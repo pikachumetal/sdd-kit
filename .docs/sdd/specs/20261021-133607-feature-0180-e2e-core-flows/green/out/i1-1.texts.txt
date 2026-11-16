@@ -1,0 +1,558 @@
+--- [2]
+Voy a usar sdd-init para preparar el proyecto con SDD.
+
+--- [6]
+Entrada: proyecto nuevo (sin `.docs/sdd/`, sin `sdd-kit.json`). Hago el inventario (es pequeño, lo leo yo).
+
+--- [11]
+**Modo: con código.** Si es un template recién instanciado, dímelo y sigo sin código. El repo es pequeño y lo he leído entero. Todavía no he escrito nada: cada documento pasará por tu «sí» antes de crearse.
+
+## Lo que deduzco del código
+
+Confírmame o corrígeme lo que sigue.
+
+- **Producto** (README): hojas de cálculo de facturación para el equipo de administración, con una rejilla editable por documento y una lista de facturas.
+- **Módulos** (irán a `ROADMAP.md`):
+  - `src/sheet`: Grid, CellEditor (carga diferida), ContextMenu y clipboard.
+  - `src/invoices`: InvoiceList, con filtro por estado.
+  - `server/api.js`: API HTTP de Node sin framework.
+  - `e2e/`: tests de Playwright.
+- **Stack** (`package.json`): React 18.3.1, Vite 5.4.10, Vitest 2.1.4, Testing Library 16, Playwright 1.48.2 y Node en módulos ES.
+- **Comandos:**
+  - `npm run dev` (puerto 5173)
+  - `npm run api` (puerto 3001)
+  - `npm test` (Vitest)
+  - `npm run e2e` (Playwright)
+- **Cinco reglas de producto, deducidas:**
+  - **Dónde viven los datos:** las celdas y el portapapeles viven en `Map`s en memoria del servidor, que se pierden al reiniciarlo. El Grid mantiene además una copia en el estado del cliente.
+  - **Idioma de nombres:** UI y estados en español (`borrador`, `emitida`, `cobrada`); código, API y claves en inglés.
+  - **Límites:** rejilla fija de 4 columnas por 5 filas (A–D, 1–5), una sola celda copiable.
+  - **Avisos:** no hay ninguno. No se avisa de errores de guardado ni de nada más.
+  - **Regla de conflicto:** gana la última escritura. El PUT sobrescribe la celda y el portapapeles es uno por usuario, sin versiones.
+- **Ramas:** `main` y `develop`, sin remoto. Encaja con git-flow (`feature/<id>` desde `develop`), que es lo que te recomiendo.
+- **Deuda para `debt.md` («Por triar»):**
+  - El guardado en `Grid.save` es optimista y no maneja errores.
+  - La API se fía del header `x-user` y usa `anon` por defecto.
+  - El `JSON.parse` de la API no tiene `try`.
+  - La API devuelve 204 con cuerpo.
+  - El cliente llama a `/api/...` en relativo, pero no hay proxy en Vite.
+  - Faltan `tsconfig` y `typescript`, y no hay configuración de Vitest ni jsdom.
+  - El pegado solo usa `values[0][0]`.
+  - El menú contextual solo se cierra con `onMouseLeave`.
+
+## Discrepancias
+
+Esto no cuadra y necesito saber qué es verdad.
+
+1. Los E2E esperan cosas que no están en `src/`:
+   - rutas `/hojas/demo` y `/facturas`
+   - `/dev/login`
+   - la fórmula `=SUMA`
+   - el botón «Exportar a PDF»
+   - «Marcar cobrada»
+   - «Formato moneda»
+
+   Tampoco hay `index.html`, `main` ni `vite.config`.
+2. `clipboard.ts` dice «1 a 3 s con la base cargada», pero el servidor no tiene base de datos.
+3. `playwright.config.ts` fija `timeout: 60_000` sin motivo escrito.
+
+## Preguntas (todas juntas, como pediste)
+
+1. **Producto (abierta):** ¿Qué problema resuelve exactamente y para quién? ¿Qué roles hay (solo veo `admin@hojas.test`)? ¿Qué queda fuera de alcance? ¿Hay términos de dominio que fijar?
+2. **Reglas de producto:** ¿Confirmas las cinco de arriba? En concreto:
+   - ¿El límite 4×5 es intencionado o provisional?
+   - ¿Qué avisos debe recibir el usuario, por ejemplo si falla el guardado?
+   - ¿La última escritura gana, o debe haber otra regla?
+3. **Stack y persistencia:** ¿El almacén en memoria es definitivo o está abierto? Si está abierto, lo apunto como fila «Next» con opciones. ¿TypeScript es intencional (hay `.tsx` pero no hay `tsconfig`)?
+4. **No negociable:** ¿Qué reglas innegociables hay sobre datos, migraciones y seguridad? ¿Alguna convención de commits, si no la fijan tus instrucciones globales?
+5. **Pruebas:**
+   - ¿Cuánto tardan `npm test` y `npm run e2e`?
+   - ¿Cuál es el comando de tests afectados?
+   - ¿Qué gate se usa al cerrar una tarea y cuál al hacer merge?
+   - ¿Los tests usan el motor de producción? El servidor es el mismo en memoria.
+   - ¿Cuáles de estos 4 flujos E2E son core? Hoy son: suma de fila (0012), exportar PDF (0015), marcar factura cobrada (0018) y formato moneda (0021).
+   - ¿Cuál es el presupuesto de tiempo E2E?
+   - ¿Por qué el timeout es de 60 s?
+   - ¿Mantengo `retries` en 2 solo en CI, como está en la config?
+   - ¿El agente entra a la app con `/dev/login?user=admin@hojas.test&next=<ruta>`?
+6. **Discrepancia 1:** ¿Los E2E son especificación de lo que falta por construir (el «molde»), o la implementación vive en otro sitio?
+7. **Changelog:** ¿quieres `CHANGELOG.md`?
+8. **Tracker de tickets:** ¿usas Azure DevOps, Jira u otro?
+9. **Ramas:** ¿Confirmas git-flow? Como no hay remoto, ¿lo vas a añadir?
+10. **Worktrees:** ¿Los usas? Si sí, ¿el entorno de un worktree necesita algo más que instalar dependencias (puertos 3001/5173, servicios, datos)? No he encontrado scripts `env:*`.
+11. **Réplica:** ¿Replica patrones de otro proyecto? ¿Cuál? («no» lo deja como «no aplica».)
+12. **Frontend:** ¿Qué detector usas para lo que se ve? Te recomiendo impeccable y Playwright como runner. «Ninguno» también vale.
+13. **Claves del kit** (numeración, perfil, merge, push, frenos, método, validación, minors, precios): las pasaré una a una con `sdd-config` cuando termines con lo anterior. Si ya sabes tus preferencias, dímelas aquí.
+
+Con tus respuestas empiezo por `PRODUCT.md`. Lo que respondas «no sé» queda pendiente y lo que respondas «no aplica» queda cerrado.
+
+--- [21]
+Estoy configurando las claves del kit con los valores recomendados (ya tengo la tabla de precios leída de la página oficial). Ahora las registro con el CLI.
+
+--- [27]
+Config del kit registrada en `init.config`. El `sdd-kit.json` definitivo (con su `version`) se escribe al final, en `--finish`.
+
+Estas son las claves registradas, todas con el valor recomendado:
+- **Numeración:** secuencia propia (`ids.mode: sequence`), porque no tienes tracker.
+- **Perfil de control:** `delegate`.
+- **Merge:** a `develop` con `--no-ff`, sin borrar worktrees y con push (`merge.push: true`).
+- **Frenos:** hasta 3 agentes en paralelo y aviso tras 8 min de silencio entre pasos o 20 en un comando largo.
+- **Ejecución de planes:** `auto`.
+- **Validación:** `manual`.
+- **Minors de la revisión final:** `defer`.
+- **Precios:** leídos hoy de la página oficial de precios. Para Haiku 5.5 he usado la tarifa de prompts de hasta 100k tokens.
+
+El push no funcionará hasta que añadas un remoto, porque ahora no hay ninguno. Cuando lo tengas, push irá solo a `develop`.
+
+## Documento 1 de 9 — `PRODUCT.md`
+
+Lo que no me has dicho queda como `pendiente`. Los términos salen del código, como pediste.
+
+```markdown
+# Hojas
+
+## Users
+
+- **Equipo de administración de la gestoría** (cinco personas): editan hojas de cálculo de facturación y consultan la lista de facturas.
+- Roles diferenciados dentro del equipo: pendiente.
+
+## Product Purpose
+
+Hojas de cálculo de facturación y lista de facturas para las cinco personas de administración de una gestoría. Cada documento es una rejilla editable y la lista de facturas permite filtrarlas por estado.
+
+Qué es que funcione: pendiente.
+
+## Capabilities and Constraints
+
+- **Es**: una rejilla editable por documento (hoy 4 columnas × 5 filas, con copiar y pegar de una celda) y una lista de facturas filtrable por estado.
+- **No es**: pendiente.
+
+## Terminology
+
+**Hoja**:
+Documento de cálculo identificado por un nombre (p. ej. `demo`), formado por una rejilla de celdas.
+_Evitar_: spreadsheet, documento
+
+**Celda**:
+Casilla de una hoja, identificada por columna y fila (`B2`), con un valor de texto.
+_Evitar_: campo
+
+**Factura**:
+Documento de cobro con número (`F-014`), cliente, importe en euros y estado.
+_Evitar_: recibo
+
+**Estado de factura**:
+Situación de una factura: `borrador`, `emitida` o `cobrada`.
+_Evitar_: fase
+
+**Portapapeles de la hoja**:
+Último rango copiado por una persona, guardado en el servidor y compartido entre sus pestañas.
+_Evitar_: clipboard
+```
+
+¿Lo apruebo tal cual («sí»), o quieres cambiar algo?
+
+--- [31]
+`PRODUCT.md` escrito y registrado como aprobado.
+
+## Documento 2 de 9 — `.docs/sdd/steering/constitution.md`
+
+Las convenciones observadas van marcadas como propuesta. Para confirmarlas, dime «sí» o corrige artículo por artículo. Lo que dijiste «no sé» queda `pendiente`, y no he inventado ningún innegociable de datos, migraciones ni seguridad.
+
+```markdown
+# Constitution — Hojas
+
+## Principios
+
+1. Compatibilidad hacia atrás por defecto.
+2. Se respeta el patrón existente aunque no sea el ideal.
+3. Ninguna refactorización oportunista.
+
+## Artículos
+
+### Art. I — Compatibilidad hacia atrás
+
+Un cambio no rompe el comportamiento, la API ni los datos que ya existen, salvo decisión escrita.
+
+*Por qué*: es un proyecto con código en uso; romper lo existente sale más caro que convivir con ello.
+
+### Art. II — Respeto al patrón existente
+
+Se sigue el patrón que ya hay en el código, aunque no sea el ideal.
+
+*Por qué*: mezclar patrones encarece cada cambio posterior.
+
+### Art. III — Sin refactorización oportunista
+
+No se refactoriza código que no es objeto del cambio. Lo que se detecta va a `debt.md`.
+
+*Por qué*: mantiene los cambios pequeños y revisables.
+
+### Art. IV — Migraciones masivas
+
+Una migración masiva solo se hace con justificación escrita.
+
+*Por qué*: su riesgo y su coste exigen una decisión explícita.
+
+### Art. V — Datos, migraciones y seguridad (propios del proyecto)
+
+pendiente. El dev-lead no ha fijado todavía reglas innegociables sobre datos, migraciones ni seguridad.
+
+### Art. VI — Convenciones observadas (propuesta, a confirmar)
+
+- Los E2E se nombran `e2e/<NNNN>-<slug>.spec.ts` y comparten `e2e/helpers.ts`.
+- Las celdas se identifican en los tests con `data-testid="cell-<ref>"`.
+- La API vive bajo `/api/...` y el usuario se identifica con el header `x-user`.
+- Los componentes viven en `src/<módulo>/`, y los tests de componente van junto al componente (`*.test.tsx`).
+
+*Por qué*: son los patrones que el código ya sigue hoy.
+
+## Convenciones
+
+- **Idioma**: castellano para el texto humano (interfaz, documentos, título y cuerpo de los commits); código, API y claves en inglés, salvo los valores de dominio en castellano (`borrador`, `emitida`, `cobrada`).
+- **Ramas**: `main` estable, `develop` de integración, `feature/<id>` desde `develop`.
+- **Commits**: los fijan las instrucciones globales del dev-lead (`CLAUDE.md` global): tipo y scope en inglés; título y cuerpo en castellano.
+- **Proyecto de referencia**: no aplica.
+
+## Reglas de producto
+
+- **Dónde viven los datos**: las celdas y el portapapeles, en memoria del servidor (`Map`), y se pierden al reiniciarlo; el Grid guarda además una copia en el estado del cliente.
+- **Idioma de los nombres**: interfaz y estados en castellano; código, API y claves en inglés.
+- **Límites**: pendiente (la rejilla es hoy 4 columnas × 5 filas, no se ha decidido si es definitivo).
+- **Avisos**: pendiente (hoy no se avisa al usuario de nada, ni siquiera de un fallo de guardado).
+- **Regla ante conflicto**: pendiente (hoy gana la última escritura, sin decisión escrita).
+```
+
+¿Lo apruebo tal cual («sí»)? Si quieres cambiar o quitar algún artículo o convención propuesta, dime cuál.
+
+--- [34]
+`constitution.md` escrito y registrado como aprobado.
+
+## Documento 3 de 9 — `.docs/sdd/steering/operations.md`
+
+Lo que he leído de los scripts y de `playwright.config.ts` va tal cual. Lo que respondiste «no sé» queda `pendiente`. Lo que propongo yo, y no sale del código, va marcado.
+
+```markdown
+# Operations — Hojas
+
+## Comandos
+
+- **Build**: no declarado (`package.json` no tiene script de build)
+- **Arrancar**: `npm run api` (API, puerto 3001) y `npm run dev` (Vite, puerto 5173)
+
+## Testing
+
+- **Suites**: `componentes` · `npm test` (Vitest) · duración pendiente; `e2e` · `npm run e2e` (Playwright) · duración pendiente
+- **Lo afectado**: pendiente
+- **Gate de cierre**: pendiente
+- **Gate de merge**: pendiente
+- **Acceso a la aplicación**: propuesta, a confirmar: página de desarrollo `/dev/login?user=admin@hojas.test&next=<ruta>`, la que usan hoy los E2E (`e2e/helpers.ts`). Esa ruta no existe todavía en `src/`. Usuario del agente distinto del de la persona que valida: pendiente.
+- **Motor de producción**: pendiente (no hay base de datos; el servidor guarda en memoria)
+- **Flujos core**: «marcar una factura como cobrada» · `e2e/0018-invoice-status.spec.ts` › marca una factura como cobrada
+- **Presupuesto E2E**: pendiente
+- **Retries**: `0` en local y `2` en CI (valor actual de `playwright.config.ts`)
+- **Timeouts**: 60 s por test, sin motivo escrito (el valor por defecto de Playwright es 30 s)
+- **Entorno de la suite**: pendiente. La suite necesita la API (3001) y Vite (5173) levantados; la config no tiene `webServer`.
+- **Datos**: los tests no crean ni borran sus datos: escriben en la hoja `demo` del servidor y el estado dura mientras viva el proceso.
+
+## Frontend
+
+- **URL**: `http://localhost:5173`
+- **Detector**: impeccable, recomendado: `npx impeccable@<versión> detect {url} --viewport {viewport}`, fallo con el código de salida 2. La versión está pendiente de fijar.
+- **Viewports**: propuesta: `1280x800` y `390x844`
+- **Runner E2E**: Playwright (paquete `@playwright/test`)
+- **Acceso**: el mismo `/dev/login?user=admin@hojas.test&next={path}` (propuesta, a confirmar)
+- **Temas**: no aplica (no hay temas)
+- **Pantalla de referencia**: pendiente
+- **Skills de apoyo**: ninguna
+```
+
+La sección `## Entornos` no se incluye, porque no usas worktrees.
+
+¿Lo apruebo tal cual («sí»)?
+
+--- [37]
+`operations.md` escrito y registrado como aprobado.
+
+## Documento 4 de 9 — `.docs/sdd/steering/architecture.md`
+
+Describe la estructura real. Las decisiones que dijiste «no sé» quedan abiertas aquí y también como filas «Next» en `ROADMAP.md`.
+
+```markdown
+# Architecture — Hojas
+
+## Estructura
+
+```text
+/
+├── server/api.js              API HTTP de Node sin framework (puerto 3001); celdas y portapapeles en Maps en memoria
+├── src/
+│   ├── sheet/
+│   │   ├── Grid.tsx           rejilla 4×5; selección, edición, guardado y pegado
+│   │   ├── CellEditor.tsx     editor de celda (carga diferida con lazy)
+│   │   ├── ContextMenu.tsx    menú contextual de celda (hoy solo «Pegar»)
+│   │   └── clipboard.ts       copiar/leer el portapapeles de la hoja vía API
+│   └── invoices/
+│       ├── InvoiceList.tsx    lista de facturas filtrable por estado
+│       └── InvoiceList.test.tsx
+├── e2e/                       tests Playwright (<NNNN>-<slug>.spec.ts) y helpers.ts
+├── playwright.config.ts       3 workers, retries 2 solo en CI, timeout 60 s, baseURL :5173
+└── package.json               scripts dev, api, test, e2e
+```
+
+El repo no tiene todavía `index.html`, punto de entrada, rutas (`/hojas/<nombre>`, `/facturas`), `vite.config` ni `tsconfig`.
+
+## Piezas y responsabilidades
+
+| Pieza | Responsabilidad | Depende de |
+| --- | --- | --- |
+| `src/sheet/Grid.tsx` | Rejilla editable de una hoja: selecciona, edita, guarda cada celda y pega | `CellEditor`, `ContextMenu`, `clipboard`, API `/api/sheets/...` |
+| `src/sheet/clipboard.ts` | Copia y lee el último rango copiado | API `/api/clipboard` |
+| `src/invoices/InvoiceList.tsx` | Muestra facturas y las filtra por estado | Recibe las facturas por props |
+| `server/api.js` | Guarda y sirve celdas y portapapeles por usuario (`x-user`) | Memoria del proceso |
+| `e2e/` | Verifica flujos de usuario de punta a punta | App en :5173 y API en :3001 |
+
+## Flujo principal
+
+1. La persona selecciona una celda de la rejilla y pulsa Enter.
+2. `CellEditor` se carga bajo demanda y recoge el texto.
+3. Al confirmar, `Grid.save` actualiza el estado del cliente y hace `PUT /api/sheets/<hoja>/cells/<celda>`.
+4. `server/api.js` guarda el valor en un `Map` en memoria.
+5. Copiar (Ctrl/Cmd+C) hace `POST /api/clipboard`. Pegar, desde el menú contextual, hace `GET` y guarda el valor en la celda elegida.
+
+## Dónde va lo nuevo
+
+- Componente de la rejilla → `src/sheet/`
+- Componente de facturas → `src/invoices/`
+- Endpoint → `server/api.js`, bajo `/api/`
+- Test de componente → junto al componente (`*.test.tsx`)
+- Flujo E2E → `e2e/<NNNN>-<slug>.spec.ts`
+
+## Decisiones estructurales
+
+- Abiertas, sin decidir (cada una es una fila «Next» en `ROADMAP.md`):
+  - Almacén en memoria frente a persistencia real.
+  - TypeScript: se usa en `.tsx` pero no hay `tsconfig` ni dependencia.
+  - Entrada de la app: rutas, `index.html` y `vite.config` que los E2E ya suponen.
+```
+
+¿Lo apruebo tal cual («sí»)?
+
+--- [40]
+`architecture.md` escrito y registrado como aprobado.
+
+## Documento 5 de 9 — `ROADMAP.md`
+
+Una aclaración sobre cómo lo he armado. El kit pide los módulos como filas, pero los módulos que ya existen no son trabajo por hacer. Por eso en `Next` van solo tus tres decisiones abiertas, con su brief. En `Later` van las cuatro funciones que los E2E dan por existentes y que no están en `src/`; tú me dijiste «no sé» sobre si eran la especificación de lo que falta construir. `Now` queda vacío, porque no me has pedido empezar nada.
+
+Dos cosas que son propuesta mía y puedes cambiar: los tamaños (S/M/L) y los ids. Como la numeración es una secuencia propia y los E2E ya usan 0012–0021, empiezo en `0022`.
+
+```markdown
+# Roadmap — Hojas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+
+## Next
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0022 | — | **Decidir el almacén de datos**<br>*Hoy celdas y portapapeles viven en Maps en memoria y se pierden al reiniciar el servidor.*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** pendiente (decisión abierta)<br>**Decisiones ya tomadas:** ninguna; hoy, memoria del proceso<br>**Salda:** nada<br>**Toca:** `server/api.js`</details> | ⏳ | — | M |
+| 0023 | — | **Decidir el uso de TypeScript**<br>*Hay `.tsx` pero no hay `tsconfig` ni dependencia `typescript`.*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** pendiente (decisión abierta)<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `package.json`, `tsconfig`, `src/`, `e2e/`</details> | ⏳ | — | S |
+| 0024 | — | **Entrada de la aplicación**<br>*Faltan `index.html`, punto de entrada, rutas `/hojas/<nombre>` y `/facturas`, `vite.config` y proxy de `/api`, que los E2E ya suponen.*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** pendiente (decisión abierta)<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** raíz del repo, `src/`, `vite.config`</details> | ⏳ | — | M |
+
+## Later
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0025 | — | **Fórmula de suma en la rejilla**<br>*`=SUMA(A1:A2)`; la espera `e2e/0012-sum-row.spec.ts`.* | ⏳ | — | — |
+| 0026 | — | **Exportar la hoja a PDF**<br>*Botón «Exportar a PDF»; lo espera `e2e/0015-export-pdf.spec.ts`.* | ⏳ | — | — |
+| 0027 | — | **Marcar una factura como cobrada**<br>*Botón «Marcar cobrada»; lo espera `e2e/0018-invoice-status.spec.ts`, tu único flujo core.* | ⏳ | — | — |
+| 0028 | — | **Formato de moneda en celda**<br>*Opción «Formato moneda» del menú contextual; la espera `e2e/0021-cell-format.spec.ts`.* | ⏳ | — | — |
+```
+
+¿Lo apruebo tal cual («sí»)?
+
+--- [43]
+`ROADMAP.md` escrito y registrado como aprobado.
+
+## Documento 6 de 9 — `.docs/sdd/steering/debt.md`
+
+Es el inventario de deuda que encontré al leer el código, todo en «Por triar», sin decidir. Con fecha de hoy, 2026-10-21. Entra un hallazgo más que no te había contado: el cliente no envía `x-user`.
+
+```markdown
+# Deuda técnica — Hojas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| `Grid.save` actualiza el estado antes de guardar y no gestiona errores del `fetch`: un fallo de guardado no se avisa y la pantalla queda distinta del servidor | `src/sheet/Grid.tsx` | 2026-10-21 |
+| El cliente no envía el header `x-user` (`clipboard.ts`, `Grid.tsx`), así que el servidor lo trata como `anon` y el portapapeles no es por usuario, al contrario de lo que dice el comentario de `server/api.js` | `src/sheet/clipboard.ts`, `server/api.js` | 2026-10-21 |
+| La API se fía del header `x-user` sin autenticación y usa `anon` por defecto | `server/api.js` | 2026-10-21 |
+| `JSON.parse` del cuerpo sin `try`: un cuerpo inválido tumba la petición | `server/api.js` | 2026-10-21 |
+| La API responde 204 con cuerpo JSON | `server/api.js` | 2026-10-21 |
+| El cliente llama a `/api/...` en relativo y no hay proxy en Vite, mientras los E2E llaman a `http://localhost:3001` | `src/sheet/`, `e2e/helpers.ts` | 2026-10-21 |
+| Falta `tsconfig` y dependencia `typescript`; falta configuración de Vitest (entorno jsdom) para los tests de componente | raíz del repo | 2026-10-21 |
+| Pegar solo usa `values[0][0]`; copiar solo copia una celda | `src/sheet/Grid.tsx` | 2026-10-21 |
+| El menú contextual solo se cierra con `onMouseLeave` | `src/sheet/ContextMenu.tsx` | 2026-10-21 |
+| El comentario «1 a 3 s con la base cargada» no se corresponde con el código: no hay base de datos | `src/sheet/clipboard.ts` | 2026-10-21 |
+| Los E2E comparten la hoja `demo`, no limpian sus datos y corren con 3 workers; el timeout de 60 s no tiene motivo escrito | `e2e/`, `playwright.config.ts` | 2026-10-21 |
+| Los E2E esperan rutas, login de desarrollo y funciones que no están en `src/` (ver filas 0024–0028 de `ROADMAP.md`) | `e2e/` | 2026-10-21 |
+
+## En espera
+
+| Ítem | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Origen | Impacto | Evidencia | Destino |
+| --- | --- | --- | --- | --- |
+
+## Descartadas
+
+| Ítem | Origen | Motivo | Fecha |
+| --- | --- | --- | --- |
+```
+
+No hay dependencias bloqueadas. ¿Lo apruebo tal cual («sí»)?
+
+--- [45]
+`.docs/sdd/steering/debt.md` está escrito tal cual y registrado como aprobado. Eso hace 6 de los 9 documentos. Todas las filas quedan en «Por triar», sin decidir.
+
+Los otros tres documentos todavía no existen. ¿Sigo con el 7?
+
+--- [51]
+No hay bloqueo: los tres documentos que faltan son independientes entre sí y no necesitan nada que no tengas ya. Los he comprobado en `sdd-init`. Son `estimation.md`, `CHANGELOG.md` y `CLAUDE.md`, en ese orden. `CHANGELOG.md` solo se escribe si la entrevista dice que sí, y esa pregunta no consta en lo que me has contestado. Te la hago después de este.
+
+## Documento 7 de 9 — `.docs/sdd/steering/estimation.md`
+
+Es el método de estimación de siempre, con la calibración vacía. Lo propongo así porque no hay features cerradas de las que sacar notas.
+
+```markdown
+# Método de estimación — Hojas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches estiman en la pregunta de su carril y escriben la estimación y la hora de inicio antes del fix; al cerrar, el tiempo real, contado igual. Una estimación que llega en el commit de cierre se marca `(post hoc)` y el log la deja fuera de la calibración: escrita con el real delante, no estima nada.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Features y patches se calibran por separado: en un patch el trabajo es encontrar la causa, no escribir.
+- El ratio no viaja entre proyectos. La banda se calibra desde la tercera muestra y es fiable a partir de unas 10.
+
+## Notas de calibración de este proyecto
+
+_Sin notas todavía._
+```
+
+¿Lo apruebo tal cual («sí»)?
+
+--- [54]
+`.docs/sdd/steering/estimation.md` está escrito tal cual y registrado como aprobado. Eso hace 7 de los 9 documentos.
+
+**Configuración del kit.** `sdd-kit.json` ya lleva valores guardados de antes, y no los he cambiado. Son estos:
+- **Numeración:** en secuencia.
+- **Perfil de control:** delegate.
+- **Fusión:** a `develop`, con `--no-ff` y con push; el worktree no se borra.
+- **Ejecución:** automática.
+- **Validación:** manual.
+- **Minors de la revisión final:** se aplazan.
+- **Frenos:** máximo 3 agentes en paralelo, 8 min de silencio entre pasos y 20 min en comandos largos.
+- **Tabla de precios:** con fecha de hoy.
+
+No he vuelto a pasar por `sdd-config`. Si prefieres revisar alguna clave, dímela y la reviso.
+
+**Documento 8 — `CHANGELOG.md`.** Es el que depende de tu respuesta: ¿quieres un changelog en la raíz? Si dices que sí, el borrador sería solo la cabecera y `## [Unreleased]`, sin entradas. Si dices que no, lo salto y paso al `CLAUDE.md`.
+
+--- [57]
+## Documento 8 de 9: `CHANGELOG.md` (raíz)
+
+Es la plantilla del kit sin el bloque de ayuda y sin entradas. Cambié `roadmap.md` por `ROADMAP.md`, que es el nombre real del fichero en este proyecto.
+
+```markdown
+# Changelog — Hojas
+
+Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técnico del proyecto, backward-looking: `ROADMAP.md` es el forward-looking.
+
+## [Unreleased]
+```
+
+¿Lo apruebo tal cual («sí»)?
+
+--- [61]
+`CHANGELOG.md` está escrito y registrado como aprobado. Eso hace 8 de los 9 documentos.
+
+## Documento 9 de 9 — `CLAUDE.md` (raíz)
+
+Es el último. Lleva punteros a los documentos y cinco reglas críticas, todas sacadas de la constitución y de `ROADMAP.md`. No añado nada nuevo. No había un `CLAUDE.md` previo en el repo, así que no hay diff que presentar.
+
+Hay dos cosas del borrador que no me constan, y las dejo marcadas para que las confirmes:
+- **Ticket tracker:** no tengo ninguna respuesta tuya. El borrador dice «ninguno».
+- **Worktrees:** tampoco. El borrador dice que no se usan, y el entorno de un worktree se instala solo con `npm install`.
+
+```markdown
+# Hojas
+
+Hojas de cálculo de facturación para el equipo de administración. Producto y dominio en `PRODUCT.md`.
+
+## Documentos
+
+- `PRODUCT.md`: problema, usuarios, módulos, fuera de alcance, términos.
+- `ROADMAP.md`: qué se hace ahora, después y más tarde.
+- `CHANGELOG.md`: lo ya entregado.
+- `.docs/sdd/steering/constitution.md`: principios, artículos y reglas de producto.
+- `.docs/sdd/steering/operations.md`: cómo se prueba, cómo se ejecuta.
+- `.docs/sdd/steering/architecture.md`: stack y estructura.
+- `.docs/sdd/steering/debt.md`: deuda técnica por triar.
+- `.docs/sdd/steering/estimation.md`: método de estimación.
+
+## Reglas críticas
+
+1. Compatibilidad hacia atrás por defecto: un cambio no rompe comportamiento, API ni datos existentes salvo decisión escrita.
+2. Se respeta el patrón existente aunque no sea el ideal; sin refactorización oportunista. Lo que se detecta va a `.docs/sdd/steering/debt.md`.
+3. Idioma: castellano para el texto humano (interfaz, documentos, commits); código, API y claves en inglés, salvo los valores de dominio en castellano (`borrador`, `emitida`, `cobrada`).
+4. Ramas: `main` estable, `develop` de integración, `feature/<id>` desde `develop`.
+5. Las decisiones abiertas (almacén de datos, TypeScript, entrada de la aplicación) están en las filas 0022–0024 de `ROADMAP.md`: no se deciden por el camino.
+
+## Ticket tracker
+
+Ninguno.
+
+## Worktrees
+
+No se usan. Si se usaran, el entorno solo necesita `npm install`.
+```
+
+¿Lo apruebo tal cual («sí»), o quieres corregir el tracker o los worktrees antes?
+
+--- [72]
+Estoy cerrando el init. Ya corrió `--finish`, y ahora compruebo si el marketplace `superpowers-marketplace` está registrado.
+
+--- [74]
+Los 9 documentos están aprobados, pero la init no está del todo cerrada: falta el paso 5 (el log de estimación) y no he hecho commit.
+
+**Hecho**
+- `CLAUDE.md` está escrito y aprobado tal cual, con «Ninguno» como ticket tracker y «No se usan» en worktrees.
+- `sdd init --finish` ha pasado sin avisos. Ha creado `.claude/settings.json` con la memoria automática desactivada y los dos marketplaces (`sdd-kit` y `superpowers`) con sus plugins activados. Ambos marketplaces ya estaban registrados.
+- `.gitignore` queda con `.playwright-mcp/`, `.superpowers/` y `.docs/sdd/sdd-kit.local.json`.
+- `sdd-kit.json` queda con versión `2.3.4` y canal `plugin`. La versión sale de lo que escribió el script, no la he tocado.
+- Git: las ramas `main` y `develop` ya siguen la convención. No hay remoto, así que no hay nada que reconvertir ni comandos para ti. Todo lo nuevo está sin commit.
+
+**Falla: el log de estimación (paso 5).** `sdd estimation log` termina con error: *«No se encuentra changes/ ni specs/ bajo .docs/sdd…»*. El script exige que ya exista una carpeta de cambios, y en un proyecto recién iniciado no existe (`cli/src/estimation/log.ts:31-36`). Por eso `estimation-log.md` no existe todavía.
+
+No lo he esquivado, porque las reglas del kit prohíben las dos salidas: crear carpetas vacías y escribir el log a mano. Parece un fallo del kit, así que te lo dejo para el feedback de mejora. El log debería generarse solo al cerrar la primera feature o patch. Si no, `sdd-archive` o `sdd-end-release` volverán a chocar con lo mismo.
+
+**Pendiente de confirmar, sin bloquear nada**
+- La versión de `impeccable` del detector en `operations.md` sigue sin fijar.
+- El acceso `/dev/login` del frontend queda «a confirmar».
+- Las reglas de producto «Límites», «Avisos» y «Regla ante conflicto» siguen pendientes, igual que el Art. V de la constitución.
+- Hay tres decisiones abiertas en `ROADMAP.md`: filas 0022 a 0024.
+
+¿Hago el commit inicial en `develop` con todo esto? Conviene hacerlo con el log aún sin generar, porque no hay forma limpia de producirlo ahora.
+

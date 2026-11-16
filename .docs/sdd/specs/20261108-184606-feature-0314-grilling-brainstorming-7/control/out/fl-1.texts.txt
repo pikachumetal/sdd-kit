@@ -1,0 +1,42 @@
+--- [14]
+Ahora: te presento lo que he entendido y te pregunto lo primero del diseño. Queda: la entrevista del flujo, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido.** Hoy `src/app.js` guarda las reservas como `{ room, day, slot }`, sin estado. Quieres que cada reserva tenga uno de estos tres estados: `pendiente`, `confirmada` o `cancelada`. Las transiciones son:
+
+```text
+            confirmar
+ pendiente ───────────▶ confirmada
+    │  ▲                    │
+    │  │ reabrir            │ cancelar
+    │  │                    │
+    │  └──── cancelada ◀────┘
+    │ cancelar     ▲
+    └──────────────┘
+```
+
+Lo he dibujado en texto porque la sesión no tiene skill de diagramas ni Artifact.
+
+Hay 4 transiciones válidas:
+- `pendiente → confirmada`
+- `pendiente → cancelada`
+- `confirmada → cancelada`
+- `cancelada → pendiente`
+
+Todas las demás se rechazan. Por ejemplo, `confirmada → pendiente` y `cancelada → confirmada` no se permiten.
+
+Preveo 2 o 3 tasks sobre la misma superficie, así que no propongo dividirla. Nada de esto está escrito todavía como spec.
+
+Para saber si el flujo está bien, primero necesito entender qué lo motiva.
+
+❓ **¿Qué problema te encuentras hoy que te hace querer estos estados?**
+
+Cuéntamelo con un caso concreto. Por ejemplo, qué te pasó la última vez con una reserva que no supiste cómo tratar.
+
+La respuesta decide si el flujo es el correcto. Un ejemplo es la vuelta de `cancelada` a `pendiente`: si esa sala se ha reservado mientras tanto para el mismo día y franja, reabrir choca con la otra reserva. Esa duda la planteo en la siguiente pregunta.
+

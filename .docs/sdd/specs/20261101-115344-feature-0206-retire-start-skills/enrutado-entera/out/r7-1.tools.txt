@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && ls -a && git branch --all && cat .docs/sdd/sdd-kit.json && echo ---- && cat .docs/sdd/steering/debt.md && echo ---- && cat ROADMAP.md
+<<< Exit code 1
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+* develop
+  main
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+----
+cat: .docs/sdd/steering/debt.md: No such file or directory
+
+>>> Bash: cd "<run>/repo" && find .docs -type f | head -50; git show main:ROADMAP.md 2>&1 | head; grep -ril "deuda\|debt\|por triar" . --exclude-dir=.git | head
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+fatal: path 'ROADMAP.md' does not exist in 'main'
+./.docs/sdd/roadmap.md
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/roadmap.md; git show main:.docs/sdd/roadmap.md | diff - .docs/sdd/roadmap.md && echo same
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/skills/sdd-templates/templates" && cat roadmap-template.md | sed -n 1,80p; cd "<run>/repo"; cat package.json; ls src test; grep -rn -i "franja\|slot\|hora" src | head -20
+<<< # Roadmap — <proyecto>
+
+> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-archive` (marca la fila de la feature y la tabla de Patches) y `sdd-end-release` (colapsa la sección de una release a resumen y enlaces). **Las secciones y las cabeceras de tabla van literales**: una columna renombrada rompe a la skill que la lee. Estados de fila: ⏳ pendiente · 🔄 en curso · ✅ hecho y validado · 🧪 validación diferida a <disparador> 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; node -e "
+import('./src/app.js').then(m=>{console.log(Object.keys(m));for(const s of ['25:99-xx','banana','','10:00-12:00']){try{console.log(JSON.stringify(s),m.freeRooms(s))}catch(e){console.log(JSON.stringify(s),'ERR',e.message)}}})"; node "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (comman
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres "99:99-banana"; node src/app.js libres "10:00-12:00"; node src/app.js libres "25:61"
+<<< Norte, Sur
+Sur
+Norte, Sur
+
+=== RESULTADO (9 turnos, 0.1791818 $)
+He mirado la deuda y hay un solo ítem por triar. No he escrito nada, porque el triaje se decide con usted.
+
+**Forma del proyecto.** `sdd-kit.json` dice 3.0.0, pero no hay `ROADMAP.md` ni `debt.md`. El proyecto sigue en la forma 2.x (`.docs/sdd/roadmap.md`), así que el triaje se hace sobre la sección «Deuda técnica» de ese fichero. No creo `debt.md` ni `ROADMAP.md`.
+
+**Ítem: «Sin validación del formato de franja horaria»** (impacto bajo, plan «Patch cuando moleste»)
+
+- **Reproducido:** sí.
+  ```
+  $ node src/app.js libres "99:99-banana"
+  Norte, Sur
+  $ node src/app.js libres "25:61"
+  Norte, Sur
+  $ node src/app.js libres "10:00-12:00"
+  Sur
+  ```
+  Una franja inválida no da error. Devuelve todas las salas como libres, aunque no exista esa franja. La causa es `freeRooms` en `src/app.js:5`, que solo compara cadenas.
+- **Propuesta:** `**Actuar**: sin fila`. Hay evidencia con comando y salida, y el impacto es bajo, así que no hace falta reservar un id ahora. Cuando moleste, sería un patch: un solo test de comportamiento nuevo.
+- **Alternativa:** `**Actuar**` con un patch en «Próximo», con id reservado. La descarto porque en la deuda ya dice «cuando moleste».
+
+**Forma heredada que no he tocado.** `sdd roadmap check` falla en dos líneas que no escribí:
+- La cabecera de «Deuda técnica» es `| Deuda | Impacto | Plan |` y debe ser `| Ítem | Impacto | Destino |`.
+- El título de «Releases cerradas» es `v0.3.0 (2026-09-01)` y debe ser `### v0.3.0 — 2026-09-01`.
+
+Ambas son del paso «Roadmap en la forma de la plantilla» de la migración. Si usted quiere, las arreglo ahora, porque la cabecera de la deuda está en la misma tabla que voy a tocar. Si prefiere dejarlas para `sdd-upgrade`, las dejo.
+
+**Decisión que necesito:**
+1. ¿Le vale `**Actuar**: sin fila` para el ítem?
+2. ¿Corrijo la cabecera y el título de la release ahora, o lo dejo para `sdd-upgrade`?
+
+Con su OK escribo el cambio, paso `sdd roadmap check` y lo publico con `sdd roadmap publish`.

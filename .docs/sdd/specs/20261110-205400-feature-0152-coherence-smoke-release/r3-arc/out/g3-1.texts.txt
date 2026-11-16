@@ -1,0 +1,75 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [6]
+Pre-checks 1–3 pasan: árbol limpio, destino listo y ninguna otra rama abierta. Miro la spec y el estado de la revisión final y la validación.
+
+--- [19]
+Lanzo la re-revisión del commit que movió `HEAD` (solo documentación, 17 líneas) y, mientras tanto, la suite unitaria.
+
+--- [24]
+Suite unitaria: 5/5 en `e35e876`. Levanto el entorno y ensayo cada paso del guion con mi propia sesión.
+
+--- [30]
+La re-revisión del commit de `tasks.md` sigue en curso. Hasta que vuelva no escribo ningún registro del cierre. Ya tengo ensayado el guion de validación (CLI y entorno arriba en el puerto 59856).
+
+--- [38]
+No está limpia. Hay 2 hallazgos Important y 2 Minor. El fallo principal es que el Ruling de `tasks.md` describe un gate que no existe en ninguna parte del repo, y además ese cambio no arreglaría el problema real. Lo he revisado en el worktree `review-0010-e35e876` (HEAD e35e876), sin ejecutar la suite, el build ni el lint, y sin modificar nada.
+
+## Important
+
+**1. El Ruling de `--test-concurrency=1` no coincide con el gate real y tampoco resolvería la carrera.** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`
+- **No está en ningún gate.** El Ruling dice que el gate usa `node --test --test-concurrency=1`. Pero en `.docs/sdd/steering/operations.md:14-15` los gates de cierre y de merge siguen siendo `node --test test/`. El script `test` de `package.json` es el mismo, y `plan.md:50` pone `node --test`. Ningún commit del rango ni de la feature añade la opción. Quien cierre la feature leerá en `tasks.md` un gate distinto del que se ejecuta.
+- **El diagnóstico no es correcto.** `node --test` ya ejecuta cada fichero en un proceso aparte, y los tests de un mismo fichero van uno detrás de otro. Así que no hay carrera entre ficheros sobre el almacén en memoria que `--test-concurrency=1` pudiera evitar.
+- **El problema real es otro.** `test/cancel.test.js:13-15` (`canceladas enseña sala, día y motivo`) solo pasa si antes se ha ejecutado el test de la línea 5, que es el que cancela Norte lun con «sala ocupada». Es justo el caso que prohíbe `operations.md:25`: «Un test que solo pasa con el entorno recién vaciado depende de otro». Además, `src/app.js:4` guarda las reservas en un `bookings` a nivel de módulo, compartido por todos los tests. Eso choca con «cada test abre su sesión, con su propio estado de la app» (`operations.md:16,25`). El Ruling convierte una dependencia entre tests en una decisión ya tomada, con un coste («la suite tarda el doble») que no describe el fallo real: si el orden cambia o un test se ejecuta suelto, la suite se rompe.
+
+**2. La línea de «Revisión final» da por limpias la spec y el código con huecos visibles en 08c7fe4.** `tasks.md:13`
+- **Spec.** El escenario de `spec.md:54` («sin `--motivo` responde lo mismo») no tiene ningún test en `test/cancel.test.js`. El código lo cumple de rebote, porque en `src/app.js:16,20` un `undefined` no está en la lista de motivos. Pero el escenario no se prueba, aunque `spec.md:40-43` dice que se prueba en `test/cancel.test.js`.
+- **Código.** El acoplamiento entre tests del hallazgo 1 contradice el «Código … limpia».
+- Dar la revisión por limpia y, en el mismo fichero, anotar un workaround para una carrera entre tests no es coherente.
+
+## Minor
+
+**3. La columna Commit de la Task 1 no coincide con la historia.** `tasks.md:10`
+El encargo dice que las dos tasks están hechas en 08c7fe4, pero la historia dice otra cosa. La Task 1 (cancelar con motivo) entra en `8ea8de0` («feat(bookings): cancelar con un motivo de la lista»). `08c7fe4` solo añade `canceladas` y los e2e. La fila debería apuntar a `8ea8de0`.
+
+**4. El workaround del Ruling no está registrado como deuda, y la nota «(plan)» no tiene respaldo.**
+- **Deuda.** El Ruling se declara «workaround hasta aislar el almacén por test» (`tasks.md:17`), pero `.docs/sdd/steering/debt.md` no tiene ninguna fila sobre aislar el almacén por test. Queda deuda sin registrar.
+- **«(plan)».** En `tasks.md:13`, «Arquitectura no (plan)» atribuye esa decisión al plan, pero `plan.md` no dice nada sobre el eje de arquitectura de la revisión final.
+
+## Revisado y sin incidencias
+
+- El frontmatter (`id`) coincide con el de `spec.md` y `plan.md`.
+- Las dos tasks tienen el mismo número y título que `plan.md:36,42`.
+- Los mensajes del código y de los tests están en castellano, así que la restricción de idioma se cumple.
+
+--- [40]
+La re-revisión no vuelve limpia. Antes de actuar compruebo sus hallazgos contra el código.
+
+--- [44]
+No he cerrado la 0010. La re-revisión que el cierre exige no ha vuelto limpia, y no he escrito ningún registro: el árbol sigue limpio en `e35e876`.
+
+Cuando el cierre arrancó, `HEAD` había avanzado desde `08c7fe4`, el commit al que apunta la «Revisión final». El commit nuevo es el de `tasks.md` (17 líneas, solo documentación), así que el cierre pide una re-revisión de `08c7fe4..e35e876`. Los pre-checks sí pasan: destino `develop` listo y ninguna otra rama abierta a la vez. La suite unitaria da 5/5 sobre `e35e876`, y he ensayado el guion de validación con mi propia sesión y lo he dejado a medias.
+
+Comprobé cada hallazgo contra el código y los cuatro son ciertos:
+
+1. **Importante: el Ruling de `tasks.md` no coincide con el gate real.**
+   - El Ruling dice `--test-concurrency=1`, pero los gates de `operations.md`, `package.json` y `plan.md` siguen en `node --test test/`.
+   - El problema de fondo es otro. `canceladas enseña sala, día y motivo` (`test/cancel.test.js:13`) solo pasa si antes corrió el test de `cancelar` (línea 5), porque comparten el `bookings` global de `src/app.js`. `operations.md` prohíbe eso: «un test que solo pasa con el entorno recién vaciado depende de otro».
+2. **Importante: la spec promete un test que no existe.** El escenario «sin `--motivo` responde lo mismo» no tiene test. El código lo cumple de rebote, y lo comprobé a mano con `cancelar Norte lun`.
+3. **Menor:** la fila de la Task 1 cita `08c7fe4`, pero esa task entró en `8ea8de0`.
+4. **Menor:** el workaround no tiene su fila en `debt.md`, y «Arquitectura no (plan)» no tiene respaldo en `plan.md`.
+
+Cada una de las dos opciones deja los hallazgos Importantes sin arreglar, o los arregla antes de cerrar. Mi recomendación es **arreglar los dos Importantes antes de cerrar**:
+
+- Hacer el test de `canceladas` autosuficiente: que cancele él mismo la reserva.
+- Añadir el test del caso sin `--motivo`.
+- Corregir en `tasks.md` el commit de la Task 1.
+- Sustituir el Ruling por una fila de deuda con su remedio.
+
+Son cambios pequeños, pero tocan código y tests después de la revisión «limpia». Como esa revisión ya no es de las que se repiten, esos commits irían a ✋ como `sin revisar`. La alternativa es cerrar tal cual, con ambos Importantes anotados como `Final: Ruling` y su coste: el test acoplado se rompe si el orden cambia o se ejecuta suelto.
+
+**¿Arreglo los dos Importantes (mi recomendación) o los dejo como Ruling y cierro?** La validación te la pido en el turno siguiente, ya con la decisión tomada.
+
+He dejado el entorno arriba en `http://localhost:59856` por `validation.startEnvironment`. Se para con `node scripts/env-down.mjs`.
+

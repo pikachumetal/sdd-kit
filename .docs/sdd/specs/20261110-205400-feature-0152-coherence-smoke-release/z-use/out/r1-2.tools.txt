@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -30; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/sdd-kit.json 2>&1 | head -150
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+.docs/sdd:
+sdd-kit.json
+specs
+steering
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md; cat package.json; ls -R src test; wc -l src/* ; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En es
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls node_modules 2>&1 | head -2
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-propose/references" && sed -n 1,40p control-profiles.md; sed -n 1,60p nombrado.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (8 turnos, 0.15563799999999997 $)
+Ahora: he leído el contexto del proyecto (PRODUCT, ROADMAP, constitución, operations) y el código, y estoy clasificando tu petición. Queda: tu respuesta a una pregunta sobre cómo partirla. Después, la nota de comprensión y las preguntas de diseño, unos 10 min hasta la spec.
+
+**Carril:** feature, modo full · **Perfil:** delegate, por defecto del kit (no hay `control.profile` en `sdd-kit.json` ni existe `sdd-kit.local.json`).
+
+Me preocupa el tamaño, no el carril. Veo tres entregas con superficies distintas:
+
+1. **Informe de ocupación por sala.** Hoy `src/app.js` solo tiene una lista de reservas en memoria y la función `libres`. Habría que añadir el cálculo y un comando nuevo.
+2. **Exportar a Excel.** La constitución dice «sin dependencias externas». Un `.xlsx` real las exigiría. Un CSV que Excel abre no las exige. Es una decisión de fondo.
+3. **Aviso semanal a los responsables.** Necesita envío de correo y una programación semanal. Choca con la fila 0008 del roadmap, «Avisos por correo», que todavía está ⏳ y toca `src/correo.js`. Además, `PRODUCT.md` dice que no hay más usuarios que tú, así que no existe el concepto de «responsable».
+
+Calculo unas 5 o 6 tasks internas, con tres superficies distintas y un posible cambio de dependencias. Por eso te propongo partirlo.
+
+¿Cómo lo hacemos?
+
+1. **Partir en tres features, cada una con su fila en el roadmap (recomendada).** Ocupación → exportación → aviso semanal. Este último iría con `Tras: 0008`, porque necesita el correo. Empiezo ahora por la de ocupación, que es la base de las otras dos.
+2. **Mantenerlo entero en una sola feature.** Una spec y un plan con las tres partes. No volveré a proponer partirlo.
+
+Si te vas a ausentar, puedes decir: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil, di: «perfil `pair` para esta feature».
+
+Antes de la spec necesito saber si el cliente te ha dicho quiénes son esos «responsables» y qué formato de Excel espera. Lo preguntaré en la entrevista.

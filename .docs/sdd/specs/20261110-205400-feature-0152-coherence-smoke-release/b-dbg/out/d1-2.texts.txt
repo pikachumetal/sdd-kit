@@ -1,0 +1,19 @@
+--- [2]
+Empiezo la Fase 1: leo el hook, la configuración de git y la deuda del proyecto.
+
+--- [8]
+**Causa raíz:** el hook `.githooks/pre-commit` está escrito en CommonJS (`require(...)`), pero el `package.json` de la raíz declara `{"type": "module"}`. Node ejecuta el hook como módulo ES y lanza una excepción.
+
+**Evidencia**
+- Ejecuté `.githooks/pre-commit` a mano y falló con `ReferenceError: require is not defined in ES module scope` en la línea 3 (`const { spawnSync } = require('node:child_process')`).
+- `core.hooksPath` apunta a `.githooks`, así que git usa ese hook.
+- `package.json` contiene `{"type": "module"}`. No hay otro `package.json` en `.githooks/` que lo anule.
+- Los dos ficheros vienen del mismo commit, `626b582`. El hook nunca pudo funcionar en este repo.
+- El hook es un fichero sin extensión. Node lo trata como `.js` y le aplica el `type` del `package.json` más cercano.
+
+**Lo que no lo provoca:** `notas.txt` no interviene. Cualquier commit fallaría igual, porque el hook se rompe antes de mirar el contenido.
+
+**Lo que no verifiqué:** no ejecuté `git commit`. Tampoco probé la lógica del worktree temporal (`git worktree add`...), que nunca llega a ejecutarse. Puede tener otros fallos que aparezcan cuando se resuelva este.
+
+No he tocado nada. Cuando quieras arreglarlo, el cambio entra por `sdd-propose`.
+

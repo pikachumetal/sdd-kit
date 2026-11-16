@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/capabilities 2>/dev/null; cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md 2>/dev/null | head -150; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-a/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Grep: bookings|cancel
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la
+<<< .docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+test\cancel.test.js:5:test('cancelar una reserva activa', () => {
+test\cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+test\cancel.test.js:9:test('cancelar sin reserva lo dice', () => {
+test\cancel.test.js:10:  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+src\app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+src\app.js:6:  return ro
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reserva ${room} ${day}
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json .docs/sdd/estimation.md .docs/sdd/operations.md; ls .docs/sdd/sdd-kit.local.json 2>&1; cat test/*.js | head -60
+<<< {"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo
+
+=== RESULTADO (8 turnos, 0.1758733 $)
+Ahora: tengo la causa y el carril. Queda: tu confirmación para abrir el patch, luego test de regresión, fix y gate (~10 min).
+
+## Causa: no es el orden del array
+
+`findBooking` en `src/app.js:9-11` recibe `day` y **nunca lo usa**:
+
+```js
+return bookings.find((b) => b.room === room && b.status === 'active');
+```
+
+Cualquier reserva activa de la sala coincide, sea del día que sea. "Cancelar Norte mar" encuentra la del lunes, la cancela y responde con el `day` que le pasaste, por eso dice "cancelada Norte mar". Buscar desde el final no lo arregla: con una sola reserva en Norte, seguiría cancelando la del lunes. Y con varias solo cambiaría cuál se cancela por error.
+
+`anular` (`voidBooking`) usa el mismo `findBooking`, así que tiene el mismo fallo y se arregla con el mismo cambio.
+
+El patch 0007 arregló "comparación solo por hora" pero dejó el día sin comparar, así que esto es el mismo bug a medio cerrar.
+
+## Carril: patch
+
+Es un fallo determinista y la causa raíz fija la solución: comparar también `b.day === day`. Pasa el predicado del carril patch.
+
+🦆 Hoy `cancelar` y `anular` buscan "la reserva activa de esa sala" sin mirar el día. Pasarían a buscar "la reserva activa de esa sala *ese día*". Si no hay ninguna, dirán "sin reserva Norte mar" y no tocarán nada. Se añade un test que reserva el lunes, cancela el martes y comprueba que el lunes sigue activa. No cambia nada más de lo que ve el usuario.
+
+**¿Abro el patch así?**
+
+1. **Sí, patch con `b.day === day` en `findBooking` (recomendada).**
+   - Cubre `cancelar` y `anular`.
+   - Test de regresión primero (RED), luego fix.
+   - Gate de cierre `node --test && node scripts/lint.mjs`.
+   - Rama y `patch.md` con id de `sequence`.
+   - Perfil `delegate`, del proyecto.
+2. **Solo `cancelar`, dejando `anular` como está.** No lo recomiendo: dejaría el mismo bug vivo en `anular`.
+3. **Buscar desde el final, como pediste.** No lo recomiendo porque no arregla el síntoma.
+
+Dime «sí» (o la opción) y arranco `sdd-start-patch` sin más paradas hasta el cierre.

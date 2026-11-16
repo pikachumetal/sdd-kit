@@ -1,0 +1,89 @@
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261013-110000-feature-0023-cancelled-list\spec.md
+<<< 1	---
+2	id: 20261013-110000-feature-0023-cancelled-list
+3	feature: 0023
+4	title: Listado de canceladas
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-13
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Listado de canceladas
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `reports` — `canceladas` sustituye a `informe`.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. Cada línea del listado es «<sala> <día> — <motivo>».
+25	2. `informe` responde «usa canceladas».
+26	
+27	### Deci
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\reports.md
+<<< 1	# Capacidad — reports
+2	
+3	## Propósito
+4	
+5	los informes de la app de salas
+6	
+7	## Requisitos
+8	
+9	### El informe de canceladas agrupa por sala y da el total
+10	
+11	- GIVEN Norte lun cancelada con «sala ocupada» y Sur mar con «otro»
+12	- WHEN `informe`
+13	- THEN responde «Norte: lun (sala ocupada)», «Sur: mar (otro)» y «total: 2», en ese orden
+
+=== RESULTADO (5 turnos, 0.0960478 $)
+1. Crítico · Delta MODIFIED «El informe de canceladas agrupa por sala y da el total» · El MODIFIED sustituye el requisito entero. Su THEN pasa a «usa canceladas» y desaparecen la agrupación por sala y el total. El spec no declara esa retirada como REMOVED ni como cambio de contrato, y `informe` tampoco queda descrito como comando retirado. · Declarar el requisito como REMOVED (o RENAMED) y añadir un requisito nuevo aparte para `informe` → «usa canceladas». Anotar la pérdida de agrupación y total como decisión.
+
+2. Crítico · Intent / Scope / Delta · El Intent dice «se quiere uno solo» y la decisión del dev-lead dice «que nadie eche de menos el informe». Aun así `informe` sigue existiendo y responde «usa canceladas», así que no hay un solo comando. «Retirada de `informe`» contradice el Approach («`informe` deja de listar»). · Decidir una de las dos: retirar `informe` del todo (REMOVED) o mantenerlo como alias redirigido. Reescribir Intent, Scope y Approach para que coincidan.
+
+3. Crítico · Delta ADDED «Canceladas lista sala, día y motivo» · El comando nuevo deja de agrupar y de dar el total, así que «nadie echa de menos el informe» es falso. La pérdida del total y de la agrupación no está en el Scope ni en las decisiones. Tampoco se dice cómo `canceladas` ordena las filas ni qué responde cuando no hay canceladas. · Decidir si el total y la agrupación se mantienen en `canceladas`. Añadir el orden y los escenarios de «sin canceladas» y de empate.
+
+4. Importante · Terminología (PRODUCT.md) vs Delta · El spec usa «cancelada» y «canceladas» para todo. En PRODUCT.md, Cancelación es lo que anula el cliente y Anulación es lo que anula el responsable. El spec no dice si `canceladas` lista ambas o solo las cancelaciones. «Sala ocupada» y «otro» suenan a anulación por el responsable. · Declarar el alcance (solo cancelaciones, solo anulaciones o ambas). Si es solo cancelaciones, revisar los ejemplos de motivo. Si incluye anulaciones, aclarar el nombre del comando.
+
+5. Importante · «✋ Decisiones que he tomado yo» · La decisión 2 («`informe` responde “usa canceladas”») está tomada y encima es la que cambia el contrato visible, pero choca con la decisión del dev-lead de retirarlo entero. Faltan en la lista el formato de salida «Norte lun — sala ocupada» (separador «—», orden de los campos) y el orden de las filas. · Añadir como decisiones explícitas el literal del mensaje, el separador, el orden y la abreviatura del día. Resolver el conflicto con la decisión del dev-lead.
+
+6. Importante · Delta ADDED, escenario · El escenario pasa «a ojo». Solo prueba dos filas y no fija el orden ni el formato exacto. Una implementación que devuelva las filas en otro orden o con otro separador puede pasar o fallar según cómo se lea el THEN. · Fijar «en ese orden» y el literal exacto. Añadir un escenario sin canceladas y otro con motivo vacío.
+
+7. Importante · Delta MODIFIED, escenario · «GIVEN cualquier estado» no es un estado concreto. El escenario pasa trivialmente aunque no haya reservas ni canceladas y no demuestra la retirada. · Dar un GIVEN concreto (el mismo estado del ADDED) y comprobar que `informe` ya no lista nada.
+
+8. Importante · Reglas de la capacidad (sección ausente) · El spec introduce el formato de línea, el literal «usa canceladas» y el vocabulario de motivos, pero no declara las cinco reglas por nombre (dónde vive el dato, idioma de los nombres, límites, avisos, regla de conflicto) ni las marca «no aplica». La constitución solo fija el castellano para la interfaz, y el literal «usa canceladas» cumple. Falta decir dónde vive el motivo y su límite (longitud, motivo vacío). · Añadir «Reglas de la capacidad» con las cinco reglas, cada una con su valor o «no aplica». Fijar el límite y el valor por defecto del motivo.
+
+9. Menor · Scope «No entra: el motivo al cancelar (ya existe)» · Se afirma que el motivo ya existe, pero la capacidad `reports` solo lo documenta en el informe. No hay capacidad ni requisito que lo respalde, y el spec no lo cita. · Citar la capacidad o el requisito donde el motivo ya vive. Si no existe, declararlo como dependencia.
+
+10. Menor · «Dónde se prueba» · Solo cubre `canceladas`. La batería no incluye ninguna prueba del MODIFIED de `informe`, así que ese requisito no tendrá cobertura. · Añadir la prueba de `informe` («usa canceladas»), por ejemplo en `test/cancel.test.js`.

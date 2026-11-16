@@ -1,0 +1,29 @@
+--- [13]
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme si me equivoco):
+
+- Hoy `reservar` crea la reserva sin comprobar si la sala está ocupada. Sí existe `libres <franja>`, que lista las salas libres. Tu petición es que, cuando la sala que quieres esté ocupada, puedas ponerte en una **lista de espera** en vez de quedarte sin nada.
+- Es un cambio de comportamiento visible y no tiene una solución fijada. Por eso es una feature y no un patch. Calculo unas 3 tareas, así que no propongo dividirla.
+- Esto es nuevo y no está en el roadmap (la 0008 son los avisos por correo). Voy a numerarla como feature nueva cuando llegue el momento de crear la rama.
+- Como la usas tú solo, la lista de espera serías tú mismo esperando una sala. Eso lo quiero entender bien antes de diseñar nada.
+
+❓ **Primera pregunta, para entender el motivo.** Cuéntame un caso real reciente: ¿qué ha pasado la última vez que la sala que querías estaba ocupada y qué habrías querido que pasara?
+
+--- [15]
+Gracias, queda anotado: feature full, perfil delegate, y el motivo es dejar de mirar `libres` a mano cada rato.
+
+Antes de preguntar he mirado el código. `src/app.js:3` tiene las reservas fijas en memoria, con una sola reserva de ejemplo. `reservar` y `cancelar` solo devuelven un texto y no cambian nada. Ahora mismo no hay nada que se guarde entre una ejecución y la siguiente. Una lista de espera necesita guardar estado. Ese detalle técnico lo decido yo y lo dejaré anotado en la spec, con su motivo, para que lo revises.
+
+❓ **¿Qué debe pasar cuando Norte se libera?**
+1️⃣ **Reserva automática.** `reservar Norte lun 10:00-12:00` con la sala ocupada responde `Norte ocupada; en espera (1.º)`. Cuando alguien cancela, la primera de la lista pasa a ser reserva y aparece en tus reservas. No tienes que hacer nada. El coste es que reservas sin confirmar en ese momento.
+2️⃣ **Solo aviso.** Igual que arriba, pero al liberarse solo se marca `Norte libre: lun 10:00-12:00`, y reservas tú. Es más seguro, pero sigues teniendo que estar atento y reservar a mano.
+3️⃣ **Solo consulta.** Un comando `espera` lista lo que tienes en espera. No hay aviso ni reserva automática, y sigues mirando a mano.
+➡️ **Recomiendo 1️⃣**, porque lo que quieres es dejar de vigilar `libres`, y solo esta opción lo consigue del todo. A cambio, la reserva se hace sin que la confirmes en el momento. ¿Cuál eliges?
+

@@ -1,0 +1,61 @@
+
+>>> Read: <run>/review-final-51815d7.diff
+<<< 1	# Review package: 85455f3..HEAD
+2	
+3	## Commits
+4	51815d7 feat(bookings): informe de ocupación
+5	
+6	## Files changed
+7	 src/app.js | 30 +++++++++++++++++++++++++++++-
+8	 1 file changed, 29 insertions(+), 1 deletion(-)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e267053 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+16	   const booking = findBooking(room, day);
+17	   if (!booking) return `sin reserva ${room} ${day}`;
+18	   booking.status = 'voided';
+19	   return `anulada ${room} ${day}`;
+20	 }
+21	 
+22	
+
+=== RESULTADO (2 turnos, 0.1545186 $)
+### Strengths
+- `occupancyReport` is 26 lines, within the 30-line limit, and all UI text is in Spanish.
+- It iterates `rooms`, so rooms with no bookings still appear with a count of 0.
+- It counts only `active` bookings, so `voided` and `cancelled` are correctly excluded from the per-room counts and the total.
+- Singular/plural wording is handled.
+- The command is wired into `run` without disturbing the existing ones.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+- **`src/app.js:26-51`: no tests.** The diff touches only `src/app.js`. Nothing covers the new behavior: the room with 0 bookings, the optional cancelled line, the total, or the empty case. The task reports and this package show no test evidence for the command. Add tests for: no bookings, one booking (singular), several rooms, cancelled present, cancelled absent, and voided excluded.
+- **`src/app.js:42-45`: cancelled bookings are shown only as a count.** The plan says "las canceladas si las hay". `cancelledList()` already shows room, day and reason, so a bare count may not match what was meant. This is ambiguous in the plan, so please confirm. Likewise the active bookings appear only as counts, not as the reservations themselves ("cada sala con sus reservas activas").
+
+#### Minor
+- **`src/app.js:29,46`: `const now = 'hoy'` is a meaningless hardcoded constant.** It prints `total: 3 (hoy)`, which adds nothing, is not requested in the plan, and looks like a placeholder for a date. Remove it.
+- **`src/app.js:35`: the comment `// incrementa count` restates the code.** Remove it.
+- **`src/app.js:32-37`: the nested loop with two `continue`s is more verbose than needed.** `bookings.filter((b) => b.room === room && b.status === 'active').length` would do it in one line, and would also let you drop the manual `total` accumulation.
+- **`src/app.js:47-49`: the "sin reservas activas" line comes after `total:`.** It would read better in place of, or before, the total line.
+- **`src/app.js:58-59`: the `anular` line is changed without any visible difference.** This is probably whitespace or line-ending noise. Revert it to keep the diff clean.
+
+### Declined to judge
+- Whether `rooms` and `bookings` are defined elsewhere in `src/app.js`. The diff context doesn't show them, so I assumed they exist.
+- Whether `voided` bookings should appear in the report. The plan doesn't mention them, and excluding them is reasonable.
+- The suite, build and lint were not run, per the instructions.
+
+### Recommendations
+Add tests, drop the `now` placeholder, simplify the counting, and clarify with the requester whether the cancelled and active bookings should be listed or only counted.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The core behavior is correct and within the code constraints, but it ships with no tests and a spurious hardcoded `(hoy)` in the output, and the scope of the cancelled listing is ambiguous.

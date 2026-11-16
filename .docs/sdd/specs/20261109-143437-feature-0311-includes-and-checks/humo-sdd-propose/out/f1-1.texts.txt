@@ -1,0 +1,85 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio, escribir la spec y el plan, y parar tras el commit de la Task 1.
+
+--- [25]
+Ahora: la spec ya está escrita y el delta se fusiona bien en una copia. Falta que la revise un revisor y cerrar el plan. Después paro tras el commit de la Task 1.
+
+--- [32]
+El revisor de la spec está en marcha. Espero su resultado antes de seguir con el plan.
+
+--- [33]
+1. Crítico · Delta / «Cancelar exige un motivo» y «Lo que se retira o cambia de forma» · Existe un comportamiento previo (`cancelar <sala> <día>` sin motivo cancela, con respuesta `cancelada <sala> <día>`), pero `capabilities/` está vacío y todo va como `ADDED`. Eso oculta un cambio de comportamiento que debería quedar como `MODIFIED`. · Declarar el comportamiento previo como línea base (o una nota de que no hay verdad viva previa) y dejar claro que el cambio de forma es una ruptura deliberada. No presentarlo como si fuera solo algo nuevo.
+
+2. Crítico · Delta / «Un motivo ausente o fuera de la lista no cancela» · El escenario mezcla dos casos (ausente e inválido) en un solo WHEN con «o». Por eso un único THEN no demuestra los dos, y la decisión 4 dice que la comprobación va antes de buscar la reserva, pero ningún escenario lo verifica. · Separar en dos escenarios. Añadir uno donde falta la reserva y también el motivo, con THEN `motivo no válido…`.
+
+3. Importante · Delta / «Cancelar sin reserva lo dice» · El texto `sin reserva Sur mar` sale de código que no se ha leído en la spec ni se ha decidido en «✋ Decisiones». Tampoco hay escenario de cancelar una reserva ya cancelada o anulada. · Citar ese texto como comportamiento existente en la tabla de cambios, o añadirlo a las decisiones. Añadir un escenario para la reserva ya cancelada (¿sobrescribe el motivo?, ¿error?).
+
+4. Importante · Scope vs. Approach / «antes de 24 h» · El Scope dice «No entra: cambiar la regla de antes de 24 h», pero ningún escenario de `cancelar` la menciona y no se dice cómo se combina con la validación del motivo. El orden entre «motivo inválido» y «<24 h» queda sin definir. · Añadir el orden de comprobaciones a las decisiones y un escenario con cancelación fuera de plazo y motivo válido o inválido.
+
+5. Importante · Delta / «El listado de canceladas» · «En el orden de reserva» no se puede verificar: el escenario tiene una sola reserva. «Una reserva anulada no sale» no tiene GIVEN con una anulada, y `anular` no se define en ninguna capacidad. · Escribir un escenario con dos o más canceladas más una anulada y fijar el orden esperado. Definir el estado «anulada» en el GIVEN.
+
+6. Importante · Decisiones 2 y 4 · El motivo «otro» y el guion de `cambio-de-planes` son datos nuevos que no dicen dónde vive la lista, cómo se compara (mayúsculas, espacios) ni qué pasa con un cuarto argumento sobrante. Tampoco queda claro cómo se muestra el motivo con guion en el mensaje de error. · Fijar dónde vive la lista (constante única compartida entre validación, error y listado), la regla de mayúsculas y la de argumentos extra (`cancelar Norte lun otro x`).
+
+7. Importante · Decisión 3 y «Lo que se retira» · Hacer el motivo obligatorio rompe las reservas ya canceladas sin motivo, aunque las reservas están en memoria. No se dice qué muestra `canceladas` si hay una cancelada sin motivo, ni si existe otro camino hacia el estado cancelado, como `anular`. · Declarar que no hay canceladas previas, porque todo vive en memoria. Declarar también si `anular` y `cancelar` comparten el campo del motivo.
+
+8. Menor · «✋ Decisiones» / 6 · El listado depende de la fila 0011, que define el motivo de `anular`, y la decisión 6 la cita sin saber cómo quedará. Existe riesgo de colisión con el comando `canceladas`. · Anotar el contrato de estados (cancelada / anulada) como dependencia de la 0011, o dejar fuera del delta la línea sobre las anuladas.
+
+9. Menor · «Términos y ADR» · «Cancelación» está definida en PRODUCT.md y la spec dice que no se toca, pero la definición del dominio puede quedar contradicha por el motivo obligatorio. Se anuncia «Términos resueltos: ninguno» sin haber leído PRODUCT.md. · Releer PRODUCT.md y confirmar que «Cancelación» no menciona un cancelar sin motivo. Si lo menciona, planear la edición o una ADR.
+
+10. Menor · Cabecera y «Decisiones tomadas con el dev-lead» · La spec está en `status: approved`, con aprobación por delegación, y a la vez dice «cuando tengas el commit de la Task 1, para». Una parada intermedia no es un criterio de aprobación y puede confundir al implementador. · Mover la parada al plan o a las notas de ejecución. Separar la aprobación de la spec del punto de control de la implementación.
+
+--- [36]
+Incorporo los hallazgos a la spec. Acepto 2, 3, 4, 5, 6, 7 y 10 con sus cambios, y rechazo 1, 8 y 9 con su motivo.
+
+--- [39]
+Ahora: acepté un Crítico, así que una segunda ronda de un revisor relee la spec corregida. Después escribo el plan.
+
+--- [41]
+El segundo revisor está leyendo la spec. Espero su resultado antes de escribir el plan, para no tocar el fichero mientras la lee.
+
+--- [45]
+1. Importante · Delta, escenario «Cancelar sin motivo» · El AND mezcla dos casos: `cancelar Sur mar` sin motivo y sin reserva. Ese caso tiene su propio GIVEN (Sur sin reserva), que no está declarado, y no está claro si «sin motivo» incluye un motivo vacío. · Separar en un escenario propio con GIVEN, WHEN y THEN. Fijar también el comportamiento con un motivo vacío o solo espacios.
+2. Importante · Delta, escenario «Cancelar con motivo» · «la reserva queda cancelada con ese motivo» no se puede verificar solo con `run`. El único modo de observarlo es `canceladas`, que es otro escenario, y el escenario habla de «guardar» como detalle interno. · Cambiar el THEN a algo observable: tras cancelar, `canceladas` muestra `Norte lun 10:00-12:00 · sala ocupada`. Dejar el estado interno en Approach.
+3. Importante · Delta, escenario «Cancelar con motivo» · Dice que `cambio-de-planes` sale como «cambio de planes» y `otro` como «otro», pero ambos van como AND sin GIVEN propio. Con una sola reserva sembrada, el segundo cancelado cae en «sin reserva». No hay forma de ejecutarlos en la misma prueba. · Convertirlos en escenarios con tabla o en un Scenario Outline, cada uno con su propia reserva activa. Nombrar la reserva sembrada para cada caso.
+4. Importante · Decisiones 4 y 8 / Delta · Un argumento sobrante «se ignora», pero ningún escenario lo prueba, así que el gate no lo verifica. Tampoco se ha dicho qué pasa con un motivo en mayúsculas, aunque la decisión 8 dice que es exacto. · Añadir un escenario para `cancelar Norte lun otro extra` y otro para `OTRO`, o quitar esas reglas de la decisión 8.
+5. Importante · Decisión 2 / Delta · Los nombres de los motivos «salen de tu lista», pero el dev-lead dio «cambio de planes, sala ocupada, otro» con espacios. Los identificadores con guion son una invención que está solo en la decisión. Además, el mensaje de error y el comando no dicen qué pasa si el usuario escribe «sala ocupada» con espacios: queda como motivo más argumento sobrante, con lo que `sala` sería inválido. · Añadir un escenario de `cancelar Norte lun sala ocupada` que responda con el error. Marcar los guiones como decisión que debe validar el dev-lead.
+6. Importante · Decisión 6 / Delta de `canceladas` · Faltan reglas de orden y de formato con varias canceladas, y la franja se toma de la reserva sin decirlo. El comando nuevo es alcance añadido que el dev-lead no pidió: pidió el motivo y la fila habla del «listado de canceladas». · Fijar un orden determinista (por orden de cancelación) con un escenario de dos canceladas, y marcar el comando como alcance nuevo en la decisión.
+7. Menor · Cabecera / Aprobaciones · La spec está `approved` por el propio autor `Fixture` como único aprobador, a través de una delegación. «Validación: dev-lead» no aparece con una persona concreta distinta. · Dejar constancia en Aprobaciones de que el dev-lead es quien delega, no el autor.
+8. Menor · Hallazgos de la review (rechazo 1) · El rechazo del ADDED frente a MODIFIED se justifica con que `capabilities/` está vacío. Pero `cancelar` ya se comporta de una forma en el código y en los tests existentes, y esa conducta no está en ninguna capacidad. El kit pide declarar la conducta previa que se retira. · Añadir en «Lo que se retira» una línea que diga que el comportamiento anterior no estaba especificado en ninguna capacidad.
+9. Menor · «Dónde se prueba» · El orden de comprobaciones (motivo antes que reserva) no tiene prueba propia aparte de la de `Sur mar`, y el estado de «cancelada» frente a «anulada» depende de datos sembrados que no se describen. · Declarar en Approach o en Dónde se prueba cómo se siembran las reservas y cuál de ellas se usa en cada escenario.
+
+--- [47]
+La segunda ronda no trae ningún Crítico, así que no hay tercera. Incorporo lo aceptado y escribo el plan.
+
+--- [56]
+Ahora: commit de apertura (spec y plan) y paso a `sdd-implement`, que ejecuta la Task 1. Después paro.
+
+--- [60]
+Ahora: abro la ejecución en Native de la Task 1. Queda: implementarla, hacer su commit y parar, unos 10 minutos.
+
+--- [75]
+RED confirmado: fallan 8 y pasan 2, que ya cumplía el código actual (sin reserva y dos veces). Implemento lo mínimo.
+
+--- [78]
+Verde. El mensaje de error quedó demasiado ingenioso; lo dejo como el literal de la spec.
+
+--- [81]
+El test es idéntico a la copia RED. Ahora hago el commit de la Task 1, con `tasks.md` al día.
+
+--- [84]
+La Task 1 está hecha y commiteada (`dadaa8f`), y paro aquí como pediste. La Task 2 (el listado `canceladas`) queda sin empezar.
+
+En la rama `feature/0010-motivo-cancelar`, `cancelar` ahora exige un motivo de la lista, por ejemplo `cancelar Norte lun sala-ocupada`, y responde `cancelada Norte lun (sala ocupada)`. Sin motivo, o con uno fuera de la lista, responde `motivo no válido: usa cambio-de-planes, sala-ocupada u otro` y no cancela.
+
+La verificación de la task, `node --test test/cancel.test.js`, da 10 pasan y 0 fallan. Con la suite entera hay 12 pasan, 0 fallan y el lint está limpio. Los 8 tests nuevos fallaron antes de escribir el código (RED confirmado) y el fichero final es idéntico a la copia RED.
+
+La spec está aprobada por delegación con tus palabras literales. Hay dos commits: la apertura (`1bfe0ae`, spec y plan) y la Task 1. Dos revisiones de la spec encontraron dos Críticos: uno lo acepté y otro lo rechacé con motivo. Los hallazgos y mis decisiones están en `spec.md`.
+
+Decisiones mías que conviene que valides, todas en el ✋ de `spec.md`:
+- **Motivo obligatorio:** `cancelar Norte lun` sin motivo deja de cancelar. Es una ruptura deliberada del comportamiento anterior.
+- **Motivos con guiones:** `cambio-de-planes`, `sala-ocupada` y `otro`, porque los argumentos se separan por espacios. En las respuestas salen con espacios.
+- **Comando nuevo `canceladas`:** la fila 0010 pide "el listado de canceladas" y hoy no existe ninguno, así que lo añado en la Task 2. Las reservas anuladas no salen.
+- **Capacidad nueva:** `booking-cancellation`. `capabilities/` estaba vacío, así que el delta es solo `ADDED`.
+
+Para continuar con la Task 2 y el cierre, di «sigue». Las decisiones de ejecución quedan en el ledger del workspace y no hay deferred minors.
+

@@ -1,0 +1,121 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>/dev/null; cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+public/
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md | head -120; ls -R public src test; cat package.json; find . -name reservas.json -not -path "./.git/*" | xargs cat
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat public/index.html public/styles.css; ls node_modules 2>&1 | head -1; git branch --show-current
+<<< <!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reservas — salas</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Reservas</h1>
+  <table id="reservas">
+    <thead><tr><th>Sala</th><th>Día</th><th>Franja</th><th>Quién</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <script type="module">
+    const reservas = await (await fetch('reservas.json')).json();
+    document.querySelector('#reservas tbody').innerHTML = reservas
+      .map((r) => `<tr><td>${r.sala}</td><td>${r.dia}</td><td>${r.franja}</td><td>${r.quien}</td></tr>`)
+    
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/skills/sdd-propose/references" && cat control-profiles.md | head -60; echo ======; cat spec-writing.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.172118 $)
+Ahora: tengo el contexto y la nota de lo que entiendo. Queda: esta pregunta de diseño, después la spec, que es la parada, ~5 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que entiendo.** En `public/index.html` el listado muestra Sala, Día, Franja y Quién. Hay que añadir una columna **Estado** al final, con el valor `estado` que ya trae cada reserva en `public/reservas.json`. Hoy hay tres: `confirmada` (Ana), `pendiente` (Luis) y `cancelada` (Marta). No cambia ningún dato ni hay lógica nueva. Es una sola task, así que no propongo dividirla.
+
+Decisiones mías hasta ahora:
+- La columna va a la derecha de «Quién».
+- El texto se muestra tal cual viene en el JSON.
+- Se comprueba en los dos viewports de `operations.md`, 1280x800 y 390x844.
+
+❓ **¿Cómo se ve el estado en cada fila?**
+Hoy la tabla es texto plano sin color. Estas son las tres opciones, con la fila de Marta como ejemplo:
+
+1️⃣ **Etiqueta con color y texto**
+- `Ana · confirmada` sale verde.
+- `Luis · pendiente` sale ámbar.
+- `Marta · cancelada` sale gris.
+- El texto siempre está, así que el color solo refuerza. Cuesta unas pocas reglas de CSS y un color por estado.
+
+2️⃣ **Solo texto**
+- Se ve `confirmada`, `pendiente` o `cancelada` sin más.
+- Es lo más simple y encaja con la tabla actual.
+- Con muchas reservas hay que leer cada fila para distinguir los estados.
+
+3️⃣ **Texto más fila atenuada si está cancelada**
+- La columna es texto plano.
+- La fila de Marta sale en gris y tachada entera.
+- Las canceladas dejan de competir con las vigentes, pero el cambio afecta a toda la fila y no solo a la columna nueva.
+
+➡️ **Recomiendo 1️⃣**, porque la tabla ya tiene tres estados distintos y la etiqueta permite distinguirlos de un vistazo sin tocar las otras columnas. A cambio, añade color y CSS que hoy no existen en `styles.css`. ¿Cuál eliges?

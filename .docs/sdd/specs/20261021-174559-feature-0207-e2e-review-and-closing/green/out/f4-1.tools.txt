@@ -1,0 +1,85 @@
+
+>>> Read: <run>/review-final-e873984.diff
+<<< 1	# Review package: 5577220..HEAD
+2	
+3	## Commits
+4	e873984 feat(bookings): informe de ocupación
+5	
+6	## Files changed
+7	 src/app.js | 28 ++++++++++++++++++++++++++++
+8	 1 file changed, 28 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..5bb4288 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+16	   const booking = findBooking(room, day);
+17	   if (!booking) return `sin reserva ${room} ${day}`;
+18	   booking.status = 'voided';
+19	   return `anulada ${room} ${day}`;
+20	 }
+21	 
+22	 function cancell
+
+>>> Bash: cd "<run>/repo" && git ls-files && sed -n 1,28p src/app.js
+<<< .docs/sdd/capabilities/availability.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/reports.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/decisions/0003-bookings-in-memory.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+.gitignore
+
+=== RESULTADO (3 turnos, 0.1161516 $)
+### Strengths
+- `occupancyReport` is 26 lines, within the 30-line limit.
+- The output text is in Spanish.
+- The `ocupacion` command is wired into `run` in the same style as the other commands.
+- The pluralisation is correct and `rooms` and `bookings` are reused instead of duplicated.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:35`: the comment `// incrementa count` repeats what the next line does.** It adds nothing, so delete it.
+2. **`src/app.js:29,46`: the `now = 'hoy'` constant is a fake value.** The report prints `total: N (hoy)`, a literal "hoy" that carries no information and looks like a date. It is also a magic value held in a variable. Either remove it or print a real date.
+3. **No test covers the new public function `occupancyReport` or the `ocupacion` command.** The diff only touches `src/app.js`, and `test/` has no coverage for it. Branches left untested:
+   - the plural/singular label
+   - the `canceladas` line
+   - the empty case "sin reservas activas"
+   - voided bookings, which are excluded from the count
+
+   (Clean Code, "a test for every public method".)
+
+#### Minor (Nice to Have)
+1. **`src/app.js:31-38`: the nested loop with two `continue`s is clumsier than the rest of the file.** The file uses `filter` and `some`, so `bookings.filter((b) => b.room === room && b.status === 'active').length` would match its style. Splitting out a `countActive(room)` helper would also shorten the function. This is a possible Long Method / duplication judgement, not a hard violation.
+2. **`src/app.js:42`: the cancelled-bookings filter duplicates the one in `cancelledList`.** Two occurrences is below the three-occurrence threshold, but a shared helper would be cheap.
+3. **`src/app.js:47-49`: the `sin reservas activas` line comes after `total: 0`, which says the same thing.** It is redundant output.
+
+### Recommendations
+- Add tests for `occupancyReport` before merging.
+- Check whether `.docs/sdd/capabilities/reports.md` describes this report, and whether the roadmap or changelog needs an entry. That belongs to the Spec axis.
+
+### Declined to judge
+- Whether the report format and content match the spec: this is the Spec axis, and the spec folder is not in the package.
+- Whether a report function belongs in `app.js`: this is the Architecture axis.
+- E2E rules: none apply, since the project has no E2E declared.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The function works and respects the length limit. It still has a redundant comment, a meaningless `(hoy)` in the output and no tests for the new behaviour.

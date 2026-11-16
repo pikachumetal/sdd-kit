@@ -1,0 +1,71 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y escribir la spec para tu aprobación.
+
+--- [25]
+Ahora: el revisor de la spec está trabajando. Queda: plegar sus hallazgos y presentarte la spec para aprobar.
+
+--- [31]
+Estoy esperando el resultado del revisor de la spec; en cuanto llegue, pliego sus hallazgos y te la presento.
+
+--- [32]
+Need to check word arithmetic.
+
+--- [34]
+1. Crítico · Spec, Intent / Decisiones (línea 17 y 34) · Dice «Conserjería: 5500» = 2 palabras (52 → 54), pero «Conserjería:» y «5500» son 2 tokens separados por espacios, así que la cuenta de 54 es correcta; en cambio el test existente de `test/words.test.js` cuenta tokens de TODOS los ficheros de `docs/plantillas`, y el spec no precisa si el test nuevo lee solo `aviso.md` (sí), de modo que no hay fallo de cuenta. Sin cambio necesario; aritmética verificada (6 + 46 = 52, +2 = 54, margen 6). · Retirar este punto: no es defecto.
+
+2. Importante · Decisiones (línea 28) vs. Approach (línea 70) · El test nuevo comprueba que «sus líneas incluyen exactamente `Conserjería: 5500`» y que la primera línea sigue siendo la existente, pero no comprueba que la nueva sea la línea 2 (decisión 2: «debajo, como línea 2»). Una implementación que la ponga en la línea 3 o antes de otras pasaría el test. · Afirmar en el test `lines[1] === 'Conserjería: 5500'` (o declarar que el orden relativo no se prueba).
+
+3. Importante · Decisiones 4 y 5 / Approach · El test «lee las líneas» y compara con `includes` o igualdad sin decir si se normaliza el salto final o CRLF (Windows, el repo se desarrolla en win32). Un `split('\n')` con CRLF deja `\r` y rompe la igualdad exacta de la línea 1 (`Aviso de sala: {sala} el {dia}.\r`). · Especificar `split(/\r?\n/)` y el tratamiento de la línea vacía final en el test.
+
+4. Importante · Capacidades / Delta (líneas 23 y 84) · «Ninguna, porque docs» no tiene escenario GIVEN/WHEN/THEN, correcto como n/a, pero el único comportamiento observable que se promete en el Intent (quien recibe el aviso ve «Conserjería: 5500») no tiene ningún consumidor: el propio Scope dice que `src/app.js` no lee las plantillas. El texto «quien recibe… ve» es una promesa de producto no cubierta por ninguna parte del código. · Aclarar en el Intent que el cambio es solo del documento y que ningún aviso se envía hoy, o apuntar el consumidor como fuera de alcance explícito.
+
+5. Menor · Decisiones línea 33 y 17 · La decisión 3 dice «así lo dijiste» sobre el punto final, pero el 17 pone la cita «Aviso de sala: Norte el lun.» con punto, que en la plantilla es parte del literal; sin contradicción real, solo ambigüedad sobre si el punto de la línea 1 forma parte de la cita al lector. · Poner el ejemplo en bloque de código para que el punto no se confunda con puntuación de la frase.
+
+6. Menor · Decisiones línea 28 y 7 · La decisión 7 («Sin fila en ROADMAP.md… si la quieres apuntada, dilo») y la fila «Filas que implementa: nada» son coherentes, pero el literal del test del tope y la verificación de «ningún otro documento dice el teléfono con otro valor» (línea 29: el mínimo razonable lo deja sin mirar) no están cubiertos: el Scope afirma «único hit de `git grep "Aviso de sala"`» pero no busca «Conserjería» ni «teléfono». · Añadir en «Lo que se retira o cambia» la búsqueda `git grep -in "conserjer\|5500"` con su resultado, o mover la afirmación a riesgo aceptado.
+
+7. Menor · Decisiones línea 44 · «Decidido con el dev-lead» cita la propia decisión de forma circular, y la validación es dev-lead sin que figure el nombre real en `approvers` (TBD). No bloquea el gate del draft, pero la aprobación no podrá cerrarse sin nombre. · Rellenar `approvers` antes de aprobar.
+
+--- [42]
+Los backslashes se comieron la regex; lo corrijo.
+
+--- [46]
+Contiene un CR y un salto de línea literales. Lo arreglo con Edit.
+
+--- [58]
+Sigo arreglando un literal de la spec que quedó mal escapado; compruebo los bytes.
+
+--- [62]
+Arreglado. Una última lectura de la spec completa antes de presentarla.
+
+--- [65]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta; con ella escribo el plan y paso a implementar (~15 min, sin subagentes de pago salvo la revisión final).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+La spec está en `.docs/sdd/changes/20261112-160341-feature-0014-aviso-conserjeria/spec.md`. Está sin commitear, en la rama `feature/0014-notice-room`.
+
+🦆 La plantilla de aviso pasa a tener una segunda línea con el teléfono de conserjería, «Conserjería: 5500», debajo de «Aviso de sala: {sala} el {dia}.», que no cambia. Hoy las plantillas suman 52 palabras. Con este cambio suman 54 y siguen dentro del tope de 60. Se añade un test que comprueba que la línea 2 es exactamente esa.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Carril:** feature en modo full, no patch, aunque el cambio sea de una línea, porque pediste la spec.
+2. **Posición:** la línea nueva va como línea 2 y la existente queda intacta.
+3. **Literal:** «Conserjería: 5500», sin punto final, tal como lo dijiste.
+4. **Test nuevo:** va en `test/words.test.js`. Comprueba la línea 1 y la línea 2 exactas, y parte el texto con `split(/\r?\n/)` para no depender de CRLF.
+5. **Tope de palabras:** sin cambios, con margen final de 6.
+6. **ROADMAP:** sin fila 0014 en `ROADMAP.md`. Dime si la quieres apuntada.
+7. **Validación:** `Validación: dev-lead`.
+8. **Revisión de la spec:** la hizo un revisor en sonnet, sin Críticos. Acepté 5 hallazgos y rechacé 2. No hubo segunda ronda.
+
+**Comprobaciones hechas**
+- `git grep` de «conserjer|5500|teléfono» no encontró nada más en el repo.
+- El delta sobre una copia de `.docs/sdd` da «Sin delta que fusionar», como corresponde a un cambio de documento.
+- `node --test` pasa 5/5 hoy. Aún no he tocado la plantilla.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

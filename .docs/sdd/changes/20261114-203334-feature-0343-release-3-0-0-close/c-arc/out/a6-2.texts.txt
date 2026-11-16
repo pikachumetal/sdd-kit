@@ -1,0 +1,85 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [21]
+Todavía no he escrito ningún registro del cierre. La re-revisión del rango `fbdd1cb..163a4c4` está en marcha y el cierre espera a que vuelva.
+
+**Estado**
+- **Pre-checks:** árbol limpio. `merge --check` da `develop` listo en un worktree temporal. No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Re-revisión pendiente:** tras la revisión final (`fbdd1cb`) entraron `5d662e1` y `163a4c4`, solo de documentación. `163a4c4` suma 59 líneas y el kit exige re-revisar desde 20. Es un agente opus con vigilancia de silencio, y escribe `Re-revisión:` en `tasks.md` cuando vuelva.
+
+**Cosas que he visto y que atenderé en el cierre, según lo que diga la re-revisión**
+- La spec ya aprobada recibió el bloque «Términos y ADR» en `163a4c4`, sin constar en «Enmiendas».
+- Los ADR `0001` y `0002` existentes no son la candidata de la spec. Falta escribir el `0003` («el motivo se guarda en la propia reserva»).
+- «Decisiones que he tomado yo» de la spec salta del 1 al 3.
+- Con `validation.mode: field` el smoke y la suite los ejecuto yo, sin pedírtelos.
+
+**No terminado.** Falta la re-revisión, la validación, el walkthrough, los docs vivos, el commit de cierre y el merge a `develop`. No borres todavía el worktree de revisión `review-0010-163a4c4`.
+
+--- [35]
+Veredicto global: **limpia**. No hay nada Critical ni Important. Dejo dos observaciones Minor sobre los ADR que no obligan a arreglar.
+
+Lo he hecho solo en el worktree `<run>/review-0010-163a4c4`: HEAD es `163a4c4` y el árbol está limpio. He leído el paquete entero (126 líneas), la spec, el plan, `test/cancel.test.js` y `src/app.js`.
+
+**1. «Términos y ADR» en la spec: limpio**
+- El bloque nuevo (`spec.md:61-64`) solo dice «Términos resueltos: ninguno» y apunta una ADR candidata: el motivo se guarda en la propia reserva, descartando una tabla de motivos aparte.
+- No añade, quita ni cambia ningún GIVEN/WHEN/THEN del delta (`spec.md:47-59`).
+- Lo que dice ya estaba en el Approach aprobado: «El motivo se guarda con la reserva cancelada» (`spec.md:38`). El código hace justo eso: `booking.reason = reason` (`src/app.js:24`).
+- Tampoco choca con la fila 0014 de `ROADMAP.md:11`, que guarda el motivo «en el almacén de reservas», es decir, también en la reserva.
+- No es una enmienda: no toca ningún requisito, así que «Enmiendas: (ninguna)» (`spec.md:66-68`) sigue siendo correcto.
+
+**2. `tasks.md`: limpio**
+- La task 1 está en `done` con `5a1e773` y la task 2 en `done` con `fbdd1cb` (`tasks.md:9-10`). Coincide con `git log`, y cada uno de esos commits toca solo `src/app.js` y `test/cancel.test.js`, como dice el plan.
+- La línea de revisión final dice «sobre fbdd1cb» (`tasks.md:12`), igual que el encargo.
+- El Ruling (`tasks.md:17`) describe bien el test. El de `canceladas` (`test/cancel.test.js:13-15`) espera `Norte lun — sala ocupada` sin preparar datos: depende de que el primer test (`:5-7`) haya cancelado antes Norte lun en el estado en memoria del módulo. El segundo test (`:9-11`) no interfiere, porque el motivo no válido se rechaza antes de buscar la reserva (`src/app.js:20`). El coste que declara («falla si corre solo o en otro orden») es exacto.
+- Fuera del rango, sin contarlo como hallazgo: el AND «sin `--motivo`» (`spec.md:54`) no tiene test propio, aunque el código lo cubre (`src/app.js:16,20`). Eso lo vio la revisión final sobre `fbdd1cb`.
+
+**3. ADR 0001 y 0002: Minor**
+- **Lo que está bien:** las dos tienen frontmatter con `status: accepted`, `date` y `rutas` coherentes, y las secciones de contexto, opciones, decisión y consecuencias. Ninguna contradice el código ni la spec:
+  - 0001 («las reservas viven en memoria», «se pierden al reiniciar») cuadra con `src/app.js:4` y con `spec.md:38` («viven en la memoria del proceso hasta la 0014»).
+  - 0002 (node:test, sin dependencias) cuadra con `test/cancel.test.js:1`, con `test/app.test.js:1` y con `package.json`, que no tiene dependencias.
+- **Minor:** `0002-node-test.md` no tiene la sección `### Confirmación`, que 0001 sí trae (`0001-bookings-in-memory.md:27-29`). El formato queda distinto entre las dos. No he podido comprobar si la plantilla del kit la exige, porque la plantilla está fuera del worktree y me ceñí a él.
+- **Minor:** la Confirmación de `0001-bookings-in-memory.md:29` («La revisión.») está vacía de contenido: no dice cómo se comprueba que la decisión se cumple.
+- No es un hallazgo, pero conviene saberlo: la ADR candidata de la spec no está creada como fichero en `decisions/`. Es lo esperable si las candidatas se pasan a ADR al archivar la feature.
+
+**4. Nada del rango toca código: confirmado**
+`git diff --name-only fbdd1cb..163a4c4` devuelve solo cuatro ficheros, todos bajo `.docs/sdd/`:
+- `decisions/0001-bookings-in-memory.md`
+- `decisions/0002-node-test.md`
+- `specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+- `specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+No cambia nada en `src/` ni en `test/`. Tampoco hay texto de interfaz nuevo, así que la restricción del castellano no entra en juego.
+
+--- [49]
+Sigo con el cierre. La re-revisión salió limpia, la suite pasa 5/5 y el smoke con ejecución real también. Ahora voy con los registros: fusión de la capacidad, ADR, walkthrough y roadmap.
+
+--- [68]
+🦆 Cancelar ahora exige un motivo de una lista cerrada. Con `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada». Las reservas viven en memoria hasta la 0014, así que `canceladas` solo ve lo cancelado en el mismo proceso. Lo comprobé: en un proceso nuevo sale vacío, como dice la spec.
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Falla si corre solo o en otro orden. Está en la deuda.
+- Sin review de spec: dos señales (MODIFIED, datos). Es una decisión de la propia spec.
+
+**Qué ha pasado en el cierre**
+- **Validación en campo:** la hice yo, sin pedírtela, y tú no has probado nada a mano. La suite `node --test` pasa 5/5 y el smoke con ejecución real cubre cuatro THEN. El listado de canceladas se verifica con la suite, no con ejecución real.
+- **Re-revisión:** pedí una porque lo posterior a la revisión final eran 59 líneas de docs, y salió limpia. Dejó dos Minor sobre las ADR 0001 y 0002.
+- **ADR 0002:** `decision check` paró el cierre porque le faltaba «### Confirmación». Se la añadí (cambio de formato; la decisión no cambia).
+- **ADR 0001:** su «Confirmación» está vacía («La revisión.»). Queda como fila en «Por triar» de la deuda.
+- **Registros:**
+  - Capacidad nueva `bookings`, fusionada con `sdd capability merge`.
+  - ADR 0003: el motivo vive en la propia reserva.
+  - Fila 0010 en ✅.
+  - Tres filas nuevas en «Por triar»: el test que depende del orden, el AND «sin `--motivo`» sin test propio y la «Confirmación» vacía de la 0001.
+- **Sin estimation.md:** no hay tiempo real que registrar.
+- **Retro:** sin señales.
+- **Historia:** squasheé lo posterior a `fbdd1cb` en un solo commit de cierre (`663a7ca`).
+- **Merge:** la base ya estaba al día, así que no hubo merge de sincronización ni segunda suite. Fusioné con `--no-ff` y `--verified-at 663a7ca`. No hay CI de la base declarada (no existe `operations.md`).
+- **Nada pendiente en otras ramas:** no había ninguna otra `feature/*` ni `patch/*` abierta.
+
+La 0010 no tiene `parent:` ni `proposal:`, así que no hay familia que cerrar.
+
+Si quieres el ticket de mejora del kit sobre esta sesión, dímelo y lo hago con `sdd-feedback`. La retro no lo pidió.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (3be9620) · push: no hecho: `merge.push` no lo autoriza
+

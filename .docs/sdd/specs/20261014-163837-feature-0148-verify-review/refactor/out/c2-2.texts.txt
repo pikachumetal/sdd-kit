@@ -1,0 +1,45 @@
+--- [3]
+Ahora: leo `tasks.md`, la config y la spec de la 0010 para preparar la validación. Queda: re-revisión del último commit si no salió, smoke y guion, ~10 min.
+
+--- [12]
+Ahora: presento la validación de la 0010. Queda: tu prueba y tu «validado» (o diferirla); después `sdd-end-feature`.
+
+## 🦆 Qué hay, en llano
+
+Cancelar una reserva exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). El comando `canceladas` enseña `sala día — motivo`. Cuando no hay ninguna cancelada, `canceladas` responde «sin canceladas» en vez de una línea vacía.
+
+## ✋ Me salí del plan en…
+
+- **`730f1c7` — `canceladas` sin canceladas dice «sin canceladas».** Es un cambio de comportamiento pedido por el dev-lead después de la revisión final y de su re-revisión, y la spec no lo recoge.
+  - **Sin revisar:** `730f1c7` — con una `Re-revisión:` ya en `tasks.md` (`4b37f55..3b2436b`, limpia) no abro otra.
+  - **Sin test:** el commit no añade ninguno. Lo cubro solo con la ejecución real de abajo.
+  - **Spec sin actualizar:** el comportamiento «sin canceladas» no está en ningún escenario y `Enmiendas` sigue en «(ninguna)». Lo recogerá el delta de `bookings` al cerrar si lo apruebas.
+- El resto va según el plan. La revisión final (Spec: 1 Minor; Código: 1 Important, arreglado en `3b2436b`) y su re-revisión están cerradas.
+
+## Smoke (lo que ya ejecuté yo)
+
+Suite completa: 6/6 en ~0,2 s (~0,6 s con arranque de Node).
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo responde «cancelada Norte lun (sala ocupada)» | `ejecución real`: `node src/app.js cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista responde «motivo no válido: …» | `ejecución real`: `--motivo "porque sí"` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` responde «Norte lun — sala ocupada» | `ejecución real`: cancelar y listar en el mismo proceso (`node` en una sola invocación) | «Norte lun — sala ocupada» |
+| (cambio `730f1c7`, fuera de spec) `canceladas` sin canceladas | `ejecución real`: `node src/app.js canceladas` | «sin canceladas» |
+
+## Guion de pruebas (lo haces tú)
+
+No hay nada que arrancar: es una CLI, y el estado vive solo en memoria de cada ejecución. Desde la raíz del repo, en la rama `feature/0010-cancel-reason`:
+
+1. `node src/app.js canceladas` → responde `sin canceladas`.
+2. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → responde `cancelada Norte lun (sala ocupada)`.
+3. `node src/app.js cancelar Norte lun --motivo "porque sí"` → responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+4. `node src/app.js cancelar Norte lun --motivo "otro"` → responde `cancelada Norte lun (otro)`.
+5. Cada ejecución arranca de cero, así que el listado con una cancelada solo se ve dentro de un mismo proceso. Comprueba con `node --test` que pasa `canceladas enseña sala, día y motivo`.
+
+## Qué necesito de ti
+
+Dime **qué has probado y que funciona**. Un «sí» sin detalle también vale: quedará registrado tal cual y como «no detalló qué probó». Si no puedes probarlo ahora, lo difiero a la prueba de la release con dueño el dev-lead; dime si lo prefieres.
+
+Mientras tanto, los borradores de cierre siguen sin commitear y el roadmap sin tocar.
+

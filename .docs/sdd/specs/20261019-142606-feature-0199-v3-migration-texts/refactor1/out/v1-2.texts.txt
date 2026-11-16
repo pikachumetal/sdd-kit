@@ -1,0 +1,121 @@
+--- [4]
+Veamos qué hay en el proyecto.
+
+--- [10]
+Hay una migración pendiente, la **v3.0.0** (el proyecto está en 2.3.4). Tiene tres gates, y no he tocado nada. El árbol está limpio y el sha de partida es `28c8f0c`. Necesito tu «sí» a las tablas, o los cambios que quieras.
+
+## Gate 1 — Traslados
+
+| Lo que hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` (no hay uno en la raíz) |
+| `constitution.md` | `git mv` a `steering/constitution.md`. El enlace `decisions/0001-…` pasa a `../decisions/0001-…` |
+| `architecture.md` | `git mv` a `steering/architecture.md` |
+| `estimation.md` | `git mv` a `steering/estimation.md` |
+| `estimation-log.md` | `git mv` a `steering/` y regenerar con `sdd estimation log` |
+
+El diff del log regenerado solo añade una cabecera `AUTO-GENERADO`, el título «(estimado vs real)» y las columnas Tipo, Est, Real, Ratio, tokens, $ y Carpeta. No hay filas que perder, porque hoy tiene 0.
+
+## Gate 2 — Producto y operaciones
+
+**`mission.md` → `PRODUCT.md`:**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| Por qué existe | `## Product Purpose` |
+| Usuarios y roles | `## Users` |
+| Qué es y qué no es | `## Capabilities and Constraints` |
+| Dominio | `## Terminology`: `**Franja**: una hora reservable, de en punto a en punto.` No lleva `_Evitar_`, porque el original no nombra ningún sinónimo. |
+
+**`tech-stack.md` y `environments.md` → `steering/operations.md`:**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| Comandos, Testing, Frontend | La sección del mismo nombre, tal cual |
+| Tecnologías (Node 22, Vitest 3) | Salen: lo dicen los manifests. Compruebo `package.json`; si algo no está en él, va a `steering/architecture.md` |
+| Entornos (`environments.md`) | `## Entornos`, condensado: «Marcador `.sdd-env.json`, que deja `npm run env:setup` en la raíz del worktree. Entradas: `env:setup`, `env:clean` y `env:status`, en `package.json`.» No hay runner declarado, y lo dejo sin inventar. |
+| Decisiones abiertas («¿Avisos por correo al reservar?») | Pasa al Gate 3, a Later |
+
+Después hago `git rm` de los tres ficheros viejos. El texto de antes queda en `git show 28c8f0c:.docs/sdd/mission.md` (y los otros dos).
+
+## Gate 3 — `ROADMAP.md` y `steering/debt.md`
+
+**`ROADMAP.md`:** no hay release en preparación, así que no pongo título de versión ni línea de perfil.
+
+| Lo que hay | Destino |
+| --- | --- |
+| 0021 Cancelar una reserva propia | Now. Externo: SAL-41. Toca: `src/app.js`. Carril: feature. Tras: —. Estado ⏳ |
+| 0022 Avisar de la cancelación a recepción | Now. Requisitos: 0019. Toca: `src/app.js`, `src/notify.js`. Tras: 0021. Salda: la fila de deuda de `cancel` (SAL-45). Estado ⏳ |
+| 0024 Informe de ocupación por sala | Now. Toca: `src/report.js`. Tras: 0015, que no está en `ROADMAP.md` ni en `CHANGELOG.md`, así que pasa a **—** |
+| B3 Exportar las reservas del mes a CSV | Later, `B3`. Origen «Recepción, reunión del 2026-09-18» al final del one-liner. Estado ⏳ |
+| Decisión abierta «¿Avisos por correo al reservar?» | Later, `B4` (el siguiente al mayor del Backlog). Estado ⏳ |
+| Patch 0023 (2026-09-25, posterior a la v1.2.0) | Now con ✅. Título «Rechazar dos reservas en la misma franja», fecha en el one-liner, Carril: patch, Requisitos: su `patch.md` |
+| Releases cerradas (v1.2.0) | Sale: vive en `CHANGELOG.md`. Su validación pendiente, **0016**, sigue en su walkthrough. |
+
+**Tamaño: lo decide el dev-lead.** Hace falta S, M o L para 0021, 0022, 0024 y 0023 (la ✅ también). El gate no se cierra sin eso.
+
+**`steering/debt.md`:**
+
+| Fila 2.x | Sección | Celdas |
+| --- | --- | --- |
+| Patch 0023 saldada (posterior a la última release) | Lista | Ítem con su prefijo intacto. Evidencia: el enlace al `patch.md`. Destino: 0023. Impacto: Alto. Origen: SAL-44 |
+| `cancel` no comprueba al propietario | Lista | Evidencia: SAL-45 y `../field-reports/sal-45.md`. Destino: 0022. Impacto: Alto. Origen: SAL-45 |
+| Los mensajes de error mezclan castellano e inglés | Por triar | `Actuar` sin evidencia. Origen: `roadmap 2.x`. Fecha: 2026-09-01 |
+| Pasar `src/app.js` a TypeScript | Por triar | Destino «versión siguiente». Origen: `roadmap 2.x`. Fecha: 2026-09-15 |
+| El test de franjas falla a veces en CI | En espera | Falta: «un segundo fallo con su log». Impacto: Medio. Fecha: 2026-09-01 |
+| Validar el formato de la franja en la API | Descartadas | Motivo: «duplica la 0018». Fecha: 2026-09-01 |
+
+Las fechas salen de `git log -S` sobre `roadmap.md`. En Por triar y Descartadas se pierde la celda Impacto («Bajo», «Bajo — confunde»), porque esas secciones no tienen columna para ella. Dime si quieres que vaya al texto del Ítem.
+
+Después hago `git rm .docs/sdd/roadmap.md`. El texto viejo queda en `git show 28c8f0c:.docs/sdd/roadmap.md`.
+
+## Pasos que corren solos después de los gates
+
+- **Enlaces (paso 4):** `CLAUDE.md` pasa a `steering/constitution.md`, `PRODUCT.md` y `ROADMAP.md`. Corrijo también la ruta `roadmap.md` entre backticks.
+- **Nombres de skills (paso 5):** `CLAUDE.md` cambia `sdd-end-feature` por `sdd-archive`. `.claude/commands/pregunta.md` cambia `/sdd-consult` por `/sdd-explore`.
+- **Estimación (paso 6):** `steering/estimation.md` conserva el texto de la plantilla 2.x. Sustituyo las dos líneas por las de la 3.0.0 sin gate, y las «Notas de calibración» no se tocan.
+- **Cierre:** verificación, marcador 3.0.0 y commit. Después viene el paso 8, una tabla propia con las reglas del proyecto que el kit ya cubre. Un adelanto: «el id de una feature se elige a mano» en la constitución choca con el kit.
+
+**¿Apruebo las tres tablas?** Contesta «sí», o dime qué destinos cambiar. Necesito además los tamaños S/M/L de 0021, 0022, 0024 y 0023.
+
+--- [20]
+Estoy en el paso 8, el último de la migración: revisar las reglas del proyecto contra el kit. Antes abro la regla del kit sobre los ids para citarla en la tabla.
+
+--- [22]
+La migración a la **v3.0.0** está aplicada y commiteada (`40cf558`). Falta tu respuesta al paso 8, la revisión de reglas contra el kit; es el único gate abierto.
+
+El marcador `sdd-kit.json` ya está en 3.0.0. `sdd roadmap check` da «Roadmap válido» y `sdd capability check`, «Capacidades válidas: 1».
+
+## Qué cambió
+
+- **Traslados:** `changelog.md` pasó a `CHANGELOG.md`. `constitution`, `architecture`, `estimation` y `estimation-log` pasaron a `.docs/sdd/steering/`. El enlace a la ADR de la constitución ahora lleva `../decisions/`. El log está regenerado, con 0 filas.
+- **Producto y operaciones:** creé `PRODUCT.md` y `steering/operations.md`, y quité `mission.md`, `tech-stack.md` y `environments.md`. Las versiones de Node y Vitest salen de `package.json`, así que no se copiaron.
+- **Roadmap y deuda:** creé `ROADMAP.md` y `steering/debt.md` con las tablas que aprobaste, con tamaño M en las cuatro filas, y quité `roadmap.md`. El texto viejo de cada fichero quitado está en `git show 28c8f0c:<ruta>`.
+- **Enlaces, skills y estimación:** corregí los enlaces de `CLAUDE.md` y `README.md`. `sdd-end-feature` pasó a `sdd-archive` y `/sdd-consult`, a `/sdd-explore`. Las dos líneas de método de `steering/estimation.md` son ya las de la 3.0.0.
+
+## Pendiente del dev-lead
+
+- **Enlace roto en una ADR:** `decisions/0001-salas-por-franja.md:10` enlaza `../mission.md`. Las ADR son inmutables, así que no lo toqué. Ahora debería apuntar a `PRODUCT.md`.
+- **Validación pendiente de la 0016** (release v1.2.0): sigue en su walkthrough.
+- **Sin runner de entornos:** `operations.md` no declara el runner de `## Entornos`, porque el original no lo decía. Además, `package.json` no define los scripts `env:*`.
+
+## Paso 8 — reglas del proyecto que ya cubre el kit
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap.» | `steering/constitution.md:6` | `skills/sdd-start-feature/references/nombrado.md` (con `ids.mode: sequence`, el id sale de la fila del roadmap o de `sdd id next --reserve`) | choca | quitarla |
+
+Es la única regla que encontré. Las demás de `CLAUDE.md` y de `steering/` no repiten ninguna del kit.
+
+**¿Aplico esta propuesta?** Si me dices que sí, quito esa línea de la constitución y la commiteo aparte como `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no contestas, queda en el informe como pendiente. Para reanudarlo, pide revisar las reglas del proyecto contra el kit.
+
+--- [24]
+Quité la regla de los ids de `steering/constitution.md` y la dejé en su propio commit (`7c3216f`). La regla de dónde viven los datos sigue como estaba. El árbol de trabajo está limpio.
+
+El proyecto está en el kit **3.0.0**, con dos commits: `40cf558` (la migración) y `7c3216f` (esa regla).
+
+Siguen pendientes tres cosas que son tuyas:
+- **Enlace roto en una ADR:** `decisions/0001-salas-por-franja.md:10` enlaza `../mission.md`. Debería apuntar a `PRODUCT.md`. No lo toqué porque las ADR son inmutables.
+- **Validación de la 0016:** sigue pendiente en su walkthrough.
+- **Entornos:** `package.json` no define los scripts `env:*`, y `operations.md` no declara el runner.
+

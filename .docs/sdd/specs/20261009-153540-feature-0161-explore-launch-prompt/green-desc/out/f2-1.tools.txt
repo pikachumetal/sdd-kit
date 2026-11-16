@@ -1,0 +1,93 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; echo "=== local"; cat .docs/sdd/sdd-kit.local.json 2>&1; echo "=== kit"; cat .docs/sdd/sdd-kit.json 2>&1; echo "=== index"; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t6/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; git branch --show-current
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los 
+
+>>> Bash: cd "<run>/repo" && ls src test .docs/sdd/specs; wc -l src/*.js; cat src/app.js | head -120
+<<< .docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+
+src:
+app.js
+
+test:
+app.test.js
+16 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-se
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t6/skills/sdd-start-feature/references" && head -60 control-profiles.md; grep -n "sequence" -m5 nombrado.md
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+>>> Bash: cd "<run>/repo" && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-t6/cli/bin/sdd.js" id next --project-root . --reserve
+<<< 0008
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0008 && git status --short
+
+>>> Skill: superpowers:brainstorming
+<<< Switched to a new branch 'feature/0008'
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.2290766 $)
+Sigo en el arranque de la feature: ya la clasifiqué, reservé el id y la rama, y ahora estoy en el diseño de la spec. Todavía no he tocado código.
+
+**Carril: feature, modo full · Perfil: `delegate`, default del kit (`sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`)**
+Id `0008` reservado con `sdd id next --reserve`, rama `feature/0008` creada desde `develop`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+**What I understood (correct me)**
+
+- You want a waitlist: when someone tries to book a room that's already taken, they can join a queue for it instead of just getting "occupied".
+- What the code shows (not assumptions):
+  - A booking is `{room, day, slot}`.
+  - `reservar` doesn't check availability yet; `libres <slot>` is the only availability check.
+  - `cancelar <day> <slot>` is the only place a slot gets freed.
+  - There's no persistence: `bookings` is an in-memory array, and the roadmap already has an unrelated item for email notices.
+- What I'm assuming and not yet confirmed: the waitlist is per `(room, day, slot)`, and it lives in `src/app.js` with tests in `test/`.
+- I foresee 3 tasks or fewer, so I'm not proposing a split.
+
+❓ **What should happen, from your side, the moment a waitlisted slot frees up?**
+
+I'm asking this open because it's the decision that reshapes the rest (auto-booking, a notice, or just a queue position you check yourself), and only you know how you use the tool. Describe what you'd want to see happen, in your own words.

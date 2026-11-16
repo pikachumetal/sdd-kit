@@ -1,0 +1,28 @@
+--- [3]
+Voy a comprobar el estado del proyecto para decidir el modo de la init.
+
+--- [8]
+Modo: con código — si es un template recién instanciado, dímelo y sigo sin código.
+
+**Inventario** (hecho por mí, sin preguntarte):
+- Stack: Node con ESM (`package.json` solo tiene `"type": "module"`), sin dependencias ni scripts.
+- Código: `src/app.js` (comandos `libres`, `reservar --cada-semana`, `cancelar`) y `test/app.test.js` (3 tests con `node:test`).
+- Git: ramas `main` y `develop`, sin remoto. Estás en `develop`.
+- Sin CI, sin pre-commit, sin linter.
+
+**Cosecha** (`PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md`, `README.md`): no hay `CLAUDE.md`. Dos discrepancias para que las decidas más adelante:
+- `CHANGELOG.md` y `ROADMAP.md` enlazan a `.docs/sdd/specs/...` (tasks 0005, 0006 y patch 0007), y esa carpeta no existe.
+- El roadmap marca la 0007 (cancelación) como ✅ y la 0008 (avisos por correo, `src/correo.js`) como ⏳. `src/correo.js` no existe todavía, lo cual es coherente con ⏳.
+
+Del `PRODUCT.md` ya sé el problema y los usuarios: una CLI para reservar las salas de tu coworking, la usas solo tú, y la desarrollas, pruebas y despliegas tú. Lo dejo como propuesta a confirmar en el documento.
+
+Empiezo la entrevista con las reglas de producto, que son lo que el agente decidiría al azar en cada feature. Primera: dónde viven los datos.
+
+❓ **Dónde viven los datos de las reservas**
+Hoy `src/app.js` tiene `rooms` y `bookings` como arrays en memoria. Nada se guarda: cada ejecución de la CLI empieza con la reserva de ejemplo `Norte lun 10:00-12:00`. El CHANGELOG habla de «reserva recurrente» y «cancelar una reserva propia», que sin persistencia no tienen efecto entre ejecuciones.
+1️⃣ **Un fichero JSON local** (por ejemplo `data/reservas.json`, fuera de git). Lo puede leer y editar una persona. No necesita servicios en tu servidor. Cuesta que no hay control de concurrencia, aunque con un solo usuario no pesa.
+2️⃣ **SQLite**: transacciones y consultas por franja, pero añade una dependencia y migraciones.
+3️⃣ **Memoria, como ahora**: es lo que hay, pero las reservas se pierden al terminar el proceso.
+4️⃣ **Otra cosa** (dímela).
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y despliegas en tu propio servidor, así que no necesitas concurrencia. A cambio, si algún día hay más usuarios habrá que migrar a SQLite.
+

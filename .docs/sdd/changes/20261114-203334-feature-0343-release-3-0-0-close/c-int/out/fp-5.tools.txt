@@ -1,0 +1,147 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Glob: **/*.md
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+
+>>> Bash: ls -a; ls -a .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+.docs/sdd:
+.
+..
+sdd-kit.json
+specs
+steering
+
+.docs/sdd/steering:
+.
+..
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test; ls node_modules 2>&1 | head -3; git branch -a
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js test/app.test.js; head -60 "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references/control-profiles.md"; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.17037000000000002 $)
+Ahora: clasifico el cambio y paro en una pregunta. Queda: la entrevista de diseño, la spec y su aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, por defecto (no hay `control.profile` en `sdd-kit.json` ni `sdd-kit.local.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+**Lo que entendí.** Quieres un comando que diga qué salas están libres en una franja.
+
+**Ese comando ya existe.** Lo he visto en el código y en el historial:
+
+- `src/app.js:4-10` tiene `libres <franja>`, que devuelve las salas sin reserva en esa franja.
+- `test/app.test.js` lo cubre con `libres excluye la sala reservada en la franja`.
+- Existe la spec cerrada `20260917-090000-task-0006-free`, con su walkthrough.
+
+Hay una diferencia entre lo que pides y lo que hace hoy `libres`. Cada reserva guarda `day`, `slot` y `room`. `freeRooms` solo compara `room` y `slot` e ignora el día. Con la reserva `Norte lun 10:00-12:00`, `libres 10:00-12:00` da `Sur` el martes igual que el lunes. Eso es el mismo fallo que corregiste en el patch 0007 para `cancelar`. Tampoco hay validación del formato de franja; está en la deuda «Por triar».
+
+Aún no he creado rama ni carpeta. Antes quiero saber qué cambio quieres de verdad.
+
+❓ **¿Qué falta en `libres`?**
+1️⃣ **Franja con día.** `libres lun 10:00-12:00` da `Sur`, y `libres mar 10:00-12:00` da `Norte, Sur`. Es una feature pequeña (probablemente una sola task). Pasaría a ser un cambio de la interfaz, porque hoy `libres` solo recibe la franja.
+2️⃣ **Otra cosa.** Algo distinto de lo que hace `libres` hoy. En ese caso, cuéntame qué te falta, con un ejemplo de lo que escribirías y lo que querrías ver.
+3️⃣ **Nada.** No sabías que ya existía y no hay que cambiar nada. Cierro sin crear artefactos.
+➡️ **Recomiendo 1️⃣**, porque el código ya tiene el campo `day` y `libres` lo ignora, y es el único hueco que veo respecto a lo que describes. A cambio, cambia la forma de invocar `libres`, y tendría que decidir contigo qué pasa con la forma antigua `libres 10:00-12:00`.
+
+¿Cuál es?
+
+>>> Bash: node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id --help 2>&1 | head -30; sed -n 1,80p "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references/nombrado.md"
+<<< uso: sdd id next|claim
+sdd id next   Propone o reserva el siguiente id SDD (ids.mode=sequence)
+sdd id claim  Reclama el id de la tarea contra la integración del remoto (ids.mode=sequence)
+## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAY
+
+>>> Bash: S="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve
+<<< 0010
+
+>>> Bash: S="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; git checkout -b feature/0010-libres-franja && node "$S" id claim --project-root "$PWD"; git status --short; git branch --show-current
+<<< Switched to a new branch 'feature/0010-libres-franja'
+sin remoto: la 0010 vale (contador local)
+feature/0010-libres-franja
+
+=== RESULTADO (4 turnos, 0.2150064 $)
+Ahora: la entrevista de la spec, con la rama `feature/0010-libres-franja` ya creada. Queda: unas pocas preguntas, spec con su aprobación y plan, ~10 min.
+
+He reservado el id 0010 y la rama. Aún no hay carpeta ni spec.
+
+Como `libres` ya existe, necesito entender qué esperas de este comando que no tenga lo que hay.
+
+Cuando lo uses, ¿para qué lo quieres y qué quieres ver en la salida?

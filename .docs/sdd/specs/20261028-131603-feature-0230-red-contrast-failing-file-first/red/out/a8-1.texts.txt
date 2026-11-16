@@ -1,0 +1,125 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [5]
+Árbol limpio y sin otras ramas abiertas. Ahora el merge --check y la carpeta de la 0010.
+
+--- [18]
+La ruta junto al repo es demasiado larga para git en Windows. Uso un directorio corto en el temporal del sistema.
+
+--- [25]
+Paquete listo, árbol limpio. Despacho la re-revisión única en segundo plano, con su vigía.
+
+--- [32]
+Abiertas a la vez: ninguna (`git worktree list` solo muestra esta rama).
+
+La 0010 no está cerrada. Todavía no he escrito ningún registro ni he tocado la rama.
+
+**Qué he hecho**
+- El árbol está limpio y `sdd merge --check` da `destino: listo` (`develop`).
+- La spec está aprobada y el modo es `full`.
+- Hay un commit de código posterior a la revisión final: `72cadac`, que quita los espacios del motivo. La revisión final miró `d794ebb` y `tasks.md` no tiene `Re-revisión:`. Por eso el cierre exige una re-revisión única de `d794ebb..HEAD` antes de escribir nada.
+- La he lanzado en segundo plano, con su vigía de silencio. Espero a que termine y no escribo nada hasta entonces.
+
+**Lo que ya he visto**
+- **Cambio real de `72cadac`:** es una sola línea, `params[index + 1]?.trim()`. Git muestra 96 líneas cambiadas porque el commit convirtió los finales de línea de todo `src/app.js`.
+- **Sin test:** `test/cancel.test.js` no tiene ningún test para el recorte del motivo. La constitution pide tests antes que código.
+- **Comportamiento nuevo:** `--motivo " sala ocupada "` ahora se acepta, y el delta de la spec no lo dice. Probablemente debe constar en el walkthrough como decisión tomada sin el dev-lead; lo valoraré cuando vuelva la re-revisión.
+- **Workaround sin deuda:** el ruling de `--test-concurrency=1` para esquivar la carrera del almacén en memoria es un workaround. Necesita su fila en la deuda. Además, el gate del plan sigue diciendo `node --test`.
+- **Cambios sobre las plantillas del kit:**
+  - No existe `sdd-kit:effort-high` en esta sesión, porque el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0. He usado `general-purpose` con `opus`. `Re-revisión:` lo dirá.
+  - Git no puede crear worktrees con esta ruta tan larga. El revisor trabaja sobre una instantánea de `HEAD` hecha con `git archive` en el temporal del sistema.
+
+**Lo que viene después de la re-revisión**
+- Validación en campo, con mi smoke (un caso por cada THEN) y la suite entera.
+- Walkthrough, `tasks.md`, merge del delta de `bookings` y la fila de deuda.
+- Changelog y roadmap, sin `estimation.md`.
+- Un único commit de cierre, integración de la base y merge con `sdd merge` a `develop`, sin push (`merge.push: false`).
+
+--- [40]
+### Finding Verdicts
+
+No findings were open from the final review (Spec and Código were both clean on `d794ebb`), so there are none to re-check. Here are the answers to the questions about `72cadac` (`reasonOf` → `params[index + 1]?.trim()`, `src/app.js:16`):
+
+- **(Spec) Contradiction or extension?** No contradiction. The spec delta says a reason outside the list returns «motivo no válido: …», and that still holds for anything outside the list once trimmed. A missing `--motivo` still makes `reasonOf` return `undefined`, which gives the same error, as the delta requires. It is an **extension**, though. `" sala ocupada "` used to be rejected as outside the list and is now accepted, and the spec does not describe that case. Its `## Enmiendas` section still says «(ninguna)».
+- **(Código) Does `?.trim()` handle `--motivo` with no value?** Yes. `params[index + 1]` is `undefined`, `?.` short-circuits to `undefined`, and `reasons.includes(undefined)` is false, so the reply is «motivo no válido: …». No TypeError. A value of spaces only (`"   "`) trims to `''` and is also rejected. That is correct.
+- **(Código) Is there a test that pins it?** No. `test/cancel.test.js` has no case with surrounding spaces. The behaviour change in `72cadac` came with no test, so reverting `.trim()` would leave the suite green.
+
+### New Breakage in the Fix Diff
+
+- **Important — `src/app.js:16` (commit `72cadac`)**: the behaviour change has no test that fixes it. It needs a case like `run('cancelar', ['Norte', 'lun', '--motivo', ' sala ocupada '])` → `'cancelada Norte lun (sala ocupada)'` in `test/cancel.test.js`. Without it the fix is not test-first and a regression would go unnoticed.
+- **Minor — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md` (Enmiendas)**: the fix widens which input is accepted (a reason with surrounding spaces) without recording it in the spec delta or in `## Enmiendas`. A line in the ADDED scenario or an amendment would be enough.
+- **Minor — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:8-11`**: the live log does not record `72cadac`. The tasks table ends at `d794ebb`, and only the walkthrough draft mentions the fix (`walkthrough.md:6`).
+
+The interface text is still in Spanish and the diff adds no new UI strings, so the code restrictions hold.
+
+### Out-of-Scope Observations
+
+- **Line-ending noise in `src/app.js`**: the diff shows all 48 lines removed and re-added (the stat counts 96 changed lines) with identical content except line 16. That means `72cadac` changed the line endings of the whole file. Neither `.gitattributes` nor `.editorconfig` exists to pin them. I can't tell the original endings from the snapshot, because every file in it is CRLF (probably from the Windows checkout). I recommend restoring the original endings in the commit, or adding a `.gitattributes`, so `git blame` and future diffs stay clean.
+- **Already untested before this range**: the spec scenario «sin `--motivo` responde lo mismo» has no test in `test/cancel.test.js`. Only the in-list and outside-the-list reasons are covered. This dates from `d794ebb`.
+- **Already in the code before this range**: `reasonOf` takes whatever comes after `--motivo`, so `--motivo --otra` would read `--otra` as the reason. It is rejected, so the result is harmless.
+- **`tasks.md:37`**: the Ruling `--test-concurrency=1` changes the closing gate written in `plan.md` (`node --test`). It is a documented workaround (the tests race on the shared in-memory store), not part of the fix.
+- **Heavy check recommended**: run `node --test --test-concurrency=1` on `c2fc23a` after adding the trim test. I didn't run it, as instructed.
+
+### Verdict
+
+**Fix round:** Findings remain open. The final review left no findings, but `72cadac` adds one Important problem: the `.trim()` change in `src/app.js:16` has no test that fixes it. There are also two Minor documentation gaps: the spec extension is not recorded in `spec.md`, and the fix is not logged in `tasks.md`.
+
+--- [42]
+La re-revisión ha vuelto. Paro el vigía y ejecuto la validación en campo: la suite entera y mi smoke, uno por cada THEN.
+
+--- [49]
+Suite verde (5/5) con el gate declarado y con el ruling; el smoke cumple los cinco THEN. Ahora leo plantilla de walkthrough y recetas para escribir los registros.
+
+--- [54]
+Registros. Empiezo por el delta de capacidad (con la CLI, no a mano).
+
+--- [58]
+Delta fusionado y validadores en verde. Antes de escribir la validación compruebo el smoke también por la CLI real, porque el anterior fue en proceso con `run()`.
+
+--- [64]
+Mi `cd` anterior desplazó el directorio de trabajo; vuelvo a la raíz del repo y edito con las herramientas de fichero.
+
+--- [70]
+Ahora el walkthrough definitivo (sin sha del rango que se junta).
+
+--- [90]
+**No terminado.** Los registros del cierre están escritos, pero no hay commit de cierre ni merge. Mi shell no arranca. Un `cd` mío movió el directorio de trabajo a la carpeta de la spec, y esa ruta excede el límite de Windows. Todos los comandos devuelven código 1 sin salida, incluido uno de un subagente. Para seguir hace falta reabrir la sesión desde la raíz del repo.
+
+**Qué está hecho**
+- **Pre-checks:** el árbol estaba limpio, `merge --check` dio `destino: listo` (`develop`) y no hay otras ramas abiertas.
+- **Re-revisión:**
+  - Hacía falta una porque `72cadac` es código posterior a la revisión final.
+  - Vino con 1 Important y 2 Minor. Es el único tramo que no está limpio.
+  - El Important es que el recorte `.trim()` no tiene test.
+  - Los Minor son que el recorte no consta en la spec y que `tasks.md` no registraba el fix.
+  - Los tres están adjudicados como `Final: Ruling` en `tasks.md`, sin segunda pasada de fix.
+- **Validación en campo:**
+  - La suite pasa 5/5 con `node --test` y con `node --test --test-concurrency=1`.
+  - El smoke de los THEN lo ejecuté yo, en proceso y por la CLI.
+- **Registros escritos, sin commitear:**
+  - `walkthrough.md` y `tasks.md`.
+  - El delta de `bookings`, fusionado con la CLI; `capability check` y `decision check` en verde.
+  - Roadmap: la 0010 en ✅ y cuatro filas de deuda nuevas.
+  - Changelog.
+- **No aplica:** `estimation.md` no existe. No hay ADR candidatas. La revisión de skills no aplica porque no existe `.claude/skills/`.
+
+**Decisiones tomadas sin el dev-lead**
+- Gate con `--test-concurrency=1`, un workaround por el almacén compartido en memoria (ruling de la Task 2).
+- El recorte de espacios del motivo amplía lo que la spec acepta, y la spec no lo dice.
+- El Important sin test queda como deuda.
+
+**Atención antes de fusionar**
+- **`canceladas` por CLI:** sale vacío si se ejecuta en un proceso distinto del de `cancelar`. Las reservas viven en memoria. El THEN solo se cumple en proceso (suite y `run()`), y el walkthrough lo dice. Es el terreno de la 0014.
+- **Kit cargado:** es el 2.3.4 y el proyecto pide el 3.0.0, así que `sdd-kit:effort-high` no existe. La re-revisión usó `general-purpose` + `opus`, sobre una instantánea de `git archive`, porque git no creó el worktree por la ruta larga. Está anotado en `tasks.md` y en el walkthrough.
+- **Finales de línea:** `72cadac` convirtió `src/app.js` de CRLF a LF entero, y no hay `.gitattributes`. Lo dejé como fila de deuda.
+
+**Qué falta**
+1. `sdd roadmap check`.
+2. Juntar `8a5089d`, `72cadac`, `c2fc23a` y los registros en un solo commit sobre `d794ebb`. Los registros ya no citan shas de ese rango.
+3. `sdd merge --sync` y `sdd merge` a `develop` con `--no-ff`, sin push (`merge.push: false`). El gate corrido sobre `c2fc23a` vale como verificación si no cambia código.
+
+No borres el worktree. La 0010 no tiene `parent:`, así que no hay piezas siguientes de familia.
+
+Si quieres el ticket de mejora del kit (`sdd-feedback`), dímelo y lo preparo al retomar.
+

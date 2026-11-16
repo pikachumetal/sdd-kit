@@ -1,0 +1,96 @@
+--- [14]
+Ahora: leo el proyecto y te planteo la primera pregunta de diseño de la feature. Queda: entrevista corta, spec, tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** hoy `salas` solo tiene `libres <franja>`, `reservar` y `cancelar`. Quieres que, si intentas reservar una sala que ya está ocupada en esa franja, puedas quedar en lista de espera para esa sala. Es una feature, y calculo unas 3 tasks, así que no propongo dividirla.
+
+Lo que he visto en el código: `src/app.js` guarda las reservas en memoria (`bookings`) y no persiste nada. `reservar` solo reconoce `--cada-semana` y siempre responde «reserva semanal creada», sin comprobar si la sala está libre. Tampoco hay ya nada que "avise" a nadie: `0008` (avisos por correo) está aparte en el roadmap.
+
+❓ **¿Qué pasa cuando la sala que esperas queda libre?**
+Es lo que define la lista: sin esto no sé si es solo un registro o algo que actúa.
+1️⃣ **Promoción automática:** al cancelar una reserva, la primera persona en la lista de esa sala y franja pasa a tener la reserva y `cancelar` lo dice en su salida (`cancelada mar 10:00 · Norte pasa a Ana`). Es lo que se espera de una lista de espera. A cambio, `cancelar` pasa a tener un efecto más y hay que decidir el orden (el de llegada).
+2️⃣ **Solo aviso en pantalla:** al cancelar, `cancelar` muestra quién esperaba, pero no crea la reserva; tú la haces con `reservar`. Es más simple, pero la lista no te ahorra nada frente a mirar `libres`.
+3️⃣ **Solo consulta:** apuntas en la lista y la ves con un comando; nada se dispara al liberar. Es lo mínimo, pero tampoco evita que te la quiten.
+
+➡️ **Recomiendo 1️⃣**, porque encaja con una herramienta de un solo usuario sin correo ni notificaciones (el aviso por correo es `0008`) y con lo que entiendo por "lista de espera". A cambio, `cancelar` deja de ser una operación sin efectos.
+
+--- [38]
+Ahora: el revisor de la spec está trabajando en segundo plano (la spec `0010` ya está escrita y el delta probado sin rechazos). Queda: integrar sus hallazgos y presentarte la spec para tu aprobación, ~5 min.
+
+Espero su resultado antes de seguir.
+
+--- [45]
+1. Crítico · Intent / ✋ decisión 7 / Delta · `src/app.js` ejecuta un solo comando por proceso (`process.argv`, una línea de `console.log`). `esperar` y `cancelar` nunca coinciden en el mismo proceso desde la terminal, así que la feature no funciona donde el dev-lead la va a validar («ver las salidas en la terminal»). Además solo hay un usuario y no hay dueño de reserva, así que quien cancela es quien espera. La decisión 7 solo admite una limitación parcial. · Replantear la feature (persistencia mínima, o un modo interactivo) o declarar en Intent y Scope que solo es verificable por `run()`. Quitar la validación por terminal o decir cómo se hará.
+2. Importante · Delta, escenarios 2, 3 y 7 · Los `AND` «no se apunta ninguna espera», «sigue habiendo una sola espera» y «las esperas no cambian» no se pueden observar por `run()`. No hay `esperas` (decisión 8) y `waits` no se exporta, así que un código que no toque `waits` los cumple igual. · Hacerlos observables: un `cancelar` posterior que demuestre el estado, o exportar `waits` como contrato de test. Decirlo en «Dónde se prueba».
+3. Importante · Delta, escenario 5 · El `AND` «`libres 10:00-12:00` ya no incluye a Norte» se cumple sin la feature: Norte ya está ocupada antes de cancelar. Además `freeRooms` ignora el día, así que el `AND` no prueba nada sobre `lun`. · Comprobar el estado intermedio. Por ejemplo, cancelar con una espera de otra sala o día y ver que Norte aparece en `libres`, o cancelar dos veces y ver el efecto. Decidir si `libres` debe empezar a mirar el día.
+4. Importante · Dónde se prueba / Contratos · El estado es global del módulo y `bookings` arranca con Norte lun. Los escenarios 5 y 6 parten del mismo GIVEN y borran esa reserva, y eso rompe «libres excluye la sala reservada» y «cancelar respeta el día» según el orden de los tests. No hay reset ni inyección de estado. · Especificar cómo se aísla el estado: un `reset` exportado, una fábrica o un orden fijo. Declarar que cambia la superficie exportada de `src/app.js`.
+5. Importante · Delta / Regla ante conflicto · No hay escenario para «solo pasa la espera que casa en sala, día y franja». Una espera de otra sala o día no debe promoverse y nada lo comprueba. Tampoco se dice que la espera se consume tras promoverse. · Añadir un escenario con una espera que no casa (Sur, o `mar`) y otro con la espera ya consumida (segundo `cancelar lun 10:00`).
+6. Importante · ✋ vs Approach · Decisiones tomadas en el cuerpo y ausentes de ✋: (a) `esperar` compara la franja por igualdad exacta, y `10:30-11:30` sobre una reserva de `10:00-12:00` diría «está libre»; (b) el orden de las validaciones (sala, libre, duplicado); (c) qué reserva se cancela si Norte y Sur coinciden a la misma hora de inicio; (d) la espera se elimina al promoverse; (e) el formato de franja y de día no se valida. · Listarlas en ✋ con su criterio. Fijar el solapamiento o la igualdad exacta y añadir un escenario.
+7. Importante · Delta · Faltan escenarios de entrada inválida: `esperar` sin argumentos, franja con formato erróneo, `cancelar` sin hora. Con `params[2]` indefinido el código produciría `en espera: Norte lun undefined`. · Añadir el escenario y su texto de salida, o declarar en No entra que no se valida.
+8. Importante · Scope / Delta · `cancelar` pasa a borrar reservas, y eso cambia el comportamiento de un comando existente. Se cuelga de la capacidad `waitlist` y no de una capacidad de reservas, y no hay `capabilities/` donde apoyarlo. Los escenarios 6 y 7 describen `cancelar` general, no la lista de espera. · Decir en ✋ que el comportamiento de `cancelar` queda cobijado por `waitlist` por no existir otra capacidad. Valorar abrir también una capacidad `bookings`.
+9. Menor · Reglas de la capacidad · «Idioma de los nombres: castellano, en las salidas» no es una regla sobre los datos nuevos: `waits` guarda `{ room, day, slot }` en inglés. «Límites» no dice nada sobre un tamaño máximo de la lista. · Reescribir el idioma como «campos internos en inglés como `bookings`; salidas en castellano». Añadir «sin tope de esperas» si es el caso.
+10. Menor · Scope / líneas 68 y 60 · «avisos por correo (es la 0008)» y «la reserva la 0010» se citan sin fila de roadmap verificable. La decisión 10 (merge probado en una copia) es un hecho de verificación, no una decisión, y va en la sección de decisiones. · Enlazar o quitar el 0008. Mover la 10 a un apartado de verificación y dejar en ✋ solo las decisiones.
+
+--- [54]
+Ahora: segunda ronda de revisión de la spec en marcha. La primera encontró un fallo crítico: `salas` ejecuta un comando por proceso, así que una espera en memoria se perdería entre `esperar` y `cancelar`. Por eso he rehecho el enfoque para guardar reservas y esperas en un fichero JSON. Queda: integrar los hallazgos de esta segunda ronda y presentarte la spec para tu aprobación, ~4 min.
+
+Espero su resultado.
+
+--- [59]
+1. Crítico · Delta, escenarios «Una espera que no casa» y «Cancelar sin reserva que case» · Contradicen la decisión 7. Norte no tiene reserva el martes. Con el orden argumentos, sala, franja libre, duplicada, `esperar Norte mar 10:00-12:00` devuelve «está libre: no hace falta esperar» y nunca «ya esperas…». Además, ese GIVEN no se puede crear con `esperar`. · Poner la espera con una franja que sí esté ocupada, o pasar el estado inicial como dato. Cambiar el THEN a la salida real o cambiar el orden de la decisión 7. Una espera sobre sala libre no se puede crear, así que el fichero no puede contenerla por esa vía.
+
+2. Crítico · Escenario «No esperar una sala libre», AND · «Si Sur se reserva» no se puede observar con `run()`. `reservar` solo devuelve texto para `--cada-semana` y no añade ninguna reserva. Además, `cancelar lun 10:00` devuelve «cancelada lun 10:00» aunque no cambie nada, así que el AND se cumple sin la feature. · Quitar el AND o pasar las reservas por el tercer parámetro de `run`. Si hace falta `reservar`, declararlo en el Scope y en ✋.
+
+3. Crítico · Decisión 3, «Dónde se prueba» y escenarios con «el comando siguiente» · No dice si `run(cmd, params, datos)` modifica el objeto `datos` que recibe, ni si lo escribe en disco. Sin eso, «repetir `esperar`» o «`libres` incluye a Norte» no se pueden comprobar con `run()`. · Fijar en ✋ que `run` modifica `datos` en sitio y escribe el fichero solo cuando no se pasan datos. Añadirlo a la regla «Dónde viven los datos».
+
+4. Crítico · Constitución 2 (`node --test` en verde) y tests existentes · Los tres tests actuales llaman a `run` sin tercer parámetro. Con la spec leerían `salas.json` del directorio actual. Si alguien ejecutó la CLI en la raíz del repo, existe un `salas.json` con Norte liberada y `libres` deja de devolver `Sur`. · Hacer que los tests existentes pasen `datos` explícitos, o que `node --test` fije `SALAS_DATOS` a un temporal. Añadir `salas.json` a `.gitignore` y decirlo en el spec. Restaurar `SALAS_DATOS` tras el test del fichero.
+
+5. Importante · Decisión 8 vs escenarios · El desempate entre dos salas con la misma hora y día («solo la sala con espera, o la primera») no tiene escenario. Tampoco lo tiene la espera con franja distinta de la reserva (por ejemplo `10:00-11:00` frente a `10:00-12:00`). · Añadir un escenario de empate y otro de franja distinta, o quitar la regla del desempate.
+
+6. Importante · Scope y «Lo que se retira o cambia» · El Scope dice que no cambia `libres` ni `reservar`. Pero `libres` pasa a leer del fichero y `reservar` sigue sin escribir. Faltan por decir: el comportamiento ante un JSON corrupto o ilegible, la forma exacta del fichero (`{bookings, waits}`) y el cambio del arranque de `src/app.js:3`. · Añadir un matiz al Scope («`libres` lee del fichero, sin cambiar su salida»). Decidir en ✋ qué pasa con un JSON inválido. Añadir la forma del fichero a la regla «Dónde viven los datos».
+
+7. Importante · Decisión 8, «Si no casa con ninguna reserva, sigue diciendo `cancelada <día> <hora>`» · No hay requisito sobre la salida de `cancelar` cuando sí casa con una reserva y no hay espera. Solo existe por el escenario «Cancelar sin espera». Tampoco se dice qué hace `cancelar` con la reserva promovida (propia): el segundo `cancelar` la borra, porque la reserva sigue siendo de Norte. · Añadirlo como regla explícita en el delta.
+
+8. Menor · Decisión 9 · «Quien cancela es quien espera» es un supuesto de producto que está en el cuerpo y no se ha validado con el dev-lead. · Marcarlo como decisión que debe confirmar el dev-lead.
+
+9. Menor · Hallazgos, ronda 1 · Dice «7 requisitos... 8 con la versión nueva» pero el delta tiene 8 ADDED y ningún MODIFIED. La frase no se entiende. Además, la verificación se hizo contra la versión anterior de la spec, no contra esta. · Volver a ejecutar `sdd capability merge` sobre la spec reescrita y poner la cifra correcta.
+
+10. Menor · Rúbrica y estado del contexto · No existe `.docs/sdd/steering/PRODUCT.md` (la lectura falló), así que no se pudo contrastar el motivo del producto. Las dependencias sí cumplen: `node:fs` es nativo y no añade dependencias externas. · Confirmar la ruta de PRODUCT.md y, en la spec, decir que se usa `node:fs` síncrono (sin dependencias nuevas).
+
+--- [65]
+La spec está lista y espera tu aprobación: `.docs/sdd/changes/20261113-152003-feature-0010-lista-espera/spec.md` (rama `feature/0010-lista-espera`). Está sin commitear y no he tocado código.
+
+🦆 Hoy, si Norte está ocupada el lunes de 10:00 a 12:00, tienes que volver a ejecutar `libres` cada rato. Con esto escribes una vez `esperar Norte lun 10:00-12:00` y la herramienta lo apunta en un fichero. Cuando después ejecutes `cancelar lun 10:00` y esa reserva se libere, Norte pasa a ser tuya y la salida te lo dice, por ejemplo `cancelada lun 10:00 · Norte lun 10:00-12:00 pasa a tu reserva`. Para que la espera sobreviva entre ejecuciones, las reservas y las esperas pasan a guardarse en `salas.json`, porque hoy cada comando arranca de cero.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+1. **Fichero en vez de memoria.** Mi primera versión guardaba las esperas en memoria. La review vio que cada comando es un proceso distinto, así que `esperar` y `cancelar` nunca compartirían la lista. Ahora todo va a `salas.json` (o al fichero de `SALAS_DATOS`). Esto amplía el cambio: toca cómo arrancan las reservas.
+2. **`run(cmd, params, datos)`.** El tercer parámetro es opcional y lo usan los tests; sin él se lee y escribe el fichero.
+3. **Tests actuales.** Los tres pasan a llamar a `run` con datos explícitos, con las mismas aserciones. `salas.json` entra en `.gitignore`.
+4. **Capacidad nueva `waitlist`.** El nuevo comportamiento de `cancelar` también queda dentro de ella, porque no existe una capacidad de reservas.
+5. **Comando nuevo `esperar <sala> <día> <franja>`.** Comprueba en este orden: argumentos, sala, franja libre, duplicada. Compara la franja por igualdad exacta y no valida el formato.
+6. **Textos de salida:**
+   - `en espera: Norte lun 10:00-12:00`
+   - `… está libre: no hace falta esperar`
+   - `ya esperas …`
+   - `sala desconocida: Oeste`
+   - `uso: esperar <sala> <día> <franja>`
+   - `datos ilegibles: <ruta>`
+7. **`cancelar <día> <hora>` ahora borra la reserva que casa.** Hoy solo escribe el texto. Si hay dos salas a la misma hora, pasa la que tiene espera; la espera se consume al promoverse. Si no casa ninguna reserva, la salida es la de hoy.
+8. **Supuesto a confirmar:** eres la única persona que usa la herramienta, así que no hay dueños de reserva ni cola. Quien cancela es quien espera.
+9. **No entra:** listar o quitar esperas, cambiar `reservar` o la salida de `libres`, y validar formatos.
+
+**Review.** Dos rondas con un revisor (sonnet). La primera dio un crítico, el del fichero. La segunda dio cuatro críticos sobre escenarios no observables y tests existentes, todos aceptados y corregidos. Rechacé dos hallazgos menores, con su motivo en la spec. El delta se probó sobre una copia de `.docs/sdd`: `sdd capability merge` lo acepta con 10 requisitos y 5 reglas.
+
+Validación: la haces tú en la terminal, con ejecuciones separadas de `esperar` y `cancelar`.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar.
+2. **Cambios.** Dime qué ajustar, por ejemplo el supuesto de la decisión 8 o el nombre de `esperar`.
+

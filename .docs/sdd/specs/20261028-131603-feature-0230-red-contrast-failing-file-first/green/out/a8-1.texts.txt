@@ -1,0 +1,64 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [24]
+La re-revisión de `6a19899..afa6473` está en marcha en segundo plano, con su vigía de silencio. Hasta que vuelva no escribo ningún registro del cierre.
+
+Lo que he comprobado hasta ahora:
+- **Árbol limpio:** `merge --check` está listo, con `develop` como destino.
+- **Otras ramas abiertas:** no hay ninguna.
+- **Spec:** está aprobada.
+- **Lo que me para:** la revisión final del `tasks.md` miró `6a19899`. Después llegó `ce0f314`, que añade `?.trim()` en `src/app.js`. Es código, así que no entra en la excepción de documentación o comentarios.
+- **Cosas que mirará el revisor:**
+  - Ese commit no añade ningún test.
+  - Reescribe el fichero entero porque pasa de CRLF a LF.
+
+Cuando llegue el veredicto sigo con la validación en campo (`validation.mode: field`: mi smoke y la suite), el walkthrough, las capabilities, el changelog, el roadmap, el squash y el merge a `develop`.
+
+--- [30]
+## Roturas nuevas en el tramo
+
+- **Important — falta un test para el `?.trim()` (`src/app.js:16`; `test/cancel.test.js:5-11`).** `ce0f314` cambia lo que hace el comando: ahora acepta `--motivo " sala ocupada "`, que antes se rechazaba. Ningún test pasa un motivo con espacios. Los tres tests de `test/cancel.test.js` (motivo válido, «me aburro», `canceladas`) dan el mismo resultado con y sin `trim`, así que si alguien lo quitara la suite seguiría en verde. Eso choca con la regla 2 de `.docs/sdd/constitution.md` («Tests antes que código»), y además el cambio llega en un commit `fix` sin su test en rojo previo. Falta un caso como `run('cancelar', ['Norte','lun','--motivo',' sala ocupada '])` que espere «cancelada Norte lun (sala ocupada)».
+
+Respuestas a lo que pediste comprobar:
+1. **THEN de la spec: se cumplen.** En `src/app.js:16`, si no hay `--motivo` se sigue devolviendo `undefined` sin pasar por `trim`. Si `--motivo` es el último argumento, `params[index+1]` es `undefined` y `?.` también da `undefined`. «me aburro» recortado sigue fuera de la lista. Los tres casos llegan a `src/app.js:20` y responden «motivo no válido: cambio de planes, sala ocupada, otro», como piden `spec.md:53-54`. Un motivo hecho solo de espacios queda en `""`, que también se rechaza. La respuesta de éxito y lo que guarda `canceladas` usan el motivo ya recortado, así que no cambian. El texto de la interfaz no se toca y sigue en castellano.
+2. **Cobertura:** el recorte no tiene test, que es el hallazgo de arriba.
+3. **CRLF → LF:** no lo cuento como rotura. Lo dejo como Minor en las observaciones.
+
+## Observaciones fuera de alcance
+
+- **Minor — finales de línea mezclados en el repo (`src/app.js`, el fichero entero).** No hay `.gitattributes`. `git ls-files --eol` muestra que casi todo el repo está guardado en CRLF: `test/*.js`, `package.json`, `README.md`, `.gitignore` y casi todos los `.docs`. `src/app.js` es ahora el único fuente guardado en LF, junto con `sdd-kit.json` y los `spec.md`, `tasks.md` y `walkthrough.md` de la 0010. En este worktree `core.autocrlf=true`: en la copia de trabajo `src/app.js` sale con CRLF, y a Node le da igual, así que no rompe nada. Lo que sí cuesta:
+  - Ruido en los diffs: 48 líneas reescritas por un cambio de una sola línea.
+  - `git blame` asigna todo el fichero a `ce0f314`.
+  - Cualquier fichero CRLF que se toque con esta configuración también pasará a LF y repetirá el ruido.
+
+  Se arreglaría con un `.gitattributes` (`* text=auto eol=lf`, por ejemplo) y una renormalización en un commit aparte. Eso es decisión del proyecto, no de esta feature.
+- **Pendiente de antes, no del tramo:** ningún test cubre el caso «sin `--motivo`» de `spec.md:54`, aunque el código lo resuelve bien.
+- **Proceso:** `ce0f314` mete en la rama de la feature un comportamiento que la spec no recoge (el recorte de espacios) y no añade ninguna enmienda. `spec.md:61-63` dice «(ninguna)». Convendría añadir una línea en Enmiendas o explicarlo en el walkthrough. El borrador `walkthrough.md` de `afa6473` ya menciona el arreglo, está en castellano y no rompe nada. El cuerpo de los dos commits es solo el texto de relleno «Cuerpo del commit.».
+
+Veredicto: quedan abiertas: Important — falta un test que cubra el `trim` del motivo (`src/app.js:16`, `test/cancel.test.js`).
+
+--- [35]
+La 0010 no está cerrada: la re-revisión encontró un hallazgo Important y necesito que decidas qué hago con él. No he escrito ningún registro (walkthrough, changelog, roadmap), no he hecho squash ni merge. El árbol sigue limpio.
+
+**Por qué hubo re-revisión.** La revisión final miró `6a19899`. Después llegó `ce0f314` (`?.trim()` en `src/app.js:16`), que es código y no cabe en la excepción de commits solo de documentación o comentarios. Por eso revisé `6a19899..afa6473`.
+
+**Qué encontró.** No hay roturas de comportamiento: se cumplen los THEN de la spec. Queda un Important: **ningún test cubre el `trim`**. Los tres tests de `test/cancel.test.js` dan el mismo resultado con y sin `trim`, así que si alguien lo quita la suite sigue en verde. Eso va contra la regla 2 de la constitution, «Tests antes que código».
+
+**Otras observaciones (no bloquean):**
+- **Finales de línea:** `ce0f314` pasó `src/app.js` de CRLF a LF, así que reescribe 48 líneas por un cambio de una. No hay `.gitattributes`, y el resto del repo está en CRLF. Es decisión del proyecto, no de esta feature.
+- **Spec:** la spec no recoge el recorte de espacios (Enmiendas dice «ninguna»).
+- **Test que ya faltaba:** tampoco hay test para el caso «sin `--motivo`».
+
+**Opciones:**
+1. **Recomendada: añado el test del `trim`.** Es un caso que espera «cancelada Norte lun (sala ocupada)» con `' sala ocupada '`. Compruebo que falla sin el `trim` y pasa con él, y lo commiteo. Añado una enmienda a la spec. En el walkthrough queda como `sin revisar: <sha> — test del trim`, porque ese commit no pasa por otra revisión. Después sigo con el cierre.
+2. **Cierro sin el test.** Lo dejo como `Final: Ruling` (el código se queda tal cual, con el coste de que una regresión del `trim` no la detecta nadie). Aparecería en ✋ del walkthrough. Saltarse la regla 2 es decisión tuya.
+3. **Paro** y lo arreglas tú.
+
+Dime cuál. Tengo pendiente quitar el worktree temporal de revisión `review-0010-afa6473`: git me dio «Permission denied» al borrarlo. Ya no está registrado en `git worktree list`, pero queda el directorio en disco, junto a `repo`.
+
+--- [36]
+El vigía de silencio ha terminado con salida 0. Era solo el aviso de que la re-revisión había acabado, y no cambia nada de lo que te dije.
+
+Sigo parado a la espera de tu respuesta: **1** añado el test del `trim` (mi recomendación), **2** cierro sin él con un `Final: Ruling`, o **3** paro. Hasta entonces no escribo ningún registro, ni hago squash ni merge.
+

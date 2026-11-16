@@ -1,0 +1,70 @@
+--- [3]
+Voy a comprobar el estado de la init que quedó cortada.
+
+--- [14]
+Retomo la init donde se cortó. Esto es lo que he encontrado:
+
+- **Modo: con código.** Hay `package.json` y `src/app.ts`. Si es un template recién instanciado, dímelo y sigo sin código.
+- **Ya aprobados (`init.approved`):** `PRODUCT.md` y `.docs/sdd/steering/constitution.md`. No los vuelvo a presentar.
+- **Ya respondido (`init.config`):** numeración por secuencia, perfil `delegate`, ejecución `auto` y validación manual. No lo vuelvo a preguntar.
+- **Siguiente en el orden de generación:** `.docs/sdd/steering/operations.md`. Ahora toca la entrevista de «Cómo se prueba».
+
+Esto sale del código y del CI:
+
+| Campo | Lo que veo |
+| --- | --- |
+| Arrancar | `npm run dev` (vite) |
+| Suites | `test` → `vitest run`; `e2e` → `playwright test` |
+| CI de la base | `.github/workflows/ci.yml` (solo corre `npm test`), sin remoto |
+| Configs y tests | No hay `vitest.config` ni `playwright.config`, y no veo ficheros de test |
+| Lint | No hay script de lint ni pre-commit, así que `ninguno` |
+
+Hay una discrepancia con el `CLAUDE.md` previo. Dice «puerto 3000», pero no hay config de vite y su puerto por defecto es 5173. Lo dejo en la lista de discrepancias y no lo copio como regla. Lo de «las fechas van en UTC» tampoco lo puedo verificar en el código.
+
+❓ **Nivel de la suite `test`**
+Ningún fichero de config me dice qué arranca `vitest run`, así que su nivel queda `pendiente` hasta que lo digas.
+¿Esa suite es solo de funciones, sin servidor, base de datos ni red (`unitario`)?
+
+➡️ **Recomiendo que sí.** Hoy `src/app.ts` es lo único que existe y los datos viven en memoria, según la constitución. Así no hay nada que levantar. A cambio, si más adelante añades tests contra un servidor, habrá que cambiar el nivel.
+
+--- [18]
+Tengo todo lo que necesito para `operations.md`. Este es el borrador, trazado de la plantilla:
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: `pendiente` (no hay script `build` en `package.json`)
+- **Arrancar**: `npm run dev`
+
+## Testing
+
+- **Suites**:
+  - `test` · `npm test` (`vitest run`) · duración `pendiente` · unitario
+  - `e2e` · `npm run e2e` (`playwright test`) · duración `pendiente` · nivel `pendiente` (no hay config ni tests todavía)
+- **Lo afectado**: `npx vitest run --changed <base>` (propuesta, sin verificar)
+- **Gate de cierre**: `pendiente` (el único E2E aún no tiene tests; `test` es unitario y el cierre lo corre entero con su orden)
+- **Gate de merge**: `npm test`
+- **Sin filtro**: `package.json`, `package-lock.json`, `vite.config.*`, `vitest.config.*`, `playwright.config.*`, `tsconfig*.json`
+- **Lint**: `ninguno`
+- **CI de la base**: `.github/workflows/ci.yml` (solo corre `npm test`) · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: `no aplica` (los datos viven en memoria, sin base de datos)
+- **Temporales**: `e2e` · `test-results/` (valor por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`; `test` · `no declarado`
+```
+
+Estas son las decisiones que he tomado yo y que puedes corregir:
+
+- **Sin sección `## Frontend`.** No hay `index.html` ni framework de UI, solo `src/app.ts` con una función. Si la app va a tener interfaz, dímelo y la añado.
+- **Sin sección `## Entornos`.** No me has dicho que uses worktrees con entorno propio.
+- **Sin campos E2E.** `e2e` es un script sin tests, así que lo trato como suite sin esos campos.
+- **Fichero `package-lock.json`.** El CI usa `npm ci`, que lo exige, pero no existe en el repo. Queda en «Sin filtro» igualmente, y lo apunto como discrepancia.
+- **Propuesta de `outputDir`.** No toco ninguna config de la suite ni añado filas al roadmap por ella.
+
+Responde con una de estas opciones:
+1. **Apruebo tal cual.** Lo escribo en `.docs/sdd/steering/operations.md`, lo registro con `sdd init --approved` y sigo con `architecture.md`.
+2. Corrige lo que quieras y te lo vuelvo a presentar.
+
+¿Qué eliges?
+

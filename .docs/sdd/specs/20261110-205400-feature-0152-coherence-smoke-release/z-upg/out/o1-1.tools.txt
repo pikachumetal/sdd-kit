@@ -1,0 +1,106 @@
+
+=== RESULTADO (1 turnos, 0.0658171 $)
+Antes de ponerme con el filtro por sala en `libres`, una cosa. El proyecto tiene aplicado el kit 2.3.3 y el kit cargado trae migraciones hasta la 2.3.4.
+
+¿Quieres que las aplique ahora (sí/no)?
+
+- **Sí:** ejecuto `sdd-upgrade`, te doy su informe y después sigo con el filtro.
+- **No:** voy directo al filtro y no te lo vuelvo a ofrecer en esta sesión.
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1 | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; git ls-files | head -50
+<<< ls: cannot access '.docs/sdd/steering': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "2.3.3", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js package.json .docs/sdd/constitution.md .docs/sdd/roadmap.md .docs/sdd/specs/*free/spec.md; git branch
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-propose/references" && cat modo-lite.md; sed -n 1,80p patch-lane.md
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-propose/references" && grep -n -i "default\|por defecto" control-profiles.md | head -10
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+222:| Key | Type | Default |
+240:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+
+=== RESULTADO (7 turnos, 0.1594732 $)
+Ya he leído el contexto del proyecto y el código de `libres`. Ahora toca clasificar el cambio, y para eso necesito tu confirmación.
+
+🦆 `libres` hoy recibe una franja (`libres 10:00-12:00`) y devuelve las salas sin reserva en ella. Tu filtro añadiría una sala opcional, por ejemplo `libres 10:00-12:00 --sala Norte`, para ver solo si esa sala está libre. El resto del comando sigue igual.
+
+No es un patch: nadie ha fijado la sintaxis ni qué responde si la sala no existe. Esas decisiones serían mías, y por eso queda como feature. Puede ir en modo lite si tú lo confirmas.
+
+**¿Cómo lo llevo?**
+
+1. **Lite (recomendada).** Cumple las condiciones del modo lite, comprobadas una a una:
+   - El flujo ya existe y se puede leer: `freeRooms` y `run` en `src/app.js`.
+   - No cambia contratos públicos: `--sala` es opcional y `libres <franja>` sigue respondiendo igual.
+   - No toca el esquema de datos: `rooms` y `bookings` no cambian.
+   - Cabe en un solo módulo: `src/app.js`, más su test.
+   - No hay `estimation.md`, así que esa condición no aplica.
+
+   Haría una spec corta, sin plan ni tasks. La spec pasa por tu aprobación y el cierre sigue completo, con smoke y `walkthrough.md`.
+2. **Full.** Spec y plan completos, con más ceremonia para un cambio de unas pocas líneas.
+
+Perfil actual: `delegate`, el valor por defecto, porque `sdd-kit.json` no fija otro. Eso significa que me paro en la spec, en las desviaciones y en la validación. Dos opciones más:
+- Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación».
+- Si quieres otro perfil, di «perfil `pair` para esta feature».
+
+Dime 1 o 2, y si quieres alguna de esas frases.

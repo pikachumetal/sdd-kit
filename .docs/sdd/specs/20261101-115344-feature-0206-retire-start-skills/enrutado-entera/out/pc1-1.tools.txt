@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -1; grep -rn "cancelar" --include=*.html --include=*.js . --exclude-dir=node_modules --exclude-dir=.git | head -20
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md; done
+<<< .:
+./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+
+.docs/sdd:
+./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+- `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+ls: cannot access 'node
+<<< === constitution
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+=== mission
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+=== tech-stack
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+=== roadmap
+# Roadmap — ventas
+
+## Features
+
+>>> Bash: cd "<run>/repo" && cat app.js pages/pedido-detalle.html; ls pages; cat .docs/sdd/capabilities/order-sheets.md; git branch --show-current
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Pedido</title><link rel="stylesheet" href="../styles/ficha.css"></head>
+<body>
+  <main class="ficha">
+    <header class="ficha-cabecera">
+     
+
+=== RESULTADO (6 turnos, 0.16193459999999998 $)
+Ahora: clasifico VEN-31. Queda: que confirmes el carril, y luego abrir el patch, hacer el cambio y verificarlo. Sin `estimation.md` no hay estimación en horas.
+
+🦆 Hoy los dos botones Cancelar (`pages/pedido-detalle.html:10` y `pages/albaran-detalle.html:10`) no hacen nada. Con el cambio, pulsarlos te lleva a `../index.html`, que es el listado de pedidos según el ticket. El cambio es un único listener en `app.js` sobre `[data-accion="cancelar"]`, y como las dos fichas cargan ese script, vale para ambas. También hay que actualizar la capacidad `order-sheets`, porque Cancelar pasa de «se ofrece» a «te lleva al listado».
+
+**Carril:** patch de petición cerrada. El ticket fija qué cambia (Cancelar lleva al listado), dónde (`app.js`) y cómo (`location.assign('../index.html')`), así que no hay que diseñar nada. Perfil `delegate`, del proyecto (`sdd-kit.json`). La verificación es abrir la página en el navegador, porque el proyecto no tiene tests automáticos.
+
+**Un problema del ticket:** en el repo no existe `index.html`, solo `pages/` y `styles/`. Con la solución tal como está, Cancelar daría un 404 hasta que alguien cree el listado. Crearlo sería otra feature, así que no lo tocaría en este patch.
+
+¿Cómo seguimos?
+
+1. **Patch tal cual el ticket (Recomendada).** Hago el listener y actualizo `order-sheets`. En el cierre dejo anotado que `../index.html` aún no existe.
+2. **Patch con otro destino.** Me dices a qué URL debe ir Cancelar, si el listado vive en otro sitio.
+3. **Feature.** Incluye crear el listado de pedidos (`index.html`) para que Cancelar llegue a algo real.
+
+Si te ausentas, puedes responder «apruebo por delegación» y sigo con la opción 1.

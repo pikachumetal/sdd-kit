@@ -1,0 +1,167 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\e2e-flaky.log
+<<< 1	$ npx playwright test --repeat-each=3
+2	Running 15 tests using 3 workers
+3	
+4	  ✘  3 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (6.1s)
+5	  ✘  9 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (5.9s)
+6	  ✘ 11 [chromium] › 0012-sum-row.spec.ts:4:5 › la fila de total suma la columna (36.0s)
+7	
+8	  1) [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda
+9	
+10	    Error: Timed out 5000ms waiting for expect(locator).toHaveText(expected)
+11	
+12	    Locator: getByTestId('cell-B2')
+13	    Expected string: "1.234,50 €"
+14
+
+>>> Glob: **/*.{ts,js,json}
+<<< e2e\0018-invoice-status.spec.ts
+e2e\0021-cell-format.spec.ts
+e2e\helpers.ts
+e2e\0012-sum-row.spec.ts
+e2e\0015-export-pdf.spec.ts
+package.json
+src\sheet\clipboard.ts
+server\api.js
+playwright.config.ts
+.docs\sdd\sdd-kit.json
+
+>>> Read: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('formatea una celda como moneda', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'B2', '1234.5');
+7	  await expect.poll(() => cellValue(request, 'demo', 'B2')).toBe('1234.5');
+8	  await page.getByTestId('cell-B2').click({ button: 'right' });
+9	  await page.getByRole('menuitem', { name: 'Formato moneda' }).click();
+10	  await expect(page.getByTestId('cell-B2')).toHaveText('1.234,50 €');
+11	});
+12	
+
+>>> Read: <run>\repo\e2e\0012-sum-row.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('la fila de total suma la columna', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'A1', '100');
+7	  await expect.poll(() => cellValue(request, 'demo', 'A1')).toBe('100');
+8	  await typeInCell(page, 'A2', '250');
+9	  await expect.poll(() => cellValue(request, 'demo', 'A2')).toBe('250');
+10	  await typeInCell(page, 'A3', '=SUMA(A1:A2)');
+11	  await expect(page.getByTestId('cell-A3')).toHaveText('350');
+12	});
+13	
+
+>>> Read: <run>\repo\e2e\helpers.ts
+<<< 1	import { APIRequestContext, Page } from '@playwright/test';
+2	
+3	export async function login(page: Page, path: string) {
+4	  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+5	}
+6	
+7	export async function typeInCell(page: Page, cell: string, text: string) {
+8	  await page.getByTestId(`cell-${cell}`).click();
+9	  await page.keyboard.press('Enter');
+10	  await page.keyboard.type(text);
+11	  await page.keyboard.press('Enter');
+12	}
+13	
+14	export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+15	  const res = await request.get(`http://localho
+
+>>> Read: <run>\repo\playwright.config.ts
+<<< 1	import { defineConfig } from '@playwright/test';
+2	
+3	export default defineConfig({
+4	  testDir: './e2e',
+5	  workers: 3,
+6	  use: { baseURL: 'http://localhost:5173' },
+7	});
+8	
+
+>>> Read: <run>\repo\server\api.js
+<<< 1	import http from 'node:http';
+2	
+3	// El portapapeles de la hoja vive en el servidor: se comparte entre pestañas del mismo usuario.
+4	const clipboard = new Map();
+5	const cells = new Map();
+6	
+7	const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
+8	const read = (req) => new Promise((resolve) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => resolve(b ? JSON.parse(b) : {})); });
+9	
+10	http.createServer(async (req, res) => {
+11	  const user = req.headers['x-user'] ?? 'anon';
+12	  if (req.url 
+
+>>> Bash: cd e2e && cat 0018-invoice-status.spec.ts 0015-export-pdf.spec.ts; cat ../package.json; cat ../src/sheet/clipboard.ts; git log --oneline | head
+<<< import { expect, test } from '@playwright/test';
+import { login } from './helpers';
+
+test('marca una factura como cobrada', async ({ page }) => {
+  await login(page, '/facturas');
+  await page.getByText('F-014').click();
+  await page.getByRole('button', { name: 'Marcar cobrada' }).click();
+  await expect(page.getByText('F-014 · Norte SL · 120 € · cobrada')).toBeVisible();
+});
+import { expect, test } from '@playwright/test';
+import { login } from './helpers';
+
+test('exporta la hoja a PDF', async ({ page }) => {
+  await login(page, '/hojas/demo');
+  const download = page.waitForEvent('download')
+
+>>> Bash: cd e2e && python - <<'E'
+import re
+h=open('helpers.ts').read()
+h=h.replace("import { APIRequestContext, Page } from '@playwright/test';","import { APIRequestContext, Page, TestInfo } from '@playwright/test';\n\n// Una hoja propia por ejecución del test: el servidor guarda las celdas en memoria y se comparte entre workers y repeticiones.\nexport function uniqueSheet(info: TestInfo) {\n  return `e2e_${info.workerIndex}_${info.repeatEachIndex}_${info.line}`;\n}")
+open('helpers.ts','w').write(h)
+for f,cells in (('0021-cell-format.spec.ts',0),('0012-sum-row.spec.ts',0)):
+    s=open(f).read()
+    s=s.replace("{ cellValue, login, typeInCell }","{ cellValue, login, typeInCell, uniqueSheet }")
+    s=s.replace("async ({ page, request }) => {\n","async ({ page, request }, testInfo) => {\n  const sheet = uniqueSheet(testInfo);\n")
+    s=s.replace("'/hojas/demo'","`/hojas/${sheet}`").replace("'demo'","sheet")
+    open(f,'w').write(s)
+E
+git diff --stat; cat 0012-sum-row.spec.ts | head -8
+<<<  e2e/0012-sum-row.spec.ts     | 11 ++++++-----
+ e2e/0021-cell-format.spec.ts |  9 +++++----
+ e2e/helpers.ts               |  7 ++++++-
+ 3 files changed, 17 insertions(+), 10 deletions(-)
+import { expect, test } from '@playwright/test';
+import { cellValue, login, typeInCell, uniqueSheet } from './helpers';
+
+test('la fila de total suma la columna', async ({ page, request }, testInfo) => {
+  const sheet = uniqueSheet(testInfo);
+  await login(page, `/hojas/${sheet}`);
+  await typeInCell(page, 'A1', '100');
+  await expect.poll(() => cellValue(request, sheet, 'A1')).toBe('100');
+
+>>> Bash: git add -A && git commit -q -m "test: hoja propia por ejecución en los E2E de celdas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -1
+<<< 756729f test: hoja propia por ejecución en los E2E de celdas
+
+=== RESULTADO (13 turnos, 0.1736343 $)
+Hecho el arreglo y el commit (`756729f`), pero **no lo he ejecutado ni lo he visto fallar antes**. No hay navegadores ni servidor, así que el ciclo RED→GREEN de la skill queda sin cumplir. La causa es una hipótesis firme, no una confirmación.
+
+**Causa probable.** Los tests `0012-sum-row` y `0021-cell-format` usan todos la misma hoja `demo` del mismo usuario. El servidor (`server/api.js`) guarda las celdas en un `Map` en memoria que comparten todos los workers. Con `--repeat-each=3` y 3 workers, varias copias del mismo test escriben a la vez en las mismas celdas (`B2`, `A1`–`A3`) y se pisan. Eso encaja con el log: `cell-B2` llega vacío y la suma se queda colgada hasta el timeout.
+
+**Cambio.** Añadí `uniqueSheet(testInfo)` en `e2e/helpers.ts`. Da una hoja propia por ejecución (`e2e_<worker>_<repetición>_<línea>`). Los dos specs la usan tanto en la URL como en las llamadas a la API. No toqué `0015-export-pdf`, porque espera `demo.pdf` y solo lee. Tampoco toqué `0018`, que no usa celdas.
+
+**Cómo lo comprobaría:**
+1. Levantar `npm run dev` y `npm run api`.
+2. Ejecutar `npx playwright test --repeat-each=10 --workers=3`, más exigente que la pasada del log, y comprobar que todo pasa.
+3. Para confirmar la causa, ejecutar el mismo comando sobre el commit anterior (`5c4c2ec`). Tiene que fallar de forma parecida al log.
+
+**Riesgos:**
+- No he visto el código de `/hojas/:id`. Si la app solo acepta hojas que ya existen, la URL con hoja nueva dará 404. En ese caso hay que crear la hoja antes del test o usar un usuario distinto por worker.
+- Si sigue fallando con hojas aisladas, la causa sería otra. El portapapeles de `clipboard.ts` está compartido por usuario, y el timeout de 36 s de `0012` podría ser lentitud del servidor, no estado compartido.
+
+**Aviso del kit.** El proyecto pide sdd-kit 3.0.0 y esta sesión cargó la 2.3.4. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

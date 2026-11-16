@@ -1,0 +1,73 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -80; echo ---; cat package.json 2>/dev/null; ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+---
+{"type": "module"}
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat src/app.js; echo ---; cat PRODUCT.md ROADMAP.md README.md; echo ---; cat .docs/sdd/steering/*.md; echo; cat .docs/sdd/sdd-kit.json; head -40 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.11999640000000002 $)
+Lo que he visto en el código (`src/app.js`, `PRODUCT.md`, `operations.md`):
+
+- `bookings` es un array en memoria con una reserva sembrada a mano. `reservar` ni siquiera añade nada: devuelve un texto fijo. Y `cancelar` tampoco borra nada.
+- Es una CLI de un solo uso. Cada comando es un proceso nuevo, así que hoy las reservas se pierden en cada comando, no solo al reiniciar. Por eso la persistencia es previa a `reservar` y `cancelar`: sin ella no pueden funcionar de verdad.
+- Los límites de partida son un único usuario, Node 22 y cero dependencias externas (según `operations.md`). Lo que no está escrito es si tu servidor puede lanzar dos comandos a la vez, por ejemplo un cron junto a ti.
+
+```text
+CLI (proceso efimero) --> leer almacen --> operar --> escribir almacen
+                              ^                            |
+                              +------ sobrevive a reinicios +
+```
+
+❓ **¿Dónde guardamos las reservas?**
+Hay un solo usuario, el volumen es mínimo y no puede haber dependencias externas.
+
+1️⃣ **Fichero JSON** (`reservas.json`, escritura atómica con fichero temporal y `rename`). No necesita nada que no traiga Node. Se puede leer y editar a mano. Si dos procesos escriben a la vez, el último pisa al primero, y con un solo usuario eso casi no pasa.
+2️⃣ **`node:sqlite`** (viene con Node 22, pero es experimental). Da transacciones y consultas por día y sala. Tiene más peso del necesario para este volumen y depende de una API que aún puede cambiar.
+3️⃣ **Fichero de líneas (JSONL)**. Cada reserva se añade al final. Aguanta mejor las escrituras concurrentes, pero cancelar obliga a reescribir el fichero o a guardar marcas de borrado.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no se admiten dependencias, así que es lo más sencillo que cumple. A cambio, no hay protección ante escrituras simultáneas. Si eso llegara a importar, el paso a SQLite se hace dentro de una sola función de carga y guardado.
+
+¿Te encaja el JSON, o tienes algo concurrente en el servidor (cron, avisos de la 0008) que escriba a la vez?
+
+Quedan pendientes para después: la ruta del fichero (junto al proyecto o en un directorio de datos del servidor), y si la reserva sembrada de Norte desaparece o pasa a ser el contenido inicial.

@@ -1,0 +1,37 @@
+--- [13]
+Ya he leído la spec, la configuración y el código de cancelar. Te la presento, pero antes de aprobarla hay tres cosas que no cuadran.
+
+**Perfil:** `delegate`, que sale de `sdd-kit.json` del proyecto (no hay `sdd-kit.local.json`). Ejecución fijada a `native`. Modo full.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro. Se decidió contigo en la entrevista.
+2. El listado de canceladas enseña sala, día, motivo y quién canceló.
+3. Sin review de spec.
+
+### Lo que no cuadra al contrastar la spec con el código
+
+- **Falta de dónde sale «quién canceló» (decisión 2).** Ni las reservas ni el comando tienen usuario: `src/app.js` guarda `{ room, day, slot, status }` y `cancelar <sala> <día>` no recibe a nadie. El THEN «Norte lun — sala ocupada — Ana» no se puede producir tal cual. Hay que decidir de dónde sale: un `--por <nombre>`, un usuario de la sesión o del entorno, o quitarlo del alcance. Es una decisión de producto, así que no la he tomado yo.
+- **El primer requisito cambia uno que ya existe, aunque esté como `ADDED`.** Hoy `cancelar Norte lun` responde «cancelada Norte lun», con su test en `test/cancel.test.js:6`. La spec cambia la respuesta y exige `--motivo`, así que es un `MODIFIED` de `bookings`. Además falta el escenario de `cancelar Norte lun` sin `--motivo`: ¿error, o «otro» por defecto?
+- **La decisión 3 se justifica con una señal que la spec no tiene.** Cita «MODIFIED» cuando el delta solo declara `ADDED`. Contando bien salen MODIFIED y datos (el motivo, y quizá el usuario, se guardan con la reserva): 2 señales, y la review sigue siendo **ninguna** con la rúbrica. Si se confirma, la línea quedaría así: `Review de spec propuesta: ninguna — señales: MODIFIED (cancelar), datos (motivo en la reserva) · tamaño: ~40 líneas en 2 ficheros`.
+
+## Resumen de la spec
+
+- **Intent:** hoy una cancelación no deja rastro. Se quiere saber el motivo de cada una.
+- **Scope:** `cancelar <sala> <día> --motivo <motivo>` y un comando nuevo, `canceladas`. Las anulaciones del responsable de sala no entran: son la 0011.
+- **Approach:** el motivo se guarda con la reserva cancelada, y `canceladas` lista las reservas en estado cancelada. Las anuladas (`voided`) se quedan fuera, en línea con la 0011.
+- **Delta en `bookings`:**
+  - Con un motivo de la lista, `cancelar` responde «cancelada Norte lun (sala ocupada)».
+  - Con uno que no está en la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - `canceladas` responde «Norte lun — sala ocupada — Ana».
+- **Dónde se prueba:** en `test/cancel.test.js`, por la salida de los comandos.
+
+Te recomiendo **Cambios**: con lo de «quién» sin resolver, el plan tendría que inventárselo. Dime de dónde sale el usuario y qué pasa sin `--motivo`, y corrijo la spec (el `MODIFIED`, el escenario nuevo y la decisión 3) antes de volver a pedirte la aprobación.
+
+Opciones:
+- **Cambios** (recomendada): me dices lo de «quién» y lo de sin `--motivo`.
+- **Apruebo**: la spec queda como está.
+- **Apruebo; escribe el plan y, como sale Native, para antes de la Task 1 para que bajes la sesión a gama media.** En Native la sesión implementa todas las tasks, y eso va bien con Sonnet en effort medium. Después de aprobar no hay otra parada donde puedas cambiar el modelo.
+
+¿Apruebas la spec o quieres cambios?
+

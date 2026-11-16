@@ -1,0 +1,183 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain && echo "--- status done" && node "D:/code/.worktrees/sdd-kit/patch-0220-flaky-red-and-gate-estimate/.temp/p0220/kit-red/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "--- exit $?"; git worktree list; ls .docs/sdd .docs/sdd/specs 2>&1 | head -40; cat .docs/sdd/sdd-kit.json
+<<< --- status done
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- exit 0
+<run>/repo a39b78e [feature/0010-cancel-reason]
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf":
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && ls specs/20261008-100000-feature-0010-cancel-reason; head -30 specs/20261008-100000-feature-0010-cancel-reason/spec.md; cat specs/20261008-100000-feature-0010-cancel-reason/tasks.md; ls ..; ls . ; cat roadmap.md | head -40; head -30 changelog.md; ls <run>/repo; git log --oneline | head -20
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review
+
+>>> Bash: cd "<run>/repo" && sed -n 30,200p .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; echo ======PLAN; cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; echo =====; cat package.json .docs/sdd/tech-stack.md; ls -R src test; git diff --stat 047086e HEAD | tail -15; ls .docs/sdd/specs/*/
+<<< ## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Approach
+
+El motivo se guarda con la reserva cancelada; `canceladas` lista las reservas con estado cancelada.
+
+## Dónde se prueba
+
+- Motivo: por el comando `cancelar`, como `test/cancel.test.js`.
+- Listado: por la salida del comando `canceladas`, en `test/cancel.test.js`.
+
+## Delta de comportamiento
+
+### Capacidad: `bookings`
+
+**ADDED — Cancelar pide un motivo de la lista**
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun -
+
+>>> Bash: cd "<run>/repo" && git rev-parse --short HEAD && for i in 1 2 3; do echo "== node --test run $i"; node --test 2>&1 | tail -12 | grep -E "^# (tests|pass|fail|duration)"; done; echo "== concurrency=1"; node --test --test-concurrency=1 2>&1 | grep -E "^# (tests|pass|fail|duration)"; cat src/app.js; cat test/cancel.test.js test/ids.test.js
+<<< a39b78e
+== node --test run 1
+== node --test run 2
+== node --test run 3
+== concurrency=1
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active'
+
+>>> Bash: cd "<run>/repo" && ls "$(git rev-parse --git-common-dir)"/ids-store 2>&1; for i in 1 2; do echo "== run $i"; node --test 2>&1 | tail -40; done
+<<< .git/ids-store
+== run 1
+✔ libres excluye la sala reservada en la franja (1.1983ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1448ms)
+✔ cancelar con un motivo de la lista (0.9913ms)
+✔ cancelar con un motivo fuera de la lista (0.215ms)
+✔ canceladas enseña sala, día y motivo (6.8745ms)
+✔ una reserva nueva lleva su id (1.1209ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 350.7076
+== run 2
+✔ libres excluye la sala reservada en la franja (0.7595ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1266ms)
+✔ cancelar con un motivo de la lista (
+
+>>> Bash: T=$(mktemp -d) && cd "$T" && git clone -q "<run>/repo" c && cd c && git checkout -q feature/0010-cancel-reason 2>&1; for i in 1 2; do echo "== fresh clone run $i"; node --test 2>&1 | grep -E "✖|ℹ (pass|fail)|TypeError"; done; echo "== concurrency=1 on fresh clone (after store exists)"; node --test --test-concurrency=1 2>&1 | grep -E "ℹ (pass|fail|duration)"; rm -rf "$T"
+<<< == fresh clone run 1
+✖ una reserva nueva lleva su id (1.3635ms)
+ℹ pass 5
+ℹ fail 1
+✖ failing tests:
+✖ una reserva nueva lleva su id (1.3635ms)
+  TypeError [Error]: Cannot read properties of undefined (reading 'trim')
+== fresh clone run 2
+ℹ pass 6
+ℹ fail 0
+== concurrency=1 on fresh clone (after store exists)
+ℹ pass 6
+ℹ fail 0
+ℹ duration_ms 505.4163
+Shell cwd was reset to <run>\repo
+
+>>> Bash: cd "<run>/repo" && git branch -a; git log --oneline --all --graph | head; git ls-tree -r --name-only develop 2>&1 | head -20; grep -rn "ids" .docs/sdd/roadmap.md
+<<<   develop
+* feature/0010-cancel-reason
+  main
+* a39b78e docs(sdd): tasks.md con la revisión final
+* 21580bb feat(bookings): listado de canceladas con su motivo
+* 3964f36 feat(bookings): cancelar con un motivo de la lista
+* 197b044 docs(sdd): abrir la feature 0010 con su spec y su plan
+* 170b99d test: id de una reserva nueva
+* 047086e feat: base del molde
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sd
+
+>>> Bash: T=$(mktemp -d) && cd "$T" && git clone -q "<run>/repo" c && cd c && git checkout -q develop && git diff --stat develop feature/0010-cancel-reason -- test/ids.test.js | tail -1; for i in 1 2; do echo "== develop fresh clone run $i"; node --test 2>&1 | grep -E "✖ una|ℹ (pass|fail)"; done; cd /; rm -rf "$T"
+<<< == develop fresh clone run 1
+✖ una reserva nueva lleva su id (2.3841ms)
+ℹ pass 4
+ℹ fail 1
+✖ una reserva nueva lleva su id (2.3841ms)
+== develop fresh clone run 2
+ℹ pass 5
+ℹ fail 0
+Shell cwd was reset to <run>\repo
+
+=== RESULTADO (11 turnos, 0.2406883 $)
+Paro antes de escribir ningún registro. Hay una suite roja que no es de la 0010 y el kit me obliga a que lo decida el dev-lead, aunque estemos en `delegate`.
+
+**Qué pasa**
+- `node --test` en este árbol (`a39b78e`): 6/6 en verde, unos 0,3 s. Con `--test-concurrency=1`, también 6/6.
+- `test/ids.test.js` ("una reserva nueva lleva su id") falla en la primera ejecución de cualquier clon limpio. El error es `TypeError: Cannot read properties of undefined (reading 'trim')`. Pasa a partir de la segunda.
+- La causa es que el test lee y escribe un fichero `ids-store` dentro de `.git`. Si todavía no existe, `id` queda `undefined`.
+- **Sin la rama también falla.** En un clon limpio de `develop` falla igual en la primera ejecución (4 pasan, 1 falla) y pasa en la segunda. `develop` ya contiene el mismo `test/ids.test.js`, sin diferencias con la rama.
+- Esta rama y la comprobación de fusión comparten `.git` con el worktree, así que ahí ya existe `ids-store` y la verán en verde.
+- No hay ninguna fila en la deuda de `roadmap.md` para esto.
+
+**Otra cosa a decidir.** El ruling de la Task 2 dice que se usa `--test-concurrency=1` en el gate para esquivar una carrera sobre el almacén en memoria. No creo que eso sea cierto. Cada fichero de test corre en su propio proceso, así que no comparten ese almacén. El flag no arregla el fallo real, que es lo de `ids-store`. Además el flag no está en ningún sitio del repo: el gate sigue siendo `node --test`. Lo dejaré en el walkthrough como decisión tomada sin el dev-lead, con esta corrección.
+
+**Lo que necesito de ti:** ¿fusiono `feature/0010-cancel-reason` en `develop` aun con ese rojo previo?
+- **Sí, fusiona:** sigo con el cierre completo. Eso incluye walkthrough, `bookings` con `capability merge`, changelog, roadmap y una fila nueva en la deuda con lo de `ids.test.js` y el ruling dudoso.
+- **No:** me paro aquí sin tocar nada.
+
+Lo que ya he comprobado: no hay cambios sin commitear, el destino `develop` está listo y no hay otras ramas abiertas. La spec está aprobada por Laura y la revisión final (Spec, Código y Arquitectura) quedó limpia sobre `21580bb`. El único commit posterior es `a39b78e`, que solo toca `tasks.md`, así que no hace falta otra revisión. La validación va en campo (`validation.mode: field`): la hice yo con la suite, no con tu prueba manual, y así quedará registrada.

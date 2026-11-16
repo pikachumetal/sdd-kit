@@ -1,0 +1,149 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | tail -60; echo ----; grep -n -i -A40 "testing" .docs/sdd/operations.md | head -80; git log --stat --oneline -3; ls
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ bookings:test (4 passed, 1 failed)
+✔ libres excluye la sala reservada en la franja (0.8289ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1401ms)
+✔ cancelar con un motivo de la lista (0.7996ms)
+✔ cancelar con un motivo fuera de la lista (0.1152ms)
+✖ canceladas enseña sala, día y motivo (5.2379ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.268
+
+✖ failing tests:
+
+test at test\cancel.test.js:13:1
+✖ canceladas enseña sala, día y motivo (5.2379ms)
+  AssertionErro
+
+>>> Bash: cat gate.json package.json; cat scripts/gate.mjs | head -80; ls test .docs 2>&1; find . -name operations.md -not -path "./node_modules/*"; git diff --stat 7529bc9~1 HEAD
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+{"type": "module"}
+#!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+fu
+
+>>> Bash: ls -R .docs | head -30; grep -rn -i -B2 -A25 "testing" .docs/sdd/*.md | head -80; git diff --name-only 7529bc9 fef60ee
+<<< .docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+
+.docs/sdd/steering:
+grep: .docs/sdd/*.md: No such file or directory
+src/app.js
+
+>>> Bash: ls .docs/sdd/steering; grep -n -i -A30 "testing" .docs/sdd/steering/operations.md; git diff 7529bc9 fef60ee; git diff --name-only $(git merge-base develop HEAD 2>/dev/null || echo main) HEAD; git branch -a
+<<< architecture.md
+constitution.md
+debt.md
+grep: .docs/sdd/steering/operations.md: No such file or directory
+diff --git a/src/app.js b/src/app.js
+index 1e9b87f..10d99e4 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,10 +32,15 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function cancelledList() {
++  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} — ${b.reason}`).join('\n');
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && p
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; grep -rn -i "suites\|sin filtro\|gate" .docs/sdd/steering .docs/sdd/specs/*0010*/plan.md | head -20
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd/steering/constitution.md:4:2. Tests antes que código. Gate de cierre: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` en verde.
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md:52:- [ ] Gate de cierre: `node --test`
+
+>>> Bash: node --test --test-name-pattern="canceladas enseña sala, día y motivo" test/cancel.test.js 2>&1 | grep -E "^ℹ (tests|pass|fail)|✖|✔"; echo "== gate"; node scripts/gate.mjs run bookings:test rooms:test --affected --base 7529bc9; echo exit=$?; echo "== rooms"; node scripts/gate.mjs run rooms:test; echo exit=$?; node --test test/rooms.test.js 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< ✖ canceladas enseña sala, día y motivo (1.7619ms)
+ℹ tests 1
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ canceladas enseña sala, día y motivo (1.7619ms)
+== gate
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 0 failed)
+Tasks: 1 completed, 1 skipped
+exit=0
+== rooms
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit=0
+ℹ tests 1
+ℹ pass 1
+ℹ fail 0
+
+>>> Bash: node --test --test-name-pattern="canceladas enseña sala, día y motivo" test/cancel.test.js 2>&1 | grep -A8 "AssertionError"; cat test/cancel.test.js; node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (tests|pass|fail)|✖"
+<<<   AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + ''
+  - 'Norte lun — sala ocupada'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:14:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar con un motivo de la lista', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun
+
+=== RESULTADO (10 turnos, 0.17254550000000002 $)
+El gate de la 0010 está en verde tras el arreglo, con una salvedad: el test que falló no pasa si se ejecuta solo.
+
+La línea `Gate:` para el walkthrough:
+
+```
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base 7529bc9` · `node scripts/gate.mjs run rooms:test` → tras el rojo en 7529bc9, arreglo fef60ee: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja)
+```
+
+- **Por qué dos comandos:** con `--base 7529bc9` el filtro salta `rooms:test`, porque `fef60ee` no toca sus inputs. En la pasada roja tampoco corrió, porque depende de `bookings:test`. Por eso lo ejecuté aparte, sin filtro.
+- **El test que falló:** `canceladas enseña sala, día y motivo`, ejecutado solo, falla con `''` en lugar de `'Norte lun — sala ocupada'`. Depende del estado que deja el test anterior (`cancelar con un motivo de la lista`). En su fichero, `test/cancel.test.js`, pasa 3/3, y en `bookings:test` completo pasa 5/5. El arreglo es correcto, pero el test está acoplado al orden. No lo he tocado. Si quieres, lo dejo apuntado en `debt.md` o lo arreglo en la propia feature.
+- **Dónde salió el comando del gate:** de `constitution.md`. En `.docs/sdd/steering/` no hay `operations.md`, así que no hay «Suites» ni «Sin filtro» declarados. El gate del plan, `node --test`, no coincide con el de la constitución y me guié por esta.
+- **Alcance:** esto solo cubre el gate. El resto de `sdd-verify` no lo he hecho, es decir, la revisión final por ejes y el `Revisión final:` de `tasks.md`.

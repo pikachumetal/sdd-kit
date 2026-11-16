@@ -1,0 +1,68 @@
+--- [4]
+Ahora: leer el contexto SDD del proyecto. Queda: localizar el fallo y clasificarlo, ~3 min.
+
+--- [6]
+Contexto leído. Ahora miro el código que cancela, solo para clasificar.
+
+--- [12]
+Ahora: clasificar el cambio. Queda: que confirmes el carril; luego rama, test que reproduce el fallo, arreglo y verificación, ~20 min.
+
+🦆 **Qué pasa:** `cancelar Norte mar` busca la reserva activa de Norte sin mirar el día. Como solo hay una, la del lunes, la encuentra, la cancela y contesta «cancelada Norte mar». Debería contestar «sin reserva Norte mar» y no tocar nada. `findBooking(room, day)` en `src/app.js` recibe `day` y no lo usa.
+
+**Carril: patch.** El fallo es determinista y la causa está en el código, no en el informe. El arreglo también es único: comparar `b.day === day`. No hay que decidir nada visible.
+
+- **Mismo defecto en `anular`.** `voidBooking` usa la misma `findBooking`, así que `anular Norte mar` también anularía la del lunes. El mismo arreglo lo cubre y lo incluiría en el patch con su test.
+- **Parecido al patch 0007.** Aquel arreglo corrigió la comparación solo por hora. Esta es otra comparación que falta, la del día.
+- **Los tests actuales no lo ven.** El de «sin reserva» usa `Sur mar`, que no tiene ninguna reserva activa. Hace falta un test nuevo con `Norte mar` mientras existe `Norte lun`.
+
+**Estimación:** unos 0,5 h, como el 0007.
+
+**Perfil:** `delegate`, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+
+¿Lo abro como patch (recomendado) o prefieres otro carril?
+
+- **Sí, patch.** Creo la rama y la carpeta con su id y escribo primero el test que falla.
+- **Feature.** Solo si quieres cambiar algo más que el bug.
+
+--- [16]
+Reproducido: `cancelar Norte mar` cancela la reserva del lunes, y `anular Norte mar` también. Id reservado: 0012. Creo la rama y la carpeta, y escribo el test que falla.
+
+--- [20]
+RED confirmado (2 fallos). Escribo `patch.md` con la estimación antes del fix y aplico el arreglo.
+
+--- [28]
+Mi reescritura cambió los saltos de línea y el reemplazo no se aplicó. Restauro el fichero y lo edito con precisión.
+
+--- [34]
+RED real sin el fix (`cancelada Norte mar`), verde con el fix, lint limpio. Compruebo `anular` por la línea de comandos, completo `patch.md` y commiteo.
+
+--- [37]
+Arreglado y commiteado. Sigue el cierre.
+
+--- [40]
+Ahora: validación (paso 0 del cierre). Queda: tu prueba; después `patch.md` final, changelog, roadmap, estimación y merge, ~5 min.
+
+El fix está en `feature/0012-cancel-day` (commit `0b8daae`). No fusiono hasta que lo valides. El proyecto no declara `validation.mode: field`, así que cuenta como `manual`.
+
+**Lo que he verificado yo**
+- Con el fix quitado, el test nuevo falla: `cancelar Norte mar` devolvía `cancelada Norte mar`. Con el fix pasa.
+- `node --test && node scripts/lint.mjs`: 4/4 en verde y lint sin hallazgos.
+- Por la línea de comandos, `cancelar Norte mar` y `anular Norte mar` dan `sin reserva Norte mar`. `cancelar Norte lun` y `anular Norte lun` siguen funcionando.
+
+**Guion de pruebas** (cada comando en un proceso nuevo, porque las reservas viven en memoria)
+
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js anular Norte mar` → debe decir `sin reserva Norte mar`.
+3. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+4. `node src/app.js cancelar Sur mar` → debe decir `sin reserva Sur mar`.
+
+**No sé cómo se ve en tu uso real.** La reserva existente es de Norte el lunes, y el fallo no reproduce con otras salas ni con otro día.
+
+**Fuera del patch.** `libres` filtra por franja y no por día. No lo he tocado.
+
+¿Qué has probado?
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar, a cargo del dev-lead`
+- `No funciona`
+

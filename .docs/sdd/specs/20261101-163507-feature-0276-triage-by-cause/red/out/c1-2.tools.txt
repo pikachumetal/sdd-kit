@@ -1,0 +1,64 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo ----; cat .docs/sdd/steering/debt.md; echo ----; cat ROADMAP.md; echo ----; git branch --all; ls .docs/sdd
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Copiar el molde de una campaña falla con `ENOENT` en una carpeta que existe | [ticket](../../../docs/tickets/2026-10-20-copia-molde.md) | 2026-10-20 |
+| `/tmp` no existe en la sesión de Git Bash y el script de informes no arranca | [ticket](../../../docs/tickets/2026-10-22-tmp.md) | 2026-1
+
+>>> Bash: cd docs/tickets 2>/dev/null && ls && for f in 2026-10-20-copia-molde.md 2026-10-22-tmp.md 2026-10-05-salidas.md; do echo "=== $f"; cat $f; done; cd - >/dev/null; ls; git ls-files | head -50
+<<< 2026-10-05-salidas.md
+2026-10-20-copia-molde.md
+2026-10-22-tmp.md
+=== 2026-10-20-copia-molde.md
+# Copiar el molde falla con `ENOENT`
+
+Al arrancar el segundo sujeto, `cp` dio `ENOENT: no such file or directory` sobre `node_modules\.pnpm\vitest@3.2.4\node_modules\vitest\dist\chunks\runner.js`, y el fichero existe en el molde. Sucede solo en la copia que cuelga del scratchpad de la sesión de la feature 0044, cuyo nombre de worktree es largo: la ruta de destino pasa de 260.
+
+Perdí 40 minutos mirando permisos y Defender. Con la copia colgando de `D:\r` no falla.
+=== 2026-10-22-tmp.md
+# `/tmp` no ex
+
+>>> Bash: grep -rn "tmp\|out_path\|RUNS_DIR\|DRY_RUN" --include=* -I . 2>/dev/null | grep -v "^./.git/" | grep -v "^./docs/tickets" | head; cat docs/qa/2026-10-12-informe.md | head -30; ls -d /tmp; 
+<<< ./.docs/sdd/steering/debt.md:8:| `/tmp` no existe en la sesión de Git Bash y el script de informes no arranca | [ticket](../../../docs/tickets/2026-10-22-tmp.md) | 2026-10-22 |
+./.docs/sdd/steering/debt.md:14:| Las salidas de `DRY_RUN=1` no aparecen en `out/` | [ticket](../../../docs/tickets/2026-10-05-salidas.md) | Medio | 2.º caso | 2026-10-05 |
+# Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también 
+
+=== RESULTADO (6 turnos, 0.1621474 $)
+He leído `debt.md`, `ROADMAP.md`, los tres tickets y las ramas (solo existe `develop`). Hay dos ítems en «Por triar». No he escrito nada: en perfil `delegate` primero te lo propongo y espero tu decisión.
+
+**Qué he podido comprobar:** ni el script de informes ni el lanzador (`out_path`, `RUNS_DIR`) están en este repo, así que no he podido reproducir ninguno de los dos casos aquí. La evidencia es lo que cuentan los tickets.
+
+**Propuesta (agrupada por causa)**
+
+1. **Copiar el molde falla con `ENOENT`** (2026-10-20) → **Lista**, junto con el ítem de «En espera» `DRY_RUN=1` (2026-10-05).
+   - Causa común: la ruta del scratchpad de un worktree con nombre largo se hace demasiado larga. En el primer ticket pasa de 260 y `cp` falla. En el segundo llega a 152 y `out_path` la descarta en silencio.
+   - Con eso, el segundo ticket tiene su «2.º caso» y los dos pasan a «Lista».
+   - **Evidencia:** los enlaces a los dos tickets. En cada uno, la misma operación desde `D:\r` funciona.
+   - **Destino:** `sin fila`. El código afectado (`cp` del molde y el lanzador) no está en este repo. El apaño es usar un directorio corto.
+   - Impacto: Medio. Se perdieron 40 y 25 minutos.
+   - Juicio mío: los mecanismos son distintos (límite de Windows frente a un límite del lanzador), aunque la causa de fondo sea la misma. Si no lo ves como el mismo defecto, el molde se queda en «En espera» con «Falta» `reproducirlo`. El de `DRY_RUN` seguiría esperando su 2.º caso.
+
+2. **`/tmp` no existe en Git Bash** (2026-10-22) → **Descartadas**.
+   - Motivo: la causa es la limpieza de temporales de Windows, un problema del entorno local. Se resolvió con `mkdir -p /tmp`, el script no está en el repo y no hay forma de reproducirlo.
+   - Si vuelve a pasar, entra en «Por triar» como fila nueva con los dos orígenes.
+   - Alternativa: «En espera» con «Falta» `reproducirlo`.
+
+No hace falta reservar ids ni crear filas en `ROADMAP.md`, porque el único «Destino» es `sin fila`.
+
+¿Confirmas esta propuesta o prefieres alguna alternativa? Con tu «vale», o con un «decide tú», lo escribo, paso `sdd roadmap check` y lo publico en `develop`.

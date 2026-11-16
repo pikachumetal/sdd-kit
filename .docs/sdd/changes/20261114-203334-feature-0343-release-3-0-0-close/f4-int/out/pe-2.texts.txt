@@ -1,0 +1,82 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y arrancar la entrevista de diseño, ~3 min.
+
+--- [16]
+Ahora: abro la entrevista de diseño de la feature. Queda: unas pocas preguntas, el enfoque, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He reservado el id 0010 y creado la rama `feature/0010-exportar-reservas-csv` desde `develop`. La feature no tenía fila en el roadmap, y la 0009 ya estaba cogida.
+
+**Lo que he entendido, corrígeme:**
+- Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV.
+- El motivo es que el responsable de cada sala las cuadra los lunes en su hoja de cálculo, así que el CSV tiene que abrirse bien ahí.
+- Por ahora una reserva (`src/app.js`) solo tiene `room`, `day` (`'lun'`) y `slot` (`'10:00-12:00'`), sin fecha concreta. Eso condiciona qué puede ir en las columnas.
+
+❓ Los lunes, cuando el responsable de una sala cuadra esas reservas en su hoja, ¿qué compara con qué y qué busca encontrar?
+
+--- [18]
+Anotado: lo que compara el responsable y lo que busca queda **pendiente** en la spec. No lo invento. Sin saberlo, el CSV será lo más neutro posible: todas las reservas de la sala, una por fila, sin cálculos añadidos.
+
+Hay una decisión que sí cambia lo que ve quien lo abre, y es del producto: el separador de columnas.
+
+❓ **Separador del CSV**
+Una hoja de cálculo en castellano (Excel o LibreOffice con configuración regional de España) espera `;` como separador, porque la coma es el separador decimal. Con `,` suele abrir todo apretado en la primera columna. Los programas en inglés esperan lo contrario. No lo he comprobado en tu hoja concreta: es lo habitual, no una certeza.
+
+1️⃣ **Punto y coma (`;`)**
+`salas exportar Norte` imprime:
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Se abre en columnas con doble clic en una hoja en castellano. Si la hoja está configurada en inglés, saldrá todo en una columna.
+
+2️⃣ **Coma (`,`)**
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Es el CSV «estándar» y lo leen bien las herramientas en inglés. En una hoja en castellano hay que importarlo indicando el separador.
+
+3️⃣ **Elegible con una opción**
+`salas exportar Norte` usa `;` y `--coma` cambia a `,`. Cubre los dos casos, pero añade una opción que mantener y probar.
+
+➡️ **Recomiendo 1️⃣**, porque el responsable abre el fichero cada lunes y con `;` no tiene que importar nada si su hoja está en castellano. A cambio, el fichero no sirve tal cual para una herramienta en inglés.
+
+¿Cuál eliges?
+
+--- [46]
+Estoy terminando el repaso de coherencia: repito la fusión del delta tras mis correcciones y luego te presento la spec para aprobarla.
+
+--- [48]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación; después escribo el plan y paso a implementar, ~10 min.
+
+La spec está en `.docs/sdd/changes/20261116-154116-feature-0010-exportar-reservas-csv/spec.md`. La fusión del delta en una copia temporal da `Capacidades válidas: 1`, y el `capabilities/` del repo no cambia.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala a una hoja de cálculo. Con esto, `exportar Norte` imprime una tabla en CSV con una fila por reserva (`Norte;lun;10:00-12:00`), separada por `;` para que una hoja en castellano la abra ya en columnas. Se guarda con `exportar Norte > norte.csv`. No cambia ningún otro comando.
+
+**No he despachado revisores.** Esta sesión no tiene herramienta para lanzar subagentes. El rubric pedía dos (capacidad nueva y un formato de fichero que consume otra herramienta). Revisé la spec yo mismo con los siete puntos y corregí tres cosas. No es una revisión independiente. Los detalles están en «Hallazgos de la review» de la spec.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `exportar <sala>`, como `libres`, `reservar` y `cancelar`.
+2. Sale por la salida estándar y se guarda con `> norte.csv`. No escribe a un fichero.
+3. Cabecera `sala;dia;franja` y una fila por reserva, en el orden registrado. `dia` va sin tilde porque no hay BOM. La columna `sala` va siempre, para poder juntar CSV de varias salas.
+4. Fin de línea `\n`, sin `\n` final y sin BOM UTF-8. Si algún día hay una sala con tilde, una hoja en castellano podría mostrarla mal.
+5. Un campo con `;`, `"` o salto de línea sale entre comillas dobles. La franja es texto libre, así que un `;` dentro rompería las columnas.
+6. El nombre de sala se compara exacto y con mayúsculas, como `libres`: `norte` no es `Norte`.
+7. Sala sin reservas: sale solo la cabecera. Sala que no existe: `sala desconocida: Oeste`. Sin sala: `falta la sala: uso exportar <sala>`. Salen por la salida estándar con código 0, como el resto de respuestas de `run`.
+8. Se exportan todas las reservas de la sala, sin filtro. Lo que el responsable compara cada lunes quedó **pendiente**, porque no lo sabes y un filtro sería inventarlo.
+9. Capacidad nueva `booking-export`. No declaro «Reglas de la capacidad»: la constitution no tiene «Reglas de producto» y no invento valores.
+10. Enfoque: una función pura `toCsv` en `src/app.js`, frente a un módulo `src/csv.js` o a generarlo a mano dentro de `run`.
+
+Lo tuyo, con tus frases, está en «Decisiones tomadas con el dev-lead»: el separador `;` y para qué es.
+
+Validación al cerrar: la haces tú, abriendo el CSV en la hoja del responsable.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

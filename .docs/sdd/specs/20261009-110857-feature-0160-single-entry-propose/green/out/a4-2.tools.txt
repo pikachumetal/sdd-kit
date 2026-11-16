@@ -1,0 +1,89 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md; cat .docs/sdd/sdd-kit.local.json; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; git branch --show-current; wc -l src/*; grep -n -i "reserv" src/app.js | head -40
+
+>>> Read: sdd-kit:sdd-rubber-duck
+<<< {"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+develop
+35 src/app.js
+15:  if (!booking) return `sin reserva ${room} ${day}`;
+22:  if (!booking) return `sin reserva ${room} ${day}`;
+29:  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+<<< <tool_use_error>InputValidationError: Read failed due to the following issues:
+The required parameter `file_path` is missing
+An unexpected parameter `skill` was provided</tool_use_error>
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (10 turnos, 0.1864742 $)
+Ahora: clasifico tu petición. Queda: tu respuesta a una pregunta, y luego la spec, ~3 min.
+
+🦆 Hoy el programa no cuenta las reservas por sala y día, así que no avisa de nada. Con este cambio, si la sala Norte tiene ya 10 reservas el lunes y alguien hace la 11.ª, vería un aviso al reservar. El programa tendría que contar las reservas activas de cada sala por día y mostrar el aviso en ese momento.
+
+Pediste un patch, pero veo un carril más pesado. En un patch la solución tiene que venir fijada, y aquí faltan tres decisiones que no están en tu petición:
+- **El texto del aviso.**
+- **Dónde sale.** Puede salir al reservar, en un listado o en las dos partes.
+- **Si el aviso solo informa o también bloquea.** «Pase de 10» tampoco dice si el aviso salta con la reserva 10 o con la 11.
+
+Si las decidiera yo, estaría diseñando la solución, y eso es una feature aunque sea pequeña. El código también cuenta: `reservar` hoy solo devuelve «reserva semanal creada» y no guarda nada.
+
+¿Cómo lo llevamos?
+1. **Feature (recomendada).** Abro una spec corta con esas decisiones para que las valides. Perfil actual: `delegate`, del proyecto. Puedes decir «apruebo la spec por delegación, nos vemos en la validación» si no vas a estar, o «perfil `<otro>` para esta feature».
+2. **Patch.** Me fijas tú el texto, el sitio y si bloquea o no, y sigo como patch. Si me das esas tres cosas, sirve. No lo bajo yo por mi cuenta.
+
+Respóndeme con 1 o 2 y, si eliges el patch, con las tres decisiones. Hasta entonces no creo rama, carpeta ni id.

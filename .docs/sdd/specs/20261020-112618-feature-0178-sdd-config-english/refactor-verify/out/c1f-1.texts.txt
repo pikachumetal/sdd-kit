@@ -1,0 +1,71 @@
+--- [3]
+Ahora: retomo tras la revisión final de la 0010. Queda: leer los informes, cerrar la revisión y pasar a la validación.
+
+--- [11]
+Con `review.minors: fix`, el Minor también entra en la pasada de fix. Primero los tests en RED.
+
+--- [15]
+El test de trim chocaría con la reserva ya cancelada por el primer test; uso una sala sin reserva para que pasar la validación del motivo se vea como «sin reserva».
+
+--- [18]
+RED→GREEN confirmado, y el test de canceladas pasa también solo. Commit, ledger y `tasks.md`.
+
+--- [21]
+Hay que lanzar la única re-revisión sobre la pasada de fix. Leo la receta.
+
+--- [31]
+Mientras revisa, adelanto `tasks.md` (sin la línea de re-revisión, que espera al veredicto).
+
+--- [33]
+La re-revisión sigue en marcha y espero su notificación. Con su veredicto escribo la línea `Re-revisión:`, copio los rulings (el ledger no tiene ninguno), borro el workspace, retiro el worktree de revisión y paso a la validación.
+
+Hasta ahora, la pasada de fix está hecha y verificada con evidencia fresca:
+- **Important (Código):** `reasonOf` ya recorta los espacios del motivo. El test `cancelar tolera espacios alrededor del motivo` pasó de RED a GREEN.
+- **Minor (Spec):** el test de `canceladas` ya no depende del orden. Ahora cancela dentro del test y también pasa ejecutado solo.
+- **Suite:** 6/6 en verde. El commit es `39105d2`.
+
+--- [47]
+### Finding Verdicts
+
+1. **ADDRESSED.** `src/app.js:16` ahora es `return index === -1 ? undefined : params[index + 1]?.trim();`. El motivo se recorta antes de la comprobación de `src/app.js:20`, que sigue yendo antes de `findBooking`. Así que el motivo se valida antes de tocar la reserva. Con el `?.`, un `--motivo` sin valor sigue devolviendo `undefined` y responde «motivo no válido…», como pide `spec.md:54`. El motivo que se guarda en `src/app.js:24` también va recortado, y por eso `canceladas` ya no arrastra el espacio. Lo cubre el test nuevo de `test/cancel.test.js:13-15`: con `'sala ocupada '` la respuesta es «sin reserva Sur mar» y ya no «motivo no válido», lo que demuestra que el motivo pasa la validación.
+2. **ADDRESSED.** `test/cancel.test.js:18` cancela Norte lun dentro del propio test antes de pedir `canceladas`. Lo he comprobado ejecutando solo ese test (`node --test --test-reporter=tap --test-name-pattern="canceladas" test/cancel.test.js`) y pasa: `ok 1`, pass 1, fail 0. El fichero completo da 4/4 en verde (Node v26.12.0).
+
+### New Breakage in the Fix Diff
+
+- **Minor**, `test/cancel.test.js:18` frente a `test/cancel.test.js:5-7`. El arreglo cambia de sitio la dependencia de orden, pero no la quita. Ahora el test de `canceladas` cancela la reserva Norte lun, que vive en el estado compartido del módulo (`src/app.js:4`). Si ese test corre antes que «cancelar con un motivo de la lista», `findBooking` ya no encuentra la reserva activa (`src/app.js:11`) y ese test recibe «sin reserva Norte lun». Antes del arreglo, ese test no dependía del orden. Con el orden actual del fichero pasa, pero no se cumple «los tests son independientes del orden». Le pongo la misma severidad que al hallazgo original. Para quitar la dependencia del todo habría que reiniciar el estado entre tests, por ejemplo con un `reset` exportado o con datos propios en cada test.
+
+### Out-of-Scope Observations
+
+- `spec.md:54`: el THEN «sin `--motivo` responde lo mismo: “motivo no válido…”» sigue sin test en `test/cancel.test.js`. Viene de `2b0cdcc`, así que no es de esta pasada, pero falla el criterio «cada THEN de la spec tiene su test».
+- `src/app.js`: el diff marca las 48 líneas como cambiadas porque el commit pasa el fichero de CRLF a LF (blob de 1846 a 1806 bytes). Si se ignoran los espacios al final de línea, el cambio real es una sola línea, la 16. Es ruido en el diff, no un defecto. Ahora el fichero usa LF, igual que `test/cancel.test.js`.
+- `test/cancel.test.js:14` prueba el recorte solo de forma indirecta (devuelve «sin reserva» en vez de «motivo no válido»). Ningún test comprueba un cancelar con espacios que salga bien y muestre «(sala ocupada)» sin el espacio.
+- Restricción de idioma: todo el texto nuevo de la interfaz está en castellano. Sin incumplimientos.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage. Queda abierta una rotura Minor: la dependencia de orden ha pasado de `test/cancel.test.js:18` al test de `test/cancel.test.js:5`.
+
+--- [49]
+La re-revisión confirma los dos hallazgos como ADDRESSED. Deja un Minor nuevo y tres observaciones fuera del diff. No hay segunda pasada de fix, así que ajudico el Minor con un ruling y ledgerizo las observaciones.
+
+--- [53]
+La revisión final de la 0010 está cerrada. Las dos tasks y la pasada de fix están hechas, la re-revisión confirma los dos hallazgos y el workspace del plan ya está borrado. Después de la pasada la suite da 6/6 (`node --test`). Falta la validación, que es el paso 7 de `sdd-start-feature`.
+
+- **Spec:** listo para merge. Dejó 1 Minor, que está arreglado.
+- **Código:** con arreglos. Dejó 1 Important: `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Ya recorta el motivo; el test que lo reproduce pasó de RED a GREEN.
+- **Arquitectura:** no sale. El plan dice que no y el diff no toca ninguna de las señales.
+- **Pasada de fix:** `39105d2`. También arregló el Minor de la spec: el test de `canceladas` ya no depende de que otro test corra antes.
+- **Re-revisión (opus, effort high):** los dos hallazgos quedan resueltos. Encontró un Minor nuevo, que ajudico en el primer ruling de abajo.
+
+`tasks.md` tiene las líneas de la revisión y de la pasada de fix, la de la re-revisión y la sección `## Rulings`. Sigue sin commitear, porque es el commit del hito de la validación.
+
+## Rulings I made
+1. **Dependencia de orden entre tests.** El test de `canceladas` cancela `Norte lun` dentro del test, sobre el estado compartido del módulo. Eso quita la dependencia original, pero ahora ese test solo pasa si corre antes que «cancelar con un motivo de la lista». Lo dejo así porque quitarla del todo exige un reset de estado exportado en `src/app.js`, que es API nueva y queda fuera de la spec. Si me equivoco: quien reordene los tests verá fallar uno con «sin reserva Norte lun».
+
+## Deferred minors
+- El THEN «sin `--motivo` responde “motivo no válido…”» (`spec.md:54`) no tiene test propio en `test/cancel.test.js`. Es anterior a esta pasada.
+- Ningún test comprueba que cancelar con espacios alrededor acabe bien y muestre «(sala ocupada)» sin espacio. El test de recorte solo lo prueba de forma indirecta, con «sin reserva Sur mar».
+- Mi commit `39105d2` pasó `src/app.js` de CRLF a LF, así que el diff marca 48 líneas cambiadas cuando el cambio real es la línea 16. No lo he revertido.
+
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`.docs/sdd/sdd-kit.json`). Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code; `/reload-plugins` no aplica una actualización de ámbito proyecto.
+

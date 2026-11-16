@@ -1,0 +1,200 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- check"; node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "<run>/repo"; echo "--- wt"; git worktree list; echo "--- cfg"; cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs/*
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- wt
+<run>/repo 5a70344 [feature/0010-cancel-reason]
+--- cfg
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manual"}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs/20260915-09000
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; cat spec.md; echo ======; cat tasks.md; echo =====; cat ../../sdd-kit.local.json; ls ../../../../; git log --oneline main..HEAD 2>/dev/null | head
+
+>>> Read: D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/skills/sdd-archive/references/dev-validation.md
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MO
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`, step 7 of `sdd-start-feature`). With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in their order: the symptom of `patch.md`
+
+>>> Bash: cd <run>/repo && cat package.json && ls src scripts test e2e && cat .gitignore && sed -n 1,80p .docs/sdd/tech-stack.md && cat server.mjs | head -40
+<<< {"type": "module", "scripts": {"test": "node --test test/", "test:e2e": "node e2e/run.mjs", "env:up": "node scripts/env-up.mjs", "env:down": "node scripts/env-down.mjs"}}
+e2e:
+cancel.e2e.mjs
+config.json
+free.e2e.mjs
+run.mjs
+
+scripts:
+env-down.mjs
+env-up.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+.superpowers/
+node_modules/
+data/
+.docs/sdd/sdd-kit.local.json
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+import http from 'node:http';
+import { readFileSync } from 'node:fs';
+
+
+
+>>> Bash: cat src/app.js; cat scripts/env-up.mjs scripts/env-down.mjs e2e/config.json; ls .docs/sdd/steering; cat .docs/sdd/steering/* | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: node scripts/env-up.mjs && B=http://localhost:4671; q(){ curl -s -H "x-session: $1" -G "$B/run" --data-urlencode "cmd=$2" --data-urlencode "args=$3"; echo; }; S=ensayo
+q $S cancelar '["Norte","lun","--motivo","sala ocupada"]'
+q $S canceladas '[]'
+q $S cancelar '["Norte","lun","--motivo","porque sí"]'
+q $S cancelar '["Norte","lun"]'
+echo "--- gate"; node --test test/ 2>&1 | tail -8
+<<< el entorno no responde en http://localhost:4671/health
+
+
+
+
+--- gate
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 115.595
+
+>>> Bash: curl -s -m 3 -i http://localhost:4671/health | head -3; (timeout 3 node server.mjs 2>&1 | head -5); echo exit=$?
+<<< node:events:505
+    throw er; // Unhandled 'error' event
+    ^
+
+Error: listen EACCES: permission denied 0.0.0.0:4671
+exit=0
+
+>>> PowerShell: netsh interface ipv4 show excludedportrange protocol=tcp | Select-String "46[0-9][0-9]"; Get-NetTCPConnection -LocalPort 4671 -ErrorAction SilentlyContinue | Select-Object State,OwningProcess
+<<<       4567        4666      
+      4667        4766
+
+>>> Bash: cat > /tmp/rehearse.mjs <<'EOF'
+const { run } = await import(process.argv[2] + '?session=ensayo');
+for (const [c, a] of [['cancelar',['Norte','lun','--motivo','sala ocupada']],['canceladas',[]],['cancelar',['Norte','lun','--motivo','porque sí']],['cancelar',['Norte','lun']]]) console.log(`${c} ${a.join(' ')} → ${run(c,a)}`);
+EOF
+node /tmp/rehearse.mjs "file:///$(pwd)/src/app.js"; ls .temp 2>&1 | head -1; git status --porcelain
+<<< salas
+cancelar Norte lun --motivo sala ocupada → cancelada Norte lun (sala ocupada)
+canceladas  → Norte lun — sala ocupada
+cancelar Norte lun --motivo porque sí → motivo no válido: cambio de planes, sala ocupada, otro
+cancelar Norte lun → motivo no válido: cambio de planes, sala ocupada, otro
+ls: cannot access '.temp': No such file or directory
+
+>>> Bash: mkdir -p .temp/validation && cat > .temp/validation/steps-0010.json <<'EOF'
+[{"id":"1","title":"cancelar Norte lun --motivo \"sala ocupada\" → cancelada Norte lun (sala ocupada)"},
+{"id":"2","title":"canceladas → Norte lun — sala ocupada"},
+{"id":"3","title":"cancelar Norte lun --motivo \"porque sí\" → motivo no válido: cambio de planes, sala ocupada, otro"},
+{"id":"4","title":"cancelar Norte lun (sin --motivo) → motivo no válido: cambio de planes, sala ocupada, otro"}]
+EOF
+nohup node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" validation serve --steps .temp/validation/steps-0010.json --out .temp/validation/0010.json > .temp/validation/serve.log 2>&1 &
+sleep 2; cat .temp/validation/serve.log
+<<< panel: http://127.0.0.1:9887/
+
+=== RESULTADO (13 turnos, 0.2396241 $)
+Todavía no puedo cerrar la 0010. El proyecto tiene `validation.mode: manual`, y «ciérrala» es la orden de cerrar, no una validación. Hace falta que la pruebes tú.
+
+**Pre-checks**
+- El árbol está limpio y `merge --check` da `listo` (`develop` irá a un worktree temporal).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura (modo `full`).
+- La revisión final es de la línea de `tasks.md`: spec y código limpios, sobre `d5d7cb7`. `HEAD` (`5a70344`) solo añade ese `tasks.md`, así que no hace falta otra revisión.
+- El gate `node --test test/` pasa: 5 de 5.
+
+**Entorno**
+No he podido levantarlo. El puerto 4671 de `e2e/config.json` cae en un rango que Windows tiene reservado (4667–4766), y `server.mjs` falla con `EACCES`. Esto afecta también a `npm run test:e2e`. No he cambiado el puerto porque es config del proyecto; dime si lo muevo y lo apunto como deuda.
+
+Ensayé los pasos con el mismo `run` de la app, en una sesión aparte, así que tu estado parte de cero.
+
+Panel: plan B en http://127.0.0.1:9887/
+Este panel no ve la app, así que no recoge consola ni red. Si algo falla, cuéntalo en el comentario. `.temp/` no está en `.gitignore`; propongo añadirlo.
+
+**Guion** (cada paso sobre una app recién arrancada):
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+2. `canceladas` → «Norte lun — sala ocupada»
+3. `cancelar Norte lun --motivo "porque sí"` → «motivo no válido: cambio de planes, sala ocupada, otro»
+4. `cancelar Norte lun` (sin `--motivo`) → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+Como `src/app.js` guarda las reservas en memoria, cada comando suelto por CLI empieza de cero. Para que el paso 2 vea la cancelación del 1, tiene que ser la misma sesión. En esta máquina el entorno HTTP no arranca, así que no he podido darte esa sesión. Los pasos 1 y 2 los he ensayado importando `run` en un solo proceso; por CLI suelto el paso 2 saldría vacío. Dime cómo prefieres probarlos.
+
+**Mi smoke:** el gate de 5 tests, más el ensayo de los 4 pasos con las salidas literales de arriba.
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Hasta que respondas no escribo ningún registro ni fusiono.

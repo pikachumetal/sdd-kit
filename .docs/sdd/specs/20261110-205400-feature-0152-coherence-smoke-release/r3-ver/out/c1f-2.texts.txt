@@ -1,0 +1,70 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, porque los ejes ya volvieron. Queda: leer los informes y dejar el resultado listo para ✋.
+
+--- [19]
+RED confirmado: falla el test del espacio y los otros pasan. Ahora aplico el fix.
+
+--- [27]
+Ahora: despacho la re-revisión única del rango `a85ce8e..e1f1b3a`, porque el fix es código. Queda: leerla y presentar el resultado, ~5 min.
+
+--- [38]
+La re-revisión está en marcha en segundo plano, con su vigilancia de silencio. Hasta que vuelva no doy la revisión por limpia.
+
+**Estado**
+- **Informes de los ejes:**
+  - Spec: sin Critical ni Important, y 1 Minor (el test `canceladas` dependía del orden de los tests).
+  - Code: 1 Important (`reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` fallaba).
+- **Pasada de fix única:** commit `e1f1b3a`, con los dos hallazgos arreglados.
+  - El Important lo cubre un test nuevo, que falló antes del fix y pasa después. `reasonOf` ahora recorta el motivo.
+  - Para el Minor, cada test carga su propia copia del módulo, así que ya no dependen del orden.
+  - La suite da 6/6 en verde.
+- **Registro:** la línea `Revisión final:` está en `tasks.md` y las líneas `Final: fixed` en el ledger.
+
+**Falta**
+- La línea `Re-revisión: a85ce8e..e1f1b3a` en `tasks.md`, cuando vuelva el veredicto.
+- Quitar el worktree de revisión `review-0010-e1f1b3a`.
+- Los borradores de cierre (walkthrough y capabilities) y la validación, que corresponden a `sdd-archive`.
+
+--- [50]
+### Finding Verdicts
+
+1. **[Code, Important] `reasonOf` keeps the spaces around the reason** — ADDRESSED. `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. The trimmed value is what reaches `cancelBooking` through `run` (`src/app.js:41`), so the list check and the stored reason both get the clean text. The `?.` keeps the old behaviour when `--motivo` is the last argument: the reason is `undefined` and the answer is «motivo no válido: …». The new test 'cancelar con un motivo con espacios alrededor' (`test/cancel.test.js:18-21`) sends `' sala ocupada '` and expects «cancelada Norte lun (sala ocupada)». I ran `test/cancel.test.js` on its own and it passes.
+
+2. **[Spec, Minor] the `canceladas` test depends on the order of the tests** — ADDRESSED. Each test now loads its own copy of the module (`test/cancel.test.js:5-6`, `import(`../src/app.js?t=${n++}`)`). The `canceladas` test sets up its own cancellation before it asserts (`test/cancel.test.js:25`). I ran it alone with `--test-name-pattern="canceladas"` and it passes, so it no longer needs the `cancelar` test to run first. Its name and its assertion «Norte lun — sala ocupada» are unchanged, and the new line only sets up state. That is the fix the finding asked for, so it does not count as a change to a RED test.
+
+### New Breakage in the Fix Diff
+
+- **Minor** — `test/cancel.test.js:1-27`: the commit changed this file's line endings from CRLF to LF. The rest of the repo still uses CRLF (`src/app.js`, `test/app.test.js`), and there is no `.gitattributes` or `.editorconfig`. This is why the package diff shows the whole file deleted and re-added. The real change is only about 20 lines, as `git diff -w` shows. It doesn't change behaviour, but it hides the real change from the review and leaves the line endings inconsistent across the repo.
+
+### Out-of-Scope Observations
+
+- The spec says `cancelar` without `--motivo` must answer «motivo no válido: cambio de planes, sala ocupada, otro» (`spec.md:54`). No test covers that case, in either `test/cancel.test.js` or `test/app.test.js`. The code handles it (`reasons.includes(undefined)` is false).
+- The commit also adds `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, the task ledger, which the review package left out of its stat. It is documentation only, not code.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [55]
+La revisión final de la 0010 está cerrada, pero la validación y el cierre (`sdd-archive`) siguen pendientes.
+
+- **Revisión de los ejes:**
+  - Spec: sin Critical ni Important, y 1 Minor (el test `canceladas` dependía del orden de los tests).
+  - Code: 1 Important (`reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` fallaba).
+- **Fix:** commit `e1f1b3a`, con ambos hallazgos arreglados.
+  - El Important lo cubre un test nuevo que falló antes del fix y pasa ahora. `reasonOf` recorta el motivo.
+  - Para el Minor, cada test carga su propia copia del módulo, así que ya no dependen del orden.
+  - La suite da 6/6 en verde.
+- **Re-revisión de `a85ce8e..e1f1b3a`:** el revisor da los dos hallazgos por resueltos y sin Critical ni Important nuevos. Está registrada en `tasks.md` (commit `20133a0`) y el worktree de revisión ya está retirado.
+- **Dos observaciones del revisor, que dejo anotadas sin arreglar:**
+  - `test/cancel.test.js` pasó de CRLF a LF, mientras el resto del repo es CRLF. No cambia comportamiento. Un commit más ya no tendría revisión y la re-revisión es única.
+  - Falta un test de `cancelar` sin `--motivo` (`spec.md:54`). El código ya lo cubre.
+- **Sin revisar:** ningún commit mío queda sin revisar, y no hay hallazgos "no verificados".
+
+Siguiente paso: la validación y el cierre con `sdd-archive`, que ya tiene los borradores por completar.
+
+--- [58]
+La vigilancia de silencio de la re-revisión terminó sin avisos: el subagente devolvió su resultado y no hubo cuelgue. Con eso no queda nada abierto en la revisión final de la 0010.
+
+Falta la validación y el cierre con `sdd-archive`.
+

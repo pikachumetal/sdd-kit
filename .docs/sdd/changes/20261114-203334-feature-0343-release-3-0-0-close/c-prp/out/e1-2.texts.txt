@@ -1,0 +1,101 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs SDD) para clasificar el cambio. Queda: confirmar el carril patch contigo, ~2 min.
+
+--- [23]
+RED visto. Ahora el fix mínimo.
+
+--- [33]
+Ahora: espero la revisión del patch (un revisor sonnet). Queda: responder hallazgos, commit del fix y cierre con `sdd-archive`, ~10 min.
+
+La revisión del patch está en curso y no sé aún qué dirá. En cuanto vuelva, respondo cada hallazgo en el §4 de `patch.md`, hago el commit del fix y paso a `sdd-archive`.
+
+Estado hasta ahora, en la rama `feature/0012` y sin commitear:
+- **Fix:** `src/app.js` devuelve `reserva cancelada: ${room} ${day}`.
+- **Test:** `test/cancel.test.js` exige «reserva cancelada: Norte lun». Lo vi fallar antes del cambio, con «cancelada Norte lun» como valor actual.
+- **Verificación:** `node --test` da 4/4 y `node scripts/lint.mjs` sale sin hallazgos. Eso es antes del commit; el gate de cierre completo corre en `sdd-archive`.
+- **Registro:** `.docs/sdd/changes/20261116-113114-patch-0012-mensaje-cancelar/patch.md`.
+
+--- [37]
+Sin hallazgos bloqueantes.
+
+1. **`src/app.js`**: bien aplicado. `cancelBooking` devuelve `reserva cancelada: ${room} ${day}`, que da exactamente «reserva cancelada: Norte lun». El mensaje de error `sin reserva …` queda intacto, como debe ser.
+2. **`test/cancel.test.js`**: el test `cancelar una reserva activa` pasa de exigir `cancelada Norte lun` a `reserva cancelada: Norte lun`. El literal sale de la petición, no del código, y el patch.md documenta el RED previo. El diff solo toca esa línea.
+3. **Usos del texto antiguo**:
+   - `git grep -n cancelada` no deja ningún uso del mensaje antiguo en `src/` ni en `test/`.
+   - Las menciones en `ROADMAP.md`, `CHANGELOG.md` y `PRODUCT.md` son de otros temas: «canceladas» en el listado de la fila 0010, y el concepto «Cancelación».
+   - `voidBooking` (comando `anular`, mensaje `anulada …`) es otra operación que la petición no menciona. No debe cambiar, y es coherente dejarlo.
+4. **`.docs/sdd/changes/*patch-0012*/patch.md`**: coherente. La frase literal, el fichero, el cambio y la decisión coinciden con el diff. Dos observaciones menores, sin impacto:
+   - `commit: pendiente` y `Esfuerzo real: pendiente` se rellenarán al cerrar.
+   - `status: done` aparece antes del commit, lo cual es un poco prematuro. Es cosmético y lo normal en este flujo es que `sdd-archive` lo cierre.
+
+No he podido reejecutar `node --test` ni el lint. Me he basado en lo que declara el patch (4/4, sin hallazgos) y en la lectura del diff.
+
+--- [38]
+Reviewer sin hallazgos bloqueantes. Anoto la respuesta en §4 y hago el commit del fix.
+
+--- [40]
+Ahora: cierro con `sdd-archive` (gate de cierre, validación y merge). Queda: gate ~1 s en este proyecto más la validación, ~5 min.
+
+--- [50]
+Cierro sin fusionar todavía: falta tu validación y además la política de merge del proyecto está incompleta.
+
+🦆 Quien use `cancelar` ya no ve «cancelada Norte lun», sino «reserva cancelada: Norte lun». El mensaje de error `sin reserva Sur mar` no cambia.
+
+**✋ Me salí del plan en…**
+
+- nada
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun` devuelve el mensaje nuevo | `ejecución real` + `suite` | «reserva cancelada: Norte lun» |
+| `cancelar Sur mar` sigue igual | `ejecución real` + `suite` | «sin reserva Sur mar» |
+
+**Suites**
+
+- `node --test`: 4/4 sobre `a67a741` (RED visto antes del fix).
+- `node scripts/lint.mjs`: sin hallazgos.
+- El gate de cierre completo corre sobre el árbol que se fusiona, en el paso de la base integrada.
+
+**Sin probar:** nada.
+
+**Dos cosas que frenan el cierre**
+
+1. **Validación manual.** El patch no declara `Validación: agente` ni `validation.mode: field`. Sin tu «validado», `sdd-archive` no cierra, aunque el perfil sea `delegate`.
+2. **Política de merge incompleta.** `sdd merge --check` dice: «falta 'merge.into' o 'merge.noFf' en `.docs/sdd/sdd-kit.json`». Dime a qué rama fusiono (supongo `develop`) y si va con `--no-ff`, y lo dejo en el fichero. Sin eso presento el merge y espero tu confirmación.
+
+Abiertas a la vez: ninguna otra rama, solo `feature/0012`.
+
+Panel: plan B en http://127.0.0.1:10425/ (no hay herramientas de Chrome; el panel no ve la app y los fallos me los cuentas en el comentario). Dejé creada `.temp/validation/` y `.temp/` no está en `.gitignore`. Propongo añadirlo.
+
+**Guion**
+
+Rama `feature/0012` · worktree `<run>\repo`
+
+Es una CLI sin servidor: no hay entorno que arrancar ni parar.
+
+```
+cd <run>\repo
+```
+
+1. Cancelar una reserva activa:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `reserva cancelada: Norte lun`
+
+2. Cancelar sin reserva:
+
+```
+node src/app.js cancelar Sur mar
+```
+
+→ `sin reserva Sur mar`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

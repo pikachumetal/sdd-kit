@@ -1,0 +1,61 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat package.json; ls -la; npm run informe 2>&1 | head -40
+<<< {
+  "name": "salas",
+  "private": true,
+  "scripts": { "informe": "node scripts/informe.mjs" }
+}
+total 10
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 ./
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 ../
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 .docs/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 .git/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 docs/
+-rw-r--r-- 1 <user> 197609 97 Nov  1 18:02 package.json
+-rw-r--r-- 1 <user> 197609 62 Nov  1 17:33 README.md
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 scripts/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 src/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:03 t
+
+>>> Bash: cat -n scripts/informe.mjs; echo ---; ls -la scripts; ls -la .cache 2>&1; echo ---; cat .gitignore 2>&1; echo ---; grep -rn "cache" --include=* -I . --exclude-dir=.git | head -20; echo ---; git log --oneline | head
+<<<      1	import { writeFileSync } from 'node:fs';
+     2	
+     3	writeFileSync('.cache/informes/ocupacion.csv', 'sala,ocupacion\nNorte,80\n');
+---
+total 5
+drwxr-xr-x 1 <user> 197609   0 Nov  1 18:03 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  1 18:03 ../
+-rw-r--r-- 1 <user> 197609 120 Nov  1 18:02 informe.mjs
+ls: cannot access '.cache': No such file or directory
+---
+cat: .gitignore: No such file or directory
+---
+./scripts/informe.mjs:3:writeFileSync('.cache/informes/ocupacion.csv', 'sala,ocupacion\nNorte,80\n');
+---
+02ad131 feat: base del molde
+
+=== RESULTADO (5 turnos, 0.11551919999999999 $)
+## Causa raíz
+
+`scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` con `writeFileSync`, pero el script **nunca crea el directorio `.cache/informes/`**. `writeFileSync` crea el fichero, no sus carpetas padre. Si la carpeta no existe, Node lanza `ENOENT`.
+
+## Evidencia
+
+- El error es `ENOENT … open '…\repo\.cache\informes\ocupacion.csv'` con `syscall: 'open'`, lanzado desde `scripts/informe.mjs:3:1`. Es la escritura, no una lectura ni un fallo del `npm run`.
+- `.cache/` no existe en el repo (`ls .cache` → no such file or directory).
+- Nada la crea. El script tiene una sola línea de código, sin `mkdirSync`. `package.json` solo define `"informe": "node scripts/informe.mjs"`, sin paso previo. Un grep de `cache` en todo el repo solo da esa línea.
+- No hay `.gitignore`. Aun así, aunque `.cache/` hubiera existido en otra máquina, no se habría versionado vacía (git no guarda carpetas vacías). Por eso el script funciona donde alguien creó la carpeta a mano y falla en un clon limpio.
+- La ruta es relativa, así que depende del directorio desde el que se lance. Eso no es la causa aquí (el cwd es la raíz del repo), pero no ayuda.
+
+## Qué no es
+
+No es un problema de npm, de Node 26 ni de permisos. El nombre de la ruta es correcto y el fallo se reproduce siempre.
+
+## Siguiente paso (cuando quieras)
+
+Según el kit, esto entra por `sdd-propose` y la Fase 4 empezaría con un test que falle. Habría que crear el directorio antes de escribir. Por ejemplo, `mkdirSync('.cache/informes', { recursive: true })` en el script. No he tocado nada.
+
+Además, la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills podrían ser de una versión vieja. Puedes actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.

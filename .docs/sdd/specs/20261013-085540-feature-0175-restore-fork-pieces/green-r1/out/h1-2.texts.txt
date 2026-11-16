@@ -1,0 +1,60 @@
+--- [2]
+Ahora: invocar `sdd-implement` para ejecutar el plan de la 0010. Queda: implementar las tasks y la revisión final, hasta la validación.
+
+--- [5]
+Ahora: preparar el workspace y leer el plan y la spec de la 0010. Queda: implementar las tasks y la revisión final, hasta la validación.
+
+--- [15]
+Ahora: abrir el ledger y hacer el pre-flight scan. Queda: 2 tasks, revisión final y la validación, ~10 min.
+
+--- [27]
+Sigo con la Task 1: el fichero usa CRLF y mi reemplazo de `cancelBooking` no casó; lo aplico con Edit.
+
+--- [38]
+Task 2 implementada; verifico en verde, comparo la copia RED y commiteo.
+
+--- [41]
+No hay herramienta de subagentes en este harness, así que la revisión final la hago yo misma sobre el diff completo y lo dejo anotado.
+
+--- [44]
+Hallazgo en mi revisión: `--motivo` sin valor cancela sin motivo en silencio, cuando la spec exige rechazar lo que no esté en la lista. Lo arreglo con test RED primero.
+
+--- [50]
+La implementación de la 0010 está hecha y commiteada en `feature/0010-cancel-reason`, y la suite completa pasa (8/8, `node --test`). Falta tu validación del trabajo, y la feature no se cierra hasta tenerla.
+
+Cada task tuvo su test en RED antes del código, y los dos THEN de la spec cuentan con test:
+- **Task 1** (`b8b3b71`): `cancelar <sala> <día> --motivo <motivo>` acepta «cambio de planes», «sala ocupada» y «otro». Responde «cancelada Norte lun (sala ocupada)», o «motivo no válido: cambio de planes, sala ocupada, otro» si el motivo no está en la lista.
+- **Task 2** (`74e8d7b`): `canceladas` lista «Norte lun — sala ocupada».
+- **Fix de la revisión final** (`d9fc27f`): `--motivo` sin valor cancelaba la reserva sin motivo; ahora se rechaza como motivo no válido (test RED→GREEN).
+
+**Revisión final:** no hay subagentes en este harness, así que fue una auto-revisión mía y no la de un revisor con contexto fresco. Es más débil; decide si te basta antes del merge. Tampoco he podido hacer la re-revisión del tramo ni la verificación de la validación con un revisor independiente.
+
+## Smoke por THEN
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) y suite |
+| motivo fuera de la lista → «motivo no válido: …» | ejecución real (CLI, con `x`) y suite |
+| `canceladas` → «Norte lun — sala ocupada» | solo suite: `src/app.js` guarda el estado en memoria y cada invocación CLI arranca de cero, así que no se puede encadenar `cancelar` y `canceladas` desde la línea de comandos |
+
+La suite completa tarda ~0,2 s. No arranqué ningún proceso que quede vivo.
+
+## Guion de pruebas
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js cancelar Norte lun --motivo` → el mismo mensaje de motivo no válido, sin cancelar.
+4. `node --test test/cancel.test.js` → 6 tests en verde, entre ellos «canceladas enseña el motivo de cada reserva cancelada» (el único modo de ver el listado, por lo anterior).
+
+## Rulings que tomé (con su coste si me equivoco)
+- **Sin `--motivo`**: `cancelar` responde como antes y `canceladas` lo muestra como «— sin motivo». La spec calla y así no cambia la salida existente. Si el dev-lead quiere exigir el motivo, hay que cambiar un test y un mensaje.
+- **Tests con módulo fresco**: los tests nuevos importan `app.js` con un query único para no depender del orden. Si no gusta, se cambia por un reset exportado.
+- **Solo estado cancelada**: `canceladas` no lista las anuladas, que quedan para la 0011. Si hubiera que incluirlas, se amplía el filtro.
+- **Lista vacía**: `canceladas` sin canceladas devuelve cadena vacía. Si se quiere un texto tipo «sin canceladas», es un mensaje más.
+
+## Minors diferidos
+- `canceladas` vacío no dice nada (la spec no fija la salida).
+- El estado en memoria impide encadenar `cancelar` y `canceladas` entre invocaciones CLI; viene de la base del molde.
+
+Antes de cerrar con `sdd-end-feature` necesito tu validación: dime qué has probado y si funciona. «Cierra» solo no cuenta. Si prefieres diferirla, dime con qué disparador.
+

@@ -1,0 +1,135 @@
+
+>>> Read: <run>/review-final-5a00d3d.diff
+<<< 1	# Review package: 30e2b17..HEAD
+2	
+3	## Commits
+4	5a00d3d feat(bookings): anular sin aviso por correo
+5	60c6b9e docs(sdd): abrir la feature 0025
+6	
+7	## Files changed
+8	 src/app.js        | 6 +-----
+9	 test/void.test.js | 7 +++++++
+10	 2 files changed, 8 insertions(+), 5 deletions(-)
+11	
+12	## Diff
+13	diff --git a/src/app.js b/src/app.js
+14	index 301cfbe..444305a 100644
+15	--- a/src/app.js
+16	+++ b/src/app.js
+17	@@ -4,29 +4,25 @@ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'act
+18	 export const outbox = [];
+19	 
+20	 function freeRooms(slot) {
+21	   return room
+
+>>> Bash: cd "<run>/repo"; ls -R .docs/sdd/specs .docs/sdd/decisions; cat .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/plan.md .docs/sdd/decisions/0003-bookings-in-memory.md; cat -n src/app.js; ls test; ls .docs/sdd
+<<< .docs/sdd/decisions:
+0003-bookings-in-memory.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261014-100000-feature-0025-void-no-mail/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail:
+plan.md
+spec.md
+# Spec — weekly
+
+status: done
+# Spec — free
+
+status: done
+---
+id: 20261014-100000-feature-0025-void-
+
+>>> Bash: cd "<run>/repo"; ls .docs/sdd/capabilities; cat .docs/sdd/capabilities/bookings* .docs/sdd/capabilities/bookings/* 2>/dev/null; cat -n test/app.test.js test/cancel.test.js; grep -rn "node:fs\|sqlite\|import" src; git log --oneline
+<<< availability.md
+bookings.md
+reports.md
+# Capacidad — bookings
+
+## Propósito
+
+reservar, cancelar y anular salas, y lo que se avisa al hacerlo
+
+## Requisitos
+
+### Anular una reserva
+
+- GIVEN la reserva de Norte del lunes
+- WHEN `anular Norte lun`
+- THEN responde «anulada Norte lun» y la reserva deja de contar en `libres`
+
+### Avisar por correo
+
+- GIVEN la reserva de Norte del lunes
+- WHEN `anular Norte lun`
+- THEN responde «anulada Norte lun»
+- AND `salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo
+     1	import { test } from '
+
+=== RESULTADO (4 turnos, 0.256489 $)
+### Strengths
+
+- The change is small and stays in scope: only `voidBooking` (`src/app.js:14-20`) changes, and `anular-todas` (`voidAll`, `src/app.js:22-26`) is left alone as the spec's «No entra» says.
+- `anular` still replies «anulada <sala> <día>» (`src/app.js:19`), which meets decision ✋1. `test/void.test.js:5-7` pins that reply through the `anular` command, which is where «Dónde se prueba» says to test it.
+- The UI text stays in Spanish and the diff adds no comments.
+- ADR 0003 holds. Its Confirmación says `src/` must not import `node:fs` or any database package. `src/app.js` imports nothing.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed notice still goes out: «REMOVED — Avisar por correo» still runs** — `src/app.js:18`
+- **What's wrong:** The commit drops `formatMail` and the «(enviado por correo)» suffix, but `voidBooking` still pushes `{ to: 'responsable', body: 'anulada <sala> <día>' }` to `outbox`. `salida` (`pending`, `src/app.js:28-30`) still lists `responsable: anulada Norte lun`. That is exactly the removed requirement's THEN in `capabilities/bookings.md`: «`salida` lista "anulada Norte lun" para el responsable de sala, y la oficina se lo envía por correo». The diff only changes how the message looks. The notice is still sent.
+- **Why it matters:** The office keeps sending the email that the dev-lead decided «sobra». The feature as a whole does not happen.
+- **How to fix:** Delete line 18 so `voidBooking` doesn't touch `outbox`.
+- **Gap:** `contradicts`.
+- **Origin:** the REMOVED requirement «Avisar por correo» in the spec's delta, and the dev-lead's decision «El aviso por correo al anular desaparece». No rule in the diff covers that decision at all, not even partly.
+
+#### Important (Should Fix)
+
+**2. No test checks that the notice is gone** — `test/void.test.js:5-7`
+- **What's wrong:** The test is named «anular responde sin aviso», but it only checks the reply text. It never checks `outbox` or the output of `salida` after `anular`. That is why issue 1 passes the task's verification (`node --test test/void.test.js`).
+- **Why it matters:** The only scenario in «Dónde se prueba» («Anular sin aviso») has no assertion behind it. The test name says something the test doesn't check.
+- **How to fix:** Add an assertion in that test, or a second test, that after `run('anular', ['Norte','lun'])`, `run('salida', [])` returns `''` (or `outbox` is empty).
+- **Gap:** `partial`.
+- **Origin:** the spec's «Dónde se prueba» line «Anular sin aviso: por el comando `anular`, como `test/void.test.js`».
+
+#### Minor (Nice to Have)
+
+- **The capability document is out of date:** `.docs/sdd/capabilities/bookings.md` still lists «Avisar por correo» as a requirement. This is normally fixed at archive, so I note it and don't count it against the branch.
+
+### Declined to judge
+
+- **`test/app.test.js` and `test/cancel.test.js`:** they test `reservar` and `cancelar`, and `run` in `src/app.js:32-38` doesn't handle either command, so it returns `'salas'`. These tests are outside the diff and not part of this spec. It is either a problem from before this branch or a fixture limit. The main thread will see it when it runs the full suite.
+- **`anular-todas` sends no notice:** the spec puts it explicitly out of scope, and it never sent one.
+- **`run` with no params, e.g. `anular` without a room:** it returns «sin reserva undefined undefined». This happened before the branch and the spec doesn't touch it.
+
+### Not verified
+
+- I didn't run `node --test test/void.test.js`, as the brief asked. I read the code and the test to conclude it passes even with issue 1 present, but I didn't run it.
+
+### Recommendations
+
+- After the fix, the main thread should run the full suite and run `node src/app.js anular Norte lun` then `salida` in the same process (e.g. with a quick script calling `run`), to confirm `salida` comes back empty.
+- When fixing issue 2, also check the plan's Task 1 verification. As written, it passes even when the requirement isn't met.
+
+### Assessment
+
+**Ready to merge?** No.
+
+**Reasoning:** The removed behavior still runs. `anular` still queues a notice for the responsable, `salida` still lists it, and the office still emails it. The commit only changed the wording of that notice, and the only test checks the reply text, so it can't catch the problem.

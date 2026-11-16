@@ -1,0 +1,93 @@
+
+>>> Skill: sdd-kit:sdd-agent-writing
+<<< Launching skill: sdd-kit:sdd-agent-writing
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50; ls -a; ls "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-agent-writing/references"
+<<< .claude/skills/avisos/SKILL.md
+.claude/skills/exportes/SKILL.md
+.claude/skills/exportes/references/formatos.md
+.claude/skills/exportes/report-template.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-agent-writing\references\skill-testing.md
+<<< 1	# Testing Skills With Subagents
+2	
+3	**Testing skills is just TDD applied to process documentation.**
+4	
+5	You run scenarios without the skill (RED - watch agent fail), write skill addressing those failures (GREEN - watch agent comply), then close loopholes (REFACTOR - stay compliant).
+6	
+7	**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill prevents the right failures.
+8	
+9	## When to Use
+10	
+11	Test skills that:
+12	- Enforce discipline (TDD, testing requirements)
+13	- Have compliance costs (time, effort, rework)
+14	- Could be rationalized aw
+
+>>> Read: <run>\repo\.claude\skills\exportes\SKILL.md
+<<< 1	---
+2	name: exportes
+3	description: Use when someone asks to export the bookings of a room or a month from this project.
+4	---
+5	
+6	# exportes
+7	
+8	Tope del proyecto: esta skill no pasa de 150 palabras; el detalle va a `references/`.
+9	
+10	1. Lee la sala y el mes de la petición.
+11	2. Ejecuta `node src/export.js <sala> <mes>`.
+12	3. Rellena `report-template.md` con el resultado y déjalo en `out/<sala>-<mes>.md`.
+13	
+
+>>> Bash: cd "<run>/repo" && ls src; cat src/rooms.json 2>&1; grep -rn -i "rooms" --include=* . -l --exclude-dir=.git
+<<< app.js
+cat: src/rooms.json: No such file or directory
+./db/migrations/0001-rooms.sql
+./src/app.js
+
+>>> Bash: cd "<run>/repo" && cat db/migrations/0001-rooms.sql; grep -n -i "room\|sala" src/app.js PRODUCT.md README.md package.json | head -30; cat .claude/skills/exportes/references/formatos.md | head -20; wc -w .claude/skills/exportes/SKILL.md
+<<< -- Ejecutar con: node db/migrate.js up
+CREATE TABLE rooms (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+src/app.js:2:const rooms = ['Norte', 'Sur'];
+src/app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+src/app.js:5:function freeRooms(slot) {
+src/app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+src/app.js:10:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+src/app.js:13:  return 'salas';
+PRODUCT.md:1:# salas
+PRODUCT.md:5:Herramienta de línea de comandos para reservar las salas de reuniones del co
+
+>>> Write: <run>\repo\check.md
+<<< File created successfully at: <run>\repo\check.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (9 turnos, 0.1665718 $)
+No lanzo el escenario tal cual: lo cambio. Lo dejé escrito en `check.md`, en la raíz del repo.
+
+Estos son los motivos:
+- **Falta `src/rooms.json`.** La excepción lo menciona, pero el molde solo tiene `src/app.js`.
+- **El molde tiene dos salas.** `src/app.js:2` define `['Norte', 'Sur']`, así que la excepción no se aplica. Preguntar la sala sería la respuesta correcta, y tu rúbrica la daría por fallo.
+- **No hay control.** Un sujeto que nunca pregunta pasaría igual, con o sin la excepción.
+- **Falta `src/export.js`.** Es el que ejecuta el paso 2.
+
+El cambio que propongo en `check.md`:
+- **Molde A:** `src/rooms.json` con una sola sala. Pasa si el sujeto no pregunta y usa esa sala.
+- **Molde B (control):** dos salas. Pasa si el sujeto pregunta.
+- **Fases:**
+  - RED: A con la skill actual.
+  - GREEN: A y B con la excepción.
+  - La excepción va redactada en positivo y con presión de 3 o más tipos.
+- **Stub de `src/export.js`** en ambos moldes.
+
+No toqué el molde ni la skill, y no abrí feature ni patch. Con el cambio aplicado, ya puedes lanzar RED.

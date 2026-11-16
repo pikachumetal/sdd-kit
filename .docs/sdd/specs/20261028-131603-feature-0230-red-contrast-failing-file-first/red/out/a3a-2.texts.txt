@@ -1,0 +1,51 @@
+--- [3]
+Voy con el paso 0: pre-checks.
+
+--- [33]
+Ahora el changelog, el roadmap (fila de la 0010 y fila de deuda del flaky), el walkthrough y `tasks.md`.
+
+--- [39]
+La base está al día y el código no cambió desde la suite (850c10a). Fusiono con el script, sin `--push` porque `merge.push` es `false`.
+
+--- [43]
+**No terminado.** La 0010 está cerrada en la rama, pero la fusión en `develop` falló y no se hizo.
+
+`sdd merge` paró con `destino sacado: no se pudo crear el worktree de 'develop' en '…\a3a-2\merge-0010-cancel-reason'`. Antes ya había fallado un `git worktree add` mío en este mismo entorno ("gitfile does not point to a valid repository"). No lo reintenté ni fusioné a mano. `develop` sigue sin tocar en 0d634e2.
+
+Abiertas a la vez: ninguna, `git worktree list` solo muestra esta rama. No borres el worktree `…\scratchpad\runs\red\a3a-2\repo`. Es el checkout principal del repo, así que no se ofrece borrarlo en ningún caso.
+
+**Qué hice**
+- **Validación en campo** (`validation.mode: field`): ejecuté de verdad los 4 THEN y los 4 salen bien. «Sin `--motivo`» no lo cubre ningún test, solo el smoke.
+- **Revisión final:** estaba limpia sobre a1121d2. Después solo cambió `tasks.md`, así que no hubo re-revisión.
+- **Registros:**
+  - Walkthrough nuevo.
+  - Capacidad `bookings` creada y fusionada con `sdd capability merge`; `capability check` y `decision check` pasan.
+  - Entrada en el changelog.
+  - Fila 0010 del roadmap marcada ✅.
+  - `tasks.md` corregido: la Task 1 apuntaba a a1121d2 y es c09b571.
+- **Historia:** el cierre y el commit de `tasks.md` quedan en un solo commit, e5ed3c9, sobre a1121d2. `--sync` dijo `base: al día`.
+- **Sin estimación ni skills:** no hay `estimation.md`, así que no hay esfuerzo real ni log de estimación. No hay `.claude/skills/`; lo miré y la revisión de skills no aplica.
+
+**Decisiones sin el dev-lead**
+- Un ruling en `tasks.md` dice que se usó `--test-concurrency=1` en el gate. No está en ningún fichero del repo (`gate.json` ni `tech-stack.md`). Lo dejé en el walkthrough con esa nota.
+
+**Gate:** `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: corrió 5/6 (1 fallo, flaky) · rooms:test: saltada (sus entradas no cambian respecto a `develop`) · sobre 850c10a.
+- **Contraste:** el mismo comando en `develop` (0d634e2) dio 5/5 verde. En la rama dio 6/6 verde.
+- **Causa:** `test/store.test.js` falla la primera vez que no existe `store-lock` en el git-common-dir, con un `EBUSY` lanzado desde el propio test.
+- **Fila de deuda:** abierta en el roadmap, en «Deuda técnica».
+- **Desvíos del procedimiento:**
+  - El contraste lo hice con `git checkout --detach develop` en este mismo checkout (limpio), porque el worktree temporal no se podía crear.
+  - La línea de error de la fila de deuda la copié del `throw` del test, no del log guardado. La salida del gate solo trae recuentos y no pude reproducir el fallo sin limpiar el estado.
+
+**Pendiente**
+- `roadmap check` da 2 fallos en líneas que no escribí: la cabecera de «Deuda técnica» (línea 22) y el título `v0.3.0` (línea 35). No los toqué. Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- Residual: el almacén es en memoria, así que `canceladas` en un proceso aparte de `cancelar` sale vacío. Eso es la 0014.
+- Aviso del hook: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar).
+- Para fusionar hace falta resolver por qué no se puede crear el worktree temporal. Luego repito `sdd merge --project-root <repo> --verified-at 850c10a`. No usa `--push`, porque `merge.push` es `false`.
+
+**Siguiente:** la 0010 no tiene `parent:` ni `proposal:`, así que no hay familia que cerrar.
+
+**Ticket del kit:** ¿quieres que prepare el ticket de mejora con `sdd-feedback`? El fallo de `git worktree add` en este entorno es un buen candidato.
+
+**No terminado.** Falta fusionar `feature/0010-cancel-reason` en `develop` (el script no pudo crear su worktree temporal). No borres todavía el worktree `<run>\repo`.
+

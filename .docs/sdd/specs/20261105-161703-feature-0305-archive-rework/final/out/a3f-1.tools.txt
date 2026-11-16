@@ -1,0 +1,456 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs/*0010* 2>&1; cat .docs/sdd/sdd-kit.json
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+---
+<run>/repo 856a10b [feature/0010-cancel-reason]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode"
+
+>>> Bash: cd .docs/sdd/specs/*0010*; head -30 spec.md; echo ----; cat tasks.md; echo ----; cat "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-archive/references/final-review-check.md"
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MO
+
+>>> Bash: cd "<run>/repo"; git diff --stat 36e009e..HEAD; cat "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-verify/references/encargo-revision.md" | head -80; grep -n "Closing the review" -A25 "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-verify/SKILL.md"
+<<<  .../20261008-100000-feature-0010-cancel-reason/tasks.md | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+# Encargo de revisión — cabecera obligatoria
+
+El encargo de **cada eje de la revisión final**, el de su **pasada de fix** en SDD y el de su **re-revisión** empiezan así, antes del encargo del eje ([`sdd-verify`](../SKILL.md), «Final review»). Los del revisor de task y del re-revisor ya la llevan dentro: [task-reviewer-prompt.md](../../sdd-implement/references/task-reviewer-prompt.md) y [re-review-prompt.md](../../sdd-implement/references/re-review-prompt.md) de `sdd-implement`.
+
+``
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-implement"; grep -rn "Every commit of yours" -A12 SKILL.md | head -40; cd "<run>/repo"; git show 856a10b | head -50
+<<< 306:- **Every commit of yours** —an improvised fix too— enters the review scope of the task in progress; with no task open and the final review not yet out, the final review's; and once it's out, even if not back, the single re-review of the range `<last reviewed>..HEAD` («Closing the review» of `sdd-verify`); once that re-review is out, it doesn't open another and goes to ✋ as `sin revisar: <sha> — <what it changes>`. Never presented or closed unreviewed, except a commit under 20 lines (`git diff --numstat`) that only changes documentation or comments —files under `.docs/`, `*.md` of any path
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-archive/references"; cat validation-modes.md closing-suite.md
+<<< # Validation by mode
+
+Step 1 of `sdd-archive`.
+
+## With `validation.mode: field`
+
+You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with
+
+>>> Bash: cd "<run>/repo"; git ls-files | grep -v '^.docs/sdd/specs' ; echo ---; sed -n 30,200p .docs/sdd/specs/*0010*/spec.md; echo ---; cat .docs/sdd/tech-stack.md; cat package.json; git remote -v; git branch -a
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+.gitignore
+PRODUCT.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+test/cancel.test.js
+test/ids.test.js
+---
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Approach
+
+El motivo se guarda con la reserva cancelada; `canceladas` lista las reservas con estado cancelada.
+
+## Dónde se prueba
+
+- Motivo: por el comando `cancelar`, como `test/cancel.test.js`.
+- Lista
+
+>>> Bash: cd "<run>/repo"; cat src/app.js; ls .docs/sdd/specs; git rev-list --count HEAD..develop; git diff --stat develop...HEAD | tail -5; S=$(mktemp -d); node --test --test-concurrency=1 > "$S/suite.out" 2>&1; echo exit $?; tail -12 "$S/suite.out"; echo $S
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> Bash: cd "<run>/repo"; grep -n "A red suite" -A25 "D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-archive/references/merge-recipe.md" | head -60; ls .docs/sdd/debt.md ROADMAP.md 2>&1; grep -rni "ids\|id de una" .docs/sdd/roadmap.md | head
+<<< 14:## A red suite
+15-
+16-A red is contrasted by hand, from the saved output:
+17-
+18-1. Create a detached temporary worktree of `<remote>/<merge.into>` (`git worktree add --detach <parent of the worktrees>/base-<id> <remote>/<merge.into>`), removed when done with `git worktree remove`, and prepare it as Step 2 of `sdd-worktrees` says (dependencies; `env:setup` with `environments.md`) before running anything in it: a fresh worktree without them fails on a missing module, not on the test.
+19-2. Run the failing file alone, with the project's runner (`vitest run <file>`, `node --test <file>`), not 
+
+>>> Bash: cd "<run>/repo"; B="<run>/base-0010"; git worktree add --detach "$B" develop >/dev/null 2>&1; git -C "$B" log --oneline -1; S=/tmp/tmp.eHing9DN3l
+(node --test test/ids.test.js > $S/branch-ids.out 2>&1; echo "branch exit $?" >> $S/branch-ids.out) &
+(cd "$B" && ls test; node --test test/ids.test.js > $S/base-ids.out 2>&1; echo "base exit $?" >> $S/base-ids.out) &
+wait; tail -5 $S/branch-ids.out; echo ====; tail -15 $S/base-ids.out; cat test/ids.test.js; git log --oneline develop -5
+<<< fabb5bc test: id de una reserva nueva
+app.test.js
+cancel.test.js
+ids.test.js
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 172.8371
+branch exit 0
+====
+✔ una reserva nueva lleva su id (1.2859ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.8772
+base exit 0
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { execSync } from 'node:child_process';
+import { existsSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const store = join(execSync('git rev-parse --git-common-dir').toString().trim(), 'id
+
+>>> Bash: cd "<run>/repo"; B="<run>/base-0010"; S=/tmp/tmp.eHing9DN3l
+(node --test --test-concurrency=1 > $S/branch-all.out 2>&1; echo "branch exit $?" >> $S/branch-all.out) &
+(cd "$B" && node --test --test-concurrency=1 > $S/base-all.out 2>&1; echo "base exit $?" >> $S/base-all.out) &
+wait; grep -E "^ℹ (tests|pass|fail)|exit" $S/branch-all.out $S/base-all.out; git rev-parse --git-common-dir; ls "$(git rev-parse --git-common-dir)/ids-store"; git status --porcelain; git worktree list
+<<< /tmp/tmp.eHing9DN3l/branch-all.out:ℹ tests 6
+/tmp/tmp.eHing9DN3l/branch-all.out:ℹ pass 6
+/tmp/tmp.eHing9DN3l/branch-all.out:ℹ fail 0
+/tmp/tmp.eHing9DN3l/branch-all.out:branch exit 0
+/tmp/tmp.eHing9DN3l/base-all.out:ℹ tests 5
+/tmp/tmp.eHing9DN3l/base-all.out:ℹ pass 5
+/tmp/tmp.eHing9DN3l/base-all.out:ℹ fail 0
+/tmp/tmp.eHing9DN3l/base-all.out:base exit 0
+.git
+.git/ids-store
+<run>/repo      856a10b [feature/0010-cancel-reason]
+<run>/base-0010 fabb5bc (detached HEAD)
+
+>>> Bash: cd "<run>/repo"; git worktree remove --force ../base-0010; cat .docs/sdd/roadmap.md; echo ----; cat .docs/sdd/changelog.md; ls .docs/sdd/specs/*0007*; R=D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-archive/references; cat $R/records.md
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 0012 | **Informe de canceladas**: `informe` lista las reservas canceladas por sala, con su motivo y el total | ⏳ |
+| 0013 | **Precio en su módulo**: el cálculo del precio sale de `app.js` sin cambiar lo que responde `precio` | ⏳ |
+| 0014 | **Motivo guardado**: el motivo 
+
+>>> Bash: cd "<run>/repo"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "porque sí"; node src/app.js cancelar Norte lun;
+node --input-type=module -e 'import {run} from "./src/app.js"; console.log(run("cancelar",["Norte","lun","--motivo","sala ocupada"])); console.log(run("canceladas",[]))'; git rev-parse --short HEAD; grep -n "ADR" .docs/sdd/specs/*0010*/spec.md .docs/sdd/specs/*0010*/plan.md | head; ls .docs/sdd/capabilities 2>&1 | head -3; git status --porcelain
+
+>>> Bash: T=D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills; cat $T/sdd-archive/references/learnings.md; echo =====; ls $T/sdd-templates/templates; cat $T/sdd-templates/templates/walkthrough-template.md; echo =====; cat $T/sdd-templates/templates/validation-template.md
+<<< cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+856a10b
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+<<< # Learnings to living docs
+
+Step 3 of `sdd-archive`, `Feature only:`. Each learning of the walkthrough goes where it lives: the walkthrough is a dead record for the next tasks.
+
+## Where each one goes
+
+| Learning | Destination |
+| --- | --- |
+| A new convention | `constitution.md` |
+| A structural change | `architecture.md` |
+| A version or a tool | `tech-stack.md` |
+| A change of observable behavior | the spec's delta, merged into `capabilities/<capability>.md` with `sdd capability merge` (step 3 of `SKILL.md`) |
+
+An anchor document says where the technical piece is and links the capability. 
+
+>>> Bash: cd "<run>/repo"; SDD=D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/cli/bin/sdd.js; node $SDD capability merge --path .docs/sdd --artifact .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; echo exit $?; ls .docs/sdd/capabilities; cat .docs/sdd/capabilities/*.md; node $SDD capability check --path .docs/sdd --artifact .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; echo check $?; node $SDD session tokens --path "$(pwd)" --branch feature/0010-cancel-reason --artifact .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason 2>&1 | head
+<<< bookings.md: añadido «Cancelar pide un motivo de la lista»
+bookings.md: añadido «El listado de canceladas enseña el motivo»
+exit 0
+bookings.md
+# Capacidad — bookings
+
+## Propósito
+
+cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Requisitos
+
+### Cancelar pide un motivo de la lista
+
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro»
+- AND sin `--motivo` responde lo mismo: «mot
+
+>>> Bash: cd "<run>/repo"; git show --stat --format='%h %s' c04acf8 36e009e | cat; grep -E "^ℹ (tests|pass|fail)" /tmp/tmp.eHing9DN3l/suite.out; git log --format='%h %ad %s' --date=format:%H:%M ce3ce0d^..HEAD; grep -n "retro\|Retro" -i .docs/sdd/constitution.md | head -3
+<<< c04acf8 feat(bookings): cancelar con un motivo de la lista
+
+ src/app.js          | 14 +++++++++++---
+ test/cancel.test.js |  8 ++++----
+ 2 files changed, 15 insertions(+), 7 deletions(-)
+36e009e feat(bookings): listado de canceladas con su motivo
+
+ src/app.js          | 5 +++++
+ test/cancel.test.js | 4 ++++
+ 2 files changed, 9 insertions(+)
+ℹ tests 6
+ℹ pass 5
+ℹ fail 1
+856a10b 10:42 docs(sdd): tasks.md con la revisión final
+36e009e 10:42 feat(bookings): listado de canceladas con su motivo
+c04acf8 10:42 feat(bookings): cancelar con un motivo de la lista
+ce3ce0d 10:42 docs(sdd): abrir la feature 
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason"; sed -i 's/| 1 | Cancelar con motivo | done | 36e009e |/| 1 | Cancelar con motivo | done | c04acf8 |/' tasks.md; grep -n "^| [12] " tasks.md
+cat > walkthrough.md <<'EOF'
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Walkthrough — Motivo al cancelar
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-11-06
+---
+
+# Walkthrough — Motivo al cancelar
+
+## 1. Cambios realizados
+
+- `cancelar <sala> <día> --motivo <motivo>` valida el motivo contra la lista cerrada (cambio de planes, sala ocupada, otro), lo guarda con la reserva y responde `cancelada <sala> <día> (<motivo>)`. Sin motivo o con uno fuera de la lista responde `motivo no válido: …`. `src/app.js`, `test/cancel.test.js` — c04acf8.
+- `canceladas` lista las reservas canceladas con su motivo (`Norte lun — sala ocupada`). `src/app.js`, `test/cancel.test.js` — 36e009e.
+- Capacidad `bookings` creada con los dos requisitos de la spec: `capabilities/bookings.md`.
+
+## 2. Tiempo y coste: estimado vs real
+
+- No aplica: el proyecto no tiene `.docs/sdd/estimation.md`.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_.
+
+### Decisiones tomadas sin el dev-lead
+
+- Task 2: `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria — workaround hasta aislar el almacén por test — coste si es erróneo: la suite tarda el doble. Con fila en la deuda técnica del roadmap.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- `node --test --test-concurrency=1` en el árbol de cierre: 6/6. La primera pasada dio 5/6, con `test/ids.test.js` en rojo (ver 4.3); el fichero solo y la suite entera, repetidos en la rama y en un worktree desanclado de `develop`, dieron verde.
+- Gate: `node --test --test-concurrency=1` → suite: corrió 6/6 · sobre el commit de cierre.
+- Revisión final: ejes Spec (opus) y Código (sonnet), limpios, sobre 36e009e; Arquitectura no, por el plan. El único commit posterior, de documentación (`tasks.md`, 17 líneas), lo leí yo: revisado en el hilo, sin re-revisión.
+
+### 4.2 Smoke / tests
+
+- Validación en campo: 2026-11-06 · suite 6/6 · smoke 3/3 THEN con ejecución real (el listado, en un mismo proceso, porque el almacén es en memoria) · revisión final Spec y Código limpia sobre 36e009e. Nadie del equipo ha probado el cambio a mano.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Un motivo fuera de la lista responde «motivo no válido: …» | ejecución real | `cancelar Norte lun --motivo "porque sí"` → `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` responde lo mismo | ejecución real | `cancelar Norte lun` → `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real | `Norte lun — sala ocupada` (cancelar y listar en un mismo proceso) |
+
+### 4.3 Residuales / deuda generada
+
+- `test/ids.test.js` falla la primera vez que corre en un repo sin `.git/ids-store`: lee ese fichero, lo escribe y luego compara. Fila en la deuda técnica.
+- `--test-concurrency=1` esquiva la carrera sobre el almacén en memoria sin arreglarla. Fila en la deuda técnica.
+
+## 5. Aprendizajes
+
+- Un test que lee y escribe estado fuera del árbol de trabajo (`.git/ids-store`) da rojo solo en la primera pasada y verde en las siguientes: una repetición no basta para contrastarlo → deuda técnica del roadmap.
+
+## 6. Adendas
+
+EOF
+
+<<< 10:| 1 | Cancelar con motivo | done | c04acf8 | |
+11:| 2 | Listado de canceladas | done | 36e009e | |
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Edit: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md
+<<< The file <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md has been updated successfully.
+
+>>> Skill: sdd-kit:add-to-changelog
+<<< Launching skill: sdd-kit:add-to-changelog
+
+>>> Bash: cd "<run>/repo/.docs/sdd"; python3 - <<'EOF' 2>/dev/null || echo nopy
+EOF
+node -e '
+const fs=require("fs");
+let c=fs.readFileSync("changelog.md","utf8");
+c=c.replace("### Fixed\n","### Changed\n\n- **0010** — `cancelar` exige `--motivo` de una lista cerrada (cambio de planes, sala ocupada, otro), lo guarda con la reserva y `canceladas` lo lista. → [ref](specs/20261008-100000-feature-0010-cancel-reason/)\n\n### Fixed\n");
+fs.writeFileSync("changelog.md",c);
+let r=fs.readFileSync("roadmap.md","utf8");
+r=r.replace("lo enseña | ⏳ |","lo enseña | ✅ |");
+r=r.replace("| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n","| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| `test/ids.test.js` falla la primera vez que corre en un repo sin `.git/ids-store` (lee el fichero, lo escribe y compara): `TypeError [Error]: Cannot read properties of undefined (reading \x27trim\x27)` en `test/ids.test.js:12:19`. No se repite: verde solo y con la suite entera, en la rama y en `develop`. Hallada en la [0010](specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md), 2026-11-06 | Bajo: un rojo falso en la primera pasada | Patch para que el test no dependa de estado fuera del árbol |\n| `node --test --test-concurrency=1` esquiva la carrera de los tests sobre el almacén de reservas en memoria sin arreglarla ([ruling de la 0010](specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md)) | Bajo: la suite tarda el doble | Aislar el almacén por test y quitar la opción |\n");
+fs.writeFileSync("roadmap.md",r);'
+git diff --stat; cd ../..; SDD=D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/cli/bin/sdd.js; node $SDD decision check --path .docs/sdd; echo dec $?; node $SDD roadmap check --path .docs/sdd; echo road $?; node $SDD capability check --path .docs/sdd --artifact .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md; echo cap $?
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/roadmap.md                                                | 2 +-
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+Sin decisiones
+dec 0
+roadmap.md: línea 34: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+road 1
+Capacidades válidas: 1
+cap 0
+
+>>> Bash: cd "<run>/repo"; git status --porcelain; git diff .docs/sdd/roadmap.md .docs/sdd/changelog.md | cat -A | head -30
+<<<  M .docs/sdd/roadmap.md
+ M .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+?? .docs/sdd/capabilities/
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/timing.json
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md
+diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md$
+index 07eb108..22df666 100644$
+--- a/.docs/sdd/roadmap.md$
++++ b/.docs/sdd/roadmap.md$
+@@ -4,7 +4,7 @@$
+ ^M$
+ | # | M-CM-^Mtem | Estado |^M$
+ | --- | --- | --- |^M$
+-| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado 
+
+>>> Bash: cd "<run>/repo/.docs/sdd"; node -e '
+const fs=require("fs");
+let c=fs.readFileSync("changelog.md","utf8");
+const a=c.length;
+c=c.replace("### Fixed\r\n","### Changed\r\n\r\n- **0010** — `cancelar` exige `--motivo` de una lista cerrada (cambio de planes, sala ocupada, otro), lo guarda con la reserva y `canceladas` lo lista. → [ref](specs/20261008-100000-feature-0010-cancel-reason/)\r\n\r\n### Fixed\r\n");
+console.log(c.length-a);
+fs.writeFileSync("changelog.md",c);
+let r=fs.readFileSync("roadmap.md","utf8");const b=r.length;
+r=r.replace("| Patch cuando moleste |\r\n","| Patch cuando moleste |\r\n| `test/ids.test.js` falla la primera vez que corre en un repo sin `.git/ids-store` (lee el fichero, lo escribe y compara): `TypeError [Error]: Cannot read properties of undefined (reading \x27trim\x27)` en `test/ids.test.js:12:19`. No se repite: verde solo y con la suite entera, en la rama y en `develop`. Hallada en la [0010](specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md), 2026-11-06 | Bajo: un rojo falso en la primera pasada | Patch para que el test no dependa de estado fuera del árbol |\r\n| `node --test --test-concurrency=1` esquiva la carrera de los tests sobre el almacén de reservas en memoria sin arreglarla ([ruling de la 0010](specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md)) | Bajo: la suite tarda el doble | Aislar el almacén por test y quitar la opción |\r\n");
+console.log(r.length-b);
+fs.writeFileSync("roadmap.md",r);'
+cd ../..; git diff --stat | cat; node D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/cli/bin/sdd.js roadmap check --path .docs/sdd; git ls-files --error-unmatch .docs/sdd/specs/*0010*/timing.json 2>&1 | tail -1; cat .docs/sdd/specs/*0010*/timing.json | head -5
+<<< 229
+802
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/changelog.md                                              | 4 ++++
+ .docs/sdd/roadmap.md                                                | 4 +++-
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md | 2 +-
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+roadmap.md: línea 36: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: la cabecera de «Deuda técnica» debe ser «| Íte
+
+>>> Bash: cd "<run>/repo"; git reset --soft 36e009e && git add -A && git commit -q -F - <<'EOF'
+docs(sdd): cerrar la feature 0010, motivo al cancelar
+
+Walkthrough con la verificación en campo, capacidad bookings, changelog,
+roadmap (0010 ✅ y dos filas de deuda) y tasks.md con su revisión final.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -4; git status --porcelain; for s in c04acf8 36e009e; do git merge-base --is-ancestor $s HEAD && echo "$s ok"; done
+SDD=D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/cli/bin/sdd.js; node $SDD merge --sync --project-root "$(pwd)"; echo sync $?
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/capabilities/bookings.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/timing.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md', LF will be replaced by CRLF the next time
+
+>>> Bash: sed -n 40,68p D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/skills/sdd-archive/references/merge-recipe.md
+<<< ## The merge is a script
+
+```text
+sdd merge --project-root "<worktree>" [--push] [--verify "<merge gate>"] [--verified-at <sha>]
+```
+
+With `--verify`, the script integrates the destination (remote and local) into the change's branch in its worktree, resolving as `--sync` does, and runs `--verify` there, without the lock. Then, under one lock per repo, it integrates the destination's remote into the local destination, merges in the destination's clean checkout or in a temporary `merge-<id>` worktree beside the others and pushes the destination by its name. If the destination changed meanwhile o
+
+>>> Bash: cd "<run>/repo"; node D:/code/.worktrees/sdd-kit/feature-0305-archive-rework/.temp/k05r/cli/bin/sdd.js merge --project-root "$(pwd)" --verified-at 85c741d; echo exit $?; git log --oneline -3 develop; git worktree list; git status --porcelain
+<<< Fusionado feature/0010-cancel-reason en develop: daab895
+exit 0
+daab895 merge: feature/0010-cancel-reason en develop
+85c741d docs(sdd): cerrar la feature 0010, motivo al cancelar
+36e009e feat(bookings): listado de canceladas con su motivo
+<run>/repo 85c741d [feature/0010-cancel-reason]
+
+=== RESULTADO (30 turnos, 0.6065667 $)
+🦆 Ahora `cancelar` exige `--motivo` de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin motivo, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2: usé `node --test --test-concurrency=1` en el gate, sin consultarlo con el dev-lead. Esquiva la carrera de los tests sobre el almacén de reservas en memoria, pero no la arregla. Si me equivoqué, la suite tarda el doble. Tiene su fila en la deuda técnica.
+
+**Validación en campo.** La hice yo, porque el proyecto usa `validation.mode: field`. Nadie del equipo ha probado el cambio a mano.
+- Las 4 comprobaciones de la spec las ejecuté de verdad. El listado lo probé cancelando y listando en un mismo proceso, porque el almacén es en memoria.
+- La revisión final (Spec y Código) salió limpia sobre `36e009e`. Es la última revisión: no hubo re-revisión.
+- El único commit posterior era de documentación (`tasks.md`, 17 líneas). Lo leí yo y no pedí re-revisión.
+
+**Lo que ha pasado en el cierre**
+- **Suite roja en la primera pasada.** `test/ids.test.js` falló (5/6) con `Cannot read properties of undefined (reading 'trim')`. El test lee `.git/ids-store`, lo escribe y compara, así que falla solo si el fichero no existe. Ese fichero no lo toca esta feature.
+- **Contraste.** Solo el fichero y la suite entera salen verdes en la rama y en `develop`. La suite entera dio 6/6 en la rama y 5/5 en `develop`. Lo traté como «No se repite» y lo dejé como fila de deuda.
+- **`tasks.md` estaba mal.** Daba `36e009e` como commit de la Task 1 y es `c04acf8`. Lo corregí y lo anoté en la retro.
+- **Faltaba la carpeta de capacidades.** No existía `capabilities/`. `sdd capability merge` creó `bookings.md` y `capability check` sale válido.
+- **Cosas que no existen en el proyecto.** No hay `estimation.md` (no hubo tiempo real que registrar), ni ADR candidatas, ni CI de la base declarado.
+
+**Pendiente**
+- `roadmap check` sale rojo por dos líneas que ya estaban así: la cabecera de «Deuda técnica» y `v0.3.0 (2026-09-01)`. No las toqué; la migración v2.3.0 del kit las deja en forma de plantilla.
+- Push: no hecho, `merge.push` no lo autoriza.
+- Gate: `node --test --test-concurrency=1` → suite: corrió 6/6, sobre `85c741d`. La base ya estaba al día, así que no repetí la suite.
+
+**Kit.** Esta sesión no ha dejado ninguna línea `Retro: … → ticket del kit`. Si quieres igualmente el ticket de mejora del kit, dímelo y lo preparo con `sdd-feedback`.
+
+El aviso de inicio de sesión dice que el proyecto pide el kit 3.0.0 y esta sesión cargó el 2.3.4. El proyecto está en forma 2.x (`roadmap.md` dentro de `.docs/sdd`), así que cerré con esa. Actualizar el kit con `claude plugin update sdd-kit@sdd-kit --scope project` queda fuera de este cierre.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`daab895`) · push: no hecho: `merge.push` no lo autoriza

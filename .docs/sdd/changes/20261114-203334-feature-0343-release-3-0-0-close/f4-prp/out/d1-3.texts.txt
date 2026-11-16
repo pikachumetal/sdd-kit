@@ -1,0 +1,109 @@
+--- [6]
+Ahora el código: no hay `node_modules`, así que miro si el proyecto tiene dependencias antes de ejecutar nada.
+
+--- [15]
+Estoy abriendo el patch: ya está reservado el id 0012, así que creo la rama y hago el claim.
+
+--- [28]
+Estoy escribiendo `patch.md` con la causa raíz antes del fix. Ya reproduje el fallo: `cancelar Norte mar` devuelve «cancelada Norte mar».
+
+--- [36]
+RED confirmado: falla por el motivo correcto (devuelve `cancelada Norte mar`, y el test de después ya no encuentra la del lunes). Aplico el fix mínimo.
+
+--- [42]
+Ahora: espero la revisión del patch (un revisor sonnet). Queda: contestar sus hallazgos, hacer el commit del fix y cerrar con `sdd-archive`, ~10 min.
+
+Fix y test ya están hechos: `node --test` da 5/5 y el lint pasa. Falta la revisión antes del commit.
+
+--- [47]
+**Hallazgos**
+
+1. **Baja, `test/cancel.test.js:8`.** El test nuevo depende del orden de los tests del fichero.
+   - La aserción `libres` espera `'Sur'`, es decir, que `Norte lun` siga activa. Eso solo se cumple si este test corre antes de `cancelar una reserva activa` (línea 11), que cancela esa reserva.
+   - Si alguien reordena los tests, o añade uno antes que cancele `Norte lun`, el test falla sin que haya regresión.
+   - El orden actual es el correcto y hoy pasa. Es una fragilidad, no un fallo.
+   - Se arregla comprobando la reserva dentro del propio test. Por ejemplo, cancelar `Norte lun` al final de ese test y afirmar `cancelada Norte lun`. Así se prueba que seguía activa sin usar `libres` como testigo. La otra opción es documentar la dependencia con un comentario.
+
+2. **Baja, `patch.md` §4.** La tabla vacía de `| # | Caso | Resultado |` aparece duplicada, una vez sin filas justo antes del `Gate`. Es un resto de plantilla.
+
+**Comprobaciones que salen bien**
+
+- **Causa raíz (§2):** correcta. En la base, `findBooking` ignoraba `day` y devolvía la primera reserva activa de la sala. `cancelBooking` y `voidBooking` comparten esa función, y la respuesta usa el `day` pedido, no el de la reserva. Todo coincide con lo que dice el patch.
+- **Fix:** `src/app.js:10` añade `b.day === day`.
+  - `libres` no cambia, porque usa `freeRooms` y no `findBooking`.
+  - `cancelar` y `anular` devuelven `sin reserva <sala> <día>` cuando no hay reserva ese día, y siguen cancelando o anulando cuando coincide el día.
+  - No he encontrado regresiones.
+- **El test falla sin el fix:** sin el fix, `cancelar Norte mar` cancela la reserva del lunes y devuelve `cancelada Norte mar`, así que falla la primera aserción. `cancelar una reserva activa` también falla. Por eso el patch dice «1 pasa, 2 fallan» y es coherente. Ejecuté el RED con `git stash` de `src/app.js` y lo restauré. Cambios sin commitear intactos: `src/app.js`, `test/cancel.test.js` y `.docs/sdd/changes/`. La salida de ese RED no se mostró por el formato del reporter, así que me baso en el razonamiento y en el 1 pasa, 2 fallan del patch.
+- **Aislamiento:** `app.test.js` corre en otro proceso, así que `bookings` no se comparte con él.
+- **Gate:** `node --test` pasa 5/5 y `node scripts/lint.mjs` dice «sin hallazgos».
+
+--- [54]
+El fix está en el commit `b3baeac`. Ahora: cierro con `sdd-archive`, que escribe el hash en `patch.md` y pide tu validación.
+
+--- [63]
+Para cerrar el patch 0012 necesito que lo valides tú. El proyecto no declara `validation.mode`, así que cuenta como `manual`. Todavía no he fusionado nada.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes aunque el martes no tuvieras ninguna, y contestaba «cancelada Norte mar». Ahora contesta `sin reserva Norte mar` y no toca la del lunes. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día | `ejecución real` + `suite` | `sin reserva Norte mar` |
+| `cancelar Norte lun` sigue funcionando | `ejecución real` + `suite` | `cancelada Norte lun` |
+| `anular Norte mar` sin reserva ese día | `ejecución real` + `suite` | `sin reserva Norte mar` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 y lint sin hallazgos, sobre `b3baeac`. Tras fusionar con la base se repite si hace falta.
+
+**Sin probar**
+
+- Nada.
+
+**Avisos del cierre**
+
+- `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. El `merge --check` lo señala, así que antes de fusionar te presentaré el merge y esperaré tu OK.
+- `.temp/` no está en `.gitignore` (el proyecto no tiene). El panel escribe ahí su resultado. Te propongo añadirlo.
+- Solo hay un worktree, así que no hay otras ramas abiertas a la vez.
+
+Panel: plan B en http://127.0.0.1:10807/. No ve la app, así que si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0012` · worktree `<run>/repo`
+
+Es una CLI sin servidor: no hay entorno que arrancar.
+
+```
+cd <run>/repo
+```
+
+1. Tu caso: Norte el martes, sin reserva → debe decir `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Y la del lunes sigue ahí → debe decir `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. `anular` con el mismo caso → debe decir `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+Cada comando arranca con la reserva del lunes activa, porque los datos viven en memoria de cada ejecución.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

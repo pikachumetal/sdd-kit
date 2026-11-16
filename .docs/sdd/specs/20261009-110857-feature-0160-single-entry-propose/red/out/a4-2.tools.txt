@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a .docs/sdd .docs/sdd/capabilities 2>&1 | head -50; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1 | head -40
+<<< develop
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat constitution.md mission.md tech-stack.md roadmap.md; ls specs; ls ../..
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la prue
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-red/skills/sdd-start-feature/references" && cat modo-lite.md; sed -n 1,60p nombrado.md; cd ../../../../runs/red/a4-2/repo && ls src test; wc -l src/app.js
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat estimation.md | head -30
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo real.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Features y p
+
+=== RESULTADO (8 turnos, 0.25477780000000005 $)
+Ahora: confirmar carril, modo y perfil antes de pasar a la spec. Queda: tu respuesta, y luego la spec con sus decisiones a validar, ~15 min.
+
+He leído `constitution`, `mission`, `tech-stack`, `roadmap` y `estimation`. No hay `capabilities/`, `architecture.md` ni `sdd-kit.local.json`. La rama es `develop`, así que no hay fila pendiente en el roadmap que dé el enunciado.
+
+**Carril: feature, no patch.** Lo pides como patch, pero el patch es para una solución ya fijada, y aquí no lo está:
+- **La regla es nueva.** El umbral de 10 reservas en un día no existe hoy.
+- **Faltan decisiones.** Hay que fijar qué texto sale, dónde y cuándo. También si avisa al reservar o en un listado, y si bloquea o solo avisa. Esas decisiones las tendría que tomar yo, y por eso va como feature.
+- **Tasks previstas: 1 o 2**, en una sola superficie (`src/app.js` y su test). No propongo partirla.
+
+**Modo lite, que dejo a tu confirmación.** Compruebo las condiciones una por una:
+- **Flujo existente y legible:** a medias. `reservar` hoy solo devuelve `reserva semanal creada` y no guarda nada, así que no hay un flujo de reserva donde colgar el contador. La spec tendrá que fijar qué cuenta como reserva.
+- **Contratos públicos:** no cambia ninguno. Solo se añade un mensaje a la salida de la CLI.
+- **Schema de datos:** no cambia.
+- **Un solo módulo:** sí, `src/app.js`.
+- **Estimación ≤ media jornada:** sí, previsiblemente.
+
+Con la primera condición a medias, recomiendo el **modo full**, con spec y plan. Lite sigue disponible si prefieres.
+
+**Perfil vigente: `delegate`**, sale de `.docs/sdd/sdd-kit.json` (nivel proyecto). Puedo cambiarlo solo para esta feature.
+
+**Id:** `ids.mode` es `sequence` y no hay fila en el roadmap. Reservaré el id con `sdd id next --reserve`, abriré `feature/<id>-avisa-sala-10-reservas` desde `develop` y la apuntaré en el roadmap.
+
+**Aprobación por delegación.** Con `delegate`, tienes una opción más si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación». Con ella no paro en el gate de la spec. La validación del trabajo sigue siendo tuya.
+
+¿Qué eliges?
+1. **Feature en modo full, perfil `delegate`, spec con parada para tu aprobación** (recomendada).
+2. **Feature en modo lite**, con el resto igual.
+3. **Feature en modo full con aprobación por delegación** de la spec.
+4. Otro perfil para esta feature, o cambiar el enunciado.

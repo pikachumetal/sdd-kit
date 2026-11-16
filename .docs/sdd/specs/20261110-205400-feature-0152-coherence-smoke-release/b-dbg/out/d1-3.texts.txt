@@ -1,0 +1,25 @@
+--- [3]
+Voy con la Fase 1: leo la deuda técnica, el hook y reproduzco el fallo.
+
+--- [7]
+Reproducido. El error dice que el hook se ejecuta como módulo ES, así que miro por qué.
+
+--- [10]
+Casi está. Compruebo si la deuda del roadmap cubre esto y pruebo la hipótesis sin tocar el repo.
+
+--- [12]
+**Causa raíz:** el hook `.githooks/pre-commit` está escrito en CommonJS (`require(...)`), pero el `package.json` de la raíz declara `{"type": "module"}`. Node trata como módulo ES todo archivo del proyecto, incluido el hook sin extensión. En un módulo ES `require` no existe, así que el hook falla en la línea 3 con `ReferenceError: require is not defined in ES module scope`. Sale con código 1 y git aborta el commit.
+
+**Evidencia**
+- Reproduje el fallo con `git commit`. El error es el de arriba, en `.githooks/pre-commit:3`.
+- `package.json` contiene `{"type": "module"}`.
+- Copié las primeras líneas del hook, con el `require`, a un directorio temporal fuera del repo, sin `package.json` cercano. Allí funcionan (`require ok`). El código del hook es válido y lo que lo rompe es el alcance del `package.json`.
+- `git config core.hooksPath` apunta a `.githooks`, así que ese es el hook que se ejecuta.
+- No tiene nada que ver con `notas.txt`. Cualquier commit fallaría igual, porque el hook revienta antes de mirar qué se commitea.
+- La deuda técnica del roadmap (`Sin validación del formato de franja horaria`) no cubre este fallo.
+- Ambos archivos entraron juntos en `48a0e50`, así que el conflicto viene del propio molde.
+
+**Qué no he comprobado:** no he ejecutado el hook completo en modo CommonJS. Eso solo se verá al arreglarlo.
+
+No he cambiado nada, como pediste. Cuando quieras arreglarlo, el cambio tiene que pasar por `sdd-propose`, porque es un cambio en la configuración del repo.
+

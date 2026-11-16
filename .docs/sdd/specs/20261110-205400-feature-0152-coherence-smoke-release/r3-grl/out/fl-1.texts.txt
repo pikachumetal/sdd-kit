@@ -1,0 +1,35 @@
+--- [11]
+Ahora: te cuento cómo leo la feature y revisa el flujo contigo antes de escribir la spec. Queda: tu respuesta a una pregunta, la spec para aprobar, y luego plan e implementación sin más paradas; unos 10 min hasta la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido.** Cada reserva tiene un estado: `pendiente`, `confirmada` o `cancelada`.
+
+| Desde | Puede ir a |
+| --- | --- |
+| pendiente | confirmada, cancelada |
+| confirmada | cancelada |
+| cancelada | pendiente |
+
+Cualquier otro salto se rechaza. Por ejemplo, confirmar una cancelada, o volver de confirmada a pendiente. Preveo unas 3 tareas, todas en `src/app.js`, así que no propongo partirla.
+
+**¿Está bien el flujo?** Las transiciones son coherentes, y no veo que falte ninguna. Veo un hueco que sí hay que decidir: **reabrir una cancelada**.
+
+Hoy `libres` mira las reservas por sala y franja. Si una reserva cancelada deja libre la sala, otra persona puede reservarla después. Entonces, al volver la cancelada a pendiente, habría dos reservas en la misma sala y franja.
+
+Dos cosas más las decido yo y las dejo en la spec para que las valides:
+- Las reservas pendientes y las confirmadas ocupan la sala. Las canceladas no.
+- `cancelar` pasa a ser la transición a cancelada. Hasta ahora borraba la reserva, y conserva el respeto al día del patch 0007.
+
+**Pregunta:** ¿qué pasa si reabres una cancelada y su sala y franja ya las ocupa otra reserva?
+
+1. **Se rechaza la reapertura (recomendada).** La reserva sigue cancelada y el mensaje dice qué reserva ocupa el hueco. Nunca hay dos reservas activas en el mismo hueco.
+2. **Se permite y quedan solapadas.** Es más simple, pero `libres` y las confirmaciones dejan de ser fiables.
+3. **Se reabre y se avisa del choque.** Queda pendiente con una advertencia, y alguien tiene que resolverlo después.
+
+Con la 1, la spec incluye un escenario de reapertura bloqueada.
+

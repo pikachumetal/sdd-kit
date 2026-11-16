@@ -1,0 +1,43 @@
+--- [6]
+### Strengths
+- The change is small and easy to follow. `InvoiceList` stays a function component with hooks. The `Status` type removes the repeated `(typeof STATUSES)[number]`.
+- The UI text is in Spanish.
+- The server prefs endpoints follow the style of the existing ones, and `retries` keeps the declared `0` locally and `2` in CI.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`playwright.config.ts:8-9`: timeouts raised above the declared value with no reason.** `timeout: 90_000` and `expect: { timeout: 20_000 }` replace the default timeouts. The only mention of timeouts is `.docs/sdd/steering/operations.md:22` ("por defecto"), and it has no reason for the change. Raised timeouts hide slowness or races. Remove both lines. If they are really needed, write the reason in `operations.md`.
+2. **`e2e/0024-remember-filter.spec.ts:24` and `:33`: the new E2E tests name no core flow.**
+   - The core flows are sum a column, export to PDF, and mark an invoice as paid.
+   - The "recuerda el filtro" test does not mark an invoice as paid. It only selects a filter.
+   - The "cuatro opciones" test checks a static detail of the UI.
+   - Move both one layer down, to a component or unit test of `InvoiceList` with a mocked `fetch`. Or keep an E2E only if it extends a core flow.
+3. **`e2e/0024-remember-filter.spec.ts:27`: `expect.poll(() => savedStatus(request))` waits on server state between two user actions, with no comment.** The user never sees that state. If the app saved the value late, the test would wait for it instead of catching the failure. The `PUT` in `choose` is fire-and-forget, so leaving the page right after selecting can drop the save. Remove the poll and the `savedStatus` helper (`e2e/helpers.ts:53`). Assert only what the user sees, after the navigation.
+4. **`server/api.js:94-96`: the filter preference is global, not per user.** `prefs` is keyed only by name. `clipboard` and `cells` read `x-user`; `prefs` does not. One user's filter shows up for every other user. `InvoiceList.tsx:115,119` also sends no `x-user` header. Key `prefs` by `${user}:${name}` and send the header from the client the same way the other calls do.
+5. **`src/invoices/InvoiceList.tsx:114-120`: weak error handling and a race in the preference load.**
+   - The `GET` has no `.catch`, so a network failure gives an unhandled rejection. The `PUT` result is ignored.
+   - `saved.value` is passed to `setStatus` without checking it is one of `STATUSES`. A bad value gives a `select` with no matching option and a wrong list.
+   - If the user picks a status before the `GET` returns, the late response overwrites their choice. Cancel the effect on unmount or on a choice, check the value against `STATUSES`, and handle the errors.
+
+#### Minor (Nice to Have)
+- `InvoiceList.tsx:119`: the `PUT` sends JSON without `content-type: application/json`. It works only because the server ignores the header.
+- `InvoiceList.tsx:115`: the `GET` and `PUT` paths are the same string repeated. Name it as a constant (Clean Code, "magic numbers named constants", as a judgement).
+
+### Recommendations
+- Cover the persistence in a component test with a mocked `fetch`, and keep any E2E tied to the invoice-paid flow.
+- I did not run the suite, as instructed. Before merging, run the full E2E with the timeouts removed to confirm the tests pass at the defaults.
+
+### Declined to judge
+- Whether remembering the filter on the server (rather than in `localStorage`) was what the spec asked: the spec folder is outside the package, so this belongs to the Spec axis.
+- Whether the `/facturas` route and the `Hojas` and `Facturas` links exist elsewhere: they are outside the diff and belong to the Architecture axis.
+- The existing `read` in `server/api.js` throws on invalid JSON: it was already there and is not part of this change.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works for a single user. The E2E layer breaks the project's rules on core flows, raised timeouts and waiting on server state. The shared server preference and the unhandled load errors would show up in real use.
+

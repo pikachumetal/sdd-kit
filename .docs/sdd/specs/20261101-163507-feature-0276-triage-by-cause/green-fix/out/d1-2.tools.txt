@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cd "<run>/repo" && git config core.hooksPath; ls -la .githooks; echo ---; cat .githooks/pre-commit; echo ---; cat .docs/sdd/steering/debt.md 2>/dev/null; echo ---; cat notas.txt | head -50
+<<< .githooks
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov  1 18:39 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  1 18:39 ../
+-rwxr-xr-x 1 <user> 197609 845 Nov  1 17:33 pre-commit*
+---
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+const { spawnSync } = require('node:child_process');
+const { rmSync } = require('node:fs');
+const { join } = require('node:path');
+
+const git = (args, options = {}) => spawnSync('git', args, { stdio: 'inherit', ...options }).status === 0;
+const tmp = join(spawnSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).stdout.tri
+
+>>> Bash: cd "<run>/repo" && echo "direct:"; node .githooks/pre-commit; echo "exit=$?"; git worktree list; git rev-parse --git-dir
+<<< direct:
+file:///<run>/repo/.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+                      ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+    at file:///<run>/repo/.githooks/pre-commit:3:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.10.0
+exit=1
+<run>/repo 36a4f35 [develop]
+.git
+
+>>> Bash: cd "<run>/repo" && cat package.json; ls -a; git log --oneline -3 -- package.json .githooks
+<<< {"type": "module"}
+./
+../
+.docs/
+.git/
+.githooks/
+notas.txt
+package.json
+README.md
+src/
+test/
+36a4f35 feat: base del molde
+
+=== RESULTADO (6 turnos, 0.12292439999999998 $)
+El pre-commit falla porque `package.json` declara `"type": "module"` y el hook está escrito en CommonJS. Lo reproduje ejecutando el hook a mano. No he tocado nada.
+
+**Error**
+```
+.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+ReferenceError: require is not defined in ES module scope
+```
+
+**Por qué pasa**
+- `package.json` es `{"type": "module"}`.
+- `.githooks/pre-commit` no tiene extensión, así que Node mira el `type` del `package.json` más cercano para decidir cómo cargarlo. Lo trata como ESM.
+- El hook usa `require(...)`, que no existe en ESM. Node lanza el `ReferenceError` en la línea 3 y sale con código 1, y git aborta el commit.
+- `notas.txt` no tiene nada que ver. Cualquier commit fallaría igual, porque el hook rompe antes de mirar qué se commitea.
+
+**Qué descarté**
+- El proyecto no tiene `.docs/sdd/steering/debt.md`, así que ninguna deuda registrada cubre este fallo.
+- `core.hooksPath` apunta a `.githooks` y el hook es ejecutable. Se carga y se ejecuta bien.
+- Hay un solo commit, `36a4f35`, que introdujo `package.json` y el hook a la vez. No hay un cambio posterior que lo haya roto.
+
+**Qué no he comprobado**
+El hook falla en la línea 3, así que el resto de su lógica nunca se ha ejecutado. Eso incluye el worktree temporal en `<git-dir>/hook-check`. Cuando se arregle la carga del módulo, podría salir otro fallo más adelante. Ese lo trataría como una hipótesis aparte.
+
+Cuando quieras que lo arregle, dime y paso a la Fase 4 (test que falle primero y después el cambio).

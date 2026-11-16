@@ -1,0 +1,62 @@
+--- [3]
+Voy a leer el estado real del roadmap y la configuración.
+
+--- [19]
+El módulo de informes está apuntado en el roadmap y no he arrancado nada: ni rama, ni spec, ni código. El commit `5132f86` en `develop` lo recoge, y `sdd roadmap check` da "Roadmap válido".
+
+`sdd roadmap publish` se negó porque `ROADMAP.md` tenía mis cambios sin confirmar en `develop`. Hice el commit de `ROADMAP.md` y `proposal.md` a mano con `git commit`. El efecto es el mismo que con `publish`.
+
+Es algo grande (3 features), así que hay una propuesta, `0010`, en `.docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md`. Tiene las reglas con ejemplos con datos, y las filas apuntan a ella. Las tres filas están en Next:
+
+| Orden | Id | Feature | Tras | Tamaño |
+| --- | --- | --- | --- | --- |
+| 1 | 0011 | Informe de ocupación por sala | — | M |
+| 2 | 0012 | Exportar el informe a Excel | 0011 | S |
+| 3 | 0013 | Aviso semanal a los responsables | 0011, 0012, 0008 | M |
+
+La 0013 va detrás de la 0008 porque necesita el envío de correo que esa fila construye.
+
+Como me dijiste "decide tú", decidí yo estos detalles. Los marqué como supuestos en la propuesta para confirmarlos con el cliente:
+- **Horario:** de lunes a viernes, de 08:00 a 20:00, que son 60 h por sala y semana.
+- **Ocupación:** horas reservadas entre horas disponibles de la semana natural (lunes a domingo). Con las reservas actuales, Norte da 3,3 % y Sur 0,0 %.
+- **Excel:** un `.xlsx` real, no un CSV, con una fila por sala. La librería se elige en el spec de la 0012.
+- **Aviso:** los lunes a las 08:00, con la ocupación de la semana anterior y el `.xlsx` adjunto. Lo lanza un cron externo, sin proceso residente.
+- **Responsables:** una lista de correos en la configuración, porque el producto no tiene el concepto de "responsable".
+
+La primera fila es la 0011. Este es su prompt de arranque:
+
+### *✨ 0011 — Informe de ocupación por sala*
+***Nombre:*** `feature/0011-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0011 con sdd-propose, carril feature: un comando que da el porcentaje de ocupación semanal de cada sala.
+
+Alcance:
+- src/app.js (nuevo comando de informe) y src/informes.js (cálculo)
+- Lista todas las salas, también las sin reservas; una reserva semanal cuenta cada semana; una cancelada no cuenta
+
+Fuera de alcance:
+- exportar a Excel: 0012
+- el aviso por correo: 0013
+
+Decisiones ya tomadas:
+- Horario lun-vie 08:00-20:00 (60 h por sala y semana), porque la herramienta no tiene horario propio (supuesto a confirmar con el cliente)
+- Periodo: semana natural lun-dom, por defecto la última completa
+- Ocupación = horas reservadas / 60, en % con un decimal: Norte con lun 10:00-12:00 → 3,3 %; Sur sin reservas → 0,0 %
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261114-100000-proposal-0010-informes/proposal.md, §Reglas de negocio y §Reparto, y la fila 0011 del roadmap
+
+Nada que saldar.
+
+Está hecho cuando el comando del informe, con las reservas de ejemplo, imprime `Norte 3,3 %` y `Sur 0,0 %`, y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

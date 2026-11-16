@@ -1,0 +1,121 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json && echo ---- && cat .docs/sdd/steering/debt.md && echo ---- && cat ROADMAP.md && git branch --all
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-
+
+>>> Bash: cd "<run>/repo" && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/k43c/cli/bin/sdd.js" roadmap check --path .docs/sdd; echo; cat docs/qa/2026-10-12-informe.md; cat package.json; ls -R src test docs | head -50; git log --oneline -5
+<<< debt.md: aviso: línea 14: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+Roadmap válido
+
+# Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+{"type": "module"}
+docs:
+qa/
+
+docs/qa:
+2026-10-12-informe.md
+
+src:
+app.js
+
+test:
+app.test.js
+fa834d2 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js; ls .docs/sdd .docs/sdd/steering
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: cd "<run>/repo" && node src/app.js exportar | od -c | head -3; node src/app.js exportar; node src/app.js libres --planta 2; node src/app.js libres --planta 1; cat .docs/sdd/steering/operations.md | head -30
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+Norte,lun,10:00-12:00
+Norte (planta 1)
+Norte (planta 1)
+# Operations — salas
+
+## Comandos
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+## Testing
+
+- Tests: `node --test` (carpeta `test/`).
+
+=== RESULTADO (7 turnos, 0.1424297 $)
+Estoy en el paso de proponer el triaje. He comprobado el estado real, he pasado `sdd roadmap check` y he reproducido los dos ítems de «Por triar». Como el perfil es `delegate`, no escribo nada hasta que decidas.
+
+## Propuesta
+
+**1. `salas libres --planta 2` lista salas de la planta 1 → «Lista»**
+- **Reproducido:** `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- **Causa:** `defecto del producto`. `roomsOnFloor` en `src/app.js` filtra con `floors[room] <= floor`, cuando debería filtrar por igualdad.
+- **Impacto:** Medio.
+- **Evidencia:** el comando anterior con su salida. Sur está en la planta 3 y tampoco debería salir con `--planta 1`.
+- **Remedio temporal:** `ninguno`. Solo hay un caso y no encuentro un remedio en el informe.
+- **Arreglo:** `—`, porque es un defecto del producto.
+- **Destino:** una fila nueva en Now o Next, con tamaño S y `**Carril:** patch`. Lleva un test de comportamiento nuevo, así que sigue siendo patch. Su id lo reservaría con `sdd id next --reserve` al escribir.
+- **Solución:** el brief diría «solución por confirmar». No he probado el cambio a `===` en una copia.
+
+**2. La exportación a CSV pierde las tildes desde la 1.4.2 → «En espera»**
+- **No reproducido:** `node src/app.js exportar` imprime `sala,día,franja`, y en bytes la `í` es `c3 ad`, UTF-8 correcto. El informe habla de `d?a`, que apunta a la consola o al programa que abre el CSV (por ejemplo Excel en Windows), no al código.
+- **Causa:** `sin determinar`.
+- **Falta:** `reproducirlo`. Hace falta saber con qué herramienta lo abrió QA.
+- **Fecha:** 2026-10-12.
+
+**3. «Las reservas de más de 8 h no avisan al responsable» → descartar con razón `caducada`**
+- Lleva en espera desde 2026-07-01 y el check avisa de que caduca: dos releases sin 2.º caso.
+- Sale de `debt.md`. La razón queda en el cuerpo del commit.
+- Si vuelve a aparecer, entrará en «Por triar» como fila nueva.
+
+**4. Segundo caso entre ítems**
+- Los dos ítems de «Por triar» vienen del mismo informe, pero no comparten cambio ni remedio. Son problemas distintos y no se fusionan.
+
+¿Lo escribo así? Puedes cambiar el destino del ítem 1 (Now o Next), o decir «decide tú» y lo escribo con estas decisiones en el commit. Al escribir reservaría el id, ejecutaría `roadmap check`, publicaría con `sdd roadmap publish` y te daría el prompt de la fila nueva.

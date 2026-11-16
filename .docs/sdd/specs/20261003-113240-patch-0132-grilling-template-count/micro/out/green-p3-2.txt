@@ -1,0 +1,42 @@
+Esta es la pregunta que le haría ahora:
+
+---
+
+❓ **¿En qué formato se exportan las reservas?**
+
+Lo que encontré:
+- `tech-stack.md`: Node 22 sin dependencias externas, y cada reserva tiene sala, día y franja. Cualquiera de estos formatos se escribe a mano en pocas líneas, sin librerías.
+- El repo no dice qué forma tienen el día y la franja: puede ser `lunes` o `2026-10-05`, y `9-10` o `09:00-10:00`. Solo pesa en la opción 3️⃣.
+- No verificado (no tengo permiso para consultar la web): Google Calendar importa archivos `.ics` y también CSV con columnas fijas (`Subject`, `Start Date`, `Start Time`…).
+
+En los ejemplos uso una reserva `reservar Norte lunes 9-10`.
+
+1️⃣ **CSV**: una fila por reserva.
+```
+sala,dia,franja
+Norte,lunes,9-10
+```
+La hoja de cálculo lo abre con doble clic, un script lo lee línea a línea y se lee bien a simple vista. A cambio, todo es texto sin tipos. Si un nombre de sala lleva coma hay que ponerlo entre comillas. Para meterlo en un calendario habría que adaptar las columnas a mano, y aún no he comprobado que funcione.
+
+2️⃣ **JSON**:
+```
+[{"sala":"Norte","dia":"lunes","franja":"9-10"}]
+```
+Un script lo carga con `JSON.parse` y le da los campos ya separados. A cambio, la hoja de cálculo no lo abre directamente, ningún calendario lo importa, y con muchas reservas cuesta leerlo.
+
+3️⃣ **iCalendar (`.ics`)**: un evento por reserva.
+```
+BEGIN:VEVENT
+SUMMARY:Norte
+DTSTART:20261005T090000
+…
+```
+Cualquier calendario lo importa tal cual. A cambio, no sirve para hojas de cálculo ni para leerlo a ojo. Además exige fecha y hora concretas: si el día es `lunes`, habría que decidir de qué semana es o crearlo como evento que se repite.
+
+4️⃣ 🔀 **CSV y `.ics`**, eligiendo uno al exportar (`exportar --csv` / `exportar --ics`): cubre los cuatro usos sin adaptaciones. A cambio, son dos formatos que mantener y probar, y arrastra el coste de fecha y hora de la 3️⃣.
+
+➡️ **Te recomiendo 1️⃣**, porque de los cuatro usos que mencionas (hojas de cálculo, calendarios, scripts y leerlas) CSV cubre tres sin ningún paso intermedio. A cambio, el calendario queda peor resuelto. Si el calendario es el uso principal, la opción sería 4️⃣.
+
+---
+
+Hay otro punto que dejo para la pregunta siguiente. Según `tech-stack.md`, las reservas viven en memoria y se pierden al salir, así que hoy un `salas exportar` lanzado aparte no tendría nada que exportar. Habrá que decidir si las reservas se guardan entre ejecuciones o si la exportación ocurre en la misma sesión. Esa decisión no cambia la del formato.

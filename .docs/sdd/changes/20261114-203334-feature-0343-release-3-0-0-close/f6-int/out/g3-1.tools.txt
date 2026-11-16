@@ -1,0 +1,135 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs/sdd 2>/dev/null | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "r
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test; node "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k7354/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; head -60 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -40; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k7354/skills/sdd-propose/references"; sed -n 1,60p control-profiles.md; cat nombrado.md | head -60
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+>>> Bash: cd "<run>/repo" && pwd && git status --short && node "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k7354/cli/bin/sdd.js" id next --project-root "$(pwd)" --reserve
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< <run>/repo
+0010
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git checkout -b feature/0010-lista-espera && node "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k7354/cli/bin/sdd.js" id claim --project-root "$(pwd)"
+<<< Switched to a new branch 'feature/0010-lista-espera'
+sin remoto: la 0010 vale (contador local)
+
+=== RESULTADO (11 turnos, 0.1808478 $)
+Ahora: he reservado el id 0010 y creado la rama `feature/0010-lista-espera`. Queda: una o dos preguntas de diseño, luego la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no comprueba si la sala está ocupada. Quieres que, si intentas reservar una sala en una franja donde ya hay reserva, la herramienta te apunte en una lista de espera para esa sala y franja. Sobre qué ocurre después, de momento no he asumido nada. Corrígeme si lo he entendido mal.
+
+Estimo 2 o 3 tareas internas, todas en `src/app.js`, así que no propongo dividirla.
+
+❓ **¿Qué ocurre cuando la sala se libera?**
+Hoy `cancelar` solo devuelve un texto y no modifica nada, y los datos viven en memoria. Mi propuesta es el comportamiento de abajo, con `reservar Norte lun 10:00-12:00` estando Norte ocupada.
+1️⃣ **Solo apuntarte y consultar.** Sale `Norte ocupada; en espera (1.º)`. Existe un comando `espera` para ver tu posición. Al cancelar la reserva no pasa nada automático. Es lo más simple, pero tú tienes que volver a mirar.
+2️⃣ **Promoción automática.** Mismo mensaje al apuntarte. Cuando se cancela la reserva, el primero de la lista pasa a ser la reserva y el comando lo dice: `cancelada lun 10:00; Norte pasa a quien esperaba`. Es más útil, pero cambia el comportamiento de `cancelar`, que ya tiene un patch (0007).
+3️⃣ **Aviso al liberarse.** Al cancelar se dice quién era el primero de la lista, pero la reserva no se crea sola. Queda en un punto medio, aunque obliga a una confirmación manual.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta no guarda nada entre ejecuciones y el aviso por correo (0008) todavía no existe. Sin eso, 2️⃣ y 3️⃣ no tendrían a quién avisar de forma útil. A cambio, tendrás que consultar la lista a mano.
+
+¿Cuál eliges?
+
+=== RESULTADO (1 turnos, 0.2024724 $)
+Anoto feature full con perfil delegate. Tu motivo me hace corregir mi recomendación anterior. Con la 1️⃣ seguirías teniendo que volver a mirar, solo que el comando sería `espera` en vez de `libres`. Eso es justo lo que quieres evitar.
+
+Hay además un hecho del código que cambia el planteamiento. `src/app.js` guarda las reservas en un array en memoria y cada ejecución arranca de cero. Una lista de espera que sobreviva entre ejecuciones necesita guardar su estado en un fichero, cosa que hoy no existe. Y `cancelar` hoy solo devuelve un texto, no libera nada.
+
+❓ **¿Qué debe pasar cuando se libera la sala, para que no tengas que mirar?**
+Caso: `reservar Norte lun 10:00-12:00` con Norte ocupada, y luego `cancelar lun 10:00` sobre la reserva que la ocupaba.
+1️⃣ **Promoción automática.** Al reservar sale `Norte ocupada; en espera (1.º)`. Al cancelar sale `cancelada lun 10:00; Norte pasa a quien esperaba` y la reserva queda hecha. No tienes que mirar nada.
+2️⃣ **Aviso al liberarse.** Al cancelar sale `cancelada lun 10:00; Norte libre, el 1.º en espera puede reservar`. La reserva no se crea sola y tienes que ejecutarla tú.
+3️⃣ **Solo lista consultable.** Un comando `espera` muestra tu posición y al cancelar no pasa nada. Es lo más simple, pero sigue exigiendo mirar a mano.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que elimina el volver a mirar. A cambio, hay que guardar reservas y espera en un fichero, y `cancelar` pasa a modificar datos de verdad. Eso amplía el alcance a unas 3 tareas.
+
+¿Cuál eliges?

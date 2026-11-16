@@ -1,0 +1,64 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+Voy a cerrar la 0010. Antes de escribir ningún registro he encontrado tres cosas que afectan al cierre. Las compruebo y sigo.
+
+--- [33]
+The diff file couldn't be read, so I'll rebuild the diff from git in the review checkout.
+
+--- [35]
+La re-revisión de `9e8c08a..c75beb9` está en marcha en segundo plano, con su vigilancia de silencio. Hasta que vuelva no escribo ningún registro del cierre, y espero su resultado.
+
+Lo que he encontrado hasta ahora:
+
+- **Revisión final incompleta.** La revisión final es de `9e8c08a`. Después hay dos commits de código sin revisar: `06537d0` (la pasada de fix) y `c75beb9`. No hay línea `Re-revisión:` en `tasks.md`.
+- **`06537d0` convirtió `src/app.js` de CRLF a LF entero.** El cambio real es de una línea, pero el diff muestra 96. Se lo he dicho al revisor.
+- **`c75beb9` añade un comportamiento que la spec no recoge.** `canceladas` sin canceladas responde «sin canceladas», y no hay test ni THEN en la spec. Es una decisión de lo que ve el usuario sin el dev-lead. Irá a «Decisiones tomadas sin el dev-lead» del walkthrough.
+- **Tu validación no lo cubre.** «Probé cancelar con motivo y sale en canceladas» vale como validación `manual`, y la registraré con tus palabras literales. Pero no cubre el «sin canceladas» ni los casos de error.
+- **El merge no puede ir automático.** `sdd merge --check` falla con `falta 'merge.into' o 'merge.noFf'`, porque `sdd-kit.json` no tiene bloque `merge`. Aunque el perfil es `delegate`, con el bloque incompleto tengo que presentarte la política y esperar tu respuesta. Mi propuesta será `develop` como destino, según la constitución.
+- **Sin cambios sin commitear ni otras ramas abiertas.** `git status` está limpio y `git worktree list` solo muestra esta rama, así que no hay aviso de «Abiertas a la vez».
+
+Cuando llegue la re-revisión escribo `Re-revisión:` en `tasks.md` y sigo con la suite, el walkthrough, el roadmap y la capacidad `bookings`.
+
+--- [42]
+### Finding Verdicts
+- [Important, code axis] `--motivo "otro "` rejected as «motivo no válido»: **ADDRESSED**. `src/app.js:16` now returns `params[index + 1]?.trim()`, so `"otro "` reaches the check at `src/app.js:20` as `otro` and passes. Because of the optional chaining, a `--motivo` with no value after it still gives `undefined`, which is still rejected as the spec requires (spec.md:54). The new test at `test/cancel.test.js:17-19` checks the bug. Before the fix, `"otro "` returned «motivo no válido…». Validation runs before the booking lookup (`src/app.js:20-22`), so now it gets past validation and returns «sin reserva Sur mar». The test is weak, though. It only proves the reason is no longer rejected. It does not check that the trimmed value is what gets echoed and stored (for example «cancelada … (otro)»). This is Minor and does not block.
+- Check I ran: `node --test test/cancel.test.js` at c75beb9. 4/4 pass, including «cancelar con un espacio tras el motivo».
+
+### New Breakage in the Fix Diff
+- **Important**, `src/app.js:36` (commit `c75beb9`): `canceladas` with no cancellations used to print an empty line and now prints «sin canceladas». This is a new user-visible behaviour, not a spec deviation. It does not contradict the spec, but nothing in the spec covers it. The delta (spec.md:56-59) only defines the listing when a cancellation exists, and Enmiendas (spec.md:63) is «(ninguna)». No test covers it: `test/cancel.test.js` has no empty-listing case. Writing one is awkward because the module-level `bookings` state is shared across tests and `test/cancel.test.js:5` cancels Norte lun first. This commit also had no review, and tasks.md does not record it: `tasks.md:13-14` lists only the fix pass `06537d0`. I checked by hand: `node src/app.js canceladas` prints «sin canceladas», and the text is in Spanish, so the castellano constraint holds. Fixing it needs a spec amendment adding the empty case plus a test, or reverting the commit.
+- **Minor**, `src/app.js` (whole file, commit `06537d0`): the file went from CRLF to LF (48 CR bytes at 9e8c08a, 0 at 06537d0). The code does not change. The problem is the cost: the commit diff and `git blame` now show all 48 lines as rewritten, for a one-line fix. The repo has no `.gitattributes`, and line endings already differ by file (`git ls-files --eol`: `test/app.test.js`, `package.json` and `README.md` are CRLF; `PRODUCT.md` and `CHANGELOG.md` are LF), so this breaks no project convention. It is unrequested churn that is not a functional problem.
+- **Minor**, `test/cancel.test.js:16-19`: the file now mixes line endings (`git ls-files --eol` gives `i/mixed`). Lines 1-15 are CRLF and the 4 lines added in `06537d0` are LF. The new test also uses double quotes, while the rest of the file uses single quotes. These are formatting issues only and the test's assertion is unaffected.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js:5-14`: the tests depend on order. The test at :13 only passes because the one at :5 already cancelled Norte lun on the shared `bookings` array (`src/app.js:4`). This is not in the fix diff, but it is why an empty-`canceladas` test cannot easily be added to this file.
+- `tasks.md:13` records the final review without the verbatim text of the original finding, so this re-review had to rebuild the finding from the commit and the test.
+
+### Verdict
+**Fix round:** Findings remain open. The original Important finding is addressed, but the fix range adds one new Important issue: `c75beb9` prints «sin canceladas» (`src/app.js:36`) with no spec coverage, no test, and no review.
+
+--- [47]
+**Terminado no: el cierre de la 0010 está parado.** Necesito que decidas una cosa antes de seguir. Todavía no he escrito el walkthrough, ni tocado el roadmap, ni fusionado nada.
+
+**La decisión.** La re-revisión (`9e8c08a..c75beb9`) deja abierto un Important, que es mío. El commit `c75beb9` hace que `canceladas` sin canceladas responda «sin canceladas». Antes devolvía una línea vacía. La spec no lo recoge, no hay test y nadie lo revisó. Es un cambio de lo que ve el usuario que tomé sin ti. No puedo darlo por bueno yo: arreglarlo cambia la spec o quita el comportamiento.
+
+Tienes dos salidas, y recomiendo la primera:
+
+1. **Mantenerlo.** Añado una enmienda a la spec (`canceladas` sin canceladas responde «sin canceladas») y un test que lo cubra. Es lo más útil para quien lo use. Hay que aislar el estado de `bookings` en el test, porque ahora los tests dependen del orden.
+2. **Quitarlo.** Revierto `c75beb9`, y `canceladas` vuelve a devolver una línea vacía.
+
+Qué eliges, 1 o 2?
+
+**Lo que sí está hecho:**
+- El fix de `06537d0` (el motivo con espacios alrededor) está bien resuelto.
+- Hay dos Minor, que no bloquean. `06537d0` convirtió `src/app.js` de CRLF a LF entero, y `test/cancel.test.js` quedó con finales de línea mezclados y comillas dobles. Los dejo como minors diferidos, salvo que quieras que los arregle.
+- He anotado la línea `Re-revisión:` en `tasks.md`. Sigue sin commitear. Es un borrador del cierre y no cuenta como cambio ajeno.
+- He parado la vigilancia de silencio y quitado el worktree de revisión.
+
+**Lo que falta después de tu respuesta:**
+- Tu validación («probé cancelar con motivo y sale en canceladas») vale como validación `manual`, y la registraré con tus palabras. No cubre el «sin canceladas».
+- Falta pasar la suite. Ahora mismo hay 6/6 en verde sobre `c75beb9`.
+- Faltan el walkthrough, el delta de la capacidad `bookings` y el estado de la fila 0010 del roadmap.
+- `.docs/sdd/sdd-kit.json` no tiene bloque `merge`, y `sdd merge --check` falla por eso. Antes de fusionar tengo que presentarte la política. Propongo `merge.into: develop`, que es la rama de integración de la constitución, y `merge.noFf: true`. Dime si la quieres distinta.
+

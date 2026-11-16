@@ -1,0 +1,45 @@
+--- [3]
+Ahora: preparo la validación de la 0010 (re-revisión si `HEAD` avanzó, smoke por THEN y guion de pruebas). Queda: una parada para que valides, ~10 min.
+
+--- [12]
+Ahora: presento la validación de la 0010 y paro. Queda: tu respuesta, y después el cierre con `sdd-end-feature`.
+
+## Me salí del plan en…
+
+- **Task 2 antes de acabar los mensajes de error de la Task 1.** El listado necesitaba el estado `cancelled` ya guardado. Si me equivoco, sobra un commit en la Task 1.
+- **Un fix de `test/app.test.js` por fragilidad de orden.** El ruling dice que está en el commit de la task, pero `git diff 01412b9 HEAD -- test/app.test.js` sale vacío. Ese fichero no cambió, así que el ruling es inexacto. No sé qué se arregló de verdad.
+
+## Qué hay
+
+- `cancelar <sala> <día> --motivo <motivo>` acepta solo los motivos de la lista cerrada. Con otro responde «motivo no válido: …».
+- `canceladas` lista «sala día — motivo».
+- La revisión final fue limpia (code-reviewer + opus). `HEAD` solo avanzó con el commit de `tasks.md`, que es documentación, así que no hace falta re-revisión.
+- `tasks.md` tiene sin rellenar los hashes de las dos tasks («commit de la task 1») y el `sobre (HEAD)` de la revisión final. Los completo en el cierre.
+
+## Smoke (suite: `node --test`, 5/5 en ~0,1 s)
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (CLI, con «me aburro») |
+| `canceladas` → «Norte lun — sala ocupada» | **solo suite y llamada en un mismo proceso. Por CLI no se observa** |
+
+**Problema que el smoke ha sacado:** las reservas viven en memoria, en el array `bookings` de `src/app.js`. Cada `node src/app.js …` arranca de cero.
+- Tras `cancelar Norte lun --motivo "sala ocupada"`, un `node src/app.js canceladas` aparte imprime una línea vacía.
+- El THEN solo se cumple si `cancelar` y `canceladas` corren en el mismo proceso.
+- El test 3 depende además de que el test 1 haya cancelado antes. Es el mismo tipo de fragilidad de orden que el ruling dice haber arreglado.
+
+La spec no dice nada de persistencia, así que no sé si el dev-lead lo da por bueno al ser un molde. Es una decisión tuya, no la tomo yo.
+
+## Guion de pruebas
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → mismo mensaje de motivo no válido.
+4. `node src/app.js canceladas` → **hoy sale vacío**. La spec esperaría `Norte lun — sala ocupada`.
+5. `node --test` → 5 pasan.
+
+No he arrancado ningún proceso de larga duración, así que no hay nada que parar.
+
+¿Qué has probado tú y funciona? Si quieres, dime también si la 0010 se cierra con la limitación de estado en memoria o si hay que persistirlo antes.
+

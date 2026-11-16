@@ -1,0 +1,75 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [18]
+Sigo con el trabajo: ya medí los topes y estoy escribiendo la spec de la feature 0014.
+
+--- [24]
+Ahora: la spec está escrita y un revisor la está leyendo. Queda: plegar sus hallazgos y presentártela para aprobar, ~3 min.
+
+Estoy esperando el resultado de la revisión de la spec antes de presentártela.
+
+--- [32]
+1. Menor · Scope / Lo que se retira o cambia de forma · El título del test, «cabe en su tope de 60 palabras» (`words.test.js:5`), aparece en la tabla de retirada. El Scope solo dice «subir el tope» y no menciona renombrarlo. Si no se renombra, el título contradice el tope 114. · Añadir al Scope y al Approach: «renombrar el título a 114».
+
+2. Importante · Dónde se prueba / Intent · El Intent pide como éxito que «el primer renglón sigue igual» y que el resto quede «byte a byte igual». El único test nuevo compara el final del fichero con el literal y no fija nada de lo anterior. · Declarar un segundo assert, o un test único, que compruebe que `aviso.md` empieza por `Aviso de sala: {sala} el {dia}.\n\n` y acaba en literal + `\n`.
+
+3. Importante · Dónde se prueba / Decisión 3 · El THEN «acaba con el literal y un único salto de línea» no dice si la comparación es `endsWith(literal + '\n')` ni cómo trata CRLF. En Windows, con autocrlf, `readFileSync` puede devolver `\r\n` y el test fallaría sin que el texto haya cambiado. · Fijar la comparación exacta, y declarar la normalización de EOL o confirmar que el repo fija LF.
+
+4. Menor · Dónde se prueba · No hay escenarios GIVEN/WHEN/THEN. Para una spec sin delta es admisible, pero lo verificable queda repartido entre Intent, Scope y Dónde se prueba. · Añadir un escenario por cada comprobación: párrafo literal, primera línea intacta y tope 114.
+
+5. Importante · Intent / Decisiones (Review) · El Intent exige que pase `node --test && node scripts/lint.mjs`, pero la constitución solo fija como gate de cierre `node --test` entero en verde. El spec no dice qué comprueba `lint.mjs` ni si puede tocar `docs/` o el recuento de palabras. No lo he leído, así que su efecto sobre `aviso.md` queda sin verificar. · Justificar `lint.mjs` o quitarlo del criterio de éxito. Si se queda, listar qué reglas puede aplicar al fichero editado.
+
+6. Menor · Decisiones (Hallazgos) / frontmatter · La spec habla de «dev-lead» y deja `approvers: TBD`. La misión dice que no hay más usuarios ni desarrolladores. El validador de la decisión 1 no existe como rol. · Nombrar al usuario como único aprobador, o explicar quién es el dev-lead.
+
+7. Menor · Topes de palabras / Decisión 1 · El tope declarado es correcto: 52 + 42 = 94 y 94 + 20 = 114, medido (`wc -w`: 6 + 46 = 52; el párrafo tiene 42). Pero el margen de 20 es una cifra elegida sin criterio y deja holgura para meter texto sin que el test avise. La tabla da «Medido / tope 52 / 60» y no muestra el 94 previsto. · Justificar el margen de 20 frente a un tope de 94, o usar un margen menor. Añadir 94 a la tabla.
+
+8. Menor · Términos y ADR / Decisión 1 · La decisión 1 se presenta como un cambio de regla del proyecto (el tope de palabras), pero «ADR candidatas: ninguna» no lo justifica. · Una frase que explique por qué el cambio del tope no merece ADR.
+
+9. Menor · Decisiones · Hay decisiones tomadas en el cuerpo y no enumeradas en «✋ Decisiones». El test nuevo va en `words.test.js` en vez de un fichero propio, y el tope sigue siendo la suma de toda la carpeta, no por fichero. Tampoco se declara que el texto del párrafo en el test duplica el literal. · Añadir una decisión 7 con la ubicación del test y el tope global. Justificar la duplicación del literal.
+
+10. Menor · Encabezado / Lo que se retira · `git grep` se cita como evidencia, pero la spec no deja su salida ni el comando completo salvo en dos casos. La ausencia de capacidades se afirma con esa búsqueda y no con una lectura de `src/app.js`. · Dejar la salida de `git grep -n "aviso"` o declarar que `src/app.js` se leyó.
+
+--- [38]
+Arreglo el orden de la numeración (7 antes que 6).
+
+--- [40]
+La spec de la 0014 está escrita y revisada, y espera tu aprobación. No he tocado `aviso.md` ni los tests, y el plan lo escribo cuando apruebes. Está en `.docs/sdd/specs/20261110-132221-feature-0014-aviso-conserjeria/spec.md`, sin commitear.
+
+Ahora: presentarte la spec. Queda: tu aprobación; después el plan y la implementación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+🦆 Hoy el aviso de sala dice solo «Aviso de sala: Norte el 2026-11-12.». Con el cambio, justo debajo sale el párrafo de conserjería con tu texto literal. Dice a quién llamar (extensión 5500 en horario de oficina, 5599 de seguridad fuera de él) y qué dejar recogido al salir (sillas, pizarra, proyector, ventanas). Para que quepa hay que subir el tope de palabras de `docs/plantillas` de 60 a 114, porque la plantilla ya gasta 52 y el párrafo suma 42.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Tope de palabras de 60 a 114.** Es la decisión que más te pido mirar.
+   - Hoy `test/words.test.js` da 52 palabras: `aviso.md` 6 y `recibo.md` 46.
+   - Con el párrafo serían 94 y el test fallaría con el tope en 60.
+   - Propongo 94 + 20 de margen = 114.
+   - Descarté recortar `recibo.md`: son 46 repeticiones de «palabra», pero es otro fichero que nadie pidió tocar. También descarté acortar tu párrafo.
+2. **Enfoque.** Una sola edición literal más el tope nuevo, frente a recortar `recibo.md` o acortar el párrafo.
+3. **Formato.** El párrafo va tras una línea en blanco y el fichero acaba en un único salto de línea. La primera línea no cambia.
+4. **Sin capacidad ni delta.** El aviso es un documento y `src/app.js` no lo usa.
+5. **Sin partir.** Prevé una sola task.
+6. **Dónde va el test.** En `test/words.test.js`.
+   - Un test nuevo comprueba el principio y el final de `aviso.md`.
+   - Normaliza los saltos de línea, porque aquí `core.autocrlf=true`.
+   - El párrafo queda duplicado a propósito en el test.
+   - El título del test de palabras pasa a «tope de 114».
+7. **Carril feature.** Lo pediste tú, y no lo bajo a patch aunque el texto venga dado.
+8. **Validación: agente.** El test compara el literal y el tope, y no hay nada más que una persona fuera a ver.
+9. **Política de modelos.** Revisor de la spec en sonnet, y revisión final con Spec en opus y Código en sonnet.
+
+**Review:** un revisor (sonnet), sin ningún hallazgo Crítico, así que no hubo segunda ronda. Acepté 7 hallazgos y rechacé 3. Los rechazados fueron los escenarios GIVEN/WHEN/THEN (la spec no tiene delta), el rol de dev-lead y el ADR del tope. El detalle está en la spec.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

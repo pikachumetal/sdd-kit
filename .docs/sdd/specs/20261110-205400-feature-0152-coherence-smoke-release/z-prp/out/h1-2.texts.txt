@@ -1,0 +1,79 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, escribir spec y plan, y parar antes de implementar, ~5 min.
+
+--- [21]
+Reservé el id 0012 y ahora creo la rama y reclamo el id antes de crear la carpeta.
+
+--- [29]
+Nada se escribió; uso Write para la spec.
+
+--- [33]
+Corrijo la referencia a la spec en las Reglas (los literales van dentro del delta).
+
+--- [38]
+Ahora: dispatch de un revisor de la spec (sonnet, siete puntos; spec delegada ⇒ uno solo). Queda: integrar hallazgos y escribir el plan, ~5 min.
+
+--- [46]
+Mientras el revisor trabaja, no toco la spec; espero su resultado.
+
+--- [48]
+Estado: la spec está escrita en `.docs/sdd/changes/20261112-162723-feature-0012-libres-por-planta/spec.md`, en la rama `feature/0012-libres-por-planta`. La fusión del delta pasa en una copia. Un revisor sonnet la está leyendo ahora.
+
+Siguiente: integrar sus hallazgos, escribir el plan y hacer el commit de apertura. Después paro, sin implementar nada.
+
+Decisiones mías que tendrás que validar:
+- **Plantas:** Norte es la planta 1 y Sur la 2.
+- **Orden:** `--planta <n>` vale antes o después de la franja.
+- **Mensajes:** `sin salas en la planta 9` y `planta no válida: usa un número, p. ej. --planta 1`.
+- **Capacidad nueva:** `room-availability`, cuyo primer requisito documenta lo que `libres` ya hace.
+
+--- [50]
+1. Importante · Delta, requisito 1 (ADDED «Libres lista…») · Documenta comportamiento existente, pero el GIVEN usa una reserva `lun 10:00-12:00` y el WHEN `libres 10:00-12:00` no lleva día. «Reserva activa» (cancelar/anular) no está cubierta en ningún escenario, y `reservar/cancelar` no tienen capacidad. El requisito depende de datos de reservas sin declararlo y su fidelidad a lo que hace hoy `libres` no está comprobada. · Declarar la dependencia con las reservas, aclarar cómo se cruza el día con la franja y añadir un escenario con la reserva anulada o cancelada. Si no se puede cotejar con el código, marcarlo como supuesto.
+
+2. Importante · Approach («separa `--planta <valor>` de `params` en cualquier posición») + Delta 3 · `libres --planta 14:00-16:00` consume la franja como valor y da «planta no válida», un mensaje engañoso. Faltan además `libres --planta 2` (sin franja), `--planta` repetido y `--planta` seguido de otra franja. Ningún escenario los cubre. · Fijar la precedencia de errores (franja ausente antes que planta) y añadir escenarios para estos casos, o declararlos fuera de alcance.
+
+3. Importante · Approach («Planta válida = cadena de dígitos; compara como número») · Decisión de comportamiento tomada en el cuerpo y no listada en «✋». `--planta 02` pasa a ser planta 2, y `-1`, `1.5` y `+2` se rechazan. Ningún escenario lo prueba. · Subirla a «✋ Decisiones» y añadir un escenario (`--planta 02` y `--planta -1`).
+
+4. Importante · Delta 2 y 3 (todos los THEN «sale …») · No dice por qué canal sale cada mensaje ni qué código de salida lleva. Para «una línea vacía» tampoco precisa si es `''` o un salto de línea. Un escenario así se cumple a ojo con cualquier forma de salida. Además, un error por stdout es indistinguible de un listado. · Definir canal y código de salida de los avisos (decisión explícita) y el valor literal de la «línea vacía».
+
+5. Menor · 🦆 / Intent vs Scope · El 🦆 y el Intent parten de que `libres` «no dice en qué planta está cada sala», pero el Scope excluye enseñar la planta. La motivación promete más de lo que se entrega. · Reformular el problema en el Intent como «acotar» y no «saber la planta», o dejar escrito que mostrar la planta queda como seguimiento.
+
+6. Menor · «Lo que se retira o cambia de forma», fila 3 · Dice que `libres` «ya no toma `params[0]` como franja a ciegas». Eso es un cambio de comportamiento real: hoy `libres --planta 2` trata `--planta` como franja. Choca con la afirmación del requisito 1 («sin cambiarlo»). · Reconocerlo como cambio de forma en el requisito 1 o precisar que solo afecta a entradas con `--planta`.
+
+7. Menor · Reglas de la capacidad, «Límites» · Pone «no aplica», pero el dato nuevo tiene un dominio de validez: entero, y existen las plantas 1 y 2. Los avisos ya lo tratan como límite. · Declarar «Límites: planta = entero; plantas existentes 1 y 2» o justificar el «no aplica».
+
+8. Menor · «✋ Decisiones» · El Scope añade una línea en `CHANGELOG.md`, y eso no figura como decisión. Además la decisión 1 afirma que el requisito 1 «documenta lo que ya hace», sin respaldo de capacidad viva (lo reconoce el propio «Mínimo razonable»). · Añadir el CHANGELOG a las decisiones, y quizá un escenario de regresión sobre el test existente `libres 10:00-12:00` → `Sur`.
+
+9. Menor · Delta 3 · «Sin salas en la planta 9» no distingue «planta inexistente» de «planta existente pero sin libres» (esa da línea vacía, decisión 6). Hace falta que el implementador sepa si «sin salas» se decide sobre `rooms` o sobre las libres. El escenario 2 cubre un caso, pero la regla no está escrita. · Dejar explícito en una regla que «sin salas» se evalúa sobre `rooms`, antes de mirar las reservas.
+
+10. Menor · Entradas del encargo · `.docs/sdd/steering/PRODUCT.md` no existe en esa ruta, así que no he podido cotejar el Intent con el producto. · Confirmar la ubicación de `PRODUCT.md` y cotejarlo.
+
+--- [52]
+Sin Críticos, así que no hay segunda ronda. Integro los hallazgos en la spec.
+
+--- [65]
+La spec y el plan de la feature 0012 están escritos y commiteados en `feature/0012-libres-por-planta` (commit `6874ca2`). Paro aquí, sin implementar.
+
+Los artefactos están en `.docs/sdd/changes/20261112-162723-feature-0012-libres-por-planta/`. El delta de la spec se fusiona sin errores en una copia de `.docs/sdd`. No he ejecutado tests ni gate, porque no hay código nuevo.
+
+- **Aprobación:** la spec está aprobada por delegación y tu frase literal queda registrada en la spec. Perfil `delegate`. La validación es tuya: `libres` se ve por terminal, así que la deja el dev-lead.
+- **Review:** un revisor sonnet puso diez hallazgos, ninguno Crítico, y por eso no hubo segunda ronda. Aceptados nueve, que ya están en la spec; rechacé el décimo (dónde está `PRODUCT.md`). El detalle está en «Hallazgos de la review».
+- **Plan:** dos tasks, Native fijado en `sdd-kit.json`. La Task 1 hace el filtro; la Task 2, los mensajes de error y la línea del CHANGELOG. Cada escenario de la spec tiene su task y su test; la línea del CHANGELOG es la única sin test.
+- **Rama:** reservé el id 0012. Esta feature no tenía fila en `ROADMAP.md` y no la he añadido.
+
+Valida estas decisiones mías (están en el ✋ de la spec):
+- **Plantas:** Norte es la planta 1 y Sur la 2; nadie lo había dicho.
+- **Orden:** `--planta <n>` vale antes o después de la franja.
+- **Valores:** `<n>` es un entero sin signo (`02` vale como 2; `-1`, `1.5` y `+2` se rechazan).
+- **Mensajes:** `sin salas en la planta 9` y `planta no válida: usa un número, p. ej. --planta 1`.
+- **Salida:** todo por la salida estándar con código 0. Una planta que existe pero está toda reservada da línea vacía, como hoy.
+- **Capacidad nueva:** `room-availability`. Su primer requisito documenta lo que `libres` ya hace, incluido que cruza solo la franja y no el día.
+- **Carpeta:** la spec está en `changes/`, no en `specs/` donde están las anteriores.
+
+Para seguir, di «sigue» o «retoma la feature», y `sdd-implement` arranca en la Task 1.
+
+--- [67]
+Ese trabajo ya está hecho, así que no repito nada. Los hallazgos de la review están integrados en `spec.md` y `plan.md` está escrito. Ambos van en el commit de apertura `6874ca2`, en `feature/0012-libres-por-planta`.
+
+Sigo parado antes de implementar. Para arrancar la Task 1, di «sigue» o «retoma la feature».
+

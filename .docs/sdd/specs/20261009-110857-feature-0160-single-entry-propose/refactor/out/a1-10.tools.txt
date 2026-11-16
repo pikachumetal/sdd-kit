@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd && ls -la && cat sdd-kit.local.json && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat $f.md 2>/dev/null; done; ls capabilities 2>/dev/null; git branch --show-current
+
+>>> Bash: node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< total 23
+drwxr-xr-x 1 <user> 197609   0 Oct  9 15:27 ./
+drwxr-xr-x 1 <user> 197609   0 Oct  9 15:27 ../
+-rw-r--r-- 1 <user> 197609 590 Oct  9 15:27 changelog.md
+-rw-r--r-- 1 <user> 197609 458 Oct  9 15:27 constitution.md
+-rw-r--r-- 1 <user> 197609 769 Oct  9 15:27 estimation.md
+-rw-r--r-- 1 <user> 197609 244 Oct  9 15:27 mission.md
+-rw-r--r-- 1 <user> 197609 445 Oct  9 15:27 operations.md
+-rw-r--r-- 1 <user> 197609 929 Oct  9 15:27 roadmap.md
+-rw-r--r-- 1 <user> 197609 166 Oct  9 15:27 sdd-kit.json
+-rw-r--r-- 1 <user> 197609  26 Oct  9 15:27 sdd-kit.local.json
+drwxr-xr-x 1 <user> 197609   0 Oc
+<<< Sin capacidades
+
+>>> Bash: cd .docs/sdd && cat sdd-kit.json operations.md estimation.md; ls specs; cd ../..; ls -R src test* 2>/dev/null | head -30; wc -l src/app.js; cat src/app.js
+<<< {"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en mem
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/skills/sdd-start-feature/references" && grep -n "Aviso" control-profiles.md | head; grep -n -i "sequence" nombrado.md | head -20
+<<< 34:`Aviso: se ignora <clave> de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.`
+38:`Aviso: se ignora <clave> de sdd-kit.local.json: <valor> no es un valor admitido.`
+7:- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la feature o el patch, o, si no tiene fila, el que reserva `sdd id next --project-root <raíz del proyecto> 
+
+>>> Bash: git checkout -b feature/0011 develop
+<<< Switched to a new branch 'feature/0011'
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.25004040000000005 $)
+Ahora: entrevista de diseño para la feature 0011. Queda: unas pocas decisiones, la spec con su 🦆 y la aprobación, ~15 min.
+
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Aviso: se ignora `merge.push` de `sdd-kit.local.json`: solo admite `control.profile`, `execution` y `validation.startEnvironment`; lo demás es del proyecto y va en `sdd-kit.json`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+**Lo que he entendido** (corrígeme):
+- Tu petición coincide con la fila 0011 del roadmap: *solo el responsable de cada sala anula reservas de otras personas*. He creado la rama `feature/0011` desde `develop`.
+- Lo he tratado como feature completa, no como patch. La solución no está fijada: hay que decidir cómo se identifica quién llama y quién es el responsable de cada sala.
+- Hallazgos en `src/app.js`:
+  - `anular <sala> <día>` ya existe y marca la reserva como `voided`. No comprueba a nadie: hoy cualquiera anula cualquier reserva.
+  - Las reservas no guardan quién las hizo (`room`, `day`, `slot`, `status`).
+  - No hay ninguna noción de usuario ni de responsable. La constitución y `operations.md` dicen que no hay login.
+  - No hay capacidades documentadas en `capabilities/`.
+- Suposición mía: «anular reservas de otros» significa que el responsable puede anular reservas de su sala hechas por otras personas. Las reservas propias se siguen cancelando con `cancelar`.
+
+❓ **¿Cómo sabe la herramienta quién está ejecutando el comando?**
+Hoy `node src/app.js anular Norte lun` no lleva identidad, y sin ella no se puede distinguir al responsable de los demás.
+1️⃣ **Un parámetro `--como <nombre>` en el comando**: `anular Norte lun --como ana` → `anulada Norte lun`; `anular Norte lun --como luis` (luis no es responsable de Norte) → `solo el responsable de Norte puede anular reservas de otras personas`. Es explícito y fácil de probar. A cambio, cualquiera puede escribir el nombre de otro: no es seguridad real, solo una convención.
+2️⃣ **Una variable de entorno `SALAS_USUARIO`**: la defines una vez en tu sesión o en tu servidor y el comando queda como hoy (`anular Norte lun`). Menos escritura. A cambio, la identidad no se ve en el comando y es más fácil olvidarla o confundirla al probar.
+3️⃣ **Sin identidad: otra forma de distinguir al responsable**, por ejemplo una clave o un comando aparte. Es más complejo y la misión no pide seguridad.
+➡️ **Recomiendo 1️⃣**, porque la herramienta es de un solo usuario sin login y un parámetro visible deja cada caso de prueba legible en una línea. A cambio, no impide que alguien se haga pasar por otro.

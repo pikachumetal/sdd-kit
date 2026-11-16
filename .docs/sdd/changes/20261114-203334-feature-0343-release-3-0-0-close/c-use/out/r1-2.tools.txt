@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+.
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+.docs/sdd:
+sdd-kit.json
+specs
+steering
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test; ls node_modules 2>&1 | head -2; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; head -40 .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references"; head -60 control-profiles.md; grep -n -i "split\|dividir\|partir" nombrado.md | head
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+=== RESULTADO (7 turnos, 0.1537214 $)
+Ahora: he clasificado el cambio y te paro antes de tocar nada. Queda: tu respuesta sobre cómo partirlo, y después la nota de comprensión y las preguntas de diseño, ~10 min hasta la aprobación de la spec.
+
+**Carril:** feature, modo full. **Perfil:** `delegate`, por defecto del kit (`sdd-kit.json` no fija ninguno y no hay `sdd-kit.local.json`).
+
+Son tres piezas distintas, y calculo unas 5 o 6 tasks entre todas:
+- **Ocupación por sala:** calcular a partir de las reservas, con un comando nuevo en `src/app.js`.
+- **Exportar a Excel:** un formato de salida nuevo.
+- **Aviso semanal a los responsables:** un programador semanal, la lista de responsables y el envío del correo.
+
+Esto toca superficies distintas, así que te propongo partirlo. Además, hay tres cosas del repo que condicionan el diseño:
+- **Dependencias:** `operations.md` dice «Node 22, sin dependencias externas». Un `.xlsx` real necesita una librería o escribir el zip a mano. Si el Excel puede ser un CSV que Excel abre, no hace falta ninguna.
+- **Solape con la 0008:** el roadmap ya tiene «Avisos por correo antes de la reserva» (`src/correo.js`). El aviso semanal debería reutilizar ese envío, así que dependería de la 0008.
+- **Responsables:** `PRODUCT.md` dice que el único usuario eres tú. Ahora mismo no existe el concepto de «responsable» ni de «cliente». Habrá que decidir de dónde sale esa lista.
+
+¿Cómo lo hacemos?
+
+1. **Partir en 3 features (Recomendada):** cada una con su fila en el roadmap, en este orden:
+   1. Informe de ocupación por sala.
+   2. Exportar el informe a Excel, tras la 1.
+   3. Aviso semanal a responsables, tras la 1 y la 0008.
+
+   Empiezo ahora por la primera y dejo las otras dos apuntadas.
+2. **Mantenerlo entero:** una sola feature con las tres piezas. Después no te lo vuelvo a proponer.
+
+Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `pair` para esta feature».

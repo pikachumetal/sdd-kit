@@ -1,0 +1,25 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto y localizo `gate.json`. Queda: clasificar, leer las guías de la spec y presentártela para aprobar, ~5 min.
+
+--- [20]
+La spec está escrita en `.docs/sdd/specs/20261030-113302-feature-0015-paths-in-fast/spec.md`, modo full y perfil `delegate`. No he tocado `gate.json` ni he escrito el plan. El 4 de la lista de decisiones (`operations.md`) no sale en este resumen porque no cambia nada.
+
+**🦆 Qué cambia.** Hoy el pre-commit solo corre `fast`, así que `test/paths.test.js` (falla si alguna ruta del repo pasa de 140 caracteres) no frena ningún commit. Tras el cambio, un fichero con una ruta de 141 caracteres bloquea el commit. Cuesta ~1 s más por commit y no cambia nada de lo que ve el usuario de salas.
+
+**Carril.** Es feature en modo full porque pediste spec en su carpeta. Cumple el predicado de lite (un fichero, menos de media jornada), pero lite lo activas tú. No hay review de spec: 0 señales.
+
+**✋ Decisiones mías, que debes validar**
+1. **`fast` vigilará `**/*`.** Hoy solo mira `src/**` y `test/app.test.js`. El test de rutas depende de `git ls-files`, o sea de todo el repo. Con los inputs actuales, añadir un fichero con ruta larga fuera de `src/` no invalidaría la caché y el pre-commit se saltaría el test. El coste es que `fast` ya no se salta cuando solo cambian docs, unos 1 s.
+2. **Comando único de `fast`:** `node --test test/app.test.js test/paths.test.js`.
+3. **Se elimina la tarea `slow`.** Se queda sin comando y `gate.json` queda solo con `fast`. Si prefieres conservarla vacía, dímelo.
+4. **Carril full** en vez de lite, por lo dicho arriba.
+5. **Id 0015.** La rama no tiene fila en el roadmap; `sdd id claim` la validó con el contador local, porque el repo no tiene remoto.
+
+**Cómo se verifica.** Sin test nuevo, porque la regla ya la prueba `paths.test.js`:
+- Con una ruta de 141 caracteres tracked, `fast` tiene que fallar.
+- Tras un `fast` en verde, añadir un fichero con ruta larga fuera de `src/` tiene que ejecutar el test y fallar, no saltarlo por caché.
+
+**Aviso del kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las reglas que he aplicado pueden ser las de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+**¿Apruebas la spec, o quieres cambios?** Hasta que respondas se queda en espera. Con tu aprobación escribo el plan, que sería una sola task, y lo implemento.
+

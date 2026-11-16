@@ -1,0 +1,143 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log; echo ----; grep -n -i -A40 "testing" .docs/sdd/operations.md | head -120; echo ----; git log --stat -3 --format='%h %s'; ls
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ bookings:test (4 passed, 1 failed)
+✔ libres excluye la sala reservada en la franja (0.7084ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1229ms)
+✔ cancelar con un motivo de la lista (0.7842ms)
+✔ cancelar con un motivo fuera de la lista (0.243ms)
+✖ canceladas enseña sala, día y motivo (1.7483ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 102.1481
+
+✖ failing tests:
+
+test at test\cancel.test.js:13:1
+✖ canceladas enseña sala, día y motivo (1.7483ms)
+  AssertionErro
+
+>>> Bash: cat gate.json package.json; ls scripts test .docs 2>&1; sed -n 1,80p scripts/gate.mjs; git status --short
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+{"type": "module"}
+.docs:
+sdd
+
+scripts:
+gate.mjs
+
+test:
+app.test.js
+cancel.test.js
+rooms.test.js
+#!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+
+>>> Bash: find .docs -type f | head -30; grep -rn -i -B2 -A25 "testing" .docs/sdd/*.md | head -100; git rev-parse --verify develop main 2>&1 | head
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/tech-stack.md
+fatal: Needed a single revision
+
+>>> Bash: cat .docs/sdd/tech-stack.md; git branch -a
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+  develop
+* feature/0010-cancel-reason
+  main
+
+>>> Bash: node --test --test-name-pattern="canceladas enseña sala, día y motivo" test/cancel.test.js 2>&1 | grep -E "^(✔|✖|ℹ (tests|pass|fail))"; echo "exit=${PIPESTATUS[0]}"; echo ---; node scripts/gate.mjs run bookings:test rooms:test --affected --base a4e9f72; echo "exit=$?"; echo ---; node scripts/gate.mjs run rooms:test; echo "exit=$?"
+<<< ✖ canceladas enseña sala, día y motivo (1.6501ms)
+ℹ tests 1
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ canceladas enseña sala, día y motivo (1.6501ms)
+exit=1
+---
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 0 failed)
+Tasks: 1 completed, 1 skipped
+exit=0
+---
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit=0
+
+>>> Bash: node --test --test-name-pattern="canceladas enseña sala, día y motivo" test/cancel.test.js 2>&1 | head -40; echo ----; cat test/cancel.test.js; echo ----; git diff a4e9f72 HEAD
+<<< ✖ canceladas enseña sala, día y motivo (1.5344ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.4802
+
+✖ failing tests:
+
+test at test\cancel.test.js:13:1
+✖ canceladas enseña sala, día y motivo (1.5344ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + ''
+  - 'Norte lun — sala ocupada'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:14:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start
+
+>>> Bash: node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖|ℹ (tests|pass|fail))"; echo "exit=${PIPESTATUS[0]}"
+<<< ✔ cancelar con un motivo de la lista (1.1188ms)
+✔ cancelar con un motivo fuera de la lista (0.1737ms)
+✔ canceladas enseña sala, día y motivo (10.7868ms)
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+exit=0
+
+=== RESULTADO (10 turnos, 0.19224299999999997 $)
+El gate está en verde, pero con una salvedad sobre el test que falló.
+
+```
+Gate: `node --test test/cancel.test.js` · `node scripts/gate.mjs run bookings:test rooms:test --affected --base a4e9f72` · `node scripts/gate.mjs run rooms:test` → tras el rojo en a4e9f72, arreglo 5a36e75: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja; el filtro la saltaba, así que la lancé sin filtro)
+```
+
+**Cómo salió cada paso**
+- **`bookings:test`:** pasa 5/5 con `--base a4e9f72`, y `test/cancel.test.js` entero pasa 3/3. El fix de 5a36e75 solo toca `src/app.js`, que es un input de esta tarea.
+- **`rooms:test`:** el filtro la saltaba porque su input `src/rooms.js` no cambió desde a4e9f72. Pero en el rojo no corrió, porque dependía de `bookings:test`. Por eso la ejecuté aparte, sin filtro, y pasa 1/1.
+- **Sin sección Testing:** `tech-stack.md` no tiene sección Testing, así que no hay «Suites» ni «Sin filtro». Tampoco hay suites unitarias que correr enteras, y el fix no toca ningún fichero de build.
+
+**Salvedad: el test depende del orden.**
+- **Qué pasa:** `canceladas enseña sala, día y motivo` falla si se ejecuta suelto (`--test-name-pattern`). Devuelve `''`, porque solo ve la cancelación que crea el test anterior de `cancel.test.js`. En el fichero entero y en el gate pasa.
+- **Qué no he hecho:** no lo he arreglado, porque eso es otro cambio.
+- **Qué puedes escribir:** para el walkthrough, el verde se sostiene con el fichero entero, no con el test aislado.
+- **Qué te propongo:** anotarlo como deuda, o hacer que el test cree su propia cancelación.
+
+También hay un aviso de arranque: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Esta skill puede ser la de una versión vieja.

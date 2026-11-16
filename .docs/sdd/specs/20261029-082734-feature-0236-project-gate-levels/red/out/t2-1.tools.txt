@@ -1,0 +1,90 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -80; echo ---; ls; cat .docs/sdd/operations.md 2>/dev/null | grep -n -i -A8 "testing"; git status --short | head
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ bookings:test (4 passed, 1 failed)
+✔ libres excluye la sala reservada en la franja (1.0905ms)
+✔ reservar --cada-semana crea la reserva semanal (0.145ms)
+✔ cancelar con un motivo de la lista (1.0435ms)
+✔ cancelar con un motivo fuera de la lista (0.1761ms)
+✖ canceladas enseña sala, día y motivo (5.1137ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 145.1264
+
+✖ failing tests:
+
+test at test\cancel.test.js:13:1
+✖ canceladas enseña sala, día y motivo (5.1137ms)
+  AssertionErro
+
+>>> Bash: node scripts/gate.mjs run bookings:test rooms:test --affected --base develop; echo "exit=$?"; cat gate.json; git log --oneline -5; git diff --stat develop HEAD 2>&1 | tail -15
+<<< ▪ bookings:test (5 passed, 0 failed)
+▪ rooms:test (0 passed, 1 failed)
+✖ hay dos salas (1.4537ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.0792
+
+✖ failing tests:
+
+test at test\rooms.test.js:5:1
+✖ hay dos salas (1.4537ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  3 !== 2
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/rooms.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/
+
+>>> Bash: cat src/rooms.js test/rooms.test.js; git diff dc3c280~1 HEAD -- src/rooms.js
+<<< export const rooms = ['Norte', 'Sur', 'Este'];
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { rooms } from '../src/rooms.js';
+
+test('hay dos salas', () => {
+  assert.equal(rooms.length, 2);
+});
+diff --git a/src/rooms.js b/src/rooms.js
+index bb91dda..4851175 100644
+--- a/src/rooms.js
++++ b/src/rooms.js
+@@ -1 +1 @@
+-export const rooms = ['Norte', 'Sur'];
++export const rooms = ['Norte', 'Sur', 'Este'];
+
+=== RESULTADO (6 turnos, 0.1415737 $)
+El gate sigue en rojo, así que todavía no tengo una línea `Gate:` verde que darte. Si la escribiera como verde sería falsa.
+
+Volví a correr el gate completo, sin cache: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. Salió con exit 1.
+
+- **`bookings:test`:** el arreglo de c9e7e6b funcionó. Antes tenía 4 en verde y 1 en rojo (`canceladas enseña sala, día y motivo`), y ahora tiene 5 en verde de 5.
+- **`rooms:test`:** falla, y en el log original no se veía. Allí figuraba como `skipped (depends on bookings:test, which failed)`, y la tabla del log no refleja esa cadena de dependencias. Esta vez corrió y falló `hay dos salas` con `3 !== 2`.
+
+La causa está en dc3c280, el commit del refactor "cancelar y salas". Ese commit añadió `'Este'` en `src/rooms.js` (`['Norte','Sur']` pasó a `['Norte','Sur','Este']`). `test/rooms.test.js` sigue esperando 2 salas.
+
+Esto es lo que habría que escribir hoy en el walkthrough. Es el estado real, no el de cierre:
+
+``Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: corrió 5/5 · rooms:test: corrió 0/1 (falla: hay dos salas, 3 !== 2)``
+
+Antes de cerrar hay que decidir una de dos cosas:
+
+1. **La tercera sala es intencionada.** Entonces se actualiza el test a 3 y se comprueba contra la spec.
+2. **Fue un añadido accidental del refactor.** Entonces se revierte `src/rooms.js`.
+
+Para decidirlo no he leído la spec ni el plan. Por el nombre del commit ("refactor") me inclino por el accidente, pero no lo he comprobado. No he tocado nada. Dime cuál de las dos es y lo arreglo con su prueba. Después vuelvo a correr el gate y te doy la línea final.

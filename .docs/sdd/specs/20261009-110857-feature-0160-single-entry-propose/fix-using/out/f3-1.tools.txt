@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd .docs/sdd/capabilities 2>&1; git branch --show-current; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40
+
+>>> Bash: cd .docs/sdd && head -c 2500 constitution.md; echo ----; head -c 1500 tech-stack.md; echo ----; cat roadmap.md | head -40; echo ----; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path . 2>&1 | head -30
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+develop
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+----
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: 
+
+>>> Bash: ls src test; wc -l src/app.js; cat src/app.js; ls .docs/sdd/specs
+<<< src:
+app.js
+
+test:
+app.test.js
+16 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+ 
+
+>>> Bash: cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/skills/sdd-start-feature/references/modo-lite.md" | head -60
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa.
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (8 turnos, 0.1819404 $)
+Ahora: clasifico el cambio. Queda: tu confirmación del carril (~1 min) y luego la spec corta.
+
+🦆 Hoy `reservar` solo crea la reserva. Con este cambio podrías añadirle un texto libre, la nota, y quedaría guardado con esa reserva. Ese texto, dónde se escribe y dónde se ve no están fijados en tu petición. Por eso no es un patch, porque tendría que decidirlo yo. Es un cambio acotado y cabe en modo lite: spec corta, sin plan ni tasks.
+
+Condiciones de lite que he comprobado:
+- **El flujo ya existe y se puede leer.** `reservar` está en `src/app.js`.
+- **No cambia contratos públicos.** Hay un solo fichero y ninguna otra pieza consume la interfaz.
+- **No cambia el schema de datos.** `bookings` es un array en memoria y solo ganaría un campo opcional.
+- **Cabe en un solo módulo.** Solo toca `src/app.js` y su test.
+- **No hay `estimation.md`.** Esa condición no aplica.
+
+Perfil: el del proyecto (`sdd-kit.json` no fija ninguno, así que rige el predeterminado). No hay `sdd-kit.local.json`.
+
+**¿Seguimos en modo lite?**
+1. **Sí, lite (recomendada).** Dejo la spec corta con las decisiones que tomaré yo, por ejemplo el formato `--nota "texto"` y que la nota se vea al listar. Esas decisiones las validas tú antes de tocar código.
+2. **No, modo full.** Spec completa, plan y tasks.
+
+Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».
+
+No he creado rama ni carpeta. Espero tu respuesta.

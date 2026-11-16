@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+.docs/sdd:
+sdd-kit.json
+specs
+steering
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; find src test .docs/sdd/specs -type f | head -50
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; head -60 test/app.test.js; ls node_modules 2>&1 | head -2
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\spec-writing.md
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.19955869999999998 $)
+Ahora: abro la propuesta de la lista de espera y te hago la primera pregunta de la entrevista. Queda: la entrevista, la spec con su aprobación, el plan y la implementación; la próxima parada tuya es la aprobación de la spec, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no mira si la sala está ocupada. Quieres que, cuando la sala que pides esté ocupada en esa franja, quede constancia de que esperas por ella. Es un cambio visible para ti, no un arreglo, así que va como feature. Calculo unas 2 o 3 tareas y no hay motivo para dividirla. No hay ficheros de capacidades que tocar. Corrígeme si algo de esto no es lo que buscas.
+
+❓ **¿Para qué quieres la lista de espera?** Cuando la sala que quieres está ocupada y te apuntas, ¿qué quieres que pase después, y qué harías tú con esa lista?
+
+=== RESULTADO (1 turnos, 0.21863889999999997 $)
+Ahora: sigo la entrevista, con la decisión que más condiciona el resto. Queda: unas 2 o 3 preguntas más, la spec y su aprobación, ~8 min.
+
+Entendido: tu problema es tener que consultar `libres` a mano una y otra vez. Lo que resuelve eso es que el sistema se encargue de avisarte o de reservar cuando la sala se libere.
+
+Encontré esto en el código: en `src/app.js` las reservas están en un array en memoria. `cancelar` solo devuelve un texto y no borra nada, y no hay nada guardado entre ejecuciones. Una lista de espera necesita que alguien se entere de que la sala se libera. Tal como está, esa información no existe.
+
+❓ **¿Qué ocurre cuando la sala se libera?**
+1️⃣ **Reserva automática para el primero de la cola.** `esperar Norte 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Más tarde alguien cancela, y `libres 10:00-12:00` ya muestra `Sur` y `Norte` ocupada por ti. Es lo que más trabajo te quita. Obliga a persistir reservas y cola en un fichero, y a que `cancelar` borre de verdad.
+2️⃣ **Aviso al liberarse, sin reservar.** El mismo `esperar` te apunta. Cuando se cancela esa reserva, el siguiente comando que ejecutes antes de cualquier otra salida imprime `Norte libre 10:00-12:00 (esperabas por ella)`. La reserva sigue siendo manual y otra persona podría cogerla antes. También necesita persistencia.
+3️⃣ **Comando que espera y vigila.** `esperar Norte 10:00-12:00` se queda en marcha y consulta cada cierto tiempo hasta que se libera, y entonces imprime `Norte libre`. Sin cola ni persistencia. Si cierras la terminal, se pierde, y solo tienes un hueco a la vez.
+
+➡️ **Recomiendo 1️⃣**, porque tu objetivo es dejar de volver a mirar, y solo esta opción lo cumple sin que tengas que estar delante. A cambio, es la más grande: tocaría `cancelar` y la persistencia, y puede pasar de las 3 tareas.

@@ -1,0 +1,653 @@
+import { join, resolve } from 'node:path';
+import { describe, expect, it, vi } from 'vitest';
+import { CampaignError, readConfig, runCampaign, stopCampaign, subjectProcesses, sweepCut } from '../../../../tests/headless/campaign.mjs';
+import { memoryFs, type MemoryFs } from './memory-fs.ts';
+
+// Una raíz absoluta en la plataforma que corre: el CI corre esta suite en Linux.
+const CWD = resolve('/w');
+const SPEC = join(CWD, 'spec');
+const RUNS = join(CWD, 'scratchpad', 'runs');
+const KIT = join(CWD, 'kit');
+
+type Env = Record<string, string | undefined>;
+
+interface LaunchRequest {
+  subjectSh: string;
+  args: string[];
+  env: Env;
+}
+
+function baseEnv(overrides: Env = {}): Env {
+  return {
+    SPEC_DIR: SPEC,
+    RUNS_DIR: RUNS,
+    KIT_DIR: KIT,
+    SUBJECT_SH: join(SPEC, 'red', 'subject.mjs'),
+    SCENARIOS: 'a',
+    SUBJECT_CAP: '10',
+    COST_CAP: '10',
+    ...overrides,
+  };
+}
+
+function kitFs(): MemoryFs {
+  const fs = memoryFs();
+  fs.write(join(KIT, 'cli', 'bin', 'sdd.js'), '');
+  return fs;
+}
+
+const tools = (cost: number) => `>>> Bash: ls\n=== RESULTADO (1 turnos, ${cost.toFixed(2)} $)\nhecho\n`;
+
+interface ProcessInfo {
+  pid: number;
+  ppid?: number;
+  created?: string;
+  commandLine: string;
+}
+
+interface FakeOptions {
+  cost?: number;
+  manual?: boolean;
+  unsaved?: boolean;
+  onWait?: () => void;
+  processes?: ProcessInfo[];
+  processesFail?: boolean;
+}
+
+// Un sujeto que acaba al instante deja su tools.txt (sin él, con unsaved); con manual, el test decide cuándo acaba.
+function fakeDeps(fs: MemoryFs, options: FakeOptions = {}) {
+  const log: string[] = [];
+  const killed: { pid: number; tree: boolean }[] = [];
+  const launched: LaunchRequest[] = [];
+  const alive = new Set<number>();
+  const finishers = new Map<string, () => void>();
+  let nextPid = 1000;
+  let waits = 0;
+  let queries = 0;
+  let chain: Promise<unknown> = Promise.resolve();
+  const ticks: (() => Promise<void>)[] = [];
+  const deps = {
+    fs,
+    log: (line: string) => log.push(line),
+    wait: async () => {
+      waits++;
+      options.onWait?.();
+    },
+    isAlive: (pid: number) => alive.has(pid),
+    lock: <T>(_path: string, body: () => Promise<T>): Promise<T> => {
+      const result = chain.then(body);
+      chain = result.catch(() => undefined);
+      return result;
+    },
+    launch: (request: LaunchRequest) => {
+      const pid = nextPid++;
+      const [, label, , out] = request.args;
+      alive.add(pid);
+      launched.push(request);
+      let done!: (code: number) => void;
+      const exited = new Promise<number>((resolve) => (done = resolve));
+      const finish = () => {
+        if (!options.unsaved) fs.write(join(out, `${label}.tools.txt`), tools(options.cost ?? 0.5));
+        alive.delete(pid);
+        done(0);
+      };
+      if (options.manual) finishers.set(label, finish);
+      else queueMicrotask(finish);
+      return { pid, exited };
+    },
+    processes: async () => {
+      queries++;
+      if (options.processesFail) throw new Error('pwsh no arrancó');
+      return options.processes ?? [];
+    },
+    kill: (pid: number, tree: boolean) => killed.push({ pid, tree }),
+    every: (_ms: number, tick: () => Promise<void>) => {
+      ticks.push(tick);
+      return () => ticks.splice(ticks.indexOf(tick), 1);
+    },
+  };
+  const tick = () => Promise.all(ticks.map((run) => run()));
+  return { deps, log, launched, alive, finishers, killed, tick, waits: () => waits, queries: () => queries };
+}
+
+function mark(fs: MemoryFs, dir: string, name: string, pid: number | '') {
+  fs.write(join(dir, name), `${pid}\n`);
+}
+
+describe('readConfig', () => {
+  it('exige SPEC_DIR', () => {
+    expect(() => readConfig(baseEnv({ SPEC_DIR: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SPEC_DIR'));
+  });
+
+  it('rechaza un SUBJECT_SH que no es .mjs', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_SH: join(SPEC, 'red', 'subject.sh') }), CWD, kitFs())).toThrow(
+      new CampaignError('SUBJECT_SH tiene que ser un .mjs: los subject.sh se fueron con la 0238'),
+    );
+  });
+
+  it('exige que MAX_PARALLEL sea un entero positivo', () => {
+    expect(() => readConfig(baseEnv({ MAX_PARALLEL: '0' }), CWD, kitFs())).toThrow('MAX_PARALLEL tiene que ser un entero positivo: 0');
+  });
+
+  it('rechaza un RUNS_DIR fuera del scratchpad y de .temp/', () => {
+    const outside = join(resolve('/otro'), 'runs');
+    expect(() => readConfig(baseEnv({ RUNS_DIR: outside }), CWD, kitFs())).toThrow(`RUNS_DIR fuera del scratchpad o de .temp/: ${outside}`);
+  });
+
+  it('aborta con un RUNS_DIR de más de 100 caracteres, que los sujetos no pueden clonar (ticket de la feature 0230 §3)', () => {
+    const base = join(CWD, 'scratchpad');
+    const longRuns = join(base, 'r'.repeat(99 - base.length));
+    const tooLong = `${longRuns}x`;
+
+    expect(longRuns).toHaveLength(100);
+    expect(() => readConfig(baseEnv({ RUNS_DIR: longRuns }), CWD, kitFs())).not.toThrow();
+    expect(() => readConfig(baseEnv({ RUNS_DIR: tooLong }), CWD, kitFs())).toThrow(
+      new CampaignError(`RUNS_DIR de 101 caracteres (máximo 100): ${tooLong}; usa .temp/<corto> del worktree`),
+    );
+  });
+
+  it('aborta si la copia del kit no lleva cli/bin/sdd.js', () => {
+    expect(() => readConfig(baseEnv(), CWD, memoryFs())).toThrow(
+      'la copia del kit no lleva cli/: sácala con git archive <commit>:dist (antes de la feature 0300: git archive <commit> skills .claude-plugin agents cli hooks)',
+    );
+  });
+
+  it('resuelve un KIT_DIR relativo contra el cwd de quien lanza', () => {
+    expect(readConfig(baseEnv({ KIT_DIR: 'kit' }), CWD, kitFs()).kitDir).toBe(KIT);
+  });
+
+  it('pasa al sujeto RUNS_DIR, SPEC_DIR y KIT_DIR en ruta absoluta', () => {
+    const { env } = readConfig(baseEnv({ RUNS_DIR: join('scratchpad', 'runs'), SPEC_DIR: 'spec', KIT_DIR: 'kit' }), CWD, kitFs());
+    expect([env.RUNS_DIR, env.SPEC_DIR, env.KIT_DIR]).toEqual([RUNS, SPEC, KIT]);
+  });
+
+  it('sin previsión legible exige SUBJECT_CAP, y siempre COST_CAP', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
+    expect(() => readConfig(baseEnv({ COST_CAP: undefined }), CWD, kitFs())).toThrow(new CampaignError('define COST_CAP (previsión de la spec)'));
+  });
+
+  it('exige que COST_CAP sea un número', () => {
+    expect(() => readConfig(baseEnv({ COST_CAP: 'abc' }), CWD, kitFs())).toThrow('COST_CAP tiene que ser un número: abc');
+  });
+
+  it('reparte COST_CAP entre SUBJECT_CAP si no hay SUBJECT_COST', () => {
+    expect(readConfig(baseEnv({ SUBJECT_CAP: '4', COST_CAP: '6' }), CWD, kitFs()).subjectCost).toBe('1.5');
+  });
+});
+
+describe('el techo de la previsión de la spec', () => {
+  const SPEC_FILE = join(SPEC, 'spec.md');
+  const forecast = (sum: string) => `# Spec\n\n## Previsión de coste\n\n| Tanda | Sujetos (batería) | $ |\n| --- | --- | --- |\n| RED | prosa | 1 |\n| Suma | ${sum} | 3 |\n\n## Enmiendas\n`;
+  const STOP = (cap: number) => `techo de ${cap} sujetos de la previsión de ${SPEC_FILE} alcanzado: decide el dev-lead; subirlo exige enmendar la spec`;
+  const NO_FORECAST = (cap: number) => `aviso: sin previsión legible en ${SPEC_FILE} (escribe el total en la fila Suma, columna de sujetos): uso SUBJECT_CAP=${cap}`;
+
+  function specFs(text: string): MemoryFs {
+    const fs = kitFs();
+    fs.write(SPEC_FILE, text);
+    return fs;
+  }
+
+  async function launchAbc(fs: MemoryFs, overrides: Env = {}) {
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b c', ...overrides }), CWD, fs), fake.deps);
+    return { labels: fake.launched.map((request) => request.args[1]), log: fake.log };
+  }
+
+  it('una previsión de 2 sujetos para en el tercero, nombra la previsión y no la sube un SUBJECT_CAP mayor', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('2')));
+    expect(labels).toEqual(['a-1', 'b-1']);
+    expect(log).toContain(STOP(2));
+    expect(log).toContain(`aviso: SUBJECT_CAP=10 no sube el techo: manda la previsión de 2 sujetos de ${SPEC_FILE}`);
+  });
+
+  it('con previsión legible no exige SUBJECT_CAP', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('2')), { SUBJECT_CAP: undefined });
+    expect(labels).toEqual(['a-1', 'b-1']);
+    expect(log).toContain(STOP(2));
+    expect(log.filter((line) => line.startsWith('aviso:'))).toEqual([]);
+  });
+
+  it('lee «33 sujetos» y reparte COST_CAP entre el techo de la previsión', () => {
+    const config = readConfig(baseEnv({ SUBJECT_CAP: undefined, COST_CAP: '66' }), CWD, specFs(forecast('33 sujetos')));
+    expect(config.subjectCap).toBe(33);
+    expect(config.subjectCost).toBe('2');
+  });
+
+  it('un SUBJECT_CAP menor manda, con la parada de siempre', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('2')), { SUBJECT_CAP: '1' });
+    expect(labels).toEqual(['a-1']);
+    expect(log).toContain('techo de 1 sujetos alcanzado: decide el dev-lead');
+    expect(log.filter((line) => line.startsWith('aviso:'))).toEqual([]);
+  });
+
+  it('una previsión de 0 para en el primero, y el resumen no da NaN', async () => {
+    const { labels, log } = await launchAbc(specFs(forecast('0')), { SUBJECT_CAP: undefined });
+    expect(labels).toEqual([]);
+    expect(log).toContain(STOP(0));
+    expect(log.join('\n')).not.toContain('NaN');
+  });
+
+  it.each([
+    ['2 a 4', 4],
+    ['4 a 8 sujetos', 8],
+    ['4 a 2', 4],
+    ['5', 5],
+  ])('lee «%s» como techo %i sin aviso', (cell, cap) => {
+    const config = readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, specFs(forecast(cell)));
+    expect(config.subjectCap).toBe(cap);
+    expect(config.capNotice).toBeUndefined();
+  });
+
+  it.each([
+    ['sin spec.md', null],
+    ['con la celda vacía', forecast('')],
+    ['con la celda en prosa', forecast('hasta 4 sujetos, 4 $ de techo; real: 6 sujetos')],
+    ['con un rango con más texto', forecast('2 a 4 sujetos por tanda')],
+    ['con una Suma fuera de la previsión', '# Spec\n\n## Topes\n\n| Suma | 9 | 3 |\n\n## Previsión de coste\n\nNinguna.\n\n## Otra\n\n| Suma | 9 | 3 |\n'],
+  ])('%s usa SUBJECT_CAP y avisa', async (_case, text) => {
+    const { labels, log } = await launchAbc(text === null ? kitFs() : specFs(text), { SUBJECT_CAP: '2' });
+    expect(labels).toEqual(['a-1', 'b-1']);
+    expect(log).toContain(NO_FORECAST(2));
+    expect(log).toContain('techo de 2 sujetos alcanzado: decide el dev-lead');
+  });
+
+  it('sin previsión ni SUBJECT_CAP sigue pidiéndolo', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: undefined }), CWD, specFs(forecast('')))).toThrow(new CampaignError('define SUBJECT_CAP (previsión de la spec)'));
+  });
+
+  it('un SUBJECT_CAP inválido se rechaza también con previsión', () => {
+    expect(() => readConfig(baseEnv({ SUBJECT_CAP: 'abc' }), CWD, specFs(forecast('2')))).toThrow('SUBJECT_CAP tiene que ser un entero positivo: abc');
+  });
+});
+
+describe('runCampaign', () => {
+  it('no pasa de SUBJECT_CAP sujetos', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b c', SUBJECT_CAP: '2' }), CWD, fs), fake.deps);
+    expect(fake.launched.map((request) => request.args[1])).toEqual(['a-1', 'b-1']);
+    expect(fake.log).toContain('techo de 2 sujetos alcanzado: decide el dev-lead');
+  });
+
+  it('cuenta lo gastado en todas las fases y lo lanzado a SUBJECT_COST contra COST_CAP', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'green', 'out', 'z-1.tools.txt'), tools(0.6));
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ COST_CAP: '1', SUBJECT_COST: '0.50' }), CWD, fs), fake.deps);
+    expect(fake.launched).toHaveLength(0);
+    expect(fake.log).toContain('techo de 1 $ alcanzado (0.60 $ gastados, 0 en curso a 0.50 $)');
+  });
+
+  it('lanza si lo gastado más lo lanzado iguala COST_CAP', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'green', 'out', 'z-1.tools.txt'), tools(0.5));
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ COST_CAP: '1', SUBJECT_COST: '0.50' }), CWD, fs), fake.deps);
+    expect(fake.launched).toHaveLength(1);
+  });
+
+  it('espera hueco contando las marcas de otro run.mjs y lanza cuando una muere', async () => {
+    const fs = kitFs();
+    const live = join(RUNS, 'live');
+    mark(fs, live, 'red.x-1', 1);
+    mark(fs, live, 'red.y-1', 2);
+    const fake: ReturnType<typeof fakeDeps> = fakeDeps(fs, { onWait: () => fake.alive.delete(1) });
+    fake.alive.add(1);
+    fake.alive.add(2);
+    await runCampaign(readConfig(baseEnv({ MAX_PARALLEL: '2' }), CWD, fs), fake.deps);
+    expect(fake.log.filter((line) => line.startsWith('esperando hueco'))).toEqual(['esperando hueco: 2 sujetos en curso (MAX_PARALLEL=2)']);
+    expect(fake.waits()).toBe(1);
+    expect(fake.launched).toHaveLength(1);
+  });
+
+  it('comprueba la etiqueta dentro del cerrojo, tras esperar hueco: dos lanzadores con la misma etiqueta lanzan una vez', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { manual: true });
+    const config = readConfig(baseEnv(), CWD, fs);
+    const first = runCampaign(config, fake.deps);
+    const second = runCampaign(config, fake.deps);
+    await new Promise((resolve) => setImmediate(resolve));
+    fake.finishers.get('a-1')?.();
+    await Promise.all([first, second]);
+    expect(fake.launched).toHaveLength(1);
+    expect(fake.log).toContain('ya existe a-1: sube SUBJECT');
+  });
+
+  it('una etiqueta ya guardada no espera hueco', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'red', 'out', 'a-1.tools.txt'), tools(0.5));
+    mark(fs, join(RUNS, 'live'), 'red.x-1', 1);
+    const fake: ReturnType<typeof fakeDeps> = fakeDeps(fs, { onWait: () => fake.alive.delete(1) });
+    fake.alive.add(1);
+    await runCampaign(readConfig(baseEnv({ MAX_PARALLEL: '1' }), CWD, fs), fake.deps);
+    expect(fake.log).toContain('ya existe a-1: sube SUBJECT');
+    expect(fake.waits()).toBe(0);
+  });
+
+  it('no relanza una etiqueta que ya tiene tools.txt en su fase', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'red', 'out', 'a-1.tools.txt'), tools(0.5));
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.launched).toHaveLength(0);
+    expect(fake.log).toContain('ya existe a-1: sube SUBJECT');
+  });
+
+  it('cuenta un sujeto cortado como sujeto y como SUBJECT_COST', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ SUBJECT_CAP: '1', SUBJECT_COST: '0.50' }), CWD, fs), fake.deps);
+    expect(fake.launched).toHaveLength(0);
+    expect(fake.log).toContain('cortados sin salida: 1 (contados a 0.50 $ cada uno)');
+    expect(fake.log).toContain('sujetos de la campaña: 1 · coste acumulado: 0.50 $');
+  });
+
+  it('un cortado de una tanda real no cuenta en un ensayo en seco, ni al revés', async () => {
+    const realCut = kitFs();
+    mark(realCut, join(RUNS, 'live'), 'red.z-1', 77);
+    const dry = fakeDeps(realCut);
+    await runCampaign(readConfig(baseEnv({ SUBJECT_CAP: '1', DRY_RUN: '1' }), CWD, realCut), dry.deps);
+    const dryCut = kitFs();
+    mark(dryCut, join(RUNS, 'dry', 'live'), 'red.w-1', 78);
+    const real = fakeDeps(dryCut);
+    await runCampaign(readConfig(baseEnv({ SUBJECT_CAP: '1' }), CWD, dryCut), real.deps);
+    expect(dry.launched).toHaveLength(1);
+    expect(real.launched).toHaveLength(1);
+  });
+
+  it('para a petición si existe RUNS_DIR/stop', async () => {
+    const fs = kitFs();
+    fs.write(join(RUNS, 'stop'), '');
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.launched).toHaveLength(0);
+    expect(fake.log).toContain('parada a petición');
+  });
+
+  it('deja la marca con el PID lanzado mientras el sujeto corre y la borra al acabar', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { manual: true });
+    const done = runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    await new Promise((resolve) => setImmediate(resolve));
+    const markPath = join(RUNS, 'live', 'red.a-1');
+    expect(fs.read(markPath).trim()).toBe('1000');
+    fake.finishers.get('a-1')?.();
+    await done;
+    expect(fs.exists(markPath)).toBe(false);
+  });
+
+  it('lanza cada sujeto con el kit, la etiqueta, el escenario y la salida', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ SUBJECT: '2', PHASE: 'green' }), CWD, fs), fake.deps);
+    expect(fake.launched[0].args).toEqual([KIT, 'a-2', 'a', join(SPEC, 'green', 'out')]);
+    expect(fake.launched[0].subjectSh).toBe(join(SPEC, 'red', 'subject.mjs'));
+  });
+
+  it('informa del coste por carpeta de salida, los cortados y el total', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'red', 'out', 'a-1.tools.txt'), tools(0.6));
+    fs.write(join(SPEC, 'red', 'out', 'b-1.tools.txt'), tools(0.5));
+    fs.write(join(SPEC, 'green', 'out', 'c-1.tools.txt'), '>>> Bash: ls\n');
+    fs.write(join(RUNS, 'stop'), '');
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ SUBJECT_COST: '0.50' }), CWD, fs), fake.deps);
+    expect(fake.log.slice(-4)).toEqual([
+      'green: 1 sujetos · 0.00 $ · 1 sin RESULTADO',
+      'red: 2 sujetos · 1.10 $',
+      'cortados sin salida: 1 (contados a 0.50 $ cada uno)',
+      'sujetos de la campaña: 4 · coste acumulado: 1.60 $',
+    ]);
+  });
+
+  it('en seco escribe en RUNS_DIR/dry y lo dice al acabar', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv({ DRY_RUN: '1' }), CWD, fs), fake.deps);
+    const out = join(RUNS, 'dry', 'red', 'out');
+    expect(fs.exists(join(out, 'a-1.tools.txt'))).toBe(true);
+    expect(fake.log).toContain(`en seco: salidas en ${out}`);
+  });
+});
+
+describe('procesos del sujeto', () => {
+  const folder = join(RUNS, 'red', 'a-1');
+
+  it('reconoce la carpeta del sujeto con cualquier barra y capitalización', () => {
+    const processes = [
+      { pid: 1, commandLine: `claude.exe -p --add-dir ${folder.replaceAll('\\', '/').toLowerCase()} --verbose` },
+      { pid: 2, commandLine: `claude.exe -p --add-dir "${folder}"` },
+      { pid: 3, commandLine: `claude.exe -p --add-dir ${folder}0` },
+      { pid: 4, commandLine: 'node.exe other.js' },
+    ];
+    expect(subjectProcesses(processes, folder)).toEqual([1, 2]);
+  });
+
+  it('para los procesos del sujeto al acabar y dice cuántos', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { processes: [{ pid: 51, commandLine: `timeout.exe 0 claude --add-dir ${folder}` }, { pid: 52, commandLine: `node serve ${folder}` }] });
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.killed).toEqual([{ pid: 51, tree: true }, { pid: 52, tree: true }]);
+    expect(fake.log).toContain(`[a-1] paro 2 procesos de ${folder}`);
+  });
+
+  it('para al acabar el nieto que el sujeto dejó vivo sin nombrar su carpeta, y no un PID reutilizado', async () => {
+    const fs = kitFs();
+    const processes: ProcessInfo[] = [
+      { pid: 2001, ppid: 1000, created: 'a', commandLine: 'claude.exe -p' },
+      { pid: 2002, ppid: 2001, created: 'b', commandLine: 'bash.exe -c find' },
+      { pid: 2003, ppid: 2002, created: 'c', commandLine: 'find.exe / -name review-spec.md' },
+      { pid: 2004, ppid: 1, created: 'd', commandLine: 'vite.js' },
+    ];
+    const fake = fakeDeps(fs, { manual: true, processes });
+    const campaign = runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    await vi.waitFor(() => expect(fake.finishers.size).toBe(1));
+    await fake.tick();
+    processes.splice(0, processes.length, { pid: 2003, ppid: 2002, created: 'c', commandLine: 'find.exe / -name review-spec.md' }, { pid: 2001, ppid: 7, created: 'z', commandLine: 'otra.exe' });
+    fake.finishers.get('a-1')!();
+    await campaign;
+    expect(fake.killed).toEqual([{ pid: 2003, tree: true }]);
+    expect(fake.log).toContain(`[a-1] paro 1 procesos de ${folder}`);
+  });
+
+  it('no avisa si el sujeto no deja procesos', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.log.filter((line) => line.includes('paro'))).toEqual([]);
+  });
+
+  it('al arrancar para los procesos de los cortados de una tanda anterior', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const cutFolder = join(RUNS, 'red', 'z-1');
+    const fake = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${cutFolder}` }] });
+    fs.write(join(RUNS, 'stop'), '');
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.killed).toEqual([{ pid: 61, tree: true }]);
+  });
+
+  it('al arrancar no toca las marcas cuyo PID sigue vivo', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'z-1')}` }] });
+    fake.alive.add(77);
+    fs.write(join(RUNS, 'stop'), '');
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.killed).toEqual([]);
+  });
+
+  it('un sujeto que acaba sin tools.txt borra su marca y no queda como cortado de otra tanda', async () => {
+    const fs = kitFs();
+    const config = readConfig(baseEnv(), CWD, fs);
+    const first = fakeDeps(fs, { unsaved: true });
+    await runCampaign(config, first.deps);
+    expect(fs.exists(join(RUNS, 'live', 'red.a-1'))).toBe(false);
+    expect(first.log.some((line) => line.startsWith('cortados sin salida'))).toBe(false);
+    const next = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${folder}` }] });
+    await sweepCut(config, next.deps);
+    expect(next.killed).toEqual([]);
+  });
+
+  it('al arrancar lista los procesos una sola vez para todos los cortados', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.y-1', 76);
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs, {
+      processes: [
+        { pid: 61, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'y-1')}` },
+        { pid: 62, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'z-1')}` },
+      ],
+    });
+    await sweepCut(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.queries()).toBe(1);
+    expect(fake.killed).toEqual([{ pid: 61, tree: true }, { pid: 62, tree: true }]);
+  });
+
+  it('avisa si no puede listar los procesos y sigue', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { processesFail: true });
+    await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+    expect(fake.log).toContain('[a-1] no pude listar los procesos: pwsh no arrancó');
+    expect(fake.log.at(-1)).toBe('sujetos de la campaña: 1 · coste acumulado: 0.50 $');
+  });
+
+  describe('procesos lanzados desde la copia del kit', () => {
+    const kitCli = join(KIT, 'cli', 'bin', 'sdd.js');
+    const serve = { pid: 71, commandLine: `node ${kitCli} validation serve --steps steps.json --out .temp/validation/0001.json` };
+    const pluginDir = { pid: 72, commandLine: `claude.exe -p --plugin-dir ${KIT}` };
+
+    // Como en Windows: la carpeta no se borra mientras viva el servidor que tiene su cwd dentro.
+    function lockedBy(fs: MemoryFs, fake: ReturnType<typeof fakeDeps>, pid: number) {
+      const remove = fs.remove;
+      fs.remove = (path) => {
+        if (path.startsWith(join(RUNS, 'red')) && !fake.killed.some((kill) => kill.pid === pid)) throw new Error(`EPERM: ${path}`);
+        remove(path);
+      };
+    }
+
+    it('para el servidor del panel que deja un sujeto y borra su carpeta sin EPERM', async () => {
+      const fs = kitFs();
+      fs.write(join(folder, 'repo', 'a.txt'), '');
+      const fake = fakeDeps(fs, { processes: [serve, pluginDir] });
+      lockedBy(fs, fake, serve.pid);
+      await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps);
+      expect(fake.killed).toEqual([{ pid: 71, tree: true }]);
+      expect(fs.exists(folder)).toBe(false);
+    });
+
+    it('con otro sujeto en curso no para nada de la copia del kit: lo para el último en acabar', async () => {
+      const fs = kitFs();
+      fs.write(join(folder, 'repo', 'a.txt'), '');
+      const fake = fakeDeps(fs, { manual: true, processes: [serve] });
+      lockedBy(fs, fake, serve.pid);
+      const campaign = runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps);
+      await vi.waitFor(() => expect(fake.finishers.size).toBe(2));
+      fake.finishers.get('a-1')!();
+      await vi.waitFor(() => expect(fs.exists(join(RUNS, 'live', 'red.a-1'))).toBe(false));
+      expect(fake.killed).toEqual([]);
+      fake.finishers.get('b-1')!();
+      await campaign;
+      expect(fake.killed).toEqual([{ pid: 71, tree: true }]);
+      expect(fs.exists(folder)).toBe(false);
+    });
+
+    it('con KEEP_MOLD=1 para el servidor y deja la carpeta', async () => {
+      const fs = kitFs();
+      fs.write(join(folder, 'repo', 'a.txt'), '');
+      const fake = fakeDeps(fs, { processes: [serve] });
+      await runCampaign(readConfig(baseEnv({ KEEP_MOLD: '1' }), CWD, fs), fake.deps);
+      expect(fake.killed).toEqual([{ pid: 71, tree: true }]);
+      expect(fs.exists(folder)).toBe(true);
+    });
+  });
+
+  it('al parar, mata el árbol de cada sujeto en curso y barre sus procesos', async () => {
+    const fs = kitFs();
+    mark(fs, join(RUNS, 'live'), 'red.z-1', 77);
+    const fake = fakeDeps(fs, { processes: [{ pid: 61, commandLine: `claude.exe --add-dir ${join(RUNS, 'red', 'z-1')}` }] });
+    await stopCampaign(readConfig(baseEnv(), CWD, fs), fake.deps, [77]);
+    expect(fake.killed).toEqual([{ pid: 77, tree: true }, { pid: 61, tree: true }]);
+  });
+});
+
+describe('el código de salida de una campaña', () => {
+  const OUT = join(SPEC, 'red', 'out');
+
+  it('devuelve 0 con todos con RESULTADO', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(0);
+  });
+
+  it('devuelve 3 y nombra las etiquetas sin ningún sujeto', async () => {
+    const fs = kitFs();
+    fs.write(join(RUNS, 'stop'), '');
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1, b-1');
+  });
+
+  it('devuelve 3 sin ningún sujeto aunque otra fase ya tenga los suyos', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'green', 'out', 'a-1.tools.txt'), tools(0.5));
+    fs.write(join(RUNS, 'stop'), '');
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1');
+  });
+
+  it('devuelve 3 si el techo no deja lanzar ninguno', async () => {
+    const fs = kitFs();
+    fs.write(join(SPEC, 'green', 'out', 'z-1.tools.txt'), tools(0.5));
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SUBJECT_CAP: '1' }), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1');
+  });
+
+  it('devuelve 3 si todas las etiquetas ya existían', async () => {
+    const fs = kitFs();
+    fs.write(join(OUT, 'a-1.tools.txt'), tools(0.5));
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin sujetos: a-1');
+  });
+
+  it('devuelve 0 con un techo parcial y lo lanzado con RESULTADO', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b', SUBJECT_CAP: '1' }), CWD, fs), fake.deps)).toBe(0);
+    expect(fake.launched).toHaveLength(1);
+  });
+
+  it('devuelve 3 y nombra la etiqueta del sujeto sin tools.txt', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { unsaved: true });
+    expect(await runCampaign(readConfig(baseEnv(), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin RESULTADO: a-1');
+  });
+
+  it('devuelve 3 y nombra solo la etiqueta del sujeto sin RESULTADO', async () => {
+    const fs = kitFs();
+    const fake = fakeDeps(fs, { unsaved: true });
+    const launch = fake.deps.launch;
+    fake.deps.launch = (request: LaunchRequest) => {
+      const started = launch(request);
+      const label = request.args[1];
+      fs.write(join(OUT, `${label}.tools.txt`), label === 'a-1' ? '>>> Bash: ls\n' : tools(0.5));
+      return started;
+    };
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(3);
+    expect(fake.log).toContain('sin RESULTADO: a-1');
+  });
+
+  it('una etiqueta ya existente no cuenta como sin RESULTADO', async () => {
+    const fs = kitFs();
+    fs.write(join(OUT, 'a-1.tools.txt'), '>>> Bash: ls\n');
+    const fake = fakeDeps(fs);
+    expect(await runCampaign(readConfig(baseEnv({ SCENARIOS: 'a b' }), CWD, fs), fake.deps)).toBe(0);
+    expect(fake.log.filter((line) => line.startsWith('sin RESULTADO'))).toEqual([]);
+  });
+});

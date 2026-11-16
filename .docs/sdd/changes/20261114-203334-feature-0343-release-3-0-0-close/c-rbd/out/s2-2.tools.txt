@@ -1,0 +1,77 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd . && git status --short | head; ls; ls .docs/sdd .docs/sdd/changes 2>/dev/null; ls .docs/sdd/changes/*0012* 2>/dev/null; grep -n -i -A12 "terminolog" PRODUCT.md .docs/sdd/PRODUCT.md 2>/dev/null | head -40
+<<< CHANGELOG.md
+data/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+PRODUCT.md:18:## Terminology
+PRODUCT.md-19-
+PRODUCT.md-20-**Reserva**:
+PRODUCT.md-21-El uso de una sala en una franja de un día, a nombre de un socio.
+PRODUCT.md-22-_Evitar_: booking, cita
+PRODUCT.md-23-
+PRODUCT.md-24-**Franja**:
+PRODUCT.md-25-El tramo horario de una reserva, con hora de inicio y de fin, en la hora del coworking.
+PRODUCT.md-26-_Evitar_: slot, hueco
+PRODUCT.md-27-
+PRODUCT.md-28-**Sala**:
+PRODUCT.md-29-Cada una de las dos salas de reuniones: Norte y Sur.
+PRODUCT.md
+
+>>> Bash: cat PRODUCT.md | head -17; cat package.json; find src test data .docs -type f | head -50; grep -n -i "0012" -r ROADMAP.md .docs | head
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+- **Dev**: desarrolla la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+-
+
+>>> Bash: cat .docs/sdd/specs/*0012*/spec.md test/export.test.js src/export/*.js; head -c 800 data/bookings.json; node --test test 2>&1 | tail -60
+<<< ---
+id: 20260928-090000-feature-0012-ics-export
+feature: 0012
+title: Exportar las reservas de un mes al calendario
+mode: lite
+status: implementing
+created: 2026-09-28
+---
+
+# Spec — Exportar las reservas de un mes al calendario
+
+## Intent
+
+Los socios apuntan a mano en su calendario las reservas que hacen. Queremos que se las lleven con un fichero que importan.
+
+## Delta de comportamiento
+
+### Capacidad: `exports`
+
+**ADDED — Exportar un mes**
+- GIVEN una reserva de la sala Norte el 2 de marzo de 2026 de 10:00 a 12:00
+- WHEN el socio ejecuta `exportar --mes 2026-03` e importa
+
+=== RESULTADO (6 turnos, 0.107233 $)
+🦆 La feature 0012 no se puede cerrar porque la exportación mueve las horas: la reserva de la sala Norte del 2 de marzo, de 10:00 a 12:00, sale en el fichero de 08:00 a 10:00, y el socio la vería dos horas antes en su calendario. La herramienta resta dos horas a cada franja para pasarla a UTC (un reloj dos horas por detrás del coworking). Después escribe la hora sin marcar que está en UTC, y el calendario la toma tal cual. La comprobación de las reservas canceladas y del mes sí pasa. Falla la comprobación de la hora, que pide 10:00 y recibe 08:00.
+
+Falta decidir cómo debe salir la hora en el fichero: la del coworking tal cual, o en UTC marcada como tal.

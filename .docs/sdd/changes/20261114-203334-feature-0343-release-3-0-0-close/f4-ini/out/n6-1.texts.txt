@@ -1,0 +1,126 @@
+--- [3]
+Voy a leer el estado de la init en curso.
+
+--- [11]
+Retomo la init. `init.approved` tiene `PRODUCT.md` y la constitución, y `init.config` ya guarda ids, control, ejecución y validación, así que no repito esas preguntas. No hay `operations.md`, y es el siguiente documento en el orden.
+
+**Modo: con código.** Del inventario: `package.json` (vite, vitest, Playwright), `playwright.config.ts`, `.github/workflows/ci.yml`, 2 specs en `e2e/` y `src/app.ts`. No hay remoto y solo existe `main`.
+
+## Borrador de `.docs/sdd/steering/operations.md`
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: `pendiente` (no hay script `build`)
+- **Arrancar**: `npm run dev` (vite)
+
+## Testing
+
+- **Suites**:
+  - `unit` · `npm test` (vitest run) · `pendiente` duración · `pendiente` nivel (no hay ningún test de vitest todavía)
+  - `e2e` · `npm run e2e` (playwright test) · `pendiente` duración · E2E
+- **Lo afectado**: `no declarado` (sin filtro por afectados)
+- **Gate de cierre**: `npm run e2e` (sin forma de filtrar, la suite entera)
+- **Gate de merge**: `pendiente`
+- **Sin filtro**: `package.json`, `package-lock.json`, `playwright.config.*`, `vitest.config.*`, `vite.config.*`
+- **Lint**: `ninguno`
+- **CI de la base**: `.github/workflows/ci.yml` · `sin orden de lectura` (no hay remoto ni rama de integración definida; hoy corre solo `npm test`, no el E2E)
+- **Acceso a la aplicación**: `pendiente`
+- **Motor de producción**: `no aplica` (datos en memoria)
+- **Temporales**: `e2e` · `test-results/` (Playwright sin `outputDir`) · propuesta `outputDir: '.temp/playwright'`
+
+- **Flujos core**: `pendiente` (candidatos abajo)
+  - **Títulos heredados**:
+    - `reserva Norte a las 10:00`
+    - `cancela una reserva`
+- **Presupuesto E2E**: `pendiente`
+- **Retries**: `0` en local; en CI `2` (ya lo fija la config)
+- **Timeouts**: `60 s por test, sin motivo escrito`
+- **Entorno de la suite**: `pendiente`
+- **Datos**: `pendiente`
+
+## Frontend
+
+- **URL**: `pendiente`
+- **Detector**: `ninguno`
+- **Runner E2E**: Playwright
+- **Acceso**: `pendiente`
+- (resto de campos `no declarado`)
+```
+
+## Discrepancias que he visto
+- El `CLAUDE.md` viejo dice que el dev va en el puerto 3000. Ni `package.json` ni vite lo fijan (vite usa 5173 por defecto), así que no lo doy por verificado.
+- La CI no corre los E2E, solo `npm test`, y ese script no tiene tests escritos.
+- Los E2E hacen `page.goto('/')` sin `baseURL` ni `webServer` en la config, así que `npm run e2e` no puede arrancar la app por sí solo.
+
+## Necesito de ti antes del «sí»
+1. **Flujos core**: de los dos candidatos (reservar sala, cancelar reserva), ¿cuáles son core?
+2. **Test de títulos**: ¿lo quieres? Lo escribiría en verde tras aprobar este documento, con «Títulos heredados».
+3. **Temporales**: ¿llevo los de Playwright a `.temp/playwright`? Solo lo dejo anotado, no toco la config.
+4. **Acceso, Frontend y Entornos**: ¿hay login? ¿Cuál es la URL real de la app? ¿Usas worktrees? Si sí, ¿su entorno necesita algo más que instalar dependencias?
+5. **Rama de integración**: ¿git-flow (`develop`) o seguimos solo con `main`? Esto fija «CI de la base» y el gate de merge.
+6. **Duraciones y presupuesto E2E**: ¿tienes alguna cifra o las dejo en `pendiente`?
+
+Con lo que me contestes ajusto el borrador y te lo presento otra vez para el «sí». No he escrito nada todavía.
+
+--- [13]
+Tomo "la que recomiendas" como las opciones que te propuse con recomendación: **git-flow** (`main` estable, `develop` integración), el **test de títulos** y **mover los temporales** a `.temp/playwright`. Si te referías solo a una de ellas, dímelo y lo ajusto. Los flujos core, el acceso, la URL y las duraciones no te los recomendé, así que no los decido yo y siguen `pendiente`.
+
+## `operations.md` (versión 2)
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: `pendiente` (no hay script `build`)
+- **Arrancar**: `npm run dev` (vite)
+
+## Testing
+
+- **Suites**:
+  - `unit` · `npm test` (vitest run) · `pendiente` · `pendiente` (aún no hay tests de vitest)
+  - `e2e` · `npm run e2e` (playwright test) · `pendiente` · E2E
+- **Lo afectado**: `no declarado`
+- **Gate de cierre**: `npm run e2e` (sin filtro, suite entera)
+- **Gate de merge**: `pendiente`
+- **Sin filtro**: `package.json`, `package-lock.json`, `playwright.config.*`, `vitest.config.*`, `vite.config.*`
+- **Lint**: `ninguno`
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha` (hoy solo corre `npm test`, no el E2E)
+- **Acceso a la aplicación**: `pendiente`
+- **Motor de producción**: `no aplica` (datos en memoria)
+- **Temporales**: `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`
+
+- **Flujos core**: `pendiente`
+  - **Títulos heredados**:
+    - `reserva Norte a las 10:00`
+    - `cancela una reserva`
+- **Presupuesto E2E**: `pendiente`
+- **Retries**: `0` en local; `2` en CI
+- **Timeouts**: `60 s por test, sin motivo escrito`
+- **Entorno de la suite**: `pendiente`
+- **Datos**: `pendiente`
+
+## Frontend
+
+- **URL**: `pendiente`
+- **Detector**: `ninguno`
+- **Runner E2E**: Playwright
+- **Acceso**: `pendiente`
+```
+
+Cambios respecto a la versión 1:
+- **CI de la base**: ahora lee `develop`. Lo dejo escrito sin ejecutarlo, porque no hay remoto.
+- **Temporales**: la propuesta de `.temp/playwright` queda aceptada y solo la anoto. No edito `playwright.config.ts`.
+- **Test de títulos**: lo escribo en verde, con «Títulos heredados», justo después de que apruebes este documento.
+
+Faltan cuatro datos que solo puedes darme tú:
+1. ¿Cuáles de los dos flujos (reservar, cancelar) son **core**?
+2. ¿Cuál es la **URL** real de la app y hay **login**?
+3. ¿Trabajas con **worktrees**? Si sí, ¿su entorno necesita algo más que instalar dependencias?
+4. ¿Qué orden uso como **gate de merge**? Mi sugerencia: `npm test && npm run e2e`, pero el kit pide una sola orden sin encadenar, así que habría que crear un script.
+
+Puedes responder esas cuatro, o decirme "sí" y las dejo `pendiente`. Con el «sí» escribo el archivo y lo registro con `sdd init --approved`. También me falta preguntar las claves del kit de integración (`merge`, `push`, `review.minors`, `pricing`) con `sdd-config`, ahora que `develop` es la rama de integración. Lo hago después de este documento, salvo que prefieras antes.
+

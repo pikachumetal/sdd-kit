@@ -1,0 +1,66 @@
+--- [3]
+Voy a comprobar el estado de la init que se cortó.
+
+--- [12]
+Retomo la init. `sdd-kit.json` tiene la clave `init`, así que sigo desde donde se cortó.
+
+- **Aprobados**: `PRODUCT.md` y `.docs/sdd/steering/constitution.md`. No los vuelvo a presentar.
+- **Ya respondido** (`init.config`): numeración por secuencia, perfil `delegate`, ejecución `auto` y validación manual. No lo pregunto otra vez.
+- **Modo**: con código. Si es un template recién instanciado, dímelo y sigo sin código.
+- **Siguiente documento**: `.docs/sdd/steering/operations.md`. Lo he armado con lo que he leído en `package.json`, los configs y `ci.yml`.
+
+## Borrador de `operations.md`
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: `no declarado` (no hay script `build`)
+- **Arrancar**: `npm run dev` (vite)
+
+## Testing
+
+- **Suites**:
+  - `unit` · `npm test` (vitest run) · duración pendiente · unitario
+  - `e2e` · `npm run e2e` (playwright test) · duración pendiente · E2E (aún sin tests)
+- **Lo afectado**: `npx vitest run --changed` (propuesta)
+- **Gate de cierre**: `npm run e2e`. Sin forma de filtrar, la suite entera. `unit` no va aquí: el cierre la corre entera con su orden.
+- **Gate de merge**: `npm test`
+- **Sin filtro**: `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**`
+- **Lint**: `npm run lint` (eslint .). No hay config de eslint ni pre-commit; nunca va en el gate.
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: `no declarado`
+- **Motor de producción**: no aplica. Los datos viven en memoria, sin motor de base de datos.
+- **Temporales**: `e2e` · `test-results/` (valor por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`. `unit` · `no declarado`.
+```
+
+No incluyo `## Frontend` ni `## Entornos`: no veo código de interfaz, y todavía no me has dicho si usáis worktrees.
+
+## Discrepancias y preguntas
+
+1. **E2E sin tests**: `playwright.config.ts` apunta a `./e2e`, que no existe. El gate de cierre `npm run e2e` fallaría hoy por «no tests found». ¿Lo dejo así, o prefieres que el gate de cierre quede `pendiente` hasta que haya E2E?
+2. **Frontend**: ¿el proyecto tiene interfaz? Hay `vite` y un `dev`, pero `src/` solo tiene `app.ts`. Si la tiene, añado `## Frontend` y te pregunto el detector, el runner y el acceso.
+3. **Puerto**: `CLAUDE.md` dice «`npm run dev` en el puerto 3000», pero `vite` usa 5173 por defecto y no hay config que lo cambie. No lo puedo verificar, así que no lo meto en `operations.md`. Va a la lista de discrepancias para decidir en el paso de `CLAUDE.md`.
+4. **Pendientes**: duraciones de las suites, acceso a la aplicación y presupuesto E2E. Si me las das, las pongo; si no, quedan `pendiente` o `no declarado`.
+5. **Temporales**: ¿te vale mover los de Playwright a `.temp/playwright`? No toco el config de la suite: solo queda anotada la propuesta.
+
+¿Apruebas el borrador, con los cambios que me indiques? Con tu «sí» lo escribo y lo registro con `sdd init --approved`. No he escrito nada todavía.
+
+--- [14]
+Entiendo «la que recomiendas» como la opción de la pregunta 1: dejar el gate de cierre `pendiente` hasta que exista E2E, porque `npm run e2e` fallaría hoy. Para el resto aplico mis valores por defecto: sin `## Frontend` ni `## Entornos`, lo no respondido queda `pendiente` o `no declarado`, y la propuesta de temporales se queda como propuesta.
+
+--- [17]
+`operations.md` está escrito en `.docs/sdd/steering/operations.md` y registrado como aprobado con `sdd init --approved`.
+
+Recogí tu respuesta como la opción recomendada de la pregunta 1: gate de cierre `pendiente` hasta que haya E2E. Si querías otra cosa, dímelo y lo cambio.
+
+Quedan pendientes, y no los he decidido por ti:
+- **Frontend**: no he añadido `## Frontend`. Si el proyecto tiene interfaz, lo añado.
+- **Puerto 3000 de `CLAUDE.md`**: sigue sin verificar y lo reviso cuando llegue ese documento.
+- **Worktrees**: todavía no te lo he preguntado.
+
+Siguiente documento: `.docs/sdd/steering/architecture.md`. Antes necesito dos respuestas, porque no puedo deducirlas del código:
+1. **Stack**: por los manifests es TypeScript con Vite 7, Vitest 4, Playwright y ESLint 9. ¿Lo confirmo como stack decidido, o hay algo abierto, como el framework de interfaz o la persistencia más allá de la memoria?
+2. **Convención de ramas**: el repo solo tiene `main`. Recomiendo git-flow (`main` estable, `develop` de integración, `feature/<id>` desde `develop`). ¿La adoptas o prefieres seguir solo con `main`?
+

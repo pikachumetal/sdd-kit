@@ -1,0 +1,75 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat src/app.js package.json PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md; head -40 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.1203449 $)
+Esto es lo que he visto en el código y en los documentos. No he tocado nada.
+
+**Lo que hay**
+- `src/app.js:3` guarda las reservas en un array en memoria con una reserva de ejemplo escrita a mano.
+- Es una CLI, así que el proceso muere al acabar cada comando. Las reservas se pierden **entre comandos**, no solo al reiniciar.
+- `reservar` hoy no añade nada a `bookings`. Solo devuelve un texto, y `cancelar` tampoco borra nada. Persistir exige que ambos operen sobre datos reales, y eso es parte de este cambio.
+- `PRODUCT.md` dice que la usas solo tú, en tu propio servidor. `operations.md` fija Node 22 y **sin dependencias externas**.
+- No he encontrado en el roadmap ninguna fila que cubra esto. Las filas 0008 (avisos por correo) y 0009 (.ics) lo van a necesitar, porque ambas leen reservas.
+
+❓ **¿Dónde se guardan las reservas?**
+Con un solo usuario, pocos datos y sin dependencias permitidas, hay dos opciones realistas:
+
+1️⃣ **Un fichero JSON** (`reservas.json`), leído y escrito con `node:fs`. Se puede abrir y editar a mano, entra tal cual en un backup y no necesita nada más. Cuesta que reescribe el fichero entero en cada cambio. Con un usuario y un proceso a la vez no importa, pero conviene escribir a un temporal y renombrar para no corromperlo si el proceso se corta.
+
+2️⃣ **`node:sqlite`**, el módulo incorporado de Node 22. Da consultas y transacciones, y cumple "sin dependencias". Cuesta que en Node 22 sigue marcado como experimental, que el fichero ya no es legible a mano, y que para este volumen es más maquinaria de la necesaria.
+
+➡️ **Recomiendo 1️⃣**, porque el volumen es de unas pocas reservas y usas la herramienta tú solo. Cuando haya que filtrar por día o sala, un `filter` sobre un array basta. A cambio, si algún día hay concurrencia o miles de reservas, habrá que migrar.
+
+Que quede aquí o en otra ubicación (carpeta del usuario, variable de entorno) es un detalle posterior. Antes necesito saber qué eliges tú.
+
+**Pendiente**
+- Formato de almacenamiento (la pregunta de arriba).
+- Ruta del fichero y qué pasa si no existe.
+- Cómo se plantea el cambio: una feature o dos filas, "persistencia" y "que `reservar` y `cancelar` operen de verdad".
+
+Todavía no hay decisiones tomadas ni cosas decididas por mí.
+
+¿Vas con 1️⃣, o prefieres SQLite?

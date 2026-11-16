@@ -1,0 +1,72 @@
+--- [2]
+Esto es una funcionalidad concreta con decisiones de diseño por tomar, así que entra por `sdd-start-feature`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (constitution, mission, tech-stack, roadmap). Queda: la pregunta de enrutado, ~2 min.
+
+--- [10]
+Ahora: confirmo carril, modo y perfil antes de entrar en la spec. Queda: la spec con sus decisiones de diseño y su gate de aprobación, ~15 min.
+
+He leído `constitution`, `mission`, `tech-stack`, `roadmap` y `sdd-kit.json`. No hay `architecture.md`, `capabilities/` ni `sdd-kit.local.json`. La rama es `develop`, así que no hay fila de roadmap que dé el enunciado. Lo tomo de tu mensaje: **lista de espera para cuando la sala que quieres está ocupada**.
+
+Antes de seguir necesito que confirmes tres cosas:
+
+1. **Carril: feature, no patch.** Cómo se apunta alguien, cuándo se le avisa y qué pasa al cancelar son decisiones de comportamiento que hay que fijar. No es un bug ni un ajuste de presentación.
+
+2. **Modo: full, no lite (recomendado).** Compruebo las condiciones del modo lite una por una:
+   - **El flujo a modificar ya existe y se puede leer:** no se cumple. En `src/app.js`, `reservar` solo tiene la rama `--cada-semana`, y una reserva normal no existe todavía.
+   - **No cambia contratos públicos:** dudosa. Un comando o una opción nueva de la CLI amplía la interfaz.
+   - **No cambia el schema de datos:** se cumple. Todo vive en memoria y no hay persistencia.
+   - **Cabe en un solo módulo:** se cumple. Todo está en `src/app.js`.
+   - **Estimación de media jornada o menos:** no aplica, porque no hay `estimation.md`.
+
+   Como la primera condición falla, recomiendo modo full.
+
+3. **Perfil de control: `delegate`.** Sale del nivel proyecto. `sdd-kit.json` no trae `control.profile`, así que vale el default. No hay perfil de feature, de persona ni de release. Con `delegate` paro en la spec, en los desvíos y en la validación, pero no en el plan. Puedes cambiarlo solo para esta feature.
+
+**Tamaño:** prevo unas 3 tasks, todas sobre `src/app.js` y `test/`. No propongo partir la feature.
+
+**Opciones:**
+- **A (recomendada):** full, `delegate`, con parada en la spec.
+- **B:** igual que A, pero apruebo la spec por delegación y nos vemos en la validación. Es para quien se va a ausentar.
+- **C:** otro perfil o modo, que me dirás.
+
+¿A, B o C?
+
+--- [12]
+Ahora: creo la rama con el id que corresponde. Queda: spec, brainstorming y gate de aprobación, ~15 min.
+
+--- [16]
+Rama `feature/0008-lista-espera` creada desde `develop`, con el id 0008 reservado. Ahora invoco `superpowers:brainstorming` para la spec, con las preguntas según `sdd-grilling`.
+
+--- [20]
+Ahora: aclaro el diseño de la lista de espera, una decisión por turno. Queda: unas 2 o 3 decisiones más, la spec y su gate, ~12 min.
+
+**Clasificación en brainstorming: arquitectónica.** No es acotada, porque el flujo de reservar una sala todavía no existe en el repo, y ante la duda va el camino pesado.
+
+**Lo que entiendo (corrígeme si algo no es así):**
+- Tú eres el único usuario de la CLI `salas` (`mission.md`). Quieres que, al pedir una sala que ya está ocupada en esa franja, quede apuntada tu petición en una lista de espera en vez de limitarte a recibir un «ocupada».
+- Dos hechos del código que condicionan el diseño. Los dos están en `src/app.js`:
+  - `bookings` es un array fijo en memoria, y cada ejecución de la CLI arranca de cero.
+  - `reservar` solo tiene la rama `--cada-semana`, y `cancelar` solo devuelve un texto.
+
+  Una lista de espera necesita sobrevivir entre ejecuciones, así que la guardaré en un fichero local. Esa decisión la tomo yo y la registro en la spec.
+
+❓ **¿Qué pasa con tu petición en espera cuando la sala se libera?**
+Estoy suponiendo que quieres que el aviso o la reserva ocurran al cancelar, que es el único momento en que una sala se libera. Los comandos de las escenas son ilustrativos, porque la sintaxis real de `reservar` no está definida.
+
+🅰️ **Se promociona sola.** Al ejecutar `cancelar Norte lun 10:00-12:00`, la primera petición en espera pasa a ser la reserva.
+- `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+- `cancelar Norte lun 10:00-12:00` → `cancelada Norte lun 10:00-12:00; la reserva pasa a la 1.ª en espera`
+
+Coste: `cancelar` pasa a modificar dos cosas y hay que decidir qué ocurre si la petición en espera ya no te interesa.
+
+🅱️ **Solo se apunta, y la promoción es manual.** `cancelar` avisa de que hay alguien en espera, pero no reserva. Tú lanzas `reservar` otra vez para confirmar.
+- `cancelar Norte lun 10:00-12:00` → `cancelada Norte lun 10:00-12:00; hay 1 en espera: Norte lun 10:00-12:00`
+
+Coste: pierdes el sentido de la lista, porque tú mismo tienes que volver a pedir la sala.
+
+➡️ **Recomiendo 🅰️**, porque eres el único usuario y no hay nadie más a quien avisar. La espera solo sirve si la reserva se hace sola. A cambio, `cancelar` pasa a tener un efecto lateral que hay que cubrir con tests.
+
+¿🅰️ o 🅱️?
+

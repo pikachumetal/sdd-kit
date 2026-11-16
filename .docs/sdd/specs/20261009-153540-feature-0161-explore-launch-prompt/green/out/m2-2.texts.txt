@@ -1,0 +1,70 @@
+--- [2]
+Son tres funcionalidades a la vez (ocupación por sala, exportación a Excel y aviso semanal), así que según el kit SDD la puerta es `sdd-roadmap`.
+
+--- [5]
+Empiezo por el estado real: el roadmap, las ramas y la configuración del kit.
+
+--- [13]
+Reservo los 4 ids de una vez (3 features + la propuesta).
+
+--- [20]
+Solo quedan las dos formas heredadas que ya estaban (no las toqué). Publico la reserva en `develop`.
+
+--- [30]
+El módulo de informes queda planificado, sin arrancar ninguna feature: ni rama, ni spec, ni código. Está publicado en `develop` (commit `7ab3236`).
+
+## Qué ha quedado
+
+La propuesta es `.docs/sdd/specs/20261010-144359-proposal-0008-informes/proposal.md`. Lleva las reglas de negocio con ejemplos con datos, el reparto y las decisiones que tomé por vosotros. Las filas nuevas en «Próximo» del roadmap son:
+
+| Id | Feature | Depende de |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala (`salas informe`) | — |
+| 0010 | Exportar el informe a Excel | 0009 |
+| 0011 | Aviso semanal a los responsables | 0010 y la fila 1 |
+
+La fila 1 es «Avisos por correo antes de la reserva», que ya estaba en el roadmap.
+
+## Decisiones que tomé («decide tú»)
+
+El cliente puede corregirlas con una enmienda en la propuesta:
+
+- **Cómo se mide la ocupación:** horas reservadas ÷ 60 h por sala y semana (lun-vie 08:00-20:00), con un decimal. Por ejemplo, 3 h en Norte son un 5,0 %.
+- **Periodo:** semana natural; por defecto, la semana en curso.
+- **Excel:** un `.xlsx` real generado sin dependencias, porque el stack no admite ninguna.
+- **Aviso semanal:** lo lanza el cron del servidor con `salas aviso-semanal`, los lunes, con la semana anterior. No hay demonio propio.
+- **Destinatarios:** una lista `responsables` en la configuración. Si está vacía, el comando falla sin enviar nada.
+- **Envío:** reutiliza el correo de la fila 1. Por eso la 0011 va después de esa fila, y la elección más discutible es esa dependencia.
+
+## Para saber
+
+- **Roadmap en rojo:** `sdd roadmap check` sigue fallando en dos líneas que ya estaban y no toqué. Son la subsección `v0.3.0 (2026-09-01)` de «Releases cerradas» y la cabecera de «Deuda técnica». Son forma heredada, pendiente del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0.
+- **Publicación:** `sdd roadmap publish` se negó a publicar desde el propio worktree de `develop`, porque ahí estaban mis cambios sin commitear. Lo publiqué desde un worktree temporal, ya eliminado, y el cerrojo del kit pasó igual.
+- **Ids:** reservé 0008 (propuesta) y 0009-0011 de una sola vez.
+
+## Prompt de arranque de la primera fila
+
+**0009 — Informe de ocupación por sala**
+
+Base: `develop`
+
+```text
+feature/0009-room-occupancy-report
+```
+
+Carril: feature
+
+```text
+Arranca la 0009 con sdd-propose: el comando `salas informe` que muestra, por sala, las horas reservadas, las horas computables y el porcentaje de ocupación de una semana natural.
+Requisitos en .docs/sdd/specs/20261010-144359-proposal-0008-informes/proposal.md, §Reglas de negocio, y en la fila 0009 del roadmap.
+Decisiones ya tomadas:
+- El horario computable es lunes a viernes de 08:00 a 20:00 (60 h por sala y semana).
+- La ocupación se muestra con un decimal y por defecto es la de la semana en curso.
+- Una reserva recurrente cuenta en cada semana que cae.
+- La capacidad nueva se llama `occupancy-report`.
+Nada que saldar.
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

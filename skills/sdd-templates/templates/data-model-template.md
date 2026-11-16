@@ -29,7 +29,7 @@ created: <YYYY-MM-DD>
 
 ## 2. Migraciones
 
-> Mecanismo y nomenclatura del proyecto: ver `tech-stack.md` y la skill de nivel 2
+> Mecanismo y nomenclatura del proyecto: ver `operations.md` y la skill de nivel 2
 > correspondiente (`sql-migration` o equivalente). En brownfield: retrocompatibilidad por
 > defecto; los datos existentes no se migran en masa sin justificación escrita.
 

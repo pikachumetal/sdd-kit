@@ -1,0 +1,83 @@
+--- [2]
+Son tres funcionalidades a la vez (informe de ocupación, exportación a Excel y aviso semanal), así que según las reglas del kit entran por `sdd-roadmap`, no por una implementación directa. Cargo esa skill.
+
+--- [5]
+Empiezo por el paso 1, el estado real del roadmap y del proyecto.
+
+--- [20]
+Estoy escribiendo las tres filas en el roadmap. La propuesta ya está creada.
+
+--- [24]
+Los dos fallos están en líneas que no he tocado (la cabecera de «Deuda técnica» y el título de «Releases cerradas»). Los dejo como forma heredada y publico la reserva.
+
+--- [29]
+El roadmap queda escrito, pero no está publicado: `sdd roadmap publish` se negó a hacerlo. Cambié `roadmap.md` y creé `proposal.md` dentro del mismo worktree donde `develop` está activa. El comando dijo "destino con cambios" y no hizo el commit. No he hecho un `git commit` normal para esquivarlo, porque se saltaría el cerrojo de `sdd merge`.
+
+Las ids 0008 a 0011 ya están reservadas en local, pero otro worktree no las verá hasta que se publiquen.
+
+## Qué he dejado
+
+El proyecto sigue la forma 2.x, porque no tiene `ROADMAP.md`, aunque `sdd-kit.json` declare 3.0.0. Por eso usé `roadmap.md` y `specs/`.
+
+La propuesta es `.docs/sdd/specs/20261108-100000-proposal-0008-reports/proposal.md`. Las filas nuevas están en «Próximo», en este orden:
+
+| Id | Feature | Depende de |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala (`salas informe`) | — |
+| 0010 | Exportar a Excel (`--xlsx`) | 0009 |
+| 0011 | Aviso semanal a los responsables (`informe --aviso`) | 0009 y la fila 1 (avisos por correo) |
+
+## Lo que decidí por ti
+
+Todo esto está en la propuesta y se puede enmendar:
+- **Ocupación:** horas reservadas entre horas abiertas, de lunes a viernes de 08:00 a 20:00 (60 h por sala y semana). Las reservas semanales cuentan en cada semana, las canceladas no, y lo reservado fuera de ese horario se lista aparte.
+- **Excel:** un `.xlsx` real generado a mano, porque el stack no admite dependencias externas.
+- **Responsables:** una lista de correos en la configuración.
+- **Aviso semanal:** lo lanza el cron del servidor, cada lunes; no hay planificador interno.
+
+## Dos cosas a revisar
+
+- **"Responsables":** la misión dice que la usa solo una persona y el producto no tiene usuarios ni roles. Por eso los traté como una lista de correos. Si el cliente espera algo más, hay que enmendar la 0011.
+- **Forma heredada:** `sdd roadmap check` falla en dos líneas que no toqué (la cabecera de «Deuda técnica» y el título de «Releases cerradas»). Quedan para la migración del roadmap a la plantilla.
+
+La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+## Qué hago ahora
+
+¿Hago el commit directo en `develop` con los dos ficheros, o prefieres publicar tú desde otro worktree? Recomiendo el commit directo, porque aquí no hay concurrencia.
+
+Para arrancar, la 0009 va primero y no depende de nada:
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: el comando `salas informe` que muestra la ocupación por sala de una semana.
+
+Alcance:
+- src/app.js: cálculo y salida por pantalla; test/app.test.js
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal por correo: 0011
+
+Decisiones ya tomadas:
+- ocupación = horas reservadas / 60 h abiertas (lun-vie 08:00-20:00) por sala y semana, porque el cliente delegó el criterio
+- las reservas semanales cuentan en cada semana, las canceladas no, y lo reservado fuera de horario se lista aparte
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261108-100000-proposal-0008-reports/proposal.md, §Reglas de negocio
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y `salas informe --semana 2026-11-02` muestra Norte 6 h / 60 h = 10 %.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

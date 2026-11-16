@@ -1,0 +1,98 @@
+import { existsSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { DomainError } from '../cli/args.ts';
+import { readRows } from './artifacts.ts';
+import type { Row } from './artifacts.ts';
+import { calibrationSection } from './calibration.ts';
+import type { Warn } from './fields.ts';
+import { formatNumber } from './numbers.ts';
+import { phaseSection } from './phases.ts';
+import { releaseTable } from './releases.ts';
+import { readText } from '../cli/files.ts';
+import { MISSING } from './text.ts';
+import { changeFolders, resolveDocument, shadowWarning } from '../cli/layout.ts';
+
+const HEADER =
+  '<!-- AUTO-GENERADO por sdd estimation log (sdd-kit) — no editar a mano. Regenerar: sdd estimation log --root <proyecto> -->';
+const TABLE_HEADER =
+  '| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |';
+
+const POST_HOC_CELL = 'post hoc';
+
+export interface GeneratedLog {
+  text: string;
+  rowCount: number;
+  docsPath: string;
+}
+
+function notFound(root: string): DomainError {
+  return new DomainError(`No se encuentra changes/ ni specs/ bajo .docs/sdd ni docs/sdd en '${root}'.`);
+}
+
+function resolveDocsPath(root: string): string {
+  const candidates = ['.docs/sdd', 'docs/sdd'].map((candidate) => join(root, candidate));
+  const docsPath = candidates.find((path) => changeFolders(path).length > 0);
+  if (docsPath === undefined) throw notFound(root);
+  return docsPath;
+}
+
+function textOrMissing(value: string | null): string {
+  return value === null || value.trim() === '' ? MISSING : value;
+}
+
+function formatRow(row: Row): string {
+  const ratio = row.postHoc ? POST_HOC_CELL : formatNumber(row.ratio);
+  const hours = [formatNumber(row.estimate), formatNumber(row.real), ratio].join(' | ');
+  const costs = [row.threadTokens, row.subagentTokens, row.subjectCost, row.sessionCost].map(textOrMissing).join(' | ');
+  return `| ${row.date} | ${row.id} | ${row.type} | ${hours} | ${costs} | ${row.folder} |`;
+}
+
+function formatLog(rows: Row[], docsPath: string, warn: Warn): string {
+  const lines = [
+    HEADER,
+    '# Estimation log (estimado vs real)',
+    '',
+    TABLE_HEADER,
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ...rows.map(formatRow),
+    ...calibrationSection(rows, (all) => releaseTable(all, docsPath)),
+    ...phaseSection(changeFolders(docsPath), warn),
+  ];
+  return `${lines.join('\n')}\n`;
+}
+
+function warnShadowed(docsPath: string, warn: Warn): void {
+  for (const name of ['estimation', 'changelog'] as const) {
+    const { shadowed } = resolveDocument(docsPath, name);
+    if (shadowed !== null) warn(shadowWarning(docsPath, shadowed));
+  }
+}
+
+export function generateEstimationLog(root: string, warn: Warn): GeneratedLog {
+  if (!existsSync(root)) throw notFound(root);
+  const docsPath = resolveDocsPath(resolve(root));
+  warnShadowed(docsPath, warn);
+  const rows = changeFolders(docsPath)
+    .flatMap((folder) => readRows(folder, warn))
+    .sort((first, second) => first.folder.localeCompare(second.folder));
+  return { text: formatLog(rows, docsPath, warn), rowCount: rows.length, docsPath };
+}
+
+export function buildEstimationLog(root: string, warn: Warn = (message) => void process.stderr.write(`${message}\n`)): string {
+  return generateEstimationLog(root, warn).text;
+}
+
+function isManualLog(path: string): boolean {
+  if (!existsSync(path)) return false;
+  const firstLine = readText(path).split(/\r\n|\r|\n/)[0] ?? '';
+  return !/^<!-- AUTO-GENERADO/i.test(firstLine);
+}
+
+export function writeEstimationLog(text: string, outFile: string, warn: Warn): void {
+  if (isManualLog(outFile)) {
+    warn(
+      `El fichero ${outFile} no es un log generado (sin cabecera AUTO-GENERADO): se sobreescribe un log mantenido a mano. Revisa el diff antes de commitear.`,
+    );
+  }
+  writeFileSync(outFile, text, 'utf8');
+}

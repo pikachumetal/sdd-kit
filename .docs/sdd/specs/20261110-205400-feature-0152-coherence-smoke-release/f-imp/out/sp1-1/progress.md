@@ -1,0 +1,2 @@
+Task 1: Ruling: O2 leído como RSS del proceso, tal como lo define la spec; O1/O2/O4 re-medidos o clasificados — las medidas del commit 31b5f84 no cubrían O2, O4 a 1.000 ni los 5 min de O1; O3 simulado por agente — si se lee distinto, cambia 'no cumple' a 'cumple' en O2
+Task 1: complete (commits 31b5f84..5f072dc, tests: test -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/research.md -a -s .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o2-o4-1000.txt → (sin salida))

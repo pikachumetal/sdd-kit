@@ -1,0 +1,57 @@
+--- [8]
+I rate this **not ready to merge**: the behavior the spec removes still runs in `src/app.js:18`, and the new test doesn't check for it.
+
+### Strengths
+- The change stays inside the plan's file list (`src/app.js`, `test/void.test.js`) and keeps the dev-lead-validated decision 1: `anular` still returns «anulada <sala> <día>» (`src/app.js:19`). The new test pins that (`test/void.test.js:6`).
+- `anular-todas` is untouched, as the spec's «No entra» line says.
+- ADR 0003 (accepted) is met. Its Confirmación says `src/` must not import `node:fs` or any database package, and `src/app.js` imports neither.
+- All interface text in the diff is in Spanish, and no comments were added.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed "Avisar por correo" behavior still runs** — `src/app.js:18`
+- **What's wrong:** `voidBooking` still pushes `{ to: 'responsable', body: 'anulada <sala> <día>' }` into `outbox`. `salida` (`src/app.js:28-30`, `:36`) still lists it as `responsable: anulada Norte lun`. The commit only dropped the `subject` and the «(enviado por correo)» suffix.
+- **Why it matters:** The capability's requirement says `salida` lists the void for the room manager and the office emails it. That is exactly the behavior the spec's REMOVED item and the dev-lead's decision («el correo sobra») ask to be gone, and it still happens. The commit title «anular sin aviso por correo» says the opposite of what the code does.
+- **How to fix:** Delete the `outbox.push(...)` line in `voidBooking`. Then decide whether `outbox`, `pending` and `salida` have any remaining producer; `anular-todas` never wrote to `outbox`.
+- **Gap:** `contradicts`.
+- **Source:** Delta `bookings` → REMOVED «Avisar por correo».
+
+#### Important (Should Fix)
+
+**2. The dev-lead's decision is only half covered** — `src/app.js:18`
+- **Decision:** «El aviso por correo al anular desaparece: el responsable avisa en persona».
+- **What the rule leaves out:** The notice for the room manager is still produced. Only the email formatting is gone.
+- **Gap:** `partial`.
+- **Source:** «Decisiones tomadas con el dev-lead».
+
+**3. The «Dónde se prueba» test doesn't check that there is no notice** — `test/void.test.js:5-7`
+- **What's wrong:** The test is named «anular responde sin aviso», but it only asserts the return value of `anular`. It never checks `run('salida', [])` or `outbox` after voiding, so it passes with the bug from issue 1 still in place.
+- **Why it matters:** This is the only test the spec names for «Anular sin aviso». Nothing pins the REMOVED behavior, so it could come back unnoticed.
+- **How to fix:** In the same test, after `anular Norte lun`, assert that `run('salida', [])` does not contain «anulada Norte lun» (for example, that it is `''`).
+- **Gap:** `partial`.
+- **Source:** Spec's «Dónde se prueba» line and the REMOVED item.
+
+#### Minor (Nice to Have)
+- **Source of truth not updated:** `.docs/sdd/capabilities/bookings.md:14-20` still describes «Avisar por correo». Applying the delta normally happens at archive, so this doesn't block merge, but the delta has to be applied there.
+- **Test depends on module state:** `test/void.test.js` relies on the in-memory `Norte/lun` seed in the module. If another test voids or cancels that booking first in the same process, the test could become order-dependent. Low risk with `node --test`, which runs one process per file.
+
+### Declined to judge
+- **`reservar` and `cancelar` aren't handled by `run`:** `test/app.test.js:9-11` and `test/cancel.test.js` call these commands, and `run` falls back to `'salas'`, so those tests would fail. This is outside the diff and the 0025 spec; it comes from base `91943b1`.
+- **`anular-todas` doesn't send a notice:** the spec explicitly excludes it.
+- **Ledger:** there is no ledger, so there are no deferred minors to weigh.
+
+### Not verified
+- Test run: I didn't run any tests, as instructed, so I can't confirm the outcome of `node --test test/void.test.js`. The main thread should run it. Given the code I read, I expect the new test to pass even though the bug is present.
+
+### Recommendations
+- Fix issue 1 and strengthen the test (issue 3) in the same commit, and verify it fails on `bb8919e` before the fix.
+- Ask the main thread to run the whole suite. The failing `reservar` and `cancelar` tests suggest the baseline isn't green.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The spec's REMOVED requirement still runs: `voidBooking` still adds the notice that `salida` lists. The only test the spec names can't detect that, so the main goal of the feature isn't met.
+

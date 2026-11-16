@@ -1,0 +1,41 @@
+--- [3]
+Voy a mirar en qué punto quedó la init.
+
+--- [9]
+Retomo la init desde donde quedó: `init.approved` solo tiene `PRODUCT.md` y la constitución, así que no vuelvo a presentarlas. La config del kit (ids, perfil, validación) tampoco se vuelve a preguntar.
+
+Modo: con código. Si es un template recién instanciado, dímelo y sigo sin código.
+
+Lo siguiente en el orden es `operations.md`, y lo leído del repo es esto:
+
+| Qué | Lo que encuentro |
+| --- | --- |
+| Comandos | `dev` (vite), `test` (vitest run), `e2e` (playwright test), `lint` (eslint .) |
+| Suite `test` | Vitest; incluye solo `src/**/*.test.ts` (hay un `src/app.test.ts`). Nivel propuesto: `unitario`, porque la config no arranca host ni base de datos |
+| Suite `e2e` | Playwright con `testDir: './e2e'`, pero esa carpeta no existe, así que no hay tests E2E todavía. Es una suite sin campos E2E |
+| Lint | `lint` (`eslint .`), sin config de eslint en el repo. Se declara y no entra en la puerta de cierre |
+| CI | GitHub Actions `.github/workflows/ci.yml`: `npm ci` y `npm test` en cada push. No corre `e2e` ni `lint` |
+| Temporales | Playwright sin `outputDir`: escribe en `test-results/`. Te propongo moverlo a `.temp/playwright` |
+| Sin filtro | `package.json`, `package-lock.json`, `vitest.config.ts`, `playwright.config.ts` y `tests/helpers/**` |
+
+Discrepancias que anoto para tu lista:
+- El `CLAUDE.md` actual dice «puerto 3000», pero no hay config de vite que lo fije y su puerto por defecto es 5173.
+- El mismo `CLAUDE.md` dice «las fechas van en UTC», y en `src/` no lo he verificado.
+- `tests/helpers/rooms.ts` queda fuera del `include` de vitest, lo cual es normal para un helper.
+
+**Pregunta 1:** ¿Cuál es la puerta de cierre de una tarea, es decir, qué comando tiene que pasar para darla por terminada? Mi recomendación es `npm test` (unitario, el mismo que corre la CI) y dejar `e2e` fuera hasta que existan tests. ¿Te encaja, o prefieres otra cosa?
+
+Las duraciones de cada suite las dejo `pendiente` salvo que me las digas.
+
+--- [15]
+**Pregunta 2: gate de merge.** `sdd merge --verify` corre una sola orden sobre la base integrada antes de fusionar. Recomiendo `npm test`, que es la misma que el gate de cierre y la que ya corre la CI. Así el merge no depende del `e2e`, que no tiene tests todavía, y sigue valiendo si lo añades después. ¿Te encaja `npm test`, o prefieres otra?
+
+Antes de presentarte `operations.md` me faltan tres cosas, que te pregunto por turnos:
+- Si quieres mover los temporales de Playwright a `.temp/playwright`.
+- Cómo entra el agente en la app.
+- Si usas worktrees.
+
+Mientras tanto avanzo con lo que ya sale del repo, y lo verás en el borrador:
+- **Lo afectado:** `no declarado`, porque vitest no tiene un comando de «solo lo afectado» configurado. La alternativa sería `vitest run --changed`.
+- **Motor de producción:** `no aplica`, porque los datos viven en memoria, tal como declara la constitución.
+

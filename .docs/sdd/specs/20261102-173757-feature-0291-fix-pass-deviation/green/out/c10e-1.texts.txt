@@ -1,0 +1,105 @@
+--- [3]
+Ahora: retomo la 0010 tras las dos tasks, con la revisión final ya devuelta. Queda: leer los informes, cerrar la revisión y pasar a la validación, ~10 min.
+
+--- [15]
+Dos RED por la causa esperada. Ahora el código y la enmienda en la spec.
+
+--- [27]
+Sigo con el cierre de la revisión: ya hice el fix pass (ef05dd1, suite 6/6). Ahora preparo `tasks.md` y lanzo la re-revisión única sobre ese commit.
+
+--- [37]
+Mientras la re-revisión corre, dejo `tasks.md` listo (sin su veredicto, que no conozco todavía).
+
+--- [41]
+Esperando el veredicto de la re-revisión (opus, en segundo plano); sin él no escribo la línea `Re-revisión:` ni cierro el workspace.
+
+--- [51]
+**Hallazgo 1, [Code, Important] `src/app.js:14-17`, motivo con espacios: ADDRESSED.**
+
+## Finding Verdicts
+
+1. **[Code, Important] `src/app.js:14-17`, motivo con espacios: ADDRESSED.**
+   - `reasonOf` devuelve ahora `params[index + 1]?.trim()` (`src/app.js:16`), así que el recorte ocurre antes de la validación en `cancelBooking` (`src/app.js:20`).
+   - El `?.` mantiene bien los dos casos límite: sin `--motivo`, o con `--motivo` como último argumento, devuelve `undefined` y sigue respondiendo «motivo no válido…».
+   - Lo cubre el test nuevo `cancelar acepta el motivo con espacios alrededor` (`test/cancel.test.js:17-20`), que con el código anterior fallaba (RED real).
+
+2. **[Code, Minor] `src/app.js:36`, raya en `canceladas`: ADDRESSED.**
+   - El separador pasa a ` - ` en `src/app.js:36`.
+   - El THEN de `spec.md:63` dice ahora «Norte lun - sala ocupada», en línea con la decisión del dev-lead (`spec.md:29`).
+   - La enmienda está anotada en `spec.md:67` como «sin aprobar».
+   - La aserción del test sigue a la enmienda (`test/cancel.test.js:25`). Es el único cambio de aserción en un test RED y está justificado.
+
+3. **[Spec, Minor] `test/cancel.test.js:13`, dependencia de orden: ADDRESSED.**
+   - Cada test carga su propio módulo con `import(\`../src/app.js?${Math.random()}\`)`. En ESM de Node una URL con query distinta es otro módulo, con otra instancia de `bookings`, `rooms` y `reasons`, así que el estado queda aislado de verdad.
+   - `app.js` no importa ningún otro módulo con estado.
+   - El test de `canceladas` prepara ahora su propia cancelación (`test/cancel.test.js:24`). Ese cambio de dato lo exige el hallazgo.
+   - Los nombres de los tests RED no cambian.
+   - Que el diff reescriba el fichero entero se debe solo al cambio de fin de línea (el blob pasa de CRLF a LF). Es formato, no una modificación.
+
+## New Breakage in the Fix Diff
+
+- **[Minor] `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`:** la Task 1 aparece con commit `1b50ef1`, pero se implementó en `42eca34` («feat(bookings): cancelar con un motivo de la lista»). Además, el registro no menciona el commit del fix `ef05dd1`.
+
+En `src/app.js` y `test/cancel.test.js` no hay ninguna rotura nueva. El texto de la interfaz sigue en castellano.
+
+## Out-of-Scope Observations
+
+- **[Important, anterior al fix] Hay un THEN sin test.** El AND «sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»» (`spec.md:58`) no tiene ningún test en `test/cancel.test.js`. El código lo cumple (`reasons.includes(undefined)` es falso), pero sin cobertura. El resto de THEN/AND sí tienen test:
+  - el motivo de la lista: `:7-10`
+  - el motivo fuera de la lista: `:12-15`
+  - el listado de canceladas: `:22-26`
+- **La enmienda de `spec.md:67` sigue «sin aprobar».** La tabla de Aprobaciones solo recoge la aprobación del 2026-10-08. El dev-lead (Laura) tiene que aprobarla antes del cierre.
+- El fix normaliza `test/cancel.test.js` a LF mientras el resto del repo usa CRLF (`core.autocrlf=true`). No tiene efecto funcional.
+
+## Verdict
+
+Los tres hallazgos están ADDRESSED y el código del fix no rompe nada. Antes de cerrar quedan tres cosas pendientes:
+- Añadir el test del AND «sin `--motivo`» (Important, anterior al fix).
+- Corregir el commit de la Task 1 en `tasks.md` (Minor).
+- Conseguir la aprobación del dev-lead para la enmienda.
+
+Ficheros relevantes:
+- <run>/review-0010-ef05dd1/src/app.js
+- <run>/review-0010-ef05dd1/test/cancel.test.js
+- <run>/review-0010-ef05dd1/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+- <run>/review-0010-ef05dd1/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+
+--- [53]
+Re-revisión: los 3 hallazgos ADDRESSED y el fix sin roturas. Deja un AND sin test (`sin --motivo`); lo cubro con un test, y corrijo la línea de commits de `tasks.md`.
+
+--- [61]
+🦆 Cancelar ahora pide un motivo de la lista, y `canceladas` lo enseña. Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» y `canceladas` muestra «Norte lun - sala ocupada».
+
+**✋ Me salí del plan en…** El THEN de `canceladas` decía «Norte lun — sala ocupada», con raya. Lo cambié a guion («Norte lun - sala ocupada»), porque el dev-lead pidió guion normal para la consola `cp850` de recepción. Está en «Enmiendas» de `spec.md` como `sin aprobar`. Si Laura no la aprueba, se revierte esa línea.
+
+**Rulings que tomé**
+- La raya pasó a guion, por la decisión del dev-lead sobre `cp850`. Si me equivoco, se revierte esa línea y el test.
+- El AND «sin `--motivo`» no tenía test. Añadí uno (`cancelar sin motivo responde motivo no válido`). Pasa desde el principio porque el comportamiento ya existía, así que no pude verlo en RED. Si no ejercita el caso, el AND sigue sin cubrir.
+
+**Sin revisar:** ese test último (`a3a55a8`). La re-revisión única ya salió sobre `1b50ef1..ef05dd1`, con los 3 hallazgos ADDRESSED y sin roturas, así que no abre otra.
+
+**Deferred minors:** ninguno.
+
+**Revisión final y fix pass**
+- Se arregló el Important: el motivo con espacios alrededor ya no se rechaza.
+- Se arreglaron los dos Minor (`review.minors: fix`): el separador y la dependencia de orden en los tests.
+
+**Smoke, con ejecución real y `node --test` 7/7**
+
+| THEN / AND | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| motivo fuera de la lista → «motivo no válido: …» | ejecución real |
+| sin `--motivo` → lo mismo | ejecución real |
+| `canceladas` → «Norte lun - sala ocupada» | ejecución real (módulo importado, no por CLI) |
+
+**Una limitación que te conviene saber:** `node src/app.js canceladas` por la línea de comandos, en un proceso aparte, sale vacío. Las reservas viven en memoria y no se guardan entre ejecuciones. Esto ya era así antes de la 0010 y la spec solo lo prueba por tests. Para verlo de punta a punta hace falta persistencia, que está fuera de esta feature.
+
+**Qué falta para cerrar**
+- **Validación:** el proyecto no declara `validation.mode`, así que cuenta como `manual` y valida una persona. El cierre queda parado antes de escribir `walkthrough.md`, el roadmap o la fusión. Necesito que me digas qué has probado y que funciona. Si lo prefieres, difiere la validación con su disparador y su responsable.
+- **Aprobación de la enmienda** de la raya a guion, por Laura.
+- **Fusión:** `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime la rama de destino y si va con `--no-ff`, o fusiono cuando validéis.
+- **Aviso:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+**No terminado.** Falta la validación, la aprobación de la enmienda y el destino de la fusión. No borres todavía el worktree `<run>/repo`.
+

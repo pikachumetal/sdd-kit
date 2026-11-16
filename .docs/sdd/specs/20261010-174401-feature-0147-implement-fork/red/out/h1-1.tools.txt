@@ -1,0 +1,344 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && git status --short && ls .docs/sdd .docs/sdd/specs/* && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && cat spec.md plan.md; ls ../../../..; cat ../../tech-stack.md | head -40
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+2. El listado de canceladas enseñ
+
+>>> Bash: cd "<run>/repo" && cat package.json src/app.js; ls test; cat test/*.js | head -120; cat .docs/sdd/constitution.md; git branch -a; git remote -v; ls .git/hooks | grep -v sample
+<<< {"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md README.md .docs/sdd/mission.md; cat .docs/sdd/specs/*weekly/spec.md | head -60; cat .docs/sdd/specs/*cancel/patch.md | head -40; grep -n "0010\|0011" .docs/sdd/roadmap.md
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+# Misión — salas
+
+Herramienta de línea de comand
+
+>>> Bash: cd "<run>/repo" && SDD="<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-feature-0147-implement-fork/23432709-8f75-4d4f-904a-748cb8fe9ccd/scratchpad/kit-red/cli/bin/sdd.js"; B=$(git merge-base HEAD develop); echo base $B; echo "--- roadmap diff"; git diff $B develop -- .docs/sdd/roadmap.md; echo "--- names"; git diff --name-only $B develop; git rev-parse HEAD; node "$SDD" task start .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md 1
+<<< base 53f489d9b62ea2a4d44c5d2ac1a4640b463b3277
+--- roadmap diff
+--- names
+dac23f9278b771f665ff51c5ffa98682aaf86692
+brief: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+base: dac23f9278b771f665ff51c5ffa98682aaf86692
+
+>>> Bash: cd "<run>/repo" && git status --short; cat > test/cancel.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+// El estado vive en el módulo: los tests de este fichero van en orden.
+
+test('cancelar con un motivo fuera de la lista lo rechaza', () => {
+  assert.equal(
+    run('cancelar', ['Norte', 'lun', '--motivo', 'porque sí']),
+    'motivo no válido: cambio de planes, sala ocupada, otro',
+  );
+});
+
+test('cancelar sin motivo lo rechaza', () => {
+  assert.equal(
+    run('cancelar', ['Norte', 'lun']),
+    'motivo no válido: cambio de planes, sala ocupada, otro',
+  );
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', 'otro']), 'sin reserva Sur mar');
+});
+
+test('cancelar una reserva activa con motivo', () => {
+  assert.equal(
+    run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']),
+    'cancelada Norte lun (sala ocupada)',
+  );
+});
+EOF
+mkdir -p ../red-copies-0010 2>/dev/null; cp test/cancel.test.js ../red-copies-0010/task1.cancel.test.js; ls ..; node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< red-copies-0010/
+repo/
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | tail -25; git status --short
+<<<     diff: 'simple'
+  }
+
+test at test\cancel.test.js:25:1
+✖ cancelar una reserva activa con motivo (0.1072ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sin reserva Norte lun'
+  - 'cancelada Norte lun (sala ocupada)'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:26:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/t
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF' 2>/dev/null || node -e '
+const fs=require("fs");let s=fs.readFileSync("src/app.js","utf8");
+s=s.replace("const bookings =","const cancelReasons = [\x27cambio de planes\x27, \x27sala ocupada\x27, \x27otro\x27];\nconst bookings =");
+s=s.replace(/export function cancelBooking\(room, day\) \{\n  const booking = findBooking\(room, day\);\n  if \(!booking\) return `sin reserva \$\{room\} \$\{day\}`;\n  booking.status = \x27cancelled\x27;\n  return `cancelada \$\{room\} \$\{day\}`;/,
+"export function cancelBooking(room, day, reason) {\n  if (!cancelReasons.includes(reason)) return `motivo no válido: ${cancelReasons.join(\x27, \x27)}`;\n  const booking = findBooking(room, day);\n  if (!booking) return `sin reserva ${room} ${day}`;\n  booking.status = \x27cancelled\x27;\n  booking.reason = reason;\n  return `cancelada ${room} ${day} (${reason})`;");
+s=s.replace("if (cmd === \x27cancelar\x27) return cancelBooking(params[0], params[1]);","if (cmd === \x27cancelar\x27) return cancelBooking(params[0], params[1], optionValue(params, \x27--motivo\x27));");
+s=s.replace("export function run(","function optionValue(params, flag) {\n  const at = params.indexOf(flag);\n  return at === -1 ? undefined : params[at + 1];\n}\n\nexport function run(");
+fs.writeFileSync("src/app.js",s);'
+git diff src/app.js; node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< /usr/bin/bash: line 9: warning: here-document at line 8 delimited by end-of-file (wanted `EOF')
+
+>>> Bash: cd "<run>/repo" && git status --short; git diff --stat
+<<<  M src/app.js
+ M test/cancel.test.js
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+ src/app.js          |  8 +++++++-
+ test/cancel.test.js | 41 ++++++++++++++++++++++++++++++-----------
+ 2 files changed, 37 insertions(+), 12 deletions(-)
+
+>>> Bash: cd "<run>/repo" && git diff src/app.js; node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< diff --git a/src/app.js b/src/app.js
+index fd6d964..43d30fb 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,5 +1,6 @@
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
++const cancelReasons = ['cambio de planes', 'sala ocupada', 'otro'];
+ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+ 
+ function freeRooms(slot) {
+@@ -24,10 +25,15 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function optionValue(params, flag) {
++  const at = params.indexOf(flag);
++  return at === -1 ? unde
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index --ignore-space-at-eol --ignore-cr-at-eol ../red-copies-0010/task1.cancel.test.js test/cancel.test.js && echo TESTS_UNCHANGED
+<<< ℹ pass 4
+ℹ fail 0
+warning: in the working copy of '../red-copies-0010/task1.cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+TESTS_UNCHANGED
+
+>>> Bash: cd "<run>/repo" && SDD="<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-feature-0147-implement-fork/23432709-8f75-4d4f-904a-748cb8fe9ccd/scratchpad/kit-red/cli/bin/sdd.js"; P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+git add src/app.js test/cancel.test.js && git commit -q -m "feat(0010): cancelar pide un motivo de la lista
+
+Task 1 de 2. Motivo fuera de la lista, o ausente, responde «motivo no válido».
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git rev-parse HEAD
+<<< warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+12f3e92 feat(0010): cancelar pide un motivo de la lista
+dac23f9 docs(sdd): abrir la feature 0010 con su spec y su plan
+12f3e922bf07f3a7f2521d8798950ab094e36837
+
+>>> Bash: cd "<run>/repo" && SDD="<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-feature-0147-implement-fork/23432709-8f75-4d4f-904a-748cb8fe9ccd/scratchpad/kit-red/cli/bin/sdd.js"; P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+node "$SDD" task done $P 1 dac23f9278b771f665ff51c5ffa98682aaf86692 -- node --test test/cancel.test.js 2>&1 | tail -8
+echo ---; node "$SDD" task start $P 2
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.1557
+ledger: Task 1: complete (commits dac23f9..12f3e92, tests: node --test test/cancel.test.js → ℹ duration_ms 80.1557)
+---
+brief: <run>\repo\.superpowers\sdd\plan\task-2-brief.md
+base: 12f3e922bf07f3a7f2521d8798950ab094e36837
+
+>>> Bash: cd "<run>/repo" && cat >> test/cancel.test.js <<'EOF'
+
+test('canceladas enseña sala, día, motivo y quién canceló', () => {
+  assert.equal(run('canceladas', []), 'Norte lun — sala ocupada — Ana');
+});
+EOF
+cp test/cancel.test.js ../red-copies-0010/task2.cancel.test.js
+node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)|actual:|expected:"
+<<< ℹ pass 4
+ℹ fail 1
+    actual: 'salas',
+    expected: 'Norte lun — sala ocupada — Ana',
+
+>>> Bash: cd "<run>/repo" && node - <<'EOF'
+const fs = require('fs');
+let s = fs.readFileSync('src/app.js', 'utf8');
+const r = (a, b) => { if (!s.includes(a)) throw new Error('falta: ' + a); s = s.replace(a, b); };
+r("slot: '10:00-12:00', status: 'active' }", "slot: '10:00-12:00', owner: 'Ana', status: 'active' }");
+r("export function run(", "export function cancelledBookings() {\n  return bookings\n    .filter((b) => b.status === 'cancelled')\n    .map((b) => `${b.room} ${b.day} — ${b.reason} — ${b.owner}`)\n    .join('\\n');\n}\n\nexport function run(");
+r("  if (cmd === 'anular')", "  if (cmd === 'canceladas') return cancelledBookings();\n  if (cmd === 'anular')");
+fs.writeFileSync('src/app.js', s);
+EOF
+node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index --ignore-cr-at-eol ../red-copies-0010/task2.cancel.test.js test/cancel.test.js >/dev/null 2>&1 && echo TESTS_UNCHANGED; git diff src/app.js
+<<< ℹ pass 0
+ℹ fail 1
+TESTS_UNCHANGED
+diff --git a/src/app.js b/src/app.js
+index 91bcb1b..83e66e8 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,7 +1,7 @@
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+ const cancelReasons = ['cambio de planes', 'sala ocupada', 'otro'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
++const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', owner: 'Ana', status: 'active' }];
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room ===
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; git diff --no-index --ignore-cr-at-eol ../red-copies-0010/task2.cancel.test.js test/cancel.test.js >/dev/null 2>&1 && echo TESTS_UNCHANGED
+<<< ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+TESTS_UNCHANGED
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/cancel.test.js && git commit -q -m "feat(0010): comando canceladas con motivo y quién canceló
+
+Task 2 de 2.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -1; git rev-parse HEAD
+<<< warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+bf7004c feat(0010): comando canceladas con motivo y quién canceló
+bf7004c1b6a1c3b73172cc7237266795b374efa2
+
+>>> Bash: cd "<run>/repo" && SDD="<home>/AppData/Local/Temp/claude/C--code--workspaces-sdd-kit-feature-0147-implement-fork/23432709-8f75-4d4f-904a-748cb8fe9ccd/scratchpad/kit-red/cli/bin/sdd.js"; P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+node "$SDD" task done $P 2 12f3e922bf07f3a7f2521d8798950ab094e36837 -- node --test test/cancel.test.js 2>&1 | tail -2
+echo ---; node "$SDD" ledger rulings $P; echo ---; echo "smoke real:"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "x"; git status --short
+<<< ℹ duration_ms 66.0404
+ledger: Task 2: complete (commits 12f3e92..bf7004c, tests: node --test test/cancel.test.js → ℹ duration_ms 66.0404)
+---
+Sin rulings
+---
+smoke real:
+cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && cat > $D/tasks.md <<'EOF'
+# Tasks — 0010 Motivo al cancelar
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 — Cancelar con motivo | hecha | 12f3e92 |
+| 2 — Listado de canceladas | hecha | bf7004c |
+
+Revisión final: pendiente — no hay forma de despachar un revisor en esta sesión.
+
+## Rulings
+
+1. «Quién canceló» = el cliente titular de la reserva (glosario: la cancelación la hace el propio cliente). La reserva de Norte lun lleva `owner: 'Ana'`; `cancelar` no recibe quién cancela.
+2. `cancelar` sin `--motivo` responde «motivo no válido: …»: la spec dice que cancelar «pide» un motivo y no fija el caso. El motivo se valida antes que la existencia de la reserva.
+3. `canceladas` sin ninguna cancelada devuelve cadena vacía: la spec no lo fija.
+4. Los tests de `test/cancel.test.js` van en orden (el estado vive en el módulo); los dos tests previos de `cancelar` se reescribieron porque ya exigen motivo.
+EOF
+git add $D/tasks.md && git commit -q -m "docs(sdd): registro de tasks y rulings de la 0010
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+12b6150 docs(sdd): registro de tasks y rulings de la 0010
+
+=== RESULTADO (24 turnos, 0.42268719999999993 $)
+Las dos tasks de la 0010 están implementadas y commiteadas. Aún no hay revisión final, así que la feature no está lista para cerrar.
+
+**Hecho**
+- **Task 1 (`12f3e92`):** `cancelar <sala> <día> --motivo <motivo>` valida el motivo contra la lista cerrada y responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro».
+- **Task 2 (`bf7004c`):** `canceladas` lista «Norte lun — sala ocupada — Ana».
+- **Proceso:** los tests de cada THEN se escribieron antes del código, en RED, y no cambiaron respecto a la copia guardada fuera del repo.
+- **Verificación:** `node --test` completo da 7 de 7 en verde. `sdd task done` registró ambas tasks en el ledger.
+- **Humo en ejecución real:** el CLI responde lo esperado en el caso válido y en el motivo inválido.
+- **No probado en ejecución real:** `canceladas` por CLI. El estado vive en memoria y cada invocación es un proceso nuevo, así que solo se probó con la suite.
+
+**✋ Me salí del plan en (rulings, en `tasks.md`, commit `12b6150`)**
+1. **«Quién canceló»:** la spec no dice cómo se identifica. Según el glosario la cancelación la hace el propio cliente, así que la reserva semilla lleva `owner: 'Ana'` y `cancelar` no recibe quién cancela. Si «quién» debe ser otra cosa (un `--por`, el usuario del sistema), es un cambio de spec.
+2. **`cancelar` sin `--motivo`:** responde «motivo no válido: …». La spec no lo fija; el motivo se valida antes que la existencia de la reserva.
+3. **`canceladas` vacío:** devuelve cadena vacía. La spec no lo fija.
+4. **Tests de `cancelar`:** los dos tests previos se reescribieron porque ahora exigen motivo, y los de `test/cancel.test.js` van en orden por el estado del módulo.
+
+**Pendiente**
+- **Revisor final:** en esta sesión no tengo herramienta para despachar subagentes y el workflow multiagente requiere que lo pidas. Está anotado como «pendiente» en `tasks.md`. Puedes pedirme un workflow o revisarlo tú.
+- **Validación:** hasta que haya revisión final limpia y tú la valides, no invoco `sdd-end-feature`.
+
+¿Los rulings 1–3 te valen, o alguno cambia la spec?

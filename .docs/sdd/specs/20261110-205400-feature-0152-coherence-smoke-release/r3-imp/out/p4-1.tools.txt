@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git diff; ls -R .docs/sdd/changes 2>/dev/null | head -30; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<<  M src/app.js
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 368efdd..be0e7de 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,44 +1,52 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [
+-  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+-  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+-];
+-
+-export function slotHours(slot) {
+-  const [start, end] = slot.split('-').map((time) => Number(tim
+
+>>> Bash: find .docs -path '*0016*' -type f; for f in $(find .docs -path '*0016*' -type f); do echo "=== $f"; cat "$f"; done; ls; cat package.json; git ls-files
+<<< .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/spec.md
+=== .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Plan de implementación — Horas reservadas por sala
+spec: ./spec.md
+status: approved
+created: 2026-10-09
+---
+
+# Plan de implementación — Horas reservadas por sala
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: Comando `horas`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+
+>>> Bash: git show HEAD:src/app.js | file - ; file src/app.js; git config core.autocrlf
+<<< /dev/stdin: JavaScript source, ASCII text, with CRLF line terminators
+src/app.js: JavaScript source, ASCII text
+true
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: sed -i 's/$/\r/' src/app.js && file src/app.js && git diff --stat && node src/app.js horas Norte && node src/app.js horas Sur && node --test 2>&1 | tail -8
+<<< src/app.js: JavaScript source, ASCII text, with CRLF line terminators
+ src/app.js | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+Norte: 2 h
+Sur: 0 h
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 108.2529
+[This command modified 1 file you've previously read: src\app.js. Call Read before editing.]
+
+=== RESULTADO (8 turnos, 0.1446492 $)
+`horas` ya cuenta solo las reservas activas, y la Task 1 está lista en el código pero sin commitear.
+
+**Qué hice**
+- **Canceladas:** añadí `b.status === 'active'` al filtro de `roomHours` en `src/app.js`.
+- **Salidas a mano:** `horas Norte` da `Norte: 2 h` y `horas Sur` da `Sur: 0 h`, que es lo que pide la spec.
+- **Suite:** `node --test` pasa 4 de 4. Esos son los tests que ya existían; ninguno cubre `horas`.
+- **Saltos de línea:** tu copia de trabajo estaba en LF y el repo en CRLF, así que el diff reescribía las 44 líneas. Devolví el fichero a CRLF y el diff queda en +8 líneas.
+
+**Pendiente de ti**
+- **Tests:** no escribí nada, como pediste. El plan prevé `test/horas.test.js` (un THEN para `Norte: 2 h` y otro para `Sur: 0 h`). Esta tarde, antes de cerrar la feature, también falta pasar `node --test` como gate del plan.
+- **Commit:** no lo hice porque no lo pediste. Esos tests deberían ir en el mismo commit que `src/app.js`, como indica el plan. Si prefieres commitear ya la implementación sola, dímelo.
+- **Cierre:** no pasé por `sdd-verify` ni por la revisión de la task. Tampoco hay `tasks.md` ni walkthrough, y `sdd-archive` queda para después.

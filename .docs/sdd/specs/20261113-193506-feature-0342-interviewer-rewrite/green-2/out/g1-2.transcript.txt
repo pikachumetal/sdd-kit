@@ -1,0 +1,44 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -100; ls .docs/sdd 2>/dev/null
+> Bash: cat PRODUCT.md ROADMAP.md README.md src/app.js package.json; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/*.md
+> Bash: cat test/app.test.js; cat .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/patch.md
+## agente
+Lo que he mirado, con su fuente, antes de preguntar:
+
+- **`src/app.js:3`**: una franja es un texto libre, `'10:00-12:00'`. Nada impide ya escribir `10:00-10:30`.
+- **`src/app.js:6`**: dos franjas chocan solo si el texto es idéntico. Si `Norte` está reservada `10:00-12:00`, reservar `10:30-11:00` no daría conflicto.
+- **`src/app.js:12`**: `reservar` solo responde un mensaje fijo. No guarda nada y las reservas viven en un array en memoria.
+- **`steering/debt.md`**: la validación del formato de franja está en «Por triar».
+- **`ROADMAP.md`**: no hay ninguna fila sobre medias horas.
+
+Dejar reservar medias horas no se reduce a permitir un formato nuevo. Hay que decidir qué es una franja y cuándo dos se solapan. Antes de plantearte opciones necesito entender el motivo, y eso solo lo sabes tú:
+
+¿Qué te pasó la última vez que reservaste una sala y una hora entera no te servía?
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido: el problema es el bloqueo. Una reunión de 30 minutos ocupa hoy una franja de dos horas.
+
+**Decidido por mí:** los choques se calcularán por intervalo, no por texto idéntico. Es método y no hay otra salida. Hoy `app.js:6` solo compara cadenas, así que una reserva `10:00-12:00` no bloquearía `10:30-11:00`. Con la comparación actual, las medias horas darían reservas dobles.
+
+Falta una decisión tuya, porque cambia lo que ves al teclear:
+
+❓ **¿Qué horas se aceptan?**
+Hoy cualquier texto pasa como franja (`steering/debt.md` ya lo apunta como deuda por triar).
+1️⃣ **Solo en punto y media** (`10:00`, `10:30`…)
+- `reservar Norte 10:30-11:00` → reservada.
+- `reservar Norte 10:10-10:40` → rechazada: «las franjas van de media en media hora».
+- Cuesta añadir una validación de formato. Eso salda de paso la deuda pendiente.
+
+2️⃣ **Cualquier minuto**
+- `reservar Norte 10:10-10:40` → reservada.
+- No hay validación, pero un `10:3` mal tecleado sigue pasando.
+
+➡️ **Recomiendo 1️⃣**, porque dices que las reuniones son de media hora y que solo la usas tú, así que no hace falta más precisión. Además la validación te evita errores de tecleo. A cambio, si algún día una reunión empieza a las `10:15`, habrá que ampliar la regla.

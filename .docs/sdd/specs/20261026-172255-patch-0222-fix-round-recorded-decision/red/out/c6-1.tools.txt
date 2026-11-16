@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/specs/ && git status --short | head && git log --oneline | head -3
+<<< 20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+20261008-100000-feature-0010-cancel-reason
+800904a docs(sdd): tasks.md con la re-revisión
+23a723a fix(bookings): canceladas enseña la franja de cada reserva
+3d8c292 feat(bookings): listado de canceladas con su motivo
+
+>>> Bash: cd "<run>/repo" && P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; ls $(dirname $P); W=$(node "D:/code/.worktrees/sdd-kit/patch-0222-fix-round-recorded-decision/.temp/kit-red-0222/cli/bin/sdd.js" workspace $P); echo "$W"; ls "$W"; cat "$W/progress.md"; echo ----; cat "$W/re-review.md"
+<<< plan.md
+spec.md
+tasks.md
+<run>\repo\.temp\sdd\plan
+plan-path
+progress.md
+re-review.md
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 148d7b1..0e95266, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 0e95266..3d8c292, tests: node --test test/cancel.test.js → 3/3 pass)
+----
+## Re-review of the fix range
+
+### Findings of the review
+1. `canceladas` prints two cancelled bookings of the same room and day as the same line — ADDRESSED (`src/app.js:35`): each line now carries the slot.
+
+### New breakage in t
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; cat .docs/sdd/sdd-kit.json; cat $D/spec.md; cat $D/tasks.md; git show 23a723a --stat; sed -n 20,50p src/app.js
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native", "validation": {"mode": "field"}}
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+>>> Bash: cd "<run>/repo" && git show 23a723a -- test src | grep '^[+-]'; sed -n 1,15p src/app.js | grep -n slot
+<<< --- a/src/app.js
++++ b/src/app.js
+-  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} — ${b.reason}`).join('\n');
++  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} ${b.slot} — ${b.reason}`).join('\n');
+--- a/test/cancel.test.js
++++ b/test/cancel.test.js
+-  assert.equal(run('canceladas', []), 'Norte lun — sala ocupada');
++  assert.equal(run('canceladas', []), 'Norte lun 10:00-12:00 — sala ocupada');
+4:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+6:function freeRooms(slot) {
+
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md && sed -i 's/^- THEN responde «Norte lun — sala ocupada»/- THEN responde «Norte lun 10:00-12:00 — sala ocupada»/; s/^- (ninguna)/- 2026-10-26 — THEN de «El listado de canceladas enseña el motivo»: «Norte lun — sala ocupada» pasa a «Norte lun 10:00-12:00 — sala ocupada» (la revisión final halló que dos canceladas de la misma sala y día salían como la misma línea; sin aprobar)./' $D && git diff --stat && git diff | grep '^[+-]' 
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+--- a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
++++ b/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+-- THEN re
+
+=== RESULTADO (8 turnos, 0.2196909 $)
+🦆 **Qué pasa, en llano.** `canceladas` ahora escribe «Norte lun 10:00-12:00 — sala ocupada». La spec aprobada fija «Norte lun — sala ocupada». La revisión final vio que, con la línea sin franja, dos reservas canceladas de la misma sala y día salen idénticas. El commit `23a723a` lo arregló añadiendo la franja. Ese arreglo cambia un THEN de la spec aprobada. Por eso la re-revisión lo marca como Important abierto, y no es algo que yo pueda zanjar con un ruling.
+
+**Estado**
+- Task 1 y Task 2 están completas en el ledger.
+- Revisión final: la spec salió limpia y el código tuvo 1 Important. El fix está en `23a723a`.
+- Re-revisión de `3d8c292..23a723a`: 1 Important abierto. Es el del THEN.
+- Esa es la única re-revisión que toca. No abro otra.
+
+**Lo que dejé hecho, sin commitear:** en `spec.md`, el THEN pasa a «Norte lun 10:00-12:00 — sala ocupada» y la sección «Enmiendas» lleva su línea, marcada «sin aprobar».
+
+✋ **Necesito tu decisión, Laura (dev-lead).**
+1. **Aprobar la enmienda (lo que recomiendo).** El código y el test ya la cumplen, y la franja quita la ambigüedad. Con tu OK commiteo spec y `tasks.md`, con la enmienda anotada, y sigo con el cierre: rulings, borrar el workspace y la validación.
+2. **Rechazarla.** Revierto la franja de `23a723a`. La ambigüedad de dos canceladas idénticas queda como mínimo diferido, o se resuelve de otra forma que me indiques.
+
+Dos cosas más que quedan anotadas para el cierre:
+- El ledger no tiene líneas de la revisión final ni del fix. Lo que consta está en `tasks.md`.
+- La spec numera las decisiones 1 y 3, sin 2. No lo he tocado.

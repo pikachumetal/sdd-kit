@@ -1,0 +1,72 @@
+--- [4]
+Ahora: leo el contexto del proyecto en `.docs/sdd/`. Queda: clasificar, escribir spec y plan, y parar antes de implementar, ~10 min.
+
+--- [27]
+Nada se escribió. Uso Write para el fichero.
+
+--- [40]
+He lanzado el revisor de la spec (Sonnet, siete puntos) y su vigilancia de silencio. Espero a que termine para integrar sus hallazgos antes de escribir el plan.
+
+--- [41]
+1. Crítico · Delta «Libres por franja» (ADDED) · El GIVEN dice «Norte reservada el lunes de 10:00-12:00», pero `libres 10:00-12:00` no recibe día: no se sabe qué día se consulta. Escenario no verificable, y la regla de cuándo cuenta una reserva (día) no está declarada. · Decidir y declarar cómo `libres` resuelve el día (hoy, argumento, cualquier día). Ajustar el GIVEN/WHEN y registrarlo en «Decisiones que he tomado yo».
+
+2. Crítico · Delta «Libres por franja» vs «Lo que se retira o cambia de forma» · Dice que «libres <franja>» ya existe y «queda igual», pero lo declara ADDED. Si hay comportamiento previo, se trata de un MODIFIED encubierto. Es un ADDED y no hay `capabilities/` que lo contraste. · Aclarar que este ADDED solo documenta lo ya entregado y no cambia nada. Si la salida de hoy (formato, orden, separador entre salas) difiere de `Sur`, corregirlo. Fijar con un escenario de varias salas el formato de salida (una por línea o separadas por coma).
+
+3. Importante · Delta «Planta sin valor» · `--planta` sin valor es ambiguo: `libres --planta 10:00-12:00` consume la franja como valor de planta. La decisión 4 permite la opción antes de la franja, pero ningún escenario cubre ese caso. · Añadir un escenario o una regla: qué pasa con `libres --planta 10:00-12:00`, y con `libres --planta` sin franja.
+
+4. Importante · Decisión 3 y Scope · «La planta es un número entero», pero no hay escenario ni regla para `--planta abc`, `--planta 2.5`, `--planta` repetida o `--planta 0`/negativa. La propia spec dice que son «lo que más se escapa» y no los cubre. · Añadir escenarios o declararlos como «no aplica» en «Reglas de la capacidad» (Límites). Decidir si el valor no numérico da el aviso o una salida vacía.
+
+5. Importante · Reglas de la capacidad · «Límites: no aplica» contradice la decisión 3 (entero) y la 5 («no validar el número»). Hay un límite implícito sin declarar. «Regla ante conflicto: no aplica» tampoco justifica el caso de `--planta` repetida o con valores distintos. · Declarar los límites reales (entero, sin validar existencia) y la regla para la opción repetida.
+
+6. Importante · «Decisiones que he tomado yo», línea del revisor · El texto afirma «un revisor con los siete puntos» pero se mezcla con «Mínimo razonable: sin revisor» y «Único (sonnet)»: dos políticas contradictorias en el mismo bloque. Además, el ítem 9 cita `sdd capability merge` como ya ejecutado sin evidencia. · Dejar una sola política de revisión y quitar o respaldar la afirmación del ítem 9.
+
+7. Importante · Scope vs Intent · El Intent promete «fracaso: que `--planta` mal escrito parezca un filtro aplicado y liste todo», pero el Scope solo cubre el caso sin valor. Una opción desconocida o un valor inválido quedan sin declarar, y podrían listar todo en silencio. · Cubrir `--planta` inválido con escenario o excluirlo explícitamente del Scope.
+
+8. Menor · Scope / Términos · El Scope pone «Planta» en `PRODUCT.md` como entregable, pero la decisión 8 dice que lo escribe el cierre. Ambos dicen que la spec de 4 ficheros incluye `PRODUCT.md`. Hay ambigüedad sobre quién y cuándo, y «Planta» puede chocar con «Sala» (que no menciona planta). · Indicar la tarea o el paso exacto y si la definición de «Sala» necesita referenciar la planta.
+
+9. Menor · Cabecera/Aprobaciones · `status: approved` con aprobación «por delegación» firmada por el propio autor (Fixture) y nombrada como dev-lead; la validación se difiere. La spec se aprueba antes de pasar la revisión adversarial. · Poner el estado en «draft» hasta cerrar los hallazgos de la revisión, o reaprobar tras las correcciones.
+
+10. Menor · Decisión 6 y Reglas «Avisos» · El texto de aviso `falta el número de planta` no indica si va a stdout o stderr, ni el código de salida. «Salida» es ambiguo para un comando CLI. · Fijar el canal y el código de salida, o declarar que no importan.
+
+--- [50]
+Segunda ronda lanzada, porque la review aceptó un Crítico (el escenario base hablaba de un día que `libres` no mira). Espero su resultado antes de escribir el plan.
+
+--- [55]
+1. Crítico · Delta «Planta sin valor o que no es un número» y Límites · `libres 10:00-12:00 --planta 2.5` y `--planta -1` están en Límites y en la decisión 6, pero ningún escenario los prueba (solo `abc`). `--planta 2.5` tampoco tiene THEN. · Añadir los casos `2.5` y `-1` con su THEN `falta el número de planta`, o quitarlos de la decisión 6 y de Límites.
+2. Crítico · Delta (todos los escenarios) y decisión 4 · `libres --planta 10:00-12:00` da el aviso, pero `libres --planta 2 10:00-12:00` da `Sur`. Falta el caso `--planta` sin valor al final con la franja antes, y la ambigüedad de «seguido de la franja» no está definida. Con `--planta 2 --planta` (repetida, la última sin valor) la regla «vale la última» choca con el aviso. · Fijar en un escenario qué pasa con `--planta 2 --planta` (aviso, y no la última válida), y definir «franja» con un formato (`HH:MM-HH:MM`).
+3. Importante · Delta y decisión 6 · «Sin franja, `libres` se comporta como hoy» no tiene escenario GIVEN/WHEN/THEN. Tampoco lo tiene `libres --planta 2` sin franja. Es una regla del delta sin verificación. · Añadir un escenario `libres` y `libres --planta 2` sin franja, con la salida de hoy. Si hoy es un fallo, decir cuál es.
+4. Importante · Delta «Libres por franja» · Se declara ADDED, pero documenta algo que ya existe y la nota dice que «no lo cambia». Incluye `libres 12:00-14:00` (sin reserva, sin `--planta`), que es el «sin --planta, lista todas» del dev-lead. Falta un escenario con `--planta` y ambas salas libres, por ejemplo `--planta 1` en 12:00-14:00 da `Norte`. · Añadir ese escenario para probar que el filtro filtra y no solo vacía.
+5. Importante · Decisiones, numeración · La numeración salta (1-6, 10, 11, 7, 8, 9) y las decisiones 10 y 11 están antes de la 7. Las citas «lo cazó la review» y «se repite tras los cambios de la review» son un historial de proceso dentro de la spec. · Reordenar de 1 a 11 y quitar las referencias a la review.
+6. Importante · Decisiones, bloque «Review de spec propuesta» · Se dice «un revisor con los siete puntos» y luego hay otra política de modelos con «un revisor de spec en sonnet». El «Mínimo razonable: sin revisor» contradice «Único (sonnet)». Se mezclan las opciones propuestas con la elegida. · Dejar una sola política de review (la elegida) y borrar las alternativas descartadas.
+7. Importante · Decisión 9 y Scope · Se afirma que `sdd capability merge` dio «añadido» en «cuatro requisitos» y «cinco reglas». Ahora hay cinco requisitos ADDED, así que el dato está desfasado o no es verificable. «Los cuatro sitios» de la tabla tampoco cuadran (la tabla tiene tres y dice «los tres de la tabla»). · Corregir los conteos a cinco requisitos y tres sitios, o quitar la afirmación.
+8. Menor · Reglas de la capacidad, «Dónde viven los datos» · Dice «en memoria como las reservas», pero ninguna decisión dice que sea dato en memoria sin persistencia; el nombre del campo (`planta`) no está fijado y toca el contrato interno de `rooms` en `src/app.js`. · Nombrar el campo y decir en el Scope que se cambia la forma de cada sala.
+9. Menor · Decisión 8 y Scope · «Planta» en `PRODUCT.md` lo escribe el cierre, pero el Scope lo mete en «Entra» sin un escenario ni una tarea que lo verifique. «Piso» como _Evitar_ no se comprueba contra el texto de la interfaz. · Añadir al Scope que el cierre comprueba el término, o ponerlo como tarea del plan.
+10. Menor · Decisión 3 y Scope «No entra» · Se rechaza `--planta=2` pero no hay escenario que diga qué sale con `libres 10:00-12:00 --planta=2`. Ese caso lo cubre el aviso, o lo toma como franja inválida, y no se dice cuál. · Añadir un escenario con `--planta=2` y su THEN, o quitarlo del «No entra».
+
+--- [66]
+Spec y plan escritos y confirmados en un commit. Paro aquí, antes de implementar.
+
+**Qué he hecho**
+- Carril feature, modo full, perfil delegate (el del proyecto). Id 0012, rama `feature/0012-libres-por-planta`.
+- Spec aprobada por tu delegación: `.docs/sdd/specs/20261106-114217-feature-0012-libres-por-planta/spec.md`. Con `--planta`, `libres` filtra por planta. Sin `--planta`, lista todas las salas como hoy.
+- Plan en `plan.md`, de una sola task en Native. El gate de cierre es `node --test && node scripts/lint.mjs`.
+- La spec pasó dos revisiones (Sonnet). La primera cazó un Crítico: mi escenario base hablaba de «el lunes», pero `libres` no mira el día. Lo corregí y añadí los escenarios que faltaban.
+- El delta de comportamiento se fusiona en una copia de `.docs/sdd` sin rechazos.
+- Commit `7efda3c`. No he tocado código ni tests.
+
+**Decisiones mías que debes validar** (están en ✋ de la spec)
+- **Plantas:** nadie dijo en qué planta está cada sala. Puse Norte en la 1 y Sur en la 2.
+- **Orden de la opción:** `--planta` vale antes o después de la franja.
+- **Salida vacía:** una planta sin salas libres, o sin salas, da salida vacía. No valida que la planta exista.
+- **Aviso:** un `--planta` sin valor, no numérico, `--planta=2` o seguido de la franja da `falta el número de planta`. Elegí un aviso para que un filtro mal escrito no liste todo en silencio.
+- **Repetida:** con `--planta` repetida decide la última.
+- **Día:** `libres` sigue sin mirar el día, como hoy.
+
+**Pendiente**
+- «Planta» como término en `PRODUCT.md` y la entrada del changelog los escribe el cierre (`sdd-archive`), no el plan.
+- Para continuar, di «sigue» o «implementa». Invocaré `sdd-implement`, que ejecuta la Task 1 en Native.
+
+**Avisos**
+- El aviso de arranque decía que la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que leí eran las del 3.0.0. Si quieres igualarlos: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+- Git avisó de que convertirá LF en CRLF en los dos ficheros nuevos.
+

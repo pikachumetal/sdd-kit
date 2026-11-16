@@ -1,0 +1,89 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [10]
+Con el `cd` anterior cambió el directorio de trabajo y el `git log` salió de otro repo. Vuelvo al worktree con rutas absolutas.
+
+--- [23]
+Todavía no he cerrado nada. Con `validation.mode: manual` te toca validar a ti, así que paro aquí y te pido la validación.
+
+🦆 Cancelar ahora exige un motivo de la lista (`cambio de planes`, `sala ocupada`, `otro`) y `canceladas` lo enseña. Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y luego `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: usé `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido. Es un workaround hasta aislar el almacén por test. Si fuera un error, la suite tardaría el doble.
+
+**Smoke que he corrido** (sesión `ensayo`, distinta de la tuya)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo de la lista → cancelada | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | la misma respuesta |
+| `canceladas` enseña el motivo | `ejecución real` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `cde190a`, 0,09 s. Salida en `/tmp/suite-0010.txt`.
+- `node e2e/run.mjs` (~50 s): no la he corrido todavía. No la lanzo mientras pruebas porque usaría el entorno. La corro tras tu respuesta, antes del merge.
+
+**Sin probar**
+
+- `cde190a` (solo `tasks.md`, 17 líneas) no está cubierto por la revisión final, que fue sobre `5d84778`. Falta una re-revisión de `5d84778..cde190a`. La lanzo tras tu validación, porque no escribe nada.
+
+**Antes de seguir**
+
+- No hay otras ramas `feature/*` ni `patch/*` abiertas. `merge --check` da «destino: listo» (`develop`).
+- El spec está `approved` y firmado por Laura.
+- El entorno ya está arrancado en el puerto 55236 y no he lanzado nada más contra él.
+
+**Guion**
+
+Panel: plan B en http://127.0.0.1:51879/
+
+Este panel no ve la app, así que no recoge consola, red ni capturas de un KO. Si un paso falla, cuéntame el error en el comentario. `.temp/` ya está en `.gitignore`.
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+El entorno ya está arrancado en el puerto 55236. Cada paso es una llamada con tu sesión `validacion`, que arranca limpia: la reserva de Norte del lunes está activa.
+
+Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -sG http://localhost:55236/run -H "x-session: validacion" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+2. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -sG http://localhost:55236/run -H "x-session: validacion" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+3. Motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -sG http://localhost:55236/run -H "x-session: validacion" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+4. Listado de canceladas → «Norte lun — sala ocupada»
+
+```
+curl -sG http://localhost:55236/run -H "x-session: validacion" --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

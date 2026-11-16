@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls -a && cat .docs/sdd/sdd-kit.json && echo ---- && cat .docs/sdd/steering/debt.md && echo ---- && cat ROADMAP.md
+<<< * develop
+  main
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a Excel tarda 40 s con 1.000 reservas: cuatro veces el límite de 10 s | [ticket de soporte](../../../docs/tickets/2026-10-11-exportar-excel.md) | 2026-10-11 |
+
+## En espera
+
+
+
+>>> Bash: cd "<run>/repo" && cat docs/tickets/2026-10-11-exportar-excel.md; echo ----; cat package.json; ls -R src test docs | head -50; echo ----; cat src/*.js | head -120; ls test; cat .docs/sdd/steering/*.md 2>/dev/null | grep -i -n "10 s\|límite\|rendimiento" | head
+<<< # Ticket — la exportación a Excel es lenta
+
+Abierto por el equipo de soporte el 2026-10-11.
+
+La exportación a Excel tarda 40 s con 1.000 reservas, cuatro veces el límite de 10 s que fijó la feature 0012. Lo midió la propia 0012 al cerrarse: está en su [walkthrough](../../.docs/sdd/changes/20261002-090000-feature-0012-excel-export/walkthrough.md), §2.
+
+Propuesta: un patch antes de la release.
+----
+{"type": "module"}
+docs:
+qa/
+tickets/
+
+docs/qa:
+2026-10-12-informe.md
+
+docs/tickets:
+2026-10-11-exportar-excel.md
+
+src:
+app.js
+
+test:
+app.test.js
+----
+const [command, ...args] = process.argv.slice(2)
+
+>>> Bash: cd "<run>/repo" && cat docs/qa/*.md; echo ----; find .docs -type f | head -40; grep -rn "40 s\|walkthrough" .docs --include=*.md -l | head; cat CHANGELOG.md | head -30; grep -rni "excel\|xlsx" src test package.json | head
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+----
+.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md
+.docs/sdd/changes/20261002-090000-feature-0012-excel-export/walkthrough.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/sp
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/changes/20261002-090000-feature-0012-excel-export/walkthrough.md; echo ----; cat test/app.test.js | head -40; echo ----; time node src/app.js exportar
+<<< # Walkthrough — feature 0012: exportar a Excel
+
+## 1. Qué se hizo
+
+La exportación de las reservas a Excel, con una hoja por sala y una fila por reserva (`salas exportar-excel`).
+
+## 2. Verificación
+
+| Medida | Resultado | Límite |
+| --- | --- | --- |
+| 1.000 reservas | 4 s | 10 s |
+| 5.000 reservas | 9 s | 10 s |
+
+Medido con `node bench/excel.js <reservas>` sobre la base de pruebas, el 2026-10-02.
+----
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal
+
+=== RESULTADO (7 turnos, 0.16434959999999998 $)
+Triaje propuesto, sin escribir nada todavía. En perfil `delegate` toca presentarlo y esperar tu decisión.
+
+**Hay un solo ítem en «Por triar»:** la exportación a Excel tarda 40 s con 1.000 reservas (ticket de soporte del 2026-10-11).
+
+**Propuesta: «En espera», con «Falta» `reproducirlo`.** Lo que he comprobado:
+
+- **No hay nada que ejecutar.** `src/app.js` no tiene `exportar-excel` (solo `exportar`, que da CSV y tarda 0,19 s con la única reserva de prueba), y `bench/excel.js` no existe en el repo.
+- **El ticket cita mal su fuente.** Dice que la 0012 midió 40 s. El walkthrough de la 0012 (§2) dice **4 s** con 1.000 reservas, límite 10 s, y 9 s con 5.000. Parece un cero de más, o una medición distinta que no consta.
+- **Sin comando y salida, «Lista» no es posible.** Un ticket es una afirmación, no una reproducción. Tampoco hay un segundo caso independiente.
+
+La fila quedaría así en «En espera»:
+
+| Ítem | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- |
+| La exportación a Excel tarda 40 s con 1.000 reservas | ticket de soporte | Supera el límite de 10 s de la 0012 (según el ticket) | `reproducirlo` | 2026-10-11 |
+
+- **Impacto:** lo redacto yo a partir del ticket; dime si prefieres otra formulación.
+- **Fecha:** conservo la del ticket (2026-10-11), que es la de entrada en la tabla.
+- **Qué desbloquea el ítem:** que soporte aporte la medición (comando, datos y salida) o que aparezca un segundo caso. Si se reproduce, pasa a «Lista» con un patch en Now (`**Carril:** patch`, talla S), como pide el ticket.
+
+**Fuera del triaje:** los dos hallazgos de `docs/qa/2026-10-12-informe.md` (tildes en el CSV y `--planta 2`) no están en «Por triar», así que no los toco. Si quieres que entren como deuda o como patches, dímelo y los trato aparte.
+
+¿Confirmas «En espera», o prefieres otro destino? Con tu OK escribo `debt.md`, paso `sdd roadmap check` y lo publico en `develop`.

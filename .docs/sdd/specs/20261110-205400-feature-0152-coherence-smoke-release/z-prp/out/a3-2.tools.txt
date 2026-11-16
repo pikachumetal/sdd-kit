@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git ls-files | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spe
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md; cat src/app.js test/cancel.test.js package.json; ls node_modules 2>&1 | head -2; cat .docs/sdd/specs/*patch-0007*/patch.md
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\patch-lane.md
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md; git log --oneline | head; node -e "import('./src/app.js').then(m=>console.log(m.run('cancelar',['Norte','mar'])))"; grep -n "Gate de cierre\|min" .docs/sdd/specs/*/walkthrough.md | head
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-rubber-duck\SKILL.md
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+<<< 1	---
+2	name: sdd-rubber-duck
+3	description: Use when the user asks you to explain how something in their project works or travels, step by step or in plain words («explícame cómo viaja un pedido de punta a punta», «explícamelo en llano»), when your last message didn't land («no te he entendido», «wait, what?»), or when another sdd-kit skill needs the 🦆 paragraph of a stop.
+4	---
+5	
+6	# sdd-rubber-duck
+7	
+8	## Overview
+9	
+10	Explain for a reader who knows the product, not its code or the kit. Write everything they read in the language of their message, skill announcements included: an English
+
+=== RESULTADO (8 turnos, 0.157563 $)
+🦆 Hoy, si cancelas Norte el martes y no tienes reserva ese día, la herramienta dice «cancelada Norte mar» y te anula la reserva de Norte del lunes. Lo he reproducido. La causa es que la búsqueda de reserva mira solo la sala y el estado, no el día. Por eso encuentra la primera reserva activa de la sala, sea de cuando sea. «Anular» usa la misma búsqueda, así que tiene el mismo fallo y se arregla con el mismo cambio.
+
+Es un fallo determinista con causa raíz clara, así que cumple el carril patch.
+
+**Prueba que falla hoy:** `cancelar Norte mar`, con la reserva de Norte del lunes activa, debe devolver `sin reserva Norte mar` y dejar la del lunes activa. Hoy devuelve `cancelada Norte mar`. El arreglo la pone en verde y añado la misma comprobación para `anular`.
+
+**Estimación:** 0,5 h, más el gate de cierre (`node --test && node scripts/lint.mjs`, unos segundos según operations; no hay un tiempo medido en el proyecto).
+
+Una cosa más: el patch 0007 del roadmap dice haber arreglado un fallo parecido, pero el código actual sigue sin comparar el día. No lo toco ahora, pero puede que el arreglo se perdiera.
+
+¿Cómo seguimos? Perfil actual: `delegate`, del proyecto (`sdd-kit.json`).
+
+1. **Abro el patch tal cual (recomendada):** prueba que falla, arreglo en la búsqueda de reserva y cierre.
+2. **Abro el patch y aviso antes del cierre** para que valides tú el resultado.
+3. **Otro perfil para este patch:** dime cuál.

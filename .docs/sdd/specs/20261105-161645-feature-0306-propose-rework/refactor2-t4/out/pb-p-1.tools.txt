@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3; git branch --show-current
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+develop
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md; done; cat package.json; ls -R src test scripts | head -50; ls .docs/sdd/specs
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat PRODUCT.md | head -30; K="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references"; cat $K/nombrado.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306"; node $S/cli/bin/sdd.js id next --project-root . --reserve; cat $S/skills/sdd-propose/references/spec-writing.md
+<<< 0012
+# Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview cov
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306"; git checkout -b feature/0012-informes && node $S/cli/bin/sdd.js id claim --project-root .
+<<< Switched to a new branch 'feature/0012-informes'
+sin remoto: la 0012 vale (contador local)
+
+=== RESULTADO (9 turnos, 0.17726930000000002 $)
+Rama `feature/0012-informes` creada desde `develop`. El id 0012 vale: no hay remoto, así que lo comprobé contra el contador local.
+
+**Cómo construirlo.** Lo decidido con el dev-lead fija el qué (cuatro vistas, `--sala`, tabla de texto, «sin reservas»). El cómo sigue abierto. Hay tres formas:
+
+1. **Una función por vista** sobre la lista de reservas activas, con un formateador de tabla compartido. `run('informes', …)` junta las cuatro vistas y `--sala` filtra la lista antes de agregarlas. Encaja con 5 tasks: una por vista y otra para `--sala`. Es lo que ya hace `app.js` (funciones pequeñas que `run` despacha).
+2. **Una sola función `informes()`** que calcula las cuatro vistas de golpe. Es menos código, pero cada task toca el mismo bloque y las vistas no se prueban por separado.
+3. **Un fichero nuevo `src/informes.js`.** Separa mejor, pero la constitución y la tech-stack piden un solo fichero de entrada (`src/app.js`).
+
+**Recomiendo la 1.** Cada vista tiene su test y su task, y `--sala` queda como filtro común. Va en el mismo fichero, como pide la tech-stack.
+
+Con la 1 tengo dos dudas de diseño:
+- Las reservas **canceladas y anuladas no cuentan** como ocupación. Solo cuentan las `active`, igual que en `libres`.
+- «Franjas más reservadas» ordena de más a menos reservas y, en empate, por orden de la franja.
+
+¿Vamos con la opción 1? Si dices que sí, te presento el diseño por secciones, una por mensaje, y luego escribo la spec.
+
+=== RESULTADO (1 turnos, 0.1899964 $)
+Voy con la opción 1. El diseño va por secciones, una por mensaje. Esta es la primera.
+
+**Sección 1 de 4: qué ve quien usa `informes`**
+
+`informes` escribe las cuatro vistas, una detrás de otra, cada una con su título y su tabla. Con las reservas de ahora (Norte, lunes, 10:00-12:00) saldría:
+
+```text
+Ocupación por sala
+Sala   Reservas
+Norte  1
+Sur    0
+
+Ocupación por día
+Día  Reservas
+lun  1
+
+Franjas más reservadas
+Franja       Reservas
+10:00-12:00  1
+
+Salas sin reservas
+Sur
+```
+
+- Cuentan solo las reservas activas. Las canceladas y las anuladas no cuentan, igual que en `libres`. Es decisión mía y la dejo en ✋ para que la valides.
+- En «ocupación por sala» salen todas las salas, también las de 0 reservas.
+- En «ocupación por día» salen solo los días con reservas, en orden de semana (lun…dom). Es decisión mía.
+- Sin ninguna reserva, cada vista pone «sin reservas» en lugar de la tabla. La de «salas sin reservas» también, aunque entonces todas las salas estarían sin reservar. Esto último es decisión mía.
+
+¿Va bien?

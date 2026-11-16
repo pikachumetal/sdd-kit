@@ -1,0 +1,30 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [15]
+Estoy en el paso 1 del cierre (validación). Pasé los pre-checks y dejé el panel listo. Ahora necesito que pruebes la 0010 antes de tocar nada más.
+
+**Pre-checks:** el worktree está limpio, `merge --check` da «destino: listo» (`develop`), no hay otras ramas abiertas y la spec está `approved`. La revisión final existe (spec y código limpios, sobre `18eec48`). El único commit posterior, `020e18e`, es solo `tasks.md`, así que no hace falta re-revisión.
+
+**Mi smoke (verificado por mí):**
+- `npm test`: 5/5 pasan, salida guardada en `%TEMP%\suite-0010.txt`.
+- Ensayé los 4 pasos de abajo con los datos reales y salen los literales esperados.
+- `env:up` falla (`falta data/seed.json`, el commit `619d8eb` quitó la semilla). Esta app se prueba por CLI, así que no hace falta entorno. No probé la E2E.
+
+Panel: plan B en http://127.0.0.1:3583/ (no hay herramientas de Chrome, así que no verá consola ni red de un KO; cuéntame el error en el comentario).
+
+**Tu script.** El estado vive en memoria de cada proceso, así que cancelar y listar en dos comandos `node src/app.js` sueltos no se ve entre sí. El paso 4 usa un solo proceso.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. `node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(run('canceladas',[]))})"` → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+Estos pasos no escriben nada persistente, así que no hay datos que restaurar.
+
+Mientras pruebas no lanzo nada más contra el entorno. ¿Qué probaste?
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+**Aviso:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Estoy usando las skills de la ruta `k30`, que es la 3.0.0. Si prefieres la actualización oficial (`claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar), dímelo.
+

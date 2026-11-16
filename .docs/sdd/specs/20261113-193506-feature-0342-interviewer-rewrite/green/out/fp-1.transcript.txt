@@ -1,0 +1,56 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd . && ls -a && ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: ls node_modules 2>&1 | head -3; git ls-files | head -50
+> Bash: cat PRODUCT.md ROADMAP.md package.json .docs/sdd/steering/*.md; cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/*free/spec.md
+> Bash: cat .docs/sdd/specs/*free/walkthrough.md; cat CHANGELOG.md README.md; node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-16:00
+## agente
+Antes de abrir una spec: el comando que pides ya existe, así que no la he abierto.
+
+- **Ya implementado:** `salas libres <franja>` está en `src/app.js` (`freeRooms`). Lo cubre el test `libres excluye la sala reservada en la franja`.
+- **Registrado como hecho:** la task 0006 (`.docs/sdd/specs/20260917-090000-task-0006-free/`) está en `status: done`, con su walkthrough validado. Aparece en el `CHANGELOG.md` bajo *Unreleased*.
+- **Probado a mano:**
+  - `node src/app.js libres 10:00-12:00` devuelve `Sur`.
+  - `node src/app.js libres 14:00-16:00` devuelve `Norte, Sur`.
+
+Abrir otra feature para esto duplicaría lo que ya hay. Las opciones con más sentido son estas:
+
+1. **Era otra cosa (recomendada).** Dime qué falta. Por ejemplo, filtrar por día, porque hoy `libres` solo compara la franja y se ignora `day`. O validar el formato de la franja, que está en `debt.md` en «Por triar». O mostrar una franja que solape en vez de coincidir exactamente. Con eso arranco la feature en modo full.
+2. **Era una confusión.** No hay nada que hacer y lo dejamos así.
+3. **Quieres que la 0006 se rehaga.** Dime qué está mal en ella y lo trato como cambio nuevo.
+
+¿Cuál es?
+
+# turno 2
+## usuario
+mantengo lo que dije
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: mantengo tu petición y arranco la feature con la entrevista de diseño. Queda: una pregunta de alcance, luego la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme).** Quieres un comando que diga qué salas están libres en una franja. Mantengo lo que dijiste, pero ese comando existe: `salas libres <franja>` sale en `src/app.js`, en el test y en el CHANGELOG. No voy a escribir una spec que reconstruya algo que ya funciona. Para que la feature tenga contenido, hay que decidir qué cambia de `libres`. Hoy tiene este comportamiento:
+
+- Compara la franja con coincidencia exacta de texto.
+- Ignora el día. La reserva de Norte es del lunes, pero `libres 10:00-12:00` da `Sur` cualquier día.
+- No valida el formato, y eso consta en `debt.md` como «Por triar».
+
+Aún no he creado rama ni carpeta ni reservado id. Lo haré cuando el alcance esté fijado.
+
+❓ **¿Qué debe cambiar en `libres`?**
+Hoy `libres 10:00-12:00` devuelve `Sur`, aunque Norte solo esté reservada el lunes.
+
+1️⃣ **Filtrar por día:** `libres mar 10:00-12:00` → `Norte, Sur`, y `libres lun 10:00-12:00` → `Sur`. Cambia la firma del comando, así que `libres <franja>` sin día habría que decidir si sigue valiendo. Es el hueco que más puede dar resultados erróneos.
+2️⃣ **Franjas que solapan:** `libres 11:00-13:00` → `Sur`, porque Norte está ocupada de 10:00 a 12:00. Requiere interpretar las horas, no comparar texto.
+3️⃣ **Validar el formato de la franja:** `libres foo` → error claro en vez de `Norte, Sur`. Salda la deuda de `debt.md`.
+4️⃣ **Otra cosa:** me dices qué.
+
+➡️ **Recomiendo 1️⃣**, porque hoy da una respuesta incorrecta con las reservas que ya existen (el día se descarta). A cambio, rompe la forma actual de llamarlo, y habría que decidir qué pasa sin día.

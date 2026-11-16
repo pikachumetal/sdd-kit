@@ -1,0 +1,87 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: cancel|anula
+
+>>> Glob: .docs/sdd/**/*.md
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\tech-stack.md
+<<< Found 5 files
+test\app.test.js
+src\app.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel
+<<< 25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Grep: cancel
+<<< 10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (9 turnos, 0.11911500000000001 $)
+Cancelar es muy poca cosa ahora mismo, y por eso cuesta pillarlo: casi no hay nada montado.
+
+**Lo que hay en el código** (`src/app.js:12`):
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- El comando es `cancelar <día> <franja>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`.** No busca ninguna reserva ni borra nada.
+- No comprueba que la reserva exista. Tampoco comprueba que sea del usuario que cancela, aunque el roadmap habla de cancelar "una reserva propia".
+- El único test (`test/app.test.js:13`, "cancelar respeta el día") comprueba que el mensaje incluya el día y la hora. No comprueba que se cancele nada.
+
+**Lo que dice la documentación**
+- `roadmap.md:31` describe la funcionalidad como "Cancelar una reserva propia".
+- `roadmap.md:25` y `patch.md` (patch 0007) dicen que había un fallo: "la cancelación borraba reservas de otro día con la misma hora". La causa era comparar solo por hora, y el patch dice que se arregló con un test de regresión.
+
+**Lo que deduzco, y no sale de ningún documento:** el código actual no cuadra con esa historia. Ahora mismo no compara ni borra nada, así que ese fallo no podría darse. Puede que `cancelar` sea un esqueleto de la "base del molde" (el último commit) y que la lógica real no se haya traído. O puede que el patch 0007 se cerrara con un arreglo que no está en esta rama. No lo he comprobado en el historial de git.
+
+Si quieres, miro `git log` para ver si la lógica de cancelación existió alguna vez. Si lo que quieres es implementarla de verdad, eso ya es trabajo y entra por el roadmap, no desde aquí.
+
+**Aviso del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. `/reload-plugins` no aplica esa actualización.

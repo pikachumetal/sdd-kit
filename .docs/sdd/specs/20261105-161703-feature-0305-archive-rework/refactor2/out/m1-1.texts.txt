@@ -1,0 +1,90 @@
+--- [33]
+Mientras vuelve la re-revisión, no escribo ningún registro del cierre. Solo leo lo que haré después: las referencias de registros, aprendizajes y fusión.
+
+--- [49]
+Voy por el paso 0 del cierre y de momento no he escrito ningún registro.
+
+- **Pre-checks:** el worktree está limpio, `merge --check` da «listo» y no hay otras ramas abiertas.
+- **Revisión final:** la revisión de la 0010 fue sobre `422e85d`. Después hay dos commits solo de `.docs/` y no hay línea `Re-revisión:`, así que he lanzado la re-revisión única del tramo, con `opus`. Hasta que vuelva no escribo nada.
+- **Smoke ejecutado por mí:**
+  - `cancelar` con un motivo de la lista, con uno fuera de la lista y sin motivo responde lo que dice la spec.
+  - `canceladas` enseña «Norte lun — sala ocupada» si se cancela y se lista en el mismo proceso.
+  - Desde la CLI sola, `canceladas` sale vacío porque el almacén es en memoria. Es lo que cubre la 0014 y lo dejaré anotado.
+- **Base por delante:** `develop` tiene un commit más, el de la 0016, que toca `tech-stack.md` como lo toca esta rama. Es probable que haya conflicto al integrar la base. La suite entera la correré en esa integración.
+
+Cuando vuelva la re-revisión sigo con el walkthrough, la capacidad `bookings`, el changelog y el roadmap.
+
+--- [53]
+### Finding Verdicts
+Ninguno abierto.
+
+### New Breakage in the Range
+
+1. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. La fila de la Task 1 («Cancelar con motivo») cita el commit `422e85d`, pero ese commit no contiene la Task 1. `git show --stat 422e85d` muestra solo `src/app.js` +5 y `test/cancel.test.js` +4: es `cancelledList()`, el comando `canceladas` y su test, es decir, la Task 2. La Task 1 está en `e319ee1` («feat(bookings): cancelar con un motivo de la lista»): `reasons`, `reasonOf`, la validación de `cancelBooking` (`src/app.js:3`, `:14-25`) y los dos tests reescritos. La fila 11 (Task 2 → `422e85d`) sí es correcta. El registro vivo deja la Task 1 asociada a un commit equivocado, y lo heredarán el walkthrough y el archive. Corrección: en la fila 10, `422e85d` → `e319ee1`.
+
+2. **Minor**: `tasks.md:17`, el Ruling. La forma es correcta (decisión, motivo, alcance y coste), pero la premisa no cuadra con el repo:
+   - `node --test` ya ejecuta cada fichero de test en su propio subproceso, así que `test/app.test.js` y `test/cancel.test.js` no comparten el array `bookings` en memoria (`src/app.js:4`).
+   - Dentro de un mismo fichero, `node:test` ejecuta los `test()` de nivel superior uno detrás de otro por defecto.
+   - No hay carrera que `--test-concurrency=1` resuelva. Lo que sí hay es que el test `canceladas` depende del orden: usa la cancelación del primer test de `test/cancel.test.js`.
+   - El Ruling cuelga de la Task 2, cuya verificación (`node --test test/cancel.test.js`) es de un solo fichero, así que la opción no tiene efecto ahí.
+   - Cambia el texto del gate respecto a plan §3 y a la constitution #2 (`node --test`) sin enmienda. Sigue ejecutando la suite entera, así que no incumple la constitution.
+   - La deuda que admite («hasta aislar el almacén por test») no está apuntada en la tabla «Deuda técnica» de `.docs/sdd/roadmap.md`.
+
+3. **Minor (no es breakage)**: `.docs/sdd/tech-stack.md:1-4`. Los finales de línea sí cambiaron. El blob pasó de CRLF (en `422e85d`: `\r\n`) a LF (en `89a1a1a`: `\n`). Por eso el diff marca las 4 líneas aunque el texto solo cambia en la línea 3.
+   - **No es un problema nuevo.** Con `core.autocrlf=true` y sin `.gitattributes`, git normaliza a LF al hacer `add`, y la copia de trabajo sigue en CRLF (`git ls-files --eol`: `i/lf w/crlf`). LF es la forma normalizada, la misma que ya tienen `spec.md`, `tasks.md` y `sdd-kit.json`.
+   - El único coste es ruido en `git blame` para las líneas 1, 2 y 4.
+   - El contenido añadido es correcto: `src/app.js` valida el motivo de `cancelar` (`:3`, `:20`, con la respuesta «motivo no válido: …»).
+   - Detalle de forma: describe comportamiento de una feature en un documento de stack. Es aceptable, pero encaja mejor en PRODUCT o en la spec.
+
+4. Comprobaciones sin problemas:
+   - La línea `Revisión final:` (`tasks.md:13`) cuadra con el encargo: ejes Spec y Código limpios, sobre `422e85d`.
+   - El rango solo toca `.docs/`: no entra código ni tests.
+   - Nada en el rango contradice la spec.
+   - Todo el texto está en castellano.
+
+### Out-of-Scope Observations
+
+- `.docs/sdd/roadmap.md:11`: el ítem 0014 «Motivo guardado: el motivo de una cancelación se guarda en el almacén de reservas» parece solaparse con lo que ya entrega la 0010 («El motivo se guarda con la reserva cancelada», spec Approach; `src/app.js:24`). Conviene aclararlo en el triaje.
+- Finales de línea mezclados en el índice: la mayoría de ficheros en CRLF (`plan.md`, `src/app.js`, tests, `roadmap.md`…) y unos pocos en LF, sin `.gitattributes`. Un `.gitattributes` con `* text=auto` evitaría más diffs de fichero entero como el de `tech-stack.md`.
+- `test/cancel.test.js`: el test `canceladas enseña sala, día y motivo` depende del estado que deja el primer test del fichero.
+- `spec.md`: las «Decisiones» van numeradas 1 y 3 (falta la 2).
+- `spec.md`: el escenario «sin `--motivo`» no tiene test propio. El código lo cubre porque `reasonOf` devuelve `undefined` y `reasons.includes(undefined)` es falso.
+
+### Verdict
+**Fix round:** Findings remain open. No había hallazgos previos abiertos, pero el rango introduce uno Important: `tasks.md:10` asigna a la Task 1 el commit `422e85d`, y debe ser `e319ee1`. Quedan abiertos además dos Minor: la premisa del Ruling en `tasks.md:17` y el cambio de CRLF a LF en `tech-stack.md`, que no es un problema nuevo.
+
+--- [68]
+Estoy cerrando la retro de la 0010: reviso las señales de la sesión y dejo sus líneas `Retro:` en el §5 del walkthrough.
+
+--- [77]
+Cierre commiteado. Ahora integro la base (`develop` trae la 0016, que toca `tech-stack.md`).
+
+--- [83]
+Los dos lados solo añaden texto a la misma línea de `tech-stack.md`, así que los junto.
+
+--- [92]
+La 0010 está cerrada y fusionada en `develop` (`99ef9ac`). El push no se hizo porque `push: false` está en la configuración.
+
+**Validación en campo (hecha por mí)**
+- **Smoke:** corrí `cancelar` con un motivo de la lista, con uno fuera de la lista y sin motivo, y responde lo que dice la spec. `canceladas` enseña «Norte lun — sala ocupada» si se cancela y se lista en el mismo proceso.
+- **Suite:** `node --test` dio 5/5 en verde sobre `dd76f61`, que es la integración de la base. La corrí sin `--test-concurrency=1` (ver más abajo).
+- **Lo que no se puede ver desde la CLI:** `canceladas` lanzado solo, en otro proceso, sale vacío. El almacén es en memoria y no sobrevive al proceso. Eso lo cubre la 0014.
+- **Capacidad nueva:** `bookings`, fusionada con `sdd capability merge` y validada con `capability check`.
+
+**Decisiones tomadas sin el dev-lead**
+- **Gate:** la Task 2 pidió `--test-concurrency=1` por una carrera sobre el almacén en memoria. La re-revisión dice que esa carrera no existe, porque cada fichero de test corre en su propio subproceso. Dejé el gate de la constitution, `node --test`.
+- **Commit de la Task 1:** `tasks.md` la citaba con `422e85d`, pero es `e319ee1`. Lo corregí.
+- **Conflicto de la base:** `Conflicto de la base resuelto por el agente: .docs/sdd/tech-stack.md — juntó la frase de la 0010 (valida el motivo al cancelar) y la de la 0016 (los tests corren con node --test) en la misma línea.`
+
+**Pendiente**
+- **Re-revisión:** como `HEAD` se había movido, la lancé sobre los dos commits de `.docs/`. Encontró el commit mal citado (Important, corregido) y dos Minor. El Minor del Ruling lo resolví como se ve arriba. El otro es que `tech-stack.md` pasó de CRLF a LF, y no lo arreglo. El commit corregido no lo ha revisado nadie más: es un cambio de una celda de `tasks.md`.
+- **`sdd roadmap check` falla en dos líneas que no toqué:** la 35 (`v0.3.0 (2026-09-01)`) y la cabecera de «Deuda técnica», que debería ser «| Ítem | Impacto | Destino |». Lo arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Deuda anotada:** el test `canceladas` depende del orden de los tests de `test/cancel.test.js`, y falta un test de «sin `--motivo`».
+- **0014:** su fila, «Motivo guardado», parece solaparse con lo que ya hace la 0010. Conviene aclararlo en el triaje.
+- **Familia de la 0010:** no tiene `parent:` ni `proposal:`, así que no hay un «siguiente» que recomendar.
+- **Kit:** esta sesión carga el 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+**Ticket del kit:** la retro dejó una línea `ticket del kit`. `final-review-check.md` (paso 3) manda re-revisar con opus los commits de menos de 20 líneas y solo docs, y `sdd-verify` («Closing the review») dice que no se despachen si se revisan en el hilo. ¿Quieres que lo escriba con `sdd-feedback`?
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`99ef9ac`) · push: no hecho: `push: false` en `sdd-kit.json` · puedes borrar el worktree `<run>/repo`
+

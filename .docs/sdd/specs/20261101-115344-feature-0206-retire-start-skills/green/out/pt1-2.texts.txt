@@ -1,0 +1,61 @@
+--- [2]
+Using sdd-propose to classify this fix.
+
+--- [5]
+Voy a leer el contexto del proyecto y el código implicado para clasificar el cambio.
+
+--- [14]
+Es un patch, así que sigo `references/patch-flow.md` desde su paso 1.
+
+--- [20]
+`references/patch-flow.md` no existe en este kit (la rama retira las skills `start`). El flujo del patch sigue en `sdd-start-patch`, así que lo leo de ahí.
+
+--- [23]
+Paso 1: reproduzco el fallo sobre la base actual antes de abrir nada más.
+
+--- [26]
+Reproducido: `cancelar Norte mar` responde "cancelada Norte mar" y después `cancelar Norte lun` da "sin reserva", así que se llevó la del lunes. Ahora la plantilla y la carpeta del patch.
+
+--- [33]
+RED confirmado, con los dos síntomas del reporte: cancela el martes y se pierde la del lunes. Ahora el fix mínimo.
+
+--- [37]
+GREEN: 5/5. Escribo `patch.md` y hago el commit del fix.
+
+--- [40]
+El aviso nombra `sdd-kit.json`, que yo no toqué. Compruebo qué entró en el commit.
+
+--- [42]
+El fix está hecho y commiteado (`791ef7f` en `feature/0015`), pero falta cerrar el patch con `sdd-archive`.
+
+**Causa.** `findBooking(room, day)` en `src/app.js:9` recibía el día y no lo usaba. Devolvía la primera reserva activa de la sala, así que `cancelar Norte mar` cancelaba la del lunes y respondía con el día que le habías pedido. Lo reproduje antes de tocar nada.
+
+**Arreglo.** `findBooking` compara ahora también `b.day === day`. `anular` usa el mismo helper y tenía el mismo fallo, así que queda arreglado a la vez.
+
+**Pruebas.**
+- **Test de regresión nuevo:** cancelar y anular `Norte mar` devuelven `sin reserva Norte mar`. Falló antes del fix y pasa ahora.
+- **La del lunes sigue activa:** lo comprueba el test existente que cancela `Norte lun`, que va justo después. Si reordenas esos tests, esa comprobación se rompe.
+- **Gate de cierre:** `node --test` pasa 5/5.
+
+**Qué incluye el commit.** Solo `src/app.js`, `test/cancel.test.js` y `patch.md` (carpeta `.docs/sdd/specs/20261101-124818-patch-0015-cancel-dia/`). El aviso de `sdd-kit.json` era solo de saltos de línea: ese fichero no entró en el commit.
+
+**Notas.**
+- **Falta `patch-flow.md`.** `sdd-implement` apunta a `references/patch-flow.md`, que no existe en este kit (la rama retira las skills `start`). Seguí el flujo de `sdd-start-patch`, que sí está. Conviene arreglar ese enlace.
+- **Kit desfasado.** El aviso de arranque decía que la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. No he actualizado nada.
+
+**Lo siguiente.** `sdd-archive` te pedirá validar el comportamiento, escribirá el hash del commit en `patch.md` y añadirá la fila 0015 en «Patches» del roadmap y la entrada del changelog. ¿Lo cierro?
+
+--- [44]
+Ese punto ya está hecho: el commit del fix existe (`791ef7f`, `feature/0015`) y el árbol está limpio. Compruebo el estado antes de confirmártelo.
+
+--- [46]
+El patch está en el commit del fix `791ef7f`, en `feature/0015`. El árbol está limpio y `node --test` pasa 5/5. Me detengo aquí, como pediste, y no he ejecutado el cierre.
+
+Queda por hacer, y es lo que haría `sdd-archive`:
+- Pedirte que valides el comportamiento.
+- Escribir el hash del commit en `patch.md` (ahora pone `pendiente`).
+- Añadir la fila 0015 en «Patches» del roadmap y la entrada del changelog.
+- Mergear a `develop`.
+
+Dime «cierra» y lo hago.
+

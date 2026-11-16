@@ -1,0 +1,37 @@
+--- [5]
+### Strengths
+- The change is small and contained. It adds one export and one dispatcher line (`ocupacion`) that follow the file's existing pattern.
+- The UI text is in castellano, with correct singular/plural handling ("reserva"/"reservas").
+- `occupancyReport` is 26 lines, under the 30-line limit.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+- **`src/app.js:34`**: the comment `// incrementa count` repeats `count++`. The brief treats a comment that repeats the code as Important. Delete it.
+- **`src/app.js:28,45`**: `const now = 'hoy'` is a hard-coded literal, not a date, and it is printed as `(hoy)` in the total line. The output carries no information, and the name `now` promises a timestamp it doesn't hold. Remove it, or use a real date if the report needs one.
+- **`src/app.js:25`**: there are no tests for `occupancyReport` or the `ocupacion` command. The commit touches only `src/app.js`. These cases are unverified:
+  - the singular/plural label;
+  - the `canceladas` line;
+  - the zero-total branch;
+  - the dispatcher entry.
+
+#### Minor
+- **`src/app.js:29-37`**: the per-room count is a nested loop with two `continue`s. `bookings.filter(b => b.room === room && b.status === 'active').length` would be shorter and would match the style of the rest of the file. A helper that does the counting would also separate it from the formatting. This is a possible Refactoring "Long Method" smell, but the length constraint is met, so I'm not reporting length.
+
+### Recommendations
+- Add tests in `test/` for the report's branches.
+- Extract a small counting helper, then simplify the function.
+
+### Declined to judge
+- There is no spec or plan in the package, so I did not check whether the report format matches a requirement. That belongs to the Spec axis.
+- `ocupacion` is not added to the README or capabilities docs (`.docs/sdd/capabilities/reports.md` exists). Documentation coverage is a Spec/Architecture matter.
+- The `rooms` and `bookings` globals are shared in-memory state, which ADR 0003 records. That is an Architecture decision, so I did not judge it.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the size limit. The redundant comment, the placeholder `now = 'hoy'` and the missing tests should be fixed first.
+

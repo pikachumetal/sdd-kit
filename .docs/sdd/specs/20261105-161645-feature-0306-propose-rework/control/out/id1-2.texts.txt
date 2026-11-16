@@ -1,0 +1,142 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, config y capacidades). Queda: clasificar y presentar el anuncio, ~2 min.
+
+--- [15]
+Ahora: reservo y compruebo el id 0012 contra el remoto. Queda: anuncio, entrevista, spec con revisión y la parada de aprobación, ~10 min.
+
+--- [41]
+Ahora: pruebo el delta sobre una copia de `.docs/sdd` en una carpeta temporal. Queda: lanzar los dos revisores y presentar la spec.
+
+--- [47]
+Ahora: lanzo los dos revisores de la spec en paralelo (dominio y técnica, ambos en Sonnet), cada uno con su vigilancia de silencio. Queda: integrar los hallazgos y presentar la spec, ~6 min.
+
+--- [58]
+Los dos revisores de la spec (dominio y técnica) siguen trabajando, cada uno con su vigilancia de silencio. No sé qué han encontrado hasta que terminen.
+
+Lo hecho hasta ahora:
+- **Id:** la 0012 ya estaba cogida en `origin/develop` por «Informe de ocupación». `sdd id claim` pasó esta feature a **0013** y la rama es `feature/0013-export-csv`. En `develop` la fila del roadmap ya dice 0013.
+- **Spec:** escrita en `.docs/sdd/specs/20261106-100417-feature-0013-export-csv/spec.md`, con la capacidad nueva `booking-export` y 5 requisitos. Probé el delta sobre una copia de `.docs/sdd` y se fusiona y valida bien.
+- **Decisiones mías (✋):** las 15 están en la spec, por ejemplo el comando `exportar [ruta]`, las columnas `sala,dia,franja,estado` y que salgan todas las reservas, también las canceladas y anuladas.
+- **Fusión:** tu «al fusionar, `sdd merge --push`» queda registrado en «Decisiones tomadas con el dev-lead».
+
+Avisos:
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he seguido traen referencias de la 3.x, pero conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+- El proyecto conserva la estructura de documentos anterior a 3.0.0 (artefactos en `specs/`), así que la spec va ahí y no en `changes/`.
+
+Cuando vuelvan los revisores integro sus hallazgos en la spec. Después te la presento con su 🦆 y la pregunta de aprobación, y paro ahí.
+
+--- [59]
+1. Importante · Delta de comportamiento (`booking-export`) / Decisiones 4 y 9 · Los literales `activa`, `cancelada` y `anulada` no tienen ningún THEN que los fije por sí solo, y no hay ningún PRODUCT.md ni capacidad que los respalde. La decisión 4 dice que PRODUCT.md fija «Cancelación» y «Anulación», pero esa fuente no se ha leído aquí, y no consta que `anulada` o `cancelada` sean el término del dominio. · Citar la sección exacta de PRODUCT.md que define esos dos estados. Si PRODUCT.md no los nombra así, cambiar los literales o declararlos en «Reglas de la capacidad» como decisión propia.
+
+2. Importante · Decisión 11 / «Reglas de la capacidad» (5 bis) · La spec dice «no aplica» sin más, y además no tiene sección «Reglas de la capacidad». El delta sí trae datos nuevos: el formato del fichero, la cabecera, los nombres de columna y literales de estado, la ruta por defecto `reservas.csv` y la regla de conflicto «sobrescribe sin preguntar». Cada una de las cinco reglas debe quedar declarada o marcada «no aplica» con su motivo. La justificación «la constitución no define Reglas de producto» no vale como valor: la constitución tiene 4 artículos y ninguna sección de reglas de producto. · Añadir «Reglas de la capacidad» con las cinco reglas por nombre. Datos: dónde vive el dato (memoria, fichero en el directorio de lanzamiento). Idioma: castellano, sin acentos en la cabecera pero con acentos en los valores (`mié`). Límites: sin tope de filas. Avisos: ninguno, y justificar que sobrescribir sin avisar es deliberado. Conflicto: sobrescribir.
+
+3. Importante · Delta de comportamiento / Decisión 7 · La regla de conflicto «sobrescribe» solo aparece como decisión de diseño. En el delta, el THEN comprueba el contenido, pero no cubre la ruta indicada que ya existe, ni qué pasa si la ruta no se puede escribir. Es una condición de conflicto nueva, y la spec no declara qué ocurre. · Añadir un escenario para el fallo de escritura (ruta inexistente o sin permiso) con su mensaje en castellano, o declarar en la spec que queda fuera con un motivo.
+
+4. Importante · Scope vs Delta · El Scope incluye el comando `exportar [ruta]`, pero el delta solo prueba `exportar reservas.csv` y `exportar` sin ruta. Ningún escenario cubre una ruta distinta de `reservas.csv`, que es lo que justifica el parámetro `[ruta]` y la salida «la ruta que se usó». La decisión 9 promete que el mensaje lleva «el número y la ruta que se usó», pero el único THEN fija `reservas.csv`. · Añadir un escenario con una ruta distinta y su mensaje, o quitar `[ruta]` del Scope.
+
+5. Importante · Decisión 15 / Delta · La decisión 15 dice que `sdd capability merge` «añade los 5 requisitos», pero el delta no cubre los estados de forma aislada. La decisión 3, «salen todas las reservas aunque estén canceladas o anuladas», es el contrato central del Intent y solo se prueba dentro del primer escenario, mezclado con el orden. El Intent dice que «fracasaría si dejase fuera las canceladas sin decirlo», pero no hay un THEN que lo fije por separado. · Separar un escenario que fije «las canceladas y anuladas salen con su estado» del escenario del orden.
+
+6. Menor · Delta, escenario «Un campo con coma…» · El escenario mezcla dos casos, coma y comilla, bajo un solo GIVEN. El AND sobre `La "Sur"` no tiene GIVEN propio. Además, el salto de línea, que el título y la decisión 6 declaran, no tiene ejemplo. · Dividir en escenarios con su GIVEN, y añadir un ejemplo con salto de línea o quitarlo del título y de la decisión 6.
+
+7. Menor · Decisión 9 / Delta, escenario del comando · El mensaje `exportadas 1 reservas` no concuerda en plural, y la spec lo reconoce. Queda como texto de interfaz con un error gramatical fijado en un THEN, y la constitución (art. 4) pide castellano, no castellano correcto. Se vuelve contrato público. · Cambiar a una fórmula sin plural, como `reservas exportadas: 1 en reservas.csv`, o aceptar el error de forma explícita como límite conocido en la decisión.
+
+8. Menor · Decisión 12 / Intent · El Intent habla de «sacar las reservas del programa», pero las reservas viven solo en memoria con una reserva de arranque. Cada lanzamiento de `salas exportar` exportará siempre esa única reserva inicial, así que el éxito del Intent, «filas de datos igual a reservas», no se puede ver nunca con datos reales. El «Hoy no hay forma de sacar las reservas del programa» queda sin utilidad real. · Declarar en el Intent esa limitación, o decidir con el dev-lead si la feature tiene sentido sin persistencia.
+
+9. Menor · Decisión 5 / Delta · La cabecera `sala,dia,franja,estado` usa `dia` sin acento, y los datos llevan `mié`, con acento. La spec dice «UTF-8 sin BOM» y que el dev-lead comprobará los acentos en la hoja, pero Excel suele abrir CSV sin BOM como ANSI, con lo que `mié` saldría mal. El Intent promete «columnas que se leen sin tocar nada». · Reconocer el riesgo en la decisión 5 con un criterio de validación, o decidir con BOM.
+
+10. Menor · Decisión 15 · La spec cuenta cómo se probó el delta con comandos del kit y menciona el número de requisitos y de capacidades válidas. Esos datos son de proceso, no de dominio, y la cifra «5 requisitos» ya queda vieja si se añade algún escenario de los pedidos arriba. · Quitar la cifra o actualizarla tras las enmiendas.
+
+--- [61]
+Ha vuelto el revisor de dominio y falta el técnico, así que espero a que termine antes de integrar los hallazgos en la spec.
+
+--- [62]
+1. Crítico · Delta «El CSV lleva una fila por reserva» (THEN) · Dice «separadas por `\n`», pero no fija si el contenido termina en `\n`. La decisión 5 dice «sin línea final en blanco extra», que es ambiguo, porque «extra» puede entenderse como que un `\n` final sí es válido. Con los tres escenarios de cabecera y filas, dos implementaciones distintas pasan o fallan según cómo se lea. · Escribir en el THEN que el contenido no acaba en `\n` (`lines.join('\n')` sin salto final) y reformular la decisión 5 como «sin salto de línea tras la última fila».
+
+2. Crítico · Delta «Sin reservas, solo la cabecera» · «`sala,dia,franja,estado` y nada más» no dice si lleva `\n` final. Con la decisión 5 ambigua, el test no distingue `cabecera` de `cabecera\n`. · Fijar el literal exacto sin salto final y decirlo en el THEN. Añadir que el fichero escrito por el comando tiene esos mismos bytes.
+
+3. Importante · Delta «Un campo con coma, comilla o salto de línea va entrecomillado» · El título y la decisión 6 prometen escape de salto de línea, pero ningún THEN lo verifica. Falta un caso con `\n` dentro del campo (`"a\nb"`). La propia sección «Técnica» de la review de spec anuncia que ese caso está cubierto. Tampoco hay caso de un campo `estado` o `dia` con coma, ni de `\r`. · Añadir un AND con una sala que contiene un salto de línea y su salida exacta (`"Sala\nX",lun,...`). Decidir si `\r` también se entrecomilla.
+
+4. Importante · Delta «El comando escribe el fichero y lo dice» · El escenario mezcla `exportar reservas.csv` y `exportar` sin ruta en un solo WHEN con un único THEN. Con ruta se escribe `reservas.csv`, pero sin ruta el destino es el cwd del proceso, y el escenario no lo verifica ni lo hace verificable. «Dónde se prueba» solo cubre `run('exportar', [ruta])` en carpeta temporal. El caso sin ruta, que es el que usa la decisión 1, no tiene test posible sin `process.chdir`. · Separar en dos escenarios (con ruta, sin ruta) y decir cómo se prueba el segundo (`chdir` a carpeta temporal, restaurado al acabar), o quitar la promesa del default de la spec.
+
+5. Importante · Delta «El comando escribe el fichero y lo dice» · El mensaje `exportadas 1 reservas en reservas.csv` solo se verifica con ruta `reservas.csv` y una reserva. No hay caso con otra ruta que demuestre que se imprime «la ruta que se usó» (decisión 9), ni con 0 o 2 reservas que demuestre el número. Un `1` o `reservas.csv` fijos pasarían el test. · Añadir un escenario con ruta distinta (`out/x.csv`) y N distinto de 1, con el mensaje exacto.
+
+6. Importante · Delta «El CSV lleva una fila por reserva» · El `mié` con acento aparece en el THEN, pero lo que se prueba es una cadena JS, no los bytes. La decisión 5 promete UTF-8 sin BOM y el escenario del fichero no lo verifica. El dev-lead valida por los acentos y ningún THEN comprueba los bytes del archivo (`EF BB BF` ausente, `mié` como `6D 69 C3 A9`). · Añadir un AND al escenario del comando: el fichero leído como `Buffer` empieza por `sala` (sin BOM) y contiene los bytes UTF-8 de `mié`. Incluir una fila con `mié` en el escenario del comando.
+
+7. Importante · Decisiones (cuerpo) vs «✋ Decisiones que he tomado yo» · El Approach y el Scope fijan cosas que no están en la lista: `writeFileSync` síncrono con codificación implícita; qué pasa si la ruta no existe o es un directorio (error no especificado, sin escenario); `exportBookings()` vive en `src/app.js` y no en un módulo propio; orden «en que se crearon», que depende del orden del array en memoria. · Añadir a la lista las decisiones de comportamiento ante error de escritura (carpeta inexistente, directorio, permisos) y de codificación explícita `utf8`, con un escenario para el error.
+
+8. Importante · Decisión 7 y delta «Exportar de nuevo sobrescribe» · Se sobrescribe sin preguntar un fichero que puede ser cualquiera, porque `[ruta]` es libre (`exportar src/app.js` lo pisaría) y el contrato afecta a datos del usuario fuera del proceso. La justificación «el dato no se pierde porque viene de las reservas» solo vale para un `reservas.csv` previo, no para una ruta arbitraria. Tampoco se dice qué pasa con la ruta relativa cuando el cwd varía. · Acotar la decisión (por ejemplo, sobrescribe cualquier ruta dada, asumido por ser herramienta personal) y decirlo explícitamente, o rechazar rutas que no acaben en `.csv`.
+
+9. Menor · Decisión 4 y escenario 1 · Los estados `activa`/`cancelada`/`anulada` se prueban solo cada uno una vez y por cadena exacta. La spec no dice qué hace `exportBookings()` con un estado interno desconocido, ni si el mapeo falla en alto o sale vacío. · Decir en la decisión 4 que un estado fuera de los tres es error (o salida literal), de modo que no sea comportamiento implícito.
+
+10. Menor · Decisión 15 / Decisión 12 · La decisión 15 afirma que `sdd capability merge` añade «los 5 requisitos» y que `check` da 1 capacidad válida sobre una copia. Es una prueba hecha por quien redacta, no verificable desde la spec. En la 12, «una sola reserva de arranque» es un dato en memoria que condiciona el escenario del comando, porque «GIVEN la reserva `Norte lun 10:00-12:00` activa» depende de ese arranque y no se dice cómo se fija en el test. · Decir en «Dónde se prueba» que los tests fijan `bookings` explícitamente (vaciar o sembrar) y no dependen de la reserva de arranque.
+
+--- [64]
+Ahora: integro los hallazgos en la spec. El revisor técnico dio dos Críticos —el `\n` final no estaba fijado— y los acepto, así que habrá segunda ronda con un revisor más. También paro las dos vigilancias.
+
+--- [67]
+Las dos vigilancias ya habían terminado solas, así que no hay nada que parar. Reescribo la spec con los hallazgos integrados.
+
+--- [70]
+Ahora: repito la prueba del delta sobre una copia y lanzo la segunda ronda (un revisor Sonnet con los siete puntos).
+
+--- [81]
+El delta ya se fusiona (10 requisitos y las 5 reglas) y valida bien sobre la copia. El `capabilities/` del repo sigue sin crearse.
+
+Espero al revisor de la ronda 2 antes de presentar la spec; sin su resultado no puedo cerrar el bloque de hallazgos.
+
+--- [82]
+1. Importante · Delta, «Sin ruta» y «Exportar de nuevo sobrescribe» · No hay ningún escenario donde el comando escriba `reservas.csv` con `process.chdir` y se compruebe que no quedó nada a medias. Además, «Exportar de nuevo sobrescribe» no fija el contenido «otro contenido» ni cuál es el CSV actual, así que el THEN no se puede verificar sin inventar datos. · Dar un contenido concreto al fichero previo (por ejemplo `viejo\n`) y fijar el CSV esperado con las reservas del GIVEN. Decir también cómo se parte de `bookings` en ese caso.
+
+2. Importante · Delta, «Si la ruta no se puede escribir» · «No crea ningún fichero» solo se comprueba en el caso de la carpeta inexistente. La decisión 9 promete lo mismo para un directorio y para «sin permisos», y esos casos no tienen THEN. «Sin permisos» ni siquiera es fiable en Windows ni como root. · Quitar «un directorio, sin permisos» de la decisión 9, o añadir un escenario para la ruta que es un directorio. Dejar «sin permisos» fuera del compromiso.
+
+3. Importante · Delta, «Canceladas y anuladas» y «Dónde se prueba» · Los GIVEN dicen «cancelada» y «anulada», pero el estado interno es `cancelled` o `voided` (decisión 4). Nada dice cómo fijar un estado interno desconocido. La decisión 4 promete «sale tal cual, sin error» y no tiene escenario. · Añadir un escenario con un estado interno desconocido (por ejemplo `foo`) y el THEN con ese literal. En los GIVEN, escribir los estados internos y su salida.
+
+4. Importante · Delta, «Un salto de línea en un campo» · El THEN usa `\n` en dos sentidos: el literal de dos caracteres, en `"Sala\nX"`, y el salto real. El AND de `\r` no lleva fila ni literal, y se verifica con lo que el tester interprete. · Dar el THEN del `\r` con su fila exacta (`"Sala\rX",lun,10:00-12:00,activa\n`) y decir si `\n` y `\r` son caracteres de control o los dos caracteres escritos.
+
+5. Importante · Decisión 4 y Delta · El valor `activa` casa con las salas de arranque, pero la spec no dice qué literal interno tiene el estado «activa». Todo el comportamiento de «Cancelación» y «Anulación» se apoya en nombres internos (`active`, `cancelled`, `voided`) que se afirman sin haber leído código ni PRODUCT.md. · Marcar esos nombres internos como asunción a confirmar en el plan, o citar de dónde salen.
+
+6. Importante · Decisión 9 y escenario «Si la ruta no se puede escribir» · «No deja ningún fichero a medias» obliga a escribir en un temporal y renombrar, o a comprobar antes. Con `writeFileSync(ruta, texto, 'utf8')` (decisión 16), el fallo ocurre antes de crear nada solo si falta la carpeta. Hay una contradicción entre las decisiones 9 y 16. · Cambiar la decisión 9 a «no crea el fichero cuando falla la apertura», o decir cómo se garantiza la atomicidad.
+
+7. Menor · «Hallazgos de la review», línea 58, y decisión 15 · «Segunda ronda... Su resultado, abajo» queda colgado, porque no hay resultado debajo. La decisión 15 afirma que el delta se probó con `sdd capability merge` y `sdd capability check`, pero la spec está en `draft` y no se ve evidencia. · Quitar «Su resultado, abajo» o rellenarlo. Anotar en la decisión 15 que la comprobación está pendiente hasta que se repita.
+
+8. Menor · Numeración del bloque ✋ · Las decisiones 1 a 16 aparecen en una lista numerada pegada a «Review de spec propuesta» y a «Hallazgos». La política de modelos queda como viñeta suelta tras la 16 y no es una decisión numerada. El encabezado «Segunda ronda» anuncia a un revisor Sonnet, pero la política de modelos habla de un «tercero». · Separar la política de modelos en su propia línea bajo un encabezado. Unificar «segunda ronda» y «tercero».
+
+9. Menor · «Reglas de la capacidad», «Límites» y «Avisos» · «Sin tope de filas» y «Avisos: ninguno» no tienen ningún escenario que las verifique. «Regla ante conflicto» sí tiene los THEN. · Reconocer que «Límites» y «Avisos» no tienen escenario, o apoyarlas con uno (por ejemplo, N filas).
+
+10. Menor · Scope e Intent · El Scope lista «la mención en el changelog al cerrar» y el Intent no la menciona. La decisión 13 sobre la renumeración no tiene efecto sobre el contenido, y el roadmap `.docs/sdd/roadmap.md:9` se cita sin haberlo leído aquí. · Mover la decisión 13 a una nota fuera de ✋, y confirmar la línea del roadmap con una lectura real.
+
+--- [84]
+La ronda 2 no trae ningún Crítico, así que no hay tercera ronda. Integro los hallazgos: acepto la mayoría y rechazo tres con motivo.
+
+--- [93]
+Ahora: repito la prueba del delta con las últimas enmiendas y compruebo que no quedan referencias colgadas. Queda: presentar la spec con su 🦆 y la pregunta de aprobación.
+
+--- [96]
+La spec 0013 está lista para aprobar. Las dos rondas de revisión están integradas y el delta se fusiona y valida sobre una copia de `.docs/sdd`.
+
+Hasta que respondas no escribo el plan ni toco código. Aunque el perfil sea `delegate`, sin tu «apruebo» la spec queda en espera.
+
+🦆 Hoy las reservas solo se ven una a una. Con esta feature, `salas exportar` escribe `reservas.csv` con una fila por reserva, por ejemplo `Norte,lun,10:00-12:00,activa`. Salen todas, también las canceladas y anuladas, con su estado. Si la ruta no se puede escribir, el comando responde `no se pudo escribir <ruta>`. Un límite que ya existe: las reservas viven solo en memoria, así que hoy cada exportación sale con la reserva de arranque.
+
+La spec está en `.docs/sdd/specs/20261106-100417-feature-0013-export-csv/spec.md`, con la capacidad nueva `booking-export` (10 escenarios y las 5 reglas).
+
+**✋ Decisiones que he tomado yo, las que más pesan:**
+- **Comando:** `exportar [ruta]`; sin ruta, escribe `reservas.csv` en la carpeta de lanzamiento.
+- **Columnas:** `sala,dia,franja,estado`, sin columna de persona porque la reserva no guarda a quien la pide.
+- **Estados:** `activa`, `cancelada` y `anulada`; un estado desconocido sale tal cual.
+- **Formato:** coma como separador, `\n` tras cada línea incluida la última, UTF-8 y **sin BOM**. Un campo con coma, comilla o salto de línea va entrecomillado.
+- **Sobrescribir:** el fichero se pisa sin preguntar, sea cual sea la ruta.
+- **Textos nuevos:** `reservas exportadas: <n> en <ruta>` y `no se pudo escribir <ruta>`.
+- **Riesgo para tu validación:** Excel en configuración regional española puede abrir el CSV sin BOM como ANSI y romper `mié`, o pedir `;`. Lo primero que mirarás al validar es esto; el cambio sería una feature aparte.
+
+**Review:** acepté la mayoría de los hallazgos de ambas rondas. Los dos Críticos eran de la técnica y pedían fijar el `\n` final; ya está fijado. Rechacé tres con motivo, todos recogidos en la spec:
+- Los literales de estado sin respaldo en PRODUCT.md.
+- Añadir el BOM.
+- Escenarios para «Límites» y «Avisos».
+
+Nota de proceso: la 0012 estaba cogida en `origin/develop` por «Informe de ocupación», así que esta feature es la 0013. Al fusionar usaré `sdd merge --push`, como pediste.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué cambiar, por ejemplo columnas, `;` en vez de coma, BOM o no sobrescribir.
+

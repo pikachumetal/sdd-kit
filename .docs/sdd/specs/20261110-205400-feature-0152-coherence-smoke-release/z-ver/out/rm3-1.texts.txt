@@ -1,0 +1,61 @@
+--- [7]
+No, this branch isn't ready to merge. `anular` still leaves a notice for the responsable in `outbox`, which is exactly what the spec's REMOVED requirement says must go. I reviewed the 61-line package and checked it against the spec, plan, ADR 0003, the `bookings` capability, `src/app.js` at HEAD and the existing tests. I made no changes to the checkout.
+
+### Strengths
+- The change is small and stays on `voidBooking` (`src/app.js:14-20`), as the plan says. `anular-todas` is untouched, which matches the spec's «No entra».
+- The confirmed reply «anulada <sala> <día>» (✋ decision 1) is kept, and `test/void.test.js:5-7` checks it through `run`, the way «Dónde se prueba» asks.
+- The old `formatMail` helper and its «(enviado por correo)» suffix are gone, and nothing else still uses them.
+- The code constraints hold: interface text is in Spanish and the diff adds no comments.
+
+### Issues
+
+#### Critical (Must Fix)
+1. **The notice still goes out when you void a booking.** `src/app.js:18`
+   - **What's wrong:** `voidBooking` still pushes `{ to: 'responsable', body: 'anulada <sala> <día>' }` into `outbox`. The diff only changed the shape of the message: it dropped `subject` and the «(enviado por correo)» suffix.
+   - **Concrete case:** run `anular Norte lun`, then `salida`. You get `responsable: anulada Norte lun`, so the responsable is still sent the notice.
+   - **Why it matters:** this is the one behavior the feature exists to remove.
+   - **Fix:** delete the `outbox.push(...)` line from `voidBooking`.
+   - **Gap:** `contradicts`.
+   - **Source:** REMOVED — «Avisar por correo», capability `bookings`.
+
+#### Important (Should Fix)
+2. **The dev-lead's decision is only half covered.** `src/app.js:18`
+   - **The decision:** «El aviso por correo al anular desaparece».
+   - **What the rule leaves out:** the diff only changes how the notice is written. The notice itself is still queued and still shown by `salida`.
+   - **Fix:** the same as issue 1.
+   - **Gap:** `partial`.
+   - **Source:** «Decisiones tomadas con el dev-lead».
+3. **The test is named for something it doesn't check.** `test/void.test.js:5-7`
+   - **What's wrong:** the name «anular responde sin aviso» says there's no notice, but the test only checks the return string. It never looks at `outbox` or `salida`, so it passes with the Critical bug in place. «Dónde se prueba» names this file as the proof for «Anular sin aviso», so the one verification the spec asks for is missing.
+   - **Fix:** add `assert.equal(outbox.length, 0)` after the call, or `assert.equal(run('salida', []), '')`. The test would then fail until issue 1 is fixed.
+   - **Gap:** `partial`.
+   - **Source:** «Dónde se prueba — Anular sin aviso».
+
+#### Minor (Nice to Have)
+4. **Spec problem: the REMOVED requirement isn't in the capability file.** `.docs/sdd/capabilities/bookings.md` lists only «Anular una reserva». There is no «Avisar por correo» requirement there, even though the stated purpose mentions «lo que se avisa al hacerlo». When the delta is merged, it will remove a requirement that doesn't exist. The executor should check whether the notice requirement was lost when the 0024 delta was merged (`449958b`), or whether the delta should say MODIFIED on «Anular una reserva» instead.
+   - **Gap:** `partial`. **Source:** the spec's delta.
+5. **The plan doesn't match the spec.**
+   - The plan's front matter says `status: draft` while the spec is `approved`.
+   - The plan says «Ejecución: native, porque es una task», but the spec is a `mode: full` feature.
+   - These are plan-hygiene points, not code problems.
+
+**ADR 0003 (accepted):** its Confirmación is met: `src/` doesn't import `node:fs` or any database package.
+
+### Declined to judge
+- **`salida` and `outbox` once the notice is gone:** after the fix, nothing writes to `outbox` any more, so `salida` always returns an empty string. Whether to remove that command is outside this spec's scope, and only «anular» is in. The executor should decide.
+- **`test/cancel.test.js` and the second test in `test/app.test.js`:** they call `cancelar` and `reservar`, which `run` doesn't handle (it returns `'salas'` for both). That code was already there before this branch.
+- **`voidBooking` is still exported:** whether it should be is a code-quality question for another axis.
+
+### Not verified
+- That `test/void.test.js` passes: I didn't run it, as the brief says. The package includes no task report with test evidence, so I can't count it as passing.
+
+### Recommendations
+- Fix issue 1, then strengthen the test as in issue 3 so it would have caught the bug. The main thread should run `node --test` across the whole suite afterwards.
+- Before archiving, settle the capability text for the notice requirement (issue 4).
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** `anular` still queues a notice to the responsable and `salida` still shows it, which contradicts the REMOVED requirement and the dev-lead's decision. The test named for that behavior doesn't check it, so it can't catch the problem.
+

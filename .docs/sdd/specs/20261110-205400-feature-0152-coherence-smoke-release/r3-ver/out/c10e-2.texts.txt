@@ -1,0 +1,103 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`. Queda: leer los dos informes y decidir, ~3 min.
+
+--- [17]
+Ahora: paso de fix único con los 3 hallazgos (1 Important y 2 Minor; `minors: fix`), primero los tests en RED. Queda: arreglar, correr la suite y anotar el ledger, ~4 min.
+
+--- [23]
+Diff mínimo y suite 6/6. Commit del fix, ledger y `tasks.md`.
+
+--- [26]
+Ahora: la re-revisión única de la pasada de fix (código, no solo docs). Queda: leer su brief y lanzarla, ~5 min.
+
+--- [40]
+La re-revisión del fix está en marcha en segundo plano; aún no tengo su veredicto.
+
+**Hallazgos de la revisión final (los dos informes):**
+- **Código, Important:** `reasonOf` conservaba los espacios del motivo, así que `sala ocupada ` se rechazaba. Arreglado recortando el motivo.
+- **Código, Minor:** el ` — ` de `canceladas` se rompe en consolas cp850. Arreglado con ` - `.
+- **Spec, Minor:** el test de `canceladas` dependía de que corriera antes el de `cancelar`. Ahora cancela dentro del propio test.
+
+La revisión de Spec no tenía Critical ni Important, y el eje de Arquitectura no salió (`no` en el plan, sin señales en el diff).
+
+**Pasada de fix (`0c0b9b7`):**
+- Los dos tests nuevos o cambiados fallaban antes del fix y pasan después. La suite completa da 6/6 con `node --test`.
+- Los ficheros eran CRLF; los dejé así, y el diff queda en 8 líneas añadidas y 3 quitadas.
+- El ledger (`progress.md`) y `tasks.md` están actualizados: la línea de `Revisión final:` y la de `Pasada de fix:`. También corregí el commit de la Task 1 a `581162b`.
+- `tasks.md` sigue sin commitear.
+
+**Siguiente paso:** cuando vuelva la re-revisión (`sdd-kit:effort-high` + `opus`, sobre `67f6efb..0c0b9b7`), anoto su línea `Re-revisión:` en `tasks.md`. Si deja algo abierto, lo trato como pide `closing-the-review.md`. Después retiro el worktree `review-0010-0c0b9b7` y sigo con `sdd-archive`.
+
+--- [46]
+El vigía de silencio (`sdd watch subagent`) terminó con código 1 y sin ningún mensaje, así que no sé por qué falló. No es un aviso de silencio del subagente: es el propio comando el que cayó.
+
+La re-revisión sigue en marcha, pero sin vigía. Si se cuelga, no me avisará nadie. Por eso no doy nada por devuelto hasta que llegue su notificación. Si tarda más de lo normal, la relanzo una sola vez, como indica la regla de la silencio.
+
+Sigo esperando el veredicto de la re-revisión. Cuando llegue, anoto la línea `Re-revisión:` en `tasks.md`, retiro el worktree `review-0010-0c0b9b7` y paso a `sdd-archive`.
+
+--- [48]
+**Finding 1 [Code, Important] `src/app.js:14-17`, reason not trimmed: ADDRESSED.**
+`src/app.js:16` now returns `params[index + 1]?.trim()`. So `' sala ocupada '` passes the `reasons.includes` check at `src/app.js:20`. Validation still holds:
+- An off-list reason still gets «motivo no válido…».
+- With no `--motivo`, `reasonOf` returns `undefined`, so the answer is «motivo no válido…».
+- With `--motivo` as the last argument, `params[index + 1]` is `undefined`. The `?.` stops a TypeError, and the answer is «motivo no válido…».
+- A blank value (`"   "`) becomes `''`, which is not in the list, so the answer is «motivo no válido…».
+
+The regression test is `test/cancel.test.js:13-15`. It fails before the fix («motivo no válido…») and passes after («sin reserva Sur mar»), so it does tell the two apart. It is weak, though (see Out-of-Scope).
+
+**Finding 2 [Code, Minor] `src/app.js:36`, the ` — ` separator on a cp850 console: ADDRESSED in code.**
+`src/app.js:36` now joins with ` - `. That matches the decision taken with the dev-lead at `spec.md:29`: «`canceladas` separa con ` - `… `Norte lun - sala ocupada`». The spec was not updated to match, though. See New Breakage.
+
+**Finding 3 [Spec, Minor] `test/cancel.test.js:13`, the `canceladas` test depends on test order: ADDRESSED.**
+`test/cancel.test.js:18` now cancels Norte lun itself before it lists.
+- Run alone: the cancel succeeds and the list is `Norte lun - sala ocupada`.
+- Run after test 1: the second cancel answers «sin reserva Norte lun». That return value is ignored, and the list still holds exactly one entry.
+
+So the test passes either way.
+
+## New Breakage in the Fix Diff
+
+- **Important (Spec): the THEN at `spec.md:63` no longer matches its test at `test/cancel.test.js:17-19`.**
+  - The THEN still says «Norte lun — sala ocupada», with an em dash.
+  - The fix changed this existing test's expected string from `'Norte lun — sala ocupada'` to `'Norte lun - sala ocupada'`. It also added a setup line (`test/cancel.test.js:18`).
+  - This test came from Task 2. It is not new, so the thread's claim that it was a "new test" is wrong. Changing its assertion and adding a line of data counts as modifying a RED test.
+  - `spec.md:65-67` still records «Enmiendas: (ninguna)».
+  - The spec already contradicted itself (line 29 says ` - `, line 63 says `—`). The fix moved the code and the test to the line-29 side but did not correct the THEN. As a result, the second THEN of 0010 has no test that checks what it says.
+  - The code is right and matches the dev-lead decision. What's missing is an amendment that changes `spec.md:63` to «Norte lun - sala ocupada» and records the test change. The code should not be reverted.
+- The first THEN («cancelada Norte lun (sala ocupada)») still has its test at `test/cancel.test.js:5-7`, unchanged.
+- No other breakage. All user-facing text is still in Spanish.
+
+## Out-of-Scope Observations
+
+- **Minor:** the new test at `test/cancel.test.js:13-15` only shows that the trimmed reason gets past the check («sin reserva Sur mar»). It never cancels a booking, so it doesn't show that the reason is saved or shown trimmed («cancelada … (sala ocupada)»).
+- **Minor:** the bookings list is shared module state. Test 4 now works alone, but test 1 (`test/cancel.test.js:5-7`) would answer «sin reserva Norte lun» if test 4 ran before it. Node runs them in file order, so this only matters if the tests are reordered or shuffled.
+- **Minor, pre-existing:** the AND «sin `--motivo` responde lo mismo» (`spec.md:58`) has no test in `test/cancel.test.js` or `test/app.test.js`.
+
+## Verdict
+
+**Fix round:** Findings remain open. All three findings are fixed in the code. But the fix leaves an Important spec mismatch: `spec.md:63` still expects «—», while the modified test and the code use « - ». It needs a spec amendment.
+
+--- [53]
+Diff de 2 líneas, solo documentación: lo leí yo y lo commiteo como `revisado en el hilo`. Luego ledger, `tasks.md` y limpieza del worktree.
+
+--- [55]
+✋ La implementación de la 0010 está terminada y la suite da 6/6 (`node --test`). Antes de cerrar con `sdd-archive`, tienes que revisar la enmienda de la spec, que hice sin tu aprobación.
+
+**Enmienda sin aprobar (`7001907`).** La re-revisión encontró un Important que traía mi propio fix. El test de `canceladas` y el código ya usaban ` - `, pero el THEN de `spec.md:63` seguía diciendo «Norte lun — sala ocupada», con raya. Lo cambié a «Norte lun - sala ocupada» y lo anoté en «Enmiendas» como `sin aprobar`. Es la decisión que ya constaba en la spec, en «Decisiones tomadas con el dev-lead»: «con guion normal, que en recepción la raya sale rota». Son 2 líneas de documentación y las revisé yo, sin subagente.
+
+**Qué cambió desde la revisión final:**
+- **Código (Important):** el motivo se recorta antes de validarlo, así que `sala ocupada ` ya no se rechaza.
+- **Código (Minor):** `canceladas` separa con ` - ` en vez de ` — `.
+- **Spec (Minor):** el test de `canceladas` ya no depende del orden, porque cancela dentro del propio test.
+- **Commits:** el fix está en `0c0b9b7` y la enmienda en `7001907`.
+- **Estado:** el worktree de revisión está retirado, y `tasks.md` y el ledger están al día. `tasks.md` sigue sin commitear.
+
+**Pendiente, sin arreglar** (los dejé como `Ruling:` en el ledger, todos Minor):
+- El test del recorte solo comprueba que el motivo pasa la validación; no cancela una reserva ni comprueba que se guarda recortado.
+- Los tests comparten el estado de las reservas, así que dependen de ejecutarse en el orden del fichero.
+- El AND «sin `--motivo` responde lo mismo» no tiene test.
+
+**Vigía de silencio:** `sdd watch subagent` terminó con código 1 y sin mensaje. La re-revisión devolvió su informe igualmente.
+
+**Siguiente paso:** si apruebas la enmienda, sigo con `sdd-archive`. Si no, dime qué texto debe llevar el THEN.
+

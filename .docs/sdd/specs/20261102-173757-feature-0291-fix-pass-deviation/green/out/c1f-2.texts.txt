@@ -1,0 +1,70 @@
+--- [3]
+Ahora: retomo la 0010 tras la última task y leo los informes de la revisión final. Queda: cierre de la revisión, rulings y validación, ~10 min.
+
+--- [20]
+Estoy arreglando un efecto colateral de mi commit: reescribió los finales de línea de `src/app.js` y metió ruido de 48 líneas en el diff. Lo dejo con CRLF como estaba y vuelvo a probar.
+
+--- [35]
+Sigo esperando la re-revisión única (opus, en segundo plano) del fix `fe31a6e`. Ya tengo la pasada de fix commiteada, `tasks.md` con la revisión final y el ledger sin rulings. Cuando vuelva, anoto su veredicto, borro el workspace y paso a `sdd-archive`.
+
+Un detalle mío: en el encargo escribí mal la ruta del worktree de revisión (falta `c1f-2`). Si el revisor no encuentra el árbol, lo relanzo una sola vez con la ruta correcta.
+
+--- [37]
+The `review-0010-fe31a6e` directory does not exist. The repo in my working directory is at `fe31a6e` with HEAD clean apart from an untracked tasks.md, so I'll review read-only there.
+
+--- [46]
+### Finding Verdicts
+
+Note on location: `D:\code\.worktrees\sdd-kit\feature-0291-fix-pass-deviation\.temp\sdd\spec\runs\green\review-0010-fe31a6e` does not exist. I reviewed read-only in `<run>\repo` instead. That repo has HEAD at `fe31a6e`, and `git log` without `--all` shows nothing after it. The only untracked file is `tasks.md`, and running the tests left the tree unchanged.
+
+1. **Code axis, Important: `reasonOf` kept the spaces around the reason. ADDRESSED.**
+   - The trim is in place at `src/app.js:16`: `return index === -1 ? undefined : params[index + 1]?.trim();`.
+   - `?.` keeps the earlier behaviour when `--motivo` is missing or is the last argument. The value is `undefined`, which fails the reasons check, so the reply is still «motivo no válido…», as the spec's "sin `--motivo`" THEN requires.
+   - The new test is at `test/cancel.test.js:64-67` (`'cancelar con un motivo con espacios alrededor'`, input `'sala ocupada '`, expects `'cancelada Norte lun (sala ocupada)'`). It fails without the trim: `'sala ocupada '` is not in `reasons`, so `cancelBooking` returns «motivo no válido: …». That matches the RED run in the fix report.
+   - It also only passes because of the isolation fix. Test 1 has already cancelled Norte lun, so with shared state this test would get «sin reserva Norte lun».
+
+2. **Spec axis, Minor: the `canceladas` test depended on test order. ADDRESSED.**
+   - `test/cancel.test.js:49-50` adds `freshRun`, which imports `../src/app.js?case=${n++}`. Each query string is a separate ESM module, so `bookings` gets a fresh copy every time.
+   - This is real isolation. All state in `src/app.js` (`bookings`, `rooms`, `reasons`) lives in that module, and it has no imports of its own that could share cached state.
+   - The `canceladas` test (`test/cancel.test.js:69-73`) now sets up its own GIVEN by cancelling Norte lun with «sala ocupada». It then asserts the spec's THEN exactly: «Norte lun — sala ocupada».
+   - The other assertions still match the spec's THENs: «cancelada Norte lun (sala ocupada)» at line 54 and «motivo no válido: cambio de planes, sala ocupada, otro» at line 60.
+   - I ran only `node --test test/cancel.test.js`: 4/4 pass.
+
+### New Breakage in the Fix Diff
+
+None.
+- The production change is one line and handles an `undefined` value.
+- The tests changed only to add the fresh import and the new case; the existing assertions are as before.
+- Test names and expected messages are in Spanish, so the Spanish-UI rule is met.
+
+### Out-of-Scope Observations
+
+- The spec's THEN «sin `--motivo` responde lo mismo: motivo no válido…» (`spec.md:54`) has no test in `test/cancel.test.js`. The gap predates this fix range. The behaviour is correct by reading the code (`reasonOf` returns `undefined`, which fails `reasons.includes`).
+- `voidBooking`/`anular` in `src/app.js` belongs to feature 0011, which this feature's scope leaves out. It comes from the base commit `d0baa4a`, not from this branch.
+
+### Verdict
+
+Both findings are addressed and the fix range adds no new problems. The fix pass is approved.
+
+--- [52]
+La revisión final de la 0010 está cerrada y limpia, pero el cierre se ha parado en el primer paso de `sdd-archive`. Hay un fichero sin commitear y todavía no has validado nada.
+
+No hay otras ramas `feature/*` ni `patch/*` abiertas, solo esta.
+
+**Revisión final**
+- **Hallazgos:** el eje Spec salió listo, con un Minor. El eje Código dio un Important: `reasonOf` no recortaba los espacios, así que `--motivo "sala ocupada "` se rechazaba. El eje Arquitectura no salió, porque el diff no tiene módulos ni dependencias nuevas.
+- **Fix:** commit `fe31a6e`. El test nuevo falló antes del `trim` y pasa después. El Minor era que el test de `canceladas` dependía del orden de los otros; ahora cada test importa `app.js` limpio.
+- **Suite:** 6 de 6 en verde.
+- **Re-revisión:** la única que se permite (opus, esfuerzo alto) aprobó los dos arreglos, sin roturas nuevas. Hubo un fallo mío: escribí mal la ruta del worktree de revisión. El revisor lo avisó y revisó el repo principal, que está en `fe31a6e`, así que la revisión es válida.
+- **Workspace:** borrado.
+
+**Rulings I made:** ninguno. El ledger no tenía ninguna línea `Ruling:`.
+
+**Deferred minors:** el THEN «sin `--motivo` responde motivo no válido» (`spec.md:54`) no tiene test. El código lo cumple, según la re-revisión. No lo añadí porque habría sido un commit nuevo sin revisar.
+
+**Para seguir con el cierre**
+1. **Cambios sin commitear:** el único es `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`. Es el registro de la feature, con la revisión final, la pasada de fix y la re-revisión. ¿Lo commiteo en la rama, lo descarto o paro? Recomiendo commitearlo, porque el cierre lo necesita.
+2. **Validación:** `sdd-kit.json` no tiene `validation.mode`, así que cuenta como manual. «Cierra» o una revisión limpia no valen como validación. Cuando resuelvas lo anterior te paso el mensaje con el guion de prueba (cancelar con motivo válido, con motivo inválido, con espacio final, y el listado de canceladas). Puedes validar diciendo qué probaste, o diferirlo con tu frase y un disparador.
+
+**No terminado.** Falta commitear `tasks.md`, tu validación, el walkthrough y el merge. No borres todavía el worktree `<run>/repo`.
+

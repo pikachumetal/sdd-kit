@@ -1,0 +1,106 @@
+
+=== RESULTADO (1 turnos, 0.0656751 $)
+Antes de empezar: el proyecto tiene aplicado el kit 2.3.3 y el kit cargado trae migraciones hasta la 2.3.4. ¿Quieres que las aplique ahora (sí/no)?
+
+- **Sí:** aplico la actualización con `sdd-upgrade` y después me pongo con el filtro por sala del comando `libres`.
+- **No:** voy directo al filtro por sala y no vuelvo a ofrecértelo en esta sesión.
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json && ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git ls-files | head -50
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+{"version": "2.3.3", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat package.json src/app.js test/app.test.js .docs/sdd/roadmap.md .docs/sdd/constitution.md .docs/sdd/specs/*0006-free/spec.md
+<<< {"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge
+
+=== RESULTADO (8 turnos, 0.1905075 $)
+Ahora: he leído el contexto y clasificado el cambio. Queda: que me confirmes el carril, y luego la spec corta (con su aprobación), el código y los tests, ~15 min.
+
+🦆 Hoy `libres <franja>` lista las salas libres en esa franja (`src/app.js`). Añadir un filtro por sala es hacer que `libres` acepte también una sala y diga solo si esa sala está libre, en vez de listarlas todas. Toca una función y un test en un único módulo, sin tocar datos.
+
+**Carril propuesto: lite** (spec corta, sin plan ni tasks). No es patch porque no hay un fallo que un test reproduzca: el formato del filtro es una decisión mía y tuya. Cumple las condiciones de lite una a una:
+
+- El flujo ya existe y se lee: `freeRooms` y la rama `libres` de `run`.
+- No cambia contratos públicos: solo añade un parámetro opcional, y el uso actual `libres <franja>` sigue igual.
+- No cambia el esquema de datos: las salas y reservas siguen como están.
+- Cabe en un solo módulo: `src/app.js` y su test.
+- No hay `estimation.md`, así que esa condición no aplica.
+
+No propongo dividirlo: prevé una sola task. Perfil actual: `delegate`, por defecto del proyecto, porque `sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`.
+
+¿Cómo seguimos?
+
+1. **Lite (recomendada).** Escribo la spec corta, te la presento para aprobar y luego implemento.
+2. **Feature completa.** Spec, plan y tasks. Es más ceremonia de la que pide un cambio así.
+3. **Lite con aprobación delegada.** Dime «apruebo la spec por delegación, nos vemos en la validación» y no paro en la spec.
+
+También puedes pedir otro perfil con «perfil `pair` para esta feature».

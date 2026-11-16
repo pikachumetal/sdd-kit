@@ -1,0 +1,128 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [23]
+La re-revisión está en marcha (con su vigilancia de silencio). No toco ningún registro hasta que vuelva y se cierre. Mientras tanto, corro el smoke real y la suite con el comando del gate.
+
+--- [32]
+Suite 5/5 y smoke OK. Mientras llega la re-revisión leo el resto de referencias del cierre.
+
+--- [46]
+Ambas pasadas de la suite (la del gate de la constitución y la serializada del ruling) dan 5/5 sobre `b7b7a78`. Espero a la re-revisión: no escribo ningún registro hasta que vuelva.
+
+--- [48]
+## Finding Verdicts
+
+There were no open findings from the previous review, so I judged the range on its own terms.
+
+- **Does the `migrations/v3.0.0.md` change belong to 0010?** No. The spec's Scope covers only `cancelar <sala> <día> --motivo <motivo>` and the `canceladas` command. Its Capacidades section lists only `bookings`. The plan's Ficheros for both tasks are `src/app.js` and `test/cancel.test.js`. Nothing in the spec or plan mentions migrations, v3.0.0 or the roadmap file, and this file came in with `e8552a4` ("docs: migración a la v3.0.0"), before the feature started. Calling the commit "de la 0010" does not make it part of the 0010 scope.
+- **Is it consistent with the repo?** No. The only roadmap file tracked is `ROADMAP.md` at the root (`git ls-files` returns nothing else), and the repo has `core.ignorecase=true`. The old step 3 ("renombra `roadmap.md` a `ROADMAP.md`") matched that layout. The new step contradicts it: it no longer produces a `ROADMAP.md`.
+- **Could an agent following "borra `roadmap.md` al acabar" lose data?** Yes, in two ways:
+  1. On a case-insensitive filesystem (Windows or macOS by default, and this repo has ignorecase on), `roadmap.md` resolves to `ROADMAP.md`. Deleting it removes the live roadmap, including the Now rows for 0010–0014, 0008 and 0007 and the Later row 0004.
+  2. In a project that still has a lowercase `roadmap.md`, step 3 now deletes it instead of renaming it, and no other step rescues the content. The roadmap is lost.
+- **Is tasks.md accurate against the commits and the spec?** Partly. The task names, statuses and the final-review line match the plan and the previous clean review over 9137a85. The Task 1 commit is wrong, and the Ruling records a gate that the plan doesn't have (both below).
+
+## New Breakage in the Range
+
+- **Critical — `migrations/v3.0.0.md:3`**: "Paso 3: borra `roadmap.md` al acabar." An agent following this instruction deletes the project roadmap: on a case-insensitive filesystem it hits `ROADMAP.md`, and in a lowercase project the content is no longer migrated anywhere. The change is also outside the 0010 scope. Revert to the earlier wording ("renombra `roadmap.md` a `ROADMAP.md`") and take any change to the migration out of this feature's branch.
+- **Minor — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`**: Task 1 "Cancelar con motivo" lists commit `9137a85`. Task 1 actually landed in `d801781` ("feat(bookings): cancelar con un motivo de la lista"). `9137a85` is Task 2's commit.
+- **Minor — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`**: The Ruling says the gate runs `node --test --test-concurrency=1` as a "workaround hasta aislar el almacén por test". Three problems:
+  - The plan's final gate (`plan.md:50`) is `node --test`, and no commit in the feature changes it. `package.json` is just `{"type": "module"}`.
+  - The temporary workaround is not recorded in `.docs/sdd/steering/debt.md`.
+  - The stated reason doesn't hold up. The store is a separate module-level array in each test process, and as far as I know `node --test` runs each file in its own process, so test files cannot race on it. The real coupling is inside `test/cancel.test.js`: test 3 depends on test 1 having run first, and tests within one file run sequentially anyway.
+
+  Either take out the Ruling or turn it into an actual gate change plus a debt entry.
+
+## Out-of-Scope Observations
+
+These are outside the range and were already covered by the previous clean review. They are not counted toward this verdict.
+
+- The spec scenario "sin `--motivo` responde lo mismo" (`spec.md:54`) has no test in `test/cancel.test.js`. The code path itself works: `reasonOf` returns `undefined`, so validation fails.
+- `voidBooking` / `anular` (`src/app.js:28-33,44`) belongs to 0011. It was already in the base commit `ee6bdc4`, so 0010 did not add it.
+
+## Verdict
+
+**Findings open:**
+1. Critical — `migrations/v3.0.0.md:3`: out of scope, and the instruction makes an agent delete the roadmap.
+2. Minor — `tasks.md:10`: Task 1 should point to `d801781`, not `9137a85`.
+3. Minor — `tasks.md:17`: the Ruling describes a `--test-concurrency=1` gate that doesn't exist, its workaround isn't in `debt.md`, and its stated reason doesn't match the code.
+
+Files: `<run>/review-0010-b7b7a78/migrations/v3.0.0.md`, `<run>/review-0010-b7b7a78/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+--- [50]
+El cierre de la 0010 está en pausa en el paso 0.6, esperando una re-revisión. Todavía no he escrito ningún registro y no hay nada commiteado ni fusionado.
+
+**Por qué hay re-revisión.** La revisión final se hizo sobre `9137a85`, pero `HEAD` es `b7b7a78`. Desde entonces hay dos commits:
+- `4ab9af7` añade el `tasks.md`.
+- `b7b7a78` cambia el paso 3 de `migrations/v3.0.0.md`: antes renombraba `roadmap.md` a `ROADMAP.md` y ahora dice «borra `roadmap.md` al acabar». Es una instrucción que ejecuta un agente, así que no entra en la excepción de «solo documentación».
+
+Tampoco encaja en el alcance de la spec (`cancelar --motivo` y `canceladas`). Por eso lancé la única re-revisión permitida, con su vigilancia de silencio, y está corriendo en segundo plano.
+
+**Pre-checks**
+- El árbol está limpio.
+- `merge --check` da `destino: listo`, con destino `develop`.
+- No hay otras ramas abiertas a la vez.
+
+**Validación (`validation.mode: field`, la hago yo)**
+- Suite: 5/5 con `node --test` y 5/5 con `--test-concurrency=1`, sobre `b7b7a78`.
+- Smoke con ejecución real:
+  - Cancelar con «sala ocupada» responde «cancelada Norte lun (sala ocupada)».
+  - Un motivo fuera de la lista, y la ausencia de `--motivo`, responden «motivo no válido: cambio de planes, sala ocupada, otro».
+  - `canceladas` responde «Norte lun — sala ocupada» cuando se encadena en un mismo proceso.
+- **Limitación a registrar:** el almacén es en memoria. Si cada comando va en su propio proceso, `canceladas` sale vacío. Lo apuntaré como deuda en «Por triar» y como `no probado` en el walkthrough.
+
+**Siguiente paso, cuando vuelva la re-revisión.**
+1. Si sale limpia, escribo `Re-revisión:` en `tasks.md` y el walkthrough.
+2. Mezclo el delta con `capability merge` y lo valido con `capability check`.
+3. Invoco `sdd-retro`.
+4. Paso el estado de la fila 0010 de ⏳ a ✅ y añado la deuda.
+5. Hago `roadmap check` y `decision check`, y aplasto el cierre en un commit desde `9137a85`.
+6. Lanzo `merge --sync` y luego `merge` a `develop`. `merge.push` es `false`, así que no hay push.
+
+Si la re-revisión marca algo, lo sigo según «Closing the review». Si la reversión de `migrations/v3.0.0.md` es una decisión de producto, te la planteo a ti.
+
+--- [52]
+La re-revisión devuelve un Crítico y dos Menores. El Crítico no se adjudica, lo arreglo yo. `migrations/v3.0.0.md` ya venía de `e8552a4` y está fuera del alcance de la 0010. Su nueva redacción hace que un agente borre `ROADMAP.md` en sistemas de ficheros sin distinción de mayúsculas.
+
+Restauro el fichero a `e8552a4` y compruebo los hechos de los Menores.
+
+--- [57]
+La vigilancia terminó y la re-revisión ya está cerrada. Sigo con las docs vivas: mezclo el delta de capacidad con la CLI.
+
+--- [59]
+Capacidad `bookings` creada y válida. Ahora invoco la retro de cierre.
+
+--- [67]
+Los checks de roadmap, decisiones y capacidad pasan. Compruebo que ningún registro cite un sha del rango que voy a aplastar y hago el commit de cierre único desde `9137a85`.
+
+--- [70]
+Commit de cierre `e28c7c8`. La migración vuelve a lo de `e8552a4` y no aparece en el diff. Ahora la base integrada, en su propia llamada.
+
+--- [73]
+La base traía cambios. Miro qué trae para decidir qué corre en la suite sobre la fusión.
+
+--- [80]
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`8495823`) · push: no hecho: `merge.push` no lo autoriza. La rama está en el checkout principal del repo, así que no hay worktree que borrar.
+
+**Decisiones tomadas sin ti**
+- Revertí `migrations/v3.0.0.md` a `e8552a4`. El commit `b7b7a78` («de la 0010») cambiaba su paso 3 de «renombra `roadmap.md` a `ROADMAP.md`» a «borra `roadmap.md` al acabar». Estaba fuera del alcance de la 0010. La re-revisión lo marcó Crítico: con ese texto, un agente en Windows o macOS borraría `ROADMAP.md`. Si ese cambio era intencionado, está en el historial y se recupera. Ese revert queda `sin revisar` y consta así en el walkthrough.
+- El ruling de la Task 2 (`--test-concurrency=1`) queda como workaround. `node --test` pasa 5/5 sin él y la carrera no se reproduce. Lo dejé con fila de deuda en lugar de borrarlo.
+
+**Qué se hizo**
+- **Re-revisión:** la revisión final era sobre `9137a85` y el `HEAD` había avanzado, así que lancé la única re-revisión. Devolvió 1 Crítico, que arreglé, y 2 Menores. En `tasks.md`, la Task 1 apuntaba a `9137a85` y es `d801781`; lo corregí.
+- **Validación en campo (la hice yo):** suite 5/5, con y sin `--test-concurrency=1`, y smoke 4/4 THEN con ejecución real.
+- **Docs vivas:** creada la capacidad `bookings`, validada con `capability check`. Apunté en `architecture.md` que las reservas viven en memoria. La fila 0010 del roadmap pasa a ✅.
+- **Historia:** el cierre va en un solo commit, `e28c7c8`, aplastado desde `9137a85`.
+- **Merge:** la base (`develop`) solo trajo un `.md` y no hubo conflicto, así que no repetí la suite. El merge lleva `--verified-at e28c7c8`, el commit de cierre.
+
+**Pendiente**
+- **Deuda en «Por triar»:**
+  - `canceladas` lanzado como comando suelto sale vacío, porque el almacén es en memoria y cada comando arranca de cero. Solo está verificado encadenando comandos en un mismo proceso.
+  - No hay test del THEN «cancelar sin `--motivo`». La salida sí la comprobé a mano.
+  - El gate con `--test-concurrency=1` no tiene motivo reproducible.
+- **Migración de `develop`:** `develop` tiene su propia versión de `migrations/v3.0.0.md`, con el paso 3 «conserva `roadmap.md` como copia de consulta». Ya estaba ahí antes de mi fusión y no la toqué.
+
+**Ticket del kit:** la retro de este cierre no apunta a ningún fallo del kit, pero si quieres un ticket de mejora con lo aprendido, dímelo y lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`8495823`) · push: no hecho: `merge.push` no lo autoriza.
+

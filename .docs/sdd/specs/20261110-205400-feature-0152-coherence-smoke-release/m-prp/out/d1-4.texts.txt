@@ -1,0 +1,17 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs SDD) y el código que toca el fallo, solo para clasificar. Queda: confirmarte el carril con una pregunta.
+
+--- [10]
+Reproducido: `node src/app.js cancelar Norte mar` imprime `cancelada Norte mar` y marca como cancelada la reserva del lunes.
+
+**Causa raíz** (`src/app.js:12`): `findBooking(room, day)` recibe `day` pero solo compara `room` y `status`, así que devuelve la primera reserva activa de la sala sea cual sea el día. `anular` usa la misma función, así que tiene el mismo fallo. Ese fallo es determinista y el arreglo está fijado: comparar también `b.day === day`. Los walkthroughs de 0005 y 0006 están cerrados, así que es un patch. Dijiste «patch» y mi análisis lo confirma, así que no lo vuelvo a preguntar.
+
+🦆 Hoy `cancelar` y `anular` buscan la reserva solo por sala. Si pides `cancelar Norte mar`, encuentran la del lunes y la cancelan. Voy a hacer que busquen también por día. Cuando no haya reserva ese día, dirán `sin reserva Norte mar` y no tocarán la del lunes. El test que hoy falla y que el arreglo pone en verde es `cancelar Norte mar` con la reserva del lunes activa. Debe devolver `sin reserva Norte mar`, y la reserva del lunes debe seguir activa.
+
+**Estimación:** 0,3 h, más el gate de cierre (`node --test && node scripts/lint.mjs`, sin tiempo medido en el proyecto, ~1 s de tests).
+
+1. **Abrir el patch (Recomendada):** creo `feature`-less `patch-0012-cancel-dia`, escribo el test de regresión en rojo, hago el arreglo en `findBooking` y cierro con el gate.
+2. **Cambiar el alcance:** por ejemplo, no tocar `anular` o hacerlo con spec completa.
+
+¿Abro el patch con la opción 1?
+

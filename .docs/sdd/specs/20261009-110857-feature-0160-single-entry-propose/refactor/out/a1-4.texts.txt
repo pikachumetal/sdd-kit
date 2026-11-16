@@ -1,0 +1,28 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` para clasificar este cambio, porque es una funcionalidad nueva.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y plantearte la primera pregunta, ~2 min.
+
+--- [18]
+**Lo que entiendo (corrígeme si falla):** quieres que `anular` deje de poder lanzarlo cualquiera. Solo debe poder el responsable de cada sala, y no hace falta que la reserva sea suya. Es la fila 0011 del roadmap y la definición de «Anulación» de `PRODUCT.md`.
+
+**Lo que he visto en el código** (`src/app.js`):
+- `anular` ya existe y lo puede lanzar cualquiera.
+- No existen personas, ni dueño en las reservas, ni responsables de sala.
+- `operations.md` dice «sin login» y las reservas viven en memoria.
+
+Falta decidir cómo sabe la herramienta quién actúa. Es la decisión de la que cuelgan las demás.
+
+❓ **¿Cómo se identifica quien ejecuta el comando?**
+1️⃣ **Parámetro `--como <nombre>`**: se declara en cada comando. Los responsables se definen en una tabla de `src/app.js` (`Norte: ana`, `Sur: luis`).
+   - `anular Norte lun --como ana` → `anulada Norte lun`
+   - `anular Norte lun --como luis` → `solo el responsable de Norte puede anular`
+   - `anular Norte lun` → `indica quién eres con --como`
+2️⃣ **Variable de entorno `SALAS_USUARIO`**: se define una vez por sesión y el comando no cambia.
+   - `anular Norte lun` con `SALAS_USUARIO=ana` → `anulada Norte lun`
+3️⃣ **Usuario del sistema operativo**: el nombre sale de `os.userInfo()` y no hay que declarar nada.
+   - `anular Norte lun` ejecutado por `ana` → `anulada Norte lun`
+
+➡️ **Recomiendo 1️⃣**, porque `run(cmd, params)` ya recibe todo por parámetros. Así el cambio se prueba con tests sin tocar el entorno y no añade ninguna dependencia nueva. A cambio, no es autenticación: cualquiera puede escribir `--como ana`. Para esta herramienta, sin login y con una sola persona desarrollándola, creo que basta.
+

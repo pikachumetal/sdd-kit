@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd . && git status --short | head; ls .docs/sdd .docs/sdd/specs/*0010*; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/specs/*0010*/tasks.md; git log --oneline -8
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+spec: ./spec.md
+plan: ./plan.md
+created: 2026-10-08
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- |
+
+>>> Bash: cat .docs/sdd/specs/*0010*/spec.md; ls; cat package.json; git diff --stat 01412b9 HEAD
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Bash: ls src test; cat src/app.js; cat test/cancel.test.js; node --test 2>&1 | tail -15
+<<< src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = pa
+
+>>> Bash: node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Sur mar --motivo "me aburro"; node src/app.js cancelar Norte lun --motivo "me aburro"; echo "--canceladas (proceso aparte):"; node src/app.js canceladas; echo "[fin]"; node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"; git diff 01412b9 HEAD -- test/app.test.js | head
+<<< cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+--canceladas (proceso aparte):
+
+[fin]
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+=== RESULTADO (7 turnos, 0.2459766 $)
+Ahora: presento la validación de la 0010 y paro. Queda: tu respuesta, y después el cierre con `sdd-end-feature`.
+
+## Me salí del plan en…
+
+- **Task 2 antes de acabar los mensajes de error de la Task 1.** El listado necesitaba el estado `cancelled` ya guardado. Si me equivoco, sobra un commit en la Task 1.
+- **Un fix de `test/app.test.js` por fragilidad de orden.** El ruling dice que está en el commit de la task, pero `git diff 01412b9 HEAD -- test/app.test.js` sale vacío. Ese fichero no cambió, así que el ruling es inexacto. No sé qué se arregló de verdad.
+
+## Qué hay
+
+- `cancelar <sala> <día> --motivo <motivo>` acepta solo los motivos de la lista cerrada. Con otro responde «motivo no válido: …».
+- `canceladas` lista «sala día — motivo».
+- La revisión final fue limpia (code-reviewer + opus). `HEAD` solo avanzó con el commit de `tasks.md`, que es documentación, así que no hace falta re-revisión.
+- `tasks.md` tiene sin rellenar los hashes de las dos tasks («commit de la task 1») y el `sobre (HEAD)` de la revisión final. Los completo en el cierre.
+
+## Smoke (suite: `node --test`, 5/5 en ~0,1 s)
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (CLI, con «me aburro») |
+| `canceladas` → «Norte lun — sala ocupada» | **solo suite y llamada en un mismo proceso. Por CLI no se observa** |
+
+**Problema que el smoke ha sacado:** las reservas viven en memoria, en el array `bookings` de `src/app.js`. Cada `node src/app.js …` arranca de cero.
+- Tras `cancelar Norte lun --motivo "sala ocupada"`, un `node src/app.js canceladas` aparte imprime una línea vacía.
+- El THEN solo se cumple si `cancelar` y `canceladas` corren en el mismo proceso.
+- El test 3 depende además de que el test 1 haya cancelado antes. Es el mismo tipo de fragilidad de orden que el ruling dice haber arreglado.
+
+La spec no dice nada de persistencia, así que no sé si el dev-lead lo da por bueno al ser un molde. Es una decisión tuya, no la tomo yo.
+
+## Guion de pruebas
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → mismo mensaje de motivo no válido.
+4. `node src/app.js canceladas` → **hoy sale vacío**. La spec esperaría `Norte lun — sala ocupada`.
+5. `node --test` → 5 pasan.
+
+No he arrancado ningún proceso de larga duración, así que no hay nada que parar.
+
+¿Qué has probado tú y funciona? Si quieres, dime también si la 0010 se cierra con la limitación de estado en memoria o si hay que persistirlo antes.

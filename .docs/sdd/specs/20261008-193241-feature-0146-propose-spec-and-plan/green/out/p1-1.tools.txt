@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50 && cat .docs/sdd/specs/*0010*/spec.md && cat .docs/sdd/sdd-kit*.json 2>/dev/null
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+spec.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md; grep -n "0010" .docs/sdd/roadmap.md; git ls-files | grep -v .docs; cat .docs/sdd/specs/*0007*/patch.md | head -40; ls "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/skills/sdd-templates"
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7:|
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js package.json; cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/skills/sdd-templates/templates/plan-template.md"
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -30; cat test/app.test.js
+<<< ✔ libres excluye la sala reservada en la franja (0.6504ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1027ms)
+✔ cancelar una reserva activa (0.6273ms)
+✔ cancelar sin reserva lo dice (0.1121ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.7988
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  as
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (8 turnos, 0.3476972 $)
+Escribí el plan en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`. No lo he commiteado, y no he escrito código ni tests.
+
+- **Una sola task.** Son unas 15 líneas en `src/app.js` con `reasons`, `cancelBooking(room, day, reason)`, `cancelledBookings()` y el despacho de `--motivo` y `canceladas` en `run`. Los tests van en `test/cancel.test.js`, uno por THEN de la spec, y los escribo en RED antes del código.
+- **Ejecución native**, porque `sdd-kit.json` lo fija así. La task va con Sonnet y effort medium. El revisor final de rama va con `opus` y `sdd-kit:effort-high`.
+- **Perfil `delegate`: no hay gate de plan.** Comprobé que cada escenario de la spec tiene su task y lo anoté en el Self-review.
+
+Hay decisiones que la spec no fija y que quedan registradas en el plan por si quieres cambiarlas:
+
+1. `cancelar` sin `--motivo` responde «motivo no válido: cambio de planes, sala ocupada, otro» y no cancela.
+2. El motivo se valida antes de buscar la reserva.
+3. `canceladas` lista solo las `cancelled`, no las `voided`, y sin ninguna imprime una cadena vacía.
+4. Los tests comparten el estado en memoria y hay una sola reserva, así que su orden importa: inválidos, luego cancelar, luego listar.
+5. El test existente `cancelar una reserva activa` pasa a llevar `--motivo`.
+
+Siguiente paso: antes de la Task 1 junto la apertura (spec y plan) en un commit y sigo con la implementación (Native).

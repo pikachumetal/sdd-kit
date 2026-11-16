@@ -1,0 +1,84 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: node -v; cat package.json 2>/dev/null; ls; ls .docs/sdd 2>/dev/null; cat .docs/sdd/tech-stack.md 2>/dev/null | head -60
+<<< v26.10.0
+{"type": "module"}
+package.json
+README.md
+src
+test
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+>>> Bash: cat .docs/sdd/constitution.md; ls src test; wc -l src/* test/*
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+src:
+app.js
+
+test:
+app.test.js
+  16 src/app.js
+  15 test/app.test.js
+  31 total
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: node --test --experimental-test-coverage 2>&1 | tail -15; node --help | grep -i coverage
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 554.2582
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ----------------------------------------------------------
+ℹ all files |  93.75 |    83.33 |  100.00 | 
+ℹ ----------------------------------------------------------
+ℹ end of coverage report
+  --experimental-test-coverage
+         
+
+=== RESULTADO (8 turnos, 0.1170927 $)
+Ya funciona en el entorno (lo he probado aquí con Node 26.10, no con el 22 que declara `tech-stack.md`). `node --test --experimental-test-coverage` da cobertura por línea, rama y función. Con `src/app.js` suelto dice 93,75 % de líneas y 83,33 % de ramas, y señala la línea 13 sin cubrir.
+
+❓ **¿Qué nivel de medición necesitamos?**
+
+Esto sale de los documentos del proyecto y de lo que acabo de probar:
+- `tech-stack.md` dice «Node 22, sin dependencias externas». El `package.json` ni siquiera tiene `dependencies`.
+- La constitución exige `node --test` en verde antes de cada commit. No pide cobertura.
+- El proyecto es muy pequeño: 16 líneas de código y 15 de tests.
+- Node trae umbrales (`--test-coverage-lines`, `-branches`, `-functions`), `--test-coverage-include` y `--test-coverage-exclude`. No trae reporte HTML ni formato lcov, que c8 sí da (`--reporter=html`, `lcov`).
+- c8 usa el mismo motor V8 que Node. La diferencia está en los reporters y la configuración, no en la exactitud de la medición.
+- Sin verificar: si los flags de umbral y de include/exclude existen en el Node 22 del proyecto. En el 26 sí están. Habría que comprobarlo en el 22.
+
+1️⃣ **Solo Node, sin dependencias.** Un script `"test:cov": "node --test --experimental-test-coverage"` más un umbral opcional. Respeta la regla de no tener dependencias. El coste es que el reporte es solo texto en terminal y no hay HTML ni lcov para CI o editor.
+
+2️⃣ **c8.** Añade una devDependency. Da reporte HTML, lcov y configuración en `.c8rc`. El coste es romper el «sin dependencias externas» y editar `tech-stack.md`. Para 16 líneas de código no se nota la ventaja.
+
+3️⃣ **Node ahora, c8 cuando haga falta.** Es 1️⃣ con un criterio de salida: pasamos a c8 cuando aparezca CI que necesite lcov o un HTML. No añade nada ahora y no cierra la puerta.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto hoy no tiene ni CI ni reporte que consumir, y mantiene la regla de cero dependencias. A cambio, si más adelante queremos lcov o HTML habrá que migrar a c8 y reescribir el script. Esa migración es pequeña. 3️⃣ es lo mismo con el aviso escrito, así que se decide más tarde si hace falta.
+
+¿Vamos con 1️⃣?

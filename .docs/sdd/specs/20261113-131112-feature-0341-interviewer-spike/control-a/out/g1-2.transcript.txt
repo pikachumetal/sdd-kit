@@ -1,0 +1,46 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/dev/nu
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md README.md src/app.js package.json; 
+## agente
+Antes de proponer nada, he leído `PRODUCT.md`, `ROADMAP.md`, `src/app.js` y la deuda técnica. Esto es lo que dicen y lo que veo en el código:
+
+- **Producto (`PRODUCT.md`):** CLI para reservar las dos salas del coworking. Solo la usas tú.
+- **Código (`src/app.js`):** una franja es un texto libre como `10:00-12:00`. `libres` solo comprueba que el texto sea idéntico al de una reserva existente. Por eso hoy `10:30-11:00` no choca con `10:00-12:00`.
+- **Deuda (`debt.md`):** ya hay un ítem por triar, «Sin validación del formato de franja horaria».
+- **Roadmap:** no hay ninguna fila sobre medias horas.
+
+Lo de las medias horas toca justo esa comparación de franjas y esa validación, así que antes de decidir nada necesito entender el motivo.
+
+❓ ¿Qué te ha llevado a querer reservar medias horas, y qué harías con ello que hoy no puedas hacer?
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido. Aquí hay un hallazgo que cambia el planteamiento: hoy ya puedes escribir `reservar Norte lun 10:00-10:30`, porque la franja es texto libre. Lo que falta es que el sistema entienda las horas. Compara texto, no tiempo, así que no detecta solapes entre franjas distintas.
+
+❓ **Cómo entiende `salas` una franja**
+
+Escena de partida: Norte tiene `lun 10:00-12:00` y alguien pide `reservar Norte lun 10:30-11:00`.
+
+1️⃣ **Intervalos con detección de solape, en múltiplos de media hora.** La franja se valida (`HH:00` o `HH:30`, inicio anterior al fin) y dos reservas chocan si se pisan.
+   - Escena: `reservar Norte lun 10:30-11:00` → `Norte ocupada de 10:00 a 12:00`.
+   - Escena: `reservar Norte lun 12:00-12:30` → `reservada`. Una de 2 h y otra de 30 min conviven, y `libres lun 12:00-12:30` devuelve `Norte, Sur`.
+   - Coste: cambia `freeRooms`, añade la validación y también arregla de paso el ítem de deuda del formato.
+
+2️⃣ **Rejilla fija de medias horas.** El día son celdas de 30 min y una reserva ocupa N celdas consecutivas.
+   - Escena: `reservar Norte lun 10:00 4` → ocupa de 10:00 a 12:00. Pierdes la sintaxis `10:00-12:00` actual y las reservas existentes hay que migrarlas.
+   - Coste: es el cambio más grande y rompe lo que ya funciona.
+
+3️⃣ **Dejarlo como está y solo documentar la franja `10:00-10:30`.**
+   - Escena: con `lun 10:00-12:00` en Norte, `reservar Norte lun 10:30-11:00` → `reservada`. Hay doble reserva sin aviso.
+   - Coste: no cuesta nada, pero deja justo ese hueco abierto, y el solape es lo que más importa cuando se mezclan reservas de 30 min y de 2 h.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es que las franjas largas bloquean las cortas, y eso solo se resuelve si el sistema compara intervalos en vez de textos. En contrapartida, `freeRooms` pasa a parsear horas, y `cancelar` (la fila 0007, ya hecha) y `--cada-semana` tendrán que usar la misma comparación.
+
+¿Te encaja 1️⃣, o prefieres otra?

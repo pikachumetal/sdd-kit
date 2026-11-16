@@ -1,0 +1,38 @@
+--- [3]
+Voy a mirar el estado de la init.
+
+--- [13]
+Retomo la init. Modo: con código; si es un template recién instanciado, dímelo y sigo sin código.
+
+**Estado** (leído de `.docs/sdd/sdd-kit.json`, que es lo único que cuenta como aprobado):
+- Aprobados: `PRODUCT.md` y `.docs/sdd/steering/constitution.md`.
+- Configuración ya respondida, así que no la repito: ids por secuencia, perfil `delegate`, ejecución `auto` y validación manual.
+- Sigue `operations.md`, y después `architecture.md`, `ROADMAP.md`, `debt.md`, `estimation.md`, `CLAUDE.md`, el log de estimación, git y el cierre.
+
+**Lo que encuentro para `operations.md`:**
+- **Comandos:** `npm run dev` (vite), `npm test` (vitest) y `npm run e2e` (playwright). No hay script de build.
+- **Suites:** `vitest`, sin ningún test unitario en el repo, y `playwright` con 2 specs en `e2e/`. CI (`ci.yml`) solo corre `npm test`, no el E2E.
+- **Playwright:** `retries` es 2 en CI y 0 en local. El timeout es de 60 s por test, sin motivo escrito. No hay `outputDir`, así que los temporales van a `test-results/` (propuesta: `.temp/playwright`).
+- **Discrepancia a revisar:** el `CLAUDE.md` actual dice que `dev` usa el puerto 3000. Ni `package.json` ni la config de Vite lo fijan (el defecto de Vite es 5173), así que no lo doy por verificado.
+- **Constitución:** el fichero en disco solo tiene un punto (datos en memoria), aunque consta como aprobado. No lo toco; dime si quieres completarla después.
+
+❓ **Flujos core del E2E**
+Los specs que he encontrado son:
+1️⃣ `e2e/booking.spec.ts` › reserva Norte a las 10:00
+2️⃣ `e2e/cancel.spec.ts` › cancela una reserva
+Un E2E nuevo tendrá que nombrar uno de los flujos core. Lo demás se prueba en una capa más baja.
+➡️ **Recomiendo marcar los dos como core.** Son los dos caminos del producto (reservar y cancelar) y no hay más specs. A cambio, la suite E2E tendrá que mantener ambos.
+
+¿Cuáles de estos flujos son core?
+
+--- [15]
+Anotado: los dos flujos son core.
+
+❓ **Acceso del agente a la aplicación**
+No he encontrado login, usuarios ni páginas de desarrollo. `src/app.ts` solo tiene `reserve(room, slot)`, y los specs entran directamente por `/` y `/mis-reservas`.
+1️⃣ **`sin login`**: el agente abre la URL de `dev` y prueba sin credenciales. Además, ningún test cambia datos de una persona, porque los datos viven en memoria.
+2️⃣ **Usuario de pruebas propio para el agente**: lo defines tú. Habría que crearlo, y hoy no hay dónde.
+➡️ **Recomiendo 1️⃣**, porque no hay autenticación en el código y los datos están en memoria, según la constitución aprobada. A cambio, si más adelante llega un login, este campo se reescribe.
+
+¿Con qué URL responde `npm run dev`? No puedo confirmar el puerto 3000 del `CLAUDE.md`: Vite usa 5173 por defecto y no hay `server.port` en ningún sitio. Si lo sabes, dímelo junto con tu elección. Si no, dejo la URL como `no declarado`.
+

@@ -1,0 +1,171 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -la .docs/sdd/ .docs/sdd/specs/20260921-090000-patch-0021-cancel-missing/; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git log --oneline -5; git status --short
+<<< .docs/sdd/:
+total 10
+drwxr-xr-x 1 <user> 197609   0 Nov  1 17:01 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  1 17:01 ../
+-rw-r--r-- 1 <user> 197609 590 Nov  1 16:06 changelog.md
+-rw-r--r-- 1 <user> 197609 450 Nov  1 16:06 constitution.md
+-rw-r--r-- 1 <user> 197609 244 Nov  1 16:06 mission.md
+-rw-r--r-- 1 <user> 197609 678 Nov  1 16:06 roadmap.md
+-rw-r--r-- 1 <user> 197609 107 Nov  1 17:01 sdd-kit.json
+drwxr-xr-x 1 <user> 197609   0 Nov  1 17:01 specs/
+-rw-r--r-- 1 <user> 197609 204 Nov  1 16:06 tech-stack.md
+
+.docs/sdd/specs/20260921-090000-patch-0021-cancel-missing/:
+total 1
+drwxr-xr-x 1 <user> 19
+
+>>> Bash: cd .docs/sdd; cat specs/*/patch.md; echo ----; cat constitution.md mission.md tech-stack.md roadmap.md; cd ../..; ls; git diff main --stat | tail -3
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+---
+solution: causa raíz
+---
+
+# Patch 0021 — cancelar una reserva que no existe
+
+## 1. Síntoma
+
+«Si cancelo una reserva que no existe me dice cancelada igual.»
+
+## 2. Causa raíz
+
+`run` en src/app.js:12 devuelve `cancelada` sin mirar `bookings`.
+
+## 3. Fix
+
+Si no hay reserva de ese día y franja, responde `no existe`; el test `cancelar respeta el día` pasa a usar `lun 10:00-12:00`. Decisiones: texto, dev-lead.
+
+## 4. Verificación
+
+Pendiente.
+
+## 5. Tiempo
+
+- Inic
+
+>>> Bash: ls .docs/sdd/specs; cat src/app.js; ls test; cat test/*.js; cat package.json; node --test 2>&1 | tail -15
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20260921-090000-patch-0021-cancel-missing/
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'r
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0116-session-start-and-resume\.temp\claude\D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume\74405bf9-2b85-4c04-8d5c-2fde2a174cfe\scratchpad\kit-base\skills\sdd-implement\references\patch-flow.md
+<<< 1	# The patch flow
+2	
+3	A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/SKILL.md#is-it-really-a-patch)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+4	
+5	One todo per step.
+6	
+7	1. **Root cause, MANDATORY in a failure** (the intent, in a visual adjustment; the fixed solution, in a closed request) — `sdd-debugging` BEFORE proposing the fix. Never 
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: python - <<'E'
+p='test/app.test.js'
+s=open(p,encoding='utf8').read()
+s=s.replace("""  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});""","""  assert.equal(run('cancelar', ['lun', '10:00-12:00']), 'cancelada lun 10:00-12:00');
+});
+
+test('cancelar una reserva que no existe responde no existe', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'no existe');
+});""")
+open(p,'w',encoding='utf8').write(s)
+E
+node --test 2>&1 | grep -E "^(✔|✖)|expected|actual|# (pass|fail)|ℹ (pass|fail)"
+<<< ✔ libres excluye la sala reservada en la franja (0.7248ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1157ms)
+✔ cancelar respeta el día (8.8203ms)
+✖ cancelar una reserva que no existe responde no existe (1.0586ms)
+ℹ pass 3
+ℹ fail 1
+✖ failing tests:
+✖ cancelar una reserva que no existe responde no existe (1.0586ms)
+  + actual - expected
+    actual: 'cancelada mar 10:00',
+    expected: 'no existe',
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: node --test 2>&1 | grep -E "^(✔|✖)|ℹ (pass|fail)"; date -u +%Y-%m-%dT%H:%M:%SZ
+<<< ✔ libres excluye la sala reservada en la franja (0.7022ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1085ms)
+✔ cancelar respeta el día (0.7024ms)
+✔ cancelar una reserva que no existe responde no existe (0.1524ms)
+ℹ pass 4
+ℹ fail 0
+2026-11-01T16:02:27Z
+
+>>> Bash: cd .docs/sdd/specs/20260921-090000-patch-0021-cancel-missing && python - <<'E'
+s=open('patch.md',encoding='utf8').read()
+s=s.replace("Pendiente.","""Rojo antes del fix: `node --test` → `cancelar una reserva que no existe responde no existe` falló con `actual: 'cancelada mar 10:00'`, `expected: 'no existe'`.
+Verde tras el fix: `node --test` → 4 pasan, 0 fallan (el test `cancelar respeta el día` usa ahora `lun 10:00-12:00`).""")
+open('patch.md','w',encoding='utf8').write(s)
+E
+cd ../../../.. && git add -A && git commit -q -m "fix(0021): cancelar una reserva inexistente responde 'no existe'
+
+Causa raíz: cancelar no consultaba bookings (src/app.js).
+Gate: node --test → 4/4
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< 84469ed fix(0021): cancelar una reserva inexistente responde 'no existe'
+4f099c0 feat: base del molde salas
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-base/cli/bin/sdd.js"; git status --porcelain; node "$SDD" merge --check --project-root "$PWD" 2>&1 | tail -5; git worktree list; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -3; node src/app.js cancelar mar 10:00; node src/app.js cancelar lun 10:00-12:00
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo 84469ed [patch/0021-cancel-missing]
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+no existe
+cancelada lun 10:00-12:00
+
+=== RESULTADO (18 turnos, 0.4530014 $)
+El patch 0021 está arreglado y commiteado, pero no lo he cerrado: falta tu validación. Necesito que pruebes el arreglo y me digas qué has probado y si funciona.
+
+🦆 Antes, `cancelar` decía «cancelada» aunque esa reserva no existiera. Ahora responde `no existe` si no hay reserva en ese día y franja. Por ejemplo, `cancelar mar 10:00` da `no existe`, y `cancelar lun 10:00-12:00` da `cancelada lun 10:00-12:00`.
+
+**Qué he verificado yo**
+- **Causa raíz:** `cancelar` en `src/app.js` devolvía `cancelada` sin mirar `bookings`.
+- **Test en rojo:** `cancelar una reserva que no existe responde no existe` falló con `cancelada mar 10:00` antes del fix.
+- **Gate:** `node --test` da 4 pasan, 0 fallan.
+- **Ejecución real:** `node src/app.js cancelar mar 10:00` → `no existe`; `node src/app.js cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00`.
+
+**Para que lo pruebes tú**
+1. Ejecuta `node src/app.js cancelar mar 10:00`. Debe imprimir `no existe`.
+2. Ejecuta `node src/app.js cancelar lun 10:00-12:00`. Debe imprimir `cancelada lun 10:00-12:00`.
+
+**✋ Me salí del plan en…** nada.
+
+**Qué falta para cerrar**
+- **Tu validación:** dime qué has probado y que va bien, o difiérela con tu frase, un disparador y su responsable.
+- **Tiempo real:** `patch.md` §5 solo tiene el inicio (2026-09-21T09:00:00Z). No tengo el esfuerzo real y no me lo invento. ¿Cuánto fue?
+- **Merge:** `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, así que `sdd merge --check` no puede comprobar nada. Cuando valides te propongo el destino (`develop`, según la constitución) y espero tu OK antes de fusionar.
+- **Kit desactualizado:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene actualizar antes de cerrar.

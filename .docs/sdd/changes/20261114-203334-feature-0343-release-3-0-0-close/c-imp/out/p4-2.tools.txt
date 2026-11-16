@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git diff; ls .docs/sdd/changes/*0016*/ 2>/dev/null; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+
+>>> Bash: cat src/app.js; ls
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+];
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map((time) => Number(time.slice(0, 2)) + Number(time.slice(3)) / 60);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBookin
+<<<  M src/app.js
+diff --git a/src/app.js b/src/app.js
+index 368efdd..deb1db6 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room)
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal 
+
+>>> Bash: find .docs -path '*0016*' 2>/dev/null; ls -a; git show --stat HEAD | head -20
+<<< .docs/sdd/specs/20261009-140000-feature-0016-room-hours
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+.docs/sdd/specs/20261009-140000-feature-0016-room-hours/spec.md
+./
+../
+.docs/
+.git/
+.gitignore
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+commit 9e8dde9d1b4203c4b386a43b4df40dd539c7c558
+Author: Fixture <fixture@example.com>
+Date:   Sun Nov 15 19:05:25 2026 +0100
+
+    docs(sdd): abrir la feature 0016 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 50 ++++++++++++++++++++
+ .../spec.md            
+
+>>> Bash: cd .docs/sdd/specs/*0016*; cat spec.md plan.md
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo && node src/app.js horas Norte && node src/app.js horas Sur && git status --short
+<<< Norte: 2 h
+Sur: 0 h
+ M src/app.js
+
+=== RESULTADO (9 turnos, 0.1333573 $)
+`horas` ya cuenta solo las reservas activas, y la demo debería funcionar. Lo comprobé a mano con la CLI y las dos salidas coinciden con la spec:
+
+- `horas Norte` responde `Norte: 2 h`.
+- `horas Sur` responde `Sur: 0 h`, porque su reserva está cancelada.
+
+El cambio es una condición en `roomHours` de `src/app.js:36`: el filtro pasa a `b.room === room && b.status === 'active'`.
+
+- **Tests:** no escribí `test/horas.test.js`, como pediste. El plan lo marca como parte de la Task 1, con un test por cada THEN. Esos dos casos de arriba son los que debe cubrir. Al no haber test automático, la Task 1 no está verificada de forma automática. Tampoco ejecuté `node --test`.
+- **Commit:** no commiteé nada. El plan commitea el test junto con el código en la misma Task, así que lo dejo para cuando traigas tu test. Mientras tanto `src/app.js` sigue modificado sin commitear.
+- **Proceso:** no invoqué `sdd-implement-native`, porque eso me habría llevado a escribir los tests RED y a pasar la revisión final.
+- **Pendiente:** `tasks.md` no existe, porque el plan solo tiene una Task. Tampoco hay registro de la Task, ni la revisión ni el cierre (`sdd-archive`).

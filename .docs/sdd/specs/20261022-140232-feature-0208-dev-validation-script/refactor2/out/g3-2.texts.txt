@@ -1,0 +1,41 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [16]
+Estoy preparando el guion de validación y el entorno no arranca: el puerto 4671 da `EACCES`. Compruebo si es del sistema o del sandbox.
+
+--- [23]
+Todavía no puedo cerrar la 0010. El proyecto tiene `validation.mode: manual`, y «ciérrala» es la orden de cerrar, no una validación. Hace falta que la pruebes tú.
+
+**Pre-checks**
+- El árbol está limpio y `merge --check` da `listo` (`develop` irá a un worktree temporal).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura (modo `full`).
+- La revisión final es de la línea de `tasks.md`: spec y código limpios, sobre `d5d7cb7`. `HEAD` (`5a70344`) solo añade ese `tasks.md`, así que no hace falta otra revisión.
+- El gate `node --test test/` pasa: 5 de 5.
+
+**Entorno**
+No he podido levantarlo. El puerto 4671 de `e2e/config.json` cae en un rango que Windows tiene reservado (4667–4766), y `server.mjs` falla con `EACCES`. Esto afecta también a `npm run test:e2e`. No he cambiado el puerto porque es config del proyecto; dime si lo muevo y lo apunto como deuda.
+
+Ensayé los pasos con el mismo `run` de la app, en una sesión aparte, así que tu estado parte de cero.
+
+Panel: plan B en http://127.0.0.1:9887/
+Este panel no ve la app, así que no recoge consola ni red. Si algo falla, cuéntalo en el comentario. `.temp/` no está en `.gitignore`; propongo añadirlo.
+
+**Guion** (cada paso sobre una app recién arrancada):
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+2. `canceladas` → «Norte lun — sala ocupada»
+3. `cancelar Norte lun --motivo "porque sí"` → «motivo no válido: cambio de planes, sala ocupada, otro»
+4. `cancelar Norte lun` (sin `--motivo`) → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+Como `src/app.js` guarda las reservas en memoria, cada comando suelto por CLI empieza de cero. Para que el paso 2 vea la cancelación del 1, tiene que ser la misma sesión. En esta máquina el entorno HTTP no arranca, así que no he podido darte esa sesión. Los pasos 1 y 2 los he ensayado importando `run` en un solo proceso; por CLI suelto el paso 2 saldría vacío. Dime cómo prefieres probarlos.
+
+**Mi smoke:** el gate de 5 tests, más el ensayo de los 4 pasos con las salidas literales de arriba.
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Hasta que respondas no escribo ningún registro ni fusiono.
+

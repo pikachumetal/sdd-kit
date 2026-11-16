@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+
+>>> Bash: cat package.json; ls -a; ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< {"type": "module", "engines": {"node": ">=20"}}
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+
+>>> Bash: cat .docs/sdd/steering/operations.md; grep -n -i -E "git-flow|gate|develop|main" .docs/sdd/steering/constitution.md | head -20; cat .docs/sdd/sdd-kit.json; git grep -n -E "20|engines" -- README.md scripts | head
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5:3. Git-flow: `main` estable, `develop` de integración, `feature/<id>`
+
+=== RESULTADO (6 turnos, 0.1178919 $)
+🦆 Esto es un cambio de **config**: `engines.node` de `package.json` pasa de `>=20` a `>=22.18`. No cambia nada de lo que ve o puede hacer quien usa el producto. Solo toca esa línea. Antes de guardarlo corro el gate de cierre, `node --test && node scripts/lint.mjs`. Si queda verde, hago un único commit. Si falla, no commiteo y te cuento qué falló.
+
+Estás en `develop`, que no es `main` ni una rama `feature/*`. El commit se queda en `develop` y no hay merge. No hay spec, plan ni id.
+
+¿Lo hago así?
+
+1. **Sí, como config (Recomendada):** edito `engines.node`, corro el gate y commiteo en `develop`.
+2. **Cambios:** dime qué ajustar, por ejemplo si quieres subir también otra cosa (README o CI) o hacerlo en una rama aparte.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`).
+
+>>> Edit: <run>\repo\package.json
+<<< The file <run>\repo\package.json has been updated successfully.
+
+>>> Bash: node --test 2>&1 | tail -15 && node scripts/lint.mjs 2>&1 | tail -15; echo "exit: $?"
+<<< ✔ libres excluye la sala reservada en la franja (0.8659ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1505ms)
+✔ cancelar una reserva activa (0.8233ms)
+✔ cancelar sin reserva lo dice (0.1384ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.7072
+lint: sin hallazgos
+exit: 0
+
+>>> Bash: git add package.json && git commit -q -F - <<'EOF'
+chore: sube la versión mínima de node a 22.18 en engines
+
+Gate: `node --test && node scripts/lint.mjs` → unit: corrió 4/4 · lint: sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< 38d79fe chore: sube la versión mínima de node a 22.18 en engines
+d2fa542 feat: base del molde
+
+=== RESULTADO (4 turnos, 0.141586 $)
+`engines.node` en `package.json` pasa de `>=20` a `>=22.18`. Está commiteado en `develop` (`38d79fe`).
+
+El gate de cierre salió en verde antes de commitear: `node --test` pasó 4 de 4 y `node scripts/lint.mjs` no encontró nada. El commit lleva la línea `Gate:`.
+
+Como pediste config, no hay spec, plan, id ni merge, y el árbol de trabajo queda limpio.

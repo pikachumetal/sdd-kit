@@ -1,0 +1,28 @@
+--- [2]
+Este proyecto usa el kit SDD, y para cualquier cambio, incluido un patch urgente, la entrada es `sdd-propose`. La invoco.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (solo docs, no código). Queda: clasificar el cambio y preguntarte por el carril, ~2 min.
+
+--- [9]
+Ahora: compruebo dependencias, leo la referencia del carril patch y miro el código mínimo para clasificar. Queda: preguntarte por el carril, ~2 min.
+
+--- [16]
+Ahora: te pregunto por el carril antes de crear rama, carpeta o id. Queda: tu confirmación; después `sdd-implement` con el test rojo, el fix y el gate, ~30 min.
+
+🦆 **Lo que he visto, en llano.** No es el orden del array. `findBooking` (`src/app.js:10-12`) recibe `day` pero no lo usa: filtra solo por sala y estado. Hay una única reserva (Norte, lunes), así que "cancelar Norte mar" encuentra la del lunes, la marca cancelada y responde con el día que le pasaste. Buscar desde el final no lo arregla: con una sola reserva activa de Norte seguiría devolviendo la del lunes. `anular` usa la misma función y tiene el mismo fallo. El parche 0007 corrigió el caso análogo en la hora, pero no el día.
+
+**Carril propuesto: patch (fallo determinista).** La causa raíz fija la solución: comparar también `b.day === day`. Un test de regresión la reproduce hoy: `cancelar Norte mar` debería dar `sin reserva Norte mar` y deja la reserva del lunes activa.
+
+Perfil: `delegate`, del proyecto (`sdd-kit.json`).
+
+Estimación: ~0,5 h (referencia: patch 0007) más el gate de cierre `node --test` entero, que no está medido en este proyecto.
+
+¿Cómo seguimos?
+
+1. **Patch con la causa real (Recomendada).** Arreglo `findBooking` para que compare el día, con un test rojo de `cancelar` y otro de `anular`, y cierro con `node --test` en verde. `cancelar` y `anular` quedan arreglados juntos, porque comparten la causa.
+2. **Patch, pero tu versión.** Busco desde el final. No lo recomiendo: el test rojo seguiría en rojo y producción seguiría parada.
+3. **Cambiar de perfil o ausentarte.** Para `pair` en este cambio, di «perfil `pair` para esta feature». Si te vas a ausentar, di «apruebo por delegación».
+
+Aviso aparte: esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. No bloquea este patch.
+

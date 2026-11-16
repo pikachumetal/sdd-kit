@@ -1,0 +1,30 @@
+--- [3]
+Ahora: localizo el workspace del plan y leo `re-review.md`. Queda: decidir qué hacer con sus hallazgos, ~2 min.
+
+--- [13]
+Ahora: arreglo el Critical de `re-review.md` (`cancelar` sin `--motivo` debe responder «motivo no válido»), con el test en RED antes. Queda: fix, suite, commit y ✋, ~3 min.
+
+--- [16]
+RED confirmado. Ahora el fix.
+
+--- [23]
+`sed` convirtió el fichero de CRLF a LF y el commit reescribía las 48 líneas. Restauro CRLF y rehago mi commit.
+
+--- [28]
+Corregido el Critical de la re-revisión. El commit queda **sin revisar**: la re-revisión ya salió y no se abre otra.
+
+**Qué pasaba:** el fix anterior dejó la comprobación en `reason !== undefined && …`. Un `cancelar` sin `--motivo` se saltaba la validación y cancelaba la reserva. Eso incumple el AND de la spec: «sin `--motivo` responde lo mismo: motivo no válido…».
+
+**Fix (`f76d654`):**
+- **RED:** añadí `cancelar sin motivo pide uno de la lista` en `test/cancel.test.js` y falló. Respondía «sin reserva Sur mar», es decir, se saltaba la validación.
+- **Código:** en `src/app.js:20` la condición es ahora `!reasons.includes(reason)`.
+- **GREEN:** la suite pasa, 7/7 (`node --test test/`).
+- **A mano:** `cancelar Norte lun` responde «motivo no válido: cambio de planes, sala ocupada, otro», y `libres 10:00-12:00` sigue sin listar Norte.
+- **Ledger:** `Final: fixed … RED→GREEN, suite 7/7`, anotado en el `progress.md` del workspace.
+
+**Nota sobre el diff:** `git diff --numstat` marca 48/48 líneas en `src/app.js`. El blob anterior estaba guardado con CRLF y `core.autocrlf=true` lo normaliza a LF al commitear. Con `--ignore-space-at-eol` el cambio real es 1 línea de código más 4 de test. No toqué la configuración de git.
+
+✋ **sin revisar: f76d654 — `cancelar` sin `--motivo` responde «motivo no válido» en vez de cancelar.** Son más de 20 líneas por numstat y toca código, así que no vale el «revisado en el hilo». Hasta que alguien lo revise, el cierre no puede decir que la revisión quedó limpia: queda 1 sin revisar.
+
+No he tocado `tasks.md` (quedó como lo dejó `dee37fc`, sin línea de este fix). Dime si prefieres que anote `sin revisar: f76d654` ahí, o si pasamos al cierre con `sdd-archive`.
+

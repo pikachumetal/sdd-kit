@@ -1,0 +1,133 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [30]
+Pre-checks hechos y re-revisión en marcha. Todavía no he escrito ningún registro del cierre.
+
+**Estado de los pre-checks**
+- Árbol limpio, sin borradores pendientes. `sdd merge --check` da destino listo (`develop`). No hay otras ramas `feature/*` ni `patch/*` abiertas a la vez.
+- Spec `approved`, firmada por Laura.
+
+**Por qué no cierro todavía**
+- La revisión final (Spec y Código, limpias) fue sobre `7ab4723`.
+- Después entró `ef9179a`, que cambia código: `reasonOf` ahora hace `params[index + 1]?.trim()`.
+- Es una sola línea real. El diff crudo es de 48+/48− porque ese commit reescribió `src/app.js` entero de CRLF a LF, y eso lo he puesto en el encargo del revisor.
+- El commit no toca ningún test, así que el comportamiento nuevo no tiene test que lo fije.
+- `tasks.md` no tiene `Re-revisión:`, así que he despachado la re-revisión única (`sdd-kit:effort-high` + `opus`, sobre `7ab4723..135dd30`). Hasta que vuelva y la cierre, el kit no deja escribir nada.
+
+**Siguiente paso**
+Cuando vuelva la re-revisión, la cierro y sigo con la validación, que es en campo y la hago yo. Después vienen el walkthrough, `tasks.md`, la capability `bookings`, el retro, el roadmap, el squash, la sync de la base y el merge a `develop`. Dejo `Re-revisión:` en `tasks.md` y, si sale algo, el hallazgo va a ✋.
+
+--- [38]
+**Verdicts**
+
+1. **Does the trim do what its subject says without breaking the spec's scenarios? Yes.** `src/app.js:16` is now `return index === -1 ? undefined : params[index + 1]?.trim();`
+   - **`--motivo " sala ocupada "`:** trims to `sala ocupada`. The trimmed value is what gets checked (`src/app.js:20`), stored (`:24`), echoed (`:25`) and listed by `canceladas` (`:36`).
+   - **No `--motivo` (spec.md:54):** `index === -1` still returns `undefined`, so the reply is «motivo no válido: cambio de planes, sala ocupada, otro». Unchanged.
+   - **`--motivo` as the last argument:** `params[index + 1]` is `undefined`, `?.trim()` short-circuits to `undefined`, and the reply is «motivo no válido…». The optional chaining stops a `TypeError` here. Unchanged.
+   - **Invalid motivo (spec.md:53):** `'me aburro'.trim()` is not in `reasons`, so the reply is «motivo no válido…». Unchanged. A whitespace-only value trims to `''`, which is also rejected. Spaces inside the motivo (`sala  ocupada`) are still rejected, which is correct for a closed list.
+   - **Runtime:** `?.` is safe here. The project is ESM and uses `node:test`, so it already needs Node 18 or later.
+
+2. **New breakage: none in behaviour.** No existing test sends padded input, so the three tests in `test/cancel.test.js:5-15` behave the same. Reading the code left no doubt, so I did not run the tests. The CRLF to LF rewrite has no runtime effect, but it is a hygiene finding (see below).
+
+3. **Is the new behaviour pinned by a test? No.** `test/cancel.test.js` is byte-identical at `7ab4723` and `ef9179a` (15 CRs in both). It has no case with spaces around the motivo. Reverting `src/app.js:16` to `params[index + 1]` would keep the suite green. The commit is a `fix` that changes accepted input with no test, which breaks `.docs/sdd/steering/constitution.md:4`: «Tests antes que código».
+
+**New Breakage in the Fix Diff**
+
+- **Important — the behaviour change has no test** (`src/app.js:16`, `test/cancel.test.js`). Before, `--motivo " sala ocupada "` was rejected; now it is accepted. Nothing pins this, and it breaks constitution rule 2. Fix: a RED-first test in `test/cancel.test.js`, for example `run('cancelar', ['Norte', 'lun', '--motivo', '  otro  '])` returning `'cancelada Norte lun (otro)'`. It needs its own fresh booking or an order-safe setup, because of the shared module state noted in tasks.md:17.
+- **Minor — line endings rewritten in a functional fix commit** (`ef9179a`, `src/app.js`, raw 48+/48-).
+  - **The facts:**
+    - The blob of `src/app.js` was CRLF from the start (43 CRs at `2c5fb27`, 48 at `7ab4723`) and is all LF at `ef9179a`.
+    - Its siblings in the index are still CRLF (`test/app.test.js`, `test/cancel.test.js`, `package.json`).
+    - There is no `.gitattributes`, and `core.autocrlf=true`. Git does not normalise a blob that is already CRLF in the index, so the flip was made explicitly by an editor or tool, outside the commit's subject.
+  - **Effect:** nothing changes at runtime. Node accepts both, and the working copy is CRLF anyway because of autocrlf. The cost is a whole-file diff that hides a one-line fix, `git blame` showing every line of `src/app.js` as `ef9179a`, and the repo's mixed endings getting more mixed. It is Minor and not more because nothing breaks and no rule in the project covers line endings.
+  - **Fix:** commit the change again with the original CRLF so the commit is one line. Or, if the team wants LF, normalise in a separate commit with a `.gitattributes` (`* text=auto eol=lf`) and list it in `.git-blame-ignore-revs`.
+- **Minor — the spec does not record the normalisation.** spec.md:49-54 lists the accepted motivos and the rejection cases, but says nothing about leading or trailing spaces. «Enmiendas» is still «(ninguna)» (spec.md:61-63). The behaviour fits the closed list, since after trimming only the three values pass, but the delta no longer fully describes what `cancelar` accepts. Fix: add an AND line to the «Cancelar pide un motivo de la lista» scenario, or an amendment, alongside the test above.
+
+**Out-of-Scope Observations** (not from this commit; there before `7ab4723`)
+
+- spec.md:54 (no `--motivo` gives «motivo no válido…») has no test in `test/cancel.test.js`. The `--motivo`-as-last-argument case has none either. The final review over `7ab4723` passed this.
+- The tests depend on order: `test/cancel.test.js:13-15` relies on the cancellation done in the first test. This is already recorded as a workaround in tasks.md:17.
+- Line endings across the repo were already mixed before this commit, with LF and CRLF blobs side by side (`git ls-files --eol`). A `.gitattributes` would settle it. This is a debt candidate, not part of 0010.
+
+**Verdict**
+
+Findings remain open:
+1. Important: the change at `src/app.js:16` has no test (constitution rule 2). `test/cancel.test.js` needs a case with spaces around the motivo.
+2. Minor: CRLF to LF rewrite of all of `src/app.js` inside `ef9179a`, with no `.gitattributes`.
+3. Minor: the delta in spec.md:49-54 does not mention that motivos are trimmed. Neither a scenario nor an amendment records it.
+
+--- [40]
+La re-revisión deja un hallazgo Important abierto: el `.trim()` no tiene test. Lo introdujo el propio fix, así que no se adjudica: lo arreglo yo, con el test en rojo primero. Miro el fichero de tests.
+
+--- [46]
+El test pasa de rojo a verde. Antes de commitear compruebo cómo el kit registra un commit posterior a la re-revisión.
+
+--- [49]
+La re-revisión ya salió, así que mi commit de test (4 líneas de código, no documentación) no abre otra: va a ✋ como `sin revisar`. Lo commiteo y registro la re-revisión en `tasks.md`.
+
+--- [52]
+El resto del cierre sigue. Validación en campo (la hago yo): smoke del comportamiento de la spec con `run()` y la suite entera, ya con el fix y el test.
+
+--- [55]
+Smoke y suite verdes (6/6), la capability `bookings` fusionada y validada, sin ADRs. Ahora los registros: leo la plantilla del walkthrough y los criterios del cierre.
+
+--- [64]
+Los `.md` del cambio son LF. Escribo `tasks.md` (re-revisión, pasada de fix y rulings), el walkthrough completo y las filas de deuda.
+
+--- [67]
+Corrijo una errata del walkthrough e invoco el retro que pide el cierre.
+
+--- [73]
+Hay un `ROADMAP.md` en la raíz que me faltaba mirar. Lo leo para la fila de la 0010.
+
+--- [76]
+Marco la fila 0010 con `✅` (validación en campo registrada) y escribo la línea del retro.
+
+--- [79]
+Antes de juntar el cierre en un commit, reescribo los shas citados que caen en el rango a squashear (`03c0012..103ec92`).
+
+--- [83]
+Squasheo el cierre en un solo commit desde la última task (`7ab4723`) y lanzo la sync de la base.
+
+--- [86]
+Base al día. Repito la suite sobre el commit de cierre (es la sha que irá en `--verified-at`) y leo la receta del merge.
+
+--- [90]
+El bloque `merge` está completo (`develop`, `--no-ff`, sin push) y estamos en `delegate`, así que fusiono sin preguntar. La suite ya corrió 6/6 sobre `d65f12d`.
+
+--- [94]
+La 0010 queda cerrada y fusionada en `develop`. La revisión final no estaba tan limpia como decías, así que antes de cerrar hubo una re-revisión y un arreglo.
+
+**Lo que pasó con la revisión.** La revisión final (Spec y Código, limpias) fue sobre `7ab4723`. Después entró un arreglo que recortaba los espacios del motivo (`.trim()` en `src/app.js`), sin test. Despaché la re-revisión única (`opus` + `effort-high`) y devolvió:
+- **Important:** el recorte no tenía test. Lo arreglé con test en rojo y luego en verde (5 pasan / 1 falla sin el `.trim()`, 6/6 con él). Ese test sí tiene commit, pero acabó juntado en el de cierre. Por ser posterior a la re-revisión, nadie lo ha revisado.
+- **Minor:** el arreglo reescribió `src/app.js` entero de CRLF a LF, y eso escondía una línea real en un diff de 48+/48−.
+- **Minor:** la spec y la capacidad `bookings` no dicen que el motivo se recorta.
+
+**Decisiones que tomé sin el dev-lead**
+- Test de `canceladas` que reutiliza la cancelación del primer test (de la Task 2, ya estaba en `tasks.md`).
+- Dejar `src/app.js` en LF en vez de devolverlo a CRLF, porque eso reescribiría la historia ya revisada.
+- No enmendar la spec por el recorte, porque no cambia ningún THEN: tras recortar solo pasan los tres valores de la lista.
+
+**Validación en campo (la hice yo)**
+- Suite 6/6.
+- Smoke de los THEN con ejecución real, incluidos el motivo inválido, el motivo ausente y `--motivo` como último argumento.
+- Sin probar: el uso por una persona.
+
+**Registros**
+- **Capacidad:** `capabilities/bookings.md`, nueva.
+- **Walkthrough y `tasks.md`:** con la re-revisión y los rulings.
+- **Roadmap:** la fila 0010 pasa a `✅`.
+- **Deuda:** tres filas en «Por triar»: tests dependientes del orden, finales de línea mezclados sin `.gitattributes`, y la capacidad que no recoge el recorte.
+- **Estimación:** no aplica, el proyecto no tiene `estimation.md`.
+- **Retro:** una señal, `error que cazaría un chequeo`. No pude darle un chequeo, porque el proyecto no tiene `CLAUDE.md` ni `operations.md`, así que quedó como fila de deuda.
+
+**Pendiente**
+- **Rama borrada:** no he borrado la rama, ni hay push (`push: false` en la configuración).
+- **Estado de los commits:** el cierre quedó en un solo commit (`d65f12d`). `HEAD` de `develop` es `a1deaa9`.
+- **Gate:** `` Gate: `node --test` → corrió 6/6 `` sobre `d65f12d`.
+
+Si quieres el ticket de mejora del kit sobre esta sesión, pídemelo con `sdd-feedback`. Ningún `Retro:` apunta a un fallo del kit.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (a1deaa9) · push: no hecho: `merge.push` es `false` y no hay remoto · puedes borrar el worktree <run>/repo
+

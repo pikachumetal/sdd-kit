@@ -1,0 +1,62 @@
+--- [21]
+Estoy terminando el repaso: la prueba del delta rechazó la spec y he encontrado huecos. Los corrijo en `spec.md` y repito la prueba antes de presentártela.
+
+--- [25]
+Ahora: presentarte la spec de la 0010 para aprobarla. Queda: tu respuesta.
+
+# Spec — Motivo al cancelar
+
+🦆 Quien cancela una reserva tiene que elegir un motivo de una lista cerrada. Por ejemplo, Ana cancela la sala Norte del lunes con «sala ocupada», y la respuesta es «cancelada Norte lun (sala ocupada)». Un listado nuevo de canceladas enseña después «Norte lun — sala ocupada — Ana». El nombre sale de la persona a cuyo nombre está la reserva. Las reservas siguen en memoria, así que el listado solo enseña lo cancelado durante la misma ejecución.
+
+**Antes de aprobar, mira la decisión 6:** tal como está la spec, el objetivo de dejar rastro no se cumple en el uso real. Cada orden de terminal arranca de cero: al cancelar dos veces seguidas Norte lun, las dos responden «cancelada». Por tanto, `canceladas` lanzado después de `cancelar` en otra orden responde «sin canceladas». El listado solo funciona en el mismo proceso, que es como lo prueban los tests.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Motivos:** lista cerrada con cambio de planes, sala ocupada y otro. Viene de la entrevista.
+2. **Listado de canceladas:** enseña sala, día, motivo y quién canceló.
+3. **Sin review de spec:** hay dos señales (capacidad nueva y datos) y unas 30 líneas en 2 ficheros.
+4. **`bookings` es una capacidad nueva:** todavía no existe `capabilities/`.
+5. **Quién canceló:** es el titular de la reserva, sin parámetro nuevo en el comando. Hoy las reservas no guardan titular, así que la de ejemplo pasa a estar a nombre de Ana.
+6. **Las reservas siguen en memoria:** es lo que dice `operations.md`, con la consecuencia de arriba. Guardar en disco queda fuera.
+7. **Sin `--motivo`:** no cancela y responde «motivo no válido: cambio de planes, sala ocupada, otro», igual que con un motivo fuera de la lista.
+8. **Sin reserva:** responde «sin reserva <sala> <día>» antes de mirar el motivo, como hoy.
+9. **Sin ninguna cancelada:** `canceladas` responde «sin canceladas».
+10. **Nombres y textos:** `--motivo`, `canceladas`, «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada — Ana».
+11. **Anulaciones:** no salen en `canceladas`.
+12. **Ejecución:** una task, con método Native, fijado en `sdd-kit.json`.
+
+- **Política de modelos:** sin revisores de spec. En la revisión final, Spec opus+high, Código sonnet+high y Arquitectura según el plan. Sin otros despachos en paralelo.
+- **Prueba del delta:** `sdd capability merge` sobre una copia da `bookings.md` con 2 requisitos añadidos y sin rechazos.
+
+## Qué he corregido en el repaso
+
+- **Prueba del delta:** rechazaba la spec porque declaraba `bookings` como modificada sin que existiera el fichero. Ahora es nueva.
+- **Señales de review:** la spec contaba un `MODIFIED` que el delta no tiene. Siguen siendo dos señales y sigue sin haber review.
+- **Casos añadidos:** sin motivo, sin reserva y listado vacío (decisiones 7 a 9). Antes no estaban definidos.
+- **Secciones obligatorias:** añadidas las que faltaban de la plantilla, como la validación (`dev-lead`) y «Lo que se retira o cambia de forma». Ahí consta que cambia la respuesta de `cancelar`, así que `test/cancel.test.js:6` se tendrá que actualizar.
+
+## Alcance y comportamiento
+
+- **Entra:** `cancelar <sala> <día> --motivo <motivo>`, el comando `canceladas` y el titular en la reserva.
+- **No entra:** anulaciones del responsable de sala (0011) y guardar las reservas entre ejecuciones.
+
+| Orden | Situación | Respuesta |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | Reserva a nombre de Ana | «cancelada Norte lun (sala ocupada)» |
+| `cancelar` con motivo fuera de la lista, o sin motivo | Hay reserva | «motivo no válido: cambio de planes, sala ocupada, otro», y la reserva sigue activa |
+| `cancelar Sur mar` | No hay reserva | «sin reserva Sur mar» |
+| `canceladas` | Norte lun cancelada en esta ejecución | «Norte lun — sala ocupada — Ana» |
+| `canceladas` | Ninguna cancelada en esta ejecución | «sin canceladas» |
+
+## Avisos
+
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que algunas reglas pueden ser de la versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+- **Contradicción en los documentos:** `mission.md` dice que no hay más usuarios y `PRODUCT.md` habla de equipos de una oficina. He seguido `PRODUCT.md` porque la spec necesita saber quién cancela.
+
+La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`, sin commitear.
+
+**¿Apruebas la spec?** Aprobar acepta que el listado solo funcione dentro de una misma ejecución. Si quieres que funcione entre órdenes de terminal, elige «Cambios»: guardar en disco entra en el alcance y tendría que reescribir esa parte.
+
+1. Apruebo (Recomendada)
+2. Cambios
+

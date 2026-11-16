@@ -1,0 +1,34 @@
+Esta es la pregunta que le haría ahora al usuario:
+
+---
+
+❓ **¿En qué formato se exportan las reservas?**
+
+Lo que he encontrado: `tech-stack.md` dice que el proyecto usa Node 22 sin dependencias externas, y que los comandos reciben siempre `sala día franja`, en ese orden. No dice si el día es una fecha (`2026-10-05`) o un día de la semana (`lunes`), ni qué horas cubre una franja. En los ejemplos uso `lunes` y `mañana` solo como suposición. Has mencionado cuatro usos: hojas de cálculo, calendarios, otros scripts y leerlas sin más. Ningún formato sirve bien para los cuatro.
+
+1️⃣ **CSV** (texto por columnas separadas por comas, RFC 4180). Tras `reservar Norte lunes mañana`, `salas exportar` da:
+```
+sala,dia,franja
+Norte,lunes,mañana
+```
+Se abre directamente en una hoja de cálculo, un script lo lee línea a línea y se entiende a simple vista. Pero un calendario no lo convierte en eventos.
+
+2️⃣ **iCalendar `.ics`** (RFC 5545), el formato que importan Google Calendar, Outlook y Apple Calendar. Cada reserva sería un evento:
+```
+BEGIN:VEVENT
+SUMMARY:Sala Norte
+DTSTART:20261005T090000
+DTEND:20261005T140000
+END:VEVENT
+```
+La reserva aparece en el calendario. Pero cada evento necesita una fecha y hora concretas, así que hay que decidir qué fecha es «lunes» y a qué horas corresponde «mañana». Además, una hoja de cálculo no lo abre bien y un script tendría que interpretarlo.
+
+3️⃣ **JSON**, `[{"sala":"Norte","dia":"lunes","franja":"mañana"}]`. Cualquier script lo lee sin trabajo extra. Pero no sirve para hojas de cálculo ni calendarios, y con muchas reservas cuesta más leerlo a ojo que el CSV.
+
+🔀 **CSV y `.ics`**, con `salas exportar --formato csv|ics`. Cubre los cuatro usos. A cambio, hay dos formatos que mantener, y la parte `.ics` arrastra la misma condición que 2️⃣: fijar fecha y horas de cada franja.
+
+➡️ **Te recomiendo 1️⃣**, porque con un solo formato cubre tres de tus cuatro usos y no hace falta ninguna dependencia. El `.ics` depende de algo que el proyecto aún no define (si el día es una fecha y qué horas tiene cada franja). A cambio, de momento las reservas no llegarán solas al calendario. Se puede añadir el `.ics` más adelante, cuando estén definidas la fecha y las horas.
+
+---
+
+**Aparte, para la skill que me ha llamado (no se lo preguntaría en este turno):** según `tech-stack.md`, las reservas se guardan en memoria y se pierden al salir. Cada vez que se ejecuta `salas` se arranca de cero, así que un `salas exportar` lanzado por separado siempre saldría vacío. Antes de cerrar el formato, o justo después, hay que decidir cómo se guardan las reservas entre una ejecución y otra.

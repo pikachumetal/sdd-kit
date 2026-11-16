@@ -1,0 +1,104 @@
+--- [6]
+Contexto: leo docs y código.
+
+--- [11]
+No hay dependencias que instalar. Reservo el id y creo la rama.
+
+--- [30]
+Mi edición no se aplicó. Uso Edit.
+
+--- [34]
+RED verificado: falla por lo esperado. Escribo `patch.md` (síntoma y causa) antes del fix.
+
+--- [41]
+Mi test nuevo consume la reserva del lunes y rompe el test existente, que comparte estado. Compruebo que la del lunes sigue activa con `libres`, sin cancelarla.
+
+--- [45]
+Con el fix quitado el test falla, y con él pasan 5 de 5. Completo §4 y lanzo el revisor único del patch.
+
+--- [52]
+Acepto H1 y H2. Muevo el test a un fichero propio, que corre en un proceso con estado limpio, y añado el caso de `anular`. H3 queda fuera del patch. H4 se completa al cerrar.
+
+--- [65]
+Compruebo si `.temp/` ensucia el árbol antes de presentar.
+
+--- [68]
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva de Norte del lunes y decía «cancelada Norte mar». Ahora dice `sin reserva Norte mar` y no toca la del lunes. `anular` tenía el mismo defecto y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada. En la revisión acepté dos hallazgos: el test va en su propio fichero y se añadió el caso de `anular`. Rechacé uno, porque ya existía y queda fuera del patch: el test «cancelar una reserva activa» depende del orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva el martes | ejecución real | `sin reserva Norte mar` |
+| La reserva del lunes sigue activa | suite (`test/cancel-day.test.js`) | `libres 10:00-12:00` → `Sur` |
+| `anular Norte mar` sin reserva el martes | ejecución real | `sin reserva Norte mar` |
+| `cancelar Norte lun` y `anular Norte lun` siguen funcionando | ejecución real | `cancelada Norte lun` / `anulada Norte lun` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre 166ff30. Sin el fix, los dos tests nuevos fallan.
+
+**Sin probar**
+
+- Que la reserva del lunes sobreviva tras cancelar el martes, en la terminal: el almacén es de cada proceso y cada comando arranca con el lunes activo. Lo cubre el test, que lo comprueba en un solo proceso.
+
+Panel: plan B en http://127.0.0.1:58917/ (esta página no ve la app, así que si falla un paso, cuéntalo en el comentario).
+
+**Guion**
+
+Rama `feature/0015-cancel-dia` · worktree `<run>/repo`
+
+Es una CLI y no declara entorno que arrancar.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Tu caso: cancelar el martes, que no tienes reservado → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Cancelar el lunes sigue funcionando → `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Anular un día sin reserva → `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+4. Anular el lunes sigue funcionando → `anulada Norte lun`
+
+```
+node src/app.js anular Norte lun
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Aviso para el merge: `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, así que `sdd merge --check` se detiene. Cuando valides, te presento el merge para que lo apruebes o me digas qué política quieres.
+
+Dime "validado" o qué paso falla.
+
+--- [71]
+El fix está commiteado y paro aquí, sin validar ni cerrar.
+
+- **Causa:** `findBooking` en `src/app.js` recibía `day` y no lo usaba. Por eso `cancelar Norte mar` cancelaba la reserva activa de Norte del lunes. `anular` usa la misma función y tenía el mismo fallo.
+- **Fix:** una condición, `b.day === day`.
+- **Tests:** `test/cancel-day.test.js`, con un caso para `cancelar` y otro para `anular`. Sin el fix fallan los dos, y con él pasa `node --test` entero (6/6).
+- **Commit:** `166ff30` en `feature/0015-cancel-dia`, que incluye el `patch.md` en `.docs/sdd/changes/20261112-184719-patch-0015-cancel-dia/`.
+- **Revisión:** un revisor aceptado en dos puntos y rechazado en uno, como consta en `patch.md`.
+- **Panel de validación:** lo he parado y el puerto 58917 está libre.
+
+Queda pendiente el cierre con `sdd-archive`, que necesita tu «validado» y una política de merge. En `sdd-kit.json` faltan `merge.into` y `merge.noFf`. Cuando quieras cerrar, dímelo y retomo desde ahí.
+

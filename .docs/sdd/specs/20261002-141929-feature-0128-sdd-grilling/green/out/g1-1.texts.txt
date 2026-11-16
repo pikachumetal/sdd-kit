@@ -1,0 +1,30 @@
+--- [14]
+Antes de proponer nada he leído lo que hay. No he tocado nada.
+
+**Lo que dice el código y los docs**
+- Una franja es hoy un texto libre, como `10:00-12:00` (`src/app.js:3`). `freeRooms` y la cancelación comparan ese texto con `===`.
+- No se valida el formato. La deuda técnica del roadmap lo recoge como «Patch cuando moleste».
+- En la misión eres la única persona usuaria y no hay dependencias externas.
+
+**Lo que infiero yo**
+- Como `10:30-11:00` ya es un texto válido, hoy se podría «reservar media hora» sin cambiar nada.
+- Lo que no funcionaría es el solapamiento. Con la comparación por igualdad, `10:30-11:00` y `10:00-12:00` no chocan, y la sala saldría libre estando ocupada.
+
+El resto de decisiones (validación, granularidad, `--cada-semana`, cancelar, `.ics`) depende de cómo resuelvas esto.
+
+❓ **¿Cómo detecta el sistema que dos franjas chocan?**
+🅰️ **Intervalos con solapamiento.** Se interpreta la franja como inicio-fin y hay choque si se pisan.
+- `reservar Norte lun 10:30-11:00` → `Norte ocupada (lun 10:00-12:00); no reservada`
+- `libres lun 11:00-11:30` → `Sur` (Norte sigue ocupada por 10:00-12:00)
+- Coste: hay que parsear y validar las horas. Eso absorbe la deuda de validación, y la cancelación y `libres` pasan a usar la misma regla.
+
+🅱️ **Franjas fijas de 30 min.** Las reservas se dividen en bloques de 30 min, y una de 2 h ocupa 4 bloques.
+- `reservar Norte lun 10:30-11:00` → `Norte ocupada; no reservada`
+- Coste: es un cambio mayor en el modelo, y la cancelación tendría que decidir si borra un bloque o la reserva entera.
+
+🅲 **Igualdad exacta, como ahora.** Solo cambia que se admiten horas como `:30`.
+- `reservar Norte lun 10:30-11:00` → `reservada`, aunque Norte esté ocupada de 10:00 a 12:00
+- Coste: permite dobles reservas silenciosas. Es lo más barato, pero no creo que lo quieras.
+
+➡️ **Recomiendo 🅰️**, porque la media hora solo tiene sentido si choca con las reservas largas ya existentes (como la de Norte, lun 10:00-12:00), y 🅰️ lo consigue sin rediseñar el modelo. A cambio, asumes escribir el parseo y la validación de horas, que hoy no existen.
+

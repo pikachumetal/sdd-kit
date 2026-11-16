@@ -1,0 +1,23 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y darte la nota de entendimiento, ~2 min.
+
+--- [12]
+Ahora: te doy el aviso de carril y la nota de entendimiento, y te hago la primera pregunta de diseño. Queda: la entrevista (unas pocas preguntas), la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** el responsable de cada sala cuadra las reservas los lunes en su hoja de cálculo. Quiere un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV para abrirlo directamente en la hoja. Hoy `src/app.js` es un único fichero con un array `bookings` en memoria (`room`, `day`, `slot`) y `run(cmd, params)` que despacha comandos (`libres`, `reservar`, `cancelar`). El comando nuevo seguiría ese patrón, sin dependencias externas (Node 22, constitución y operations). Éxito: abrir el CSV en la hoja y que cada reserva caiga en su fila y columna, sin arreglos a mano.
+
+No he mirado más código que eso, y no he creado rama ni carpeta todavía.
+
+❓ **¿Cómo se invoca y a dónde sale el CSV?**
+Hoy los comandos devuelven un texto que `app.js` imprime con `console.log`. El responsable lo va a pegar o importar en una hoja.
+1️⃣ **`salas exportar <sala>` imprime el CSV por la salida estándar.** Es coherente con el resto de comandos. Quien quiera fichero hace `salas exportar Norte > norte.csv`. Cuesta una redirección de shell.
+2️⃣ **`salas exportar <sala> --salida norte.csv` escribe el fichero.** Más cómodo para quien no usa shell. Cuesta una opción nueva, gestionar rutas y sobrescrituras, y más tests.
+3️⃣ **Ambas:** stdout por defecto y `--salida` opcional. Es lo más completo, pero es más superficie de la que pide el caso.
+➡️ **Recomiendo 1️⃣**, porque encaja con `run(cmd, params)` devolviendo texto y no añade lógica de ficheros. A cambio, el responsable tiene que redirigir la salida.
+

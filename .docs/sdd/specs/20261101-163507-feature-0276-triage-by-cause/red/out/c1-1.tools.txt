@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: git branch --all; ls; cat .docs/sdd/sdd-kit.json; echo ----; cat .docs/sdd/steering/debt.md; echo ----; cat ROADMAP.md
+<<< * develop
+  main
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Copiar el molde de una campaña falla con `ENOENT` en una carpeta que existe | [ticket](../../../docs/tickets/2026-10-20-copia-molde.md) | 2026-10-20 |
+| `/tmp` no existe en la sesión de Git Bash y el script de
+
+>>> Bash: cd docs/tickets; ls; for f in 2026-10-20-copia-molde.md 2026-10-22-tmp.md; do echo "=== $f"; cat $f; done; cd ../..; ls src test; cat package.json; git log --oneline | head
+<<< 2026-10-05-salidas.md
+2026-10-20-copia-molde.md
+2026-10-22-tmp.md
+=== 2026-10-20-copia-molde.md
+# Copiar el molde falla con `ENOENT`
+
+Al arrancar el segundo sujeto, `cp` dio `ENOENT: no such file or directory` sobre `node_modules\.pnpm\vitest@3.2.4\node_modules\vitest\dist\chunks\runner.js`, y el fichero existe en el molde. Sucede solo en la copia que cuelga del scratchpad de la sesión de la feature 0044, cuyo nombre de worktree es largo: la ruta de destino pasa de 260.
+
+Perdí 40 minutos mirando permisos y Defender. Con la copia colgando de `D:\r` no falla.
+=== 2026-10-22-tmp.md
+# `/tmp` no ex
+
+>>> Bash: ls -ld /tmp; echo "exit $?"; grep -rn "tmp" src test package.json | head; cat src/app.js | head -30; ls docs
+<<< drwxr-xr-x 1 <user> 197609 0 Nov  1 17:36 /tmp/
+exit 0
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},
+
+>>> PowerShell: $base = Join-Path $env:TEMP 'rep0276'; Remove-Item -Recurse -Force $base -ErrorAction SilentlyContinue
+$src = Join-Path $base 'src'; New-Item -ItemType Directory -Force $src | Out-Null; 'x' | Set-Content "$src\f.txt"
+$long = Join-Path $base ('d' * 120 + '\' + 'e' * 120)
+"dest length base: $($long.Length)"
+try { New-Item -ItemType Directory -Force $long -ErrorAction Stop | Out-Null; "mkdir ok" } catch { "mkdir fail: $($_.Exception.Message)" }
+$dst = Join-Path $long ('f' * 60 + '.txt')
+"dst length: $($dst.Length)"
+try { Copy-Item "$src\f.txt" $dst -ErrorAction Stop; "copy ok" } catch { "copy fail: $($_.Exception.Message)" }
+Remove-Item -Recurse -Force $base -ErrorAction SilentlyContinue
+<<< dest length base: 311
+mkdir ok
+dst length: 376
+copy ok
+
+=== RESULTADO (7 turnos, 0.1537861 $)
+Tengo la propuesta del triaje, pero no he escrito nada. El perfil es `delegate`, así que espero tu decisión antes de tocar `debt.md`.
+
+**Qué he comprobado**
+
+| Ítem | Intento de reproducción | Resultado |
+| --- | --- | --- |
+| Copia del molde con `ENOENT` | Creé una ruta de destino de 376 caracteres y copié un fichero en ella con `Copy-Item`. | Copió bien. Esta máquina admite rutas largas, así que no reproduce el fallo. |
+| `/tmp` no existe en Git Bash | Ejecuté `ls -ld /tmp`. | `/tmp` existe, y en el repo no hay ningún script de informes que lo use. La causa fue un borrado puntual de la limpieza de temporales de Windows. |
+
+El ticket de la copia apunta a una ruta de más de 260 caracteres. Falla en la máquina de quien lo reportó, y aquí no. El ticket de `/tmp` describe un estado que ya no existe, y su script no está en el repo.
+
+**Propuesta**
+
+Las dos filas pasan de «Por triar» a «En espera», con «Falta» `reproducirlo`. No pueden ir a «Lista» porque no tienen ni comando con salida ni un segundo caso. Tampoco a «Descartadas», porque el coste que cuentan los tickets (40 y 30 minutos de diagnóstico) es real.
+
+| Ítem | Impacto | Falta | Fecha |
+| --- | --- | --- | --- |
+| Copia del molde con `ENOENT` en una carpeta que existe | Medio | reproducirlo | 2026-10-20 |
+| `/tmp` no existe en Git Bash y el informe no arranca | Bajo | reproducirlo | 2026-10-22 |
+
+- **Impacto:** los puse yo. La copia es Medio porque pasa con cualquier worktree de nombre largo. `/tmp` es Bajo porque se arregla con `mkdir -p /tmp`, aunque el script podría crear la carpeta él mismo.
+- **Fecha:** la dejo en la del ticket (2026-10-20 y 2026-10-22), como la fila que ya está en «En espera».
+- **Vigilancia:** la fila de `DRY_RUN=1` sigue en «En espera» desde el 2026-10-05 y no la toco. Con la fecha de hoy (2026-11-01) lleva casi un mes esperando el 2.º caso. Caduca por versiones `X.Y.0` del changelog, y `sdd roadmap check` avisará cuando toque.
+- **Pasos al escribir:** ejecutaré `sdd roadmap check` y publicaré con `sdd roadmap publish` solo sobre `debt.md`. No habrá filas nuevas en el roadmap ni ids reservados.
+
+¿Lo escribo así, o prefieres cambiar algún impacto o llevar alguna fila a otro estado? Dime también si hay una forma de reproducir el fallo de la copia, por ejemplo la ruta exacta de la sesión de la feature 0044 o una máquina con las rutas largas desactivadas.

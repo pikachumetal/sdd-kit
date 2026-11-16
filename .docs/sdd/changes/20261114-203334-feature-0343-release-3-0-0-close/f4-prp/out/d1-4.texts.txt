@@ -1,0 +1,100 @@
+--- [19]
+Ahora: escribo la causa raíz en `patch.md`, luego el test en rojo y el fix. Queda: revisor, commit y cierre, ~15 min.
+
+--- [23]
+Mi test dependía del estado compartido: el primer test ya había cancelado la del lunes. Lo aíslo sembrando su propia reserva.
+
+--- [28]
+RED correcto. Ahora el fix mínimo.
+
+--- [30]
+Verde. Registro la verificación y lanzo el revisor único del patch.
+
+--- [41]
+El diff queda limpio. Espero al revisor.
+
+--- [45]
+El patch 0012 está arreglado y la suite pasa 6/6, pero todavía no he hecho el commit ni el cierre. Falta el revisor, que sigue corriendo, y espero a que termine para responder a sus hallazgos.
+
+- **Causa:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba. `cancelar Norte mar` cancelaba la reserva del lunes y respondía «cancelada Norte mar». `anular` usa la misma función y tenía el mismo fallo.
+- **Fix:** `findBooking` ahora exige que coincida el día. Sin reserva ese día, `cancelar` y `anular` devuelven `sin reserva <sala> <día>`, que es un texto que ya existía.
+- **Tests:** he añadido dos tests (`cancelar` y `anular`). Fallaban antes del fix con `cancelada Norte mar` y `anulada Norte mar`. Para que no dependan del estado de otros tests, exporto `bookings` desde `src/app.js` y cada test siembra su propia reserva.
+- **Gate:** `node --test && node scripts/lint.mjs` da 6/6 y lint sin hallazgos.
+
+He guardado el patch en `.docs/sdd/specs/20261116-141207-patch-0012-cancelar-ignora-dia/`. Uso `specs/` porque es donde están los patches y features anteriores del proyecto, aunque el kit habla de `changes/`. La rama es `feature/0012-cancelar-ignora-dia`.
+
+Después del revisor sigue el commit, la fila 0012 en el `ROADMAP.md` y el cierre. Ahí te tocará validar a ti, porque `patch.md` pone `Validación: dev-lead`.
+
+--- [49]
+Hay hallazgos de severidad baja o informativa y ninguno bloqueante. La causa raíz está bien, el fix es mínimo y los tests nuevos fallan sin él.
+
+Ejecuté la suite en copias temporales del repo, sin tocar el original. Con el fix pasan 6 de 6 y el lint sale sin hallazgos. Con `src/app.js` de HEAD más solo `export` en `bookings`, fallan exactamente los 2 tests nuevos y pasan los otros 4.
+
+**(1) Causa raíz de patch.md: correcta y evidenciada.**
+- En HEAD, `findBooking(room, day)` no usaba `day`: filtraba solo por `room` y `status === 'active'`.
+- `cancelBooking` y `voidBooking` responden con el `day` pedido, no con el de la reserva hallada. Eso explica el mensaje `cancelada Norte mar` sobre una reserva del lunes.
+- La evidencia que cita patch.md (RED antes del fix, con `cancelada Norte mar` y `anulada Norte mar`) coincide con lo que obtuve.
+- La referencia al patch 0007 se corresponde con CHANGELOG.md:14 y ROADMAP.md:10.
+
+**(2) Fix mínimo y que cubre las dos órdenes.**
+- El cambio efectivo es una sola condición, `b.day === day`, en `src/app.js:10`.
+- `cancelar` (`src/app.js:13-18`) y `anular` (`src/app.js:20-25`) pasan por `findBooking`, así que ambos quedan arreglados sin más cambios.
+- `freeRooms` (`src/app.js:5-7`) no usa `findBooking` y no se ve afectado.
+
+**(3) Tests nuevos.**
+- Fallan sin el fix, como se ve arriba, y cada uno cubre una orden (`cancelar` y `anular`).
+- Independencia del estado:
+  - Cada test nuevo llama a `seed()`, que vacía y resiembra `bookings`, así que no dependen del orden entre ellos.
+  - Los dos tests antiguos de `test/cancel.test.js:5-11` siguen dependiendo del estado inicial. El primero muta `Norte lun` a `cancelled`. Hoy es inocuo porque los nuevos resiembran, pero si alguien añade un test sin `seed()` después de ellos, heredará ese estado.
+  - `test/app.test.js` corre en otro proceso (el aislamiento por defecto de `node --test`), así que no comparte estado.
+- Baja, `test/cancel.test.js:13-16`: `seed()` duplica el literal de la reserva inicial. Si cambia el estado inicial en `src/app.js`, hay que tocar dos sitios.
+- Baja, `test/cancel.test.js`: falta el caso positivo con día distinto del actual. Por ejemplo, con `Norte lun` y `Norte mar` ambas activas, `cancelar Norte mar` debe cancelar solo la del martes. Los tests solo prueban la ausencia de reserva.
+
+**(4) Efectos de exportar `bookings`.**
+- Baja, `src/app.js:3`: `bookings` queda como estado mutable global expuesto a cualquier importador, no solo a los tests. Hoy nadie más lo importa (`git grep` solo lo encuentra en `test/cancel.test.js`).
+- No hay efectos en tiempo de ejecución: `src/app.js` ya exportaba `run`, `cancelBooking` y `voidBooking`. El CLI sigue igual.
+- patch.md lo declara como «costura de test», lo cual es honesto. Una alternativa sin exportar estado sería un `resetBookings()` o semilla inyectable, pero no es necesaria para este patch.
+
+**Otros.**
+- Informativa, `test/cancel.test.js`: el primer `git diff` mostró el fichero entero reescrito, lo que apunta a ruido de fin de línea (`core.autocrlf=true` y aviso LF→CRLF). Con `--stat` el cambio real son 19 líneas. Conviene comprobar al hacer commit que no se reescriba el fichero completo.
+- Informativa, patch.md: el campo `commit: pendiente` y el esfuerzo real `pendiente` son coherentes con que no hay commit todavía. La tabla de verificación tiene una sola fila que cubre `cancelar` y `anular` a la vez. Es correcto, aunque la fila de `anular` podría ser explícita.
+
+Ficheros revisados:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel.test.js`
+- `<run>\repo\.docs\sdd\specs\20261116-141207-patch-0012-cancelar-ignora-dia\patch.md`
+
+--- [51]
+El revisor no ve nada bloqueante. Acepto el caso positivo (cancelar el martes cuando también hay una del lunes) y rechazo el resto con motivo en `patch.md`.
+
+--- [53]
+Ahora: commit del fix y fila en el roadmap. Queda: cierre con `sdd-archive` y tu validación, ~5 min.
+
+--- [62]
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes aunque no tuvieras nada el martes. Ahora responde `sin reserva Norte mar` y la del lunes sigue en pie. `anular` tenía el mismo fallo y también está arreglado.
+
+**✋ Me salí del plan en…** nada. Un detalle: exporté `bookings` desde `src/app.js` para poder sembrar estado en los tests.
+
+El fix está en el commit `7dd7b47`, sobre la rama `feature/0012-cancelar-ignora-dia`. No he cerrado ni fusionado nada, porque `patch.md` pide que valides tú. Yo ya probé esto con ejecución real:
+
+| Comando | Resultado |
+| --- | --- |
+| `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+| `node src/app.js anular Norte mar` | `sin reserva Norte mar` |
+| `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+
+La suite pasa 7/7 y el lint sale sin hallazgos. Las reservas viven en memoria, así que cada ejecución arranca solo con `Norte lun`.
+
+Para validarlo tú, ejecuta estos dos comandos desde la raíz del repo:
+
+1. `node src/app.js cancelar Norte mar` debe decir `sin reserva Norte mar`.
+2. `node src/app.js cancelar Norte lun` debe decir `cancelada Norte lun`.
+
+**¿Lo das por validado?** Dime qué probaste y que funciona, o di «Diferir» con cuándo lo probarás y quién lo hará.
+
+Dos cosas más antes de fusionar:
+- `.docs/sdd/sdd-kit.json` no tiene el bloque `merge` (`merge.into` y `merge.noFf`). Sin él, el kit me pide que te presente el merge y espere tu confirmación en vez de fusionar solo.
+- No hay más ramas abiertas.
+
+**No terminado.** Falta tu validación, y después el merge a `develop`. No borres todavía el worktree `<run>/repo`.
+

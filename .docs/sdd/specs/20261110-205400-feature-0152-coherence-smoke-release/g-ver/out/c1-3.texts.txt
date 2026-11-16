@@ -1,0 +1,56 @@
+--- [3]
+Ahora: reviso el estado de la 0010 (tasks.md, ledger e informes de revisión). Queda: decidir si pasa a cierre o hay hallazgos que atender, ~2 min.
+
+--- [15]
+Ahora: aplico el hallazgo Important del eje Código (recortar espacios del motivo) con TDD, y apunto el ledger. Queda: pasada de fix, suite completa y re-revisión, ~5 min.
+
+--- [25]
+Ahora: lanzo la única re-revisión (opus + high) sobre el commit de fix. Queda: esperar su informe y cerrar `tasks.md`, ~3 min, ~0,3 $.
+
+--- [35]
+La re-revisión está en marcha (opus + high, en segundo plano) y espero su informe. Hasta ahora:
+
+- **Eje Spec:** listo para merge. Solo tiene un Minor: el test de `canceladas` depende del orden de ejecución. Lo dejé aplazado en el ledger, porque `review.minors` no está en `fix`.
+- **Eje Código:** un Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Lo arreglé con TDD.
+  - Primero, el test nuevo falló: 1 fallo.
+  - Después, con `.trim()`, pasa toda la suite: 6/6.
+  - El fix está en el commit `2a26b20`.
+- **Eje Arquitectura:** no sale. El diff no trae módulo, dependencia, contrato ni datos nuevos.
+- **Ledger y `tasks.md`:** apuntados los tres `Final:` y las líneas `Revisión final:` y `Pasada de fix:`. `tasks.md` sigue sin commitear.
+
+Cuando llegue el informe de la re-revisión, escribo su línea `Re-revisión:` en `tasks.md`, retiro el worktree de revisión y sigo con el cierre.
+
+--- [40]
+### Finding Verdicts
+- **[Code, Important] `src/app.js:14-17` — `reasonOf` keeps the spaces around the reason.** ADDRESSED. `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. The value is trimmed before `cancelBooking` checks it at `src/app.js:20`, so `"sala ocupada "` matches the list. Because the trim happens before the check, the reason saved at `src/app.js:24` and shown at `src/app.js:25` and `:36` is the trimmed one too. If `--motivo` has no value after it, `?.` still gives `undefined`, so the spec line «sin `--motivo` responde lo mismo» still holds. The new test at `test/cancel.test.js:17-19` matches the claimed RED→GREEN. Before the fix, `'sala ocupada '` failed the list check and returned «motivo no válido…». After the fix it passes the check and falls through to «sin reserva Sur mar», since there is no booking for Sur mar. I did not run the test; I checked this by reading the code and the diff.
+
+### New Breakage in the Fix Diff
+- **Minor** — `test/cancel.test.js:18`: the new test passes the reason check but only checks the «sin reserva Sur mar» message. It never shows the trimmed reason in a «cancelada X (sala ocupada)» message or in `canceladas`. So it proves the reason gets past the check, but not that the trimmed value is the one saved. Moving the `.trim()` into the check alone, without the saved value, would still pass this test. The current code trims once in `reasonOf`, so the behaviour is correct; the test is just weaker than it could be. A booking that can really be cancelled cannot be used today because of the test-order dependency already deferred in the ledger.
+
+The interface text added by the fix is in Spanish, so the language constraint is met.
+
+### Out-of-Scope Observations
+- `src/app.js:28-33` and `:44`: `voidBooking` / `anular` belong to feature 0011, which the spec leaves out of scope. They come from the base commit d2413b8, not from this branch, so nothing to do here.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [43]
+La implementación de la 0010 ha terminado y la revisión final está cerrada. Falta el cierre con `sdd-archive`: lo lanzo cuando me lo pidas.
+
+- **Suite:** `node --test` pasa 6/6. La corrí después del fix, no después del último commit, que solo toca `tasks.md`.
+- **Eje Spec:** sin Critical ni Important, listo para merge.
+- **Eje Código:** el Important era que `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Lo arreglé en `2a26b20` con `.trim()` y un test nuevo, que falló antes y pasa ahora.
+- **Eje Arquitectura:** no salió. El diff no trae módulo, dependencia, contrato ni datos nuevos.
+- **Re-revisión:** opus + high sobre `66c664d..2a26b20`. Confirma el hallazgo resuelto y no ve roturas nuevas.
+- **Registro:** `tasks.md` está commiteado en `428a3b9`, con las líneas `Revisión final`, `Pasada de fix` y `Re-revisión`. Es un commit solo de docs; lo revisé en el hilo.
+
+Dos Minors aplazados, porque `review.minors` no está en `fix`. Los dos están en el ledger como `minor (deferred)`:
+1. El test de `canceladas` depende de que antes se ejecute el de `cancelar` (`test/cancel.test.js:13`).
+2. El test nuevo solo prueba que el motivo con espacios pasa la lista, no que se guarde recortado (`test/cancel.test.js:18`).
+
+--- [44]
+Es solo el aviso de que terminó la vigilancia de silencio de la re-revisión. No hay nada que hacer: el agente ya había devuelto su informe y está recogido en `tasks.md`.
+
+La 0010 queda como estaba en mi último mensaje: implementada y con la revisión final cerrada. Falta `sdd-archive`, que lanzo cuando me lo pidas.
+

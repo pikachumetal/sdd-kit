@@ -1,0 +1,35 @@
+--- [12]
+Ahora: clasifico el cambio como feature y reservo su id y rama. Queda: una pregunta de descubrimiento, luego la spec para tu aprobación, ~10 min.
+
+--- [15]
+Ahora: ya tengo la rama `feature/0010-lista-espera`. Queda: tu respuesta a una pregunta, y después la spec.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto, `sdd-kit.json` no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido:** hoy `reservar` no avisa de que una sala está ocupada. Quieres que, si la sala que pides ya está reservada en esa franja, puedas apuntarte en una lista de espera para esa sala y esa franja. Es un cambio de comportamiento nuevo, no un patch. Preveo 2 o 3 tasks, así que no propongo dividirla. Corrígeme si he entendido mal algo.
+
+No hay `node_modules` ni dependencias (Node 22 sin paquetes), así que no hace falta instalar nada.
+
+Antes de proponerte nada, necesito saber esto: ¿qué vas a hacer con la lista de espera, es decir, qué quieres que pase cuando la sala que querías se libera?
+
+--- [17]
+Entendido: el problema es tener que mirar `libres` a mano. Eso reduce las opciones a dos. Este es el diseño que más condiciona el resto.
+
+❓ **¿Qué pasa cuando la sala en espera se libera?**
+En `src/app.js` los datos están en memoria y `cancelar` solo devuelve un texto. Hoy no libera nada, y la spec tendrá que arreglar eso para que la lista tenga sentido.
+
+1️⃣ **Reserva automática.** Al cancelar, el primero de la lista se queda la sala.
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   - `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a quien esperaba (1.º)`
+   - Tú no vuelves a mirar nada. Si ya no la quieres, tienes que salir de la lista con un comando.
+
+2️⃣ **Aviso y tú confirmas.** La sala queda marcada como «te toca» y reservas tú.
+   - `espera` → `Norte lun 10:00-12:00: libre, te toca. Reserva con: reservar Norte lun 10:00-12:00`
+   - Sigues teniendo que ejecutar un comando, pero ya sin mirar `libres` a ciegas.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es mirar `libres` cada rato, y con 2️⃣ seguirías pendiente de ejecutar algo. A cambio, puedes acabar con una reserva que ya no necesitas si te olvidas de salir de la lista.
+
+¿Qué prefieres, 1️⃣ o 2️⃣?
+

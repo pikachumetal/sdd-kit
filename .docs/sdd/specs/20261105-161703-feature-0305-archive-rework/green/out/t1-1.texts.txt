@@ -1,0 +1,129 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [25]
+La re-revisión de 0937f39..0827bc4 sigue en marcha, con su vigía de silencio activo. El cierre está en el paso 0, apartado 6, y aún no he escrito ningún registro.
+
+Esto es lo que ya sé y lo que falta:
+
+- **Estado:** la 0010 pasa los pre-checks. No hay otras ramas abiertas a la vez.
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills podrían ser de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project`, y luego reiniciar Claude Code.
+- **Validación:** el proyecto tiene `validation.mode: manual`, y «ciérrala» es la orden de cerrar, no una validación. Cuando vuelva la re-revisión te pediré que la valides, con el guion de prueba al final. Tendrás que decirme qué probaste y que funciona, o diferir la validación con sus tres condiciones. Sin eso, no toco el walkthrough ni la fusión.
+
+--- [35]
+**Nuevos problemas en el diff**
+
+1. **Important** — `tasks.md:10`: la Task 1 apunta al commit equivocado. La tabla le asigna `0937f39`, pero la Task 1 se hizo en `427657a` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `0937f39` es solo la Task 2. El registro no refleja bien los commits, y quien siga la Task 1 por su commit llega al cambio que no es. La fila tendría que decir `427657a`.
+
+2. **Important** — `tasks.md:17`: el ruling del gate se apoya en un diagnóstico falso y cambia el gate sin enmendar el plan.
+   - **No hay ninguna carrera.** `node --test` (Node 22, según tech-stack) lanza cada fichero en su propio subproceso, así que `test/app.test.js` y `test/cancel.test.js` no comparten el almacén en memoria. `--test-concurrency` solo limita cuántos ficheros corren a la vez. Dentro de un fichero los tests ya van uno detrás de otro, y aquí además son síncronos. Por eso `--test-concurrency=1` no corrige nada.
+   - **El acoplamiento real es de orden, dentro de un mismo fichero.** El test `canceladas enseña sala, día y motivo` (`test/cancel.test.js:13-15`) solo pasa si antes ha corrido `cancelar con un motivo de la lista`. Es el caso que `operations.md` señala como defecto: «Un test que solo pasa con el entorno recién vaciado depende de otro». El ruling le pone a eso la etiqueta de «workaround» y lo deja escondido.
+   - **Choca con el gate de los demás documentos.** `plan.md:50` dice `node --test`, la constitución (punto 2) dice `node --test` entero, y `operations.md` dice `node --test test/ && node e2e/run.mjs`. El ruling cambia el comando del gate y nadie toca `plan.md` ni la sección de Enmiendas de la spec.
+   - **El coste anunciado no tiene base.** Con dos ficheros de unos 1 s, «la suite tarda el doble» no sale de ningún dato.
+
+3. **Minor** — `plan.md:52`: el procedimiento funciona, pero la justificación no se sostiene.
+   - **Lo que funciona.** He leído `server.mjs`, `scripts/env-up.mjs` y `e2e/run.mjs`:
+     - `node scripts/env-up.mjs` levanta `server.mjs` en el puerto 14008.
+     - `GET /run?cmd=…&args=<JSON>` con la misma `x-session` reutiliza la misma instancia de `src/app.js`, cargada con `import` por sesión.
+     - Así, `cancelar Norte lun --motivo …` y luego `canceladas` en la misma sesión muestran «Norte lun — …».
+     - Además es el único camino que enseña el flujo entero: por la CLI, cada proceso arranca con el estado de cero y `canceladas` sale vacío.
+   - **Lo que no se sostiene.** La razón «porque el servidor es la aplicación que usa» contradice `PRODUCT.md` y `README.md` («Reservas de salas de reuniones desde la terminal») y la sección «Dónde se prueba» de la spec (por los comandos `cancelar` / `canceladas`). `server.mjs` es el banco de pruebas e2e: su comentario habla de «cada sesión de test», sale de `e2e/config.json` y tiene `/shutdown`. Habría que cambiar la razón (la CLI no guarda estado entre invocaciones) y recordar que la persona use su propia `x-session`, distinta de las de los tests, como pide `operations.md`.
+
+**Observaciones fuera de alcance** (código ya revisado en `0937f39`, o documentos fuera del diff)
+- El escenario de la spec «sin `--motivo` responde lo mismo» no tiene test, ni en `test/cancel.test.js` ni en `e2e/cancel.e2e.mjs`. El código lo cubre (`reasonOf` devuelve `undefined` y sale el mensaje de error), pero ningún test lo comprueba.
+- El gate de `plan.md:50` (`node --test`) no incluye la suite e2e que exige el gate de cierre de `operations.md`. Y la constitución y `operations.md` no dicen lo mismo sobre el gate.
+- La Task 2 tocó `e2e/cancel.e2e.mjs`, que no está entre los ficheros del plan.
+- En «Decisiones» de la spec la numeración salta del 1 al 3.
+- La línea de revisión final de `tasks.md:13` encaja con el encargo (Spec y Código limpias, sobre `0937f39`). Lo de «Arquitectura no (plan)» no consta de forma explícita en `plan.md`.
+
+**Veredicto:** Hay hallazgos abiertos:
+1. Important, `tasks.md:10`: el commit de la Task 1 es `427657a`, no `0937f39`.
+2. Important, `tasks.md:17`: el ruling de `--test-concurrency=1` no corrige ninguna carrera, esconde la dependencia de orden entre tests de `test/cancel.test.js` y cambia el gate sin enmendar el plan.
+3. Minor, `plan.md:52`: la razón «el servidor es la aplicación que usa» contradice `PRODUCT.md` y la spec, aunque el procedimiento por `GET /run` con `x-session` funciona.
+
+No he cambiado nada en el repositorio ni he ejecutado la suite.
+
+--- [43]
+El `sed` cambió los finales de línea de plan.md y el diff salió de 104 líneas. Lo rehago conservando CRLF.
+
+--- [58]
+El e2e falló porque no había servidor: el entorno de la suite pide `env-up` antes. Es un fallo de entorno, no del código. Levanto el entorno y lo vuelvo a correr.
+
+--- [61]
+El gate de cierre está en verde sobre a0798a6: unitarios 5/5 y e2e 7/7. Ahora ensayo los pasos del guion contra el servidor, con mi propia sesión.
+
+--- [64]
+Los cuatro THEN dan el literal esperado. Paré el servidor que había levantado. Ahora preparo el panel plan B, porque aquí no hay herramientas de Chrome.
+
+--- [68]
+🦆 Cancelar una reserva ahora exige un motivo de la lista: cambio de planes, sala ocupada u otro. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». El comando nuevo `canceladas` enseña cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: puse `--test-concurrency=1` en el gate «para esquivar una carrera» entre tests. La re-revisión dice que no hay carrera, y `node --test` a secas pasa 5/5 aquí. Dejé el ruling como estaba. El acoplamiento real es de orden: el test de `canceladas` solo pasa si antes corrió el de cancelar, dentro de `test/cancel.test.js`. Está sin resolver.
+- No sé si el cambio de gate, el ruling o el acoplamiento de orden te parecen bien. Dímelo si quieres otra cosa.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real (`GET /run`) | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+| Motivo fuera de la lista | ejecución real, con `me aburro` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | el mismo mensaje de motivo no válido |
+
+**Suites** (todas sobre `a0798a6`)
+
+- `node --test test/`: 5/5.
+- `node e2e/run.mjs`: 7/7 en 48 s, con el entorno arriba. La primera pasada dio 7 fallos con `ERR_CONNECTION_REFUSED` porque no había servidor, y la repetí tras `env-up`.
+
+**Sin probar**
+
+- Falta un test para «sin `--motivo`»: lo comprobé a mano, pero ningún test automático lo cubre.
+
+**Re-revisión de cierre**
+
+- Encontró 2 Important y 1 Minor, todos de documentación. Corregí el commit de la Task 1 (`427657a`) y la razón de la prueba en `plan.md`.
+
+Panel: plan B en http://127.0.0.1:4255/ (la página no ve la app: si algo falla, cuéntame el error en el comentario)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2: usa tu propia sesión (`x-session: tu-nombre`, distinta de las de los tests), la misma en los cuatro pasos. La CLI no guarda estado entre invocaciones y por eso va por el servidor.
+
+1. `curl -G -H "x-session: tu-nombre" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]" http://localhost:14008/run` → `cancelada Norte lun (sala ocupada)`
+2. `curl -G -H "x-session: tu-nombre" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]" http://localhost:14008/run` → `Norte lun — sala ocupada`
+3. `curl -G -H "x-session: tu-nombre" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Sur\",\"mar\",\"--motivo\",\"me aburro\"]" http://localhost:14008/run` → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. `curl -G -H "x-session: tu-nombre" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]" http://localhost:14008/run` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [69]
+El servidor del panel de validación se ha parado al llegar a su límite de tiempo en segundo plano. El enlace `http://127.0.0.1:4255/` que te di ya no responde. No lo relanzo, porque ese comando ya llevaba el plazo más largo permitido.
+
+Sigo esperando tu validación. Puedes dármela de estas formas:
+
+- Prueba los cuatro pasos del guion con `curl` y dime qué probaste y que funciona, o qué paso falla. No necesitas el panel.
+- Si no puedes ahora, responde con la línea `Diferir:`, indicando el uso más próximo y quién lo valida.
+
+Esa respuesta tuya es lo único que falta para seguir. Hasta entonces no escribo el walkthrough, no cambio el roadmap ni fusiono.
+
+El entorno de la 0010 está parado ahora mismo. Para probar, levántalo con `node scripts/env-up.mjs` y páralo después con `node scripts/env-down.mjs`.
+

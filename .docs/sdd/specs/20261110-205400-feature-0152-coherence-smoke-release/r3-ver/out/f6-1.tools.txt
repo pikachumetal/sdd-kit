@@ -1,0 +1,78 @@
+
+>>> Read: <run>/review-final-ac3e38b.diff
+<<< 1	# Review package: 8ee645b..HEAD
+2	
+3	## Commits
+4	ac3e38b feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 7 +++++++
+8	 1 file changed, 7 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e25d07a 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,17 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+5	
+6	function freeRooms(slot) {
+7	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+8	}
+9	
+10	function findBooking(room, day) {
+11	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+12	}
+13	
+14	function reasonOf(params) {
+15	  const index = params.index
+
+>>> ReportFindings: {"findings":[{"file":"src/app.js","line":51,"summary":"The comment 'Task 4: validar antes de guardar' cites a plan task that will go stale and repeats what the code does.","failure_scenario":"Once the plan is archived, 'Task 4' points to nothing. The comment only restates the guard below it.","category":"comments","short_summary":"Stale 'Task 4' citation, repeats the code","verdict":"CONFIRMED"},{"file":"src/app.js","line":54,"summary":"saveRefund doesn't save anything: it returns the object and never persists it. It also has no validation for a missing or non-string iban, and the return type is mixed (string or object).","failure_scenario":"saveRefund('Norte', undefined) throws a TypeError. Callers receive a string on error and an object on success, so they can't tell the two apart. The function name says 'guardar' and the commit says 'guardar la devolución', but no state changes.","category":"correctness","short_summary":"Never stores anything, iban unchecked, mixed return type","verdict":"CONFIRMED"},{"file":"src/app.js","line":50,"summary":"saveRefund is defined after the top-level `if (command) console.log(run(...))` call, and it is not reachable from run(), so the CLI cannot use it.","failure_scenario":"The feature can't be used from the CLI. There are no tests for saveRefund either.","category":"design","short_summary":"Not wired into run(), no tests, placed after entry point","verdict":"PLAUSIBLE"}]}
+<<< 3 findings reported.
+
+=== RESULTADO (4 turnos, 0.1673298 $)
+### Strengths
+- The change is small and focused, and the user-facing text is in Spanish.
+- `saveRefund` is 5 lines, well under the 30-line limit.
+- The error message follows the style of the existing ones.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+- **`src/app.js:51`: comment citing a task.** `// Task 4: validar antes de guardar` points to a plan document and will go stale. It also restates the guard right below it. Delete it.
+- **`src/app.js:54`: `saveRefund` doesn't save anything.**
+  - It returns the object and persists nothing, although the commit says "guardar la devolución".
+  - `iban` is not validated, so `saveRefund('Norte', undefined)` throws a `TypeError`.
+  - The return type is mixed: a string on error and an object on success. Callers can't tell them apart.
+  - Possible Clean Code row: "Can you understand each function without reading its body?". The name doesn't match the behavior.
+
+#### Minor
+- **`src/app.js:50`: placement and wiring.** The function is declared after the top-level `console.log` entry point. It isn't reachable from `run()`, and the diff adds no tests for it. This is a judgement call (possible Clean Code row: "Is there a test for every public method?"). I only read the diff, so I can't tell whether the spec asked for CLI wiring.
+
+### Recommendations
+- Make the success and failure paths consistent: throw, or return `{ok, ...}`.
+- Add a test for `saveRefund`.
+- Move new functions above the entry-point line.
+
+### Declined to judge
+- `src/app.js:53` `// requisito del proveedor: el IBAN va sin espacios`: the word "requisito" refers to an external provider, not a project document, so it isn't a stale citation. I'm setting it aside. It does explain a non-obvious rule, so it also doesn't repeat the code.
+- Whether the spec wants CLI wiring or persistence of the refund: that is the Spec axis.
+- Whether IBAN format validation (length, checksum) is expected: not specified, and left to the Spec axis.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** There are no hard code-constraint violations. The stale `Task 4` comment is Important. The function name promises persistence the code doesn't provide, and `iban` is unchecked.

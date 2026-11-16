@@ -1,0 +1,95 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [40]
+Sigo con el cierre de la 0010 y estoy esperando una sola cosa. Es la re-revisión de `886f0fd..9f9e876`, que corre en segundo plano, y hasta que vuelva no escribo ningún registro.
+
+Hasta ahora:
+- **Pre-checks:** el árbol solo tiene el borrador del walkthrough, el destino `develop` está listo y no hay otras ramas abiertas.
+- **Smoke:** corrí los 5 THENs de la spec yo mismo (validación en campo). Los cuatro de `cancelar` salieron con el literal esperado. El listado sale en un solo proceso, porque el almacén es en memoria. El borrador usaba `sala-ocupada` y la spec dice «sala ocupada», así que lo reescribo.
+- **Desajustes en `tasks.md`:** la Task 1 cita `886f0fd`, pero su commit es `4e1c2ee`. El ruling dice que el gate lleva `--test-concurrency=1` y `gate.json` no lo lleva.
+- **Suite:** `develop` va 2 commits por delante, así que la suite corre una vez tras el sync merge del paso 6, no aquí.
+
+--- [42]
+### Finding Verdicts
+Sin hallazgos previos.
+
+### New Breakage in the Fix Diff
+- **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The Task 2 `Ruling` says the gate runs `node --test --test-concurrency=1`, but nothing in the code at `9f9e876` does that.
+  - `gate.json:2` runs `node --test test/app.test.js test/cancel.test.js` with no concurrency flag.
+  - `plan.md:50` gives the gate as `node --test`.
+  - `git grep concurrency 9f9e876` only matches this line of `tasks.md`.
+  - No commit in `a279d3a..9f9e876` touches `gate.json` or `scripts/gate.mjs`. Task 2's commit `886f0fd` only changes `src/app.js` and `test/cancel.test.js`.
+
+  So the record describes a workaround that was never applied. Either the Ruling is false, or the workaround is still missing from the gate. One of the two has to be corrected.
+- **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. Task 1 («Cancelar con motivo») is recorded with commit `886f0fd`, but that is Task 2's commit («listado de canceladas con su motivo»). Task 1 was implemented in `4e1c2ee` («cancelar con un motivo de la lista»), which adds `reasons`, `reasonOf` and the reason in `cancelBooking`. Task 2's row (line 11, `886f0fd`) is correct.
+- Line 13, «Revisión final», matches the context given: Spec opus+high clean, Code sonnet+high clean, on `886f0fd`. The plan doesn't mention an architecture review, so «Arquitectura no (plan)» doesn't contradict it. No discrepancy there.
+
+### Out-of-Scope Observations
+- The race the Ruling describes doesn't match how `--test-concurrency` works. That flag controls concurrency between test files, and each file runs in its own process, so they share no in-memory state. The real coupling is inside `test/cancel.test.js`: the test at lines 13-15 (`canceladas`) only passes if the one at lines 5-7 has already cancelled Norte lun first. Setting concurrency to 1 wouldn't fix that.
+- `spec.md:54` (no `--motivo` gives «motivo no válido…») has no test in `test/cancel.test.js`. The code does cover it, because `reasonOf` returns `undefined` and that fails `reasons.includes`. This was already there before and the earlier review didn't flag it.
+- `spec.md:25`: the numbered list jumps from 1 to 3. This was already there before.
+- `walkthrough.md` is untracked in the working tree and isn't part of the range. I didn't review it.
+
+### Verdict
+**Fix round:** Findings remain open:
+1. `tasks.md:17`: the Task 2 Ruling claims a `--test-concurrency=1` that isn't in the gate (`gate.json:2`) or the plan (`plan.md:50`).
+2. `tasks.md:10`: Task 1's commit should be `4e1c2ee`, not `886f0fd`.
+
+--- [44]
+La re-revisión confirma lo que ya había visto: dos desajustes en `tasks.md`, ninguno en el código. Compruebo antes la observación del acoplamiento entre tests y retiro el worktree de revisión.
+
+--- [50]
+Los shas del rango que voy a juntar (`9f9e876`) no pueden quedar citados, así que reescribo la línea sin ellos. Después paso a la capacidad.
+
+--- [53]
+Capacidad `bookings` creada y validada; `decision check` sale en 0, sin ADR candidatas. Ahora la retro del cierre.
+
+--- [61]
+Me equivoqué al contar: la spec tiene 4 aserciones (un THEN y dos AND en la primera, un THEN en la segunda), no 5. Corrijo el walkthrough.
+
+--- [66]
+Cierre commiteado (`824ca56`). Ahora el sync merge del paso 6, en su propia llamada.
+
+--- [69]
+Sync limpio, sin conflictos. La suite no corrió todavía para este cierre, así que corre ahora el gate de la constitution sobre el sync merge, con la salida guardada entera.
+
+--- [75]
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (5ea87ec) · push: no hecho: `merge.push` no lo autoriza. La rama está en el checkout principal del repo, así que no hay worktree que borrar.
+
+**🦆** Cancelar ahora exige un motivo de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lo lista como «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- **Ruling de la Task 2 falso.** `tasks.md` decía que el gate llevaba `--test-concurrency=1` para esquivar una carrera. Nunca se aplicó: `gate.json` y el plan no lo llevan. Comprobé que el test `canceladas` falla solo, porque depende de que el test anterior haya cancelado Norte lun. Es acoplamiento de orden dentro de `test/cancel.test.js`, no concurrencia.
+  - Corregí el ruling en `tasks.md`, lo anoté en el walkthrough y abrí una fila en «Deuda técnica».
+  - No cuesta nada si me equivoqué, porque no hay workaround en el gate.
+- **Commit de la Task 1.** `tasks.md` lo citaba como `886f0fd`, que es el de la Task 2. Lo corregí a `4e1c2ee`.
+
+**Validación y revisión**
+- **Smoke:** 4 de 4 THEN y AND con ejecución real, corridos por mí. El borrador usaba `sala-ocupada` y un solo comando, que no cubría cada THEN, así que lo reescribí.
+- **Listado de canceladas:** lo ejecuté en un solo proceso, porque el almacén es en memoria y cada invocación de la CLI parte vacía.
+- **Revisión final:** Spec y Código limpias sobre `886f0fd`. Como `HEAD` se había movido con el commit de `tasks.md`, lancé la re-revisión. No halló nada en el código; solo los dos desajustes de registro de arriba.
+- **Gate sobre el sync merge** (`develop` iba 2 commits por delante, sin conflicto): `Gate: node scripts/gate.mjs run bookings:test rooms:test --affected --base develop → bookings:test: corrió 5/5 · rooms:test: saltada (la rama no toca sus inputs) · 3 s · sobre 1b83cc4`. Corrí además `rooms:test` entera: 2/2.
+
+**Registros:** capacidad `bookings` (nueva, validada), changelog, fila 0010 en ✅ y la fila de deuda. No había ADR candidatas. Retro: una señal, `documento o skill desmentido`, corregida en su sitio.
+
+**Pendiente, sin bloquear el cierre**
+- `roadmap check` da 2 fallos en líneas que no toqué: la cabecera de «Deuda técnica» y el título de `v0.3.0`. Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code; algunas reglas de este cierre pueden ser las de una versión vieja.
+
+No hay familia (`parent:` o `proposal:`) ni líneas de retro con ticket para el kit. Si quieres el feedback de mejora del kit de esta sesión, dímelo y lanzo `sdd-feedback`.
+
+--- [77]
+El cierre ya está hecho y el walkthrough ya va commiteado. Lo compruebo antes de dar nada por hecho.
+
+--- [79]
+No queda nada por cerrar. El walkthrough que estaba sin commitear lo completé, lo reescribí y lo incluí en el commit de cierre `824ca56`. `git status` está limpio y `develop` (5ea87ec) ya tiene el walkthrough, `tasks.md`, la spec y el plan de la 0010.
+
+El estado final es el del mensaje anterior:
+- **Cerrado:** la 0010 está fusionada en `develop` y no se ha hecho push, porque `merge.push` no lo autoriza.
+- **Smoke:** 4 de 4 THEN y AND verificados con ejecución real.
+- **Gate:** en verde sobre `1b83cc4`.
+- **Registros:** ruling falso de la Task 2 corregido, fila de deuda abierta y fila 0010 en ✅.
+
+Si quieres cambiar algo del walkthrough ya fusionado, iría como adenda fechada en la sección 6, porque el cuerpo no se reescribe tras el cierre. Dime si quieres alguna.
+

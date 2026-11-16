@@ -1,0 +1,89 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [5]
+Limpio, destino listo, sin otras ramas abiertas. Sigo con el paso 0.4 y 0.6 (spec y revisión final).
+
+--- [12]
+Ensayo los pasos tal como los va a escribir quien valida. Primero miro cómo guarda las reservas la app.
+
+--- [15]
+El estado vive en memoria de cada proceso, así que `canceladas` en un proceso aparte saldría vacío. Ensayo cada paso para ver qué se puede pedir.
+
+--- [18]
+Los pasos de `cancelar` funcionan. Para `canceladas` hará falta una sesión en un solo proceso. Falta la suite: miro dónde se declara el gate y si la base va por delante.
+
+--- [21]
+El gate de cierre es `node --test` entero (constitución). Ninguna otra rama está abierta y `develop` no va por delante, así que lo corro aquí una vez, guardando la salida completa.
+
+--- [25]
+Suite en verde. Como la app es CLI y no tengo Chrome conectado, la guía pide el panel plan B (`sdd validation serve`) antes de presentar. `.temp/` ya está en el `.gitignore`.
+
+--- [27]
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro), y el comando nuevo `canceladas` lo enseña. Con la reserva de Norte del lunes, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` después da «Norte lun — sala ocupada». Un motivo fuera de la lista, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate lleva `--test-concurrency=1` para esquivar la carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test. Si me equivoco, la suite tarda el doble. Al cerrar le abro su fila en la deuda.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo de la lista → «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista → «motivo no válido…» | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` → «motivo no válido…» | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real (un solo proceso) y suite (`canceladas enseña sala, día y motivo`) | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test`: 5/5 sobre 5d0c111, 1 s. La corrí sin `--test-concurrency=1` y pasó igual.
+
+**Sin probar**
+
+- `canceladas` desde la línea de comandos en un proceso aparte: la app guarda las reservas solo en memoria, así que sale vacío. No es un fallo de esta feature, pero el paso 4 del guion se prueba en una sola sesión de Node.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Panel: plan B en http://127.0.0.1:1742/ (no ve la app, así que si algo falla cuéntame el error en el comentario).
+
+No hay entorno que arrancar: es una CLI.
+
+Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → debe salir «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo que no está en la lista → debe salir «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Cancelar sin motivo → debe salir lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → debe salir «cancelada Norte lun (sala ocupada)» y debajo «Norte lun — sala ocupada»
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Los pasos 1 a 3 no dejan datos: cada proceso empieza de cero. Para parar el panel, dime "listo" y lo paro yo.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla. No toco nada del cierre hasta tener tu respuesta.
+

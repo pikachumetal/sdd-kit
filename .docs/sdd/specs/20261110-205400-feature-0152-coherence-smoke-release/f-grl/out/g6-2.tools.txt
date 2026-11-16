@@ -1,0 +1,99 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && echo --- && ls -la .docs/sdd .docs/sdd/steering 2>&1 | head -40; ls node_modules .venv 2>&1 | head -3
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+---
+.docs/sdd:
+total 1
+drwxr-xr-x 1 <user> 197609   0 Nov 12 14:41 ./
+drwxr-xr-x 1 <user> 197609   
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/sdd-kit.json .docs/sdd/steering/*.md PRODUCT.md ROADMAP.md package.json src/app.js test/app.test.js; do echo "=== $f"; cat "$f"; done; ls .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head
+<<< === .docs/sdd/sdd-kit.json
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+=== .docs/sdd/steering/constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellan
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-propose/references" && cat nombrado.md | head -80; echo ======; head -60 control-profiles.md
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.16823700000000003 $)
+Ahora: clasifico el cambio y lo anuncio; antes de escribir la spec necesito una decisión tuya. Queda: entrevista corta, spec para tu aprobación, plan e implementación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» 
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` sobre una sala que ya está ocupada en esa franja no tiene respuesta definida. Quieres que, en ese caso, tu petición quede apuntada en una lista de espera en vez de perderse. Es una feature nueva, con comportamiento visible (nuevo estado «en espera»), y la preveo en unas 3 tasks, así que no propongo dividirla. Corrígeme si algo no cuadra.
+
+Antes de diseñar nada, una pregunta abierta, porque solo lo sabes tú:
+
+**¿Qué quieres que pase cuando la sala por la que esperas se libera, y cómo te enteras?**
+
+=== RESULTADO (1 turnos, 0.18666010000000002 $)
+Entendido: lo que quieres evitar es ir mirando `libres` a mano. Eso reordena el resto del diseño, así que esta es la decisión que va primero.
+
+Un dato del código: `src/app.js` guarda las reservas en memoria, y la única forma de que una sala se libere es `cancelar`. Por eso la espera solo se resuelve en el momento de cancelar.
+
+❓ **¿Qué pasa cuando se libera Norte y tú estabas esperando?**
+
+1️⃣ **Reserva automática.** Al cancelar la reserva que tenía Norte, la primera persona de la lista pasa a ser la titular.
+- `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+- `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a la 1.ª de la lista de espera`
+- Tú no haces nada más. Coste: te quedas con una sala que quizá ya no necesitas, y tendrías que cancelarla.
+
+2️⃣ **Aviso, sin reservar.** Al cancelar, el mensaje dice que Norte queda libre para quien esperaba, y la lista se mantiene hasta que reserves tú.
+- `cancelar lun 10:00` → `cancelada lun 10:00; Norte libre (1 en espera)`
+- Coste: sigues teniendo que ejecutar `reservar` otra vez, y alguien podría quedársela antes.
+
+3️⃣ **Consulta.** Solo un comando `espera` que lista tus esperas y dice cuáles ya se pueden reservar. No cambia `cancelar`.
+- Coste: vuelves a preguntar a mano, que es justo lo que querías evitar.
+
+➡️ **Recomiendo 1️⃣**, porque lo que quieres es no volver a mirar a mano. Es la única opción donde la sala acaba siendo tuya sin hacer nada más. A cambio, te puede quedar una reserva que ya no necesitas y que tendrás que cancelar.
+
+=== RESULTADO (1 turnos, 0.2016641 $)
+Claro, te lo explico con un caso concreto, sin opciones.
+
+Ahora mismo, si Norte está ocupada el lunes de 10:00 a 12:00 y tú quieres esa sala, no tienes nada que te ayude: tienes que ir ejecutando `libres` cada rato para ver si alguien canceló. La lista de espera sustituiría ese «ir mirando».
+
+La parte que hay que decidir es esta: **la sala solo se libera cuando alguien ejecuta `cancelar`**. La herramienta no está corriendo en segundo plano ni puede avisarte por su cuenta. Solo reacciona cuando tú, o quien sea, lanza un comando. Así que lo único que puede hacer la lista de espera es actuar en el momento en que se cancela esa reserva. Ahí hay una pregunta sencilla: ¿qué debería hacer en ese momento?
+
+- **Reservarte la sala ella sola.** Alguien cancela y tú pasas a tener Norte sin hacer nada. Es lo más cómodo, pero puedes acabar con una reserva que ya no querías.
+- **Solo avisar.** Alguien cancela y el mensaje te dice que Norte quedó libre. Tienes que reservarla tú después, y mientras tanto otra persona podría quedársela.
+
+No te he preguntado antes por «consultar la lista», porque eso es seguir mirando a mano, que es lo que quieres evitar.
+
+¿Te aclara esto la diferencia? Si es así, dime cuál de las dos prefieres o qué te falta para decidir.

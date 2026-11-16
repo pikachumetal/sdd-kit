@@ -1,0 +1,45 @@
+--- [5]
+Ahora miro el código para clasificar.
+
+--- [17]
+Estoy abriendo el patch 0012 (rama y carpeta creadas) y comprobando que los tests nuevos fallan antes del fix.
+
+--- [20]
+Los fallos son un artefacto: el primer test ya cancela `Norte lun`, y el estado es compartido. Rehago mis tests para que no dependan del orden.
+
+--- [23]
+Ese test pasaría sin el fix, porque el primero ya canceló `lun`. Lo pongo antes de ese test, para que vea `lun` activa.
+
+--- [26]
+RED confirmado. Ahora el fix mínimo.
+
+--- [30]
+Ahora: cierro el patch con `sdd-end-patch`.
+
+--- [33]
+El patch está arreglado y commiteado, pero no lo cierro ni lo fusiono hasta que lo valides. Tu perfil es `delegate` y `sdd-kit.json` no tiene `validation.mode: field`, así que la validación es manual.
+
+**Qué cambié** (commit `bc577fb`, rama `feature/0012-cancel-day`)
+- La causa estaba en `findBooking` (`src/app.js:9`): recibía `day` pero no lo comparaba. Devolvía la primera reserva activa de la sala, así que cancelar `Norte mar` cancelaba la de `lun`.
+- `anular` usa la misma función y tenía el mismo fallo. También queda arreglado.
+- Ahora `findBooking` compara también el día.
+
+**Lo que he verificado yo**
+- Con los tests nuevos y sin el fix, fallaban 2 de 5.
+- Con el fix, `node --test` pasa 5/5.
+
+**Guion de pruebas** (desde la raíz del repo, con la reserva inicial `Norte lun 10:00-12:00`)
+1. Ejecuta `node src/app.js cancelar Norte mar`. Esperado: `sin reserva Norte mar`.
+2. Ejecuta `node src/app.js anular Norte mar`. Esperado: `sin reserva Norte mar`.
+3. Ejecuta `node src/app.js libres 10:00-12:00`. Esperado: `Sur`, porque Norte sigue ocupada por la reserva del lunes.
+4. Ejecuta `node src/app.js cancelar Norte lun`. Esperado: `cancelada Norte lun`.
+
+Las reservas viven en memoria y cada comando arranca de cero. Por eso el paso 3 solo muestra el estado inicial, no el efecto de los pasos 1 y 2. Esa comprobación la cubre el test de regresión en `test/cancel.test.js`.
+
+**¿Qué has probado?**
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar/anular, a cargo del dev-lead`
+- `No funciona`
+
+Cuando me contestes sigo con el cierre: `patch.md`, changelog si existe, roadmap, estimation-log y merge. El merge depende de si `sdd-kit.json` lo autoriza, y ahora mismo no tiene bloque `merge`, así que te lo consultaré.
+

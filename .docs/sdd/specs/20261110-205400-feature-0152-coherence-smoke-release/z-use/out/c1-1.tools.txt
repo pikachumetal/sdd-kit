@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd 2>/dev/null
+
+>>> Grep: cancel|anula
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+<<< Found 5 files
+ROADMAP.md
+CHANGELOG.md
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+src\app.js
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+ROADMAP.md:8:| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/app.js`</details> | ✅ | — | S |
+test\app.test.js:13:test('cancelar respeta el día', () => 
+
+=== RESULTADO (8 turnos, 0.10763640000000001 $)
+Ahora mismo "cancelar" casi no existe en el código, y eso es probablemente lo que te despista.
+
+**Lo que hace el código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Es una sola línea. Para `cancelar mar 10:00` devuelve el texto `cancelada mar 10:00`.
+- No toca el array `bookings` ni busca ninguna reserva. Tampoco comprueba que la reserva exista ni de quién es.
+- `bookings` (línea 3) solo lo lee `freeRooms`, para el comando `libres`. Nada lo modifica. `reservar` tampoco añade nada: solo devuelve "reserva semanal creada" si llevas `--cada-semana`.
+
+**Lo que dice la documentación** (esto es lo que cuenta el repo, no lo que yo deduzco)
+
+- `CHANGELOG.md:14` dice: "La cancelación ya no borra reservas de otro día con la misma hora" (patch 0007).
+- `CHANGELOG.md:20` dice: "Cancelar una reserva propia".
+- `ROADMAP.md:8` marca el 0007 como hecho (✅). Toca `src/app.js`.
+- `patch.md` del 0007 dice: "Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado."
+- El test `cancelar respeta el día` (`test/app.test.js:13`) solo comprueba que la cadena devuelta incluye el día (`'cancelada mar 10:00'`).
+
+**Mi lectura (inferencia)**
+
+El código no coincide con lo que cuentan el changelog y el patch.
+
+- No hay ninguna comparación hora/día que corregir, porque no se borra nada. Es probable que el "fix" del 0007 solo añadiera el día a la cadena de salida.
+- El test pasa, pero solo comprueba el texto. No comprobaría el bug que el patch dice haber arreglado.
+- "Cancelar una reserva propia" tampoco tiene soporte: no existe ninguna noción de propietario en `bookings`.
+
+No he tocado nada. Si quieres que cancelar funcione de verdad (quitar la reserva de `bookings` por sala, día y hora, y comprobar que existe), eso ya es trabajo. Lo apuntaría en el roadmap, probablemente como patch, porque el 0007 declara un arreglo que el código no tiene. Si prefieres hacerlo en esta sesión, di "arráncalo".

@@ -1,0 +1,71 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering y capacidades). Queda: clasificar, anunciar y empezar la entrevista de la spec, ~5 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git ls-files | head -80 && ls -a .docs/sdd .docs/sdd/steering 2>/dev/null && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && for f in PRODUCT.md ROADMAP.md README.md package.json .docs/sdd/steering/*.md src/app.js test/app.test.js; do echo "=== $f"; cat "$f"; done; ls node_modules 2>&1 | head -2
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/skills/sdd-propose/references" && cat nombrado.md spec-writing.md; sed -n 1,60p control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: clasificar y arrancar la entrevista de la spec (todavía sin rama ni carpeta). Queda: unas pocas preguntas, el enfoque, la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `src/app.js` tiene los comandos `libres`, `reservar` y `cancelar`, y no hay forma de sacar las reservas de una sala fuera de la herramienta. Quieres un comando nuevo que, dada una sala, escriba sus reservas en CSV, para que quien lleva esa sala las cuadre los lunes en su hoja de cálculo. Lo trato como feature en modo full, con unas 2 tasks previstas, así que no propongo dividirla. En `PRODUCT.md` figura que la usas solo tú, y no sé si «el responsable de cada sala» eres tú mismo con varios sombreros u otras personas que reciben el fichero.
+
+Para no inventarme columnas, el orden ni el rango de fechas: ¿qué haces el lunes con esa hoja, es decir, con qué cuadras las reservas y qué te haría tirar el CSV a la basura si saliera mal?
+
+# turno 2
+## persona
+Los lunes cuadro las reservas de la semana que empieza ese lunes en la hoja de cálculo del responsable de la sala. Con qué las comparo y qué haría tirar el CSV: no sé.
+## agente
+Anotado como **pendiente**: con qué comparas la hoja y qué haría inútil el CSV. Lo dejo en la spec marcado «pendiente», sin inventarlo. Ya sé lo que sí cuenta: quieres las reservas de **la semana que empieza ese lunes**.
+
+Eso choca con un hecho del código. En `src/app.js` cada reserva es `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`, con el día como nombre de día de la semana y sin fecha. Por eso «la semana que empieza el lunes X» hoy no se puede calcular. Tampoco hay forma de distinguir una reserva de esta semana de otra de la siguiente.
+
+❓ **¿Qué sale en cada fila del CSV?**
+1️⃣ **Sin fechas, solo lo que hay.** `exportar Norte` escribe todas las reservas de la sala tal como están guardadas:
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+No hay argumento de semana. El CSV es siempre «la semana tipo» de esa sala. Cuesta que la hoja no lleva fechas, y si la reserva semanal (`--cada-semana`) llegara a guardarse de otra forma, se revisaría entonces.
+
+2️⃣ **Con fechas reales.** `exportar Norte 2026-11-16` toma ese lunes y calcula la fecha de cada reserva:
+```text
+sala,fecha,franja
+Norte,2026-11-16,10:00-12:00
+```
+Cuesta que invento una regla que hoy no existe: que toda reserva `lun` cae en ese lunes. Eso es falso en cuanto haya reservas de semanas distintas, y el CSV parecería más exacto de lo que es.
+
+➡️ **Recomiendo 1️⃣**, porque el modelo de datos no guarda fechas y el CSV no debe afirmar lo que la herramienta no sabe. A cambio, la semana concreta la pones tú al pegarlo en la hoja. ¿Vas con 1️⃣, con 2️⃣ o con otra cosa?
+
+# turno 3
+## persona
+Déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+Vale, lo dejamos aquí. No he creado rama, carpeta ni ningún fichero, y el repo sigue limpio en `develop`.
+
+**Lo que tenemos hasta ahora**
+- **Decidido por ti:**
+  - Es una feature en modo full: un comando que exporta a CSV las reservas de una sala.
+  - El CSV es para cuadrar las reservas de la semana que empieza cada lunes en la hoja de cálculo del responsable de la sala.
+- **Decidido por mí:**
+  - No propongo dividirla, porque prevo unas 2 tasks.
+  - El perfil es `delegate`, que es el del proyecto.
+- **Pendiente:**
+  - Con qué comparas la hoja y qué haría inútil el CSV. Dijiste que no lo sabes, así que irá a la spec como «pendiente».
+  - Qué sale en cada fila. Es la pregunta abierta de antes:
+    - 1️⃣ Sin fechas: `sala,dia,franja`, la semana tipo de la sala. Es lo que recomiendo, porque hoy las reservas solo guardan el día de la semana, sin fecha.
+    - 2️⃣ Con fechas reales a partir de un lunes que le pasas al comando. Hoy no hay datos que lo respalden.
+  - Si ya tenías claro que «la semana» importa de verdad, la 1️⃣ no la resuelve. Tendríamos que decidir antes cómo guardar fechas, y eso sería otra feature.
+  - Si la hoja del responsable es de otra persona o la usas tú solo. `PRODUCT.md` dice que la usas solo tú, y no lo sé.
+
+Cuando quieras retomar, dime «sigue con la spec del CSV» y contéstame a la pregunta de las filas. Tras eso quedan el enfoque, la spec con su revisión y tu aprobación.

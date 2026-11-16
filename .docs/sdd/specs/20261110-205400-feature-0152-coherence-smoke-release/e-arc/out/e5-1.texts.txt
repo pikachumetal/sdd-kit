@@ -1,0 +1,149 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [7]
+Los pre-checks 1–3 están limpios: no hay cambios sin commitear, `merge --check` sale con 0 y no hay otras ramas abiertas. Ahora leo la spec, el plan, las tareas y los documentos de referencia.
+
+--- [22]
+Estoy en el paso 1 del cierre. Voy a correr el gate de cierre tal como lo declara `operations.md` y a guardar cada salida completa en un fichero.
+
+--- [28]
+El E2E salió en rojo: falla el test 3, con un timeout al esperar `canceladas`. Antes de abrir el código sigo el procedimiento de «A red suite».
+
+--- [34]
+Falla igual en la rama. Ahora la base, en un worktree desligado de `develop`.
+
+--- [43]
+Worktree de la base eliminado. Ahora el arreglo: un tiempo de espera propio para ese paso, en vez de subir el `expectTimeout` global.
+
+--- [46]
+El script de Python me cambió los finales de línea, y el diff reescribe todo el fichero. Restauro los dos ficheros y repito el cambio con `sed`, que respeta CRLF.
+
+--- [52]
+El diff es el esperado: 4 líneas en 2 ficheros. Vuelvo al gate completo, con el entorno levantado por esta sesión.
+
+--- [55]
+Gate en verde: unitarias 5/5 y E2E 7/7 (56,1 s). El arreglo es código y llegó tras la revisión final, así que abre la única re-revisión. Commiteo el arreglo y preparo el paquete.
+
+--- [59]
+Lanzo la re-revisión en segundo plano, con su vigilancia de silencio en el mismo turno.
+
+--- [67]
+Mientras revisa, hago el smoke con ejecución real: un caso por THEN de la spec, incluidos los que fallan.
+
+--- [76]
+Los cuatro THEN coinciden con la spec. Mientras sigue la re-revisión, leo las plantillas y las referencias de los pasos 2 y 3.
+
+--- [81]
+Ya tengo lo que necesito para los registros. Espero a que vuelva la re-revisión antes de escribir nada.
+
+--- [83]
+## Finding Verdicts
+
+- **Point under verification (E2E test 3 timed out at 5000 ms): FIXED, and nothing else is hidden.**
+  - `e2e/run.mjs:17`: the step tuple now takes an optional 4th element, `[cmd, params, expected, waitMs = config.expectTimeout]`. Any step without that element still waits `config.expectTimeout`, which is 5000 in `e2e/config.json` and unchanged.
+  - Only one step has a 4th element. Checked: the `canceladas` step at `e2e/cancel.e2e.mjs:4` gets 12000. The other 4 steps in `cancel.e2e.mjs` and both steps in `e2e/free.e2e.mjs` have 3 elements, so they keep 5000 ms. No other step got a longer wait.
+  - `e2e/run.mjs:21`: `AbortSignal.timeout(waitMs)` is the only place that uses the wait, so the change applies to that one step and the global setting is untouched.
+  - The fix matches the cause. `server.mjs:18`, on develop and outside the range, delays only `cmd === 'canceladas'` by 8000 ms. It was added on purpose by `89c6cd6 test: la lista de canceladas tarda en pintarse`. A 12000 ms wait leaves 4 s of margin. The spec and plan set no speed requirement for `canceladas` (grep found none), so raising the wait for that step does not hide a requirement.
+- **The 30 s test budget holds.** With the default trace (`stepMs` = 6000): 6 s + `cancelar` (immediate) + 6 s + 8 s ≈ 20 s, which matches the reported 20.0 s. The worst case, with the step waiting its full 12 s, is 24 s, still under 30 000. With `E2E_TRACE=light`: 2.4 + 2.4 + 8 ≈ 12.8 s. See the out-of-scope note: `config.timeout` is not enforced, so the 30 s is a budget nobody checks.
+- **The timeout error message is still true.** `e2e/run.mjs:23` interpolates `waitMs`, not `config.expectTimeout`. It reports 12000 ms for the `canceladas` step and 5000 ms for every other step, which are the waits actually applied.
+- The reported numbers fit the code: 7 tests total (5 in `cancel` + 2 in `free`), and the per-test time matches. I did not run the suites, as the brief says.
+
+## New Breakage in the Fix Diff
+
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: the Task 1 row gives commit `48e1853`. Task 1 ("Cancelar con motivo") was actually implemented in `1277bda feat(bookings): cancelar con un motivo de la lista`; `48e1853` is Task 2. Checked with `git log --stat cf8ef2a..48e1853`.
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`: it was written before `42c924c`, so it does not record the fix at the close or its decision (a per-step wait instead of raising the global `expectTimeout`). It should be noted in Rulings or Notas before archiving.
+- Nothing new is broken in `e2e/run.mjs` or `e2e/cancel.e2e.mjs`. The interface text stays in Spanish (castellano).
+
+## Out-of-Scope Observations
+
+- `e2e/run.mjs:38`, unchanged code: the banner prints `timeout: ${config.timeout} ms`, but the runner never enforces `config.timeout` (there is no per-test timer). A hung step is still bounded by its own `AbortSignal`, but the 30 s per test is never checked. Fine for now, but a step with a large 4th element could go over 30 s without failing.
+- `e2e/run.mjs:23`, unchanged wording: the message says `page.waitForResponse` even though the runner uses `fetch`. This copies Playwright's style and predates the fix.
+- The plan's Task 2 (`plan.md`, "Ficheros") does not list `e2e/cancel.e2e.mjs`, although `48e1853` changes it. This is outside the range.
+- Recommended heavy check, not run: the full gate on 42c924c, `node --test --test-concurrency=1` plus `node e2e/run.mjs`, to confirm the reported "7 passed" and that `free.e2e.mjs` still passes at 5000 ms.
+
+## Verdict
+
+**Fix round:** all addressed, no new Critical/Important. Two Minor items in `tasks.md` remain: the wrong commit on the Task 1 row, and the 42c924c fix not being recorded. Correct both before archiving.
+
+--- [84]
+El cierre de la 0010 está a medias. Estoy esperando la re-revisión y todavía no he escrito ningún registro.
+
+- **Pre-checks:** el árbol está limpio, `merge --check` sale con 0 y no hay otras ramas abiertas.
+- **Gate:** el E2E salió en rojo en el test de `canceladas`. Corrido solo en la rama falla igual, y en `develop` ese fichero queda en verde. La causa es que el servidor pinta la lista en 8 s y el test esperaba 5 s. Lo arreglé en `42c924c` dándole a ese paso su propia espera de 12 s, sin tocar el timeout global.
+- **Después del arreglo:** unitarias 5/5 y E2E 7/7, en 56,1 s frente a un presupuesto de 0,5 min.
+- **Smoke:** los cuatro THEN de la spec coinciden con la ejecución real, incluidos el motivo fuera de lista y la cancelación sin `--motivo`.
+- **Re-revisión:** como el arreglo es código y llegó después de la revisión final, abre la única re-revisión del cierre (opus + high). Cubre `48e1853..42c924c`. El commit de `tasks.md` (`c1ae5cd`) es solo documentación y de 17 líneas, así que lo leo yo y lo anoto como `revisado en el hilo`.
+
+Cuando vuelva sin hallazgos abiertos, sigo con el resto del cierre:
+- el walkthrough y el delta de la capacidad `bookings`;
+- las filas de deuda (E2E por encima de presupuesto y dependencia entre tests por el almacén compartido);
+- el roadmap;
+- el commit de cierre único;
+- el sync y el merge a `develop`.
+
+--- [86]
+La re-revisión salió limpia. Sus dos Minor son de `tasks.md`, que actualizo yo en este cierre. Paro la vigilancia, quito el worktree de revisión y escribo los registros.
+
+--- [89]
+Primero `tasks.md`: corrijo el commit de la tarea 1, anoto el arreglo del cierre y la re-revisión.
+
+--- [92]
+Ahora el delta de la capacidad, con la CLI y no a mano.
+
+--- [95]
+Ahora el walkthrough.
+
+--- [99]
+Repasé la sesión y no hay señales. El dev-lead no corrigió nada. No hubo búsquedas a ciegas. Ningún documento ni skill quedó desmentido, y el rojo del E2E lo cazó el propio gate.
+
+--- [101]
+Ahora `operations.md`, la deuda y el roadmap.
+
+--- [106]
+Los registros están validados. Junto el cierre en un solo commit a partir del de la última tarea.
+
+--- [109]
+Cierre hecho en `674e0d0`. Sigo con la base integrada.
+
+--- [112]
+`develop` ya está integrada, así que no hay segunda suite. El código del gate es el de `674e0d0`, que lo juntó. Compruebo que mi entorno E2E está parado y hago el merge con el script.
+
+--- [116]
+🦆 Ahora cancelar exige un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» y `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Tarea 2: usé `--test-concurrency=1` en el gate para esquivar una carrera entre tests sobre el almacén en memoria. En el cierre corrí el gate tal como lo declara `operations.md`, sin ese switch, y pasó.
+- Cierre: el gate E2E salió en rojo (test de `canceladas`), así que toqué `e2e/run.mjs`, que el plan no preveía. El servidor pinta esa lista en 8 s y el test esperaba 5 s. Un paso E2E puede llevar ahora su propia espera, y el de `canceladas` espera 12 s. No subí el timeout global. Si la lista fuera lenta de verdad, el test la daría por buena.
+
+**Hecho en el cierre**
+- **Pre-checks:** árbol limpio, `merge --check` en verde y ninguna otra rama abierta.
+- **Contraste del rojo:** el fichero que fallaba, corrido solo en la rama, falló igual. En un worktree de `develop` (89c6cd6) pasa, porque allí no existe ese test. Es rojo de la rama, y lo arreglé.
+- **Gate final:** unitarias 5/5 y E2E 7/7, con el entorno levantado y parado por esta sesión.
+- **Smoke:** 4 de 4 THEN con ejecución real, incluidos el motivo inválido y la cancelación sin motivo.
+- **Revisión:** final limpia sobre 48e1853. La re-revisión (opus) cubrió el arreglo y salió limpia. Sus 2 Minor eran de `tasks.md` y los corregí: el commit de la tarea 1 y el arreglo sin anotar. El commit de `tasks.md` era solo documentación y de 17 líneas, y lo leí yo.
+- **Documentos:**
+  - Walkthrough con el registro de validación en campo y `Retro: sin señales`.
+  - Capacidad nueva `capabilities/bookings.md`, mezclada con la CLI.
+  - Dos filas en «Por triar» de la deuda: la E2E pasa de su presupuesto (56,1 s de 0,5 min) y dos tests unitarios dependen del orden por el almacén compartido.
+  - Línea de Timeouts en `operations.md`.
+  - Fila 0010 en ✅.
+  - El proyecto no tiene `estimation.md`, así que no hay bloque de tiempo ni estimation-log.
+- **Validadores:** `roadmap check`, `capability check` y `decision check` salen con 0.
+- **Historia:** el cierre quedó en un solo commit, `674e0d0`, tras `48e1853`.
+
+**Pendiente:** nada del cambio. La rama sigue en `feature/0010-cancel-reason`, porque `merge.removeWorktree` es `false`.
+
+¿Quieres el ticket de mejora del kit con `sdd-feedback`? No hay líneas `Retro: … → ticket del kit`, así que no es necesario.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (e326f1b) · push: no hecho: `merge.push` no lo autoriza. Esta rama está en el checkout principal del repo, así que no hay worktree que borrar.
+
+--- [118]
+La re-revisión ya volvió, limpia, y el cierre de la 0010 terminó. No queda nada pendiente de este aviso.
+
+- **Estado:** `feature/0010-cancel-reason` está fusionada en `develop` (e326f1b).
+- **Push:** no hecho, porque `merge.push` no lo autoriza.
+- **Worktree:** no hay uno que borrar, porque la rama está en el checkout principal.
+
+No creo otro paso. Si quieres publicar `develop`, dímelo y lanzo el merge con `--push`.
+

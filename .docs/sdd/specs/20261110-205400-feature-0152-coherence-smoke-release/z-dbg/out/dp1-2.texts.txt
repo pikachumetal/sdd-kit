@@ -1,0 +1,84 @@
+--- [12]
+Ahora: he localizado la causa y te hago la pregunta de carril antes de tocar nada. Queda: tu respuesta, el fix y el cierre, unos 10 min.
+
+**Causa raíz** (comprobada): `toHours` en `src/app.js:8` convierte `"09:30"` en `9.30` en vez de `9.5`. Así `09:30-12:00` da 2,70 h, no 2,5, y supera `MAX_HOURS = 2.5`. Ya hay un test que lo reproduce y falla hoy: `test/reservar.test.js:5` («reservar justo el máximo de horas se acepta»). Los otros 5 pasan.
+
+🦆 En llano: el programa lee las horas como si fueran decimales. Para él, 9:30 es «nueve coma treinta», es decir, nueve y casi un tercio. Por eso 9:30 a 12:00 le salen 2,7 horas en lugar de 2,5. Se arregla leyendo los minutos como minutos (dividirlos entre 60). Ese test pasará a verde y no hace falta más código.
+
+Es un fallo determinista con la solución fijada por la causa raíz, así que cumple el predicado de **patch**. Hay un efecto lateral: `precio` usa la misma función, así que hoy también calcula mal el precio de las franjas con media hora. El arreglo lo corrige de paso. Los tests actuales de `precio` usan horas en punto y no cambian.
+
+No hay `estimation.md`, así que no doy estimación en horas.
+
+¿Cómo lo abro?
+
+1. **Patch (recomendada)**: creo la rama y la carpeta `patch-`, añado el test de regresión de `precio` con media hora y arreglo `toHours`. Después verifico y cierro.
+2. **Feature completa**: spec y plan, que aquí sería desproporcionado para un cambio de una línea.
+
+Perfil actual: el del proyecto (`sdd-kit.json`, sin `sdd-kit.local.json`). Si prefieres otro, dímelo con «perfil `<otro>`».
+
+Responde «1» y sigo.
+
+--- [21]
+Ahora: abro el patch 0010 y confirmo la causa raíz con `sdd-debugging`. Queda: el arreglo, la verificación y el cierre, unos 8 min.
+
+--- [27]
+Dos tests en rojo por la causa esperada. Aplico el arreglo mínimo.
+
+--- [33]
+Los 7 tests pasan y el comando del cliente ya responde bien. Antes del commit, el patch exige un revisor independiente.
+
+--- [35]
+Ahora: el revisor independiente está leyendo el patch. Queda: sus hallazgos, el commit y el cierre con `sdd-archive`, unos 5 min. No hago nada más hasta que responda.
+
+--- [41]
+Hallazgos:
+
+1. **Importante: el fix deja un bug de coma flotante en el límite.** `toHours` ahora devuelve `h + m/60`, y `book` compara `slotHours(slot) > MAX_HOURS` (2.5) sin tolerancia. Barrí todas las franjas de exactamente 2 h 30 min con inicio de 00:00 a 20:59. En 113 de ellas la resta da algo un poco mayor que 2.5 y se rechazan. Por ejemplo, `01:38-04:08` y `00:11-02:41` dan «excede el máximo de horas» aunque duran justo 2,5 h.
+   - Es la misma clase de síntoma que el patch quiere arreglar, solo que con otras franjas.
+   - Las franjas habituales sí funcionan: `09:30-12:00`, `09:20-11:50`, `09:10-11:40` y `09:50-12:20` dan 2.5 exacto.
+   - Habría que trabajar en minutos enteros, o redondear o comparar con épsilon. Eso es una decisión del patch; yo no he tocado nada.
+
+2. **Menor: patch.md §2 no se reproduce tal cual.** Dice que `node --test test/` falla en `test/reservar.test.js:5`. Con el fix puesto, los 7 tests pasan (esperable).
+   - Sin los cambios (`git stash`), solo falla «reservar justo el máximo de horas se acepta», que es el test del archivo `reservar.test.js` que cubre `09:30-12:00`. Así que la causa raíz es cierta.
+   - No he comprobado el valor `2.6999999999999993` que cita el patch. Tampoco he cotejado el número de línea (`:5`) ni la cita `src/app.js:8`. En el código actual `toHours` ocupa las líneas 8-11.
+   - La frase «`09:00-12:30` → 3,5 con ambos criterios» es correcta: ese test pasa antes y después.
+
+3. **Menor: el test nuevo es válido pero débil.** `precio Sur 09:30-11:00` esperaba `22.5 €`. Antes del fix daba un valor cercano a 25,5, así que habría fallado. Con el fix da 1.5 × 15 = 22.5 exacto y pasa. Solo cubre `precio`, no el límite de `reservar`. Ese caso ya lo cubre `reservar.test.js`, así que no es un hueco real.
+
+4. **Menor: entradas no cubiertas y sin cambio de comportamiento.**
+   - `9:30` (sin cero inicial) da 2.5 correcto.
+   - `24:00` funciona: `22:00-24:00` da 2.
+   - Una entrada sin `:` o con basura produce `NaN` y `NaN > 2.5` es falso, así que `book` la acepta. Antes pasaba algo parecido con `Number('abc')`, así que no es una regresión. Queda fuera del alcance del patch.
+
+5. **Menor: avisos de CRLF.** Git avisa de que cambiará LF a CRLF en `src/app.js` y `test/precio.test.js`. Es ruido del entorno y no afecta al patch.
+
+La tabla de verificación §4 sigue en «pendiente», y `commit: pendiente` en el front matter. Es coherente con que no haya commit todavía.
+
+--- [43]
+El revisor tiene razón en el hallazgo 1: con `h + m/60` la resta en coma flotante puede dar algo mayor que 2,5 en franjas de justo 2 h 30 min. Lo arreglo trabajando en minutos enteros y dividiendo una sola vez.
+
+--- [54]
+Ahora: cierre del patch 0010, parada obligatoria en la validación. Queda: tu prueba, y después el cierre y la fusión, unos 5 min.
+
+El arreglo está commiteado en `feature/0010-horas-media-hora` (`a9d8614`), pero **todavía no lo cierro**. El proyecto no declara `validation.mode: field`, y este patch lo usa una persona en el CLI del cliente. Por eso la validación te toca a ti: «cierra» no cuenta como validar.
+
+🦆 **Qué cambia, con un ejemplo:** el programa leía las horas como decimales: 09:30 era «9,30», y 09:30-12:00 le salían 2,7 h en vez de 2,5. Ahora cuenta minutos enteros, así que 09:30-12:00 son 150 minutos, es decir, 2,5 h justas, y se acepta. Lo mismo arregla `precio` con franjas de minutos: `09:30-11:00` en Sur era 25,5 €, y ahora son 22,5 €.
+
+**✋ Me salí del plan en…** nada. Una cosa que debes saber: el revisor encontró que mi primer arreglo (`h + m/60`) rechazaba por redondeo 113 franjas de 2,5 h justas, como `01:38-04:08`. Lo cambié antes del commit a minutos enteros y lo cubre un test.
+
+**Lo que he verificado yo:** `node --test test/` pasa 8/8, y sin el arreglo fallan 3. También comprobé el barrido de todas las franjas de 2,5 h con inicio entre 00:00 y 20:59, sin ningún fallo. Esto es evidencia mía, no tuya.
+
+**Para validarlo tú** (desde la raíz del repo):
+
+```
+node src/app.js reservar Sur 09:30-12:00     → reservada Sur 09:30-12:00
+node src/app.js reservar Sur 09:00-12:30     → excede el máximo de horas   (3,5 h: sigue rechazando)
+node src/app.js precio Sur 09:30-11:00       → 22.5 €
+```
+
+Si lo has probado y va bien, dímelo con tus palabras («validado, probé X»). Si prefieres diferirlo, necesito tu frase y un disparador con responsable, por ejemplo «lo pruebo mañana en el entorno del cliente».
+
+**Pendiente aparte:** `sdd-kit.json` no tiene el bloque `merge` (`merge.into` y `merge.noFf`). Con la validación hecha, te presento la fusión y espero tu confirmación en vez de fusionar sola.
+
+**No terminado.** Falta tu validación, el cierre de `patch.md` (hash del commit y registro) y la fusión en `develop`. No borres todavía el worktree `<run>/repo`.
+

@@ -1,0 +1,45 @@
+--- [3]
+Voy a leer el estado de la init que se cortó.
+
+--- [14]
+Retomo la init. Modo: con código (`package.json`, `src/app.ts`).
+
+**Estado:**
+- Aprobados: `PRODUCT.md` y `constitution.md`. No los vuelvo a presentar.
+- Config ya respondida (`ids`, perfil, ejecución, validación). No la vuelvo a preguntar.
+- Siguiente documento: `operations.md`.
+
+**Lo que leo en el código para `operations.md`:**
+- **Comandos:** `npm run dev` (Vite) arranca la app. `npm test` (Vitest) y `npm run e2e` (Playwright) son las suites. No hay script de build.
+- **CI:** `.github/workflows/ci.yml` solo corre `npm test`. El E2E no está en CI.
+- **Playwright:** `retries` es 2 en CI y 0 en local. `timeout` es 60 s por test, subido sobre el valor por defecto de 30 s y sin motivo escrito. No hay `outputDir`, así que los temporales van a `test-results/`.
+- **Tests E2E:** hay dos, `e2e/booking.spec.ts` ("reserva Norte a las 10:00") y `e2e/cancel.spec.ts` ("cancela una reserva").
+
+Hay una discrepancia con `CLAUDE.md`: dice que `npm run dev` va en el puerto 3000. Ni `package.json` ni la config de Vite (que no existe) lo fijan, y Vite usa 5173 por defecto. Lo anoto como discrepancia y no lo copio como regla.
+
+❓ **Flujos core del E2E**
+Un E2E nuevo tiene que nombrar un flujo core. Todo lo demás se prueba en una capa más baja. Los candidatos son los dos tests que existen:
+1️⃣ **Los dos son core:** reservar una sala por franja (`booking.spec.ts`) y cancelar una reserva (`cancel.spec.ts`).
+2️⃣ **Solo reservar es core:** cancelar queda para una capa más baja.
+3️⃣ **Ninguno todavía:** el campo queda `pendiente`.
+
+➡️ **Recomiendo 1️⃣**, porque el producto es "reservar salas por franja" (`PRODUCT.md`) y cancelar cierra el ciclo de una reserva. A cambio, la suite E2E crece con cada flujo core que añadas.
+
+--- [16]
+Dejo anotado: los dos flujos son core.
+
+Antes de redactar `operations.md` me falta decidir `## Frontend`, porque la app tiene interfaz (los E2E usan botones y rutas como `/mis-reservas`).
+
+El resto lo propongo yo desde el código y lo apruebas en el borrador:
+- **Duraciones y presupuesto E2E:** `pendiente`.
+- **Acceso a la aplicación:** `sin login`.
+- **Motor de producción:** en memoria, como dice la constitución.
+- **Temporales del E2E:** `test-results/`, con la propuesta de moverlos a `.temp/playwright`.
+
+❓ **Qué verifica lo que se ve (`## Frontend`)**
+Hoy no hay detector de diseño. El E2E ya existe con Playwright. La URL de desarrollo no está fijada (ver la discrepancia del puerto 3000 frente al 5173 de Vite).
+1️⃣ **impeccable como detector y Playwright como runner:** `npx impeccable detect {url} --viewport {viewport}` con viewports `1280x800` y `390x844`. Es la pareja recomendada y probada con el kit. Cuesta una dependencia nueva en las verificaciones.
+2️⃣ **Sin detector:** `Detector: ninguno`, y Playwright como runner. No añade nada, pero lo que se ve solo se comprueba con los E2E.
+
+➡️ **Recomiendo 1️⃣**, porque Playwright ya está instalado y el detector cubre lo que los dos E2E no miran, que es la composición y los móviles. A cambio, hay que fijar la versión de impeccable y un puerto estable para la URL.
+

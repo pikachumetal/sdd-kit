@@ -1,0 +1,89 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, que lee los informes de los ejes. Queda: aplicar sus conclusiones y llegar al siguiente stop, ~5 min.
+
+--- [15]
+Rojo confirmado. Ahora el arreglo.
+
+--- [19]
+`sed` cambió los finales de línea de todo el archivo (diff completo). Los restauro para que el diff sea de una línea.
+
+--- [25]
+Ahora: despacho la única re-revisión del fix (opus + high). Queda: leer el encargo, lanzarla y esperar el veredicto, ~5 min y algo de coste.
+
+--- [35]
+Mientras tanto escribo las líneas de `tasks.md` que corresponden (sin la re-revisión, que aún no ha vuelto).
+
+--- [42]
+La re-revisión está en marcha. Estado hasta ahora:
+
+- **Eje Spec:** limpio. Solo tiene un Minor (el test de `canceladas` depende de que `cancelar` corra antes). `review.minors` no está en `sdd-kit.json`, así que ese Minor queda diferido en el ledger y lo mencionaré en «Deferred minors».
+- **Eje Código:** un Important. `reasonOf` conservaba los espacios alrededor del motivo, así que `"sala ocupada "` se rechazaba como no válido.
+- **Fix:** commit `00c8b03`. Escribí primero el test «cancelar ignora los espacios alrededor del motivo» y falló. Después añadí `?.trim()` en `src/app.js`, y la suite pasa 6/6 (`node --test`). El diff queda en una línea de código más el test.
+- **Eje Arquitectura:** no sale. El plan dice `no`, y el diff no toca ninguna de las señales (módulo nuevo, dependencia, contrato entre módulos, datos).
+- **Re-revisión:** lanzada en segundo plano, con opus y effort high, sobre `e3bad5e..00c8b03`.
+- **Ledger y `tasks.md`:** el ledger tiene los resultados del fix y el Minor diferido. Corregí una línea mía que decía «sin línea de plan» para la decisión de Arquitectura, porque el plan sí la lleva. `tasks.md` tiene las líneas `Revisión final:` y `Pasada de fix:`. Falta la línea `Re-revisión:`.
+
+Hasta que vuelva la re-revisión no puedo decir que la revisión final esté limpia. No avanzo a la validación ni al cierre antes de eso.
+
+--- [44]
+### Finding Verdicts
+
+**[Code axis, Important] `src/app.js:14-17`, `reasonOf` keeps the spaces around the reason: ADDRESSED.**
+- `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. The reason is trimmed before `cancelBooking` checks it against the list at `src/app.js:20`, so the reason stored at `src/app.js:24` and printed by `canceladas` is also the clean one.
+- When `--motivo` is the last argument, the optional chaining gives `undefined`. That still answers «motivo no válido: …», as the spec requires for a missing reason (`spec.md:54`).
+- The new test at `test/cancel.test.js:17-19` does fail before the fix and pass after it. Without the trim, `' sala ocupada '` fails the list check and answers «motivo no válido…». With the trim, it passes the check and reaches the booking lookup.
+- The existing «What to check» point still holds: `cancelBooking` validates the reason (`src/app.js:20`) before it looks up or changes the booking (`src/app.js:21-24`).
+
+(Spec axis: no findings to verdict.)
+
+### New Breakage in the Fix Diff
+
+- **Minor, `test/cancel.test.js:18`: the new test depends on test order and never shows a successful cancellation.**
+  - It expects `'sin reserva Norte lun'`, which only happens because the first test (`:6`) has already cancelled Norte lun.
+  - Run on its own (for example with `--test-name-pattern`), it would get «cancelada Norte lun (sala ocupada)» and fail.
+  - It also never checks the case from the finding: a person who copied the reason with spaces can actually cancel, and the reason is stored trimmed.
+  - Suggested fix: use a booking the other tests don't touch, or reset state, and assert `'cancelada … (sala ocupada)'`.
+  - It is a new test, not a RED test being modified, so the RED-test constraint doesn't apply.
+- **Minor, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: the new task record gives the wrong commit for Task 1.**
+  - It says `e3bad5e`, but Task 1 («Cancelar con motivo») was `01865eb` («feat(bookings): cancelar con un motivo de la lista»). `e3bad5e` was Task 2.
+  - The record also has no row or note for the fix commit `00c8b03`.
+
+The UI-language constraint is respected: no new UI text was added, and the test name is in Spanish.
+
+### Out-of-Scope Observations
+
+None.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage. Only two Minor issues remain: the order-dependent test at `test/cancel.test.js:18` and the wrong commit for Task 1 in `tasks.md:10`.
+
+--- [46]
+La re-revisión confirma que el Important está resuelto y no trae Critical ni Important nuevos. Ahora cierro el ledger y `tasks.md`, y quito el worktree de revisión.
+
+--- [48]
+La revisión final de la 0010 está cerrada y no queda ningún Critical ni Important abierto. Todavía no he hecho la validación ni el cierre con `sdd-archive`.
+
+**Qué dijo cada eje**
+- **Spec:** limpio, solo un Minor.
+- **Código:** un Important. `reasonOf` conservaba los espacios alrededor del motivo, así que `"sala ocupada "` se rechazaba como no válido.
+- **Arquitectura:** no sale, según el plan, y el diff no toca ninguna de sus señales.
+
+**El fix**
+- Commit `00c8b03`: `reasonOf` ahora hace `?.trim()` (`src/app.js:16`).
+- Escribí primero el test «cancelar ignora los espacios alrededor del motivo» y falló antes del arreglo. Después de arreglarlo, `node --test` pasa 6/6.
+- La re-revisión (opus + high, sobre `e3bad5e..00c8b03`) da el hallazgo por resuelto y no trae Critical ni Important nuevos.
+
+**Documentación**
+- `tasks.md` tenía mal el commit de la Task 1: ponía `e3bad5e` y era `01865eb`.
+- Lo corregí en `12ee32f`, junto con la fila del fix y la línea `Re-revisión:`. Es un cambio solo de documentación, de menos de 20 líneas; lo revisé yo en el hilo.
+- Quité el worktree de revisión.
+
+**Minors**
+- **Test que depende del orden (`test/cancel.test.js:13`):** el eje Spec lo marcó en el test de `canceladas`, y está diferido porque `sdd-kit.json` no tiene `review.minors`.
+- **Test nuevo (`test/cancel.test.js:18`):** la re-revisión marcó lo mismo en el test que añadí. Espera `'sin reserva Norte lun'` porque otro test ya canceló esa reserva, así que aislado fallaría. Tampoco comprueba que la cancelación con espacios llegue a hacerse. Lo dejé como `Ruling` porque el kit no permite una segunda pasada de fix. El coste es solo de mantenimiento: no afecta a quien usa la app.
+
+**Pendiente**
+- Hay tres commits sin pushear (`00c8b03`, `12ee32f` y los anteriores de la rama).
+- El siguiente paso es la validación y el cierre con `sdd-archive`. No lo he lanzado.
+

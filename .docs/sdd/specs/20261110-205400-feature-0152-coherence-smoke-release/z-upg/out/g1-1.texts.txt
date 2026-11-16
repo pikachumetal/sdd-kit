@@ -1,0 +1,136 @@
+--- [9]
+Estoy revisando el proyecto (2.3.4 → 3.0.0). Los pasos 1, 2 y 3 de la migración son *gates*, así que voy a preparar las tablas de destino para que las apruebes antes de mover nada.
+
+--- [12]
+Todavía no he movido nada. Los pasos 1, 2 y 3 son *gates* y necesitan tu «sí» antes de ejecutarse. El árbol está limpio y el sha previo es `6c54778`.
+
+## Paso 1 — Moves
+
+| Qué hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz. El texto no cambia, y no tiene enlaces relativos que arreglar. |
+| `constitution.md` | `git mv` a `steering/constitution.md`. El enlace `decisions/0001-…` pasa a `../decisions/0001-…`. |
+| `architecture.md` | `git mv` a `steering/architecture.md`. El texto no cambia. |
+| `estimation.md` | `git mv` a `steering/estimation.md`. El texto no cambia. El paso 6 le actualiza el método. |
+| `estimation-log.md` | `git mv` a `steering/` y regenerado con `sdd estimation log`. El diff es solo de formato, porque hoy no tiene filas y el regenerado tampoco: cambia la cabecera y añade las columnas y la sección «Tiempos por fase». No se pierde ninguna fila escrita a mano. |
+
+## Paso 2 — Producto y operaciones
+
+**`mission.md` → `PRODUCT.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Por qué existe» | `## Product Purpose` |
+| «Usuarios y roles» | `## Users` |
+| «Qué es y qué no es» | `## Capabilities and Constraints` |
+| «Dominio» | `## Terminology`: `**Franja**: una hora reservable, de en punto a en punto.` No hay sinónimo que evitar, así que no llevaría `_Evitar_`. |
+
+**`tech-stack.md` y `environments.md` → `steering/operations.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Comandos» | Igual. `npm test` va a «Suites». |
+| «Testing» | Igual, más los campos nuevos que propongo así: nivel de la suite `pendiente` (vitest no dice si es unitaria), «Lint» `ninguno` (no hay script ni pre-commit), «CI de la base» `ninguna`, «Temporales» como en la init, y sin campos E2E (no hay `e2e/`). |
+| Línea «Gate de merge» | `pnpm lint && pnpm test` no la reescribo. El paso 9 avisará de que encadena comandos y de que lleva lint. |
+| «Frontend» | Igual: «No aplica: es una CLI». |
+| `environments.md` | `## Entornos`, condensado a marcador `.sdd-env.json`, tres entradas `env:setup`/`env:clean`/`env:status`, tipos y runner. Dos cosas por confirmar: `package.json` no tiene esos scripts y el doc no menciona tipos ni runner. |
+| «Tecnologías» | Node 22 y Vitest 3 ya están en `package.json`, así que salen. No hay ningún servicio ni runtime fijado a mano que pasar a `architecture.md`. |
+| «Decisiones abiertas» | «¿Avisos por correo al reservar?» pasa a Later en el paso 3. |
+
+Después del «sí», hago `git rm` de `mission.md`, `tech-stack.md` y `environments.md`. El commit llevará `git show 6c54778:.docs/sdd/<doc>` de cada uno.
+
+## Paso 3 — `ROADMAP.md` y `steering/debt.md`
+
+**Roadmap.** Hay un `Release` en preparación por el parche 0023, que no está publicado: se añadió después de `v1.2.0`. Es una pregunta abierta para ti: ¿Now se titula `## Now — <versión> · en preparación`, o va sin título de versión? El roadmap 2.x no nombra ninguna release.
+
+| Fila 2.x | Destino |
+| --- | --- |
+| 0021 Cancelar una reserva propia | Now ⏳, `Externo` SAL-41, `Toca` `src/app.js` |
+| 0022 Avisar de la cancelación | Now ⏳, `Requisitos` proposal 0019, `Tras` 0021, `Toca` `src/app.js` y `src/notify.js` |
+| 0024 Informe de ocupación por sala | Now ⏳, `Toca` `src/report.js`. `Tras` 0015 pasa a `—` porque 0015 no está en `ROADMAP.md` ni en `CHANGELOG.md`. |
+| Patch 0023 (sin publicar) | Now ✅, `Carril: patch`, `Requisitos` hacia su `patch.md` |
+| Backlog B3 «Exportar a CSV» | Later ⏳. Sin id de secuencia, recibe uno de `sdd id next --reserve`. «Origen» queda al final de la línea. |
+| «Decisiones abiertas» («avisos por correo») | Later ⏳, id de la misma reserva (total 2 ids) |
+| «Releases cerradas» v1.2.0 | Se va: queda en `CHANGELOG.md` y `releases/`. `validaciones pendientes: 0016` se queda solo en su `walkthrough.md`. |
+
+Falta el **Tamaño** (`S`, `M` o `L`) de las filas de Now, que no lo deduzco: 0021, 0022, 0024 y 0023. Sin esos valores el gate no cierra.
+
+**Deuda.** Las fechas salen de `git log -S` sobre `roadmap.md`. Cuando no hay marca de causa, propongo una que tienes que aprobar.
+
+| Fila | Sección | Celdas |
+| --- | --- | --- |
+| Patch 0023, saldada | Lista | «Evidencia»: el enlace al patch (`../specs/…`). «Destino»: 0023. Sin causa ni arreglo. |
+| `cancel` no comprueba al dueño | Lista | «Destino» 0022. «Evidencia»: SAL-45 y `../field-reports/sal-45.md`. |
+| Pasar a TypeScript | Por triar | Fecha 2026-09-15. «Impacto» «Bajo» se pierde (no hay columna). |
+| Mensajes mezclan castellano e inglés | Por triar | Fecha 2026-09-01. Pierde «Impacto». No tiene evidencia. |
+| Test de franjas falla a veces | En espera | Fecha 2026-09-01. «Falta»: un segundo fallo con su log. «Causa»: `sin determinar`. |
+| Test de avisos depende de la fecha | Lista | «Destino» 0022. «Causa»: prueba o molde. «Arreglo»: mover regla. «Remedio»: `—`. |
+| El changelog pierde una entrada | En espera | Fecha 2026-09-01. «Causa»: fusión de registros. «Falta»: reproducirlo. |
+| Rutas largas rompen la copia | Lista | «Destino» 0022. «Causa»: entorno de la máquina. «Arreglo»: comprobación automática. «Remedio»: lanza desde `D:\r`. |
+| Avisos salen dos veces | Lista | «Destino» 0022. Dos enlaces en «Origen»: ¿cuál es el «Remedio temporal»? |
+| Validar el formato de la franja | Sale | Descartada. |
+
+El enlace `field-reports/sal-45.md` se convierte en `../field-reports/sal-45.md`. Ese fichero no existe en el repo, así que el enlace nace roto. Dime si lo dejo así o lo quito.
+
+Los pasos 4 a 10 dependen de lo que apruebes aquí. Hoy ya sé que el paso 4 tocará `CLAUDE.md`, y el 5 `CLAUDE.md` y `.claude/commands/pregunta.md`, que usan `sdd-end-feature` y `/sdd-consult`. Esos cambios no llevan gate.
+
+**Para continuar necesito de ti:**
+1. Tu «sí» a las tablas de los pasos 1, 2 y 3, con los cambios de destino que quieras.
+2. El título de Now: ¿con versión o sin ella?
+3. El Tamaño de 0021, 0022, 0024 y 0023.
+4. El «Remedio temporal» de «Los avisos salen dos veces».
+5. Qué hago con el enlace roto a `field-reports/sal-45.md`.
+
+Si prefieres que apruebe todo lo propuesto, dímelo y pásame solo los tamaños. Hasta entonces no hay marcador ni commit, y el proyecto sigue en 2.3.4.
+
+--- [22]
+Aplicando los enlaces (paso 4), los nombres de skills (paso 5) y el método de estimación (paso 6).
+
+--- [30]
+Migrado a **3.0.0** en el commit `f26bb98`. El árbol queda limpio y `sdd-kit.json` declara `"version": "3.0.0"`. Falta la revisión de reglas del paso 8, que necesita tu respuesta.
+
+**Qué cambió**
+- **Documentos movidos**:
+  - `CHANGELOG.md` va a la raíz.
+  - `constitution.md`, `architecture.md`, `estimation.md` y `estimation-log.md` van a `steering/`.
+  - El log se regeneró con `sdd estimation log`.
+- **Documentos nuevos**: `PRODUCT.md`, `steering/operations.md`, `ROADMAP.md` y `steering/debt.md`, con las tablas que aprobaste.
+- **Eliminados**: `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md`. Para recuperarlos: `git show 6c54778:.docs/sdd/<doc>`.
+- **Ids reservados**: 0025 (exportar a CSV) y 0026 (¿avisos por correo?), ambos en Later.
+- **Roadmap**: Now lleva 0021, 0022, 0024 y 0023, las cuatro con tamaño M y sin título de versión ni línea de perfil. Next queda vacío. «Remedio temporal» de los avisos duplicados: «relanzar el aviso a mano».
+- **Enlaces y nombres**: arreglados en `CLAUDE.md`, `README.md` y `.claude/commands/pregunta.md` (`sdd-end-feature` → `sdd-archive`, `/sdd-consult` → `/sdd-explore`).
+- **Método de estimación**: las dos líneas de `steering/estimation.md` pasan a la versión 3.0.0.
+- **`.gitignore` y hook**: se creó `.gitignore` con `.temp/`, y el hook `.claude/hooks/sdd-kit-loaded.mjs` con su entrada en `.claude/settings.json`.
+- **Verificación**: `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da «Capacidades válidas: 1».
+
+**Pendiente o a revisar**
+- **Enlace roto**: `../field-reports/sal-45.md` en `debt.md` apunta a un fichero que no existe, como acordamos.
+- **ADR 0001**: sigue enlazando a `../mission.md`. Las ADR son inmutables, así que no la toqué: el enlace está roto.
+- **Gate de merge**: `pnpm lint && pnpm test` encadena comandos y lleva lint. Avisos del paso 9, sin tocar la línea:
+  - Gate que encadena comandos: «pnpm lint && pnpm test» — `sdd merge --verify` ya no lo admite; hazlo una tarea de moon o un script de package.json.
+  - Gate con lint: «pnpm lint && pnpm test» — el lint va en «Lint», al editar y en el pre-commit; sácalo del gate.
+- **Superpowers**: `.claude/settings.json` no lo declara, así que no hacía falta quitar nada.
+- **`operations.md`**: «Tipos» y el nivel de la suite quedan en `pendiente`, porque los docs antiguos no los decían.
+
+**Paso 8: reglas que el kit ya cubre**
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «el id de una feature se elige a mano, el siguiente libre del roadmap» | `steering/constitution.md:7` | `skills/sdd-propose/references/nombrado.md` | choca | quitarla |
+
+No he abierto `nombrado.md` para confirmar qué fija: lo hago antes de aplicar nada. ¿Aplico esta propuesta?
+
+--- [33]
+Confirmado: `nombrado.md` fija que el id sale de la fila del roadmap o de `sdd id next --reserve`. La regla del proyecto choca con eso.
+
+--- [35]
+Quité la regla de los ids de `steering/constitution.md` y dejé las demás como estaban. Está en el commit `c9a78eb` (`chore(sdd): reglas del proyecto que ya cubre el kit`). El árbol está limpio.
+
+La constitution queda solo con la regla de dónde viven los datos.
+
+El proyecto ya está en el kit 3.0.0, con la migración en `f26bb98`.
+
+Siguen abiertos dos avisos de antes:
+- **Gate de merge**: `pnpm lint && pnpm test` encadena comandos y lleva lint, así que `sdd merge --verify` no lo admite. Conviene convertirlo en un script de `package.json` o una tarea de moon, y sacar el lint del gate. Esa decisión es tuya.
+- **ADR 0001**: sigue enlazando a `../mission.md`, que ya no existe. Las ADR no se tocan, así que el enlace queda roto.
+

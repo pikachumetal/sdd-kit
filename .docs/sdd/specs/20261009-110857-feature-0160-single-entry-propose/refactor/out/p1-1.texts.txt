@@ -1,0 +1,64 @@
+--- [3]
+Ahora: leer la spec aprobada y la configuración para escribir el plan. Queda: el plan y el traspaso a `sdd-start-feature`.
+
+--- [7]
+Estoy usando la skill writing-plans para crear el plan. Antes miro la plantilla del kit y el código.
+
+--- [16]
+Plan escrito y apertura commiteada. Perfil `delegate`, así que paso a la implementación sin parar.
+
+--- [19]
+Ahora: implementar la Task 1 en Native, con `executing-plans`. Queda: tests RED, código, revisión final, validación (~15 min).
+
+--- [28]
+RED confirmado (4 fallan). Implemento.
+
+--- [30]
+Se coló un salto de línea real por el escape de Python; lo corrijo.
+
+--- [32]
+Mi reemplazo no casó (el literal tiene dos líneas); uso Edit.
+
+--- [35]
+Verde: 7/7, lint limpio, RED sin cambios. Commit y cierre de la task.
+
+--- [39]
+Ahora: revisión final de rama con un revisor independiente. Queda: sus hallazgos, validación y cierre.
+
+--- [47]
+Hecho: la Task 1 de la 0010 está implementada y la revisión final no encontró nada Critical ni Important. Falta tu validación.
+
+El plan está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`. Lo escribí en modo `delegate`, así que no hubo gate de plan, y lo pasé a ejecución sin parar. El método es Native, fijado en `sdd-kit.json`, con una sola task.
+
+Dejé commiteados dos hitos en `feature/0010-cancel-reason`: la apertura (spec y plan, `7fdb868`) y la task (`55569d0`).
+
+## Revisión final
+Pasó el revisor `sdd-kit:effort-high` + `opus` sobre `55569d0`: **sin Critical ni Important**, con cuatro Minor.
+- **Minor diferidos:**
+  - `--motivo` antepuesto a la sala da un mensaje confuso (`cancelar --motivo otro Norte lun`).
+  - `test/cancel.test.js` pasó de CRLF a LF, por lo que su diff aparece reescrito entero.
+  - No hay un test con nombre propio para «sin canceladas»: se comprueba dentro de `un motivo inválido no cancela la reserva`.
+  - Ningún test comprueba que una reserva anulada (`voided`) no sale en `canceladas`.
+- **No me corresponde decidirlo:** el revisor señaló que `cancelar` sin `--motivo` ahora se rechaza, lo que rompe el uso anterior. Es la decisión 4 del plan y la spec no la fija; dime si te vale.
+
+## Smoke por THEN
+La suite completa (`node --test`) da 7/7 y `node scripts/lint.mjs` no encuentra nada.
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real vía módulo. La CLI no sirve para esto: cada invocación arranca con el estado inicial, así que desde la terminal `canceladas` siempre responde «sin canceladas». |
+
+## Guion de pruebas
+Desde la raíz del repo:
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo aburrimiento` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → el mismo mensaje de motivo no válido.
+4. `node src/app.js cancelar Sur mar --motivo otro` → «sin reserva Sur mar».
+5. `node --test test/cancel.test.js` → 5/5. Aquí se ve el listado «Norte lun — sala ocupada».
+
+✋ Me salí del plan en: nada, no hubo desvíos ni rulings.
+
+¿Lo validas? Dime qué probaste y si funciona. Con eso invoco `sdd-end-feature` y cierro.
+

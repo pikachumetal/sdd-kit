@@ -36,3 +36,4 @@ Baseline: kit de `feature/0021` en `884ccc3`, sin cambios de la task, con superp
 - El sujeto revisor recibe el encargo como petición de `claude -p`: es lo que el controlador le pasa en campo. Sin el plugin del kit (no carga skills) y sin `Agent`.
 - Los sujetos heredan el `CLAUDE.md` global y los hooks de la máquina del dev-lead, como en campo; el `CLAUDE.md` global también fija «funciones ≤ 20 líneas».
 - R3 carga la skill 2/2 (`Skill: sdd-kit:sdd-start-task` en `tools.txt`).
+- En un proyecto del equipo, 27 minutos por revisor que rehace el diff y ejecuta la suite, frente a los 7 de uno que solo lee el diff (cifra que vivía en `encargo-revision.md` hasta la feature 0182).

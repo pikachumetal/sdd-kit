@@ -1,0 +1,81 @@
+
+>>> Read: <run>/review-final-cb7dfc7.diff
+<<< 1	# Review package: 179e97d..HEAD
+2	
+3	## Commits
+4	cb7dfc7 feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 7 +++++++
+8	 1 file changed, 7 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e25d07a 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,17 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return
+
+>>> Grep: rooms\b
+<<< 2:const rooms = ['Norte', 'Sur'];
+7:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+52:  if (!rooms.includes(room)) return 'sala no válida';
+
+=== RESULTADO (3 turnos, 0.1107606 $)
+### Strengths
+- The change is small (one function, 7 lines) and well under the 30-line limit.
+- It validates the room first and returns early, which keeps the main flow simple.
+- The error text is in Spanish, as the restrictions require.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:51`: the comment `// Task 4: validar antes de guardar` cites a plan document.**
+   - "Task 4" goes stale as soon as the plan is renumbered or archived. Nothing in the repo explains what Task 4 is.
+   - The rest of the comment only repeats what line 52 does (validate the room, then return).
+   - Delete it. If a reason is needed, state it directly, for example why the room is validated at all.
+
+2. **`src/app.js:52-54`: `saveRefund` doesn't save anything, and its return type is inconsistent.**
+   - The function name and the commit message say "guardar la devolución". The function only returns an object. It writes no booking, refund or state.
+   - It returns the string `'sala no válida'` on failure and an object on success. A caller can't tell an error from a result without checking the type, and any caller that treats the string as data will break.
+   - Throw an error or return `{ ok, error }`. If persistence belongs to a later task, the spec should say so and the function name should reflect it.
+
+3. **`src/app.js:54`: `iban.replaceAll(' ', '')` has no input checks.**
+   - `iban` that is `undefined`, `null` or not a string throws a `TypeError`.
+   - Only plain spaces are stripped. Tabs and non-breaking spaces stay in.
+   - Nothing checks that the IBAN is valid, or that it isn't empty after stripping.
+   - A caller passing an empty or missing IBAN gets an exception or an empty IBAN stored as valid. Add a type check and return a clear error.
+
+#### Minor (Nice to Have)
+1. **`src/app.js:53`: the comment `// requisito del proveedor: ...` cites a requirement with no source.**
+   - It does give a reason: the provider needs the IBAN without spaces. That is the kind of reason a comment should carry, so I'd keep it.
+   - It points at no document, so it is vague and can't be checked. Name the provider or an ADR/doc, or move the rule into a named helper such as `normalizeIban`.
+   - I'm treating it as a Minor issue rather than a false positive for that reason. See "Declined to judge" for the other reading.
+
+2. **`src/app.js:49`: the new function was added after `if (command) console.log(...)`.**
+   - Exports sit after the module's side-effecting entry point. This is a style point.
+   - Move the new function above that line.
+
+### Recommendations
+- Define the shape of the result (error versus value) before more code builds on `saveRefund`.
+- Add a test for the invalid-room and IBAN-with-spaces paths. I saw no test in this diff.
+
+### Declined to judge
+- Whether `saveRefund` should persist anything: it depends on the spec and plan, which I can't see. This is for the Spec axis.
+- Whether the Task 4 comment matches the plan numbering: the spec folder is excluded from the package.
+- Whether "requisito del proveedor" should count as a citation with its own reason (the "living document" exception): it names no document, so I treated it as a vague comment. The executor should rule on this.
+- Missing tests: the package lists no test files and I can't tell whether the task reports include them. This is for the executor.
+- E2E rules: none apply, since the project declares no E2E.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The function is short and does what it says on the happy path. But the stale "Task 4" comment, the inconsistent error and success return values, and the missing input handling on `iban` are all Important and should be fixed before merging.

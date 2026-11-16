@@ -1,0 +1,106 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls .docs/sdd 2>&1 | head -30; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; git branch --show-current
+<<< changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+develop
+
+>>> Bash: cd .docs/sdd; cat constitution.md mission.md tech-stack.md roadmap.md sdd-kit.json; ls specs; ls ..; cd ../..; ls; ls node_modules 2>&1 | head -2
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-dev-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -20
+<<< Sin capacidades
+
+>>> Bash: cat package.json; wc -l src/app.js; grep -n -i "libres" -r src test README.md | head -30; cat .docs/sdd/specs/20260917-090000-task-0006-free/*.md | head -60
+<<< {"type": "module"}
+16 src/app.js
+src/app.js:10:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+test/app.test.js:6:  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+# Spec — free
+
+status: done
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+
+>>> Bash: cat src/app.js test/app.test.js README.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-dev-0152/skills/sdd-propose/references/modo-lite.md" | head -60; cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-dev-0152/skills/sdd-propose/references/patch-lane.md" | head -50
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enables** the m
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-dev-0152/skills/sdd-propose/references"; grep -n -i "default\|por defecto" control-profiles.md | head -8
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+222:| Key | Type | Default |
+240:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+
+=== RESULTADO (10 turnos, 0.1642207 $)
+🦆 `libres` hoy recibe solo una franja (`libres 10:00-12:00`) y responde con la lista de salas libres en esa franja. Tu cambio añade una opción para limitar la respuesta a una sala. Eso es comportamiento nuevo y visible para el usuario, y la petición no fija ni la sintaxis ni lo que pasa en los casos límite, así que no es un patch.
+
+Con la sintaxis tendría que decidir yo, y eso sería diseñar la solución.
+
+**Carril propuesto: lite.** Cumple las condiciones una por una:
+- El flujo ya existe y se lee entero: `freeRooms` en `src/app.js`, 16 líneas.
+- No cambia contratos públicos: `libres <franja>` sigue funcionando igual y la sala es opcional.
+- No toca datos ni esquema.
+- Cabe en un solo módulo, `src/app.js`, más su test.
+- No hay `estimation.md`, así que no aplica el límite de estimación.
+
+Perfil actual: `delegate`, el del proyecto (`sdd-kit.json`). Son menos de 3 tasks, así que no propongo dividirlo.
+
+¿Cómo seguimos?
+
+1. **Lite (recomendada):** spec corta, con tus decisiones de sintaxis y casos límite marcadas para validar. Sin plan ni tasks.
+2. **Full:** spec completa más plan, por si prefieres el ciclo entero.
+3. **Lite y te ausentas:** di «apruebo la spec por delegación, nos vemos en la validación» y la apruebo yo, dejando tu frase registrada.
+4. **Otro perfil:** di «perfil `<otro>` para esta feature».
+
+Si eliges lite, mi primera propuesta sería `libres <franja> --sala <nombre>`. Para una sala que no existe, sería un mensaje de error en lugar de una lista vacía. Te lo dejo en la spec para que lo valides.

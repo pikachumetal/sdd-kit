@@ -1,0 +1,72 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -la && ls .docs/sdd 2>/dev/null; grep -rl "sdd-template: pending" . --include=*.md 2>/dev/null | grep -v node_modules | head; git ls-files | head -50
+<<< total 16
+drwxr-xr-x 1 <user> 197609    0 Nov 13 15:40 ./
+drwxr-xr-x 1 <user> 197609    0 Nov 13 15:40 ../
+drwxr-xr-x 1 <user> 197609    0 Nov 13 15:40 .git/
+-rw-r--r-- 1 <user> 197609  620 Nov 13 11:13 CHANGELOG.md
+-rw-r--r-- 1 <user> 197609   20 Nov 13 11:11 package.json
+-rw-r--r-- 1 <user> 197609  254 Nov 13 11:13 PRODUCT.md
+-rw-r--r-- 1 <user> 197609   62 Nov 13 11:11 README.md
+-rw-r--r-- 1 <user> 197609 1077 Nov 13 11:13 ROADMAP.md
+drwxr-xr-x 1 <user> 197609    0 Nov 13 15:40 src/
+drwxr-xr-x 1 <user> 197609    0 Nov 13 15:40 test/
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+s
+
+>>> Bash: cd "<run>/repo" && for f in package.json README.md PRODUCT.md ROADMAP.md CHANGELOG.md src/app.js test/app.test.js; do echo "=== $f"; cat $f; done; git branch -a; git remote -v
+<<< === package.json
+{"type": "module"}
+=== README.md
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+=== PRODUCT.md
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+=== ROADMAP.md
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.1270117 $)
+Modo: con código — si es un template recién instanciado, dímelo y sigo sin código.
+
+**Inventario** (hecho por mí, sin preguntarte):
+- Stack: Node con ESM (`package.json` solo tiene `"type": "module"`), sin dependencias ni scripts.
+- Código: `src/app.js` (comandos `libres`, `reservar --cada-semana`, `cancelar`) y `test/app.test.js` (3 tests con `node:test`).
+- Git: ramas `main` y `develop`, sin remoto. Estás en `develop`.
+- Sin CI, sin pre-commit, sin linter.
+
+**Cosecha** (`PRODUCT.md`, `ROADMAP.md`, `CHANGELOG.md`, `README.md`): no hay `CLAUDE.md`. Dos discrepancias para que las decidas más adelante:
+- `CHANGELOG.md` y `ROADMAP.md` enlazan a `.docs/sdd/specs/...` (tasks 0005, 0006 y patch 0007), y esa carpeta no existe.
+- El roadmap marca la 0007 (cancelación) como ✅ y la 0008 (avisos por correo, `src/correo.js`) como ⏳. `src/correo.js` no existe todavía, lo cual es coherente con ⏳.
+
+Del `PRODUCT.md` ya sé el problema y los usuarios: una CLI para reservar las salas de tu coworking, la usas solo tú, y la desarrollas, pruebas y despliegas tú. Lo dejo como propuesta a confirmar en el documento.
+
+Empiezo la entrevista con las reglas de producto, que son lo que el agente decidiría al azar en cada feature. Primera: dónde viven los datos.
+
+❓ **Dónde viven los datos de las reservas**
+Hoy `src/app.js` tiene `rooms` y `bookings` como arrays en memoria. Nada se guarda: cada ejecución de la CLI empieza con la reserva de ejemplo `Norte lun 10:00-12:00`. El CHANGELOG habla de «reserva recurrente» y «cancelar una reserva propia», que sin persistencia no tienen efecto entre ejecuciones.
+1️⃣ **Un fichero JSON local** (por ejemplo `data/reservas.json`, fuera de git). Lo puede leer y editar una persona. No necesita servicios en tu servidor. Cuesta que no hay control de concurrencia, aunque con un solo usuario no pesa.
+2️⃣ **SQLite**: transacciones y consultas por franja, pero añade una dependencia y migraciones.
+3️⃣ **Memoria, como ahora**: es lo que hay, pero las reservas se pierden al terminar el proceso.
+4️⃣ **Otra cosa** (dímela).
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y despliegas en tu propio servidor, así que no necesitas concurrencia. A cambio, si algún día hay más usuarios habrá que migrar a SQLite.

@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && cat .docs/sdd/sdd-kit.local.json; cat .docs/sdd/sdd-kit.json 2>/dev/null; git branch --show-current; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>/dev/null; done
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+{"merge": {"push": true}}
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+develop
+Sin capacidades
+<<< Exit code 1
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde t
+
+>>> Bash: cd "<run>/repo" && git ls-files | grep -v '^.docs' ; wc -l src/app.js; cat src/app.js; ls .docs/sdd/specs; cat .docs/sdd/operations.md
+<<< PRODUCT.md
+README.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.test.js
+35 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011 develop && cat PRODUCT.md | head -30; cat test/cancel.test.js | head -30
+<<< Switched to a new branch 'feature/0011'
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+import { test } from 'node:test';
+import assert from 'node:assert/stric
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.2419628 $)
+**Lo que entiendo (corrígeme si falla):** quieres que `anular` deje de poder lanzarlo cualquiera. Solo debe poder el responsable de cada sala, y no hace falta que la reserva sea suya. Es la fila 0011 del roadmap y la definición de «Anulación» de `PRODUCT.md`.
+
+**Lo que he visto en el código** (`src/app.js`):
+- `anular` ya existe y lo puede lanzar cualquiera.
+- No existen personas, ni dueño en las reservas, ni responsables de sala.
+- `operations.md` dice «sin login» y las reservas viven en memoria.
+
+Falta decidir cómo sabe la herramienta quién actúa. Es la decisión de la que cuelgan las demás.
+
+❓ **¿Cómo se identifica quien ejecuta el comando?**
+1️⃣ **Parámetro `--como <nombre>`**: se declara en cada comando. Los responsables se definen en una tabla de `src/app.js` (`Norte: ana`, `Sur: luis`).
+   - `anular Norte lun --como ana` → `anulada Norte lun`
+   - `anular Norte lun --como luis` → `solo el responsable de Norte puede anular`
+   - `anular Norte lun` → `indica quién eres con --como`
+2️⃣ **Variable de entorno `SALAS_USUARIO`**: se define una vez por sesión y el comando no cambia.
+   - `anular Norte lun` con `SALAS_USUARIO=ana` → `anulada Norte lun`
+3️⃣ **Usuario del sistema operativo**: el nombre sale de `os.userInfo()` y no hay que declarar nada.
+   - `anular Norte lun` ejecutado por `ana` → `anulada Norte lun`
+
+➡️ **Recomiendo 1️⃣**, porque `run(cmd, params)` ya recibe todo por parámetros. Así el cambio se prueba con tests sin tocar el entorno y no añade ninguna dependencia nueva. A cambio, no es autenticación: cualquiera puede escribir `--como ana`. Para esta herramienta, sin login y con una sola persona desarrollándola, creo que basta.

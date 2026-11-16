@@ -1,0 +1,26 @@
+--- [11]
+Estoy comprobando en la documentación de Node 22 (la versión del proyecto) qué ofrece su cobertura nativa antes de recomendarte nada.
+
+--- [14]
+❓ **¿Cobertura nativa de Node o `c8`?**
+
+Esto es lo que he encontrado, con su fuente:
+
+- **Lo que dice el proyecto** (`tech-stack.md`): «Node 22, sin dependencias externas» y tests con `node --test`. `c8` sería la primera dependencia del repo.
+- **Lo que ya funciona** (lo he ejecutado, sin tocar nada): `node --test --experimental-test-coverage` mide hoy `src/app.js` con 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones. La línea sin cubrir es la 13.
+- **Lo que dice la documentación de Node 22**:
+  - La cobertura sigue marcada como **experimental** (Stability 1).
+  - Tiene reporter `lcov`, globs de inclusión y exclusión, y umbrales mínimos (líneas, ramas, funciones) que hacen fallar con código 1. Esos umbrales están documentados en la API `run()` desde v22.10.0.
+  - **No he podido confirmar** que los umbrales existan como flags de línea de comandos en 22; la página solo documenta `--test-coverage-include` y `--experimental-test-coverage`.
+- **Lo que infiero**: tu Node local es la v26.11.1, no la 22 del stack. Mientras no verifiquemos en 22, lo que medimos aquí podría no reproducirse allí.
+
+1️⃣ **Nativo de Node.** No añade dependencias y cumple el stack tal cual. Para un solo fichero de entrada y 3 tests, ya da el número. A cambio, está marcado como experimental y puede cambiar entre versiones. Si queremos umbrales que rompan el build, hay que pasarlos por `run()` en un pequeño script, porque los flags de CLI en 22 no están confirmados.
+
+2️⃣ **`c8`.** Es el estándar de facto: umbrales por CLI, `.c8rc` y reportes HTML, y no depende de que la función de Node sea estable. A cambio, rompe el «sin dependencias externas» (hay que enmendar `tech-stack.md`) y añade `package.json` con `devDependencies` y `node_modules` a un repo que hoy no los tiene. Por debajo usa la misma cobertura V8, así que los números salen casi iguales.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto se define por no tener dependencias, y el medidor nativo ya produce el número sobre el único fichero que tiene. A cambio, aceptamos que la API sea experimental y que haya que verificar los umbrales en Node 22 real.
+
+**¿Vamos con 1️⃣ (nativo) o prefieres 2️⃣ (`c8`)?**
+
+Cuando lo decidas, el siguiente paso sería pasarlo por `sdd-propose` para clasificarlo y darle id (yo no he creado nada ni tocado el roadmap).
+

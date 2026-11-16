@@ -1,0 +1,115 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap). Queda: clasificar, anunciar y arrancar la spec, ~5 min.
+
+--- [24]
+El repaso de coherencia ha encontrado un fallo: con un único usuario y sin duplicados, la «posición» siempre sería 1 y el FIFO no tendría escenario posible. Lo quito de la spec.
+
+--- [30]
+Ahora: lanzo el revisor de la spec (uno, dominio, Opus). Queda: integrar hallazgos y presentarte la spec para aprobar, ~5 min.
+
+--- [35]
+He lanzado el revisor de la spec y espero su resultado. Hasta que llegue no puedo integrar sus hallazgos ni presentarte la spec para que la apruebes.
+
+Esto es lo que hay hasta ahora:
+
+- **Carril:** feature en modo full, con perfil `delegate` (el del proyecto).
+- **Rama:** `feature/0008-lista-espera`. El id 0008 está reservado, aunque no hay remoto con el que contrastarlo.
+- **Spec:** escrita en `.docs/sdd/specs/20261108-215707-feature-0008-lista-espera/spec.md`, con estado `draft`. Define la capacidad nueva `waitlist`, con 7 escenarios.
+- **Qué hace:**
+  - `reservar <sala> <día> <franja>` reserva la sala si está libre. Si está ocupada, te apunta a la lista de espera.
+  - `espera` muestra tus esperas.
+  - `cancelar` pasa la espera de esa franja a reserva.
+- **Corrección en el repaso:** quité las «posiciones» y el orden FIFO que había escrito. Con un único usuario y sin duplicados, la posición sería siempre 1 y no tendrían escenario posible.
+- **Comprobaciones:** `git grep` no encuentra nada que se retire o cambie de forma, y la fusión del delta sobre una copia de `.docs/sdd` no dio rechazos.
+- **Pendiente:** el revisor (Opus, dominio) está en marcha. Después viene el gate de aprobación, donde tienes que dar el «apruebo» antes de que escriba el plan.
+
+Como dijiste «empieza ya», no te he hecho preguntas. Lo que supuse está en la sección «✋ Decisiones que he tomado yo» de la spec, para que lo valides.
+
+--- [37]
+1. Crítico · Intent / Decisión 4 / Delta «Al cancelar, la espera pasa a reserva» · La misión dice que hay un único usuario, así que toda reserva que ocupa una sala es tuya. Apuntarte a una sala ocupada es esperar por tu propia reserva, y al cancelarla la espera la vuelve a reservar: `cancelar` deja de liberar esa franja. El propio escenario lo confirma con «la sala está reservada otra vez». El Intent («las franjas se liberan al cancelar») no explica quién más ocupa las salas. · Hay que decir quién ocupa la sala, por ejemplo reservas ajenas que la herramienta no ve, o replantear la feature. Como mínimo: `reservar` sobre una franja que ya tienes reservada responde «ya la tienes reservada» y no crea espera, y eso se recoge como escenario y como decisión.
+
+2. Crítico · Decisión 7 / Delta «Al cancelar…» / Scope (no se toca «la comparación de día de `cancelar`») · `cancelar <día> <franja>` no lleva sala. Si Norte y Sur están reservadas a la misma hora, o hay esperas de varias salas en ese día y franja, no está definido qué reserva se cancela ni qué espera pasa a reserva. Además, `cancelar mar 10:00` usa una hora suelta y el resto de la spec usa la franja `10:00-12:00`. No se sabe si `lun 10:00` casa con una espera de `10:00-12:00`. · Hay que fijar la clave con la que se compara (sala+día+franja o día+hora) y el formato de franja que admite `cancelar`, y añadir un escenario con dos salas a la misma hora. Si para eso hay que tocar `cancelar`, se saca de «No entra».
+
+3. Importante · Delta «Cancelar sin espera no cambia» · El GIVEN no dice si existe la reserva. Falta el caso que la Decisión 7 promete: hay una espera, pero la reserva cancelada no existía, y no debe haber promoción ni segunda línea. Tampoco hay escenario de lo que está prohibido, por ejemplo que una espera de otra sala o de otro día no se promociona. · Hay que añadir dos escenarios: «espera de Norte lun, `cancelar` de una reserva inexistente ⇒ salida de hoy y la espera sigue», y «cancelar Norte mar no toca la espera de Norte lun».
+
+4. Importante · Delta «Reservar una sala libre» / «Apuntarse a una sala ocupada» · No se define qué es «ocupada». Falta si cuenta solo la coincidencia exacta de franja o también el solape (`10:00-11:00` contra `10:00-12:00`). Falta también si una reserva hecha con `reservar --cada-semana` ocupa el lunes. Es una dependencia oculta con los datos de `--cada-semana`. · Hay que declarar la regla de ocupación (exacta o con solape, y si incluye las semanales) como decisión y cubrirla con un escenario de solape y otro de reserva semanal.
+
+5. Importante · Capacidades («Modificadas: ninguna») / «Lo que se retira o cambia de forma» · `reservar` gana una forma nueva, y hoy esa entrada probablemente responde con error o uso. `cancelar` cambia su salida, porque añade una segunda línea. Las dos cosas cambian contratos visibles de comandos que ya existen, y la tabla dice «Nada se retira ni cambia de forma». · Hay que listar en la tabla `reservar <sala> <día> <franja>` (lo que responde hoy y lo que responderá) y la salida ampliada de `cancelar`, y anotarlo en Capacidades aunque todavía no exista `capabilities/`.
+
+6. Importante · Delta (complemento de lo nuevo) · No hay escenarios de entrada inválida: sala inexistente, día o franja mal formados, `reservar` sin argumentos, `espera` con argumentos. Tampoco está prohibido explícitamente que una espera aparezca como reserva en `libres` antes de la promoción. · Hay que añadir los escenarios de error con su texto en castellano y uno que diga que `libres` no cambia por tener esperas.
+
+7. Importante · Decisión 4 contra Delta «Varias esperas a la vez» y Approach · La Decisión 4 dice «sin cola con orden», pero el escenario exige «en el orden en que te apuntaste» y el Approach dice que «el orden es el del array». Es una decisión tomada en el cuerpo que contradice la lista de decisiones. · Hay que elegir una de las dos: o se declara en las decisiones que `espera` lista por orden de alta, o se quita el orden del escenario.
+
+8. Menor · Approach / cuerpo · Hay decisiones tomadas fuera de «✋ Decisiones que he tomado yo»: la forma del dato `{ room, day, slot }`, si los nombres de sala distinguen mayúsculas y la validación de que la sala exista. · Hay que llevarlas a la lista de decisiones o declararlas fuera de alcance.
+
+9. Menor · Reglas de la capacidad — Avisos / Idioma · En «Avisos» falta `reservada Sur lun 10:00-12:00`, que también es una salida nueva. «Idioma de los nombres» acepta `waitlist` en inglés como nombre de capacidad (Decisión 11), pero la constitución, punto 4, pide los documentos en castellano y la capacidad dará nombre a `waitlist.md`. · Hay que añadir el aviso que falta y justificar la excepción del inglés en los nombres de capacidad, o llamarla `lista-espera`.
+
+10. Menor · Delta «Al cancelar…», cláusula AND · Para comprobar que la sala vuelve a estar reservada se ejecuta `reservar Norte lun 10:00-12:00`, y eso crea una espera nueva. La comprobación cambia el estado que verifica, así que «`espera` muestra `sin esperas`» solo vale si se mira antes. · Hay que verificar la reserva con un medio que solo lea, por ejemplo que `libres` no muestra Norte lun 10:00-12:00, o fijar el orden de las comprobaciones.
+
+--- [39]
+Los hallazgos del revisor son resultado de un subagente mío, no una respuesta tuya: la spec sigue sin aprobar. Integro los 10 hallazgos en la spec y, como hay Críticos aceptados, haré una segunda ronda.
+
+--- [46]
+La fusión sobre la copia pasa sin rechazos. Anoto el resultado en ✋ y lanzo la segunda ronda (un revisor Sonnet, una sola vez).
+
+--- [51]
+Estoy esperando el resultado del revisor de la segunda ronda. Hasta que llegue no puedo integrar sus hallazgos ni presentarte la spec.
+
+Estado de la spec (`feature/0008-lista-espera`, `draft`):
+- Integré los 10 hallazgos de la primera revisión. Los dos Críticos eran:
+  - Esperar por tu propia reserva.
+  - `cancelar` no lleva sala, así que no se sabía qué espera promocionar.
+- Ahora son 14 escenarios y 17 decisiones tomadas por mí en ✋. La fusión del delta sobre una copia pasa sin rechazos.
+- Sigue sin aprobar: nadie ha dado el «apruebo» y no escribo el plan hasta tenerlo.
+
+--- [54]
+1. Crítico · Delta «Cancelar con dos salas a la misma hora» y decisión 9 · El escenario no es verificable y puede contradecir `cancelar` tal como es hoy. Si `cancelar` hoy borra todas las reservas que coinciden en día y hora, el primer `cancelar` sin sala se llevaría también `Norte`. Entonces el `AND cancelar … Norte` no tendría nada que promocionar. Además, la salida `cancelada …` se promete aunque no se cancele nada. · Decir qué estado queda tras `cancelar` sin sala y con dos reservas (si se borra alguna). Añadir `AND libres 10:00-12:00` o un `espera` que lo demuestre. Si no se cancela nada, nombrarlo como excepción en «Lo que se retira o cambia de forma».
+
+2. Crítico · Delta «Cancelar lo que no existe» y «Cancelar otra franja no promociona» · Los GIVEN crean una espera sobre una franja libre (sin reserva de `Norte` el lunes). Eso es imposible por decisión 4, porque la espera solo nace si la sala está ocupada. Ese estado inalcanzable no se puede montar por `run()`, que es como dice «Dónde se prueba» que se prueba. · Reescribir los GIVEN con `Norte` ocupada el lunes por otra persona y una espera. Para «Cancelar lo que no existe», usar una `cancelar … Norte` de otra franja o de una sala sin reserva, que sí es alcanzable.
+
+3. Importante · Decisiones 4, 9 y delta · Falta qué pasa con una espera cuando su franja queda libre sin pasar por la promoción. El ejemplo es una reserva ajena que desaparece, o una espera huérfana tras una cancelación sin coincidencia. Si luego haces `reservar Norte lun …`, el camino «sala libre» crea la reserva y la espera sigue en `espera`. Eso es justo el fracaso del Intent: «una espera deje una sala reservada sin que se vea». · Añadir un escenario y una decisión: reservar una franja libre que tiene espera propia la consume o la rechaza. Alternativamente, declarar que la espera huérfana no puede existir.
+
+4. Importante · Decisión 3 y delta · Los GIVEN dan por hecho que `bookings` trae `Norte` ocupada el lunes de 10:00-12:00. Pero la decisión 9 cita `cancelada mar 10:00`, que sugiere otra reserva con otra franja. El contenido real de `bookings` no se dice. «Varias esperas» y «Cancelar otra franja» necesitan `Norte` ocupada el martes sin explicar de dónde sale. · Declarar el estado inicial de `bookings` (qué reservas ajenas existen) o el mecanismo de preparación del test. Con eso, cada GIVEN es reproducible.
+
+5. Importante · Decisión 9 y delta · Complemento de entradas de `cancelar` sin cubrir: sala inexistente (`cancelar lun 10:00-12:00 Oeste`), mayúsculas en la sala, y sala con reserva pero sin espera. La decisión 10 solo valida la sala en `reservar`. · Decir si `cancelar` valida la sala y con qué texto, o excluirlo expresamente en «No entra» y en la deuda del roadmap.
+
+6. Importante · Decisión 3 y delta «Reservar una franja que ya es tuya» · El complemento de propiedad está a medias. No se dice qué pasa al cancelar una reserva propia con espera propia, ni si `cancelar` borra reservas ajenas o propias indistintamente. Tampoco hay un escenario de «ya tienes reservada» tras una promoción (la reserva promovida es `own`). · Añadir un escenario: `reservar` tras una promoción responde `ya tienes reservada …`. Aclarar en la decisión 9 que `cancelar` afecta a cualquier reserva, sea o no `own`.
+
+7. Importante · Reglas de la capacidad — Avisos · Faltan en la lista de avisos la salida `cancelada <día> <franja>`, que forma parte del contrato nuevo de `cancelar`, y su variante sin promoción. La regla «Límites» solo dice «sin tope», sin el valor que impone el resto de la spec. · Incluir `cancelada …` en Avisos. En Límites añadir que solo se admite una espera por sala+día+franja (coherente con la regla ante conflicto).
+
+8. Importante · Decisión 16 · La spec afirma como hecho haber ejecutado `sdd capability merge` sin rechazos, con «14 requisitos y 5 reglas». Es un resultado de ejecución incrustado en la spec y puede quedar obsoleto al editarla. · Quitar la afirmación o marcarla como verificación a repetir al aprobar. En lugar de las cifras, indicar el comando que debe volver a ejecutarse.
+
+9. Menor · Cabecera de «Decisiones que he tomado yo» · «Un revisor — Dominio (opus)» y «Mínimo razonable: sin revisor» aparecen como dos opciones sin decir cuál se aplicó. La política de modelos habla de una segunda ronda con Sonnet, que no figura en los Hallazgos. · Dejar una sola línea de política de review y registrar la segunda ronda en «Hallazgos de la review».
+
+10. Menor · Front matter y «Validación: dev-lead» · La misión dice que no hay más desarrolladores, y `approvers` es `TBD` con `approved_at: null`. «dev-lead» no se corresponde con nadie definido en la constitución ni en la misión. · Poner el nombre real del único aprobador, o escribir «tú, único usuario y desarrollador», y rellenar `approvers`.
+
+--- [56]
+Segunda ronda: los 2 Críticos y los 8 restantes se integran ahora. Según el kit no hay tercera ronda: lo que quede va a tu gate.
+
+--- [59]
+## Spec lista para tu aprobación
+
+**🦆 Qué cambia para ti.** Si pides una sala ocupada por otra persona, p. ej. `reservar Norte lun 10:00-12:00`, la herramienta responde `Norte ocupada lun 10:00-12:00: en lista de espera` y te apunta. `espera` te enseña tus esperas. Cuando cancelas esa reserva con `cancelar lun 10:00-12:00 Norte`, tu espera pasa a ser reserva y sale la línea `lista de espera: Norte lun 10:00-12:00 pasa a reservada`. Si la franja ya es tuya, responde `ya tienes reservada …` y no te apunta. Por dentro hay una lista `waitlist` en `src/app.js` y tres cambios en `run()`.
+
+**✋ Decisiones que he tomado yo, por tu «empieza ya».** La spec completa está en `.docs/sdd/specs/20261108-215707-feature-0008-lista-espera/spec.md`. Las que más te afectan:
+- **Comando nuevo:** `reservar <sala> <día> <franja>`. Convive con `--cada-semana`, que no toco. También reserva si la sala está libre.
+- **Reservas propias:** las que haces con `reservar` quedan marcadas como tuyas. Así no esperas por tu propia reserva.
+- **«Ocupada» es coincidencia exacta** de sala, día y franja. No hay solape, igual que `libres`.
+- **Sin posiciones ni orden de cola:** eres el único usuario, así que cada sala, día y franja tiene como mucho una espera.
+- **`cancelar` gana un tercer parámetro opcional, `[sala]`.** Sin sala, solo cancela si hay una única reserva en ese día y franja. Con varias, no borra ninguna y da la salida de hoy.
+- **Sala inexistente:** `reservar Oeste …` responde `sala desconocida: Oeste`. `cancelar` no valida la sala.
+- **Sin tope y sin darse de baja de una espera.** Los datos viven en memoria, y no hay avisos por correo (eso es el ítem 1 del roadmap).
+- **El estado inicial de `bookings` es el de hoy:** una reserva ajena en `Norte lun 10:00-12:00`. Los escenarios con otras reservas parten de ese estado ampliado en el test.
+- **Nombre de la capacidad:** `waitlist`, con el contenido en castellano.
+
+**Revisión.** Pasó un revisor Opus de dominio y una segunda ronda Sonnet.
+- **Aceptados:** los 4 Críticos y los otros 16 hallazgos, salvo dos que acepté en parte. Uno era el nombre `waitlist` en inglés, que mantengo por la regla del kit. El otro era validar la sala en `cancelar`, que queda fuera de alcance. El detalle está en «Hallazgos de la review» y «Segunda ronda» de la spec.
+- **Fusión del delta:** `sdd capability merge` sobre una copia pasa sin rechazos. Repítelo al aprobar si cambias algo.
+- **Sin medir:** no he comprobado `cancelar` contra el código real, porque la spec no lee el código. El plan lo hará.
+
+**Estado.** Vamos en ~3 tasks, así que no propongo partir la feature. No he escrito plan ni código, y la spec sigue en `draft`, sin commitear.
+
+¿Apruebas?
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué decisión quieres distinta.
+

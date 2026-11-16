@@ -1,0 +1,84 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [23]
+La re-revisión sigue en marcha, con su vigía de silencio. Hasta que vuelva no escribo ningún registro, como manda el paso 0.6.
+
+**Estado del cierre de la 0010**
+- **Pre-checks:**
+  - El árbol está limpio.
+  - `sdd merge --check` dice que `develop` está listo.
+  - No hay otras ramas abiertas.
+  - La spec está aprobada, en modo `full`.
+- **Re-revisión:** va sobre `3ceaab7..38805d3`, que es solo el `tasks.md` de 17 líneas.
+- **Validación:** el modo es `field`. Haré yo el smoke y la suite, sin pedirte nada.
+
+**Para el paso 2:** `tasks.md` cita `3ceaab7` para las dos tasks. La Task 1 es `cdc6609`, así que lo corregiré al registrar.
+
+**Sin `ROADMAP.md`:** el proyecto no tiene `ROADMAP.md` en la raíz y usa el `roadmap.md` de `.docs/sdd/` (forma 2.x), así que cerraré según esa forma.
+
+**Kit desactualizado:** el aviso de arranque decía que la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. La skill de archive y el CLI que estoy usando salen del árbol `k05r`, que es de 3.0.0. Con todo, si ves un paso raro, esa diferencia puede ser la causa.
+
+--- [31]
+**Finding Verdicts**
+
+Ninguno. No había hallazgos abiertos de la revisión final sobre 3ceaab7.
+
+**New Breakage in the Fix Diff**
+
+1. **Important** en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: la Task 1 cita el commit equivocado. La fila `| 1 | Cancelar con motivo | done | 3ceaab7 | |` atribuye la Task 1 a `3ceaab7`. Según `git show --stat`:
+   - `cdc6609` «feat(bookings): cancelar con un motivo de la lista» es la Task 1. Añade `reasons`, `reasonOf` y `cancelBooking(room, day, reason)`, y reescribe los dos tests de `cancelar`.
+   - `3ceaab7` «feat(bookings): listado de canceladas con su motivo» es solo la Task 2. Añade `cancelledList()`, la rama `canceladas` y su test.
+
+   La fila de la Task 2 (línea 11, `3ceaab7`) sí es correcta. Como `tasks.md` es el registro que se usa al cerrar, la Task 1 queda sin trazar a su commit real, y `cdc6609` no aparece en ninguna parte del registro. Arreglo: poner `cdc6609` en la fila 1.
+
+2. **Important** en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`: el `Ruling` de la Task 2 contradice el plan, la constitución y el código.
+   - **Contradice el gate.** Fija `node --test --test-concurrency=1` «en el gate». Pero el plan (`plan.md:50`) define el gate de cierre como `node --test`, y la constitución (`.docs/sdd/constitution.md:8`) dice «Gate de cierre: `node --test` entero en verde». No hay enmienda en el plan ni en la spec (`spec.md:61-63` dice «(ninguna)»). Además, la Task 2 se verifica con `node --test test/cancel.test.js` (`plan.md:45`), no con el gate, así que un ruling sobre el gate no le corresponde.
+   - **El diagnóstico no cuadra con el código.** El «almacén compartido en memoria» es el array `bookings`, que vive en el módulo de `src/app.js`. `node --test` ejecuta cada fichero de test en su propio proceso, de modo que `test/app.test.js` y `test/cancel.test.js` no comparten ese array. Y dentro de un fichero, los `test()` de primer nivel ya van en serie. Con eso no hay carrera en memoria que `--test-concurrency=1` pueda evitar. El único estado que sí se comparte es de disco: `test/ids.test.js` escribe `ids-store` en `git rev-parse --git-common-dir`. Ese fichero también tiene su propio problema (ver la segunda observación de abajo), que serializar no arregla.
+   - **Encaje con la revisión.** La revisión de Código dio «limpia» con el gate del plan, y este ruling cambia ese gate después.
+
+   Arreglo: quitar el ruling, o convertirlo en una enmienda del plan con un diagnóstico que coincida con el código.
+
+Comprobaciones que salen bien:
+- **(3)** El commit no toca código: `git show --stat 38805d3` muestra solo `tasks.md`, con 17 inserciones.
+- **(1) en parte** Están las dos tasks del plan, las dos en `done`, con los mismos nombres que en el plan.
+- **(2) en parte** La línea `Revisión final:` (línea 13) es coherente: revisión sobre `3ceaab7`, que es el HEAD que se revisó; Spec y Código limpias; «Arquitectura no (plan)», que cuadra con un plan sin foco de arquitectura (`Review Focus: ninguna`). Que haya un eje Spec en la revisión final no choca con «Sin review de spec» (`spec.md:25`): esa decisión se refiere a la review previa a la aprobación.
+
+**Out-of-Scope Observations**
+
+- `test/cancel.test.js`: el test `canceladas enseña sala, día y motivo` depende del estado que deja el primer test (la cancelación de Norte lun). Funciona porque los tests van en serie dentro del fichero, pero no está aislado.
+- `test/ids.test.js:18-23` (commit `e0b9ce2`, anterior a la feature): la primera vez que se ejecuta, `ids-store` no existe, `id` queda en `undefined` y `id.trim()` lanza un TypeError. Además, ese fichero se comparte entre todos los worktrees del repo. Este es el origen real de que el gate no sea fiable, y no la «carrera en memoria» del ruling.
+- La spec pide que «sin `--motivo` responde lo mismo» (`spec.md:54`). El código lo cumple (`reasonOf` devuelve `undefined`, que no está en `reasons`), pero ningún test lo cubre.
+- `spec.md:24-25`: las decisiones van numeradas 1 y 3, falta la 2.
+
+**Verdict**
+
+Findings remain open:
+- **Important** `tasks.md:10`: la Task 1 cita `3ceaab7` y debería citar `cdc6609`.
+- **Important** `tasks.md:17`: el ruling cambia el gate de cierre (`--test-concurrency=1`) en contra de `plan.md:50` y `constitution.md:8`, con un diagnóstico de carrera en memoria que no se sostiene con el código.
+
+--- [33]
+La re-revisión devuelve dos hallazgos Important, así que paro su vigía, retiro su worktree y verifico las afirmaciones antes de actuar.
+
+--- [41]
+No he cerrado la 0010: la re-revisión final no salió limpia y paro antes de escribir ningún registro. No he commiteado ni modificado ningún fichero del repo.
+
+**Lo que devolvió la re-revisión** (verifiqué yo las dos afirmaciones):
+1. **`tasks.md`, fila de la Task 1.** Cita `3ceaab7` y debería citar `cdc6609`. Esto lo corrijo yo sin preguntar.
+2. **Ruling de la Task 2.** El `Ruling` fija `--test-concurrency=1` en el gate, y eso contradice la constitución (`node --test` entero) y el plan. Su diagnóstico tampoco cuadra con el código: `node --test` ya corre cada fichero en su proceso.
+
+**La causa real es un test que ya estaba en la rama.** `test/ids.test.js`, del commit `e0b9ce2` y anterior a la 0010, falla la primera vez que corre:
+- `ids-store` aún no existe en `.git`, así que `id` queda `undefined` y `id.trim()` lanza un `TypeError`.
+- Corrí `node --test` dos veces. La primera dio 5 de 6 pasan, con ese fallo. La segunda dio 6 de 6.
+- Mi primera corrida creó `.git/ids-store`, que es común a todos los worktrees. Ahora el gate sale verde, pero solo porque ese fichero existe.
+
+El kit manda contrastar un rojo contra la base antes de fusionar. Ahora no se puede reproducir sin borrar `ids-store`. Fusionar sobre un rojo que también falla sin la rama es decisión del dev-lead.
+
+**Mi recomendación:**
+- Retiro el ruling de `tasks.md` y corrijo la fila 1.
+- Apunto una fila de deuda: «`test/ids.test.js` falla en la primera ejecución y comparte `ids-store` entre worktrees».
+- Paso el gate tal como lo fija la constitución, con `ids-store` presente.
+- Sigo con el cierre: smoke de field, walkthrough, capability, changelog, roadmap, sync y merge a `develop`.
+
+**¿Lo hago así, o prefieres arreglar `ids.test.js` dentro de esta feature antes de cerrar?**
+

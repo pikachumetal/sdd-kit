@@ -1,0 +1,102 @@
+--- [3]
+Empiezo por los pre-checks del cierre: estado de git, `sdd merge --check` y worktrees.
+
+--- [15]
+El puerto 52367 está libre y la base no va por delante. Levanto yo el entorno y paso la suite de cierre tal como la declara `operations.md`.
+
+--- [21]
+11 de 11 ejecuciones en verde, así que no hay inestabilidad. Paro el entorno que levanté y sigo con el cierre.
+
+--- [45]
+La re-revisión está en marcha en segundo plano. No escribo ningún registro hasta que vuelva, como pide el kit.
+
+Estado hasta ahora:
+- **Estabilidad de las specs E2E:** la tanda de 11 ejecuciones salió 11/11 en verde, sin intermitencias. Fueron los 3 tests nuevos o cambiados de `e2e/cancel.e2e.mjs` ×3 y los otros 2 del fichero ×1. `free.e2e.mjs` no lo toca la rama frente a `develop`.
+- **Suite de cierre** sobre `ebd4a51`: 5 unitarios y 7 E2E en verde, en 48,2 s. Eso supera el presupuesto E2E de 0,5 min, así que irá a la deuda.
+- **Re-revisión:** `ebd4a51` es un commit de 17 líneas, solo de `tasks.md`, posterior a la revisión final sobre `05b640f`.
+
+Cuando vuelva la re-revisión haré lo que queda del cierre:
+- El smoke con ejecución real, incluido el caso sin `--motivo`, que los E2E no cubren.
+- El `walkthrough.md`.
+- Corregir `tasks.md`, que pone `05b640f` como commit de las dos tasks cuando la Task 1 es `7d7fc2e`.
+- La capacidad `bookings`.
+- La retro.
+- La fila del roadmap y las filas de deuda (presupuesto E2E superado y ruling de concurrencia).
+- El squash de cierre, la sincronización con la base y el merge a `develop`.
+
+Un aviso sobre el ruling de la Task 2: dice que el gate usa `--test-concurrency=1`, pero ese flag no aparece en ningún fichero del repo. El gate declarado es `node --test test/` y salió verde sin él. Lo recogeré en el walkthrough y en el mensaje final.
+
+--- [55]
+## Finding Verdicts
+
+None to verdict. The final review over 05b640f was clean and no findings were open.
+
+## New Breakage in the Fix Diff
+
+1. **Important: Task 1 is attributed to the wrong commit.** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10` says `| 1 | Cancelar con motivo | done | 05b640f | |`, but Task 1 was implemented in **7d7fc2e** ("feat(bookings): cancelar con un motivo de la lista"). That commit rewrote the `cancelar` tests to require `--motivo` and added the reason check to `src/app.js`. Commit 05b640f only adds `canceladas`, which is Task 2. Both rows now point at 05b640f, so the log loses track of the Task 1 commit. The fix is to change line 10 to `7d7fc2e`. Line 11 (Task 2 → 05b640f) is correct.
+
+2. **Minor: the Task 2 ruling describes a gate the branch doesn't use, and its reason doesn't hold.** `tasks.md:17` says the gate runs `node --test --test-concurrency=1` to avoid a race over the shared in-memory store.
+   - **The gate was never changed.** The plan's closing gate is still `node --test` (`plan.md:50`), and the `test` script in `package.json` is still `node --test test/`. No commit in the branch adds `--test-concurrency=1`. The log records a change that exists nowhere else.
+   - **The race it describes can't happen across files.** `node --test` runs each test file in its own process by default, so `test/app.test.js` and `test/cancel.test.js` never share the `bookings` array. Inside one file the tests already run one after another. The flag only limits how many files run at once, so it wouldn't fix that race even if it existed. (This is from reading the code; I didn't run the suite, as instructed.)
+   - **The workaround isn't logged as debt.** The ruling calls itself temporary ("workaround hasta aislar el almacén por test"), but there's no debt or "Por triar" entry for it in `ROADMAP.md`.
+   - **Fix:** remove the ruling. Or, if a real flaky run caused it, write down what was seen and register it as debt.
+
+3. Checked and consistent:
+   - **Revisión final line (`tasks.md:13`).** Reviewers, effort, results and base (05b640f) match the review I was told about.
+   - **The Arquitectura cell.** It says "Arquitectura no (plan)", but the plan doesn't explicitly decide on an architecture review: "Review Focus" says "ninguna: comprobado" at `plan.md:32`. Not wrong, just weakly backed by the plan.
+   - **Front matter and headings.** The `id` and the task names in `tasks.md:2,10-11` match `plan.md:2,36,42`.
+   - **UI language.** All the added text is in Spanish.
+
+## Out-of-Scope Observations
+
+These come from commits before the fix base, which the final review already passed. They're listed for information only, not as findings.
+
+- **One spec scenario has no test.** `spec.md:54` says that without `--motivo`, `cancelar` answers with the "motivo no válido…" message. The code does this (`src/app.js:16,20`), but neither `test/cancel.test.js` nor `e2e/cancel.e2e.mjs` tests it.
+- **The tests in `test/cancel.test.js` depend on their order.** Test 3 (`:13-15`) only passes if test 1 has already cancelled Norte lun. This is the real form of the shared-state problem the ruling was hinting at.
+- **05b640f touched a file the plan doesn't list.** It changed `e2e/cancel.e2e.mjs`, which isn't in Task 2's **Ficheros** (`plan.md:46`).
+- **The spec skips a number.** In `spec.md:24-25`, decision "2." is missing between "1." and "3.".
+- **Roadmap item 0014 looks like it overlaps this feature.** `ROADMAP.md:11` describes it as "el motivo de una cancelación se guarda en el almacén de reservas", which seems to be what 0010 already does (`spec.md:38`). Worth a triage pass.
+
+**Fix round:** not clean. One Important (`tasks.md:10`: Task 1 should point at 7d7fc2e, not 05b640f) and one Minor (`tasks.md:17`: the ruling describes a gate that isn't in `plan.md:50` or `package.json`, and its reason doesn't hold).
+
+--- [57]
+La re-revisión devuelve un Important y un Minor, los dos en `tasks.md`. Los corrijo en el cierre. Primero retiro el worktree de revisión y hago el smoke con ejecución real, incluido el caso sin `--motivo`.
+
+--- [60]
+El smoke da los 4 THEN con ejecución real. Corrijo `tasks.md` y registro la re-revisión.
+
+--- [66]
+La única señal de la sesión es un documento desmentido: el ruling de `tasks.md` dice que el gate usa un flag que nunca se aplicó. Lo corrijo en ese mismo documento y lo anoto en §5.
+
+--- [69]
+Ese cambio es mi propia edición con `sed`. Sigo con el roadmap y la deuda.
+
+--- [76]
+Cierre commiteado en `78e6673`. Ahora sincronizo con la base.
+
+--- [82]
+La 0010 está cerrada y fusionada en `develop` (`064487b`), y la estabilidad de las specs E2E queda descartada como problema.
+
+**Estabilidad E2E.** Pasé las specs que toca la rama 3 veces y las 11 ejecuciones salieron en verde, sin intermitencias. Fueron los 3 tests nuevos o cambiados de `e2e/cancel.e2e.mjs` ×3 y los otros 2 del fichero ×1, en 84 s reales. `free.e2e.mjs` no cambia frente a `develop`. Levanté yo el entorno y lo paré después. Para las 11 ejecuciones y la suite de cierre usé la configuración declarada del gate, sin ningún atajo.
+
+**Decisiones tomadas sin el dev-lead**
+- Task 2, ruling del implementador: `node --test --test-concurrency=1` en el gate, "para esquivar una carrera". Nunca se aplicó: el gate sigue siendo `node --test test/` y salió verde sin ese flag. Además `node --test` ya corre cada fichero en su proceso, así que el flag no habría arreglado esa carrera. Lo dejé corregido en `tasks.md` y recogido en el walkthrough, y tiene su fila de deuda.
+
+**Lo que salió del cierre**
+- **Suite:** 5/5 unitarios y 7/7 E2E en 48,2 s.
+- **Smoke:** 4/4 THEN con ejecución real. El caso sin `--motivo` no tiene ningún test automático y solo está probado a mano.
+- **Re-revisión de `ebd4a51`:** el commit de `tasks.md` posterior a la revisión final tenía dos hallazgos. `tasks.md` atribuía la Task 1 a `05b640f` en vez de `7d7fc2e`, y estaba el ruling anterior. Los dos están corregidos.
+- **Registros:** capacidad nueva `bookings`, fila 0010 en ✅ (modo `field`) y retro con una sola señal. No había `estimation.md`, así que no hay tiempo real ni log de estimación.
+- **Deuda en «Por triar»:**
+  - La suite E2E supera su presupuesto: 48,2 s frente a 0,5 min.
+  - Los tests de `test/cancel.test.js` dependen del orden: el 3 solo pasa si el 1 ya canceló Norte lun.
+
+**Pendiente**
+- La fila 0014 «Motivo guardado» parece ya cubierta por esta feature, porque la spec guarda el motivo con la reserva. Conviene triarla con `sdd-roadmap`.
+- Push no hecho: `merge.push` no lo autoriza.
+- `Gate:` `node --test test/` · `node --test test/ && node e2e/run.mjs` → unit 5/5 · e2e 7/7, sobre `78e6673`. La base estaba al día, así que no hubo segunda suite.
+
+Si quieres el ticket de mejora del kit con `sdd-feedback`, dímelo. La retro no dejó ninguna línea de ticket del kit.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (064487b) · push: no hecho: `merge.push` no lo autoriza
+

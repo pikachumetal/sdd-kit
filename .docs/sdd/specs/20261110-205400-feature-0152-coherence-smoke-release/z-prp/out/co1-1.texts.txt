@@ -1,0 +1,63 @@
+--- [3]
+Ahora: terminar el paso 4 (pasada de coherencia, revisión de la spec y puerta de aprobación). Primero leo la spec escrita y las referencias.
+
+--- [15]
+Los backticks rompieron el shell; no se escribió nada. Uso Edit.
+
+--- [20]
+Ahora la revisión de la spec: un revisor (Sonnet), porque el alcance es de unas 10 líneas, sin MODIFIED y sin contrato público.
+
+--- [26]
+Ahora: la revisión de la spec está en marcha (un revisor). Queda: plegar sus hallazgos y presentarte la spec para aprobar, ~3 min, ~$0,10.
+
+Todavía no tengo el resultado del revisor, así que no puedo presentarte la spec. Cuando termine, plegaré sus hallazgos en «✋ Decisiones que he tomado yo» y te la presentaré.
+
+Hasta ahora:
+- **Pasada de coherencia:** la spec contradecía a `bookings`, que ya exige «un comando con varios días trata cada día aparte», con una línea por día. Yo la había escrito como «todo o nada» con una sola línea de respuesta. La he alineado con la capacidad: `cancelar` trata cada día aparte y responde una línea por día. Ningún requisito existente cambia.
+- **Si prefieres «todo o nada»:** sería un `MODIFIED` de ese requisito. Lo dejo anotado en ✋ para que lo decidas tú.
+- **Delta probado en una copia de `.docs/sdd`:** `sdd capability merge` lo acepta sin rechazos.
+- **Scope:** ahora incluye `test/cancel.test.js` y deja `anular` fuera, porque acepta un solo día.
+
+--- [27]
+1. Importante · Delta de comportamiento (ADDED) · El ADDED «Cancelar varios días de una vez» solo repite lo que ya exigen «Cancelar una reserva propia», «Cancelar sin reserva» y «Un comando con varios días trata cada día aparte». `cancelar` pasa a aceptar varios días, y eso cambia el requisito existente `cancelar <sala> <día>`. La sección «Capacidades» dice «Modificadas», pero el delta es ADDED, así que declaración y delta se contradicen. · Decidir una de dos: si `cancelar` solo cumple la regla ya vigente, ADDED es defendible, pero hay que sacar la capacidad de «Modificadas» y listarla como «Añadidas». Si lo que cambia es la forma de `cancelar`, escribir un MODIFIED que reescriba «Cancelar una reserva propia» con la forma `<día>…`.
+
+2. Importante · Delta, último AND · El escenario `lun mar` (sin reserva el martes) solo cubre un caso mixto. No cubre un día repetido (`lun lun`), un día inválido o desconocido (`xyz`), ni el comando sin días (`cancelar Norte`). Una implementación que ignore esos casos pasa igualmente. · Añadir escenarios o decidir expresamente «no aplica». Como mínimo, `cancelar Norte` sin días y `cancelar Norte lun lun`, con la respuesta esperada.
+
+3. Importante · Decisiones, 1 · El «sin límite» se justifica con «Límites: no aplica», pero es una decisión nueva sobre un dato nuevo (cuántos días). Los días repetidos, los días inválidos y el orden de las líneas de respuesta tampoco se declaran. No aparecen en «✋ Decisiones que he tomado yo», y hay un título de sección que ni siquiera lleva ese nombre. · Renombrar la sección a «✋ Decisiones que he tomado yo» y añadir las decisiones sobre duplicados, días inválidos y orden. Declarar de forma explícita las cinco reglas de la capacidad (Dónde viven los datos, Idioma de los nombres, Límites, Avisos, Regla ante conflicto) como «no aplica» o «aplica», una por una.
+
+4. Importante · Decisiones, 2 · La decisión se presenta como «corregida en la pasada de coherencia» y mezcla historial con decisión. Además ofrece un MODIFIED alternativo («todo o nada») sin ponerlo en el Intent. El Intent dice «saber si la operación entera salió», que es una semántica de todo o nada y choca con el Approach, donde cada día se trata aparte. · Reescribir el Intent para que describa una respuesta por día (no «la operación entera»). Pasar el historial de la corrección a Enmiendas, y dejar en Decisiones solo la decisión vigente.
+
+5. Importante · Capacidades / Scope · El Scope dice que `anular` queda fuera porque «acepta un solo día». Es una afirmación sobre un comando que `bookings` no menciona. La capacidad habla de «cualquier comando que acepta varios días» sin listar cuáles, y `anular` (responsable de sala, según PRODUCT) no está en ella. Tampoco se sabe si `anular` debería cumplir la misma regla. · Quitar la afirmación sobre `anular`, o respaldarla con un requisito en la capacidad. Declarar si `anular` pasa a acepta-varios en una feature futura, o dejarlo como «No entra» sin describir su comportamiento.
+
+6. Menor · Roles / acceso · «Cancelar una reserva propia» limita la cancelación a las reservas propias, y PRODUCT define Cancelación como la que anula el propio cliente antes de 24 h. El delta no dice qué pasa con un día cuya reserva es de otra persona, ni con uno a menos de 24 h (¿`sin reserva`? ¿otra respuesta?). Esa regla aparece en PRODUCT pero no en el delta. · Declarar el complemento: respuesta para reservas ajenas y para reservas con menos de 24 h. Si no aplica, decirlo expresamente («roles/acceso: no aplica»).
+
+7. Menor · Decisiones, 3 y 4 · La política de modelos y la prueba del merge no son decisiones sobre el comportamiento de la feature. La prueba del merge es verificación, no decisión, y va en el plan o en Enmiendas. Además, «revisión con un revisor (Sonnet)» consta como hecha, pero `status: draft` y la aprobación de Laura siguen pendientes. · Sacar el punto 4 de Decisiones y ponerlo en el plan. Dejar la política de modelos solo si el perfil `delegate` la exige.
+
+8. Menor · «Lo que se retira o cambia de forma» · La comprobación «`grep -rn 0013 .docs README.md`» no cubre `src/` ni `test/`, que son los ficheros que el Scope dice tocar. Tampoco consta que la salida de `cancelar` con varios días no rompa algún texto de README. · Ampliar el grep a `src test`, o declarar que README no documenta `cancelar`.
+
+9. Menor · «Dónde se prueba» · Solo cita «por el comando» y `test/cancel.test.js`, sin decir que se cubre el caso mixto. Una prueba con solo dos días existentes pasaría sin cumplir «trata cada día aparte». · Indicar que el test cubre el caso mixto (`lun mar`) y el orden de las líneas, que es el comportamiento que distingue «cada día aparte».
+
+--- [35]
+**Spec 0013 — Cancelar varios días de una vez** lista para aprobar. Está en `.docs/sdd/specs/20261008-120000-feature-0013-cancel-many-days/spec.md`, con `status: draft` y la aprobación de Laura pendiente.
+
+🦆 **En llano:** hoy `cancelar Norte lun mar mie` solo mira el primer día. La spec hace que acepte varios días a la vez. Cada día se trata aparte: los que tienen reserva se cancelan y se responde una línea por día (`cancelada Norte lun`, `sin reserva Norte mar`…). Es lo que `bookings` ya pide para cualquier comando con varios días, y no cambia ningún requisito existente.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Los días van separados por espacios, sin límite.
+2. Cada día se trata aparte, con una línea por día y en el orden escrito. Si prefieres «todo o nada», es un `MODIFIED` del requisito «Un comando con varios días trata cada día aparte».
+3. Un día repetido (`lun lun`) responde `cancelada` y luego `sin reserva`. Un día que no existe responde `sin reserva`. `cancelar Norte` sin días queda como hoy.
+4. Roles y permisos no aplican. La regla de las 24 h de `PRODUCT.md` no está en `bookings` ni en el código, y no entra aquí.
+5. Política de modelos: sesión Native; revisión de la spec con un revisor (Sonnet).
+
+**Cómo se ha comprobado**
+- **Coherencia:** la primera versión decía «todo o nada» con una sola línea, y contradecía a `bookings`. La he corregido.
+- **Delta de comportamiento:** probado en una copia de `.docs/sdd`; `sdd capability merge` lo acepta sin rechazos.
+- **Review:** un revisor, sin ningún Crítico, así que no hay segunda ronda. Acepté 8 hallazgos y rechacé 1 (las reservas ajenas y la regla de las 24 h). Están en «Hallazgos de la review».
+
+**Scope:** `src/app.js` (rama `cancelar` de `run`) y `test/cancel.test.js`. No entran reservar varios días ni `anular`.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media** — la prevé una sola task, así que no lo recomiendo: cambiar de modelo cuesta más de lo que ahorra.
+

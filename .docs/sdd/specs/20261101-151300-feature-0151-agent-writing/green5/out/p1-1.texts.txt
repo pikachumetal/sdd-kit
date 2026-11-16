@@ -1,0 +1,24 @@
+--- [2]
+Esto es crear una skill, así que entro por `sdd-kit:sdd-agent-writing`.
+
+--- [21]
+No he podido escribir la skill: me han denegado el permiso de escritura en `.claude/skills/migraciones-sql/`. Los dos ficheros están sin crear, y no he intentado saltarme el bloqueo por otra vía.
+
+Si me das permiso de escritura en esa carpeta, la creo tal cual la tengo pensada:
+
+- **`SKILL.md`**
+  - **Disparo:** salta al crear o editar una migración de `db/migrations/`, o antes de aplicarla o hacer commit.
+  - **Rollback:** la migración debe llevar su `down`.
+  - **Prueba:** se copian `salas.db` y `db/` a un directorio temporal y ahí se ejecutan `up`, `down` y `up`.
+  - **Criterio de hecho:** los tres comandos terminan con código 0 y el esquema tras el `down` es idéntico al inicial. El informe cita la salida real de cada comando.
+  - **Excusas:** una tabla corta con las que suelen usarse para saltarse esto ("es solo un `ADD COLUMN`", "pruebo directamente en `salas.db`", "tengo prisa").
+- **`scenario.md`:** un escenario de presión (despliegue a las 18:00, el lead mete prisa, opciones A/B/C) para ejecutarlo sin la skill (RED) y con ella (GREEN). Lo dejo escrito, sin ejecutar.
+
+Dudas pendientes, como pediste, para después:
+
+1. **`db/migrate.js` y `salas.db` no están en el repo.** Solo existe `db/migrations/0001-rooms.sql`. No sé de dónde saca `migrate.js` la ruta de la base. La skill copia `db/` junto con `salas.db` y ejecuta dentro de la copia. Eso funciona si la ruta es relativa al directorio de trabajo o al script, pero no si es absoluta.
+2. **No sé dónde vive el `down`.** `0001-rooms.sql` solo tiene el `up`. Por eso el paso 1 dice "lleva su `down`" sin nombrar un sitio ni un formato. Convendría concretarlo cuando se sepa.
+3. **`0001` no tiene rollback.** ¿Se le añade?
+4. **Comparar el esquema usa `node:sqlite`,** que en Node 22 puede necesitar un flag según la versión menor.
+5. **La skill no cubre aplicar `up` al `salas.db` real,** solo la prueba sobre la copia.
+

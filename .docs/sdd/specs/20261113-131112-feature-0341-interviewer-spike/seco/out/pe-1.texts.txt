@@ -1,0 +1,159 @@
+--- [12]
+Estoy en el paso de clasificar: es una feature en modo full, sin dividir. Ahora toca la entrevista de diseño, así que cargo `sdd-grilling`.
+
+--- [14]
+Ahora: arranco la entrevista de la spec con la nota de lo que he entendido. Queda: unas pocas preguntas, la spec con su aprobación y el plan, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json; no declara control.profile, rige el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en formato CSV, para que quien responsable de esa sala las abra en su hoja de cálculo los lunes y las cuadre. Hoy `src/app.js` solo tiene `libres`, `reservar`, `cancelar`, y las reservas son una lista en memoria con `room`, `day` y `slot`. Prevemos 2-3 tasks, así que no propongo dividir. Esta feature no tiene fila en el ROADMAP; la rama y el id los reservo al escribir la spec.
+
+Antes de decidir nada sobre el formato, necesito saber algo que solo sabes tú:
+
+❓ **¿Qué hace el responsable de la sala con el CSV el lunes, paso a paso?** ¿Qué cuadra contra qué, y qué le tendría que salir en la hoja para que dijera «esto me sirve» sin tocarlo?
+
+--- [16]
+Entendido: como no sabes qué columna usa ni qué formato de fecha quiere, decido yo y lo dejo en la spec como «✋ decisiones mías», para que lo rechaces si algo no te cuadra. Una cosa que he mirado en el código: las reservas no guardan fechas reales, solo `day` (`lun`) y `slot` (`10:00-12:00`). Así que no hay fecha que formatear, y las columnas salen tal cual están.
+
+Ahora: reservo el id y la rama, y escribo la spec. Queda: revisión de la spec, tu aprobación y el plan, ~10 min.
+
+--- [26]
+Estoy escribiendo la spec de la feature 0010 en su carpeta. Después paso el repaso de coherencia y lanzo la revisión.
+
+--- [28]
+Ahora: repaso de coherencia, probando el delta sobre una copia de `.docs/sdd`. Queda: la revisión de la spec, tu aprobación y el plan.
+
+--- [34]
+Ahora: lanzo en paralelo los dos revisores de la spec (dominio y técnica) con su vigilancia de silencio. Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~5 min y ~0,5 $.
+
+--- [43]
+Lancé la vigilancia de silencio de cada uno, en segundo plano.
+
+--- [52]
+Los dos revisores de la spec están trabajando en segundo plano, cada uno con su vigilancia de silencio. Espero a que terminen para integrar sus hallazgos y presentarte la spec.
+
+Hasta ahora está hecho esto:
+- **Rama e id:** `feature/0010-exportar-reservas-csv`, id 0010 reservado.
+- **Spec:** escrita en `.docs/sdd/changes/20261113-141448-feature-0010-exportar-reservas-csv/spec.md`. La carpeta es `changes/` porque así lo manda el kit, aunque las specs anteriores del proyecto están en `specs/`.
+- **Delta:** el repaso de coherencia sobre una copia de `.docs/sdd` lo aceptó sin rechazos.
+
+Todavía no hay plan ni código.
+
+--- [54]
+1. Crítico · Delta, escenario 1 (`exportar Norte`) · El THEN no fija si hay salto de línea final ni si la cabecera es la primera línea exacta. `console.log` añade un `\n` extra, y `run` devuelve un string que el test compara con `assert.equal`. Dos implementaciones distintas lo pasarían, y el test puede escribirse con o sin `\n` final. · Escribir el string literal exacto: `'sala;dia;franja\nNorte;lun;10:00-12:00'`, sin `\n` final (lo añade `console.log`). Poner lo mismo en el escenario de la sala vacía.
+2. Crítico · Decisión 3 y Decisión 4 (BOM) · `;` sin BOM abre en columnas en Excel es-ES (el separador de lista regional es `;`). Sin BOM, Excel lee el fichero en ANSI. Hoy los datos son ASCII, así que no se rompe, pero una sala con tilde (`Ágora`) saldría corrupta. La spec dice que la cabecera sin tilde «evita» el BOM, y eso solo cubre la cabecera, no las filas. · Cambiar la justificación a «los datos actuales son ASCII» y anotarlo como riesgo conocido en la decisión 8, o decidir el BOM. Si no hay BOM, que el escenario diga que los valores son ASCII.
+3. Importante · Decisión 3 (`\n`) · Excel en Windows abre bien un CSV con `\n` solo, así que no hay fallo. La spec no lo comprueba y lo da por bueno. Con `> norte.csv` en PowerShell 5 el fichero sale en UTF-16 con BOM, y Excel lo lee mal. · Decir que el `\n` es válido para Excel y avisar de que la redirección en PowerShell 5 cambia la codificación. Es un contrato con el consumidor, no un detalle.
+4. Crítico · Delta, escenario 3 («desconocida o ausente») · Mezcla dos comportamientos en un escenario con un solo GIVEN/WHEN. El caso sin sala (`exportar`) va como AND sin su propio WHEN, y un test se puede escribir sin ejercitarlo. Con `run('exportar', [])`, `params[0]` es `undefined` y el mensaje podría salir como `sala desconocida: undefined`. · Separar en dos escenarios: `exportar Oeste` y `exportar` (sin sala), cada uno con su WHEN y el literal exacto, y distinguir `params[0] === undefined` antes de buscar en `rooms`.
+5. Importante · Delta, escenario 3 · La sala desconocida usa comparación sensible a mayúsculas, pero la spec no lo dice. `exportar norte` daría «sala desconocida: norte», mientras que `libres` usa `===`. Es una decisión de comportamiento que no figura en ✋. · Declarar en ✋ que el nombre de sala es sensible a mayúsculas, y añadir un escenario `exportar norte`, o decidir que no lo es.
+6. Importante · Delta, escenario 2 (Sur sin reservas) · «Solo `sala;dia;franja`» pasa si la implementación devuelve la cabecera fija sin filtrar. Con una sola reserva en los datos, el filtro por sala solo lo ejercita Sur (vacía) frente a Norte (una fila). Una implementación que ignore la sala y devuelva todas las reservas pasa el escenario 1, porque solo existe la reserva de Norte. · Añadir un escenario en el que dos salas tengan reservas, para que el test distinga el filtro por sala de «devolver todo». Pedir que la prueba añada una reserva de Sur o varias de Norte (el caso de varias reservas, orden incluido).
+7. Importante · Decisión 7 y Delta, escenario 3 · Los mensajes de error salen por stdout, igual que el CSV. Con `exportar Oeste > oeste.csv`, el fichero contiene `sala desconocida: Oeste` y el responsable lo abre en Excel como si fuera un export válido. El código de salida tampoco cambia, porque `run` devuelve un string. · Decidir en ✋ si los avisos van a stderr o con código de salida distinto de 0. Si se queda como está, anotarlo como riesgo en el punto 8.
+8. Menor · Decisión 9 y sección Capacidades · «Capacidad nueva; la declaro yo» está en ✋, pero la spec no dice que `src/app.js` necesita exportar `exportCsv`. El Approach habla de una función pura que se prueba solo por `run`, y que no se exporta. También se añade una rama nueva en `run` antes del `return 'salas'` final, y la spec no dice dónde. · Precisar que la rama `exportar` va antes del `return 'salas'` y que `exportCsv` no se exporta. Añadir un escenario para un comando desconocido, que sigue devolviendo `salas`, como regresión.
+9. Menor · Delta, regla «Límites» y Decisión 8 · Dice «sin tope», pero el escenario 1 no cubre una sala con muchas reservas. Los datos en memoria son un array `bookings` global: el test no puede sembrar reservas sin modificar `src/app.js`, y la spec no lo declara. Eso toca un dato que el delta no menciona. · Indicar cómo se siembran las reservas del test (por ejemplo, ampliar `bookings` en `src/app.js` o pasarlo por parámetro). Es un cambio de datos y de contrato de `run` que hay que declarar.
+10. Menor · Repaso de coherencia y Dónde se prueba · El repaso dice «`sdd capability merge` sobre copia → 3 requisitos y 5 reglas añadidos, sin rechazos». Pero el delta tiene 3 ADDED y 5 reglas, y la sección «Lo que se retira» dice «Nada», mientras que la regla `Regla ante conflicto: no aplica` cuenta como regla vacía. Es una afirmación que no se puede comprobar desde la spec. · Quitar el resultado numérico del repaso o enlazarlo con una salida reproducible.
+
+--- [56]
+El revisor técnico ya ha terminado. Espero al de dominio para integrar los dos juntos.
+
+--- [57]
+1. Importante · Delta de comportamiento (ADDED 1) · Falta el caso de una sala con varias reservas y no dice en qué orden salen las filas. El responsable cuadra los lunes y necesita un orden predecible, y hoy sería el orden de inserción. Tampoco dice si una reserva cancelada con `cancelar` desaparece del export. · Añadir un escenario con 2 o más reservas, fijar el orden (por día de la semana lun→dom y luego por hora) y decir que el export refleja las reservas vigentes.
+2. Importante · Delta (ADDED 3) y decisión 2 · Los avisos salen por stdout. Con `exportar Oeste > norte.csv`, el fichero guardado contiene «sala desconocida: Oeste», y Excel lo abre como si fuera un CSV válido de una columna. Es justo el fracaso que el Intent quiere evitar. · Decidir y declarar que los avisos van por stderr, o al menos asumir y anotar el riesgo. Añadir un THEN sobre el canal.
+3. Importante · Reglas de la capacidad, «Dónde viven los datos» · Solo menciona la lista de reservas, pero los escenarios necesitan una lista de salas: «Sur sin reservas» y «salas Norte y Sur» para distinguir sala vacía de sala desconocida. Se queda sin declarar de dónde sale esa lista. · Declarar dónde viven las salas, o definir «desconocida» como «sin ninguna reserva». En ese caso, `Sur` sin reservas no podría devolver solo la cabecera.
+4. Importante · Reglas, «Límites» y «Regla ante conflicto: no aplica» · Contradice la decisión 8, que describe un conflicto real: una franja con `;` rompe la fila, y el export ni comprueba ni avisa. Falta también la regla de coincidencia del nombre de sala: `exportar norte` frente a `Norte`, con o sin tilde. · Declarar en Límites que el valor no puede contener `;`, y en «Regla ante conflicto» qué pasa con ese caso o con una sala duplicada. Declarar si el nombre de sala distingue mayúsculas, con un escenario.
+5. Importante · Decisión 4 y ADDED 1 · El contenido sirve a medias para cuadrar en Excel. La columna `sala` es idéntica en todas las filas y no aporta nada. `franja` como `10:00-12:00` es un único texto, y el responsable no puede ordenar por hora de inicio ni sumar horas. El propio spec admite que no sabe qué columna usa el responsable. · No decidir a ciegas: preguntarle qué columnas usa, o proponer `dia;inicio;fin` con la sala solo en el nombre del fichero. Dejar anotada la elección como pendiente de validar.
+6. Menor · Decisión 4 y Reglas, «Idioma de los nombres» · La cabecera `dia` sin tilde se aparta de la regla 4 de la constitution (castellano) y se justifica solo en una decisión. La regla de la capacidad dice «castellano» sin esa excepción. · Declarar en «Idioma de los nombres» que las cabeceras van sin tilde a propósito (no BOM), o confirmar con Excel que `día` se abre bien.
+7. Menor · Decisión 5, Reglas «Límites» y Scope · `dia` guarda `lun`. El responsable cuadra una hoja semanal, pero el CSV no distingue semanas ni deja claro que el export no tiene fecha, y la hoja podría pedir fechas. Está bien dejarlo fuera, pero el Intent promete «sin tocar nada» y puede no cumplirse si la hoja usa fechas. · Matizar el criterio de éxito del Intent: abre en tres columnas, y las fechas quedan fuera. Anotar la limitación como riesgo a validar con el responsable.
+8. Menor · Intent y cabecera 🦆 frente a PRODUCT.md · PRODUCT.md dice «No hay más usuarios»: la usa solo el autor. El spec habla de «el responsable de cada sala» y de «una persona con Excel» como si fueran otros usuarios. · Alinear la redacción con PRODUCT.md, o confirmar que existe ese usuario y actualizar PRODUCT.md. Si no, la validación «dev-lead» no tiene a quién ir.
+9. Menor · Capacidades y Delta · Es la primera capacidad, y no existe `capabilities/` con el comportamiento actual de `reservar`, `libres` y `cancelar`. El «Repaso de coherencia» dice «3 requisitos y 5 reglas», pero los ADDED solo se pueden contrastar con una verdad viva vacía. · Anotar explícitamente que no hay verdad viva previa contra la que contrastar, para que el revisor no dé por cubierta esa comprobación.
+
+--- [59]
+Ahora: integro los hallazgos de las dos revisiones en la spec. Hay tres Críticos aceptados, así que después toca la segunda ronda con un revisor. Queda: esa ronda y presentarte la spec.
+
+--- [62]
+Las dos vigilancias han terminado y los revisores devolvieron resultado. Reescribo la spec con los hallazgos integrados.
+
+--- [64]
+Ahora: repito el merge del delta sobre una copia y lanzo la segunda ronda con un revisor. Queda: integrar su resultado y presentarte la spec.
+
+--- [72]
+La segunda ronda está en marcha, con su vigilancia. Cuando vuelva, integro lo que diga y te presento la spec para aprobar.
+
+--- [76]
+1. Crítico · Decisión 9, Approach y Dónde se prueba · El comportamiento clave de la Intent (aviso por stderr con código 1, nunca dentro del fichero) no tiene escenario GIVEN/WHEN/THEN. Los THEN solo dicen «falla con el mensaje», y `assert.throws` sobre `run` pasa igual si el bloque final hace `console.log` del error y sale con 0. · Añade un escenario del proceso (stdout vacío, stderr con el mensaje, código 1) y una prueba automática con `child_process.spawnSync('node', ['src/app.js','exportar','Oeste'])`. Si no, reconoce que el requisito no está cubierto.
+
+2. Crítico · Decisión 9 («Cambio acotado a `exportar`: el resto no cambia») frente a Approach (try/catch en el bloque final) · Es falso. El `try/catch` del bloque final envuelve todos los comandos: cualquier excepción de `libres`, `reservar` o `cancelar` pasará a imprimirse solo como mensaje, sin traza, y con código 1. Hoy se vería la traza de Node. · Reescribe la decisión para decir que el bloque final cambia para todos los comandos y acota el `catch`, por ejemplo con una clase `UsoError` que solo captura los errores de `exportar`. Ponlo también en Scope y en «Lo que se retira o cambia de forma» (hoy dice «Nada»).
+
+3. Importante · Scope y «Lo que se retira o cambia de forma» · Se modifica el bloque final de `src/app.js` y se amplía el contrato de exportación del módulo con `exportCsv`. La tabla declara «Nada se retira ni cambia de forma» y el Scope dice «cambiar `libres`… no entra». Es alcance oculto. · Lista en Scope y en la tabla el cambio del bloque final y el nuevo export. Di también que `test/app.test.js` se amplía.
+
+4. Importante · Decisión 12 y delta · No se dice quién valida la sala. `exportCsv(room, list)` recibe una lista propia pero `rooms` es de módulo y no se exporta. Si `exportCsv` valida, el escenario de la lista propia con `Sur mar` depende de `rooms`. Si valida `run`, `exportCsv('Oeste')` devuelve solo la cabecera. · Fija que `run` valida contra `rooms` y lanza el error, y que `exportCsv` es pura (filtra sin validar). Añade un THEN que lo deje comprobable.
+
+5. Importante · Decisión 9 y delta · Argumentos no definidos: `exportar ''` daría `sala desconocida: ` con el texto vacío, y `exportar Norte extra` no tiene regla. Los hallazgos dicen que se «distingue `undefined`», pero eso ya no aparece en el cuerpo. · Define cómo se trata la cadena vacía, por ejemplo como falta de sala con el mismo mensaje de uso. Decide qué pasa con argumentos sobrantes: se ignoran o dan uso. Escribe el THEN correspondiente.
+
+6. Importante · Intent (Éxito) frente a delta · «Se abre en Excel en tres columnas» no tiene escenario ni test automático. Los THEN solo comprueban el string, y el Éxito queda como validación manual sin un paso definido. · Añade en Dónde se prueba un paso manual del gate: abrir `norte.csv` en Excel es-ES y ver tres columnas. Que el escenario lo cite como criterio de aceptación humano. Si no, declara que el Éxito no es verificable por tests.
+
+7. Menor · Dónde se prueba · Los escenarios con los datos reales (`exportar Norte`) dependen del `bookings` de ejemplo. Si cambia el dato, los tests se rompen. Ya hay decisión 12 pero no se aplica a esos casos. · Marca esos escenarios como pruebas de humo sobre datos fijos, o súbelos todos a `exportCsv` con lista propia y deja solo un caso por `run`.
+
+8. Menor · Bloque «Review de spec propuesta» y decisión 14 (política de modelos) · «Mínimo razonable: solo técnica» y «dos revisores» conviven con «una segunda ronda con sonnet», sin decir cuántos revisores hay en la segunda ronda ni si se repite el reparto dominio/técnica. La viñeta de política de modelos queda sin numerar dentro de la lista 1-14. · Unifica el bloque (revisores de la ronda 2) y numera o separa la política de modelos.
+
+9. Menor · Decisión 4 y Reglas, «Idioma de los nombres» · Se declara que los datos son ASCII «hoy», pero `rooms` está en el código y el responsable puede añadir `Ágora`. La regla «sin tilde a propósito» solo cubre cabeceras, no los valores. · Acota la regla a «cabeceras» y mueve el riesgo de los valores a «Límites», con un enlace a la decisión 4.
+
+10. Menor · Decisión 3 y delta · «Sin `\n` final» se afirma para `run`, pero el bloque final usa `console.log`, que añade `\n`. Entonces el fichero real sí termina en `\n`, y ningún THEN lo dice. · Aclara en los THEN que la regla es del valor devuelto por `run`, y que el fichero guardado termina en `\n` por `console.log`.
+
+--- [78]
+Ahora: integro los hallazgos de la segunda ronda. No hay tercera ronda. Los dos Críticos van aceptados: el comportamiento de stderr necesita su propia prueba, y el `catch` no puede tocar a los otros comandos.
+
+--- [87]
+Último paso antes del gate: compruebo otra vez que el delta se fusiona sobre una copia.
+
+--- [92]
+Ahora: la spec está lista y espera tu aprobación. Queda: tu «apruebo», luego el plan (2-3 tasks) y la implementación, ~10 min.
+
+**Spec 0010 — exportar a CSV las reservas de una sala**
+Fichero: `.docs/sdd/changes/20261113-141448-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`.
+
+🦆 **Qué cambia para ti:** un comando nuevo, `exportar <sala>`. `exportar Norte` imprime `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Lo guardas con `> norte.csv` y lo abres en Excel en tres columnas. Si la sala no existe o falta, el aviso sale por el canal de errores con código 1 y no acaba dentro del fichero. Por dentro es una función más en `src/app.js`, y no escribe ficheros.
+
+**✋ Decisiones que he tomado yo (valida estas):**
+1. **Nombre y salida:** `exportar <sala>`, por stdout.
+2. **Formato:** separador `;`, porque Excel en español abre `,` en una sola columna. Saltos de línea `\n`.
+3. **Columnas:** `sala;dia;franja`, tal como las guarda cada reserva. `franja` va entera, sin partir en inicio y fin.
+4. **Sin fechas de calendario:** las reservas solo guardan `lun`, `mar`… Si tu hoja pide fechas, queda fuera.
+5. **Sin BOM, cabeceras sin tilde y sin escapado.** Riesgos conocidos:
+   - Una sala con tilde (`Ágora`) se vería mal en Excel.
+   - Un `;` dentro de una franja descuadraría la fila.
+   - En PowerShell 5, `>` guarda en UTF-16 y Excel lo lee mal.
+6. **Filas:** salen en orden de alta. El nombre de sala distingue mayúsculas, como `libres`.
+7. **Casos límite:**
+   - Sala sin reservas: solo la cabecera.
+   - `exportar Oeste`: `sala desconocida: Oeste`.
+   - `exportar` o `exportar ""`: `uso: exportar <sala>`.
+   - Argumentos sobrantes: se ignoran.
+8. **Errores:** salen por stderr con código 1, mediante un `UsoError` que solo captura `exportar`. Esto cambia el bloque final de `src/app.js`, pero `libres`, `reservar` y `cancelar` no cambian.
+9. **Código:** `exportCsv` y `UsoError` se exportan, y `run` valida la sala. Capacidad nueva `booking-export`.
+10. **Pruebas:**
+   - Tests con `run` y con lista propia.
+   - Un proceso real con `spawnSync` para stderr y código 1.
+   - Un paso manual tuyo: abrir `norte.csv` en Excel y ver tres columnas.
+
+**Revisión de la spec:** dos revisores (dominio y técnica) y una segunda ronda, porque hubo tres Críticos aceptados. Dejé sin aceptar dos propuestas: partir `franja` en inicio y fin, y cambiar `PRODUCT.md`.
+
+**Una cosa para ti:** `PRODUCT.md` dice que la herramienta solo la usas tú, pero el pedido habla del «responsable de cada sala». Si hay otras personas que la usan, quizá `PRODUCT.md` esté desfasado.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios
+
+--- [94]
+De acuerdo, lo dejamos aquí. La spec queda en espera: no la he aprobado, no hay plan y no he tocado código.
+
+Está todo sin commitear:
+- **Rama:** `feature/0010-exportar-reservas-csv`, con el id 0010 reservado. No hay fila en `ROADMAP.md` todavía.
+- **Spec:** `.docs/sdd/changes/20261113-141448-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft`.
+
+Cuando quieras seguir, dime «retoma la feature» y respóndeme al gate: «apruebo» o los cambios que quieras. Si prefieres no volver a pasar por la aprobación, puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+
+Antes de aprobar, mira la decisión 3 (columnas `sala;dia;franja`) y la 4 (sin fechas de calendario). Son las que más pueden no encajar con tu hoja de cálculo.
+

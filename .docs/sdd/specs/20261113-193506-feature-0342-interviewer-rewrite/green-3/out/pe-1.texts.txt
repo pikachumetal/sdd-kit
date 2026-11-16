@@ -1,0 +1,106 @@
+--- [3]
+Ahora: leer el contexto del proyecto (producto, roadmap, steering y capacidades). Queda: clasificar, anunciar y abrir la entrevista de diseño, ~3 min.
+
+--- [14]
+Ahora: entrevista de diseño de la spec, con la rama `feature/0010-exportar-reservas-csv` ya creada. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** un comando nuevo (por ejemplo `exportar Norte`) que saca las reservas de una sala en CSV. El responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Hoy las reservas son `sala · día · franja` (`Norte · lun · 10:00-12:00`), sin fechas. Calculo 1–3 tasks, así que no propongo partir la feature. Corrígeme lo que no case.
+
+❓ **¿Con qué separador sale el CSV?**
+Lo decide cómo abre el fichero tu hoja de cálculo. Según tengo entendido, Excel en castellano espera `;` como separador y, con `,`, mete cada fila entera en una sola columna. No lo he comprobado aquí. Un ejemplo del resultado en cada caso:
+
+1️⃣ **`;` y UTF-8 con BOM**
+```
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Se abre bien en columnas en Excel en castellano. En una hoja configurada en inglés o en otras herramientas, podría quedar en una sola columna.
+
+2️⃣ **`,` estándar (RFC 4180)**
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Es el CSV universal, pero en Excel en castellano puede abrirse sin separar columnas.
+
+➡️ **Recomiendo 1️⃣**, porque el caso es una hoja de cálculo de uso diario, y es probable que sea en castellano. A cambio, otras herramientas pueden necesitar indicar el separador al importar.
+
+¿Qué hoja de cálculo usa el responsable (Excel, Google Sheets, LibreOffice) y en qué idioma?
+
+--- [16]
+Decidido: separador `;` y UTF-8 con BOM, porque lo abren en Excel en castellano.
+
+❓ **¿Dónde sale el CSV?**
+Hoy todos los comandos escriben su resultado por pantalla (`libres` → `Norte, Sur`).
+
+1️⃣ **Por pantalla, y redirigís vosotros**
+`exportar Norte > norte.csv` deja `norte.csv` listo para abrir. Es lo mismo que hacen los demás comandos y no hay opciones nuevas. Si lo lanzan desde PowerShell clásico, el `>` puede reescribir el fichero en UTF-16 y estropear el BOM.
+
+2️⃣ **Por pantalla, y con `--salida` opcional**
+`exportar Norte --salida norte.csv` escribe el fichero y responde `Exportadas 3 reservas de Norte a norte.csv`. Sin `--salida` sale por pantalla como en 1️⃣. Evita el problema de la codificación, pero añade una opción y escribir en disco, con sus errores (ruta inválida, fichero que ya existe).
+
+➡️ **Recomiendo 1️⃣**, porque es el comportamiento del resto de comandos y el responsable lo ejecuta en tu servidor, donde `>` no toca la codificación. A cambio, quien lo lance desde PowerShell clásico en Windows tendrá que usar otra consola o redirigir con otra herramienta.
+
+¿Quién ejecuta el comando: tú en el servidor y les pasas el fichero, o lo lanzan ellos desde su equipo?
+
+--- [18]
+Anotado: sale por pantalla y se redirige con `>` (opción 1️⃣). Es lo que hacen los demás comandos y no añade opciones. Quién lo ejecuta lo dejo como pendiente en la spec. El resto de detalles menores los decido yo y los marco en «✋ Decisiones que he tomado yo». Ahora escribo la spec, para lo cual leo antes la plantilla y la pasada de coherencia.
+
+--- [26]
+Ahora: pasada de coherencia (delta probado sobre una copia de `.docs/sdd`). Queda: presentar la spec en la puerta de aprobación, ~2 min.
+
+--- [30]
+The escape sequence was written as a literal invisible BOM character. I'll replace it with a readable `U+FEFF` and add the merge result line.
+
+--- [33]
+Ahora: puerta de aprobación de la spec. Queda: tu respuesta; después el plan (sin parada en `delegate`) y la implementación, ~15 min.
+
+La spec está en `.docs/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md`, sin commit hasta que la apruebes.
+
+🦆 Con `exportar Norte` sale por pantalla el CSV de las reservas de esa sala: una cabecera `sala;día;franja` y una línea por reserva, por ejemplo `Norte;lun;10:00-12:00`. Redirigido a un fichero (`exportar Norte > norte.csv`), el responsable de la sala lo abre los lunes en Excel en castellano y le salen tres columnas, con tildes bien. Si la sala no existe, no sale nada por pantalla: el error va aparte, para que no acabe dentro del fichero. Por dentro, el comando arma las líneas a partir de las reservas que ya conoce la herramienta.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Capacidad nueva `bookings`, porque hoy no hay ninguna y esta es la primera.
+2. Comando `exportar <sala>`.
+3. Enfoque: una función pura `toCsv` más `exportBookings(sala)`. Descarto escribirlo todo a mano en `run` y la opción `--salida`.
+4. Cabecera `sala;día;franja`, y las filas en el orden en que están las reservas.
+5. Una sala sin reservas sale con solo la cabecera.
+6. Sala desconocida o ausente: error por la salida de errores y código 1, sin nada por la salida normal. Si no, `> norte.csv` guardaría el mensaje como una fila más. Literales: `sala desconocida: Oeste (salas: Norte, Sur)` y `falta la sala: exportar <sala>`.
+7. Un valor con `;`, `"` o salto de línea sale entre comillas, con las comillas internas duplicadas. La franja no se valida hoy, así que un valor así puede existir.
+8. El nombre de sala se compara tal cual (`Norte`, no `norte`), como en los demás comandos.
+9. Las líneas acaban en `\n`.
+
+**Lo que no entra:**
+- Filtrar por día o franja.
+- `--salida`.
+- El `.ics`, que es la fila 0009.
+- Neutralizar celdas que empiezan por `=`.
+- Guardar las reservas de `reservar`: hoy no guarda nada y las reservas salen de una lista fija en el código, así que `exportar` muestra lo mismo que ve `libres`.
+
+**Dos avisos:**
+- **La review de la spec no se ha despachado.** El rubric pide dos revisores, por el contrato público del formato del fichero. Esta sesión no tiene herramienta de subagentes, así que me he releído la spec con los siete puntos y no he encontrado contradicciones. Eso no es una revisión independiente.
+- **Hay un punto pendiente:** quién ejecuta el comando, tú en el servidor o el responsable desde su equipo. No cambia el comportamiento, pero sí cómo le llega el fichero. Si lo lanzan desde PowerShell clásico en Windows, el `>` puede reescribir el fichero en UTF-16 y estropear el BOM.
+
+El delta lo probé sobre una copia con `sdd capability merge`, sin rechazos. Validación: dev-lead, porque lo que hay que mirar es el fichero abierto en Excel.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+¿Apruebas la spec?
+
+--- [34]
+De acuerdo. La spec queda en espera: sin aprobar, sin plan y sin código.
+
+Lo que queda en el repo:
+- **Rama:** `feature/0010-exportar-reservas-csv`, con el id 0010 ya reservado.
+- **Spec:** `.docs/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft` y sin commit.
+- **Roadmap:** todavía no hay fila 0010 en `ROADMAP.md`. La añadiré con el commit de apertura cuando apruebes.
+
+Cuando vuelvas, di «retoma la feature» y presento otra vez la puerta de aprobación. Para aprobar basta con «apruebo». Si prefieres cambios, dime cuáles. También puedes decirme quién ejecuta el comando, que es el punto pendiente.
+

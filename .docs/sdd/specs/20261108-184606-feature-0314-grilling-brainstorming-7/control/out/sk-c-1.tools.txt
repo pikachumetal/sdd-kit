@@ -1,0 +1,106 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch --show-current
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>/dev/null; done; node "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g/cli/bin/sdd.js" capability index --path .
+<<< .
+..
+.docs
+.git
+package.json
+public
+README.md
+src
+test
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+develop
+<<< === constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat package.json && wc -l src/* public/* && cat public/index.html && cat src/server.mjs 2>/dev/null | head -60; ls .docs/sdd/specs
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+public/index.html
+public/reservas.json
+public/styles.css
+src/app.js
+src/server.mjs
+test/app.test.js
+{"type": "module"}
+  16 src/app.js
+  16 s
+
+>>> Bash: cd "<run>/repo" && cat src/app.js public/reservas.json public/styles.css; cat .docs/sdd/specs/*weekly/spec.md | head -50
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (7 turnos, 0.1418075 $)
+Ahora: clasifico el cambio y te cuento lo que he entendido. Queda: una pregunta de diseño, tu respuesta y la spec, ~5 min.
+
+Carril: feature, modo full · Perfil: pair (por defecto: ni `sdd-kit.json` ni `sdd-kit.local.json` fijan otro)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `delegate` para esta feature»
+
+Aviso: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Lo que sigo puede ser una versión vieja de las skills. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. `/reload-plugins` no aplica una actualización de ámbito proyecto.
+
+**Lo que he entendido** (corrígeme):
+- Es una página nueva de informes, además del listado de reservas (`public/index.html`). Tiene una fila por sala (hoy Norte y Sur) y el porcentaje de ocupación de la semana.
+- Es una feature, no un patch: hay que decidir qué se ve y cómo se calcula. Es una sola pantalla, así que no propongo dividirla.
+- Los datos que hay hoy no alcanzan para calcular la ocupación:
+  - `reservas.json` guarda solo día y hora de inicio (`franja: "10:00"`), sin duración.
+  - Incluye reservas `pendiente` y `cancelada`.
+  - No define cuántas horas tiene la semana de una sala.
+  - Los datos no dicen a qué semana pertenecen.
+- La página va a necesitar `§Frontend`, con impeccable en 1280x800 y 390x844 y E2E en Playwright. Todavía no he puesto nada de esto en una spec ni he creado rama.
+
+**Primera pregunta (cómo se ve):** ¿qué formato prefieres para el porcentaje? Recomiendo la 1.
+
+1. **Tabla con barra (recomendada).** Columnas Sala y Ocupación, con una barra horizontal y el número al lado ("Norte · 35 %"). Es coherente con la tabla del listado, se lee bien en móvil y cada fila lleva el número exacto.
+2. **Tabla solo con números.** Sala y "35 %". Es la más simple y no añade estilos.
+3. **Tarjetas por sala.** Una tarjeta grande con el porcentaje. Ocupa más y le sobra para solo dos salas.
+4. **Otra cosa que tengas en mente.** Cuéntamela.
+
+Después de esto te preguntaré cómo se calcula el porcentaje: qué reservas cuentan, cuántas horas tiene la semana de una sala y qué semana se muestra.

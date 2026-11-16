@@ -1,0 +1,66 @@
+--- [3]
+Ahora: preparo la validación del trabajo (la 0010): compruebo si `HEAD` avanzó tras la revisión final, ejecuto el smoke y la suite, y te presento el guion. Queda: tu validación, ~5 min.
+
+--- [17]
+Estoy lanzando la re-revisión del único tramo posterior a la revisión final (`tasks.md`, 23 líneas, más de las 20 que se leen en el hilo), anclada en un worktree desanclado.
+
+--- [22]
+La re-revisión está en marcha en segundo plano, con su vigía de silencio. Cuando vuelva su veredicto, lo anoto en `tasks.md`, retiro el worktree e invoco `sdd-end-feature`. La validación va en campo (`validation.mode: field`), así que no hay parada para pedirte la prueba.
+
+Mientras tanto, esto es lo que llevo hecho:
+
+- **Suite completa:** 5 de 5 tests pasan, en 0,4 s.
+- **Estado del tramo:** `HEAD` avanzó desde la revisión final solo con `tasks.md` (docs, sin código). Pasaba de 20 líneas, así que no lo leo yo en el hilo sino que va a re-revisión.
+- **Ajuste en `tasks.md`:** el registro traía marcadores sin rellenar. Puse los hashes de las tasks (`771c87e`, `19e3127`) y cambié «sobre (HEAD)» por `19e3127`, el último commit de código. No pude comprobar sobre qué sha corrió la revisión; el código no cambió desde ese commit.
+
+Smoke, una fila por THEN de la spec:
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (CLI) y suite |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (CLI, con «porque sí») y suite |
+| `canceladas` tras esa cancelación → «Norte lun — sala ocupada» | ejecución real en una misma sesión de `run()` y suite |
+
+**Aviso:** las reservas viven en memoria. Por eso `node src/app.js canceladas` en un proceso nuevo sale vacío. El THEN solo se cumple si se cancela y se lista en la misma sesión, como hacen los tests. No lo cambia esta feature, pero conviene que lo sepas.
+
+--- [25]
+La re-revisión de `19e3127..12977b1` sale **limpia**: no hay hallazgos Critical ni Important, solo una nota Minor sobre la redacción de un ruling.
+
+**Comprobaciones:**
+1. **Hashes:** cuadran. La task 1 «Cancelar con motivo» apunta a `771c87e` («feat(bookings): cancelar con un motivo de la lista») y la task 2 «Listado de canceladas» a `19e3127` («feat(bookings): listado de canceladas con su motivo»). Los dos commits tocan solo `src/app.js` y `test/cancel.test.js`, que son los ficheros que el plan asigna a cada task.
+2. **Revisión final y rulings frente a `spec.md` y `plan.md`:** son coherentes.
+   - «Revisión final … sobre 19e3127» apunta al último commit de código, y la línea «Re-revisión … pendiente» corresponde a esta re-revisión.
+   - El ruling 1 (orden de cancelación) es cierto: la spec no fija el orden.
+   - El ruling 2 (las anuladas no salen en `canceladas`) va en la línea de la spec («No entra: anulaciones del responsable de sala (0011)»). También cuadra con el glosario de `PRODUCT.md`, que separa Cancelación de Anulación, y con el roadmap, que deja la 0011 para anular.
+3. **Diff:** `git diff --stat 19e3127 12977b1` muestra solo `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (23 líneas añadidas) y nada de código. El tramo recoge 32d224a, que crea el fichero, y 12977b1, que rellena los hashes.
+
+**Minor:**
+- El ruling 2 dice «la spec no lo dice», pero el Scope de la spec sí deja fuera las anulaciones. La conclusión es correcta; solo es impreciso al justificarla. Se podría citar el Scope en lugar de presentarlo como un hueco de la spec.
+
+Git avisa de «Filename too long» con el `.gitattributes` de la carpeta de la spec, y `git show 12977b1:<ruta>` falló por la longitud de la ruta. Leí `tasks.md` del diff y con `git grep`, así que la revisión no quedó afectada.
+
+--- [47]
+Estoy juntando el cierre en un commit y lanzando el merge a `develop`.
+
+--- [50]
+Cerré la 0010 salvo el merge a `develop`, que queda esperando tu orden. `sdd-kit.json` no tiene el bloque `merge`, y sin él el kit presenta el merge y espera en vez de hacerlo.
+
+**Estado**
+- La rama `feature/0010-cancel-reason` quedó en cuatro commits, y `HEAD` es `9265c6e`: apertura, task 1 (`771c87e`), task 2 (`19e3127`) y cierre.
+- La suite pasa (5 de 5 en 0,4 s). Los tres THEN de la spec se ejecutaron de verdad.
+- La revisión final fue limpia. Re-revisé el único tramo posterior a ella (solo `tasks.md`) y también salió limpio, con un Minor sobre la redacción de un ruling.
+- Cerré en campo (`validation.mode: field`), así que el walkthrough dice que aún no has probado nada tú.
+- Escribí el walkthrough, la entrada del changelog y la fila ✅ de la 0010 en el roadmap. `tasks.md` quedó con los hashes de las tasks y los marcadores `(HEAD)` rellenados.
+
+**Para que decidas**
+- **Capacidad `bookings`:** la spec la declara «Modificada», pero no existe `capabilities/bookings.md`, y el delta no se pudo fusionar. Crearla sin tu aprobación va contra la regla de capacidades (el slug y el alcance los apruebas tú). Lo dejé como fila en la deuda técnica del roadmap. Cuando apruebes el slug se crea y se ejecuta `sdd capability merge` sobre la spec.
+- **Reservas en memoria:** `node src/app.js canceladas` en un proceso nuevo sale vacío, porque la cancelación del proceso anterior no persiste. Ya era así antes de esta feature y no cambia.
+- **Rulings que tomé yo:**
+  - `canceladas` lista en el orden de cancelación.
+  - Las reservas anuladas no salen en `canceladas`.
+- **Roadmap:** `roadmap check` da 2 fallos en líneas que no toqué: la cabecera «Deuda técnica» y el título «v0.3.0». Los arregla el paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0.
+
+¿Quieres que genere con `sdd-feedback` el ticket de mejora del kit sobre esta sesión?
+
+**No terminado.** Falta fusionar `feature/0010-cancel-reason` en `develop`: dime si lo hago con `sdd merge`, con o sin push. No borres todavía el worktree `<run>/repo`.
+

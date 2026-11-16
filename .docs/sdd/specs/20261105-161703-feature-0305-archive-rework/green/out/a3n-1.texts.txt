@@ -1,0 +1,92 @@
+--- [3]
+Empiezo por las comprobaciones previas del paso 0.
+
+--- [32]
+Sigo parado en el paso 0.6: la re-revisión de `8f48e6c..29a3f52` está en marcha y no he escrito ningún registro. Hasta ahora esto está hecho:
+
+- **Pre-checks:** el árbol está limpio, `merge --check` dice que `develop` irá a un worktree temporal y no hay otras ramas abiertas.
+- **Spec:** `status: approved`, firmada por Laura.
+- **Suite:** `node --test --test-concurrency=1` da 5 de 5 en verde, sobre `29a3f52`.
+- **Smoke:** cancelar con motivo de la lista, con uno fuera de la lista y sin `--motivo` se comprobó con ejecución real por la CLI. El listado de canceladas solo se vio funcionando en un mismo proceso. Por la CLI, `canceladas` sale vacío entre invocaciones, porque el almacén es en memoria. Eso es la 0014 («Motivo guardado») y lo dejaré anotado en el walkthrough.
+
+Cuando llegue el veredicto de la re-revisión sigo con el cierre. Falta el walkthrough, el delta de `bookings`, el changelog, el roadmap, la fila de deuda del workaround `--test-concurrency=1`, la retro, el commit de cierre y el merge a `develop`.
+
+Aviso: la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills de esta sesión podrían ser las de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+--- [38]
+## Nuevas roturas en el diff
+
+1. **Task 1 apunta al commit equivocado (Important): `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`.**
+   La fila dice `| 1 | Cancelar con motivo | done | 8f48e6c | |`. Según `git log`, Task 1 se hizo en `cef8599 feat(bookings): cancelar con un motivo de la lista`, que toca `src/app.js` y `test/cancel.test.js`. El commit `8f48e6c` es el de Task 2 («listado de canceladas con su motivo»). Hay que poner `cef8599` en la fila 1. La fila 2 con `8f48e6c` está bien. Lo marco Important porque `tasks.md` es el registro vivo del que sale la traza en el cierre: con este hash, el commit de Task 1 queda fuera de esa traza y Task 2 aparece dos veces.
+
+2. **La regla de `--test-concurrency=1` no aparece en el plan ni en la deuda (Minor): `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`.**
+   La regla dice que el gate se ejecuta con `node --test --test-concurrency=1`. En cambio:
+   - `plan.md:50` define el gate de cierre como `node --test`, y ni `spec.md` ni `plan.md` registran una enmienda para esto.
+   - `package.json` (`{"type": "module"}`) no tiene ningún script que lo lleve.
+   - La regla misma se declara un parche provisional («hasta aislar el almacén por test»), y la tabla «Deuda técnica» de `.docs/sdd/roadmap.md` no lo recoge.
+
+   Así, el gate de la regla y el del plan no coinciden. O se enmienda el plan y se apunta la deuda, o se quita la regla.
+
+Comprobaciones pedidas:
+- **(1) Alcance del diff:** `git diff --name-only 8f48e6c 29a3f52` devuelve solo `tasks.md` (un fichero nuevo, 17 líneas). No cambia código ni tests. Se cumple.
+- **(2) Coherencia con `git log` y la spec:**
+  - La línea «Revisión final» (Spec opus+high limpia, Código sonnet+high limpia, Arquitectura no, sobre 8f48e6c) coincide con el encargo.
+  - Que las dos tasks estén `done` es coherente con `plan.md` (dos tasks) y con el log.
+  - No se cumple en los hallazgos 1 y 2.
+- **(3) Nada roto en código:** al no tocarse código, el diff no puede romper el comportamiento. El frontmatter del fichero es válido y su `id` coincide con el de la carpeta, `spec.md` y `plan.md`.
+
+## Observaciones fuera de alcance
+
+- **El motivo que da la regla parece dudoso.** No lo he comprobado ejecutando nada, como pedía el encargo. `node --test` ejecuta cada fichero en su propio proceso, así que `test/app.test.js` y `test/cancel.test.js` no comparten el array `bookings` en memoria, y `--test-concurrency=1` no cambia el orden dentro de un mismo fichero. Lo que sí existe es un acoplamiento de orden dentro de `test/cancel.test.js`: el test `canceladas` depende de que antes se ejecute el primer `cancelar`. Eso no es una carrera, y quitar la concurrencia no lo resuelve.
+- **Falta un test de la spec.** El escenario `spec.md:54` («sin `--motivo` responde lo mismo») no tiene test propio en `test/cancel.test.js`. El código lo cubre, porque `reasonOf` devuelve `undefined` y el motivo no está en la lista. Esto es del commit 8f48e6c, ya revisado, no de este diff.
+
+## Veredicto
+
+**Hallazgos abiertos:**
+- Important en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: el commit de Task 1 debe ser `cef8599`, no `8f48e6c`.
+- Minor en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`: el gate de la regla (`--test-concurrency=1`) no coincide con el de `plan.md:50`, no tiene enmienda y la deuda no está en `roadmap.md`.
+
+En código y tests el diff está limpio.
+
+--- [40]
+La re-revisión encontró un fallo real en el registro: la fila de la Task 1 cita `8f48e6c`, pero su commit es `cef8599`. Lo corrijo en el cierre. Antes compruebo el motivo del ruling y paro el vigía.
+
+--- [54]
+Changelog escrito. Sigo con la retro (`sdd-retro`), luego el roadmap, la fila de deuda y el walkthrough.
+
+--- [65]
+La 0010 está cerrada y fusionada en `develop`. Sigue una cosa por decidir: ¿quieres que genere el ticket del kit con `sdd-feedback`? Lo detallo al final.
+
+**Cierre**
+- **Re-revisión:** `HEAD` se había movido de `8f48e6c` a `29a3f52` con un commit solo de documentación. Despaché la re-revisión única (opus) antes de escribir nada. Encontró dos cosas:
+  - **Important:** `tasks.md` citaba `8f48e6c` para la Task 1, y su commit es `cef8599`. Lo corregí.
+  - **Minor:** el workaround del gate no tenía fila de deuda. La añadí.
+- **Validación en campo:** la hice yo.
+  - La suite da 5/5.
+  - Probé por la CLI real la cancelación con motivo, con motivo fuera de la lista y sin `--motivo`.
+  - El listado `canceladas` solo lo vi funcionando en un mismo proceso.
+- **Registros:**
+  - `walkthrough.md` nuevo.
+  - `tasks.md` corregido, con la línea `Re-revisión:`.
+  - `capabilities/bookings.md` creada con `sdd capability merge`; `capability check` y `decision check` pasan.
+  - Entrada en `changelog.md`.
+  - Fila 0010 en `roadmap.md` marcada ✅.
+  - Fila nueva en la deuda técnica del roadmap.
+- **Historia:** el commit de documentación se fundió en un solo commit de cierre, `10c1a60`.
+- **Base:** `develop` ya estaba al día. El merge llevó `--verified-at 10c1a60`.
+
+**Decisiones tomadas sin el dev-lead**
+- En la Task 2 se pasó el gate con `node --test --test-concurrency=1`, para esquivar una supuesta carrera de los tests sobre el almacén compartido en memoria.
+- En el cierre, `node --test` sin esa opción dio 5/5 tres veces seguidas, así que la carrera no se reprodujo. Está en el walkthrough y en la fila de deuda.
+
+**Pendiente y avisos**
+- **Persistencia:** `canceladas` lanzado como proceso aparte sale vacío, porque el almacén es en memoria. Eso es la fila 0014 «Motivo guardado», que ya estaba.
+- **Test que falta:** «sin `--motivo`» no tiene test propio en `test/cancel.test.js`. Lo comprobé a mano y el código lo cubre. No abrí fila para ello.
+- **Roadmap:** `roadmap check` sigue fallando en dos líneas que yo no toqué: la cabecera de «Deuda técnica» (línea 22) y «v0.3.0» (línea 35). Las arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Versión del kit:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+- **Kit:** la retro dejó una línea `error que cazaría un chequeo → ticket del kit`. Nada compara la columna de commit de `tasks.md` con `git log`, y así se coló el hash equivocado.
+
+**Siguiente:** la 0011 («Anular reservas de otros») y la 0014 («Motivo guardado») siguen en ⏳. Ninguna tiene `parent:` ni `proposal:`, así que no hay familia que mirar.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`ce6c289`) · push: no hecho: `merge.push` es `false` y no hay remoto. La rama está en el checkout principal del repo, no en un worktree enlazado, así que no hay worktree que borrar.
+

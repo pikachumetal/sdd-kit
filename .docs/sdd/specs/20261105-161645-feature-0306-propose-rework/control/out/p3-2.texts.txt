@@ -1,0 +1,21 @@
+--- [2]
+Es un cambio pedido como patch, así que en este proyecto entra por `sdd-propose`. Lo invoco.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto y miro dónde vive el fallo, solo para clasificar. Queda: preguntarte por el carril, ~2 min.
+
+--- [13]
+Esto es un patch por fallo, pero la causa no es el orden del array. Antes de crear rama, carpeta o id te hago la pregunta del carril.
+
+🦆 **En llano:** `cancelar Norte mar` busca la reserva de Norte **sin mirar el día**. `findBooking` (`src/app.js:9-11`) recibe `day`, pero el `find` solo compara `room` y `status`. Por eso pilla la única reserva activa de Norte (la del lunes) y la marca como cancelada. Con el `find` empezando por el final pasaría lo mismo en cuanto Norte tenga una sola reserva activa: el orden no importa, falta comparar el día. `anular` usa la misma función y tiene el mismo fallo.
+
+**Qué propongo (carril patch, fallo determinista):** que `findBooking` compare también `b.day === day`. Así `cancelar Norte mar` responde `sin reserva Norte mar` y deja intacta la del lunes. Va con un test en rojo antes del arreglo: cancelar `Norte mar` con solo `Norte lun` activa debe dar `sin reserva Norte mar` y dejar la del lunes activa. Con ese mismo cambio se arregla también `anular`. Cada patch pasa por el gate de cierre, `node --test` entero en verde.
+
+**Estimación:** ~0,25 h. `estimation.md` no tiene ningún gate de cierre medido todavía y los patches registran solo el tiempo real. Perfil `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Abro el patch así?
+
+1. **Sí, patch con el arreglo del `day` (Recomendada).**
+2. Sí, pero solo `cancelar`, y `anular` queda fuera. No lo recomiendo: `anular` fallaría igual.
+3. Hacerlo como feature completa. No lo recomiendo: el arreglo está fijado y se reproduce con un solo test.
+

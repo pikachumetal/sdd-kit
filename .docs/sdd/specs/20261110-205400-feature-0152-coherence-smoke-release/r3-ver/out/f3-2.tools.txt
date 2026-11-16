@@ -1,0 +1,191 @@
+
+>>> Read: <run>/review-final-b69d985.diff
+<<< 1	# Review package: 0ec6b2a..HEAD
+2	
+3	## Commits
+4	b69d985 feat(bookings): anular con motivo
+5	041efa3 docs(sdd): abrir la feature 0021
+6	
+7	## Files changed
+8	 src/app.js        | 25 +++++++++++++++++++++----
+9	 test/void.test.js | 10 ++++++++++
+10	 2 files changed, 31 insertions(+), 4 deletions(-)
+11	
+12	## Diff
+13	diff --git a/src/app.js b/src/app.js
+14	index bf1e41d..ca748b0 100644
+15	--- a/src/app.js
+16	+++ b/src/app.js
+17	@@ -1,39 +1,56 @@
+18	+import { writeFileSync } from 'node:fs';
+19	+
+20	 const [command, ...args] = process.argv.slice(2);
+21	 const rooms = ['Norte', 'Sur'];
+22	 const
+
+>>> Bash: cd "<run>/repo" && ls -R .docs | head -50; cat .docs/sdd/specs/20261012-100000-feature-0021-void-reason/spec.md; echo ----; cat .docs/sdd/specs/20261012-100000-feature-0021-void-reason/plan.md; echo ----; cat .docs/sdd/decisions/0003-bookings-in-memory.md; ls test; git log --oneline
+<<< .docs:
+sdd/
+
+.docs/sdd:
+capabilities/
+decisions/
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/capabilities:
+availability.md
+bookings.md
+reports.md
+
+.docs/sdd/decisions:
+0003-bookings-in-memory.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261012-100000-feature-0021-void-reason/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261012-100000-feature
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; echo ----; cat test/cancel.test.js; echo ----; cat .docs/sdd/capabilities/availability.md .docs/sdd/capabilities/bookings.md; ls data 2>&1; cat .gitignore 2>&1
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+----
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['
+
+>>> Bash: cd "<run>/repo" && git show 0ec6b2a --stat; git show 0ec6b2a:src/app.js | grep -n "cmd ==="; git show 041efa3 --stat
+<<< commit 0ec6b2af948c7773d2e22f1f3c4db87fa418cdff
+Author: Fixture <fixture@example.com>
+Date:   Wed Nov 11 22:03:06 2026 +0100
+
+    feat: la app antes del cambio
+    
+    Cuerpo del commit.
+
+ .docs/sdd/capabilities/availability.md         | 13 +++++++++++
+ .docs/sdd/capabilities/bookings.md             | 13 +++++++++++
+ .docs/sdd/capabilities/reports.md              | 13 +++++++++++
+ .docs/sdd/decisions/0003-bookings-in-memory.md | 31 ++++++++++++++++++++++++++
+ src/app.js                                     | 20 ++++++++++-------
+ 5 files changed, 82 insertions(+), 8 deletions(-)
+33:  if (cmd =
+
+>>> Bash: cd "<run>/repo" && grep -n "" src/app.js | sed -n '1p;25,53p'
+<<< 1:import { writeFileSync } from 'node:fs';
+25:function saveVoided() {
+26:  writeFileSync('data/anuladas.json', JSON.stringify(bookings.filter((b) => b.status === 'voided')));
+27:}
+28:
+29:export function voidBooking(room, day, reason) {
+30:  if (!reason) return 'falta el motivo';
+31:  const booking = findBooking(room, day);
+32:  if (!booking) return `sin reserva ${room} ${day}`;
+33:  booking.status = 'voided';
+34:  booking.reason = reason;
+35:  notifyByMail(`anulada ${room} ${day}`);
+36:  saveVoided();
+37:  return `anulada ${room} ${day} (${reason})`;
+38:}
+39:
+40:function voidAll() {
+41:  const
+
+=== RESULTADO (6 turnos, 0.3297232 $)
+## Spec review (Spec axis) of `b69d985`: not ready to merge
+
+I read the whole package (96 lines, one pass). I also read the spec, the plan, ADR 0003, the capabilities and the existing tests. I didn't run anything.
+
+### Strengths
+- The rule for a missing reason is in the code and in the right place. `voidBooking` returns «falta el motivo» before it looks for the booking (`src/app.js:30`). So `anular Norte lun` without `--motivo`, and `anular Norte lun --motivo` with no text after it, both give «falta el motivo».
+- The reason travels with the voided booking (`src/app.js:34`), as the Approach asks. The main THEN, «anulada Norte lun (avería)», has a real test that calls `run` with no mocks (`test/void.test.js:8-10`).
+- The interface text is in Spanish, and no comments were added.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **`src/app.js:35`: the voiding email is still sent.** `notifyByMail(\`anulada ${room} ${day}\`)` still runs on every void, and its text goes into `outbox`.
+   - Why it matters: the spec removes this behaviour («el correo sobra»), and it still happens.
+   - Fix: remove the call. Remove `notifyByMail` and `outbox` too if nothing else uses them. Add a test that checks `outbox` stays empty after a void.
+   - Gap: `contradicts`. Comes from REMOVED «Las anulaciones se avisan por correo» and the dev-lead's decision «El correo de anulación desaparece».
+
+2. **`src/app.js:1,25-27,36`: voiding writes `data/anuladas.json` to disk and crashes outside the tests.**
+   - `data/` is in `.gitignore` and doesn't exist in the checkout. Only the test creates it (`test/void.test.js:6`).
+   - From the terminal, `node src/app.js anular Norte lun --motivo avería` throws `ENOENT` at `writeFileSync`. By then the booking is already marked `voided`. So the THEN that should answer «anulada Norte lun (avería)» fails in real use.
+   - It also breaks ADR 0003, whose Confirmación says «`src/` no importa `node:fs`», and the spec's Scope, which says «No entra: guardar las anulaciones».
+   - Fix: remove `saveVoided`, the `node:fs` import and the test's `mkdirSync`.
+   - Gap: `contradicts`. Comes from ADR 0003 (Confirmación) and the spec's Scope.
+
+#### Important (Should Fix)
+
+3. **Review Focus line with no test: `anular Norte lun` without `--motivo` → «falta el motivo».**
+   - The plan names the test `pide motivo al anular` (Task 1). It doesn't exist: `test/void.test.js` only has `anular con motivo`.
+   - The code does give the behaviour (`src/app.js:30`), but nothing pins it down.
+   - The spec's «Dónde se prueba» asks for both cases in `test/void.test.js`: «Anular con motivo y sin él».
+   - Fix: add `test('pide motivo al anular', …)` asserting `run('anular', ['Norte','lun'])` → «falta el motivo».
+   - Gap: `missing` (verification). Comes from the THEN «AND `anular Norte lun` sin `--motivo` responde «falta el motivo»» and the plan's Review Focus.
+
+4. **`src/app.js:40-44,52`: `anular-todas` doesn't ask for a reason.**
+   - `voidAll()` takes no parameters, so `anular-todas` with no `--motivo` still voids every active booking.
+   - The reason isn't stored on those bookings either.
+   - This is the dev-lead's decision covered only in part: «Anular pide motivo en las dos vías, `anular` y `anular-todas`». The new rule leaves `anular-todas` out.
+   - Fix: pass `reasonOf(params)` to `voidAll`, check it the same way, and save it on each booking. Add a test for each case.
+   - Gap: `partial`. Comes from the dev-lead's decision and the spec's Scope (`anular-todas --motivo <texto>`).
+
+5. **`src/app.js:47-50`: `libres` changes its output with no delta.**
+   - It now answers «1 libres: Sur» instead of «Sur».
+   - The `availability` capability («THEN responde «Sur»») has no subsection in the spec. The plan says «solo cambia el comando `anular`».
+   - It also breaks the existing test `libres excluye la sala reservada en la franja` (`test/app.test.js:5-7`).
+   - Fix: revert it.
+   - Gap: `unrequested`. Comes from the `availability` capability.
+
+#### Minor (Nice to Have)
+6. **`src/app.js:51`: argument order is fixed.** The room and day are read as `params[0]` and `params[1]`, so `anular --motivo avería Norte lun` reads `--motivo` as the room. Rejecting a room that starts with `--` would cover it.
+
+### Declined to judge
+- **`test/app.test.js:9` (`reservar --cada-semana`) and `test/cancel.test.js`:** set aside. `run` at the base commit `0ec6b2a` has no `reservar` or `cancelar` command, so these tests already fail before this branch. The branch doesn't touch them.
+- **`.docs/sdd/capabilities/bookings.md` still describes the email:** set aside. Merging the delta into the capability belongs to the archive step, not to this branch.
+- **Code quality (the dead `notifyByMail`, naming):** set aside; it belongs to the quality axis.
+
+### Not verified
+- **Test evidence:** no task reports or ledger came with the package, so I can't say whether `node --test test/void.test.js` passes.
+- **The CLI crash:** my reading of `writeFileSync` without `data/` is not reproduced. I didn't run anything, as the brief asks.
+
+### Recommendations
+- Run the whole suite on the main thread. Item 5 should fail `test/app.test.js:5`. If it passes, the suite isn't running that file.
+- Run the real CLI from a clean checkout (`node src/app.js anular Norte lun --motivo avería`) to confirm item 2.
+- There's no ledger, so there are no deferred minors to rule on.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The spec removes the voiding email and it is still sent. Voiding also writes to disk, which breaks ADR 0003 and probably crashes outside the tests. `anular-todas` doesn't ask for a reason, and the «falta el motivo» line from the Review Focus has no test.

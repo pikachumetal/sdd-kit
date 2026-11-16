@@ -1,0 +1,142 @@
+--- [14]
+Estoy revisando la spec de la 0010 contra el código y las reglas del kit antes de presentártela. Ya he visto algunos huecos; ahora leo la guía del repaso de coherencia.
+
+--- [19]
+Ahora: lanzar la review de la spec (dos revisores en Sonnet, dominio y técnica, en paralelo). Queda: incorporar lo que encuentren y presentarte la spec para aprobarla, ~10 min, ~1 $.
+
+--- [34]
+Los dos revisores de la spec están trabajando: uno mira el producto y el otro la parte técnica. Antes de lanzarlos, al repasar la spec contra el código, he encontrado tres huecos y los he corregido. Los verás en el apartado «✋ Decisiones que he tomado yo»:
+
+- **`cancelar` sin motivo**: la spec no decía qué pasaba, y hoy un test espera «cancelada Norte lun». Lo he dejado como un cambio de lo que ya existe: el motivo pasa a ser obligatorio y ese test cambia.
+- **«Quién canceló»**: la reserva no guarda a nombre de quién está. He añadido el campo `titular`, porque en `PRODUCT.md` quien cancela es siempre el propio cliente.
+- **«Sin review de spec»**: lo he quitado. Con un comportamiento que cambia y datos nuevos tocan dos revisores; la regla del kit no deja saltarse la review.
+
+Cuando vuelvan los revisores, meto sus hallazgos en la spec y te la presento para aprobarla.
+
+--- [35]
+1. Crítico · Delta de comportamiento / Capacidad `bookings` · La spec dice «Modificadas: bookings» y el MODIFIED sobreescribe lo que hace hoy `cancelar` (responder «cancelada Norte lun»), pero no existe `capabilities/bookings`, así que no hay verdad viva contra la que comprobar el MODIFIED. Además el ADDED «canceladas» no tiene capacidad destino real. · Declarar que `bookings` no tiene capacidad documentada. Crearla (o plantear la spec como capacidad nueva) y recoger en ella el comportamiento actual de `cancelar` antes de modificarlo. Si no, el MODIFIED queda sin comprobar.
+
+2. Crítico · Decisión 3 / Delta (GIVEN «a nombre de Ana») / PRODUCT.md Terminology · PRODUCT.md define Cancelación como «la reserva que anula el propio cliente antes de 24 h». La spec no recoge la condición de 24 h: `cancelar` y `canceladas` aceptan cualquier cancelación, y de ahí sale un ADDED que cambia en la práctica el término. Tampoco dice qué pasa con una cancelación a menos de 24 h. · Declarar si la regla de 24 h sigue vigente. Si lo hace, añadir el THEN para el caso a menos de 24 h, o declarar «no aplica» con el motivo. Si no, tratarlo como un MODIFIED de PRODUCT.
+
+3. Crítico · Decisión 3 / Scope · «Quién canceló = titular» es una invención. La frase se justifica con PRODUCT.md, pero nada garantiza que quien ejecuta el comando sea el titular, y la CLI no tiene login. Se está afirmando como dato algo que solo es una suposición. El Intent habla de «saber quién», y el listado enseñará siempre el titular aunque cancelara otra persona. · Renombrar la columna a «titular» y no a «quién canceló». Si no, registrar la decisión de que el titular se da por quien cancela, y validarla con el dev-lead en lugar de presentarla como una decisión técnica.
+
+4. Importante · Scope / Decisión 3 · Hay un alcance oculto. La spec modifica el dato de ejemplo («la reserva de ejemplo de Norte del lunes pasa a ser de Ana») y añade `titular` a toda reserva, pero el Scope solo lista los campos y los tests. No dice cómo se crea una reserva con titular, ni qué pasa con las reservas existentes sin titular, ni si el comando de reservar (`reservar`) lo pide. · Listar en el Scope el origen del titular (reservar, la semilla de ejemplo) y qué muestra `canceladas` si una reserva no tiene titular.
+
+5. Importante · Delta / Scope (5 bis: datos nuevos) · Los datos nuevos `motivo` y `titular` no declaran las cinco reglas. Dónde viven: solo se dice «en la reserva en memoria». Idioma de los nombres: `titular` y `motivo` van en castellano, pero la constitución solo fija el texto de la interfaz y los documentos, y el código usa `status` y `cancelled` en inglés; no se justifica. Límites: no hay longitud ni normalización de mayúsculas, ni de tildes («cambio de planes» con espacios, `--motivo` con comillas). Avisos: el mensaje de error de motivo inválido sí está. Conflicto: no se dice qué pasa al cancelar una reserva ya cancelada. · Añadir las cinco reglas, cada una declarada o «no aplica». Fijar el idioma del nombre de campo (alineado con `status`) y añadir un THEN para recancelar.
+
+6. Importante · Delta / Dónde se prueba · Falta el complemento de estado. Se introduce el estado «cancelada con motivo», y no se dice qué está prohibido: cancelar una reserva inexistente, ya cancelada o anulada (0011), ni cómo `canceladas` trata las anulaciones. Aparecen filtradas por `status === cancelled`, pero el estado de anulación no queda declarado. · Añadir THEN para sala o día sin reserva, reserva ya cancelada y reserva anulada, y decir que `canceladas` excluye las anulaciones.
+
+7. Importante · Decisión 2 y 3 / Delta · Orden de validación sin especificar. Con `cancelar Norte lun` sin motivo y sin reserva, ¿qué responde? Y con un motivo válido pero sin reserva. Dos errores posibles a la vez sin precedencia. · Fijar el orden de comprobación (motivo antes o después de existencia) en un THEN.
+
+8. Menor · Intent vs Scope · El Intent exige «toda cancelación nueva tiene motivo y titular», pero el Scope no incluye ninguna comprobación de que una reserva sin titular no pueda cancelarse, ni de que `titular` se guarde al reservar. Es una promesa sin cobertura en el delta. · Añadir un THEN que cubra «titular guardado» o recortar la promesa del Intent.
+
+9. Menor · Delta / ejemplos · El ejemplo «Norte lun — sala ocupada — Ana» usa un nombre propio de persona (Ana) como dato del ejemplo y del fixture. Es inventado, así que cumple, pero se repite también como titular del GIVEN, y el campo «aprobador» usa «Laura». Mezclar el nombre del dev-lead con el de ejemplos puede dar pie a confusión. · Mantener «Ana» solo como persona inventada para el fixture y no reutilizar nombres reales de aprobadores.
+
+10. Menor · Decisiones tomadas con el dev-lead (1) / Decisión 7 · La decisión 1 dice «frase literal no recogida en la spec»: no es trazable, y la lista cerrada (los tres valores) queda sin una fuente verificable. La decisión 7 habla de una «versión anterior» que no existe en el repositorio. · Recoger la frase literal del dev-lead, o rebajarla a «decisión mía a validar». Retirar la referencia a la versión anterior.
+
+--- [39]
+El revisor de dominio ya ha terminado. Falta el técnico; cuando acabe, meto los hallazgos de los dos en la spec.
+
+--- [40]
+1. Crítico · Delta de comportamiento, MODIFIED «Cancelar exige un motivo» · El THEN «cancelada Norte lun (sala ocupada)» es una cadena exacta que el agente escribe, y el GIVEN depende de un dato que la propia spec crea (reserva de Norte a nombre de Ana). La reserva de ejemplo no existe hoy, y el escenario solo comprueba la respuesta, no que el motivo y el titular queden guardados en la reserva. · Añadir un THEN verificable que pase a través de `canceladas` (que tras cancelar aparezca «Norte lun — sala ocupada — Ana») y declarar el estado inicial (la reserva de Ana) como precondición del test, no como dato asumido.
+
+2. Importante · Delta de comportamiento, ADDED «listado de canceladas» · El GIVEN «cancelada con sala ocupada» no dice cómo se llega a ese estado (cancelar previo o fixture). Si se monta por fixture, el test pasa aunque `cancelar` no guarde nada. Falta también un escenario con varias cancelaciones: orden, separador y una reserva activa que no deba aparecer. · Hacer que el GIVEN sea una invocación real de `cancelar ... --motivo`, y añadir un escenario con una cancelada y una activa donde solo salga la cancelada.
+
+3. Importante · Delta de comportamiento · Hay comportamiento sin escenario: «otro» como motivo válido, `cancelar` de una reserva inexistente o ya cancelada, y `--motivo` con mayúsculas o espacios distintos. Todos son casos que la implementación decidirá por su cuenta. · Añadir escenarios para `cancelar ... --motivo otro`, para cancelar dos veces la misma reserva y para una sala o día sin reserva, o declararlos fuera de alcance en Scope.
+
+4. Importante · Decisiones que he tomado yo, ítem 3 y Delta · La nota de «Quién canceló = titular» no cubre la regla de las 24 h de PRODUCT.md («la reserva que anula el propio cliente antes de 24 h»). La spec llama «cancelación» a toda cancelación, pero `cancelar` no comprueba el plazo y no dice nada de las que quedan fuera de él. Es una decisión de dominio tomada en el cuerpo y sin dejar constancia. · Añadir una decisión que diga si `cancelar` aplica o ignora las 24 h y qué pasa pasado el plazo; o declararlo en No entra.
+
+5. Importante · Cuerpo (Scope, Delta) vs. «Decisiones que he tomado yo» · Hay decisiones del cuerpo que no están en la lista: el formato de salida literal de `canceladas` («Norte lun — sala ocupada — Ana», con rayas largas), el formato de la opción como `--motivo <valor>` con la cadena entre comillas, y los textos de error exactos. Solo se justifica el obligatorio. · Registrar en «Decisiones que he tomado yo» el formato de salida y los mensajes de error, con su alternativa descartada.
+
+6. Importante · Decisiones que he tomado yo, ítem 3 · Cambiar la reserva de ejemplo de Norte del lunes para que sea de Ana toca un dato que usan `anular`, `libres` y los demás tests (los que dependen de esa reserva). La spec dice «`anular` no cambia» sin comprobarlo, y el revisor técnico de la rúbrica ya planteaba esa duda. · Decir qué tests y comandos leen la reserva de ejemplo y confirmar en el Scope que la adición de `titular` no altera la salida de `anular` ni `libres`; si no se ha comprobado, anotarlo como sin medir.
+
+7. Importante · Scope y Dónde se prueba · Se toca el contrato del comando `cancelar` (de dos argumentos a tres, con mensaje de salida nuevo) y se añade el comando `canceladas`, pero el cambio no menciona la ayuda o el uso de la CLI, ni un README si lo hubiera. Además `titular` es un campo nuevo en el modelo sin que se diga cómo se asigna a las reservas nuevas (¿cómo crea una reserva el titular?). · Indicar cómo se informa `titular` en las reservas creadas por la CLI (o que solo existe en el ejemplo) y actualizar la ayuda/uso si existe.
+
+8. Menor · Decisiones tomadas con el dev-lead, ítem 1 · «Frase literal no recogida» deja sin trazabilidad la única decisión atribuida al dev-lead, y el motivo «otro» sin texto libre (ítem 4 de las decisiones del agente) se presenta como propio aunque podría derivar de ella. · Citar la frase del dev-lead, o pasarla a la lista de decisiones del agente para validarla.
+
+9. Menor · Decisiones que he tomado yo, ítem 8 · Dice que el delta no se ha podido probar con `sdd capability merge` por no existir `capabilities/`, pero el Delta nombra la capacidad `bookings` como «Modificadas» sin que exista su spec base. El MODIFIED no tiene contra qué fusionarse y hay un contrato de comportamiento actual sin documentar. · Declarar que `bookings` es una capacidad nueva (o ADDED en su base) o apuntar dónde está hoy descrito el comportamiento a modificar.
+
+10. Menor · Decisiones que he tomado yo, bloque de review · El bloque «Review de spec propuesta» está sin numerar y mezclado con la lista numerada de decisiones, y pone en la lista técnica una verificación («cada THEN es observable por la salida») que la spec actual no cumple por el hallazgo 1. · Separar el bloque de la lista de decisiones y reescribir la lista numerada para que arranque en 1 sin interrupciones.
+
+--- [45]
+Ahora: meter en la spec los hallazgos de los dos revisores. Queda: una segunda lectura con un solo revisor, porque he aceptado hallazgos críticos, y luego presentártela, ~8 min, ~0,5 $.
+
+--- [51]
+Ahora: segunda lectura de la spec corregida, con un solo revisor en Sonnet. Queda: meter lo que encuentre y presentarte la spec, ~5 min, ~0,3 $.
+
+--- [59]
+El revisor de la segunda ronda está leyendo la spec corregida. Cuando acabe, meto lo que encuentre y te la presento para aprobarla.
+
+--- [61]
+1. Crítico · Delta, escenario «Cancelar exige un motivo» · Los AND se encadenan sobre un estado que el primer THEN ya cambió. Tras cancelar Norte lun con «sala ocupada», `--motivo otro` no puede volver a cancelarla (decisión 9 dice «sin reserva»). Tampoco puede decirse que «la reserva sigue activa» tras un motivo inválido, ni que sin `--motivo` falla «aunque no exista la reserva», con la reserva ya cancelada. Los tres comprobarían un estado distinto del declarado. · Trocear en escenarios independientes, cada uno con su GIVEN: motivo válido, `otro`, motivo inválido o con mayúscula, sin motivo con reserva, sin motivo sin reserva, recancelar.
+
+2. Crítico · Intent / Dónde se prueba · Las reservas viven en memoria y cada `node src/app.js …` es un proceso nuevo. Desde la CLI real, `canceladas` siempre responderá «sin cancelaciones», y solo funciona encadenado dentro de un test. El Intent promete que `canceladas` enseña cada cancelación y el éxito no lo pone en duda. · Declarar la limitación en «Decisiones que he tomado yo» y en el Intent (o No entra), o añadir persistencia, que supondría cambiar `operations.md`. Sin eso, el éxito pasa en test y falla en uso.
+
+3. Importante · Delta, requisito del listado · «En el orden en que se cancelaron» (decisión 8) no tiene ningún escenario. El único con cancelaciones tiene una sola. · Añadir un escenario con dos cancelaciones (por ejemplo Norte lun y luego Sur mar) y el orden esperado.
+
+4. Importante · Capacidades / Delta · `bookings` se crea como capacidad nueva con requisitos ADDED, pero `cancelar` ya existe y hoy cancela sin motivo. Eso cambia un comportamiento vigente, y la capacidad nace sin reservar, libres ni anular. Es en la práctica un MODIFIED sin declarar, y la decisión 2 lo menciona fuera del delta. · Marcar explícitamente en el requisito que sustituye el comportamiento actual de `cancelar` (nota de cambio rompiente), o documentar la línea base en la capacidad.
+
+5. Importante · Decisión 4 / decisión 11 / Scope · Añadir reservas de Sur martes y miércoles 16:00-18:00 cambia la salida de `libres` en esas franjas, aunque se afirme que `libres` no cambia. Que esas reservas o la de Ana alteren otros tests de `test/app.test.js` está `sin medir`. · Listar `test/app.test.js` en el Scope como fichero a verificar, o incluir un escenario de `libres` 16:00-18:00 con su salida esperada.
+
+6. Importante · Delta, escenario del listado · Depende de que `anular Sur mié` ponga la reserva en estado `voided` y de que esa reserva exista. Ese comportamiento de `anular` no está especificado ni escenificado (su respuesta tampoco), y es lo único que prueba el filtrado de anuladas. · Declarar en el GIVEN la reserva de Sur mié y el estado `voided` tras `anular`, o precisar qué responde `anular` y confirmar que ya existe.
+
+7. Importante · Decisiones tomadas con el dev-lead / decisión 1 · Dice «ninguna con frase literal», pero la decisión 1 afirma que la lista «viene de la entrevista». El texto remite a «✋ 1», un marcador que no existe en el cuerpo. · Corregir la referencia a la decisión 1, y dejar la lista cerrada y el cambio de «quién canceló» a «titular» como validaciones explícitas para Laura antes de aprobar.
+
+8. Menor · Decisión 5 / PRODUCT.md · PRODUCT define cancelación como «antes de 24 h», y la spec acepta cancelaciones en cualquier momento. Aun declarado, el listado y los mensajes llaman «cancelación» a algo que PRODUCT restringe. «Propongo apuntarla en la deuda» no es una acción del Scope. · Añadir la nota a la deuda como tarea concreta, o matizar el término en el Intent.
+
+9. Menor · Delta / decisión 8 · Faltan casos de borde de la CLI. `--motivo` sin valor (¿«falta» o «no válido»?), el orden de argumentos y sala o día inexistentes con motivo válido (¿«sin reserva»?). Tampoco se dice si los errores salen por stdout o stderr, ni el código de salida. · Fijar `--motivo` sin valor como «falta el motivo» y añadir el escenario, y declarar el canal y el código de salida de los errores.
+
+10. Menor · Decisión 4 / fixtures · Los nombres «Ana» y «Luis» están bien por ser inventados. Pero Ana, Luis y Laura mezclan los roles de titular y aprobadora en el mismo documento, y el rechazo del hallazgo «dominio 9» solo se justifica en la review. · Usar un titular claramente distinto del nombre de aprobación (por ejemplo «Marta») para evitar la duda sin depender de la nota.
+
+--- [65]
+Hay dos hallazgos críticos en la segunda ronda: uno lo arreglo y el otro te lo dejo a ti. No hay tercera ronda.
+
+--- [77]
+# Spec 0010 — Motivo al cancelar, para aprobar
+
+🦆 Hoy, cuando alguien cancela una reserva, la sala queda libre y nadie sabe por qué. Con esta feature, `cancelar` pide siempre un motivo de una lista cerrada: cambio de planes, sala ocupada u otro. Un comando nuevo, `canceladas`, enseña cada cancelación con su sala, su día, el motivo y el titular de la reserva, por ejemplo «Norte lun — sala ocupada — Ana». Las anulaciones del responsable de sala no salen en ese listado. Hay una pega: las reservas viven en memoria, así que el listado solo ve lo cancelado en la misma ejecución.
+
+La spec ha cambiado bastante respecto a la que dejaste:
+- **Review**: la hice antes de presentártela, porque el kit no deja quitarla. La primera ronda la leyeron dos revisores en Sonnet: uno del producto y otro técnico.
+- **Segunda ronda**: aceptar hallazgos críticos obliga a una segunda lectura, que hizo un revisor en Sonnet. No hay tercera ronda.
+
+Cada hallazgo está en `spec.md`, en «Hallazgos de la review», aceptado o rechazado con su motivo.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**La que más pesa (decisión 15):**
+- **Qué pasa**: cada `node src/app.js …` arranca un proceso nuevo y las reservas viven en memoria. Por eso, desde la terminal, `canceladas` siempre responderá «sin cancelaciones».
+- **Dónde funciona**: el motivo y el listado solo se ven dentro de una misma ejecución, que es lo que comprueban los tests.
+- **Qué arreglaría esto**: guardar las reservas entre ejecuciones. Eso es otra feature, porque cambia `operations.md` y todos los comandos.
+- **Si sin eso no te sirve**, dímelo y partimos la 0010.
+
+**El resto:**
+1. **Lista de motivos**: cambio de planes, sala ocupada, otro. Viene de la entrevista, pero no se recogió tu frase literal, así que valídala tú.
+2. **`--motivo` pasa a ser obligatorio**. Hoy `cancelar Norte lun` cancela sin motivo; con este cambio responderá «falta el motivo: …». El test actual se adapta.
+3. **El listado enseña el titular de la reserva**, no «quién lanzó el comando». La CLI no tiene login, y según `PRODUCT.md` quien cancela es siempre el cliente.
+4. **El titular solo existe en las reservas de ejemplo**, porque `reservar` hoy no crea reservas de verdad:
+   - Norte, lunes: pasa a ser de Ana.
+   - Sur, martes y miércoles, de 16:00 a 18:00: dos reservas nuevas a nombre de Luis.
+   - Efecto lateral: `libres 16:00-18:00` pasa de dar «Sur» a dar «Norte».
+5. **La regla de las 24 h de `PRODUCT.md` queda fuera**: hoy no se comprueba y esta feature no la añade.
+6. **Orden de las comprobaciones**: primero se mira el motivo y después la reserva. El motivo se compara tal cual, así que «Sala ocupada» con mayúscula no vale. `--motivo` sin valor cuenta como que falta.
+7. **Formatos de salida**:
+   - Al cancelar: «cancelada Norte lun (sala ocupada)».
+   - En `canceladas`: una línea por cancelación, en el orden en que se cancelaron.
+   - Sin cancelaciones: «sin cancelaciones».
+   - Errores: por la salida estándar y con código 0, como hoy.
+8. **Cancelar dos veces la misma reserva** responde «sin reserva Norte lun».
+9. **Dónde se guarda**: el motivo y el titular van en la propia reserva, en los campos `reason` y `holder`. Descarté un registro aparte de cancelaciones porque duplicaría datos.
+10. **`bookings` no está escrita en `capabilities/`**: la crea esta spec. Por eso el cambio de `cancelar` va como requisito nuevo y no como modificación de uno existente. Tampoco he podido probar el delta con `sdd capability merge`, por la misma razón.
+
+**Rechazados en la review:**
+- Apuntar la regla de las 24 h como deuda desde la spec: si te parece bien, se apunta con `sdd-roadmap`.
+- Cambiar los nombres de ejemplo (Ana, Luis) para que no se confundan con el tuyo de aprobadora.
+
+La implementación prevé **una sola task**. La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md` y aún no está en ningún commit.
+
+¿Apruebas la spec?
+
+1. Apruebo (Recomendada)
+2. Cambios
+

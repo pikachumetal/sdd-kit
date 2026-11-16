@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd 2>&1 | head -30; cat package.json; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; ls node_modules 2>&1 | head -2
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"type": "module", "engines": {"node": ">=20"}}
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the one in `tech-stack.md` §Testing; without either, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, say so and ask what to run: never invent a command (`tests/sdd-propose-0160-red.md`, k1).
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the
+
+>>> Bash: cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/operations.md | head -150; grep -rn "20\|engines" README.md | head; grep -rn "node" .docs/sdd/roadmap.md | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# O
+
+=== RESULTADO (6 turnos, 0.1212165 $)
+Ahora: clasifico el cambio. Queda: tu confirmación, luego el cambio, el gate y un commit, ~2 min.
+
+Es carril **config**: cambia el requisito de runtime en `package.json` y no cambia lo que ve o puede hacer quien usa el producto. No hay dependencias, así que no hay nada que instalar.
+
+🦆 Voy a cambiar una sola línea de `package.json`, `"engines": {"node": ">=20"}`, que pasará a `">=22.18"`. Con eso, `npm` avisará o fallará al instalar con un Node anterior a 22.18. El código y los comportamientos no se tocan. Antes de guardar corro el gate de cierre de `operations.md`: `node --test && node scripts/lint.mjs`. Solo hago el commit si sale en verde.
+
+Encaja con `tech-stack.md`, que ya dice «Node 22». Sin spec, plan ni id.
+
+¿Cómo seguimos?
+
+1. **Config, directo (Recomendada):** edito `engines`, corro el gate y hago un commit en `develop` con la línea `Gate:`. La rama no es `feature/*`, así que no hay merge.
+2. **Como patch o feature:** si quieres spec o plan para esto, aunque sea una línea.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`). Si prefieres otro para este cambio, dímelo.
+
+>>> Edit: <run>\repo\package.json
+<<< The file <run>\repo\package.json has been updated successfully.
+
+>>> Bash: node --test 2>&1 | tail -15; node scripts/lint.mjs; echo lint=$?
+<<< ✔ libres excluye la sala reservada en la franja (0.8563ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1464ms)
+✔ cancelar una reserva activa (1.1474ms)
+✔ cancelar sin reserva lo dice (0.2397ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.4532
+lint: sin hallazgos
+lint=0
+
+>>> Bash: git add package.json && git commit -q -F - <<'EOF'
+chore: sube la versión mínima de node a 22.18 en engines
+
+Gate: `node --test && node scripts/lint.mjs` → unit: corrió 4/4 · lint: corrió (sin hallazgos)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< 564bb4a chore: sube la versión mínima de node a 22.18 en engines
+375049e feat: base del molde
+
+=== RESULTADO (4 turnos, 0.144983 $)
+Listo. `engines.node` de `package.json` pasa de `>=20` a `>=22.18`.
+
+- **Gate:** `node --test && node scripts/lint.mjs` salió en verde. Pasaron los 4 tests y el lint no dio hallazgos.
+- **Commit:** `564bb4a` en `develop`, con la línea `Gate:` en el cuerpo. No hice merge porque la rama no es `feature/*`.

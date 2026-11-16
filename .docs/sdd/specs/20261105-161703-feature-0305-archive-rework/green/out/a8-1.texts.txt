@@ -1,0 +1,143 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [25]
+La 0010 sigue abierta: aún no he escrito ningún registro ni he fusionado nada. Estoy esperando una re-revisión.
+
+**Estado de los pre-checks**
+- El árbol está limpio y `sdd merge --check` sale bien. La fusión iría a `develop`.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- La revisión final fue limpia, pero se hizo sobre `455e850`.
+
+**Por qué espero**
+- Después de esa revisión entró `9dc07dc`, un fix de código: `reasonOf` ahora hace `?.trim()`. No es un commit de solo documentación, así que no se salta la revisión.
+- `tasks.md` no tiene ninguna línea `Re-revisión:`, de modo que nadie ha revisado ese fix.
+- Según `final-review-check.md`, no escribo registros hasta cerrar la re-revisión de `455e850..HEAD`. La he lanzado en segundo plano, con `sdd-kit:effort-high` + opus y su vigía de silencio.
+
+**Un detalle para la revisión**
+- `9dc07dc` convirtió `src/app.js` entero de CRLF a LF. Git lo cuenta como 48 líneas cambiadas, pero el cambio real es una sola línea. Le he pedido al revisor que diga si eso es un problema. No hay `.gitattributes` y `core.autocrlf` está en `true`.
+
+**Después de la re-revisión**
+1. Registro `Re-revisión: 455e850..f229cc2, sdd-kit:effort-high + opus, <veredicto>` en `tasks.md`.
+2. Como `validation.mode` es `field`, valido yo con mi smoke y la suite, sin pedirte nada.
+3. Sigo con el walkthrough, el delta de la capacidad `bookings`, el roadmap, el commit de cierre, la sincronización con la base y la fusión.
+
+El aviso de arranque dice que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills podrían ser de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code. Para este cierre sigo con lo cargado.
+
+--- [33]
+## Verdicts
+
+No había findings abiertos de revisiones anteriores. Las cuatro comprobaciones del fix 9dc07dc dan esto:
+
+1. **Intención de la spec: se cumple.** La validación sigue siendo `reasons.includes(reason)` en `src/app.js:20` y se aplica después del recorte, así que la lista sigue cerrada. Lo que cambia es que `"  sala ocupada  "` ahora se acepta y se guarda ya recortado. Lo he probado: responde `cancelada Norte lun (sala ocupada)` y `canceladas` lo lista como `Norte lun — sala ocupada`.
+2. **Casos límite: mismo comportamiento que antes.** Lo he comprobado ejecutando `run` sobre el worktree.
+   - `--motivo` sin valor da `undefined?.trim()`, que es `undefined`, y responde «motivo no válido: cambio de planes, sala ocupada, otro».
+   - `--motivo ""` da `""` y responde «motivo no válido…».
+   - `--motivo "   "` da `""` y responde «motivo no válido…».
+   - Sin `--motivo` responde «motivo no válido…», igual que pide la spec en la línea 54.
+   - El `?.` evita el TypeError cuando falta el valor. Node 22 lo soporta.
+3. **Test del recorte: no hay ninguno.** `test/cancel.test.js` sigue con los mismos 3 tests y ninguno pasa un motivo con espacios. El fix no tocó ningún test. Los 3 tests de `node --test test/cancel.test.js` pasan, pero el comportamiento nuevo no está cubierto.
+4. **Restricciones de código: se cumplen.** El fix no añade ningún texto de interfaz.
+
+## New Breakage in the Fix Diff
+
+- **Important: el fix no tiene test.** El cambio está en `src/app.js:16` y no hay test en `test/cancel.test.js`. La constitución dice en la regla 2 «Tests antes que código», y 9dc07dc introduce un comportamiento nuevo y observable sin un test que falle antes del cambio. Si alguien quita el `.trim()`, ningún test lo detecta. No rompe nada en funcionamiento, pero incumple una regla del proyecto y deja el recorte sin protección. Falta un test del tipo `run('cancelar', ['Norte', 'lun', '--motivo', ' sala ocupada '])` que espere `'cancelada Norte lun (sala ocupada)'`.
+- **Minor: comportamiento que no recoge la spec.** Aceptar motivos con espacios alrededor no aparece en el Delta de la spec y la sección Enmiendas sigue en «(ninguna)", líneas 61-63. Lo que pide el usuario (aceptar espacios) es razonable y compatible con la lista cerrada, pero conviene una enmienda o un AND en el escenario «Cancelar pide un motivo de la lista».
+- **Minor: CRLF a LF en `src/app.js`.** El cambio afecta a todo el fichero y no rompe nada. Node no distingue entre finales de línea, y con `core.autocrlf=true` (configurado en el sistema y en el usuario) la copia de trabajo sale en CRLF. Aun así, no es un cambio neutro:
+  - No existe `.gitattributes` y ningún documento fija una convención.
+  - La convención de hecho del índice es CRLF: `test/*.js`, `package.json`, `README.md` y casi todo `.docs/` están en `i/crlf`. Con este commit, `src/app.js` es el único fuente en `i/lf`.
+  - El diff sale de 48/48 líneas cuando el cambio real es una. Eso esconde la línea real en el `git log -p` y le asigna en `git blame` el fichero entero a un commit de una línea.
+  - Si alguien clona con `autocrlf=false` o en Linux, le quedan finales de línea mezclados en el repo.
+
+  Hay dos arreglos posibles: devolver `src/app.js` a CRLF en el índice para que el fix vuelva a ser una línea, o decidir normalizar con un `.gitattributes` (`* text=auto`) en un commit aparte y con su nombre.
+
+## Out-of-Scope Observations
+
+- El escenario de la spec «sin `--motivo` responde lo mismo» (línea 54) no tiene test. Ya faltaba en 455e850 y las revisiones previas no lo marcaron. Funciona, como muestra la verificación 2.
+- `tasks.md` no registra 9dc07dc: la tabla y la línea de la revisión final siguen apuntando a 455e850.
+- El cuerpo del commit 9dc07dc es el texto de plantilla «Cuerpo del commit.».
+- `cancelBooking` está exportada y no recorta: el recorte solo se aplica en el camino de la línea de comandos, dentro de `reasonOf`. Ahora no hay ningún llamador directo que pase espacios, así que es solo una nota.
+
+## Verdict
+
+Findings remain open. Hay un Important nuevo, el fix sin test que incumple la regla 2 de la constitución, y dos Minor. Ninguno es una rotura funcional.
+
+Ficheros relevantes:
+- <run>/review-0010-f229cc2/src/app.js
+- <run>/review-0010-f229cc2/test/cancel.test.js
+- <run>/review-0010-f229cc2/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+- <run>/review-0010-f229cc2/.docs/sdd/constitution.md
+
+--- [35]
+La re-revisión devolvió un Important: el fix `9dc07dc` no tiene test. Paro el vigía, retiro el worktree de revisión y hago la pasada de fix, que es una sola.
+
+--- [42]
+El filtro no cazó nada: el reporter de este Node tiene otro formato. Repito con la salida completa.
+
+--- [59]
+Faltan por leer los aprendizajes y la receta de fusión antes de escribir el walkthrough. No hay `estimation.md` ni `environments.md`, así que el tiempo real y `env:clean` no aplican.
+
+--- [62]
+Antes de escribir el walkthrough compruebo el gate literal de la constitución (`node --test` entero), porque yo corrí la suite con el `--test-concurrency=1` del ruling.
+
+--- [72]
+Esa orden salió mal: el heredoc de Python quedó sin cerrar y no hay salida del `grep`. Compruebo qué le pasó al fichero.
+
+--- [75]
+Las tres sustituciones se aplicaron (la rama de Node sí se ejecutó). Ahora sí invoco `sdd-retro` con `cierre`, que es quien escribe la línea `Retro:`.
+
+--- [81]
+La línea `Retro:` ya está en el walkthrough. Paso 3: fusiono el delta de capacidad con la CLI, nunca a mano, y compruebo ADRs.
+
+--- [84]
+La capacidad `bookings` está creada y los chequeos pasan (sin ADRs). Ahora el changelog, que en este proyecto es `.docs/sdd/changelog.md`, así que va por `add-to-changelog`.
+
+--- [87]
+Añado la entrada con el formato exacto del contrato, en `Added` de `[Unreleased]`, y actualizo la fila 0010 del roadmap. Antes miro los finales de línea de esos ficheros para no meter otro CRLF/LF.
+
+--- [90]
+`roadmap check` falla en dos líneas. Compruebo si ya fallaban antes de mis cambios, porque la regla dice que lo que no escribí no lo arreglo.
+
+--- [98]
+Ningún sha del rango queda citado. Squasheo todo lo posterior a la última task (`455e850`) en un único commit de cierre, con el fix, su test, el walkthrough y los registros.
+
+--- [101]
+El cierre queda en un solo commit (`08a1922`) sobre la última task. Paso 6: integro la base con `sdd merge --sync`, en su propia llamada.
+
+--- [110]
+Fusionado en `develop` (`f52d7c9`). Limpio mi fichero de diff temporal y compruebo si este árbol es el checkout principal o un worktree enlazado, porque eso decide si ofrezco borrarlo.
+
+--- [112]
+🦆 Cancelar una reserva ahora exige un motivo de una lista cerrada, y `canceladas` lo enseña. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». Un motivo con espacios alrededor se recorta antes de validarlo.
+
+**✋ Me salí del plan en…**
+- Task 2: `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test. Si me equivoco, la suite tarda el doble.
+- El recorte del motivo no estaba en la spec: salió de la validación.
+
+**Cómo ha ido el cierre**
+- **Validación en campo:** la hice yo, con `validation.mode: field`. Smoke de 5 filas con `ejecución real` y suite 6/6, también con el gate literal `node --test`. Nada lo ha probado una persona.
+- **Re-revisión:** la revisión final era sobre `455e850`, pero después entró un fix de código sin revisar. Lancé una re-revisión con `sdd-kit:effort-high` + opus. Encontró un Important: el fix no tenía test. Lo arreglé con un test que falla sin `?.trim()` y pasa con él.
+- **Capacidad:** `capabilities/bookings.md` quedó creada con el delta de la spec.
+- **Registros:** walkthrough y `tasks.md` hechos. Changelog con la entrada de la 0010. Roadmap con la 0010 en ✅ y cuatro filas de deuda nuevas.
+- **ADRs:** no había candidatas.
+- **Retro:** una señal, `error que cazaría un chequeo`, por el cambio de finales de línea que se coló en el fix. La salida natural sería un `.gitattributes`. No lo apliqué porque renormaliza todo el repo, y eso lo decide el dev-lead.
+- **Historial:** todo lo posterior a la última task quedó en un solo commit de cierre, `08a1922`.
+- **Base:** estaba al día, así que no hubo merge de sincronización ni segunda suite. Corrí la suite sobre `08a1922` y pasó 6/6.
+- **Fusión:** con la CLI, a `develop`, sin `--no-verify` ni `git merge` a mano.
+
+**Pendiente**
+- **Gate:** `` Gate: `node --test` → suite: corrió 6/6 · sobre 08a1922 ``.
+- **Push:** no hecho, porque `merge.push` no lo autoriza.
+- **Minor diferidos** (no hay `review.minors: fix`):
+  - `src/app.js` pasó de CRLF a LF entero, y el resto del repo está en CRLF.
+  - La spec y la capacidad `bookings` no recogen el recorte. Enmendar una spec aprobada es del dev-lead.
+  - «Sin `--motivo`» no tiene test propio.
+  - Hay que aislar el almacén de los tests.
+- **`roadmap check`:** falla en 2 líneas que no escribí: la cabecera de «Deuda técnica» y `v0.3.0 (2026-09-01)`. Ya fallaban antes. El paso «Roadmap en la forma de la plantilla» de la migración v2.3.0 las arregla.
+- **Versión del kit:** esta sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+La 0010 no tiene `parent:` ni `proposal:`, así que no hay familia que cerrar. Ninguna línea `Retro:` apunta a un ticket del kit. Si quieres el feedback de mejora del kit sobre esta sesión, dilo y lanzo `sdd-feedback`. Antes de borrar nada, mira que `develop` tenga lo que esperas.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`f52d7c9`) · push: no hecho: `merge.push` no lo autoriza.
+

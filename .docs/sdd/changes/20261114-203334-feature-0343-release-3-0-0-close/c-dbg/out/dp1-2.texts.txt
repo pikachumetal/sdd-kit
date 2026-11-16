@@ -1,0 +1,91 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs) y localizo el fallo para clasificarlo. Queda: confirmarte el carril, ~2 min.
+
+--- [12]
+🦆 **Causa encontrada.** `toHours` en `src/app.js` convierte `"09:30"` en `9.30` (cambia los `:` por `.`), cuando debería dar 9,5 horas. Así `09:30-12:00` sale como 12,00 − 9,30 = 2,70, que supera el máximo de 2,5 y salta el error. Con horas en punto el fallo no se ve. `MAX_HOURS = 2.5` está bien. `node --test` ya tiene un test rojo, `test/reservar.test.js`, que reproduce exactamente tu caso.
+
+Es un fallo determinista con la solución fijada por la causa raíz. Lo clasifico como **patch**, no como feature. No he tocado nada, ni rama ni carpeta.
+
+**Efecto lateral:** `precio` usa la misma función. Hoy cobra mal cualquier tramo con medias horas, así que el arreglo también corrige esos precios. Es el comportamiento correcto, pero cambia importes que hoy salen mal.
+
+¿Abro esto como patch?
+
+1. **Sí, patch (Recomendada).** Escribo el arreglo en minutos/60, con un test para `precio` con media hora además del rojo que ya existe. Todo va por `sdd-implement`, con `node --test` en verde antes del commit. Perfil actual: el del proyecto (`sdd-kit.json`).
+2. **Patch, y paras antes de cerrar** para que revises el diff antes del commit.
+3. **Otro carril.** Dime cuál.
+
+Contesta con el número y lo arranco ya.
+
+--- [16]
+Ahora: raíz del fallo con `sdd-debugging`, luego la carpeta del patch, el arreglo y su test. Queda: arreglo, revisión y cierre, ~10 min.
+
+--- [25]
+Ahora: test rojo de `precio`, patch.md y arreglo mínimo. Queda: revisión, commit y cierre, ~8 min.
+
+--- [28]
+Dos tests en rojo por la causa esperada. Aplico el arreglo.
+
+--- [32]
+Ahora: revisión del patch por un revisor (obligatoria en el carril). Queda: commit y cierre, ~5 min.
+
+--- [34]
+Revisor lanzado; espero su resultado antes de hacer el commit.
+
+--- [40]
+**Hallazgos**
+
+1. **Media: el fix deja un error de punto flotante en la comparación con `MAX_HOURS`.**
+   - `toHours` devuelve `h + m/60`, y `slotHours` resta dos floats. `book` compara con `> MAX_HOURS` sin tolerancia.
+   - Hay franjas de exactamente 2,5 h que dan `2.5000000000000004` y se rechazan. Lo comprobé recorriendo todas las franjas de 150 min: fallan 113 de ellas, por ejemplo `00:11-02:41` y `01:38-04:08`.
+   - Las franjas de los tests (`09:30-12:00` y similares con minutos múltiplos de 10) sí dan 2.5 exacto. Por eso los tests pasan y no ven el problema.
+   - Es el mismo síntoma que el patch quiere eliminar, pero en minutos poco habituales. Conviene trabajar en minutos enteros (`h*60+m`) y comparar con `MAX_HOURS*60`, o redondear la duración.
+
+2. **Baja: `precio` sigue usando floats.**
+   - `slotHours * rate` puede dar decimales largos con franjas como `09:20-11:50` (37.5 sale bien, pero otras no tienen por qué).
+   - No es una regresión: antes era peor. Queda fuera del alcance del patch, pero merece una nota.
+
+3. **Baja: cobertura de tests y documentación.**
+   - `test/reservar.test.js` no está modificado. Ya traía el caso `09:30-12:00` en HEAD, y la verificación del §4 de `patch.md` lo da por cubierto. El único test nuevo es el de `precio`.
+   - No hay test de que `reservar` rechaza una franja de 2,6 h con minutos (por ejemplo `09:30-12:10`), ni de minutos como `:45`.
+   - En `patch.md`, §4 tiene las dos filas en «pendiente» pero `status: done`, y `commit` está en «pendiente». No pasa nada si el cierre es posterior, pero no cuadra todavía.
+
+**Lo que está bien**
+- **Causa raíz del §2:** es correcta. `Number('09:30'.replace(':','.'))` da 9.3, los minutos se tratan como centésimas de hora y `12 - 9.3 = 2.7 > 2.5`. Con horas en punto no se nota.
+- **Fix:** arregla los casos del patch (`09:30-12:00` da 2.5 y se acepta; `precio Norte` da `50 €`).
+- **Efectos laterales:** no veo ninguno en `libres`, `cancelar` ni `reservar --cada-semana`, que no usan `toHours`.
+- **`node --test`:** 7 de 7 pasan.
+
+--- [42]
+El revisor encuentra un hallazgo real: con floats, franjas de exactamente 2,5 h con minutos raros se rechazan. Lo compruebo y lo corrijo trabajando en minutos enteros.
+
+--- [50]
+Ahora: dejo `patch.md` al día, hago el commit y paso al cierre.
+
+--- [55]
+Arreglado y commiteado en la rama `feature/0010-horas-medias`, pero **aún no está fusionado en `develop`**. Falta tu validación para cerrar.
+
+**Causa:** `toHours` leía `09:30` como 9,30 en vez de 9,5, así que la franja salía de 2,70 h y superaba el máximo de 2,5.
+
+**Qué he cambiado:**
+- **`src/app.js`:** el cálculo pasa a minutos enteros (`h·60 + m`, dividido entre 60). Mi primera versión usaba `h + m/60`. El revisor encontró que con esa versión franjas de exactamente 2,5 h con minutos raros, como `00:11-02:41`, daban 2,5000000000000004 y se rechazaban. Lo comprobé y lo corregí.
+- **`precio`:** usa la misma función, así que ahora cobra bien las medias horas. Por ejemplo, `precio Norte 09:30-12:00` da `50 €`.
+- **Tests:** he añadido tres. Son `precio` con media hora, `00:11-02:41` aceptada y `09:30-12:10` rechazada.
+- **Registro:** `.docs/sdd/changes/20261114-220214-patch-0010-horas-medias/patch.md`.
+
+**Verificación mía:**
+- `node --test` pasa 9 de 9.
+- `reservar Sur 09:30-12:00` responde `reservada Sur 09:30-12:00`.
+- `reservar Sur 09:00-12:30` sigue rechazándose.
+- Las 1.290 franjas posibles de 150 minutos se aceptan.
+
+**Para validar, lo que necesito de ti:**
+1. Ejecuta `node src/app.js reservar Sur 09:30-12:00`. Debe responder `reservada Sur 09:30-12:00`.
+2. Ejecuta `node src/app.js reservar Sur 09:00-12:30`. Debe seguir respondiendo «excede el máximo de horas».
+3. Ejecuta `node src/app.js precio Norte 09:30-12:00`. Debe dar `50 €`.
+
+Dime qué has probado y que funciona (basta «validado»), y hago el cierre. El proyecto tiene la validación en modo manual y no puedo darla yo.
+
+**Falta de configuración:** `merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Cuando valides te lo pregunto en una pregunta cerrada, con `develop` y `noFf` como propuesta. No he tocado esa configuración.
+
+**No terminado.** Falta tu validación y fusionar en `develop`. No borres el worktree `<run>/repo`.
+

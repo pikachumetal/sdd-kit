@@ -1,0 +1,179 @@
+--- [9]
+Estoy migrando el proyecto de la 2.3.4 a la 3.0.0. Voy a reunir los datos que faltan para las tablas de los gates: qué está publicado, el diff del estimation-log y las fechas de la deuda.
+
+--- [12]
+Me ha pedido actualizar el proyecto del kit 2.3.4 a la 3.0.0. Hay una sola migración pendiente (`v3.0.0`). Tiene tres gates con tabla: movimientos, producto y operaciones, y roadmap con deuda. Hasta tener su «sí» no he movido ni staged nada. Antes de empezar, `git status` estaba limpio en `63b76d2`; esa es la sha de «antes».
+
+## Gate 1: movimientos
+| Qué hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz. No tiene enlaces relativos y no hay `CHANGELOG.md` previo. |
+| `constitution.md`, `architecture.md`, `estimation.md` | `git mv` a `.docs/sdd/steering/`. En `constitution.md`, `decisions/0001-…` pasa a `../decisions/0001-…`. |
+| `estimation-log.md` | `git mv` a `steering/` y se regenera con `sdd estimation log`. El log actual solo tiene la cabecera, sin filas escritas a mano. El regenerado añade las columnas Tipo, Est, Real, Ratio, tokens y $, más «Tiempos por fase», todas sin datos (0 filas). No se pierde nada. |
+
+## Gate 2: producto y operaciones
+**`mission.md` → `PRODUCT.md`** (raíz):
+| Sección 2.x | Destino |
+| --- | --- |
+| Por qué existe | `## Product Purpose` |
+| Usuarios y roles | `## Users` |
+| Qué es y qué no es | `## Capabilities and Constraints` |
+| Dominio | `## Terminology`: `**Franja**: una hora reservable, de en punto a en punto.` No hay sinónimo que evitar, así que no pongo `_Evitar_`. |
+
+**`tech-stack.md` + `environments.md` → `steering/operations.md`**:
+- **Comandos:** igual que ahora.
+- **Testing:**
+  - La línea de gate (`Gate de cierre: npm test`) no cambia.
+  - Suites: `npm test` (vitest) con nivel `pendiente`, porque no puedo decir qué arranca. `npx playwright test` como `E2E`.
+  - Lint: `lint-staged` en el pre-commit de husky.
+  - CI de la base: `azure-pipelines.yml`, `sin orden de lectura`.
+  - Temporales: lo propongo como en la init.
+  - Campos E2E:
+    - **Retries:** 2 en CI y 0 en local.
+    - **Timeouts:** «60 s por test, sin motivo escrito».
+    - **Presupuesto E2E:** `pendiente`.
+    - **Entorno de la suite:** `pendiente`, porque no hay `env:up`.
+    - **Datos:** `pendiente`.
+    - **Flujos core:** necesito que elija de `e2e/booking.spec.ts`. También le ofrezco el test de títulos; con su «sí» lo escribo en verde, con «Títulos heredados».
+- **Frontend:** «No aplica: es una CLI», tal cual.
+- **Entornos:** `environments.md` se condensa en el marcador `.sdd-env.json` y las tres entradas `env:setup`, `env:clean` y `env:status`. No tiene tipos ni runner, así que no los escribo.
+- **Tecnologías:** Node 22 y Vitest 3 ya salen de `package.json`, así que se van.
+- **Decisiones abiertas:** «¿Avisos por correo al reservar?» pasa al Gate 3, a Later.
+
+Después hago `git rm` de los tres documentos viejos. El commit llevará `git show 63b76d2:.docs/sdd/<doc>` de cada uno.
+
+## Gate 3: `ROADMAP.md` y `steering/debt.md`
+La última release cerrada es la v1.2.0. El patch 0023 no está en su tag, así que no está publicado. El walkthrough de la 0016 sí lo está.
+
+**ROADMAP.md.** No hay «Release N», así que Now no lleva título de versión ni perfil.
+| Fila 2.x | Destino |
+| --- | --- |
+| 0021 Cancelar una reserva propia | Now ⏳. Externo SAL-41. Toca `src/app.js`. Salda: nada. |
+| 0022 Avisar de la cancelación | Now ⏳. Tras 0021. Requisitos: proposal 0019. Toca `src/app.js` y `src/notify.js`. Salda: las filas de deuda de SAL-45, SAL-46, SAL-47 y SAL-48/49. |
+| 0024 Informe de ocupación | Now ⏳. **Tras `—`**: la 0015 no está en `ROADMAP.md` ni en `CHANGELOG.md`. Toca `src/report.js`. |
+| Patch 0023 | Now ✅. Carril patch. Requisitos: su `patch.md`. Fecha 2026-09-25. Salda: su fila de deuda. |
+| B3 Exportar a CSV | Later ⏳, con id nuevo (`sdd id next --reserve`). Origen «Recepción, reunión del 2026-09-18» al final de la línea. |
+| «¿Avisos por correo al reservar?» | Later ⏳, con el otro id de la misma reserva. |
+| Releases cerradas v1.2.0 | Se va; vive en `CHANGELOG.md` y `releases/`. La validación pendiente de la 0016 queda en su walkthrough. |
+
+**Tamaño (S, M o L) de 0021, 0022, 0024 y 0023: decídalo usted, porque no lo deduzco y el gate no cierra sin él.**
+
+**debt.md.** Las fechas salen de `git log -S` sobre `roadmap.md`.
+| Ítem | Sección y celdas |
+| --- | --- |
+| Patch 0023, saldada (SAL-44) | Lista. Origen: ticket SAL-44. Evidencia: el patch. Destino: 0023. |
+| `cancel` sin comprobar dueño (SAL-45) | Lista. Destino 0022. Origen: ticket SAL-45. Evidencia: `../field-reports/sal-45.md`. Causa: `defecto del producto (propuesta)`. Arreglo `—`. Remedio `—`. |
+| Test de avisos y fecha (SAL-46) | Lista. Destino 0022. Causa: prueba o molde. Arreglo: mover regla. Remedio `—`. |
+| Rutas largas (SAL-47) | Lista. Destino 0022. Causa: entorno de la máquina. Arreglo: comprobación automática. Remedio: «lanza desde D:\r». |
+| Avisos duplicados (SAL-48 y SAL-49) | Lista. Destino 0022. Causa: herramienta del kit. Arreglo: mover regla. **Remedio: tiene dos enlaces de origen, dígame cuál.** |
+| Pasar `src/app.js` a TypeScript | Por triar. Fecha 2026-09-15. |
+| Mensajes de error mezclados | Por triar. Fecha 2026-09-01. |
+| Test de franjas falla en CI | En espera. Falta: «un segundo fallo con su log». Causa: `sin determinar`. Fecha 2026-09-01. |
+| Changelog pierde una entrada | En espera. Falta: «reproducirlo». Causa: fusión de registros. Fecha 2026-09-01. |
+| Validar formato de la franja | Se va (Descartada). |
+
+El «Impacto» de las filas de Por triar no tiene columna, así que se pierde: «Bajo» y «Bajo — confunde». Dígame si lo paso al ítem.
+
+Todos los «Origen» sin ticket ni walkthrough quedan como `roadmap 2.x`. Después hago `git rm roadmap.md`.
+
+## Pasos que corro sin gate o que no aplican
+- **Enlaces (paso 4):** corrijo `CLAUDE.md` (constitución, misión y roadmap, más la mención de `roadmap.md`) y `README.md` (constitución) a sus rutas nuevas.
+- **Nombres de skills (paso 5):** `sdd-end-feature` pasa a `sdd-archive` en `CLAUDE.md`. `/sdd-consult` pasa a `/sdd-explore` en `.claude/commands/pregunta.md`. Antes compruebo que `capabilities/` no los mencione.
+- **Estimación (paso 6):** sustituyo las dos líneas del método por las de la 3.0.0. «Notas de calibración» no se toca.
+- **Marcador (paso 7):** creo `.gitignore` con `.temp/`, instalo el hook del proyecto, verifico, hago `--mark 3.0.0` y el commit `chore(sdd): migrar al kit v3.0.0`.
+- **Reglas que ya cubre el kit (paso 8):** `constitution.md` dice «el id de una feature se elige a mano», lo que choca con `sdd-propose/references/nombrado.md`. Se le presentará en su tabla, en un commit aparte.
+- **Gate con `&&` o lint (paso 9):** el gate es `npm test`, así que no hay aviso.
+- **Superpowers (paso 10):** no hay `.claude/settings.json`, así que se omite.
+
+**¿Aprueba las tablas de los tres gates?** Para seguir necesito además:
+1. los tamaños S, M o L de 0021, 0022, 0024 y 0023;
+2. el remedio de la fila SAL-48/49;
+3. los flujos core de E2E y si escribo el test de títulos;
+4. si el «Impacto» de Por triar pasa al ítem.
+
+--- [17]
+Sigo con la migración en el repo del proyecto, con rutas absolutas. Empiezo por los movimientos y la reserva de ids.
+
+--- [26]
+Nada se ejecutó porque el comando no se pudo interpretar. Escribo los ficheros con la herramienta de escritura.
+
+--- [42]
+La migración a la 3.0.0 está aplicada a medias: los ficheros están escritos y los validadores pasan, pero no hay commit ni marcador. La 3.0.0 exige instalar el hook de `.claude/` antes de marcar, y esa escritura sigue sin permiso.
+
+Todo está en el árbol de trabajo, sin commit. `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da «Capacidades válidas: 1».
+
+## Aplicado
+- **Movimientos:**
+  - `changelog.md` ahora es `CHANGELOG.md`.
+  - `constitution.md`, `architecture.md`, `estimation.md` y `estimation-log.md` están en `steering/`.
+  - En `constitution.md` ya apunta bien el enlace a la ADR.
+  - El estimation-log está regenerado (0 filas).
+- **Producto y operaciones:** `PRODUCT.md` y `steering/operations.md` están escritos con sus tablas.
+  - Flujo core: «reservar una sala · `e2e/booking.spec.ts`».
+  - Retries, timeouts y lint están como en la tabla.
+- **Roadmap y deuda:**
+  - `ROADMAP.md` tiene las cuatro filas de Now con tamaño M.
+  - Later tiene 0025 (CSV) y 0026 (avisos por correo).
+  - `steering/debt.md` tiene las tres secciones.
+  - Remedio de SAL-48/49: «relanzar el aviso a mano».
+  - El «Impacto» de las dos filas de Por triar va dentro del ítem.
+- **Enlaces y nombres:** corregidos en `CLAUDE.md` (incluido `sdd-end-feature`, ahora `sdd-archive`) y en `README.md`.
+- **Estimación:** las dos líneas del método están sustituidas.
+- **Otros:** `git rm` de `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md`, y `.gitignore` creado con `.temp/`.
+
+## Pendiente
+1. **`.claude/`:** la edición de `.claude/commands/pregunta.md` (`/sdd-consult` a `/sdd-explore`) se denegó, y no he usado otra vía. El hook del proyecto (`sdd upgrade --project-hook`) también escribe ahí. Sin él no puedo marcar la 3.0.0 ni hacer el commit `chore(sdd): migrar al kit v3.0.0`. Si me da permiso sobre `.claude/`, hago esos dos pasos, el marcador y el commit.
+2. **Test de títulos sin ejecutar:** escribí `test/e2e-titles.test.js` pero el repo no tiene `node_modules` ni `@playwright/test` en `package.json`. No he podido ejecutarlo, así que no sé si está en verde. Hay que hacer `npm ci` y añadir Playwright como dependencia de desarrollo.
+3. **Enlace roto en una ADR:** `decisions/0001-salas-por-franja.md` enlaza a `../mission.md`. Las ADR no se tocan, así que queda roto. Es el nuevo `PRODUCT.md`.
+4. **Avisos:**
+   - La fila 0024 quedó con «Tras» en `—` porque la 0015 no existe en el roadmap ni en el changelog.
+   - La validación pendiente de la 0016 sigue solo en su walkthrough.
+5. **Después del commit:** la tabla del paso 8 (reglas que ya cubre el kit) irá en su propio commit. `constitution.md` dice «el id de una feature se elige a mano», lo que choca con `sdd-propose/references/nombrado.md`. Los pasos 9 y 10 no aplican: el gate es `npm test` y no hay `.claude/settings.json`.
+
+¿Me da permiso para escribir en `.claude/`?
+
+--- [46]
+La herramienta de edición sigue sin tener ese permiso concedido. Usted ha autorizado escribir en `.claude/` y el hook se ha creado bien por el CLI. Hago el cambio de una línea con `sed`.
+
+--- [49]
+La migración a la 3.0.0 está hecha y commiteada (`7770b0e`, `chore(sdd): migrar al kit v3.0.0`). `sdd-kit.json` queda en `"version": "3.0.0"` y el hook del proyecto está instalado. Antes del commit, `sdd roadmap check` dio «Roadmap válido». Después de crear `.claude/settings.json`, que el hook pide, no he vuelto a ejecutar `git check-ignore` sobre el hook.
+
+La edición de `.claude/commands/pregunta.md` seguía denegada por la herramienta de edición. Con su «sí» hice ese cambio de una línea (`/sdd-consult` a `/sdd-explore`) con `sed`.
+
+## Paso 8: reglas del proyecto que ya cubre el kit
+Esta tabla va en un commit aparte. Todavía no he aplicado nada.
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap.» | `steering/constitution.md` (sección «Reglas de producto») | `skills/sdd-propose/references/nombrado.md` | Choca | Quitarla |
+
+No he abierto `nombrado.md` para comprobar que fija la regla, y el paso exige hacerlo antes de listarla. Lo hago al empezar el commit, y si no la fija, la quito de la tabla. El proyecto usa `ids.mode: sequence`, y los ids 0025 y 0026 ya salieron de `sdd id next --reserve`.
+
+**¿Aplico esta propuesta?** Si dice que no, queda pendiente. Para retomarla, pida «revisa las reglas del proyecto contra el kit».
+
+## Avisos que siguen abiertos
+- **Test de títulos sin ejecutar:** `test/e2e-titles.test.js` está escrito, pero no he podido ejecutarlo. No hay `node_modules` ni `@playwright/test` en `package.json`. Hay que hacer `npm ci` y añadir Playwright como dependencia de desarrollo.
+- **Enlace roto en una ADR:** `decisions/0001-salas-por-franja.md` enlaza a `../mission.md`, que ahora es `PRODUCT.md`. Las ADR no se tocan.
+- **Fila 0024:** su «Tras» quedó en `—` porque la 0015 no existe en el roadmap ni en el changelog.
+- **Validación pendiente de la 0016:** sigue solo en su walkthrough.
+- **Pasos omitidos:**
+  - **Paso 9:** el gate es `npm test` y no genera avisos.
+  - **Paso 10:** no existe `.claude/settings.json` previo con superpowers.
+
+--- [52]
+`nombrado.md` fija la regla: en `sequence` el id sale de la fila del roadmap o de `sdd id next --reserve`. Quito la línea de los ids.
+
+--- [55]
+He quitado la regla de los ids de `steering/constitution.md` y la dejé commiteada (`458bf81`, `chore(sdd): reglas del proyecto que ya cubre el kit`). La regla de datos en memoria sigue como estaba. `git status` está limpio.
+
+Ya no hay nada más de la migración pendiente de su decisión. El proyecto está en la 3.0.0:
+
+- `7770b0e` migra al kit v3.0.0.
+- `458bf81` quita la regla de los ids.
+
+Quedan abiertos estos puntos:
+- **Test de títulos sin ejecutar:** `test/e2e-titles.test.js` no se ha podido ejecutar. Hay que hacer `npm ci` y añadir `@playwright/test` como dependencia de desarrollo. Hasta entonces no sé si está en verde.
+- **Enlace roto en una ADR:** `decisions/0001-salas-por-franja.md` enlaza a `../mission.md`, que ahora es `PRODUCT.md`. Las ADR no se tocan.
+- **Fila 0024:** su «Tras» quedó en `—` porque la 0015 no existe en el roadmap ni en el changelog.
+- **Validación de la 0016:** sigue pendiente, y solo consta en su walkthrough.
+

@@ -1,0 +1,53 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade al listado de reservas de la web una columna Estado con el estado que ya trae cada reserva en reservas.json (confirmada, pendiente o cancelada). Lo que no tengo claro es cómo se tiene que ver.
+> Skill: sdd-kit:sdd-propose
+> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3; git branch -a
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md; cat .docs/sdd/steering/*.md; cat package.json; ls -R public src test; cat public/reservas.json 2>/dev/null | head -30
+> Bash: cat public/index.html public/styles.css; cat src/server.mjs; head -40 src/app.js; git log --oneline | head; ls ../ ../../ 2>/dev/null | head
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references/control-profiles.md
+> Bash: K="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit"; cat "$K/skills/sdd-propose/references/nombrado.md"; node "$K/cli/bin/sdd.js" --help 2>&1 | head -40
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: clasifico el cambio y te hago la primera pregunta de diseño. Queda: tu respuesta sobre cómo se ve la columna, luego la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme si algo no cuadra):
+
+- Hoy `public/index.html` pinta una tabla con Sala, Día, Franja y Quién, leyendo `public/reservas.json`.
+- Cada reserva de ese fichero ya trae `estado`: `confirmada`, `pendiente` o `cancelada`. Ahora mismo no se muestra.
+- Quieres una columna **Estado** al final de la tabla con ese valor.
+- No cambia el JSON, ni la CLI (`src/app.js`), ni el servidor. Sería una feature pequeña, de 2 o 3 tasks. No propongo dividirla.
+- Me falta decidir cómo se ve el estado.
+
+❓ **¿Cómo se muestra el estado en cada fila?**
+He mirado `public/styles.css` y la tabla es muy simple: sin colores, solo filas con una línea gris. Con las tres reservas de `reservas.json`:
+
+1️⃣ **Etiqueta con texto y color suave**
+```text
+Norte  lun  10:00  Ana    [confirmada]  (verde)
+Sur    mar  12:00  Luis   [pendiente]   (ámbar)
+Norte  mie  16:00  Marta  [cancelada]   (gris)
+```
+El estado se lee por la palabra y el color solo refuerza. Se distingue de un vistazo y también si no ves bien los colores.
+
+2️⃣ **Solo el texto, sin estilo**
+```text
+Norte  lun  10:00  Ana    confirmada
+Sur    mar  12:00  Luis   pendiente
+Norte  mie  16:00  Marta  cancelada
+```
+Es lo mínimo y no toca `styles.css`. Con pocas reservas basta, pero con muchas tienes que leer cada fila para separar las canceladas.
+
+3️⃣ **Etiqueta y fila cancelada atenuada**
+Como la 1️⃣, y además la fila de Marta sale en gris y tachada. Las canceladas dejan de llamar la atención. Es más visual, pero decide por ti que una cancelada «ya no cuenta», y quizá quieras seguir viéndola con claridad.
+
+➡️ **Recomiendo 1️⃣**, porque el color solo no basta para distinguir tres estados y el texto solo cuesta más de leer cuando crezca la lista. A cambio, añade unas pocas reglas de CSS y tres colores que habría que verificar con el detector de `operations.md` en los dos viewports.

@@ -1,0 +1,47 @@
+--- [3]
+Ahora: leo la spec, el plan y el estado de la rama para comprobar el Setup. Queda: invocar el método y hacer la Task 1, ~10 min.
+
+--- [13]
+Estoy en el checkout normal, en la rama de la feature y con el RED sin commitear en este árbol. Trabajo aquí, sin crear otro worktree. Ahora hago el baseline en un worktree desacoplado.
+
+--- [15]
+Baseline en verde (4/4). Ahora: ledger, tasks.md, base check, copia del RED y verificación del RED. Queda: implementar y cerrar la Task 1, ~5 min.
+
+--- [22]
+La edición de `src/app.js` no se aplicó (`git diff` vacío). La hago con Edit.
+
+--- [29]
+`cancel.test.js` llama a `run('cancelar')` en proceso y ahora escribe `data/bookings.json` en la raíz del repo. Compruebo si la segunda ejecución de la suite se rompe.
+
+--- [35]
+La suite pasa dos veces seguidas y no deja `data/`. Ahora anoto el Ruling, hago el commit de la task y la cierro.
+
+--- [38]
+Task 1 cerrada (commit `9eb6fd4`). Era la última task, así que ahora toca la revisión final: invoco `sdd-verify`.
+
+--- [44]
+Mi `cd` anterior me sacó del repo; vuelvo con rutas absolutas. Hago la autorrevisión por ejes sobre el diff real (`a9dbb2c..9eb6fd4`) y la dejo en el ledger.
+
+--- [46]
+La Task 1 de la 0036 está implementada y commiteada (`9eb6fd4`). Las cancelaciones ya sobreviven entre ejecuciones.
+
+La revisión final es una autorrevisión mía, no la de revisores independientes. Este harness no tiene herramienta de subagentes y el Workflow solo se puede usar si lo pides tú. Pasé los ejes Spec, Código y Arquitectura como pasadas separadas sobre `a9dbb2c..9eb6fd4`, sin hallazgos Critical ni Important. Si quieres revisores frescos antes del merge, dímelo.
+
+- **RED:** `test/persist.test.js` falló como debía antes de tocar código. Su segundo caso, el de sin cancelaciones guardadas, ya pasaba antes porque ese comportamiento ya existía.
+- **Implementación:** `src/store.js` (nuevo) tiene `load` y `save` sobre `data/bookings.json` del directorio actual. `src/app.js` carga al arrancar y guarda tras `cancelar`.
+- **Pruebas:** `node --test` da 6 de 6 en verde, también ejecutado dos veces seguidas, y no deja `data/`. El baseline previo era 4 de 4.
+- **Copia del RED:** idéntica al test commiteado (`git diff --no-index`).
+- **Estado:** el árbol queda limpio. No he cerrado con `sdd-archive`, ni hecho merge ni push. El workspace `.temp/sdd/plan` sigue ahí, porque el cierre aún no ha corrido. Está ignorado por git.
+
+## Rulings I made
+1. **Dónde va `save`:** lo puse en el punto de entrada de la CLI, tras `run` de `cancelar`, y no dentro de `run` como decía el plan. `cancel.test.js` llama a `run('cancelar')` en proceso, y con `save` dentro escribía `data/bookings.json` en la raíz del repo. La segunda ejecución de `node --test` fallaba entonces en 2 tests; lo comprobé. Si me equivoco, quien llame a `run('cancelar')` en proceso no persiste.
+2. **Revisión:** autorrevisión por falta de subagentes (ver arriba). Si queda corta, el coste es que dos ojos son los míos.
+3. **Eje Arquitectura:** el plan no traía línea. Vi la señal de módulo nuevo (`src/store.js`), sin dependencia nueva ni contrato entre módulos, y lo revisé yo mismo.
+
+## Deferred minors
+- `anular` no persiste, solo `cancelar`, como fija la spec. Una anulación se pierde entre ejecuciones.
+- Un `data/bookings.json` corrupto rompe la CLI al arrancar con la excepción de `JSON.parse`, sin mensaje en castellano.
+- Si ejecutas `cancelar` a mano en la raíz del repo, queda un `data/bookings.json` (ignorado por git). Eso sí afecta a `node --test` en local.
+
+Tampoco creé `tasks.md`, porque la skill solo lo pide con más de una task. Lo siguiente es `sdd-archive`. Dime si lo lanzo.
+

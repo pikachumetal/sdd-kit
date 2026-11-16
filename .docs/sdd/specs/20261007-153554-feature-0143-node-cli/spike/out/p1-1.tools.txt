@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Grep: cancel|cancelad
+
+>>> Bash: git ls-files | head -80; cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+.docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserv
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+{"version": "2.3.2", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+
+>>> Bash: cat src/app.js test/app.test.js package.json; cat .docs/sdd/specs/*patch-0007*/patch.md .docs/sdd/roadmap.md .docs/sdd/constitution.md; git branch --show-current
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cat .docs/sdd/mission.md .docs/sdd/tech-stack.md; ls .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0143-node-cli/a16a875e-c276-471d-9b9b-3203b660ee0a/scratchpad/eval/kit/skills/sdd-start-feature/references" && grep -n -i "por defecto\|default" control-profiles.md | head -15; sed -n 1,40p modo-lite.md
+<<< 8:- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+18:4. `control.profile` en `sdd-kit.json` — el proyecto. Default `"delegate"`.
+30:- `validation.startEnvironment`: booleano, default `false`. Con `true`, la persona quiere el entorno arrancado antes del guion de pruebas de la validación.
+212:| Clave | Tipo | Default |
+228:`merge` no tiene default: si falta el bloque o cualquiera de sus tres campos (`into`, `noFf`, `removeWorktree`), el paso de rama del cierre (10 de `sdd-end-feature`, 6 de `sdd-end-patch`) pregunta como hoy — una política que na
+
+=== RESULTADO (10 turnos, 0.3297816 $)
+Ahora: confirmar carril, modo y perfil antes de crear rama o spec. Queda: la spec, con sus decisiones a validar, y tu aprobación (~10 min).
+
+**Por qué no es un patch.** Reproduje el fallo en `src/app.js:12`. `cancelar` no consulta `bookings`: devuelve `cancelada <día> <hora>` con cualquier entrada. Arreglarlo exige decidir cosas que nadie ha fijado:
+- qué mensaje sale cuando no existe,
+- cómo casa `10:00` con la franja `10:00-12:00`,
+- si cancelar debe borrar de verdad la reserva.
+
+Por eso paso a feature.
+
+También hay una incoherencia. El patch 0007 y el changelog dicen que «la cancelación ya no borra reservas de otro día», pero en el código `cancelar` nunca borra nada. Lo trataré en la spec.
+
+**Qué te pregunto** (una sola pregunta):
+
+1. **Carril y modo.** Feature en **modo full** (spec, plan y tasks), o **modo lite** (spec corta, sin plan). Cumple las condiciones del predicado:
+   - el flujo ya existe y se puede leer,
+   - no cambia contratos públicos,
+   - no cambia ningún schema de datos,
+   - cabe en un solo módulo (`src/app.js`).
+
+   No hay `estimation.md`, así que esa condición no aplica. **Recomiendo lite.** No lo activo sin tu confirmación.
+2. **Perfil.** Vigente: `delegate`, que viene del proyecto (`sdd-kit.json`; no hay `sdd-kit.local.json`). Para en la spec, en los desvíos y en la validación. Puedes cambiarlo para esta feature.
+3. **Aprobación por delegación.** Si te vas a ausentar, puedes aprobar la spec ya («apruebo la spec por delegación, nos vemos en la validación»). Entonces no paro en el gate de la spec.
+4. **Partición.** Prevé 1 o 2 tasks, así que no propongo partirla.
+
+¿Lite o full, con perfil `delegate`, y quieres aprobar la spec por delegación?

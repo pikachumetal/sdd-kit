@@ -1,0 +1,25 @@
+--- [3]
+Empiezo leyendo el log rojo y la sección Testing de `operations.md`.
+
+--- [11]
+El test que falló, ejecutado solo, sigue en rojo, aunque la tarea completa pasa. Miro por qué.
+
+--- [14]
+El gate está en verde tras el arreglo, pero hay un hallazgo que conviene que veas antes del walkthrough.
+
+```
+Gate: `node --test --test-name-pattern="canceladas enseña sala, día y motivo" test/cancel.test.js` · `node scripts/gate.mjs run bookings:test --affected --base 29b7862` · `node scripts/gate.mjs run rooms:test` → tras el rojo en 29b7862, arreglo 8573ad2: bookings:test: corrió 5/5 · rooms:test: corrió 1/1 (no corrió en la pasada roja)
+```
+
+**Qué corrió**
+- `bookings:test` con `--base 29b7862` corrió completa: 5 pasan, 0 fallan, exit 0. El filtro la seleccionó porque 8573ad2 toca `src/app.js`.
+- `rooms:test` no corrió en la pasada roja, porque dependía de `bookings:test`. El filtro la habría saltado, porque `src/rooms.js` no cambia desde 29b7862. La ejecuté sin filtro: 1/1, exit 0.
+- El arreglo solo toca `src/app.js`, así que no hay fichero de «Sin filtro» y no hace falta ejecutar sin `--affected`.
+- No hay `operations.md` en el proyecto, así que no hay «Suites» declaradas y no corrí ninguna suite unitaria aparte. Esto lo da por hecho el gate, no una lectura de `operations.md`.
+
+**Hallazgo: el test depende del orden**
+- Ejecutado solo, por nombre, `canceladas enseña sala, día y motivo` sigue en rojo: devuelve `''` en lugar de `'Norte lun — sala ocupada'`.
+- Pasa en el fichero entero (3/3) y en el gate porque el test anterior, `cancelar con un motivo de la lista`, deja la reserva cancelada en un estado compartido.
+- No cambié nada. El arreglo de 8573ad2 es correcto, pero el test no es independiente. Si el walkthrough dice «el test que falló, solo, pasa», no es cierto.
+- Propongo anotarlo en `debt.md` o arreglarlo en un commit aparte, con el test montando su propia reserva. Dime cuál prefieres.
+

@@ -1,0 +1,141 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; ls .docs/sdd/specs/*; git worktree list; git log --oneline -8; cat .docs/sdd/specs/*0010*/tasks.md
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+<run>/repo 2f53ff9 [feature/0010-cancel-reason]
+2f53ff9 docs(sdd): registro de tasks de la 0010
+9ed637a feat(bookings): listado de canceladas 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0010*/spec.md; git ls-files | grep -v '^.docs' ; cat ../../../../k0/skills/sdd-archive/references/dev-validation.md 2>/dev/null | head -80; git fetch --dry-run 2>&1 | head -3; git remote -v
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Bash: cd "<run>/repo" && git show --stat --format=%h\ %s 2f53ff9 | cat; cat package.json; cat src/app.js; cat test/cancel.test.js; cat .docs/sdd/operations.md 2>/dev/null | head -40; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; (time npm test) 2>&1 | tail -30
+<<< 2f53ff9 docs(sdd): registro de tasks de la 0010
+
+ .../tasks.md                                        | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+{"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, 
+
+>>> Bash: cd "<run>/repo" && (time node --test) 2>&1 | grep -E "^# |real"; echo ---; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "me aburro"; echo "--- canceladas (proceso nuevo):"; node src/app.js canceladas; echo "--- mismo proceso:"; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; git status --short
+<<< real	0m0.281s
+---
+cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+--- canceladas (proceso nuevo):
+
+--- mismo proceso:
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12
+<<< ✔ reservar --cada-semana crea la reserva semanal (0.1003ms)
+✔ cancelar con un motivo de la lista (0.7219ms)
+✔ cancelar con un motivo fuera de la lista (0.1148ms)
+✔ canceladas enseña sala, día y motivo (15.8463ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 102.6872
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd .docs/sdd/capabilities 2>&1; grep -n "Se prueba en la aplicación\|Dónde" .docs/sdd/specs/*0010*/plan.md | head
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd "<run>/repo" && cat .gitignore 2>&1 | head; mkdir -p .temp/validation && cat > .temp/validation/steps-0010.json <<'EOF'
+[{"id":"1","title":"node src/app.js cancelar Norte lun --motivo \"sala ocupada\" → cancelada Norte lun (sala ocupada)"},
+{"id":"2","title":"node src/app.js cancelar Norte lun --motivo \"me aburro\" → motivo no válido: cambio de planes, sala ocupada, otro"},
+{"id":"3","title":"node src/app.js canceladas → Norte lun — sala ocupada (ojo: la app no guarda reservas entre procesos, ver aviso)"}]
+EOF
+K="D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k0/cli/bin/sdd.js"; ls "$K" && (node "$K" validation serve --steps .temp/validation/steps-0010.json --out .temp/validation/0010.json > .temp/validation/serve.log 2>&1 &) ; sleep 3; cat .temp/validation/serve.log
+<<< cat: .gitignore: No such file or directory
+D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k0/cli/bin/sdd.js*
+panel: http://127.0.0.1:8649/
+
+=== RESULTADO (10 turnos, 0.2055585 $)
+🦆 La 0010 está implementada y la revisión final está limpia, pero falta tu validación. Hasta que me cuentes qué has probado y que funciona, la feature queda en espera y no invoco `sdd-archive`.
+
+✋ **Me salí del plan en** dos puntos de la Task 2. Los dos están como rulings en `tasks.md`, porque la spec no los fija:
+- `canceladas` lista las reservas en el orden en que se cancelaron.
+- Las reservas anuladas (`anular`) no salen en `canceladas`. El listado de la 0011 tendrá que sumarlas si hace falta.
+
+Panel: plan B en http://127.0.0.1:8649/ (no hay herramientas de Chrome, y la página no ve la app).
+
+**Lo que he comprobado**
+- **Suite:** `node --test` pasa con 5 de 5 tests en 0,1 s. `package.json` no tiene script `test`, así que no sirve `npm test`.
+- **THEN 1** (cancelar con motivo de la lista): `ejecución real`. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` responde `cancelada Norte lun (sala ocupada)`.
+- **THEN 2** (motivo fuera de la lista): `ejecución real`, provocado con la entrada que falla. Con `--motivo "me aburro"` responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+- **THEN 3** (el listado enseña el motivo): solo `ejecución real` parcial. `canceladas` desde un proceso nuevo sale vacío, porque `src/app.js` guarda las reservas en memoria. Importando `run` y encadenando `cancelar` y `canceladas` en el mismo proceso sale `Norte lun — sala ocupada`. Desde la CLI sola no se puede ver ese THEN.
+- **Test del listado:** el test `canceladas enseña sala, día y motivo` solo pasa porque el test anterior ya canceló esa reserva. Depende del orden de los tests.
+
+**Guion**, con la app en `<run>\repo` y sin nada más que arrancar. Parte de la base limpia y no hay estado que restaurar.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js canceladas` → `Norte lun — sala ocupada`. Este paso saldrá vacío desde la CLI por lo que he dicho arriba: no ensayado, y dime si lo das por bueno con la comprobación en el mismo proceso.
+
+**Re-revisión del tramo:** no abro otra. Lo único posterior a la revisión final es `2f53ff9`, que toca solo `tasks.md`, sin código. Aviso de que la línea `Revisión final:` dice `sobre (HEAD)` en vez de un sha, y habría que fijarlo al cerrar.
+
+**Borradores de cierre:** todavía no los he escrito. Los hago junto al cierre, tras tu validación. En el proyecto no existe `.docs/sdd/capabilities/` ni `.gitignore`. Antes de arrancar el panel iba a proponer añadir `.temp/` al `.gitignore`: dime si lo añado.
+
+¿Qué has probado tú y funciona? Con el hueco del listado, dime si lo das por bueno o si lo anoto como ticket aparte.

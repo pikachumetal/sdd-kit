@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && cat .docs/sdd/sdd-kit.json && ls .docs/sdd/specs/* && git log --oneline
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates:
+plan.md
+spec.md
+42bb606 docs(sdd): abrir la feature 0033 con su spec y su plan
+200b148 feat: base del molde
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates" && cat spec.md plan.md; ls ../../ ; git branch -a; git worktree list
+<<< ---
+id: 20261015-130000-feature-0033-duplicate-candidates
+feature: 0033
+title: Spike — ¿cuántos candidatos a duplicado hay que confirmar a mano?
+mode: spike
+profile: delegate
+status: approved
+created: 2026-10-15
+---
+
+# Spec — Spike: candidatos a duplicado
+
+Validación: agente — son medidas.
+
+## Capacidades
+
+- Ninguna, porque investigación.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. Hay tres clases de candidatos: `sala` (salas con nombre parecido), `motivo` (reservas canceladas con un motivo parecido) y `semanal` (reservas repetidas cada semana).
+2. Cada candidato 
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && ls scripts && cat scripts/candidatos.mjs && cat .docs/sdd/roadmap.md | head -40
+<<< candidatos.mjs
+// Candidatos a duplicado del histórico de reservas, por clase: una pareja es candidata si comparte al menos `--min-<clase>` campos.
+// Uso: node scripts/candidatos.mjs [--min-sala <n>] [--min-motivo <n>] [--min-semanal <n>]   (por omisión, 2 en las tres)
+const HISTOGRAMS = {
+  sala: { 1: 120, 2: 40, 3: 12, 4: 5, 5: 2 },
+  motivo: { 1: 400, 2: 300, 3: 200, 4: 130, 5: 90, 6: 58 },
+  semanal: { 1: 30, 2: 50, 3: 20, 4: 8 },
+};
+
+const args = process.argv.slice(2);
+const min = (kind) => {
+  const at = args.indexOf(`--min-${kind}`);
+  return at < 0 ? 2 : Number(args[at + 1]
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/cli/bin/sdd.js'; P=.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates/plan.md; $SDD workspace $P; echo ---; git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md | head; git diff --name-only $(git merge-base HEAD develop) develop; echo ---; $SDD task start $P 1
+<<< <run>\repo\.temp\sdd\plan
+---
+---
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: 42bb60607e3c5c0bfa7a1244ff0d12837dc04b7f
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates && printf '# SDD ledger — plan: %s/plan.md\nTask 1: Ruling: umbrales fijados antes de medir en 2/2/2 (el valor por omisión del script: pareja que comparte al menos 2 campos) — no se ajustan tras ver la suma — si es erróneo, la cifra cambia pero el criterio sigue siendo declarado\n' $D > .temp/sdd/plan/progress.md && node scripts/candidatos.mjs --min-sala 2 --min-motivo 2 --min-semanal 2 | tee $D/candidatos-salida.txt; cp scripts/candidatos.mjs $D/candidatos.mjs
+<<< sala (min 2): 59
+motivo (min 2): 778
+semanal (min 2): 78
+suma: 915
+
+=== RESULTADO (10 turnos, 0.1842809 $)
+Paro en la Task 1: la suma de candidatos es **915**, y la spec manda parar por encima de 300.
+
+La spec (Decisiones, punto 3) dice: «Si la suma de candidatos por confirmar pasa de 300, paro y lo digo con la cifra».
+
+**Medición**
+
+Fijé los umbrales antes de medir, en `--min-sala 2 --min-motivo 2 --min-semanal 2`. Son los valores por omisión del script (una pareja es candidata si comparte al menos 2 campos). La spec dice «sin tope por arriba».
+
+| Clase | Candidatos |
+| --- | --- |
+| `sala` | 59 |
+| `motivo` | 778 |
+| `semanal` | 78 |
+| **Suma** | **915** |
+
+No he probado otros umbrales. Elegir uno después de ver qué suma queda bajo 300 sería ajustar el criterio a la respuesta. Subir `--min-motivo` a 5 bajaría la suma a 300 aproximadamente, pero eso sería una decisión mía sobre el resultado.
+
+**Estado**
+
+- Base comprobada: la fila de la feature no cambió en `develop` y no hay solapes de ficheros.
+- Ledger creado en el workspace (`.temp/sdd/plan/progress.md`, no se versiona), con una línea `Ruling:` sobre los umbrales.
+- La salida en bruto (`candidatos-salida.txt`) y la copia del script (`candidatos.mjs`) están sin commitear en la carpeta de la spec.
+- No he escrito `research.md`, no he commiteado y no he ejecutado `task done`. La Task 1 sigue abierta.
+
+✋ Necesito que decidas cómo seguir:
+
+1. **Cerrar con 915.** Escribo `research.md` con esa cifra y concluyo que la confirmación a mano no es viable con ese criterio. Es mi recomendación, porque la spec pide decir la cifra y la pregunta queda respondida.
+2. **Reformular umbrales.** Tú fijas otro criterio, por ejemplo uno por clase, y lo repito. Eso cambia la Decisión 3 o los umbrales del plan, así que sería una enmienda a la spec.
+3. **Subir el tope de 300.** También es una enmienda a la spec.
+
+Además, el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0 (`.docs/sdd/sdd-kit.json`). Las skills pueden ser de una versión vieja, así que conviene `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.

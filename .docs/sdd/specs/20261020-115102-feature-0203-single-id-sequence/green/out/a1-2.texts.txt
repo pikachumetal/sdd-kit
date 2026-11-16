@@ -1,0 +1,31 @@
+--- [2]
+Es un cambio de funcionalidad, así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, capabilities). Queda: clasificar el cambio y presentarte lo que he entendido, ~3 min.
+
+--- [14]
+Ahora: creo la rama `feature/0011-…` desde `develop` y reservo el id (la fila 0011 del roadmap ya existe). Queda: presentarte lo que he entendido y la primera pregunta de diseño, ~2 min.
+
+--- [16]
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Aviso: se ignora `merge.push` de `sdd-kit.local.json`: solo admite `control.profile`, `execution` y `validation.startEnvironment`; lo demás es del proyecto y va en `sdd-kit.json`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+He creado la rama `feature/0011-anular-reservas-de-otros` desde `develop`. La fila 0011 del roadmap («Anular reservas de otros: solo el responsable de cada sala anula reservas de otras personas») es el enunciado de este cambio. No hay remoto, así que el id 0011 vale con el contador local.
+
+**Lo que he entendido (corrígeme si no es así)**
+
+- El cambio es una feature: la solución no está fijada. Hay que decidir cómo se sabe quién reserva y quién es responsable de cada sala, y eso no existe todavía.
+- Hoy `src/app.js` ya tiene `anular <sala> <día>`, pero no comprueba nada. Cualquiera anula cualquier reserva y las reservas no guardan quién las hizo.
+- Prevés unas 3 tasks (identidad y dueño de la reserva, responsable por sala, la comprobación en `anular`), así que no propongo partirla.
+- Aún no hay capabilities. La spec creará una, por ejemplo `booking-void`.
+
+❓ **¿Cómo sabe la herramienta quién eres?**
+Hoy `reservar` y `anular` no reciben ninguna identidad, y esto es una CLI sin login. Fuente: `src/app.js`.
+1️⃣ **Opción `--como <nombre>` en cada comando.** Ejemplo: `anular Norte lun --como marta` → `anulada Norte lun`; con `--como pepe`, que no es responsable de Norte → `solo el responsable de Norte anula reservas de otras personas`. Es explícita y se prueba sin entorno. Cuesta escribirla en cada comando y cualquiera puede escribir el nombre de otro.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Ejemplo: con `SALAS_USUARIO=marta`, `anular Norte lun` → `anulada Norte lun`. Es más cómoda al usarla a diario, pero la identidad queda oculta y los tests dependen del entorno.
+3️⃣ **El usuario del sistema operativo.** Ejemplo: tu usuario de Windows o Linux decide quién eres. No hay que escribir nada, pero cada tests y cada despliegue dependen de la máquina.
+➡️ **Recomiendo 1️⃣**, porque la misión dice que la usas solo tú y el gate es `node --test`: una opción explícita se prueba sin tocar el entorno. A cambio, la identidad es declarada y no está autenticada.
+

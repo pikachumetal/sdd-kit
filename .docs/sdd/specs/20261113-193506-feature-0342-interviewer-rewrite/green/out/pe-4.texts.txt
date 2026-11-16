@@ -1,0 +1,70 @@
+--- [15]
+Ahora: he reservado la id 0010 y creado la rama `feature/0010-exportar-csv`. Queda: la entrevista (una decisión por turno), la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** quieres un comando de `salas` que saque a CSV las reservas de una sala. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Hoy `src/app.js` guarda las reservas como `{ room, day, slot }` en memoria. Calculo unas 2 o 3 tasks, así que no propongo dividirla. Corrígeme si algo no es así.
+
+Una pregunta antes de seguir, porque de la respuesta depende qué columnas y qué filas salen:
+
+¿Qué hará el responsable con ese CSV el próximo lunes? Descríbeme el caso, por ejemplo qué compara con qué y qué busca.
+
+--- [17]
+Queda como pendiente: no sabes qué compara el responsable ni qué busca, así que lo apunto en «Pendiente de ti» y no lo invento. Eso significa que la spec no prometerá cuadrar nada, solo entregar las reservas en un formato que la hoja abra bien.
+
+Decido yo, como método: el comando escribe el CSV por la salida estándar, igual que hacen hoy `libres` y `reservar`. Quien quiera un fichero redirige con `> norte.csv`. Lo registro en «Decisiones que he tomado yo».
+
+Lo que sí es tuyo es el separador, porque depende de tu hoja de cálculo:
+
+❓ **Separador de columnas**
+Hoy cada reserva es `{ room, day, slot }`, por ejemplo `Norte, lun, 10:00-12:00`. Con `reservas Norte` saldría:
+1️⃣ **Punto y coma** (`sala;dia;franja` / `Norte;lun;10:00-12:00`). Una hoja con configuración regional española lo abre en tres columnas con doble clic. Una hoja configurada con coma lo dejaría todo en una sola columna.
+2️⃣ **Coma** (`sala,dia,franja` / `Norte,lun,10:00-12:00`). Es el estándar y vale para hojas con configuración inglesa. Una hoja en español lo dejaría todo en la primera columna.
+➡️ **Recomiendo 1️⃣**, porque el producto y la constitución están en castellano y las hojas en español esperan `;`. A cambio, si tu hoja usa coma tendrías que importarlo a mano.
+
+¿Cuál de las dos abre bien tu hoja de cálculo?
+
+--- [25]
+Ahora: la spec está escrita y toca aprobarla. Queda: tu aprobación, y luego el plan y la implementación, ~15 min.
+
+La spec está en `.docs/sdd/specs/20261113-213804-feature-0010-exportar-csv/spec.md`, sin commit todavía.
+
+🦆 Un comando nuevo, `exportar <sala>`, imprime las reservas de esa sala en CSV con `;` como separador. Con `exportar Norte` sale `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. El responsable lo guarda con `> norte.csv` y lo abre en su hoja en español, que lo reparte en tres columnas. Por dentro es una función más en `src/app.js` que filtra por sala y une los campos con `;`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `exportar <sala>`, en castellano como `libres` y `cancelar`.
+2. Escribe por la salida estándar y no a fichero. Se guarda con `> norte.csv`.
+3. La cabecera es `sala;dia;franja`, sin tilde en `dia`.
+4. Las filas salen en el orden de las reservas y sin filtrar por día.
+5. Usa `\n`, UTF-8 y sin BOM.
+6. No lleva comillas ni escapes, porque las salas son una lista cerrada.
+7. La sala se compara exacta: `Norte` sí, `norte` no.
+8. Una sala sin reservas devuelve solo la cabecera. Una sala desconocida devuelve `sala desconocida: Este`. Sin sala devuelve `uso: exportar <sala>`. En esos dos últimos casos no sale cabecera, para que `>` no deje un fichero engañoso.
+9. Enfoque A (una función en `src/app.js`), frente a un módulo CSV genérico o a escribir con `fs`.
+10. Creo la capacidad `bookings-export`, la primera del proyecto.
+
+**Dos avisos:**
+- **Sin revisión de la spec:** por la rúbrica tocaban dos revisores, pero esta sesión no tiene herramienta de subagentes. Queda registrado en la spec, así que la revisas tú.
+- **Pendiente de ti:** qué compara el responsable cada lunes. La spec solo promete un fichero que la hoja abra en tres columnas, no que cuadre nada.
+
+El repaso de coherencia está hecho: `sdd capability merge` sobre una copia pasa sin errores y `git grep` no encuentra choques. La validación la haces tú abriendo el CSV en la hoja real.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajustar.
+
+¿Apruebas la spec?
+
+--- [26]
+Vale, la spec queda en espera: no la he aprobado ni escrito el plan, y no he tocado código.
+
+Estado actual:
+- **Rama:** `feature/0010-exportar-csv`, con la id 0010 reservada.
+- **Spec:** `.docs/sdd/specs/20261113-213804-feature-0010-exportar-csv/spec.md`, con `status: draft` y **sin commit**. Está en el árbol de trabajo de esa rama.
+- **Para retomarla:** di «retoma la feature» o aprueba la spec, y sigo con el plan.
+
+Las dos cosas que conviene mirar antes de aprobar son el punto 8 (los mensajes de error, que no sacan cabecera) y el aviso de que la spec no tuvo revisión.
+

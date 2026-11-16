@@ -1,0 +1,62 @@
+--- [20]
+RED confirmado: devuelve 'Norte, Sur' en vez del aviso. Ahora el fix mínimo.
+
+--- [24]
+Se perdieron las barras invertidas del regex; lo corrijo con Edit.
+
+--- [30]
+Un revisor (sonnet, effort medium) revisa el patch antes del commit, como pide el flujo.
+
+--- [40]
+Ahora: pido la validación. Queda: cerrar (`patch.md`, roadmap, tiempo) y fusionar cuando valides, ~10 min.
+
+Ya tengo hecho el fix, su test y el commit `07bfebc`. El cierre no empieza sin tu validación, ni siquiera en `delegate`, y tu orden de fusionar no cuenta como validar.
+
+🦆 `libres` ahora comprueba la franja antes de buscar salas. `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» en vez de listar `Norte, Sur`. Una franja buena como `libres 10:00-12:00` sigue respondiendo `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada que cambie la spec. Decidí tres cosas que tu petición no fijaba, y están en `patch.md` §3:
+  - «Válida» significa hora 00-23 y minutos 00-59. Lo deduje de `25:00-26:00`, que debe fallar.
+  - No exijo que el fin sea posterior al inicio. Si lo quieres, es otra fila de deuda.
+  - `libres` sin franja queda como estaba y lista las salas.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` avisa | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:60-11:00` avisa | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` no cambia | ejecución real | `Sur` |
+| `libres 08:00-09:30` no cambia | ejecución real | `Norte, Sur` |
+| El test de `mañana` como franja | suite | verde |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 y lint sin hallazgos, sobre `07bfebc`.
+
+**Sin probar**
+
+- Nada.
+
+**Aviso para la fusión**
+
+`sdd merge --check` dice que a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin ellos no puedo fusionar por mi cuenta. Cuando valides, dime a qué rama va y si con `--no-ff`. Lo haré con `sdd merge --push`, como pediste.
+
+**Guion**
+
+Rama `feature/0016-slot-format` · worktree `<run>/repo`
+
+No hay comando de arranque declarado en `operations.md`. Basta una terminal:
+
+```
+cd <run>/repo
+```
+
+1. Ejecuta `node src/app.js libres 25:00-26:00` → sale `franja no válida: usa HH:MM-HH:MM`
+2. Ejecuta `node src/app.js libres 10:00-12:00` → sale `Sur`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

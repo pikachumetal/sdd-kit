@@ -1,0 +1,109 @@
+--- [4]
+Empiezo por los pre-checks del paso 0.
+
+--- [24]
+Los pre-checks 1–3 y 5 están hechos y el cierre sigue parado en el 6. No he escrito ningún registro todavía.
+
+- **Árbol limpio:** `git status` no muestra cambios, así que no hay nada sin commitear.
+- **Destino:** `merge --check` responde que `develop` irá en un worktree temporal.
+- **Otras ramas abiertas:** `git worktree list` solo muestra esta, así que no hay otras ramas `feature/*` ni `patch/*`.
+- **Spec:** está `approved` y firmada por Laura. El modo es `full`.
+- **Revisión final:** `tasks.md` la da limpia sobre `79d2a45`. Desde entonces `HEAD` se movió a `e3932b5` con dos commits solo de documentación: `b557227` y `e3932b5`. El segundo es de 59 líneas, más de las 20 que permite la skill sin revisar. No hay línea `Re-revisión:`, así que la skill exige una re-revisión única del tramo `79d2a45..e3932b5`.
+
+He lanzado esa re-revisión en segundo plano (Opus, effort high) sobre un paquete de 132 líneas, con su vigía de silencio. Hasta que vuelva no escribo walkthrough, capacidad, ADR ni roadmap.
+
+Cuando vuelva, seguiré así:
+- **Validación:** el proyecto tiene `validation.mode: field`, así que la hago yo con el smoke y la suite, sin pedirte nada.
+- **ADR:** escribo el `0003` de la candidata «El motivo se guarda en la propia reserva».
+- **Roadmap y changelog:** actualizo la fila 0010 de `.docs/sdd/roadmap.md` y la entrada de `changelog.md`.
+- **Merge:** fusiono en `develop` con `--no-ff`, sin push.
+
+Dos cosas que tengo en cuenta:
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, según el aviso de inicio. Los pasos que sigo son los de la skill que se cargó. Si quieres el 3.0.0, hay que actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+- El Ruling de la Task 2 usa `--test-concurrency=1` como workaround, hasta aislar el almacén por test. Tengo que apuntarlo en el walkthrough y como fila de deuda en el roadmap.
+
+--- [35]
+### Finding Verdicts
+No había hallazgos abiertos: la revisión final sobre `79d2a45` fue limpia.
+
+### New Breakage in the Fix Diff
+
+Punto 1, sin código ni tests: se cumple. `b557227` solo añade `tasks.md`. `e3932b5` solo añade los dos ADR y 5 líneas en `spec.md`. Ninguno de los dos toca `src/` ni `test/`.
+
+1. **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: la fila de la Task 1 dice `79d2a45`, pero la Task 1 («Cancelar con motivo») se hizo en `a656944` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `79d2a45` es la Task 2, y la fila 11 sí lo dice bien. Así, ninguna fila del registro recoge `a656944`, y se pierde de qué commit sale el primer escenario ADDED. Arreglo: poner `a656944` en la fila 1.
+
+2. **Minor**, mismo fichero, línea 17 (Ruling de la Task 2): explica `--test-concurrency=1` por «la carrera de los tests sobre el almacén compartido en memoria», y esa carrera no existe.
+   - Con `node --test`, Node 22 ejecuta cada fichero de test en su propio proceso. El array `bookings` de `src/app.js` no se comparte entre `test/app.test.js` y `test/cancel.test.js`.
+   - `--test-concurrency` solo limita cuántos ficheros corren a la vez. Dentro de un fichero, los tests ya van uno tras otro.
+   - Así que la opción no cambia nada, y el «hasta aislar el almacén por test» apunta a un problema que no está ahí.
+   - Además, el Ruling cambia la orden del gate respecto al plan (§3, `node --test`) y a la constitución (§2) para corregir algo que no pasa.
+   - Arreglo: quitar el Ruling, o dejar en él el problema real (ver Out-of-Scope, el orden de los tests).
+
+Punto 2, sección «Términos y ADR» (`spec.md:61-64`): no contradice nada. La ADR candidata («el motivo se guarda en la propia reserva») cuadra con el Approach (`spec.md:38`) y con el Delta. La sección es solo de registro y no cambia comportamiento, así que no hace falta una enmienda. El resto de `tasks.md` cuadra con el plan: dos tasks, línea de revisión final con Spec y Código limpias y Arquitectura no, sobre `79d2a45`.
+
+Punto 3, ADR 0001 y 0002: están bien formados (frontmatter `status`/`date`/`rutas`, contexto, opciones, decisión, consecuencias) y en castellano. No contradicen ni la spec ni el plan: la reserva en memoria encaja con guardar el motivo en la propia reserva, y `node:test` encaja con las verificaciones `node --test` del plan. Un detalle de forma, que no cuento como rotura: `0002-node-test.md` no tiene la sección «### Confirmación» que sí tiene `0001-bookings-in-memory.md:27-29`, y la de la 0001 («La revisión.») apenas dice nada.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js`: el test «canceladas enseña sala, día y motivo» solo pasa si antes corre el de «cancelar con un motivo de la lista», porque comparten el estado del módulo. Es este orden de tests lo que el Ruling parece querer describir.
+- `test/cancel.test.js`: no hay test para el escenario «sin `--motivo`» (`spec.md:54`). El código lo cubre a través de `reasonOf`, que devuelve `undefined`, pero ningún test lo comprueba.
+- La ADR 0001 dice «Se pierden al reiniciar». Desde la línea de comandos, cada orden es un proceso nuevo, así que `canceladas` tras un `cancelar` siempre devuelve vacío. El escenario de `spec.md:56-59` solo se cumple dentro de un mismo proceso, como en los tests. La spec no lo contradice al pie de la letra, pero esa tensión no está escrita en ningún sitio.
+- `spec.md:22-25`: la lista numerada salta del 1 al 3. Además, «dos señales (MODIFIED, datos)» no cuadra con un Delta que solo tiene ADDED.
+
+### Verdict
+**Fix round:** Findings remain open:
+- `tasks.md:10`: el commit de la Task 1 está mal (`79d2a45` en vez de `a656944`). **Important.**
+- `tasks.md:17`: la razón del Ruling es falsa y la opción no cambia nada. **Minor.**
+
+--- [37]
+Verifico los hallazgos antes de actuar. Paro también el vigía y retiro el worktree de revisión.
+
+--- [41]
+El hallazgo Important se confirma: la Task 1 es `a656944` y no `79d2a45`. Lo corrijo en `tasks.md` y registro la re-revisión.
+
+--- [43]
+La revisión final está asentada. Sigo con el paso 1: el smoke y la suite, que en `field` hago yo.
+
+--- [46]
+Suite: 5/5 en verde. Ahora el smoke con ejecución real de cada THEN, incluidos los de fallo.
+
+--- [49]
+Smoke hecho. Para los registros leo las plantillas y referencias del cierre.
+
+--- [54]
+Capacidad fusionada. Ahora la ADR 0003 de la candidata de la spec.
+
+--- [60]
+Sin `estimation.md` se omiten el tiempo real y el estimation-log. Escribo el walkthrough y después invoco `sdd-retro`, que añade su línea `Retro:` al §5.
+
+--- [69]
+Mi `awk` salió mal, pero no tocó el walkthrough. Lo hago con Read y Edit.
+
+--- [73]
+Retro hecha. Ahora el roadmap (2.x) y el changelog.
+
+--- [82]
+Paso 5: junto las dos commits de documentación y el cierre en un único commit desde el de la última task. Antes reescribo la línea `Re-revisión:` sin el sha que desaparece.
+
+--- [88]
+Sin remoto no hay CI de la base que leer. Fusiono con `sdd merge`, sin push (`merge.push: false`).
+
+--- [92]
+Hay una cosa para ti: el listado `canceladas` queda vacío si lo pides desde la CLI en una orden aparte de la que canceló. El resto está cerrado.
+
+La 0010 está cerrada y fusionada en `develop`.
+
+- **Decisiones que tomé yo, sin el dev-lead:**
+  - **Gate sin `--test-concurrency=1`:** el Ruling de la Task 2 usaba esa opción para evitar una carrera entre tests. La re-revisión vio que la carrera no existe y la opción no cambia nada. Cerré con el gate del plan, `node --test`, en 5/5.
+  - **`tasks.md`:** la fila de la Task 1 decía `79d2a45`. La corregí a `a656944`.
+  - **ADR 0002:** le añadí «### Confirmación». Sin esa sección `sdd decision check` fallaba y no dejaba cerrar.
+- **Re-revisión:** `HEAD` se había movido dos commits solo de documentación desde la revisión final limpia, así que la skill exigía una re-revisión. Encontró un Important (el commit mal en `tasks.md`), ya corregido. El Minor, la razón del Ruling, quedó anotado en el walkthrough y en `tasks.md`.
+- **Validación en campo:** suite 5/5 y smoke 4/4 con ejecución real, incluidos los dos casos de fallo (motivo fuera de la lista y sin `--motivo`).
+- **Limitación del listado `canceladas`:** las reservas viven en memoria (ADR 0001) y cada orden de la CLI es un proceso nuevo. Por eso `canceladas` solo enseña el motivo dentro de un mismo proceso, como en los tests, y la fila 0014 del roadmap ya cubre el guardado.
+- **Deuda nueva en el roadmap:** los tests de `test/cancel.test.js` dependen del orden, y ningún test cubre cancelar sin `--motivo`.
+- **Registros:** walkthrough, capacidad `bookings` (nueva), ADR 0003, fila 0010 en ✅ y changelog. Sin `estimation.md`, se omiten tiempo real y estimation-log.
+- **Pendiente que ya no era mío:** `sdd roadmap check` sigue fallando en 2 líneas que no toqué: la cabecera de «Deuda técnica» y el título de `v0.3.0`. Las arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Versión del kit:** esta sesión usó el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+- **Ticket del kit:** puedo preparar el ticket de mejora con `sdd-feedback` si quieres. No es obligatorio y el cierre no depende de él.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (c538a02) · push: no hecho: `merge.push` no lo autoriza · la rama está en el checkout principal del repo, así que no hay worktree que borrar.
+

@@ -1,0 +1,97 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar, anunciar y la primera pregunta de diseño, ~3 min.
+
+--- [16]
+Ahora: ya tengo la rama `feature/0010-exportar-csv-reservas` (id 0010 reservado, sin remoto) y paso a la entrevista del diseño. Queda: tus respuestas, la spec para aprobar y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV, para que quien lleva esa sala las abra los lunes en su hoja de cálculo y las cuadre. Hoy `src/app.js` solo conoce `libres`, `reservar` y `cancelar`; cada reserva tiene sala, día y franja. Son unas 2–3 tasks (comando, tests y README), así que no propongo partirla. Corrígeme si algo no es así.
+
+❓ **¿Con qué va a abrir el CSV la hoja de cálculo?**
+Un Excel en castellano abre un CSV con comas en una sola columna; con `;` lo separa bien. Google Sheets y LibreOffice aceptan ambos.
+1️⃣ **Separador `;`** — `Norte;lun;10:00-12:00`; se abre en columnas en Excel en castellano. Cuesta: si alguien lo importa con una herramienta que espera `,`, tendrá que indicarlo.
+2️⃣ **Separador `,`** — el CSV estándar y el más portable entre herramientas. Cuesta: en Excel en castellano sale todo en una columna.
+➡️ **Recomiendo 1️⃣**, porque las hojas de cálculo de quien cuadra las salas estarán casi seguro en castellano, igual que la interfaz (constitución, art. 4). A cambio, pierdes el estándar con comas.
+
+¿Cuál eliges, o qué hoja de cálculo usa quien las cuadra?
+
+--- [18]
+Anotado: `;` como separador (Excel en castellano). Queda decidir cómo sale el fichero.
+
+❓ **¿Cómo te llega el CSV?**
+Hoy todos los comandos de `salas` escriben en pantalla (`run()` devuelve un texto y `app.js` lo imprime).
+1️⃣ **Por pantalla, y lo rediriges tú** — `salas exportar Norte > norte.csv`; sale:
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Cuesta: el responsable tiene que saber redirigir (en PowerShell 5 `>` guarda en UTF-16, que Excel puede no abrir bien).
+2️⃣ **Escribe un fichero él solo** — `salas exportar Norte` crea `norte.csv` en la carpeta actual y dice `exportadas 1 reservas de Norte a norte.csv`. Cuesta: puede pisar un fichero existente, y hay que decidir el nombre y la codificación.
+3️⃣ **Ambas** — pantalla por defecto y `--salida norte.csv` para fichero. Cuesta: más superficie y más tests para una herramienta de una sola persona.
+➡️ **Recomiendo 2️⃣**, porque el responsable cuadra a mano cada lunes y un fichero listo para abrir en Excel le evita el problema de la redirección y la codificación (puedo guardarlo en UTF-8 con BOM, que es lo que Excel en castellano espera). A cambio, tienes que decidir qué pasa si el fichero ya existe.
+
+¿Cuál eliges?
+
+--- [20]
+Anotado: el comando escribe el fichero él mismo, en UTF-8 con BOM.
+
+❓ **¿Qué pasa si `norte.csv` ya existe?**
+Quien cuadra la sala lo hará cada lunes, así que lo normal es que el fichero de la semana anterior siga ahí.
+1️⃣ **Lo sobrescribe** — `salas exportar Norte` → `exportadas 1 reservas de Norte a norte.csv`, y el de la semana pasada se pierde. Cuesta: si alguien editó ese fichero a mano, se pierde sin avisar.
+2️⃣ **Se niega** — `salas exportar Norte` → `norte.csv ya existe; bórralo o usa otro nombre`, y no escribe nada. Cuesta: cada lunes hay que borrar el anterior a mano.
+➡️ **Recomiendo 1️⃣**, porque el CSV es una copia de lo que ya está en las reservas, no un documento editable, y pedir borrar el anterior cada lunes es fricción sin ganancia. A cambio, un fichero modificado a mano se pierde.
+
+¿Cuál eliges?
+
+--- [22]
+Decidido por mí: **sobrescribe** el fichero (queda en ✋ para que lo valides). No queda ninguna decisión que sea tuya; escribo la spec. Ahora: leer la plantilla y las reglas de la revisión de la spec. Queda: spec lista para tu aprobación, ~8 min.
+
+--- [34]
+Ahora: compruebo el delta en una copia y corrijo un hueco que he visto (los tests necesitan poder inyectar reservas). Queda: presentarte la spec para aprobar, ~3 min.
+
+--- [39]
+Ahora: espero tu aprobación de la spec. Queda: con tu «apruebo», escribo el plan y paso a implementar sin más paradas hasta la validación, ~15 min.
+
+🦆 Quien lleva la sala Norte escribe «exportar Norte» y encuentra en su carpeta un fichero `norte.csv` con una fila por reserva, por ejemplo `Norte;lun;10:00-12:00`. Excel en castellano lo abre ya repartido en columnas y con los acentos bien. Si el fichero del lunes anterior seguía allí, se sustituye sin avisar. Si la sala no existe, el comando lo dice y no crea nada. Por dentro, lee la misma lista de reservas que usa «libres» y escribe el fichero con punto y coma.
+
+La spec está en `.docs/sdd/changes/20261113-143518-feature-0010-exportar-reservas/spec.md`, en la rama `feature/0010-exportar-csv-reservas`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Comando `exportar <sala>`, en castellano como los demás.
+2. Fichero `norte.csv` (sala en minúsculas) en la carpeta desde la que lo lanzas.
+3. Si el fichero ya existe, **se sobrescribe sin avisar** (me dijiste «decide tú»).
+4. UTF-8 con BOM, saltos CRLF y cabecera `sala;día;franja`, para que Excel en castellano lo abra bien. El `;` es tuyo.
+5. Salen todas las reservas de la sala, en el orden de la lista, sin filtrar por semana: una reserva guarda día de la semana, no fecha.
+6. `norte` y `Norte` valen igual.
+7. Textos: `reservas de Norte exportadas a norte.csv: 1`, `sala desconocida: Oeste`, `uso: salas exportar <sala>`. Una sala sin reservas genera el fichero solo con la cabecera.
+8. Los valores con `;` o comillas salen entrecomillados, porque la franja hoy no se valida.
+9. Enfoque: todo en `src/app.js`, sin módulo nuevo; descartada la salida por pantalla.
+10. Capacidad nueva `bookings-export`.
+11. No se tratan los errores de escritura ni se neutralizan fórmulas de Excel (`=`, `+`, `-`, `@`).
+
+**Ten en cuenta:** hoy `reservar` no guarda nada, así que el export mostrará solo la reserva de ejemplo que trae `app.js`. Guardar reservas entre ejecuciones queda fuera.
+
+**La review de la spec no se ha hecho.** La rúbrica pedía dos revisores (contrato público: el formato que consume Excel), pero esta sesión no tiene herramienta para lanzar subagentes. Solo hay mi repasada, que no es independiente. Está anotado en la spec.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+¿Apruebas la spec?
+
+--- [40]
+Vale, la spec queda en espera: no escribo el plan ni toco código hasta que la apruebes.
+
+**Estado:**
+- Rama `feature/0010-exportar-csv-reservas`, creada desde `develop`.
+- Spec en `.docs/sdd/changes/20261113-143518-feature-0010-exportar-reservas/spec.md`, con estado `draft`. No está commiteada: es un fichero nuevo sin seguimiento.
+- El id 0010 está reservado en local. No hay remoto, así que no se publicó.
+- No hay fila para la 0010 en `ROADMAP.md`. No la he añadido.
+- No he tocado código ni tests.
+
+Para retomar, di «retoma la feature» en esa rama. Si quieres cambios, dime cuáles. Si apruebas, escribo el plan y paso a implementar. Si quieres la review independiente de la spec, hay que lanzarla desde una sesión con subagentes.
+

@@ -1,0 +1,68 @@
+--- [3]
+Empiezo leyendo la spec, el plan y el estado de la rama.
+
+--- [7]
+Plan aprobado: una task, método Native. Invoco su skill.
+
+--- [9]
+Primero la skill de workspace y el workspace del plan.
+
+--- [11]
+Anuncio: uso sdd-worktrees para preparar el espacio aislado. Detecto si ya estoy en un worktree.
+
+--- [14]
+Estoy en un checkout normal, ya en la rama `feature/0035-room-hours-cs` (no `main`), así que trabajo en el sitio. Falta el baseline con el gate, en un worktree desacoplado.
+
+--- [17]
+Baseline en verde. Ahora el workspace del plan.
+
+--- [22]
+Abro el ledger y hago el pre-flight (una sola task: sin pares de tareas que crucen). También compruebo la base.
+
+--- [26]
+La base no cambió. Escribo los tests RED, uno por THEN, y guardo copia fuera del repo.
+
+--- [31]
+RED por compilación: `Rooms.Hours` no existe. Ahora el código mínimo.
+
+--- [35]
+En verde y la copia RED es idéntica al test. Commit por rutas y comprobación.
+
+--- [39]
+Task 1 completa. Sigo con la revisión final de la rama vía `sdd-verify`.
+
+--- [42]
+No tengo herramienta de subagentes en este harness (el `Workflow` exige que el usuario lo pida), así que la revisión final va como autorrevisión por ejes, y lo dejo dicho. Leo las referencias.
+
+--- [45]
+Autorrevisión por ejes. Miro el diff completo, los comentarios que citan documentos y las señales de arquitectura.
+
+--- [48]
+Sin hallazgos. Dejo la revisión y los rulings en el ledger y recojo los rulings.
+
+--- [51]
+Revisión limpia y sin fixes. Borro el workspace del plan (no hay `tasks.md` con una sola task) y la copia RED, y paso a `sdd-archive`.
+
+--- [55]
+La Task 1 de la 0035 está implementada y commiteada, y la revisión final no encontró nada. El cierre queda parado en la validación, que es tuya.
+
+**Qué hay hecho**
+- **Commit:** `690551b feat(rooms): horas reservadas por sala con Rooms.Hours`, sobre `d5065b4`. Toca solo `Rooms.cs` y `Tests.cs`; `Program.cs` queda intacto.
+- **TDD:** escribí los dos tests antes que el código, uno por cada THEN de la spec. Fallaron por compilación (`Rooms.Hours` no existía). Con el código pasan, y la copia de los tests RED es idéntica a la commiteada.
+- **Verificación:** `dotnet run` da `todo en verde` con código de salida 0, tanto en el baseline previo como al cerrar la task. El ledger quedó con `Task 1: complete (commits d5065b4..690551b)`.
+- **Base:** `develop` no ha cambiado desde que se abrió la rama, así que no hay freno de alcance.
+
+**Autorrevisión, no revisión con revisores frescos**
+En este harness no tengo herramienta de subagentes, así que hice las pasadas Spec y Código yo mismo (ledger: `self-review (no subagent tool)`). Una revisión del autor es más débil que una con contexto fresco. El diff cumple los dos THEN y el alcance, y ningún comentario cita documentos. No salió el eje Arquitectura: no hay módulo, dependencia, contrato ni datos nuevos. Decide tú si te basta antes de fusionar.
+
+**Rulings que tomé**
+1. **Trabajar en el sitio, sin worktree propio.** Ya estaba en `feature/0035-room-hours-cs` (no en `main`) y el baseline corrió en un worktree desacoplado que retiré. Si es un error, los tests RED se mezclan con tu checkout.
+2. **`Rooms.Hours` con una sala desconocida devuelve `<sala>: 0 h`.** La spec no lo fija, y es lo que espera quien pregunta por una sala sin reservas. Si es un error, habrá que decidir si debe fallar o avisar.
+
+No hay minors diferidos.
+
+**Dónde me paro**
+`sdd-kit.json` no tiene `validation.mode`, así que cuenta como `manual`. Con `delegate` el cierre espera a que tú valides. No he escrito `walkthrough.md`, ni tocado el roadmap ni las capabilities, ni fusionado. Para validar, ejecuta `dotnet run` y llama a `Rooms.Hours("Norte")` y `Rooms.Hours("Sur")`: deberían dar `Norte: 2 h` y `Sur: 0 h`. Dime qué probaste y que funciona (o difieres la validación con su disparador) y sigo con el cierre. Ese cierre es: walkthrough, delta de `bookings`, fila del roadmap, squash y `sdd merge`.
+
+**No terminado.** Falta tu validación y el merge. No borres todavía el worktree `<run>\repo`.
+

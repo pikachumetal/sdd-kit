@@ -1,0 +1,62 @@
+--- [3]
+Retomo tras las dos tasks: cierro la revisión final y el Finish.
+
+--- [11]
+RED reproducido. Arreglo en `reasonOf`.
+
+--- [16]
+Mi fix entra en revisión: un único re-review acotado del rango.
+
+--- [18]
+La re-revisión sigue en marcha. Mientras tanto no toco más archivos: espero su veredicto antes de cerrar (rulings a `tasks.md` y borrar el workspace).
+
+--- [24]
+**Verdict: ADDRESSED.** The fix trims the reason before it is checked against the list. I found no new Critical or Important problems.
+
+**Evidence.** Ignoring whitespace, the only code change in `src/app.js` is one line in `reasonOf`:
+```js
+-  return index === -1 ? undefined : params[index + 1];
++  return index === -1 ? undefined : params[index + 1]?.trim();
+```
+- `cancelar Norte lun --motivo "sala ocupada "` now passes the list check. Because the reason is trimmed before it is stored, `canceladas` also shows `sala ocupada` without the spaces.
+- **No regression on bad input:**
+  - With no `--motivo`, the reason is still `undefined` and gets «motivo no válido».
+  - With `--motivo` as the last argument and no value, `?.` turns it into `undefined`, which is also rejected and does not crash.
+  - A reason outside the list is still rejected.
+
+  All three match the spec's ADDED scenario.
+- **Test:** the new test in `test/cancel.test.js` sends `' sala ocupada '` and expects `sin reserva Sur mar`. That reply only happens after the reason has passed the check, so it shows the fix works. I didn't rerun the tests, as you said they already pass 4/4.
+
+**Deferred minors (out of scope):**
+1. **Line endings:** the commit changes `src/app.js` from CRLF to LF line endings, so the diff touches the whole file (48 lines out, 48 in). The code is unaffected, but blame and review get noisier. Settling on one line-ending convention, for example in `.gitattributes`, would stop this coming back.
+2. **Weak test:** the new test only proves the reason passed the check, by hitting "sin reserva". It never shows a successful cancellation with a padded reason, or that the reason is stored trimmed in `canceladas`. The tests share state, and Norte lun is already cancelled by the first test, which is why it uses Sur mar.
+
+Files:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel.test.js`
+
+--- [28]
+El `sed` me dejó el fichero en LF y el diff reescribe todo `src/app.js`. Restauro CRLF y enmiendo mi commit local.
+
+--- [39]
+Implementación de la 0010 terminada y revisión final cerrada. La validación (paso 7 de `sdd-start-feature`) queda pendiente.
+
+**Revisión final**
+- **Spec:** sin Critical ni Important, y 1 Minor.
+- **Code:** 1 Important, que he corregido. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` se rechazaba. Primero reproduje el fallo con un test en RED. Después recorté el motivo con `?.trim()`. Quedan 4/4 tests en verde con `node --test test/cancel.test.js`. El arreglo está en `e02afe0`.
+- **Re-revisión del arreglo:** la revisión acotada lo da por resuelto y sin roturas nuevas.
+- **CRLF:** mi primer commit del arreglo reescribió todo `src/app.js` de CRLF a LF. Lo enmendé (era local y sin publicar) y ahora el diff es de 1 línea en `src/app.js` y 4 en el test.
+
+**Rulings I made**
+- Ninguno. El ledger no tenía ningún `Ruling:`.
+
+**Deferred minors**
+- El test `canceladas` solo pasa después del test `cancelar`, porque comparten estado del módulo.
+- El test nuevo solo prueba que el motivo con espacios pasa la validación (responde `sin reserva Sur mar`). No prueba una cancelación con motivo con espacios, ni que se guarde recortado.
+
+**Estado**
+- He borrado el workspace del plan.
+- En `tasks.md` corregí el commit de la Task 1 a `f480d48` (decía `919ffe6`). Añadí la revisión final, los rulings y los minors diferidos.
+- `tasks.md` sigue sin versionar. Lo dejo para el commit del hito de validación.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Puede que algún paso no coincida con la versión que usa el proyecto. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+

@@ -1,0 +1,111 @@
+--- [9]
+**Ahora:** he clasificado el cambio y espero tu confirmación antes de crear rama o carpeta. **Queda:** abrir el patch, corregirlo y verificarlo, unos minutos. No hay `estimation.md`, así que no doy estimación en horas.
+
+🦆 **Causa raíz (confirmada en el código):** `toHours` en `src/app.js:6` convierte `"09:30"` en `9.30`, es decir, trata los minutos como decimales. `12:00 - 09:30` da `12 - 9.30 = 2.70` y no 2,5, así que supera `MAX_HOURS = 2.5`. No es un fallo del límite. Falla el cálculo de la duración. `test/reservar.test.js` ya lo reproduce: el test «reservar justo el máximo de horas se acepta» falla hoy. El arreglo es convertir los minutos a fracción de hora (`h + m/60`).
+
+`precio` usa la misma función, así que también cambia. Un tramo con media hora, como `09:30-12:00` en Sur, hoy cobra 40,5 €. Después cobrará 37,5 €, que es el precio correcto. Los tramos en punto no cambian.
+
+Es un fallo determinista con la solución fijada por la causa, así que es un **patch** (carril ligero). ¿Cómo seguimos?
+
+1. **Abrir como patch (Recomendada).** Creo la rama y el `patch.md`, y arreglo `toHours`. Verifico con el test que ya falla y añado uno para `precio` con media hora. Perfil `pair`, del proyecto (`sdd-kit.json`).
+2. **Patch con la corrección de `precio` aparte.** Solo sería posible duplicando la conversión de horas. Lo desaconsejo: mantendría el precio erróneo.
+3. **Otro carril.** Dime cuál.
+
+Si te vas a ausentar, di «apruebo por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para este patch».
+
+--- [21]
+Estoy abriendo el patch: reservo el id 0010, creo la rama y escribo `patch.md`. Después viene el arreglo.
+
+--- [26]
+Añado el test de `precio` con media hora y lo veo fallar antes de tocar el código.
+
+--- [28]
+Los dos tests fallan por el motivo esperado (2,7 h en vez de 2,5 h). Aplico el arreglo mínimo.
+
+--- [32]
+Arreglado: 7/7 tests en verde. El flujo del patch pide que un revisor lea el diff antes del commit, así que lo lanzo.
+
+--- [34]
+Estoy esperando al revisor; en cuanto responda cierro el commit del fix.
+
+--- [38]
+Hallazgos:
+
+1. **Causa raíz (§2): correcta.** `Number("09:30".replace(':','.'))` da 9.30, y `12 - 9.30 = 2.6999999999999993`, que es mayor que 2.5. Lo comprobé con `node`. Hay una imprecisión menor en el patch: dice que `precio` daba 40,5 € con el bug. En realidad daba `40.499999999999986`. Severidad baja (documental).
+
+2. **Fix en `src/app.js`: mínimo y correcto.** Usa HH + MM/60. Los únicos usos de `toHours` son `slotHours`, que llaman `book` y `precio`. Los tramos en punto no cambian. Severidad: sin hallazgo.
+
+3. **Test de `precio`: no es frágil con 09:30-12:00.** 9.5 y 12 son exactos en binario porque 30/60 = 0.5. Así, 2.5 × 15 = 37.5 sale exacto, y también lo comprobé con `node`. Pasan 7 de 7 tests.
+
+4. **Riesgo latente (baja/media).** Con minutos que no son múltiplos de 15, `precio` imprime errores de coma flotante. Por ejemplo, `precio Sur 09:20-12:00` da `39.99999999999999 €`. Esto no es regresión, porque antes era peor, y los tests actuales no lo cubren. Conviene redondear el precio (por ejemplo a 2 decimales) o dejarlo anotado como deuda. Del mismo modo, la comparación `> MAX_HOURS` con fracciones no exactas, como 2:30 con minutos raros, podría fallar por 1e-15.
+
+5. **Discrepancia entre el patch y el diff (media-baja).** §3 lista `test/reservar.test.js` como modificado, pero `git status` no lo muestra. El test ya existía en `HEAD` y ahora pasa gracias al fix. Hay que corregir la lista de ficheros del patch, o aclarar que solo se ejecutó.
+
+6. **Tests de `precio` incompletos (baja).** Falta un test de `precio` con minutos que no sean múltiplos de 15, como el del hallazgo 4. Tampoco se ejercita `09:00-12:30`, que da 3.5 h y se rechaza al reservar.
+
+7. **Documentación del patch incompleta (baja).** §4 pone «ver abajo» y no hay nada debajo. `commit` figura como «pendiente» pese a `status: done`. Conviene completar la evidencia.
+
+--- [48]
+**El arreglo ya está hecho y comprobado. Falta que lo valides tú antes de cerrar y fusionar.** Cerrar y fusionar sin tu validación sería inventarme un «Validado» que no me has dado.
+
+🦆 `reservar Sur 09:30-12:00` ahora responde `reservada Sur 09:30-12:00` y ya no «excede el máximo de horas». La causa era que `toHours` leía `09:30` como `9.30`, y `12:00-09:30` salía como 2,7 h. Ahora convierte los minutos a fracción de hora. Efecto colateral: `precio Sur 09:30-12:00` pasa de `40.499999999999986 €` a `37.5 €`.
+
+**✋ Me salí del plan en…** nada.
+
+**Smoke que he corrido**
+
+| Caso | Evidencia | Resultado |
+| --- | --- | --- |
+| `reservar Sur 09:30-12:00` | ejecución real | `reservada Sur 09:30-12:00` |
+| `reservar Sur 09:00-12:30` (3,5 h) | ejecución real | `excede el máximo de horas` |
+| `precio Sur 09:30-12:00` | ejecución real | `37.5 €` |
+| `precio Sur 10:00-12:00` (en punto) | ejecución real | `30 €` |
+
+**Suites**
+
+- `node --test`: 7/7 sobre el commit `52071ed`.
+
+**Sin probar**
+
+- Con minutos que no son múltiplos de 15, `precio` imprime restos de coma flotante, por ejemplo `09:20-12:00` da `39.99999999999999 €`. Ya fallaba antes de este patch. Redondear el precio es decidir un formato visible que nadie ha fijado, así que lo dejo fuera. Si lo quieres, es otra fila.
+- `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. El paso de fusión lo presento y lo espero contigo. Dime a qué rama fusiono, normalmente `develop`, y si con `--no-ff`.
+
+Panel: plan B en http://127.0.0.1:63219/ (no veo la consola ni la red de tu app). `.temp/` no está en un `.gitignore`, que ni existe. Propongo crearlo con `.temp/`. Yo no he tocado nada más desde que lancé el panel.
+
+**Guion**
+
+Rama `feature/0010-horas-media-hora` · worktree `<run>/repo`
+
+Es una CLI y `operations.md` no declara entorno que arrancar.
+
+Terminal 1:
+
+```
+cd <run>/repo
+node src/app.js reservar Sur 09:30-12:00
+```
+
+1. Lo que ya hiciste → debe salir `reservada Sur 09:30-12:00`.
+
+```
+node src/app.js reservar Sur 09:00-12:30
+```
+
+2. Más del máximo → debe salir `excede el máximo de horas`.
+
+```
+node src/app.js precio Sur 09:30-12:00
+```
+
+3. Precio con media hora → debe salir `37.5 €`.
+
+```
+node src/app.js precio Sur 10:00-12:00
+```
+
+4. Tramo en punto, sin cambios → debe salir `30 €`.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

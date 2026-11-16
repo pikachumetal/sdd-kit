@@ -1,0 +1,229 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/specs/ 2>/dev/null; ls .docs/sdd/specs/*0016* 2>/dev/null; ls
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261009-140000-feature-0016-room-hours/
+plan.md
+spec.md
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+
+>>> Bash: cd "<run>/repo" && P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js" workspace $P/plan.md; cat $P/plan.md; cat $P/spec.md; cat package.json; ls src test
+<<< <run>\repo\.superpowers\sdd\plan
+---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Plan de implementación — Horas reservadas por sala
+spec: ./spec.md
+status: approved
+created: 2026-10-09
+---
+
+# Plan de implementación — Horas reservadas por sala
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: Comando `horas`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+- Sin comentarios que repitan el código ni que citen documentos.
+
+### De proceso
+
+- Native: implemen
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js; git log --oneline | head -3; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+];
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map((time) => Number(time.slice(0, 2)) + Number(time.slice(3)) / 60);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+ 
+
+>>> Bash: cd "<run>/repo" && SDD='node <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js'; P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md; $SDD task start $P 1; echo ---; git diff $(git merge-base HEAD develop) develop --name-only; echo "base-diff-done"; W=.superpowers/sdd/plan; ls $W; cat $W/progress.md 2>/dev/null; git check-ignore .superpowers
+<<< brief: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+base: 13780656e901081fa3f93df54dedca940caecc71
+---
+base-diff-done
+plan-path
+task-1-brief.md
+.superpowers
+
+>>> Bash: cd "<run>/repo" && W=.superpowers/sdd/plan && cat > $W/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+
+## Pre-flight scan
+
+| Fila | Qué | Hallazgo |
+| --- | --- | --- |
+| pares de tasks | una sola task: no hay pares que compartan fichero o interfaz | — |
+| Task 1 | tests y código: `slotHours` y `bookings` existen en `src/app.js`; `bookings` no se exporta, se prueba por `run('horas', [sala])`; Norte = 10:00-12:00 activa (2 h), Sur = 09:00-10:00 cancelada (0 h) | de acuerdo con la spec |
+| Task 1 | ficheros: crea `test/horas.test.js`, modifica `src/app.js`; coinciden con los del plan | — |
+| mandatos del plan que la rúbrica llama defecto | ninguno | — |
+| base | `git diff merge-base develop` vacío: ni fila del roadmap ni ficheros de la task tocados | — |
+EOF
+mkdir -p ../red-copy 2>/dev/null; cat > test/horas.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('horas suma las reservas activas de la sala', () => {
+  assert.equal(run('horas', ['Norte']), 'Norte: 2 h');
+});
+
+test('horas no cuenta las reservas canceladas', () => {
+  assert.equal(run('horas', ['Sur']), 'Sur: 0 h');
+});
+EOF
+cp test/horas.test.js $W/horas.test.red.js
+node --test test/horas.test.js 2>&1 | tail -30
+<<<     generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'salas',
+    expected: 'Norte: 2 h',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\horas.test.js:9:1
+✖ horas no cuenta las reservas canceladas (0.1981ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'Sur: 0 h'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/horas.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (
+
+>>> Bash: cd "<run>/repo" && rmdir ../red-copy 2>/dev/null; python - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("""export function run(cmd, params) {""","""function roomHours(room) {
+  return bookings
+    .filter((b) => b.room === room && b.status === 'active')
+    .reduce((total, b) => total + slotHours(b.slot), 0);
+}
+
+export function run(cmd, params) {""")
+s=s.replace("""  if (cmd === 'duracion')""","""  if (cmd === 'horas') return `${params[0]}: ${roomHours(params[0])} h`;
+  if (cmd === 'duracion')""")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/horas.test.js 2>&1 | tail -12; git diff src/app.js | head -30
+<<< ✔ horas suma las reservas activas de la sala (0.6532ms)
+✔ horas no cuenta las reservas canceladas (0.098ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 94.8651
+diff --git a/src/app.js b/src/app.js
+index 16416fa..aea48d3 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,11 +32,18 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  return bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce((total, b) => total + slotHours(b.slot), 0);
++}
++
+ export function run(
+
+>>> Bash: cd "<run>/repo" && git diff --no-index --stat .superpowers/sdd/plan/horas.test.red.js test/horas.test.js; echo "red-vs-committed exit=$?"; git add src/app.js test/horas.test.js && git commit -q -F - <<'EOF'
+feat(0016): comando horas por sala
+
+Suma las horas de las reservas activas de una sala; las canceladas no cuentan.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline | head -2; git status --short
+<<< warning: in the working copy of '.superpowers/sdd/plan/horas.test.red.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+red-vs-committed exit=0
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+f039396 feat(0016): comando horas por sala
+1378065 docs(sdd): abrir la feature 0016 con su spec y su plan
+
+>>> Bash: cd "<run>/repo" && node <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js task done .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md 1 13780656e901081fa3f93df54dedca940caecc71 -- node --test test/horas.test.js 2>&1 | tail -8; tail -3 .superpowers/sdd/plan/progress.md; echo ---; node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.1335
+ledger: Task 1: complete (commits 1378065..f039396, tests: node --test test/horas.test.js → ℹ duration_ms 77.1335)
+| mandatos del plan que la rúbrica llama defecto | ninguno | — |
+| base | `git diff merge-base develop` vacío: ni fila del roadmap ni ficheros de la task tocados | — |
+Task 1: complete (commits 1378065..f039396, tests: node --test test/horas.test.js → ℹ duration_ms 77.1335)
+---
+ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && echo "Final review: self-review (no subagent tool) sobre f039396 — sin hallazgos Critical/Important; sin minors" >> .superpowers/sdd/plan/progress.md; git status --short; git diff 1378065 HEAD --stat
+<<<  src/app.js         |  7 +++++++
+ test/horas.test.js | 11 +++++++++++
+ 2 files changed, 18 insertions(+)
+
+=== RESULTADO (14 turnos, 0.3142647 $)
+La Task 1 de la 0016 está terminada y commiteada (`f039396`, rama `feature/0016-room-hours`).
+
+**Qué hay**
+- `src/app.js`: `roomHours(room)` suma `slotHours` de las reservas activas de la sala, y `run('horas', [sala])` responde `<sala>: <n> h`.
+- `test/horas.test.js`: dos tests, uno por cada THEN de la spec: `Norte: 2 h`, y `Sur: 0 h` porque su reserva está cancelada.
+
+**Evidencia de esta sesión**
+- RED: antes del código, los dos tests fallaban porque `run` devolvía `salas`.
+- GREEN: `node --test test/horas.test.js` pasa 2/2.
+- Gate de cierre `node --test`: 6/6 tests en verde.
+- `sdd task done` registró la task en el ledger.
+- El test commiteado es idéntico a la copia RED.
+
+**Review final**
+- No hay herramienta de subagentes en esta sesión, así que la revisión final es una autorevisión, anotada así en el ledger. Con 18 líneas y sin hallazgos, la veo suficiente, pero decides tú si quieres una revisión con contexto fresco antes de entregar.
+- El workspace del plan (`.superpowers/sdd/plan`, git-ignorado) lo dejo sin borrar por eso.
+
+**Rulings y minors diferidos:** ninguno.
+
+**Queda para ti**
+- No he hecho el push ni el merge: es un efecto fuera del worktree y lo decides tú.
+- Falta el cierre de la feature (`sdd-end-feature`: walkthrough y changelog). Dime si lo hago ahora.

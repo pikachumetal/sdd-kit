@@ -1,0 +1,91 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [16]
+Estoy ensayando los pasos del guion antes de presentarlo.
+
+--- [22]
+**No he empezado el cierre: falta tu validación.** El validation mode es `manual` (la clave no está en `sdd-kit.json`), así que valida una persona. «Cierra» es la orden de cerrar, no una validación. No he escrito ningún registro y el worktree sigue limpio.
+
+**Antes de validar**
+- **Abiertas a la vez:** ninguna otra rama `feature/*` ni `patch/*`.
+- **Spec:** `approved`, firmada por Laura.
+- **Revisión final:** hecha y cerrada. La re-revisión (`2d9ff73..74fe07b`) salió limpia.
+- **Último commit sin revisar:** `76e570d` cambia código (1 línea en `src/app.js`) y ya hay `Re-revisión:`, así que no lanzo otra. El walkthrough llevará `sin revisar: 76e570d — canceladas sin canceladas responde «sin canceladas»`.
+- **`sdd merge --check`:** para con `política: falta 'merge.into' o 'merge.noFf'` en `.docs/sdd/sdd-kit.json`. No bloquea la validación, pero el merge lo pide: dime `merge.into` (¿`develop`?) y `merge.noFf`.
+- **Comportamiento sin spec ni test:** el nuevo «sin canceladas» no aparece en el delta de `bookings` de la spec (Enmiendas dice «ninguna») ni lo cubre ningún test. Los 6 tests de `node --test` pasan sobre `76e570d`, pero ninguno ejercita ese caso. Propongo añadir al cierre una línea ADDED al delta y un test del caso vacío. Dime si lo hago o si prefieres dejarlo como está.
+
+🦆 Cancelar una reserva ahora pide un motivo de una lista cerrada. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lo enseña como «Norte lun — sala ocupada». Si no hay ninguna cancelada, `canceladas` ya no responde en blanco: dice «sin canceladas».
+
+**✋ Me salí del plan en…**
+
+- Nada. El cambio de `76e570d` lo pidió el dev-lead.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo válido | `ejecución real` | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` con una cancelada | `ejecución real` | `Norte lun — sala ocupada` |
+| `canceladas` sin canceladas (`76e570d`) | `ejecución real` | `sin canceladas` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `76e570d`. La corro otra vez tras el sync merge del paso 6.
+
+**Sin probar**
+
+- Nada. El estado se guarda en memoria, así que cancelar y listar solo se ve en un mismo proceso (paso 4).
+
+Panel: plan B en http://127.0.0.1:49882/
+
+Esa página no ve la app: no tiene consola ni captura. Si un paso falla, cuéntalo en su comentario. `.temp/` está en `.gitignore`.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Cancelar sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en un mismo proceso → `cancelada Norte lun (sala ocupada)` y en la línea siguiente `Norte lun — sala ocupada`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+5. Listar sin ninguna cancelada → `sin canceladas`
+
+```
+node src/app.js canceladas
+```
+
+Para parar el panel, dímelo y lo paro yo con su PID.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

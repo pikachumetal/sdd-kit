@@ -1,0 +1,65 @@
+--- [32]
+La revisión de la spec sigue en marcha. No he recibido sus hallazgos, así que no sé qué ha encontrado. Mientras tanto, miro la plantilla del plan.
+
+--- [41]
+Sigo esperando al revisor de la spec; los hallazgos aún no han llegado. En cuanto vuelva, los integro y escribo el plan. Después implemento la Task 1 y paro tras su commit.
+
+--- [43]
+1. Importante · Delta de comportamiento / Términos y ADR · PRODUCT.md define «Cancelación» como la que hace el propio cliente antes de 24 h, y «Anulación» como la del responsable de sala. El spec exige motivo a `cancelar` sin decir si «Cancelación» cambia. Además dice «Términos resueltos: ninguno» aunque la capacidad reinterpreta el término. · Escribir en Términos si «Cancelación» sigue igual, o acotar que la regla de 24 h no se aplica aquí. Dejarlo explícito en Scope, no solo en «No entra».
+
+2. Importante · Intent vs Delta · El Intent dice que quien gestiona las salas ve por qué se cancela. Pero PRODUCT.md dice que el responsable de sala hace las anulaciones, y estas quedan fuera de `canceladas`. El responsable no ve nada de lo suyo, y `canceladas` solo muestra lo cancelado por el cliente. · Aclarar quién usa `canceladas` y si es coherente que el listado no incluya `anular`. Si es deliberado, decirlo en Intent.
+
+3. Importante · Delta, «Listar las canceladas» · El escenario fija `Norte lun 10:00-12:00` y `Sur mar 14:00-16:00`, pero el spec no dice de dónde sale la franja. Ni el GIVEN ni ninguna decisión la establecen. · Añadir al GIVEN las franjas de las reservas, o una decisión sobre cómo se obtiene la franja.
+
+4. Importante · Delta, «Listar las canceladas» · El orden «de cancelación» se prueba con dos reservas cuyo orden de cancelación coincide con el de creación. Un listado por orden de creación o de inserción pasaría igual. · Cancelar en orden inverso al de creación, por ejemplo Sur mar antes que Norte lun.
+
+5. Importante · Delta, «Cancelar sin motivo válido» · Falta el borde `--motivo` sin valor, como `cancelar Norte lun --motivo`. No se sabe si dice «falta» o «no válido». Tampoco se cubre `--motivo` antes de la sala, ni un motivo en mayúsculas. · Añadir un escenario o un AND para `--motivo` sin valor, y decir qué texto da.
+
+6. Importante · Decisión 5 / Delta · La validación del motivo antes de buscar la reserva (`cancelar Sur mar` sin motivo da «falta el motivo», no «sin reserva») está en la decisión 5 pero ningún escenario la cubre. Un código que busque primero y valide después pasaría todos los escenarios. · Añadir un escenario: GIVEN que no hay reserva en Sur mar, WHEN `cancelar Sur mar`, THEN `falta el motivo…`. Otro para un motivo inválido sin reserva.
+
+7. Importante · Delta, «Listar las canceladas» + decisión 7 · El GIVEN usa «Norte mié anulada con `anular`», pero el spec no define la sintaxis ni el efecto de `anular`, y dice que no cambia. Se asume que existe y que deja una reserva con otro estado. Tampoco se dice qué pasa con una reserva cancelada y vuelta a reservar en la misma sala y día. · Citar el comportamiento actual de `anular`, o marcarlo como supuesto. Añadir un escenario: si la sala y día cancelados se reservan otra vez, ¿`canceladas` conserva la cancelada? ¿Y se puede cancelar dos veces?
+
+8. Menor · Decisiones, punto 12 · «4 requisitos y 5 reglas añadidos» es un dato de verificación puesto como decisión del autor. Hay 4 requisitos y 5 reglas, pero «Regla ante conflicto: no aplica» no lleva valor, así que puede no contar como regla declarada. · Poner en «Regla ante conflicto» un valor real, por ejemplo «una sola capacidad, sin conflicto posible», y mover el punto 12 a una sección de verificación.
+
+9. Menor · Decisiones / Scope · El Scope no menciona los cambios en los tests actuales (decisión 8), ni la reserva semanal. La revisión de «Mínimo razonable» lo deja sin mirar. Hay riesgo de regresión no cubierto: `reservar`, `libres` o la reserva semanal pueden depender del estado `cancelled` o de `cancelBooking`. · Añadir a Scope o a Dónde se prueba una comprobación de que `reservar` y `libres` siguen igual tras la cancelación. Borrar la mención a «reserva semanal» si no existe.
+
+10. Menor · Decisiones / «Decisiones tomadas con el dev-lead» · La aprobación por delegación incluye una instrucción de proceso («para tras la Task 1») copiada como decisión de producto, y aparece duplicada (líneas 46 y 47). La decisión 11 («dev-lead porque lo usa una persona») contradice PRODUCT.md, que dice que no hay más usuarios que el propio desarrollador. · Quitar la duplicada. Corregir la justificación de la decisión 11, o decir que la validación la hace el único usuario.
+
+--- [61]
+Ahora: escribo `tasks.md`, hago el commit de apertura (spec y plan) e invoco la implementación. Queda: Task 1 y parar tras su commit, ~5 min.
+
+--- [73]
+Ahora: guardo copia de los tests RED y compruebo que fallan antes de tocar `src/app.js`. Queda: implementar Task 1, commit y parar, ~3 min.
+
+--- [86]
+Ahora: registro la Task 1 en el ledger con `sdd task done`. Después paro, como pediste.
+
+--- [88]
+La Task 1 está hecha y commiteada, y paro aquí como pediste. La Task 2 (`canceladas`) no está empezada.
+
+- **Commit de la Task 1:** `5e0ca39 feat(0010): cancelar exige un motivo de la lista`.
+- **Rama:** `feature/0010-motivo-cancelar`.
+- **Tests:** `node --test test/cancel.test.js` da 8 pass y 0 fail. La suite entera da 10 pass y 0 fail, y el lint sale limpio. Los tests los escribí antes del código y vi que fallaban primero.
+- **Ledger:** `sdd task done` registró la Task 1 como completa. Su línea no guarda el resumen de tests, solo la duración. El resultado lo leí yo en la salida.
+- **Aún sin hacer:** la Task 2, la revisión final de la rama (`sdd-verify`) y el cierre (`sdd-archive`).
+
+**Qué hace ya `cancelar`:**
+- `cancelar Norte lun --motivo sala-ocupada` responde `cancelada Norte lun (motivo: sala ocupada)`.
+- Los motivos válidos son `cambio-de-planes`, `sala-ocupada` y `otro`.
+- Sin `--motivo`, con `--motivo` sin valor, o con un valor que no está en la lista, no cancela y dice cuáles valen.
+- El motivo se valida antes de buscar la reserva.
+- `anular` no cambia.
+
+**Decisiones mías que conviene que mires.** Están en la spec bajo «✋ Decisiones que he tomado yo»:
+- **Motivo obligatorio:** pedirlo siempre, en vez de opcional con `otro` por defecto.
+- **`canceladas`:** la fila 0010 del roadmap dice que el listado de canceladas enseña el motivo, pero ese listado no existía. Lo planifiqué como la Task 2, con el comando `canceladas`. Si no lo quieres, se quita esa task y el motivo queda guardado sin verse.
+- **Tests de `cancelar` cambiados:** los dos que ya existían ahora llevan `--motivo`, porque sin él `cancelar` ya no cancela.
+
+**Spec y revisión.**
+- La spec la aprobé yo por delegación, con tu frase literal anotada en la spec.
+- Un revisor (sonnet) la leyó y integré 7 de sus 10 hallazgos. Rechacé 3, con el motivo escrito en la spec.
+
+**Ruling.** No creé un worktree nuevo, porque la sesión ya estaba en el checkout limpio de la rama. Está anotado en el ledger.
+
+Cuando quieras seguir, dime «sigue» y hago la Task 2.
+

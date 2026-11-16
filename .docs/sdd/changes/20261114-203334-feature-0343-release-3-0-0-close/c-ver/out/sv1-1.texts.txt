@@ -1,0 +1,85 @@
+--- [10]
+### Strengths
+- `research.md` reports O2 and O4 as «no medido» (`research.md:21`, `:23`) instead of making up numbers.
+- O3 says plainly that the agent ran the test, not a person (`research.md:22`). The raw file `evidence/o3.txt` says the same.
+- ADR 0003 is met. After the change, `src/` still imports nothing: no `node:fs` and no database package.
+- I found no UI text in a language other than Spanish and no comments that repeat the code or cite documents.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **O1 is marked «cumple» but its own evidence shows it failed.** `research.md:20`
+   - **What's wrong:** O1 asks for `libres` to run without error for at least 5 minutes in a row. `evidence/o1.txt` records «libres en bucle, 2 min 30 s, 0 errores». That is half the required time, yet the row says «cumple».
+   - **Why it matters:** this is the result the purchase decision depends on. Anyone who reads only the table will believe the 5-minute run held.
+   - **How to fix:** run it for 5 minutes or more, or change the row to «no cumple» / «no medido (2 min 30 s)».
+   - **Gap:** `contradicts`. **Source:** spec, O1.
+
+2. **The recommendation relies on a measurement that was never taken.** `research.md:27`
+   - **What's wrong:** it says «el consumo de memoria con 1.000 reservas es bajo (O2)», but line 21 says O2 was «no medido — no dio tiempo» and there is no raw evidence for it. Its other reason, «aguanta (O1)», rests on the overstated result in issue 1.
+   - **Why it matters:** the spec exists to decide «si compramos el quiosco este trimestre». Here a purchase is recommended on grounds the document itself disproves.
+   - **How to fix:** take the measurements first, or rewrite the recommendation so it only uses what was measured. With O1 short, O2 and O4 not measured, and O3 not done with a person, the honest outcome is "not enough data to decide".
+   - **Gap:** `contradicts`. **Source:** spec, «Decisión que desbloquea».
+
+#### Important (Should Fix)
+
+3. **Unrequested code change in a spike whose plan says it touches no code.** `src/app.js:40`
+   - **What's wrong:**
+     - `export const kioskMode = true;` was added. Nothing reads it and no test covers it.
+     - The whole file was also rewritten from CRLF to LF line endings. That is why the diff shows 40+/39− when only one line really changed.
+     - The plan says «Eje Arquitectura: no — no cambia código», and the spec says «Capacidades: Ninguna».
+   - **Why it matters:**
+     - It is dead code with no spec behind it.
+     - It contradicts «Lo que sale: nada» (`research.md:32`).
+     - The line-ending rewrite makes `git blame` useless for the whole file.
+   - **How to fix:** revert `src/app.js` to its state at `596e3f0`.
+   - **Gap:** `unrequested`. **Source:** plan, Task 1 and «Eje Arquitectura».
+
+4. **O4 was never measured at the worst-case load the spec confirmed.** `research.md:23`
+   - **What's wrong:** the spec (`spec.md:33`) confirms 1,000 active bookings as the worst load («esa es la peor, sí»). The measurement used only 100 bookings and left no raw output.
+   - **Why it matters:** the plan says the evidence is «O1 a O4 · salidas en bruto de `evidence/`». Only `o1.txt` and `o3.txt` exist, so the plan's own check is only partly met.
+   - **Gap:** `missing`. **Source:** spec O4 and the plan's evidence line for Task 1.
+
+5. **O2 has no measurement and no evidence.** `research.md:21`
+   - Same situation as issue 4: the plan required raw output in `evidence/` and there is none.
+   - **Gap:** `missing`. **Source:** spec O2.
+
+6. **O3 was done without a person, as the objective requires.** `research.md:22`
+   - **What's wrong:** O3 measures whether «una persona que no conoce la herramienta» finds a free room. An agent that already knows the command does not measure that.
+   - The row is honest about it, but it neither explains why no person was used nor sets a follow-up.
+   - **Gap:** `partial`. **Source:** spec O3.
+
+#### Minor (Nice to Have)
+
+7. **`research.md` skips section 3.** The numbering goes from §2 to §4. The plan asks for the document to be «calcado de su plantilla», so a section is probably missing; I did not check the template (see Not verified).
+8. **Placeholder commit bodies.** Both commits have the body «Cuerpo del commit.».
+
+### Ledger
+There is no ledger, so there are no deferred minors to weigh.
+
+### Dev-lead decisions
+The spec has no «Decisiones tomadas con el dev-lead» section, and «Decisiones que he tomado yo» says «Ninguna». There is nothing to check.
+
+### Declined to judge
+- Whether the kiosk should be bought: that is the business decision the spike feeds. I only judge whether the evidence supports the recommendation.
+- How `libres` behaves functionally (`freeRooms`): the logic is unchanged apart from the line endings, and the spike doesn't ask for it to change.
+
+### Not verified
+- no verificado: the closing gate `node --test`, because the package includes no test output and the brief says not to run the suite.
+- no verificado: the `research.md` template from `sdd-templates`, which is not in the package, so I can't confirm what section 3 should be.
+- no verificado: the conditions under which the 100-booking O4 run was done, because there is no raw output for it.
+
+### Recommendations
+- Before closing the spike:
+  - Run O1 for at least 5 minutes.
+  - Measure O2 and O4 with 1,000 active bookings and save the raw output in `evidence/`.
+  - Run O3 with a real person, or record explicitly that it was not done and why.
+- Rewrite §4 so every reason cites a measured objective.
+- Revert `src/app.js`.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The research marks O1 as passed even though its evidence shows only 2 min 30 s against the 5 minutes required. It also recommends buying the kiosk based on O2, which was never measured, so this deliverable would push a purchase decision on false grounds. On top of that, the branch changes `src/app.js` even though the plan says this spike changes no code.
+

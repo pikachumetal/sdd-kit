@@ -1,0 +1,150 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: ls .docs/sdd/specs/ 2>&1; ls .docs/sdd/specs/*0020* 2>&1; cat .docs/sdd/sdd-kit.json; git log --oneline | head
+<<< 20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20260920-090000-feature-0020-room-filter/
+plan.md
+spec.md
+tasks.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+71fc10c docs(sdd): tasks de la 0020
+df581ea feat(libres): filtro por sala
+dc47b6d docs(sdd): abrir la feature 0020
+6163d40 feat: base del molde salas
+
+>>> Bash: cd .docs/sdd/specs/20260920-*; cat tasks.md plan.md spec.md; cd -; node "D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-base/cli/bin/sdd.js" workspace .docs/sdd/specs/20260920-090000-feature-0020-room-filter/plan.md
+<<< # Tasks
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 | ✅ | df581ea |
+| 2 | ⏳ | |
+| 3 | ⏳ | |
+# Plan — filtro por sala
+
+**Spec**: spec.md
+**Ejecución**: native, fijado en sdd-kit.json.
+
+## Task 1: --sala en libres
+
+Modificar: src/app.js, test/app.test.js. Verificación: node --test.
+
+## Task 2: libres sin franja
+
+Modificar: src/app.js, test/app.test.js. Test: `libres` sin franja responde `indica una franja`. Verificación: node --test.
+
+## Task 3: README
+
+Modificar: README.md. Una línea que explique `--sala`. Verificación: node --test.
+---
+mode: full
+profile: delegate
+---
+
+# Spec — filtro 
+
+>>> Bash: ls -la .temp/sdd/plan 2>&1; cat .temp/sdd/plan/progress.md 2>&1; cat src/app.js test/app.test.js; git status --short
+<<< total 1
+drwxr-xr-x 1 <user> 197609  0 Nov  1 16:13 ./
+drwxr-xr-x 1 <user> 197609  0 Nov  1 16:13 ../
+-rw-r--r-- 1 <user> 197609 65 Nov  1 16:13 plan-path
+cat: .temp/sdd/plan/progress.md: No such file or directory
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres' && params[1] === '--sala') return freeRooms(
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-base/cli/bin/sdd.js"
+P=.docs/sdd/specs/20260920-090000-feature-0020-room-filter/plan.md
+printf '# SDD ledger — plan: %s\nTask 1: complete (commit df581ea, recuperado de git/tasks.md; ledger inexistente)\nTask 2: Ruling: recuperación — ledger ausente, Task 1 confirmada por tasks.md y git log — retomo en Task 2 — coste si falla: ninguno\n' "$P" > .temp/sdd/plan/progress.md
+node "$SDD" task start $P 2; git rev-parse HEAD
+<<< brief: <run>\repo\.temp\sdd\plan\task-2-brief.md
+base: 71fc10c81eb050695008ef2177947c407d03627f
+71fc10c81eb050695008ef2177947c407d03627f
+
+>>> Bash: git diff $(git merge-base HEAD main) main --stat 2>&1 | tail -3
+cat >> test/app.test.js <<'EOF'
+
+test('libres sin franja pide una franja', () => {
+  assert.equal(run('libres', []), 'indica una franja');
+});
+EOF
+cp test/app.test.js .temp/sdd/plan/task-2-red.test.js; node --test 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< (Bash completed with no output)
+
+>>> Bash: node --test 2>&1 | tail -25
+<<< ✖ failing tests:
+
+test at test\app.test.js:21:1
+✖ libres sin franja pide una franja (0.861ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte, Sur'
+  - 'indica una franja'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/app.test.js:22:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/
+
+>>> Bash: sed -i "s|^  if (cmd === 'libres' && params\[1\] === '--sala')|  if (cmd === 'libres' \&\& !params[0]) return 'indica una franja';\n&|" src/app.js
+sed -n 9,13p src/app.js; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index --stat .temp/sdd/plan/task-2-red.test.js test/app.test.js | tail -1
+<<< export function run(cmd, params) {
+  if (cmd === 'libres' && !params[0]) return 'indica una franja';
+  if (cmd === 'libres' && params[1] === '--sala') return freeRooms(params[0]).includes(params[2]) ? 'libre' : 'ocupada';
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+ℹ pass 5
+ℹ fail 0
+warning: in the working copy of '.temp/sdd/plan/task-2-red.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/app.test.js', LF will be replaced by 
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-base/cli/bin/sdd.js"
+git status --short; git add src/app.js test/app.test.js && git commit -q -m "feat(libres): pedir franja si falta
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<<  M src/app.js
+ M test/app.test.js
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+024baa9 feat(libres): pedir franja si falta
+71fc10c docs(sdd): tasks de la 0020
+
+>>> Bash: SDD="D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-base/cli/bin/sdd.js"
+node "$SDD" task done .docs/sdd/specs/20260920-090000-feature-0020-room-filter/plan.md 2 71fc10c81eb050695008ef2177947c407d03627f -- node --test 2>&1 | tail -5
+<<< ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107.2553
+ledger: Task 2: complete (commits 71fc10c..024baa9, tests: node --test → ℹ duration_ms 107.2553)
+
+>>> Bash: sed -i 's/| 2 | ⏳ | |/| 2 | ✅ | 024baa9 |/' .docs/sdd/specs/20260920-090000-feature-0020-room-filter/tasks.md; git status --short
+<<<  M .docs/sdd/specs/20260920-090000-feature-0020-room-filter/tasks.md
+
+=== RESULTADO (13 turnos, 0.272284 $)
+La Task 2 está hecha y commiteada (`024baa9`): `libres` sin franja ahora responde `indica una franja`. `node --test` pasa 5/5.
+
+- **Test en RED primero:** fallaba con `Norte, Sur` en vez de `indica una franja`. Después de implementar, el test no cambió respecto a la copia RED.
+- **Cambio:** una línea en `src/app.js`, antes de la rama `--sala`.
+- **`tasks.md`:** he marcado la Task 2 como ✅ con su hash, pero sin commitear. Irá en el commit de la siguiente task.
+- **Task 3 y revisión final:** no las he empezado, porque pediste solo la Task 2. Quedan la Task 3 (README), la revisión final y el archivado.
+- **Base:** `git diff` contra `main` no mostró cambios en la base, así que no hay freno de alcance. No he mirado remoto.
+
+**Rulings I made**
+- Task 2: no existía ledger, aunque la Task 1 estaba hecha según `tasks.md` y `git log` (`df581ea`). Creé el ledger dando la Task 1 por completa y retomé en la Task 2. Si me equivoco, la Task 1 habría que revisarla.
+
+**Deferred minors:** ninguno.
+
+**Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizarlo, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. No he cambiado nada de eso.

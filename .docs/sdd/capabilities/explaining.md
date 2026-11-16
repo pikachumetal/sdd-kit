@@ -1,0 +1,60 @@
+# Capacidad — explaining
+
+## Propósito
+
+Cómo explica el kit al usuario: el párrafo 🦆 de una parada (modo corto) y la explicación por pasos que pide el dev-lead (modo largo).
+
+## Requisitos
+
+### El 🦆 de una spec es un párrafo llano de qué y cómo
+
+- GIVEN el molde `exportes`, cuyo `PRODUCT.md` dice «**Franja**: … _Evitar_: slot, hueco», y la spec de la feature 0013 (exportar solo las reservas de una sala), cuyo Approach nombra `src/export/filter.js` y `bookingsBySlot`
+- WHEN una skill invoca `sdd-rubber-duck` en modo corto para el 🦆 de esa spec
+- THEN devuelve un solo párrafo que empieza por 🦆, de cinco frases como máximo, que dice primero qué cambia para quien exporta, con un ejemplo con datos («exportar marzo de la sala Norte trae solo sus reservas»), y después cómo
+- AND el párrafo no contiene `src/export/filter.js`, `bookingsBySlot` ni «slot»
+- AND devuelve el párrafo sin hacer preguntas
+
+### El 🦆 de un bloqueo lo cuenta en palabras del producto
+
+- GIVEN el molde `exportes` con el test `exporta en la hora del usuario` en rojo, porque el formateador escribe la hora en UTC, y la feature 0012 sin poder cerrarse por ese test
+- WHEN una skill invoca `sdd-rubber-duck` en modo corto para explicar al dev-lead por qué para
+- THEN el párrafo, con 🦆, dice qué le pasa a quien exporta («una reserva de 10:00 sale en su calendario a las 08:00») antes que la causa técnica
+- AND un término técnico que necesita, como UTC, se explica en la misma frase por su efecto
+- AND lo que queda por decidir va después del párrafo como afirmación («falta decidir en qué hora se escribe»), sin pregunta
+
+### Una explicación larga sigue el camino real, paso a paso
+
+- GIVEN el molde `exportes`
+- WHEN el dev-lead pide «Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero»
+- THEN la respuesta son de 3 a 9 pasos numerados, cada uno respaldado por un fichero del molde, que siguen una exportación concreta (marzo, sala Norte) desde la orden hasta el fichero `.ics`
+- AND usa las palabras del glosario («franja», «reserva»), no las del código (`slot`, `booking`)
+- AND las rutas de fichero van solo en una lista final, titulada en el idioma del usuario: «Dónde mirar» si escribe en castellano, «Where to look» si escribe en inglés
+- AND termina ofreciendo resolver dudas
+
+### La pregunta de un carril que pregunta abre con su 🦆
+
+- GIVEN `sdd-propose` con un cambio clasificado como patch, lite o config
+- WHEN pregunta el carril
+- THEN antes de la pregunta va un párrafo con 🦆, escrito por `sdd-rubber-duck` en modo corto, que dice qué cambiará para quien usa el producto
+- AND en config, que no cambia nada para quien usa el producto, dice qué se toca y qué pruebas pasan antes de guardarlo: «la versión mínima de Node que pide el proyecto pasa a la 22.18; antes de guardarlo pasan todas sus pruebas»
+- AND lo que queda por decidir va en la pregunta, no en el párrafo
+
+### Si el último mensaje no llegó, se vuelve a contar con contexto y frases cortas
+
+- GIVEN el molde `exportes` y un mensaje anterior del agente al dev-lead: «El fallo está en el formateador: escribe la hora con `toISOString()`, que serializa en UTC, y el test `exporta en la hora del usuario` espera la local; hay que pasarle la zona del usuario»
+- WHEN el dev-lead contesta «No te he entendido»
+- THEN el agente invoca `sdd-rubber-duck` y lo vuelve a contar empezando por un poco de contexto: qué estábamos haciendo y dónde estamos
+- AND con frases de 25 palabras como mucho, una idea cada una
+- AND con las palabras del glosario («franja», «reserva»), sin `toISOString()`, sin el nombre del test y sin «UTC» si no lo explica en la misma frase por su efecto
+
+### El 🦆 de una parada solo nombra efectos que comprobó
+
+- GIVEN el molde `exportes` en la rama de la feature 0013, cuya Task 2 pone cuatro espacios delante de dos líneas de ayuda de `README.md`, ya dentro de un recuadro de código
+- WHEN una skill invoca `sdd-rubber-duck` en modo corto para el 🦆 de ese freno de alcance, y su material dice, sin comprobarlo, que con esos espacios la ayuda se verá como código
+- THEN el párrafo no atribuye a los cuatro espacios un cambio en cómo se ve la ayuda, o abre `README.md` o el diff antes de nombrar el efecto
+
+### El 🦆 de una parada no nombra un id de la batería sin decir qué es
+
+- GIVEN una parada por dinero cuyo material dice «RED de `co2p` 0/2, `CO2P-M` falla en co2p-1 y co2p-2; el GREEN cuesta 1,31 $ más»
+- WHEN una skill invoca `sdd-rubber-duck` en modo corto
+- THEN el párrafo dice qué se mide y qué cuesta seguir sin nombrar `co2p` ni `CO2P-M`, o diciendo antes qué es cada uno

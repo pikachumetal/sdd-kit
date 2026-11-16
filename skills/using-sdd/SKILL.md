@@ -1,34 +1,36 @@
 ---
 name: using-sdd
-description: Usar al empezar cualquier conversación en un proyecto con .docs/sdd/, antes de responder, preguntar o invocar brainstorming — dice por qué skill del kit SDD entra cada petición.
+description: Use at the start of any conversation in a project with .docs/sdd/, before answering, asking or invoking brainstorming — says which SDD kit skill each request enters through.
 ---
 
 # using-sdd
 
 ## Overview
 
-Este proyecto trabaja con el kit SDD (`.docs/sdd/`). Es una instrucción del proyecto y **prevalece** sobre la regla de superpowers de invocar `brainstorming` primero: las puertas de entrada son las skills del kit, y `brainstorming`, `writing-plans` y `executing-plans` se usan dentro de ellas, cuando la skill del kit las invoca.
+This project works with the SDD kit (`.docs/sdd/`). This is a project instruction and **takes precedence** over superpowers' rule of invoking `brainstorming` first: the entry gates are the kit's skills, which don't invoke `brainstorming` or `writing-plans`.
+<!-- kit: incluye user-language -->
 
-## Puertas
+## Gates
 
-| Lo que escribe el usuario | Puerta |
+| What the user writes | Gate |
 | --- | --- |
-| Sin `.docs/sdd/`, quiere trabajar con SDD: proyecto nuevo · con código | `sdd-kit:sdd-init-greenfield` · `sdd-kit:sdd-init-brownfield` |
-| Una pregunta o una duda: «¿cómo funciona…?», «¿se puede…?», «no lo pillo» | `sdd-kit:sdd-consult` |
-| Planificar sin hacerlo todavía: «apunta en el roadmap», «no lo arranques». Algo grande: varias funcionalidades a la vez, o una que el criterio de partir de `sdd-start-feature` partiría; notas de una reunión; items del gestor (Azure DevOps, Jira), también los que te han asignado para hacerlos; reordenar; preparar la release siguiente | `sdd-kit:sdd-roadmap` |
-| Una funcionalidad concreta o un cambio en el que hay que decidir cómo es (qué se ve, de dónde sale un dato), aunque sea pequeño o pidan un patch: «añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido» | `sdd-kit:sdd-start-feature`, antes que `brainstorming` |
-| Un cambio pequeño con la solución ya fijada: un fallo reproducible; un ajuste solo de presentación (solo plantillas o estilos, que mueve, envuelve o cambia la clase de elementos sin añadir bindings, `@if`, `*ngIf`, `v-if`, `@for`, eventos, textos ni claves de i18n, y sin TypeScript, API, datos ni capacidades) o una retirada de elementos; o un ticket o dev-lead que dicen, literal, qué cambia | `sdd-kit:sdd-start-patch` |
-| Cerrar la entrega de una versión, mandar las notas al cliente | `sdd-kit:sdd-end-release` |
-| Cómo quiere trabajar cada uno: «me paras mucho», «quiero menos preguntas», «déjamelo configurado para mí» | `sdd-kit:sdd-config`, nunca la memoria del agente: la memoria se queda en un PC y el kit no la lee |
-| Una edición sin comportamiento: un typo, un renombrado, un formato del código. Mover lo que se ve, o cambiar un texto visible por otro dado literal, es patch | directa, sin skill |
+| No `.docs/sdd/` and wants to work with SDD, or an init in progress (`.docs/sdd/sdd-kit.json` with the `init` key): «sigue con la init» | `sdd-kit:sdd-init` |
+| An initialized project wants to catch up with the kit («actualízame al kit», «ponme el proyecto al día»), or accepts the offer of the migrations notice | `sdd-kit:sdd-upgrade` |
+| A question or a doubt: «¿cómo funciona…?», «¿se puede…?», «no lo pillo», «pensemos cómo…» | `sdd-kit:sdd-explore` |
+| Planning without doing it yet: «apunta en el roadmap», «no lo arranques». Several features at once; notes from a meeting; items from the tracker (Azure DevOps, Jira), including those assigned to you to do; reordering; preparing the next release; «dame el prompt de la <id>»; «qué sigue», «dame la siguiente» | `sdd-kit:sdd-roadmap` |
+| A change, even a small one or one asked for as a patch: a feature («añade…», «hazme…», «let's build…», «es una tontería, hazlo rápido»), a failure, a presentation adjustment or removal, a dependency, CI or settings change, a typo or rename, an investigation that leaves measurements | `sdd-kit:sdd-propose`, before `brainstorming` |
+| Creating a skill: «quiero una skill para…» | `sdd-kit:sdd-agent-writing` |
+| Resuming a paused feature or patch: «retoma la feature», «sigue con la Task 3», «retoma el patch» | `sdd-kit:sdd-implement` |
+| Closing the delivery of a version, preparing the client's notes | `sdd-kit:sdd-end-release` |
+| How each person wants to work: «me paras mucho», «quiero menos preguntas», «déjamelo configurado para mí» | `sdd-kit:sdd-config`, never the agent's memory: memory stays on one PC and the kit doesn't read it |
 
-## Regla de duda
+## Doubt rule
 
-Si la petición no dice qué es ni cuánto abarca («hay que mejorar las reservas»), no elijas puerta: haz **una sola pregunta** sobre qué es y cuánto abarca, con tu **recomendación primero**, antes de invocar ninguna skill de arranque. Con la respuesta, eliges puerta.
+If the request doesn't say what it is or how much it covers («hay que mejorar las reservas»), don't choose a gate: ask **one single question** about what it is and how much it covers, with your **recommendation first**, before invoking any entry skill.
 
-| Racionalización | Realidad |
+| Rationalization | Reality |
 | --- | --- |
-| «Quiere que se haga, así que es una feature» | Querer que se haga no dice el tamaño. Sin saber qué es, la puerta es una suposición: pregunta. |
-| «Lo guardo en memoria para próximas sesiones» | La preferencia es del kit: `sdd-config` la escribe en `sdd-kit.local.json`, que leen todas las skills. |
-| «Solo toco la plantilla: edición directa» | Lo que se ve se valida en una captura: patch. Con un `@if` o un texto que nadie fijó, feature. |
-| «Me los han asignado: los hago uno detrás de otro» | Sin fila en el roadmap no hay enunciado ni id. `sdd-roadmap` los apunta y después arrancan. |
+| "They want it done, so it's a feature" | Wanting it done doesn't say the size. Without knowing what it is, the gate is a guess: ask. |
+| "I'll save it to memory for future sessions" | The preference belongs to the kit: `sdd-config` writes it in `sdd-kit.local.json`, which every skill reads. |
+| "It's a typo or a version bump: a direct edit" | There is no direct edit: `sdd-propose` classifies it, and config runs the tests before the commit. |
+| "They've been assigned to me: I'll do them one after another" | Without a roadmap row there is no statement or id. `sdd-roadmap` records them and they start afterwards. |

@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/ROADMAP.md .docs/PRODUCT.md 2>/dev/null | head -80; git grep -il libres | head
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Bash: cat src/app.js package.json; grep -n -i -B2 -A12 libres test/app.test.js; cat .docs/sdd/steering/constitution.md | head -60; ls .docs/sdd/specs; grep -n -i libres README.md CHANGELOG.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cat .docs/sdd/specs/20260917-090000-task-0006-free/*.md | head -80; B="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills/sdd-propose/references"; cat "$B/modo-lite.md" | head -60; git log --oneline | head
+<<< # Spec — free
+
+status: done
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, bu
+
+=== RESULTADO (7 turnos, 0.142124 $)
+Ahora: clasificar el cambio. Queda: tu respuesta a la pregunta de carril y, después, la spec corta, ~10 min.
+
+🦆 Hoy `salas libres 10:00-12:00` solo mira la franja: ignora el día, así que una reserva del lunes hace que Norte salga ocupada también el martes. Aceptar el día significa que la consulta pase a decir qué salas están libres en esa franja de ese día. Se toca solo `libres` en `src/app.js` y sus tests; no cambian reservar, cancelar ni anular.
+
+He mirado el código y es un cambio pequeño, pero no es un patch. El patch exige que la solución esté fijada, y aquí hay decisiones visibles que nadie ha fijado (ver 2). Cumple las condiciones del modo lite:
+
+- El flujo ya existe y se lee: `libres` y `freeRooms` en `src/app.js`.
+- No cambia contratos públicos: la franja sigue funcionando como hasta ahora, solo se añade un argumento opcional.
+- No toca el esquema de datos: `bookings` ya guarda `day`.
+- Cabe en un solo módulo, `src/app.js`, con su test.
+- La estimación está muy por debajo de media jornada.
+
+Perfil actual: `delegate`, tomado de `sdd-kit.json`. No hay `sdd-kit.local.json`.
+
+**1. ¿Qué carril quieres?**
+
+1. **Lite (recomendada):** spec corta con su revisión y su puerta de aprobación, sin plan. Si al implementar cae alguna condición, subo a full.
+2. **Feature en modo full:** spec completa y plan. Es más ceremonia de la que pide el cambio.
+
+**2. ¿Cómo se pasa el día?** Es lo que cerraré en la spec. Mi propuesta:
+- Se escribe `salas libres <franja> [día]`, por ejemplo `salas libres 10:00-12:00 lun`. Esa forma conserva la que ya existe.
+- Sin día, se comporta como hoy, para no romper el uso actual.
+- El día usa el mismo formato que las reservas (`lun`, `mar`…).
+
+Si te ausentas, puedes decirme «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+
+Respóndeme con el número del carril y dime si estás de acuerdo con la propuesta del día o la cambias.

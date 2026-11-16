@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, aprobación, validación diferida y política de merge. La tabla que aplican las skills vive en `skills/sdd-start-feature/references/control-profiles.md`.
+Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, aprobación, validación diferida y política de merge. La tabla que aplican las skills vive en `skills/sdd-propose/references/control-profiles.md`.
 
 ## Requisitos
 
@@ -10,22 +10,23 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN un proyecto con `control.profile` en `sdd-kit.json`, o sin él (default `delegate`)
 - WHEN el agente recorre una feature
-- THEN para en estos puntos y en ningún otro: `pair` en la spec, el plan, tras cada task, los desvíos, la validación y antes del merge; `delegate` en la spec, los desvíos y la validación; `unattended` en ninguno hasta terminar la release
+- THEN para en estos puntos y en ningún otro: `pair` en el arranque, la spec, el plan, tras cada task, los desvíos, la validación y antes del merge; `delegate` en el arranque, la spec, los desvíos y la validación; `unattended` en ninguno hasta terminar la release
+- AND el arranque para solo con la pregunta del carril de patch, lite y config, o con la de partir una feature grande; en full y spike sin partir, `sdd-propose` anuncia y sigue
 - AND en `pair` se confirman siempre las acciones hacia fuera (push, PR, publicar); en `delegate` y `unattended` también, salvo el push de la rama de integración tras el merge del cierre cuando `merge.push` es `true`; en los tres, el merge a `main` y el tag los decide una persona
 
 ### La primera pregunta confirma carril, modo y perfil
 
-- GIVEN una feature que arranca con usuario presente
-- WHEN el agente termina de leer el contexto
-- THEN su primera pregunta, sola en su turno, confirma carril y modo, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta feature
-- AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, la pregunta propone esa fila como enunciado
-- AND en `pair` y `delegate`, una de sus opciones aprueba la spec por delegación con la frase «apruebo la spec por delegación, nos vemos en la validación»
-- AND con la sesión en el modelo más capaz y más de una task prevista, otra opción aprueba igual y añade «…y paras antes de la Task 1 para que baje la sesión a gama media», con las tasks que prevé («prevé 3 tasks») y el motivo: en Native la sesión implementa todas las tasks y va bien en Sonnet con effort medium; con una sola task prevista no se ofrece, porque rehacer la caché al cambiar de modelo no compensa
-- AND si el usuario la elige, el agente escribe el plan, junta la apertura en su commit y para antes de la Task 1, sea cual sea el método
+- GIVEN un cambio que arranca con usuario presente
+- WHEN `sdd-propose` termina de clasificar
+- THEN en full y spike no pregunta: anuncia carril, perfil vigente y de qué nivel sale, avisa de cada clave de `sdd-kit.local.json` que ignora, y sigue
+- AND en patch, lite y config pregunta, sola, el carril con su 🦆, ofrece lite citando el predicado si se cumple y dice el perfil vigente con la opción de cambiarlo para esta feature
+- AND si la rama es `feature/<id>` y `<id>` tiene fila pendiente en el roadmap, el anuncio o la pregunta toman esa fila como enunciado
+- AND en `pair` y `delegate`, el anuncio de full y spike dice las frases con las que el dev-lead aprueba la spec por delegación («apruebo la spec por delegación, nos vemos en la validación»), con la sesión en el modelo más capaz y más de una task prevista su variante «…y paras antes de la Task 1 para que baje la sesión a gama media», y cambia el perfil para esta feature («perfil pair para esta feature»); la pregunta de lite las lleva como opciones
+- AND si el dev-lead dice o elige la variante, el agente escribe el plan, junta la apertura en su commit y para antes de la Task 1, sea cual sea el método
 
 ### La spec aprobada por delegación en la primera pregunta no para
 
-- GIVEN el usuario eligió en la primera pregunta la opción que aprueba la spec por delegación
+- GIVEN el usuario eligió la opción que aprueba la spec por delegación en la pregunta de `sdd-propose`, o escribió la frase «apruebo la spec por delegación»
 - WHEN la spec está escrita y repasada
 - THEN el agente la aprueba sin parar, registra la frase literal y la fecha en «Decisiones tomadas con el dev-lead» y en «Aprobaciones», decide él la review de spec y la registra, y sigue
 - AND el resto de paradas del perfil vigente sigue igual: la validación final no se quita nunca
@@ -33,8 +34,9 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### La primera pregunta propone partir una feature grande
 
 - GIVEN una feature cuyo enunciado, leído con el código que toca, prevé más de 5 tasks internas en el plan, o 4 o 5 que tocan capacidades o superficies distintas (BD, UI, API) o alguna con migración
-- WHEN el agente formula la primera pregunta de la entrevista
-- THEN propone partirla en features con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera
+- WHEN `sdd-propose` termina de clasificar
+- THEN pregunta si partirla en features con fila propia en el roadmap, con la partición y el motivo, como opción recomendada junto a seguir entera, aunque el carril sea full
+- AND en `pair` y `delegate`, la misma llamada ofrece aprobar la spec por delegación y, con la sesión en el modelo más capaz, su variante de parar antes de la Task 1 para bajar la sesión a gama media
 - AND con 3 tasks o menos no lo propone; con 4 o 5 de la misma superficie y sin migración, tampoco, y dice el recuento
 - AND el usuario decide; si sigue entera, no se vuelve a proponer en esa feature
 
@@ -47,21 +49,30 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### Un cambio a la spec aprobada es un desvío
 
-- GIVEN una spec aprobada y una ejecución en curso
-- WHEN el trabajo exige cambiar un requisito, un THEN, el Scope o un «No entra»
-- THEN en `pair` y `delegate` el agente para, propone el cambio como entrada de `## Enmiendas` en la spec y espera la aprobación
-- AND en `unattended` elige la opción más conservadora, la registra como enmienda sin aprobar y, si no hay opción que no bloquee, aparca la feature (`⏸️ aparcada: <motivo>`)
-- AND si la enmienda añade ficheros, la entrada nombra, antes de pedir la aprobación, las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno en «Ficheros que toca», o dice «solape no comprobable» si el roadmap no declara ficheros; con la aprobación, la fila de la feature añade esos ficheros
+- GIVEN la spec aprobada de cancelar reservas, con la Task 1 cerrada y la Task 2 en curso, que descubre que la spec pide guardar el motivo de la cancelación y la tabla de reservas no tiene ese campo
+- WHEN el trabajo exige cambiar un requisito, un THEN, el Scope, un «No entra» o «Dónde se prueba»
+- THEN en `pair` y `delegate` el agente para con el 🦆 del cambio y su ✋, deja escrito sin commitear el THEN corregido en su sitio de la spec y la línea en `## Enmiendas`, y espera la aprobación
+- AND en `pair` y `delegate`, si la corrección cambia el delta —un requisito, un GIVEN, un WHEN o un THEN, también el que pide la revisión final—, antes de parar despacha un revisor de spec en `sonnet` con los siete puntos de `review-spec.md`, y su ✋ trae sus hallazgos; también después de la re-revisión única, porque lee la spec y no un commit de código
+- AND con la aprobación, commitea la spec y sigue implementando; si la enmienda obliga a cambiar la Task 1, ya cerrada (guardar quién cancela con `--por <nombre>`), añade al plan `Task 3 — enmienda <fecha>: guardar quién cancela` con su `Tras` y anota en `tasks.md` la Task 1 como `afectada por enmienda <fecha> → Task 3`; si solo cambia la Task 2 en curso (quitar «quién canceló» del listado), el trabajo sigue en la Task 2, con la nota de la enmienda
+- AND la Task 1 no se reabre ni se reescribe su commit; una task nueva no se da por hecha sin su verificación ni su `sdd task done`
+- AND sin aprobación no sigue con la enmienda
+- AND la misma acción se aplica cuando la respuesta a un freno de alcance cambia el texto de la spec; si no lo cambia, la respuesta se apunta en «Enmiendas» sin corregir nada
+- AND en `unattended` elige la opción más conservadora, la aplica igual en su sitio con su línea de «Enmiendas» marcada `sin aprobar` y, si no hay opción que no bloquee, aparca la feature (`⏸️ aparcada: <motivo>`)
+- AND si la enmienda añade ficheros, la entrada nombra, antes de pedir la aprobación, las features abiertas del roadmap (⏳, 🔄, ⏸️, 🧪) que declaran alguno en el «Toca:» de su brief (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x), o dice «solape no comprobable» si el roadmap no declara ficheros; con la aprobación, el «Toca:» o la fila de la feature añade esos ficheros
+- AND con el humo de una skill fallado y una ronda de REFACTOR cuya guía nueva añade un AND a un requisito de la spec, el hilo para con el 🦆 y el ✋ antes de commitear esa guía, y no la commitea en la task en curso para pedir la aprobación en la siguiente
+- AND en `pair` y `delegate`, un AND o un THEN de una ronda de REFACTOR o de fix que solo aplica, literal, una línea de «Decisiones tomadas con el dev-lead» de la spec no para: se escribe en su sitio con su línea de `## Enmiendas` marcada `sin aprobar`, se commitea con la ronda y se nombra en ✋; un valor, un caso o un texto que esa línea no dice para como desvío
+- AND un punto del Scope marcado «si el RED lo exhibe», con RED limpio 3 de 3, sale con un `Ruling:` y sin parar; con menos sujetos, no sale
+- AND un punto del Scope sin esa marca, con RED limpio, es un desvío: para con la medida en la pregunta, y ni lo saca ni escribe su guía
 
 ### Salir del plan es un ruling visible
 
 - GIVEN una ejecución que se aparta del plan sin cambiar la spec (un fichero de «NO se tocan», un orden distinto, un fix del hilo principal) y sin caer en un freno de alcance
 - WHEN el agente decide
-- THEN no para: registra el ruling, y todo commit del hilo principal entra en el alcance de la revisión de la task en curso; si no queda ninguna, de la revisión final de rama; y si la revisión final ya volvió, de la re-revisión del tramo `<revisión final>..HEAD`
-- AND un commit del hilo que cambia menos de 20 líneas (añadidas más borradas, `git diff --numstat`; en un merge, las de `git show --remerge-diff`) y en el que todo lo que cambia es documentación o comentarios —ficheros bajo `.docs/`, `*.md` de cualquier ruta y líneas de comentario del código— no despacha revisor: el hilo lee el diff y lo anota en «Me salí del plan en…» como `revisado en el hilo: <sha> · <ficheros> · <n> líneas`
+- THEN no para: registra el ruling, y todo commit del hilo principal entra en el alcance de la revisión de la task en curso; si no queda ninguna, de la revisión final de rama; y si la revisión final ya volvió, del cierre de la revisión de [`verification`](verification.md): la única re-revisión o, si ya salió, `sin revisar` en ✋
+- AND un commit del hilo que cambia menos de 20 líneas (añadidas más borradas, `git diff --numstat`; en un merge, las de `git show --remerge-diff`) y en el que todo lo que cambia es documentación o comentarios —ficheros bajo `.docs/`, `*.md` de cualquier ruta y líneas de comentario del código— no despacha revisor: el hilo lee el diff y lo anota en «✋ Me salí del plan en…» como `revisado en el hilo: <sha> · <ficheros> · <n> líneas`
 - AND un `.md` que un agente o un programa lee como instrucciones o como plantilla, un comentario que una herramienta interpreta (`eslint-disable`) y cualquier otra línea, también un diccionario del corrector, despachan revisor
-- AND la pasada de fix de la propia revisión final tampoco entra en la re-revisión del tramo: en Native la verifica su TDD, y en SDD su re-revisión acotada. Un commit posterior a la pasada sí entra
-- AND la presentación de la validación abre con el bloque «Me salí del plan en…», separado del resto de decisiones
+- AND la pasada de fix de la propia revisión final entra en esa re-revisión, con los dos métodos
+- AND la presentación de la validación abre con el 🦆 y el bloque «✋ Me salí del plan en…», separado del resto de decisiones
 
 ### El tercer fix descubierto abre un checkpoint de alcance
 
@@ -89,7 +100,10 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN una feature en ejecución y la siguiente task del plan con ficheros en «Crear» o «Modificar»
 - WHEN el agente va a despacharla, antes de escribir sus tests RED
 - THEN cruza `git diff --name-only $(git merge-base HEAD <integración>) <integración>` (y `origin/<integración>` tras `git fetch` si hay remoto) con esos ficheros
-- AND si alguno coincide, lo trata como freno de alcance: en `pair` y `delegate` nombra los ficheros y los commits que los tocan y para; en `unattended` sigue y lo registra como enmienda sin aprobar
+- AND si alguno coincide, compara `git diff -U0` de la base con las líneas que la task va a tocar
+- AND si la task solo toca la línea de `libres` de `README.md` y la base cambia «Soporte», registra un ruling con los dos tramos y sigue, sin parar
+- AND si la base cambia esa misma línea y la spec declara ese solape con fichero y región, registra un ruling con los dos tramos y sigue
+- AND si la base cambia esa misma línea sin que la spec lo declare, o el plan no deja saber qué líneas toca la task, es freno de alcance: en `pair` y `delegate` nombra los ficheros, los commits y los tramos («la base cambia las líneas 11-11; la task toca la 11») y para; en `unattended` sigue y lo registra como enmienda sin aprobar
 
 ### La validación puede diferirse con condiciones
 
@@ -104,10 +118,11 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 ### Con `validation.mode: field`, la validación es en campo
 
-- GIVEN un proyecto con `"validation":{"mode":"field"}` en `.docs/sdd/sdd-kit.json` y la feature 0030 con la revisión final limpia, su smoke por THEN y la suite en verde, en cualquier perfil
-- WHEN el agente llega a la validación (paso 7 de `sdd-start-feature`, paso 0 de `sdd-end-feature`), o cierra el patch 0031 (paso 0 de `sdd-end-patch`)
+- GIVEN un proyecto con `"validation":{"mode":"field"}` en `.docs/sdd/sdd-kit.json` y la feature 0030 con el cierre de su revisión final terminado, su smoke por THEN y la suite en verde, en cualquier perfil
+- WHEN el agente llega a la validación (el paso de validación de `sdd-archive`), o cierra el patch 0031 con `sdd-archive`
 - THEN no pregunta qué ha probado el usuario ni ofrece diferir, y sigue con el cierre sin parar
-- AND el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutó (p. ej. `suite 412/412 en 96 s · smoke 5/5 THEN con ejecución real · revisión final Opus limpia sobre a1b2c3d`)
+- AND el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutó (p. ej. `suite 412/412 en 96 s · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`)
+- AND con un `sin revisar` o un «no verificado» sin resolver, esa línea no dice «limpia»: dice cuántos quedan (`…, re-revisión limpia, 1 sin revisar`)
 - AND la fila de la 0030 en el roadmap queda ✅, y la del patch 0031 en «Patches» no lleva el prefijo 🧪 ni tiene fila en la tabla de la release abierta
 - AND sin la clave, o con `"mode":"manual"`, la validación es la de hoy: para en `pair` y `delegate` y se difiere al smoke de la release en `unattended`
 
@@ -121,10 +136,11 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 ### El merge a develop sigue la política declarada
 
 - GIVEN una feature o un patch validados (o diferidos) y un bloque `merge` completo (`into`, `noFf`, `removeWorktree`) en `sdd-kit.json`
-- WHEN el agente llega al paso de rama del cierre (paso 10 de `sdd-end-feature`, paso 6 de `sdd-end-patch`)
+- WHEN el agente llega al paso del merge de `sdd-archive`
 - THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
-- AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta
-- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, el paso 0 de `sdd-end-patch` para con el smoke y la pregunta de validación antes de tocar nada
+- AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta salvo en un hotfix con la frase del dev-lead en `--order`
+- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, la validación de `sdd-archive` para con el smoke y la pregunta de validación antes de tocar nada
+- AND en cualquier perfil, con la CI de la base en `failure` no fusiona («Antes del merge, el cierre lee la CI de la base y no fusiona sobre un rojo», en `archive`)
 
 ### Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás
 
@@ -138,7 +154,8 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN la rama destino sacada en un worktree con cambios sin commitear
 - WHEN el cierre va a fusionar
-- THEN no fusiona ahí: dice qué ficheros tienen cambios y para
+- THEN no fusiona ahí y sale con 1 con `destino sacado: el checkout de '<into>' en '<ruta>' tiene cambios sin commitear; el merge se haría encima de ellos, así que no se toca.`, el `git diff --stat HEAD` del checkout, `sin seguimiento: <ficheros>` si los hay, y el bloque `Salidas:` (commit de quien los hizo y relanzar, llevarlos a la feature y dejar el merge para luego)
+- AND la salida «Llevarlos a la rama de la feature: solo tocan registros (roadmap, changelog, deuda, estimation-log).» solo aparece si todos los ficheros sucios son `.docs/sdd/roadmap.md`, `.docs/sdd/changelog.md`, `ROADMAP.md`, `CHANGELOG.md`, `.docs/sdd/steering/debt.md` o `estimation-log.md`; con `.gitignore` o un `docs/roadmap.md` modificados, las salidas son dos
 - AND no hace `stash`, `reset` ni commit de lo ajeno
 
 ### Un merge que el entorno deniega se informa con su evidencia
@@ -166,44 +183,47 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN `merge.push: true` y un push que falla: el remoto lo rechaza, faltan credenciales o el entorno lo deniega
 - WHEN el cierre termina
 - THEN el mensaje final cita en un bloque el comando literal, cita el error y dice que el merge queda en local con el hash de `merge.into`
-- AND el agente no reintenta con `--force`, `pull`, `rebase` ni otra herramienta
+- AND el agente no reintenta con `--force`, `pull` ni `rebase`, y un push que el remoto rechaza o el entorno deniega lo desbloquea una persona, sin otra herramienta ni otra forma de la orden
+- AND un push cuya clave SSH falla, con `Permission denied (publickey)` y una sesión en `gh auth status`, se relanza una vez antes de informar: el mismo `sdd merge --push`, por HTTPS con el token de `gh`, con las claves solo en el entorno de esa orden (`GIT_CONFIG_COUNT=2`, `url.https://github.com/.insteadOf` con el prefijo `git@github.com:` del remoto y `credential.helper` con `!gh auth git-credential`), sin tocar `~/.ssh` ni `.gitconfig`; si publica, el mensaje final da el push como hecho y lleva `Push relanzado por HTTPS: Permission denied (publickey) por SSH`
+- AND sin sesión de `gh`, o si el relanzamiento falla también, es un push que no sale: informa como arriba
 
 ### El cierre acaba con una línea de terminado
 
-- GIVEN un cierre de feature (`sdd-end-feature`) o de patch (`sdd-end-patch`) que ha recorrido su checklist
+- GIVEN un cierre de feature o de patch con `sdd-archive` que ha recorrido su checklist
 - WHEN el agente escribe su último mensaje
-- THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, y lo pendiente; y ofrece el ticket del kit si toca
-- AND su última línea es la de terminado: si la rama está fusionada en `merge.into` y el worktree no tiene cambios sin commitear, dice rama, destino, hash, estado del push (hecho, no hecho y por qué) y que se puede borrar el worktree, con su ruta; si no, dice «No terminado», qué falta y que el worktree no se borra todavía
+- THEN el mensaje nombra, si los hay, el disparador que concretó el agente, las decisiones tomadas sin el dev-lead que registra el walkthrough (o el `patch.md`), cada instrucción que el dev-lead dio antes del cierre y cómo quedó, lo pendiente y lo que falta de su familia; y ofrece el ticket del kit si toca
+- AND su última línea es la de terminado: si la rama está fusionada en `merge.into` y no quedan cambios sin commitear del propio cambio, dice rama, destino, hash, estado del push (hecho, no hecho y por qué) y que se puede borrar el worktree, con su ruta; si no, dice «No terminado», qué falta y que el worktree no se borra todavía
+- AND el ticket del kit no cuenta para esa línea: con la 0081 fusionada y empujada y su ticket todavía por escribir, la línea es `**Terminado.**` y no «No terminado. Falta el ticket»
 - AND con el merge o el push denegados o fallidos, sus bloques de evidencia van antes, y la línea de terminado sigue siendo la última: «No terminado» si falta el merge; con el merge hecho y el push fallido, dice «push no hecho» y el motivo
 - AND solo se ofrece borrar un worktree enlazado: si la rama está en el checkout principal del repo, la línea acaba en el push, sin cláusula de borrado
-- AND si después el agente escribe el ticket del kit en ese worktree, repite la línea de terminado con el ticket como pendiente hasta que se commitee y se fusione
+- AND si el dev-lead acepta el ticket después de esa línea, el ticket va adonde lo mandan las instrucciones del proyecto (`CLAUDE.md`, `AGENTS.md`); sin ellas, se commitea en la rama y se fusiona con `sdd merge`, y el mensaje que lo escribe acaba otra vez con la línea de terminado, con el hash del nuevo merge; el ticket nunca la vuelve «No terminado»
 
 ### Un conflicto en el estimation-log se regenera con el script
 
 - GIVEN un merge del cierre con conflicto en `estimation-log.md`
 - WHEN el agente resuelve los conflictos
-- THEN regenera `estimation-log.md` con `Build-EstimationLog.ps1` de `sdd-templates/scripts/`, y no lo edita a mano
+- THEN regenera `estimation-log.md` con `sdd estimation log`, y no lo edita a mano
 
 ### El merge del cierre espera su turno
 
 - GIVEN dos cierres del mismo repo que fusionan en `merge.into` a la vez, desde worktrees distintos
-- WHEN los dos ejecutan `Invoke-SddMerge.ps1`
+- WHEN los dos ejecutan `sdd merge`
 - THEN el segundo espera y dice quién tiene el cerrojo (rama y worktree); fusiona cuando el primero lo suelta, sobre la rama destino que dejó el primero
-- AND si el cerrojo no se libera en `-LockTimeoutMinutes`, el script falla nombrando al dueño y no toca nada; un cerrojo de un proceso que ya no existe en la misma máquina se toma, y el script lo dice
+- AND si el cerrojo no se libera en `--lock-timeout`, el script falla nombrando al dueño y no toca nada; un cerrojo de un proceso que ya no existe en la misma máquina se toma, y el script lo dice
 
 ### El merge del cierre parte de la rama destino publicada
 
 - GIVEN una rama destino con remoto que avanzó después de abrir la feature
 - WHEN el cierre fusiona
 - THEN antes de fusionar la feature, integra en la rama destino local los commits del remoto
-- AND si en cada fichero en conflicto cada trozo solo añade líneas por los dos lados, los une (primero la rama destino) y regenera `estimation-log.md` con `Build-EstimationLog.ps1`; con cualquier otro conflicto, falla con la lista de ficheros
+- AND resuelve sus conflictos como el merge de la feature: regenera `estimation-log.md` con `sdd estimation log`, une los registros por id, une los trozos que solo añaden líneas por los dos lados (primero la rama destino), une los `THEN` y `AND` de un requisito de una capacidad y prueba Mergiraf si está instalado; con cualquier otro conflicto, falla con `base: conflicto en` y la lista de ficheros
 
 ### El merge del cierre une los registros que solo añaden líneas
 
 - GIVEN dos ramas desde la misma rama destino que añaden cada una una fila a `roadmap.md`, una línea a `changelog.md`, una sección al final de otro documento o una palabra a `.cspell/custom-words.txt` en el mismo sitio, y la primera ya se ha fusionado
-- WHEN el cierre de la segunda ejecuta `Invoke-SddMerge.ps1`
-- THEN el script resuelve el conflicto dentro del cerrojo, en su worktree: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
-- AND si en algún trozo los dos lados cambian una línea que ya existía, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino
+- WHEN el cierre de la segunda ejecuta `sdd merge`
+- THEN el script resuelve el conflicto en su worktree —con `--verify`, al integrar la base en la rama del cambio, fuera del cerrojo; sin él, dentro del cerrojo—: deja las líneas de la rama destino y después las de la rama, regenera `estimation-log.md` y fusiona sin intervención
+- AND si en algún trozo los dos lados cambian una línea que ya existía y ni la unión por id de los registros, ni la de los `THEN` y `AND` de un requisito de una capacidad, ni Mergiraf lo resuelven, o los dos crean el mismo fichero, aborta y falla con `merge: conflicto en` y la lista de ficheros, sin tocar la rama destino; si el conflicto sale al integrar la base en la rama, falla con `base: conflicto en` y la rama del cambio vuelve a su commit, sin `MERGE_HEAD`
 
 ### El push del cierre publica la rama destino
 
@@ -218,36 +238,42 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - GIVEN un merge del cierre que falla: conflicto que no es el del log, verificación en rojo, push rechazado o error de git
 - WHEN el script termina
 - THEN la rama destino local vuelve al commit que tenía antes de fusionar la feature; no se empuja nada; el worktree temporal se ha retirado y el cerrojo está libre
+- AND la rama del cambio vuelve al commit que tenía antes de la integración que hizo el script, y su worktree queda en ella
 - AND el script sale con error y nombra el paso que falló y el motivo
-- AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de las últimas 20 líneas de la salida del hook, no un conflicto
+- AND si un hook rechaza el merge y no hay ficheros en conflicto, el motivo es `verificación: el hook rechazó el merge.` seguido de los tests fallidos y de las últimas 20 líneas de la salida del hook, no un conflicto
+- AND con el hook o `--verify` en rojo, si la salida tiene líneas de un test fallido —`[-] se llama sdd-archive` de Pester, ` FAIL  test/a.test.ts > grupo > nombre` o `× nombre` de Vitest, también tras un prefijo de moon como `cli:test | `—, antes de la cola va `tests fallidos:` y esas líneas, en orden y hasta 20; sin ninguna, el mensaje no cambia
+- AND si `git merge` falla sin conflictos y sin llegar a preparar el merge (un fichero sin seguimiento que sobrescribiría, una opción que su versión no admite), el motivo es `<paso>: git merge falló sin conflictos.` seguido de las últimas 20 líneas de su salida, no un rechazo del hook
 - AND si la verificación falla porque un fichero lo tiene abierto otro proceso, el motivo es `bloqueado: '<fichero>' lo tiene abierto <proceso>` (el que nombre la salida del gate, u «otro proceso») y la ruta del log, no `verificación:`
+- AND si `--verify` sale en rojo, corre otra vez, sin el cerrojo de merge, sobre la base integrada (`<remoto>/<destino>`), en el worktree del cambio desacoplado en ella, que vuelve después a su rama (en un hotfix, dentro del cerrojo y sobre el commit de antes del merge): con un gate `moon run … --affected`, los targets que corrió la pasada roja, como lista y sin `--affected`, y sin cruce, el gate sin `--affected`; y el error acaba con `base: en rojo: el mismo comando también falla sin la rama (salida en <log>); mira la deuda del proyecto antes de investigar` o con `base: en verde: el rojo lo trae la rama`; tras un `bloqueado:` o un rechazo del hook no corre
 
 ### La verificación del merge es el gate de merge, no la suite completa
 
-- GIVEN un proyecto cuyo `tech-stack.md` §Testing separa un conjunto rápido de la suite completa
-- WHEN el cierre fusiona con `Invoke-SddMerge.ps1`
-- THEN `-VerifyCommand` es el conjunto rápido, que corre sobre el resultado del merge y antes del push; con una sola suite, es esa
-- AND la suite completa ya corrió antes del script, en la validación final, y el mensaje final da su resultado
-- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `-VerifyCommand` se omite; la suite completa no se omite nunca
+- GIVEN un proyecto cuyo `steering/operations.md` §Testing separa un conjunto rápido de la suite completa
+- WHEN el cierre fusiona con `sdd merge`
+- THEN `--verify` es el conjunto rápido, que corre sobre la rama del cambio integrada con la base, antes del merge y del push; con una sola suite, es esa
+- AND el gate de cierre ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
+- AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; el gate de cierre no se omite nunca
+- AND `--verify` no lleva las suites unitarias ni lee «Sin filtro»: los aplicó el gate de cierre sobre el merge de sincronización
 
 ### Un conflicto solo en los registros se resuelve con un merge de sincronización
 
-- GIVEN un cierre de feature o de patch cuyo `Invoke-SddMerge.ps1` falla con `merge: conflicto en` y una lista formada solo por `changelog.md`, `roadmap.md` o `estimation-log.md` de `.docs/sdd/`
+- GIVEN un cierre de feature o de patch con su commit de cierre hecho y `origin/develop` por delante
 - WHEN el agente sigue la receta del merge
-- THEN en el worktree de la feature hace `git merge --no-edit <merge.into>`, en `changelog.md` y `roadmap.md` deja cada línea con el cambio del lado que la tocó, sin duplicar ninguna, regenera `estimation-log.md` con `Build-EstimationLog.ps1`, commitea el merge y relanza el script una vez, sin parar a preguntar
+- THEN ejecuta `sdd merge --sync --project-root <worktree>`, que integra `origin/develop` en la rama y resuelve los registros, los trozos que solo añaden y, si está instalado, lo que Mergiraf resuelva; con `base: integrada`, sigue con `sdd merge`, sin parar a preguntar
 - AND la rama destino acaba con las entradas de las dos features en cada registro y el log regenerado
 
 ### Un conflicto que no se puede conservar entero es de una persona
 
-- GIVEN un cierre cuyo script falla con `merge:` y en la lista hay un fichero que no es uno de los tres registros, o los dos lados tocaron la misma línea de `changelog.md` o `roadmap.md`, o el relanzamiento vuelve a fallar
+- GIVEN un cierre cuyo `sdd merge --sync` o cuyo `sdd merge` deja conflicto (`base: conflicto en` o `merge: conflicto en`), o el relanzamiento vuelve a fallar
 - WHEN el agente sigue la receta del merge
-- THEN no resuelve: aborta el merge de sincronización si lo empezó (`git merge --abort`), cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy
+- THEN no resuelve: cita el mensaje del script y los ficheros, y el cierre queda «No terminado», como hoy; `sdd merge` ya ha abortado el merge, y `--sync` lo deja a medias en el worktree, con los registros ya unidos, para que una persona resuelva los ficheros que lista y lo commitee
+- AND con `vuelta: conflicto en <ficheros>` de un hotfix, el script ya lo ha deshecho todo: una persona porta el arreglo a la rama de integración y relanza el hotfix
 
 ### El método de ejecución lo elige el handoff del plan
 
-- GIVEN una feature en modo full con la spec aprobada, superpowers ≥ 6.4.1, `execution` ausente o `auto` en `sdd-kit.json` y sin `native` ni `subagent` en `sdd-kit.local.json`, o `execution: auto` en `sdd-kit.local.json`
+- GIVEN una feature en modo full con la spec aprobada, `execution` ausente o `auto` en `sdd-kit.json` y sin `native` ni `subagent` en `sdd-kit.local.json`, o `execution: auto` en `sdd-kit.local.json`
 - WHEN el agente guarda el plan
-- THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff de `writing-plans` y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo sacado del plan>`
+- THEN en `delegate` y `unattended` no para: toma el método que recomienda el handoff y lo escribe en la cabecera del plan como `Ejecución: <native | subagent>, porque <motivo>`, y el motivo pesa por su nombre la dependencia entre las interfaces de las tasks, cuántas son, el coste de un error que llegue a la rama y si el plan cabe en un contexto, sin umbral numérico (`Ejecución: native, porque 3 tasks encadenadas por la interfaz de Ledger, un error lo caza el test de su task y el plan cabe en un contexto`)
 - AND en `pair` la parada del plan es una sola pregunta que aprueba el plan y elige el método, con la recomendación del handoff como primera opción; no hay una parada aparte para el método
 - AND ninguna task del plan lleva un campo `Ejecución` propio: el método es del plan entero, salvo el cambio a SDD tras una compactación
 
@@ -263,15 +289,15 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 
 - GIVEN un plan con `Ejecución: native` (recomendado por el handoff o fijado en `sdd-kit.json`), una sesión retomada tras una compactación y dos o más tasks sin su línea `complete` en el ledger
 - WHEN el hilo retoma la ejecución
-- THEN sigue con `subagent-driven-development` sobre el mismo ledger y lo registra como ruling, sin parar en `delegate` ni en `unattended`
-- AND con una sola task pendiente, o sin compactación, sigue en Native
+- THEN invoca `sdd-implement-subagent` con `Skill` y sigue con SDD sobre el mismo ledger, y lo registra como `Task <N>: Ruling: compactación — sigo con SDD — quedan <k> tasks`, sin parar en `delegate` ni en `unattended`
+- AND con una sola task pendiente sigue en Native y lo registra como `Task <N>: Ruling: compactación — sigo con Native — queda 1 task`; sin compactación, sigue en Native sin línea
 
 ### El perfil se hereda de la feature, de la persona, de la release o del proyecto
 
-- GIVEN un perfil en el `profile:` de la spec, `control.profile` en `.docs/sdd/sdd-kit.local.json`, una línea `Perfil de control: <perfil>` justo bajo el encabezado de la release en el roadmap o `control.profile` en `sdd-kit.json`
+- GIVEN un perfil en el `profile:` de la spec, `control.profile` en `.docs/sdd/sdd-kit.local.json`, una línea `Perfil de control: <perfil>` justo bajo el encabezado de la release en el roadmap (en `ROADMAP.md`, entre `## Now` y su tabla) o `control.profile` en `sdd-kit.json`
 - WHEN el agente determina el perfil vigente
 - THEN manda la feature sobre la persona, la persona sobre la release y la release sobre el proyecto; una spec sin `profile:` hereda
-- AND la primera pregunta de `sdd-start-feature` nombra el perfil vigente y de qué nivel sale
+- AND el anuncio o la pregunta del carril de `sdd-propose` nombran el perfil vigente y de qué nivel sale
 - AND el agente solo escribe un `profile`, un `control.*`, un `merge` o un `validation.mode` que quite una parada si el usuario lo pidió, con su frase literal y la fecha en una fila de «Aprobaciones» (o en el commit, si es `sdd-kit.json`; en `sdd-kit.local.json`, que no se commitea, basta la respuesta del usuario a `sdd-config`)
 
 ### Un método fijado en `sdd-kit.local.json` manda sobre el del proyecto
@@ -282,10 +308,211 @@ Cuánto para el agente a esperar al dev: perfiles de control, gates, desvío, ap
 - AND un método que el dev-lead nombra para la feature manda sobre los dos ficheros
 - AND un `execution: auto` en `sdd-kit.local.json` también cuenta: el método lo recomienda el handoff aunque `sdd-kit.json` fije `native` o `subagent`
 
+### La comprobación del destino no toca nada
+
+- GIVEN un worktree de feature y `develop` sacada en el checkout principal con `roadmap.md` modificado
+- WHEN se ejecuta `node sdd.js merge --check --project-root <worktree>`
+- THEN sale con 1 con el mismo mensaje de destino sacado que daría el merge, sin coger el cerrojo, sin fetch y sin cambiar ningún ref, índice ni fichero
+- AND con el checkout limpio sale con 0 y `destino: listo: 'develop' sacado en '<ruta>', sin cambios`; sin `develop` sacada, con `destino: listo: 'develop' irá en el worktree temporal '<ruta>'`
+
+### La suite no se repite si desde el commit verificado solo cambian docs
+
+- GIVEN una feature cuyo gate de cierre pasó en el commit `a1b2c3d` y una rama destino que desde entonces solo avanzó en `.docs/sdd/roadmap.md`
+- WHEN el cierre ejecuta `sdd merge --verify "<gate>" --verified-at a1b2c3d`
+- THEN no ejecuta `<gate>` y escribe `verificación: omitida: desde a1b2c3d solo cambian docs`
+- AND si desde `a1b2c3d` cambió cualquier fichero fuera de `.docs/` que no sea `*.md`, de la rama o de la base, ejecuta `<gate>`, y con un gate `moon run … --affected`, solo lo que se cruza; también si Mergiraf resolvió algún fichero, que tocaron los dos lados
+- AND `--verified-at nada` sale con 2 y `--verified-at: 'nada' no es un commit`, sin coger el cerrojo
+
+### El push del cierre reintenta si la rama destino avanzó
+
+- GIVEN `sdd merge --push` y un remoto en el que otra sesión publica `develop` entre el merge y el push
+- WHEN el push se rechaza y, tras un fetch, la `develop` remota ya no es antecesora de la local
+- THEN escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)`; sin `--verify`, integra la `develop` remota en la local y vuelve a empujar; con `--verify`, deshace el merge, suelta el cerrojo y repite fuera de él la integración en la rama y la verificación, como en «La verificación del merge corre fuera del cerrojo de merge»
+- AND en el reintento con `--verify` y un gate `moon run … --affected`, corre solo lo que toca la rama y también tocó lo que llegó desde el último commit verificado, que es la punta de la rama integrada que pasó la pasada anterior
+- AND si otra sesión publica `develop` mientras corre `--verify`, el reintento lo da el merge, con `merge: 'develop' cambió durante la verificación; …`, no el push
+- AND tras el tercer push rechazado falla con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato` y la rama destino como estaba
+- AND un rechazo con la remota todavía antecesora (credenciales, hook del servidor) falla con `push: no se pudo publicar 'develop' en 'origin'.` y, en las líneas siguientes, lo que escribió `git push` (`remote: rama protegida`), sin reintentar; el push atómico de un hotfix, igual
+
+### Un hotfix se fusiona en la rama estable, se etiqueta y vuelve a la integración
+
+- GIVEN `merge.into: develop`, la rama `hotfix/0200-fix-login` salida de `main` y ninguna `release/*` abierta
+- WHEN se ejecuta `sdd merge --branch hotfix/0200-fix-login --into main --tag v3.0.1 --order "fusiona el hotfix del login en main" --push`
+- THEN bajo un solo cerrojo fusiona la rama en `main` con `--no-ff` y el commit `merge: hotfix/0200-fix-login en main` con la línea `Orden del dev-lead: «fusiona el hotfix del login en main»`, crea la etiqueta anotada `v3.0.1` en ese commit, fusiona la misma rama en `develop` con `--no-ff`, y publica `main`, `develop` y `v3.0.1` en un solo push atómico
+- AND escribe `Fusionado hotfix/0200-fix-login en main: <hash>`, `etiqueta v3.0.1 en <hash>`, `Fusionado hotfix/0200-fix-login en develop: <hash>` y `publicado en origin`
+- AND con `release/3.1.0` abierta en `origin` (no antecesora de `main`), la vuelta va a `release/3.1.0` y no a `develop`; con dos abiertas en `origin` tras el fetch de `release/*` que hace el script, falla antes de sincronizar ni fusionar nada con `vuelta: hay varias ramas release/ abiertas (release/3.1.0, release/3.2.0); fusiona a mano`; una `release/` solo local no cuenta si hay remoto
+- AND una `release/3.2.0` que se borró en `origin` no cuenta como abierta aunque su ref de seguimiento siguiera en local antes del fetch
+- AND `--check` decide la vuelta con los refs de seguimiento que ya hay, sin fetch: no crea ni mueve ninguno
+- AND una rama `release/3.1.0` con `--into main` vuelve a `develop`
+- AND `--into main` sin `--order` sale con 2 con `--into 'main' distinta de merge.into necesita --order "<frase del dev-lead>"`; `--tag` sin ese `--into`, con `--tag solo con --into a la rama estable`; `--tag 'v3.0.1 beta'`, con `--tag: 'v3.0.1 beta' no es un nombre de etiqueta válido`, antes del cerrojo; y una etiqueta que ya existe falla sin tocar nada con `--tag: ya existe 'v3.0.1'`, o con `--tag: ya existe 'v3.0.1' en 'origin'` si solo existe en el remoto
+- AND si no se pueden consultar las etiquetas del remoto, falla sin tocar nada, también con `--check`, con `--tag: no se pudo consultar las etiquetas de 'origin'`
+
+### A la rama estable solo llegan ramas hotfix y release
+
+- GIVEN la rama `patch/0201-typo`
+- WHEN se ejecuta `sdd merge --branch patch/0201-typo --into main --order "llévalo a main"`
+- THEN sale con 1 con `--into: a 'main' solo llegan ramas hotfix/ o release/ (git-flow); 'patch/0201-typo' no lo es`, sin coger el cerrojo ni tocar ningún ref
+
+### Un hotfix cuya vuelta falla se deshace entero
+
+- GIVEN un hotfix que se fusiona en `main` y cuya vuelta a `develop` tiene un conflicto en `skills/x/SKILL.md` en el que los dos lados cambian la misma línea
+- WHEN el script llega a la vuelta
+- THEN deshace la vuelta, el merge en `main` y la etiqueta, no publica nada y falla con `vuelta: conflicto en skills/x/SKILL.md; se deshacen el merge en 'main' y la etiqueta: porta el arreglo a 'develop' a mano`
+- AND con la verificación de la vuelta en rojo, deshace lo mismo y da el error de verificación con su línea `base:`
+- AND si el push atómico se rechaza porque `main` o `develop` avanzaron en el remoto, deshace lo mismo y falla con `push: 'main' o 'develop' avanzó en 'origin'; relanza el hotfix`
+- AND si `main` y la rama de vuelta tienen remotos distintos, falla antes de tocar nada con `push: 'main' y 'develop' tienen remotos distintos ('origin', 'upstream'); fusiona a mano`; y si no se puede consultar la vuelta en el remoto, con `vuelta: no se pudo consultar 'develop' en 'origin'`
+- AND si una de las dos no tiene remoto, el mensaje dice `sin remoto` en su lugar: `push: 'main' y 'develop' tienen remotos distintos ('origin', sin remoto); fusiona a mano`
+
+### Los trozos del merge se calculan con histogram y se escriben con zdiff3
+
+- GIVEN cualquier merge que hace `sdd merge`: la base, la rama, la vuelta de un hotfix o `--sync`
+- WHEN el script ejecuta `git merge`
+- THEN lo ejecuta con `-c merge.conflictStyle=zdiff3` y `-X diff-algorithm=histogram`
+- AND un conflicto que llega a una persona lleva las marcas de `zdiff3`, con la base entre `|||||||` y `=======`
+
+### Los registros se unen por id
+
+- GIVEN `develop` y la rama que se fusiona, que en el mismo trozo de `.docs/sdd/roadmap.md` (o de `ROADMAP.md`, `CHANGELOG.md`, `.docs/sdd/changelog.md` o `.docs/sdd/steering/debt.md`) marcan una la fila `0190` como `✅` y añaden la otra la fila `0201` debajo
+- WHEN el cierre ejecuta `sdd merge`
+- THEN el trozo queda con la `0190` en `✅` y la `0201`, sin conflicto
+- AND si las dos ramas añaden la misma fila `0201` con el mismo texto, queda una sola
+- AND si añaden dos filas `0201` con texto distinto, se quedan las dos, la de la rama destino primero, y la salida dice `registros: dos filas distintas con el id '0201' en .docs/sdd/roadmap.md; se quedan las dos, revísalas`
+- AND una entrada `- **Feature 0185** — …` en `### Added` y otra en `### Changed` son ids distintos
+- AND si las dos ramas cambian celdas distintas de la misma fila que ya estaba en la base, la fila queda con los cambios de las dos: la `0248` con el `✅` de la rama y el caso que `develop` añadió a la descripción; si cambian la misma celda de forma distinta, o la fila no tiene las mismas celdas en los dos lados, es conflicto y lo resuelve una persona
+- AND la clave de una fila de deuda no cuenta los prefijos de cierre del principio de su primera celda (`**[Feature 0216, 2026-10-28: saldada — …]**`, o con `Patch` y `parcial`): si la rama salda la fila «Tres tests del lanzador en Vitest…» y `develop` le cambia la celda «Destino», queda una sola fila, con el prefijo de la rama y el «Destino» de `develop`, sin conflicto y sin aviso de `registros:`
+- AND si los dos lados añaden prefijos de cierre distintos a la misma fila, es conflicto
+- AND si el merge se aborta después por otro fichero en conflicto, la salida no dice `registros: …`
+- AND la cabecera de una tabla no es una fila con id, aunque el trozo la separe de su separador: si las dos ramas añaden la misma tabla (`| Id | Tarea | Estado |`) con filas distintas, queda una tabla con la cabecera una vez y las dos filas seguidas, sin aviso
+
+### Mergiraf resuelve lo que queda si está instalado
+
+- GIVEN dos ramas que añaden cada una un método distinto en el mismo sitio de `src/rooms.ts` y `mergiraf` en el `PATH`
+- WHEN el merge deja ese fichero en conflicto tras unir los registros y los trozos que solo añaden
+- THEN el script ejecuta `mergiraf solve src/rooms.ts`, escribe `mergiraf: resuelto src/rooms.ts`, commitea el merge y corre `--verify` sobre el resultado
+- AND si `mergiraf solve` sale con otro código, escribe `mergiraf: no resuelve src/rooms.ts`, aborta el merge y falla como hoy con el fichero en la lista de `conflicto en`
+- AND sin `mergiraf` en el `PATH` no escribe nada de Mergiraf y falla como hoy
+- AND el script no escribe `git config` ni `.gitattributes`
+- AND si resuelve `src/rooms.ts` pero otro fichero queda en conflicto, aborta y no escribe `mergiraf: resuelto src/rooms.ts`
+- AND si las dos ramas cambian el mismo import de forma compatible (`import { a, b }` y `import { a, c }`), Mergiraf los une en un solo import con `b` y `c`, en el orden que da Mergiraf según qué lado entra, y `--verify` decide: en rojo, el merge se deshace como cualquier verificación en rojo
+- AND no se lanza sobre ficheros de `.docs/` ni sobre `*.md`: un conflicto ahí que las reglas del kit no resuelven sale en `conflicto en` sin línea de Mergiraf
+- AND si resolvió algún fichero, `--verified-at` no omite `--verify`
+
+### El merge de sincronización lo hace `sdd merge --sync`
+
+- GIVEN la rama `feature/0186-x` con su commit de cierre, y `origin/develop` con la 0185 fusionada, que, como la rama, añade un requisito al final de `.docs/sdd/capabilities/routing.md` y una fila al roadmap
+- WHEN se ejecuta `sdd merge --sync --project-root <worktree de la 0186>`
+- THEN integra `origin/develop` en `feature/0186-x` con la misma resolución que el merge del cierre, sin coger el cerrojo, sin `--verify` y sin push; la capacidad queda con los dos requisitos (primero el de `develop`) y el roadmap con las dos filas, y escribe `base: integrada 'origin/develop' en 'feature/0186-x': <hash>`
+- AND si `origin/develop` ya es antecesora de la rama, no hace nada y escribe `base: al día: 'origin/develop' ya está en 'feature/0186-x'`
+- AND con un conflicto que no resuelve, no aborta: deja el merge a medias, con lo que sí resuelve —los registros unidos por id— ya en el índice, y sale con 1 con `base: conflicto en <ficheros>.`, que lista solo lo que queda; con filas contiguas del roadmap y la misma línea de `steering/operations.md` editadas en los dos lados, el roadmap queda unido y solo `steering/operations.md` en conflicto
+- AND con cambios sin commitear, o con otro merge a medias, sale con 1 sin tocar nada: `base: 'feature/0186-x' tiene cambios sin commitear; commitéalos antes de integrar la base`
+- AND en un HEAD desacoplado sale con 1 sin tocar nada: `base: HEAD desacoplado; --sync integra la base en una rama`
+- AND con `--into`, `--tag`, `--order`, `--push`, `--verify`, `--verified-at`, `--check` o `--branch` sale con 2: `--sync no admite <opción>`
+
+### Tras fusionar, las filas repetidas de los registros se limpian
+
+- GIVEN dos ramas que añaden la fila `| 0210 | x | ⏳ |` en sitios distintos de la misma tabla de `.docs/sdd/roadmap.md`, que git fusiona sin conflicto, y la primera ya fusionada en `develop`
+- WHEN el cierre de la segunda ejecuta `sdd merge` (o `sdd merge --sync`)
+- THEN tras el commit de merge, el script quita la segunda copia en un commit `docs(registros): quita las filas repetidas del merge` con el cuerpo `Filas: 0210.`, antes de verificar y publicar
+- AND si las dos filas `0210` tienen texto distinto, se quedan las dos, no hay commit de limpieza, y la salida dice `registros: dos filas distintas con el id '0210' en .docs/sdd/roadmap.md; se quedan las dos, revísalas`
+- AND vale igual en `ROADMAP.md`, `CHANGELOG.md`, `.docs/sdd/changelog.md` y `.docs/sdd/steering/debt.md`, dentro de cada sección: `**Feature 0210**` en `### Added` y en `### Changed` no se toca
+- AND un id que ya estaba repetido en la rama destino antes del merge no se toca ni se avisa
+- AND si el commit de limpieza falla, el merge se deshace, la rama destino queda como estaba y el script sale con 1 con `registros: no se pudo commitear la limpieza de filas repetidas`
+
+### El push nombra los commits de la rama destino que no son del cambio
+
+- GIVEN una `develop` local con `f5b76897 docs(roadmap): triaje` sin publicar en `origin`, y la rama `feature/0150-x` lista para fusionar
+- WHEN el cierre ejecuta `sdd merge --push`
+- THEN publica `develop` con ese commit y con el merge, y escribe `push: también publica 1 commit de 'develop' que no es de feature/0150-x:` y `- f5b76897 docs(roadmap): triaje`, antes de `publicado en origin`
+- AND con dos commits así, `push: también publica 2 commits de 'develop' que no son de feature/0150-x:` y una línea `- <hash> <asunto>` por cada uno
+- AND sin commits locales sin publicar, sin `--push` o sin remoto, la línea no sale
+- AND los commits que trae de la remota un reintento del push no cuentan
+- AND en un hotfix, cada rama publicada (la estable y la de vuelta) que tenga commits así da su línea, con su nombre
+
+### La verificación del merge corre solo lo que se cruza
+
+- GIVEN una rama que solo toca `apps/frontend/`, verificada en `a1b2c3d`, y una base que desde entonces trajo un cambio en `apps/backend/`
+- WHEN el cierre ejecuta `sdd merge --verify "moon run :test --affected --base develop" --verified-at a1b2c3d`
+- THEN no corre ninguna tarea, escribe `verificación: frontend:test: saltada (la base no toca sus inputs)` y `verificación: backend:test: saltada (solo la toca la base)`, y fusiona
+- AND si la base también tocó `apps/frontend/`, escribe `verificación: corre frontend:test (las tocan la rama y la base)` y corre `moon run frontend:test --affected --base a1b2c3d`
+- AND si la rama tiene un commit en `apps/frontend/` posterior a `a1b2c3d` y la base no tocó `apps/frontend/`, también corre `frontend:test`: lo que tocó la base se mide desde el commit verificado hasta el resultado del merge, que incluye esos commits de la rama
+- AND lo que toca la rama se mide desde `git merge-base <destino antes del merge> <rama>` hasta la punta de la rama; el `--base` declarado en el gate no cuenta
+- AND sin `--verified-at`, corre las tareas que toca la rama, con `--base <merge-base>`
+- AND con `-g` o `--include-relations` en el gate, una tarea cuya dependencia cambió cuenta como tocada en los dos lados
+- AND una tarea que no tocan ni la rama ni la base no sale en la salida
+- AND un gate sin `--affected`, o que no es `moon run`, corre como está declarado
+- AND con `--stdin`, `--status`, `--force` o un target que no es `proyecto:tarea` ni `:tarea`, escribe `verificación: sin cruce: '<opción o target>' no admitido; corre lo que toca la rama` y corre el gate con `--base <merge-base>`
+- AND si `moon query` falla, escribe `verificación: sin cruce: moon query falló (<primera línea del error>); corre lo que toca la rama` y corre el gate con `--base <merge-base>`
+- AND en un hotfix vale igual en la ida a la rama estable y en la vuelta a la de integración, con el merge-base de cada destino antes del merge
+
+### La verificación del merge lanza el gate sin shell
+
+- GIVEN una máquina Windows sin `pwsh` ni `powershell.exe` en el `PATH`
+- WHEN el cierre ejecuta `sdd merge --verify "moon run app:test"`
+- THEN el gate corre como `moon` con los argumentos `run app:test`, sin ningún intérprete de comandos
+- AND las comillas dobles o simples agrupan un argumento: `node -e "process.exit(1)"` son dos argumentos tras `node`
+- AND un `.cmd` o un `.bat` de Windows se lanza con el `cmd.exe` de `ComSpec`
+- AND `--verify "pnpm lint && pnpm test"` sale con 2, sin coger el cerrojo, con `--verify: el gate encadena comandos con '&&'; hazlo una tarea de moon o un script de package.json`; igual con `||`, `;`, `|`, `>` y `<` fuera de comillas
+- AND `$VAR`, `%VAR%` y `~` llegan literales al programa
+- AND un programa que no está en el `PATH` falla con `verificación: no se encuentra '<programa>' en el PATH`
+
+### La verificación del merge corre fuera del cerrojo de merge
+
+- GIVEN `feature/0251-x`, sacada en `D:\code\kit-0251` y verificada en `c3d4e5f`, y `origin/develop`, que avanzó a `d4e5f6a` con un cambio en `cli/src/`
+- WHEN el cierre ejecuta `sdd merge --push --verify "moon run cli:test --affected --base develop" --verified-at c3d4e5f`
+- THEN sin coger el cerrojo de merge, integra `origin/develop` en `feature/0251-x` en `D:\code\kit-0251`, con la resolución de `--sync`, y escribe `base: integrada 'origin/develop' en 'feature/0251-x': <hash>`
+- AND si la `develop` local tiene commits sin publicar que la rama no lleva, los integra también, y escribe `base: integrada 'develop' en 'feature/0251-x': <hash>`
+- AND corre la verificación en `D:\code\kit-0251`, todavía sin el cerrojo, con el cruce desde `c3d4e5f`
+- AND solo con la verificación en verde coge el cerrojo de merge, fusiona `feature/0251-x` en `develop` y la publica, sin correr otra verificación dentro del cerrojo
+- AND si al fusionar, dentro del cerrojo, el resultado difiere del commit verificado fuera de `.docs/` y de `*.md`, deshace el merge de `develop`, suelta el cerrojo, escribe `merge: 'develop' cambió durante la verificación; integro y verifico lo que se cruza (2/3)` y vuelve a integrar y a verificar lo que se cruza desde el commit verificado; si solo difieren docs, publica
+- AND si el push encuentra `origin/develop` movido, deshace el merge, suelta el cerrojo, escribe `push: 'develop' avanzó en 'origin'; integro y reintento (2/3)` y repite igual, fuera del cerrojo
+- AND los dos casos comparten el tope de 3 intentos; al agotarlo por el merge, sale con 1 con `merge: 'develop' sigue cambiando tras 3 intentos; relanza el merge en un rato`, y por el push, con `push: 'develop' sigue moviéndose en 'origin' tras 3 intentos; relanza el merge en un rato`, sin publicar
+- AND con `origin/develop` ya en la rama, no hay commit de integración, y con `--verified-at` en el `HEAD` de la rama la verificación se omite con `verificación: omitida: desde <sha> solo cambian docs`
+- AND sin `--verify`, coge el cerrojo y fusiona como antes, sin integrar en la rama del cambio
+- AND con cambios sin commitear en ficheros con seguimiento de `feature/0251-x`, o un merge a medias, sale con 1 con `base: 'feature/0251-x' tiene cambios sin commitear; commitéalos antes de integrar la base`, sin coger el cerrojo ni tocar nada
+- AND `--verify` con `--branch feature/0252-y`, que no es la sacada en `--project-root`, sale con 2 con `--verify corre en el worktree de la rama; 'feature/0252-y' no está sacada en 'D:\code\kit-0251'`, sin coger el cerrojo
+- AND en un hotfix (`--into` a la rama estable) la verificación sigue dentro del cerrojo
+
+### Dos cierres a la vez no se esperan con un cerrojo cogido
+
+- GIVEN `feature/0251-x` en `sdd merge --verify`, con su verificación en marcha, y `feature/0252-y`, que acaba su gate y ejecuta `sdd merge --push` mientras tanto
+- WHEN las dos quieren fusionar en `develop`
+- THEN `feature/0252-y` coge el cerrojo de merge, fusiona y publica sin esperar a que acabe la verificación de `feature/0251-x`
+- AND `feature/0251-x`, al acabar su verificación en verde, coge el cerrojo, ve `develop` cambiada, lo suelta e integra `origin/develop`, verifica solo lo que se cruza con lo que trajo `feature/0252-y`, y fusiona
+- AND en ningún momento una de las dos espera un cerrojo mientras tiene el otro cogido
+
+### Dentro de un requisito de una capacidad se unen los THEN y AND que cambia cada lado
+
+- GIVEN un requisito de `.docs/sdd/capabilities/control-profiles.md` cuyo `- THEN` cambia `develop` y cuyos `- AND` cambia la rama, en líneas seguidas que git deja en el mismo trozo en conflicto
+- WHEN se ejecuta `sdd merge --sync` (o el cierre ejecuta `sdd merge`)
+- THEN el requisito queda con el `THEN` de `develop` y los `AND` de la rama, sin conflicto, y la integración sigue como con cualquier conflicto resuelto
+- AND vale igual si un lado añade o quita un `- AND` y el otro cambia otra línea del trozo; las líneas añadidas quedan en el sitio donde las puso su lado
+- AND si los dos lados cambian la misma línea de forma distinta, o añaden líneas en el mismo hueco de un trozo que conserva líneas de la base, sigue siendo conflicto: `base: conflicto en .docs/sdd/capabilities/control-profiles.md.`
+- AND un trozo en el que los dos lados solo añaden líneas, sin ninguna de la base, se une como en «El merge del cierre une los registros que solo añaden líneas»: primero las de la rama destino
+- AND si alguna línea del trozo, en cualquiera de los tres lados, no empieza por `- THEN ` ni por `- AND ` (un `- GIVEN`, un `- WHEN`, un título `###`, prosa o una línea en blanco), sigue siendo conflicto
+- AND fuera de `.docs/sdd/capabilities/` esta unión no se aplica
+
+### La spec dice quién valida
+
+- GIVEN una spec o un `patch.md` con la línea `Validación: agente — solo fija Node 22 en package.json y .nvmrc` y un proyecto con `validation.mode` `manual`
+- WHEN el agente cierra
+- THEN no presenta guion ni espera validación, y el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación por el agente: <fecha> · <evidencia>`, con el smoke y la suite que ejecutó
+- AND la fila del roadmap queda ✅
+- AND sin la línea, o con `Validación: dev-lead`, valida el dev-lead
+- AND con la spec aprobada por delegación o en `unattended`, `agente` solo vale si la frase del dev-lead lo nombra; en un patch, solo con su frase literal en la petición o en la pregunta del carril
+- AND si al implementar aparece algo visible para el usuario, la línea vuelve a `dev-lead` como desvío
+- AND con `validation.mode: field`, el registro es `Validación en campo:`
+
+### La parada sobre una copia abre con el commit del kit que la cambió
+
+- GIVEN un freno de alcance en `delegate` sobre un bloque de `skills/sdd-x/references/foo-prompt.md`, que `upstream.json` clasifica como copia, con la marca `<!-- kit: a1b2c3d · sustituye: «S» -->`, y `a1b2c3d` el commit `feat(skills): el encargo sale del recuadro sangrado del original (feature 0042)`
+- WHEN el agente para
+- THEN el ✋ de la parada abre con la línea `Copia: a1b2c3d feat(skills): el encargo sale del recuadro sangrado del original (feature 0042)`: `Copia:` y la salida literal de `git log -1 --format='%h %s' a1b2c3d`
+- AND con un desvío sobre una copia, igual
+- AND con la marca `<!-- kit: 0042 · sustituye: «S» -->`, que lleva la tarea y no el commit, la línea es `Copia:` y la salida de `git log -S 'S' --reverse --format='%h %s' -- skills/sdd-x/references/foo-prompt.md`, su primera línea; si no da ninguna, `Copia: no encuentro el commit del kit que lo cambió`
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap; el método de un plan, en la línea `Ejecución:` de su cabecera.
+- **Dónde viven los datos**: `.docs/sdd/sdd-kit.json` (`control`, `merge` con `merge.push` opcional, y `execution`); las preferencias de cada persona, en `.docs/sdd/sdd-kit.local.json` (`control.profile`, `execution`, `validation.startEnvironment`), fuera de git; el perfil de la feature, en el frontmatter de su spec; el de la release, en la línea `Perfil de control:` bajo el encabezado de su sección del roadmap (en `ROADMAP.md`, entre `## Now` y su tabla); los ficheros que prevé tocar una feature abierta, en el «Toca:» de su brief (`ROADMAP.md`) o en «Ficheros que toca» (roadmap 2.x); el método de un plan, en la línea `Ejecución:` de su cabecera.
 - **Idioma de los nombres**: claves JSON en inglés camelCase, como `ids.mode`; valores de perfil `pair`, `delegate`, `unattended`; valores de `execution`: `auto`, `native`, `subagent`; estados del roadmap, conjunto cerrado: `⏳` · `🔄 en curso` · `⏸️ aparcada: <motivo>` · `🧪 validación diferida a <disparador>` · `✅`.
-- **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la define la task 0022. `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después.
-- **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); y el bloque de un push fallido (comando literal y error).
-- **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el entorno o el remoto deniegan no se reintenta: lo desbloquea una persona.
+- **Límites**: `control.maxParallelAgents` 3 por defecto; su conducta la aplica `sdd-parallel-agents` (requisito «Dos revisores de spec se despachan con `sdd-parallel-agents`» de `feature-flow`). `control.silence` 8 y 20 minutos por defecto: 20 (`longCommandMinutes`) si la llamada que espera el subagente es un comando de shell o si se vigila la salida de una verificación lenta, y 8 (`betweenStepsMinutes`) en cualquier otra espera; un subagente colgado se relanza una sola vez (requisitos de `feature-flow`). Umbral para proponer partir una feature: más de 5 tasks internas previstas, o 4 o 5 que tocan capacidades o superficies distintas o llevan migración; con 3 o menos, nunca. Checkpoint de alcance: en el 3.º fix descubierto de una feature y en cada tercero después. `sdd merge`: 3 intentos como máximo entre la verificación y la publicación cuando la rama destino cambia, al fusionar o al empujar; el push de un hotfix, uno.
+- **Avisos**: la línea de terminado, última del mensaje final de cada cierre (rama, destino, hash, estado del push y ruta del worktree que se puede borrar, o «No terminado» y qué falta); el bloque de un push fallido (comando literal y error); `Push relanzado por HTTPS: Permission denied (publickey) por SSH`, tras el relanzamiento que publica; el aviso de cada clave de `sdd-kit.local.json` que el agente ignora, en el anuncio o en la pregunta del carril de `sdd-propose`; y, en la parada sobre una copia, la primera línea de su ✋: `Copia: <sha7> <asunto del commit>` (la salida de `git log -1 --format='%h %s'`) o `Copia: no encuentro el commit del kit que lo cambió`.
+- **Regla ante conflicto**: el perfil sigue feature → persona (`sdd-kit.local.json`) → release → proyecto; `execution` sigue método nombrado para la feature → persona → proyecto, sin nivel de release, y un valor fijado manda sobre la recomendación del handoff; ninguna regla del perfil cubre el merge a `main`, el tag ni las acciones hacia fuera distintas del push de la rama de integración que autoriza `merge.push`, y no deroga la ruta «Merge y tag sin segunda ronda cuando la decisión ya está tomada» de `release-flow`, donde la decisión ya la tomó una persona. Un merge o un push que el clasificador del harness, un hook o el remoto rechazan no se reintenta: lo desbloquea una persona. Un push cuya clave SSH falla (`Permission denied (publickey)`) con sesión en `gh` se relanza una vez por HTTPS con el token de `gh`, solo en el entorno de esa orden; si vuelve a fallar, cuenta como rechazado. Un conflicto de merge en el que los dos lados cambian lo mismo lo resuelve una persona: `sdd merge` solo resuelve, en este orden, el `estimation-log.md` (regenerado), los registros por id, los trozos que solo añaden y lo que Mergiraf resuelva con código 0. La excepción es Mergiraf, solo fuera de `.docs/` y de `*.md`: une cambios compatibles de los dos lados en la misma construcción (`{ a, b }` + `{ a, c }` → `{ a, b, c }`), y la verificación que corre sobre el resultado decide (dev-lead, 2026-10-19).

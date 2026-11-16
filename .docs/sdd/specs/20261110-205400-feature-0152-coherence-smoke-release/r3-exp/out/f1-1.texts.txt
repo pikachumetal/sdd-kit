@@ -1,0 +1,26 @@
+--- [12]
+Porque en el código `cancelar` no cancela nada. Lo he comprobado en `src/app.js`, sin ejecutar nada.
+
+**Lo que hace el código**
+- `src/app.js:3`: la reserva de Norte del lunes de 10:00 a 12:00 está escrita a mano en el array `bookings`. Es un dato fijo en memoria.
+- `src/app.js:12`: `cancelar` solo devuelve el texto `cancelada <día> <hora>`. No toca `bookings`, así que la reserva sigue ahí.
+- `src/app.js:5-7`: `libres` quita las salas que tienen una reserva con esa franja exacta. Mientras la reserva exista, Norte no sale.
+
+**Otros dos problemas que encontré**
+- `libres` solo mira la franja y no el día. Aunque cancelar funcionara, `libres 10:00-12:00` no distingue lunes de martes.
+- Cada ejecución de la CLI arranca con el array original y no guarda nada en disco. Aunque `cancelar` borrara la reserva, en la siguiente ejecución volvería a aparecer.
+
+**Lo que dicen los documentos, frente a lo que hace el código**
+- El CHANGELOG y el ROADMAP anuncian que el patch 0007 corrigió la cancelación para que no borre reservas de otro día con la misma hora. En el CHANGELOG también figura «Cancelar una reserva propia».
+- El `patch.md` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado».
+- El código no coincide con eso. No hay ninguna comparación que corregir, porque `cancelar` no borra.
+- El test «cancelar respeta el día» solo comprueba que el texto devuelto sea `cancelada mar 10:00`. Pasa aunque no se cancele nada, así que da una falsa sensación de cobertura.
+
+**Lo que infiero**
+- Es un fallo propio del código, no un caso de uso mal entendido.
+- El patch 0007 figura como terminado sin que su fix exista en el código.
+
+No he cambiado nada.
+
+Si quieres arreglarlo, lo veo como un patch. El alcance sería: que `cancelar` elimine de verdad la reserva por sala, día y franja, que `libres` reciba el día, y un test que compruebe que Norte vuelve a salir libre. Si además quieres que la reserva persista entre ejecuciones, eso es una feature aparte. Si quieres seguir, lo paso al roadmap como fila de patch y, si prefieres hacerlo en esta sesión, dime «arráncalo».
+

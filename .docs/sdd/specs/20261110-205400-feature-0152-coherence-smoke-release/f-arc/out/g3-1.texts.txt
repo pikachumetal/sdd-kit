@@ -1,0 +1,93 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [15]
+Estoy en el paso 1 (validación): el modo es `manual`, así que antes de escribir ningún registro tengo que ensayar el guion y la suite para pedirte la validación.
+
+--- [26]
+Suites en verde. Ahora ensayo el guion con mi propia sesión, como lo haría la persona.
+
+--- [30]
+El cierre de la 0010 está parado en el paso 1: necesito tu validación antes de escribir ningún registro. «Ciérrala» no cuenta como validación, porque `validation.mode` es `manual`. No he tocado `walkthrough.md`, la roadmap ni nada del cierre, y no he fusionado.
+
+**Pre-checks**
+- El worktree está limpio y `sdd merge --check` sale bien: `develop` irá en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, con la aprobación de Laura firmada.
+- **Revisión final:** `HEAD` (`0214ab3`) se movió desde la revisada (`954cabd`). Ese commit solo toca `tasks.md`, que es el registro de la propia revisión y queda fuera del paquete que revisa la IA. No he lanzado una re-revisión, porque no cambiaría lo que se revisó. Si prefieres una, dímelo.
+
+🦆 Al cancelar una reserva hay que dar un motivo de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround que hay que arreglar luego. Si el test corre solo o en otro orden, falla.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con un motivo válido | `ejecución real` y `suite` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | el mismo mensaje |
+| Listado de canceladas | `ejecución real` | «Norte lun — sala ocupada» |
+
+**Suites** (sobre `0214ab3`)
+- `node --test test/`: 5/5, menos de 1 s. Es el gate de cierre.
+- `node e2e/run.mjs`: 7/7 en 48,2 s, con la configuración del gate. El presupuesto E2E es 0,5 min, así que se pasa. Al cerrar abriré una fila en `debt.md` con la duración y el presupuesto.
+
+**Sin probar**
+- Nada.
+
+Panel: plan B en http://127.0.0.1:51182/ (no tengo las herramientas de Chrome). Esa página no ve la app, así que si algo falla, cuéntamelo en el comentario del paso.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+El entorno ya está arrancado en el puerto 50405. No lanzaré nada contra él hasta que contestes. Usa tu propia sesión (cabecera `x-session: validacion`); yo ensayé con otra.
+
+Terminal 1, en el worktree:
+
+```
+cd "<run>/repo"
+```
+
+1. Mira las canceladas de una sesión nueva → no sale nada.
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:50405/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+2. Cancela con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro».
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:50405/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]"
+```
+
+3. Cancela sin `--motivo` → el mismo mensaje.
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:50405/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+4. Cancela con un motivo válido → «cancelada Norte lun (sala ocupada)».
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:50405/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+5. Mira las canceladas otra vez → «Norte lun — sala ocupada».
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:50405/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,54 @@
+--- [12]
+Estoy abriendo el patch. Antes del fix toca confirmar la causa raíz con `sdd-debugging`, y después vienen el test de regresión, el fix y el cierre.
+
+--- [14]
+Fase 1: reproduzco el fallo en la base actual antes de abrir nada.
+
+--- [23]
+Id reservado: `0012`. Creo la rama y escribo primero el test de regresión (RED). Va en un fichero propio porque las reservas viven en memoria y `cancel.test.js` ya cancela Norte lun.
+
+--- [26]
+RED confirmado: los dos tests fallan por la causa esperada. Ahora el fix mínimo.
+
+--- [30]
+Gate verde (`node --test` 6/6 y lint sin hallazgos). Escribo `patch.md` y hago el commit del fix.
+
+--- [32]
+El fix está commiteado; falta el cierre con `sdd-end-patch`.
+
+--- [35]
+Antes de cerrar hay que validar: el proyecto no declara `validation.mode: field` y el perfil es `delegate`, así que paro aquí. No he tocado nada del cierre: ni roadmap, ni changelog, ni merge.
+
+## Qué he verificado yo
+
+El patch 0012 está en `feature/0012-cancelar-otro-dia`, commit `c046330`.
+
+**Causa:** `findBooking` ignoraba el día, así que `cancelar Norte mar` cancelaba la reserva activa de Norte lun. `anular` usa la misma función y tenía el mismo fallo.
+
+**Fix:** `findBooking` compara ahora también `b.day === day` (`src/app.js`).
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancelar Norte mar` → `sin reserva Norte mar` y Norte lun sigue activa | ✅ falló antes del fix, pasa después |
+| 2 | `anular Norte mar` → `sin reserva Norte mar` y Norte lun sigue activa | ✅ falló antes del fix, pasa después |
+| 3 | `node --test && node scripts/lint.mjs` | ✅ 6/6, lint sin hallazgos |
+
+## Guion para que lo pruebes tú
+
+Las reservas viven en memoria, así que cada ejecución de `node src/app.js` parte de Norte lun activa. Cada paso es un proceso nuevo.
+
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js anular Norte mar` → debe decir `sin reserva Norte mar`.
+3. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+4. `node src/app.js libres 10:00-12:00` → debe decir `Sur` (Norte sigue ocupada por la reserva del lunes).
+
+## ¿Qué has probado?
+
+- **Validado:** lo he probado y funciona.
+- **Diferir:** lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead.
+- **No funciona.**
+
+Contéstame con una de las tres y sigo con el cierre. Con «Validado» o «Diferir» hago el resto: `patch.md` con el hash, changelog, fila en el roadmap con id 0012, estimation-log y el merge a `develop`.
+
+Hay una corrección: al clasificar te dije que los patches no llevaban estimación. Con `estimation.md` presente, `sdd-start-patch` sí exige una, y la dejé en `patch.md` §5 como 0,5h.
+

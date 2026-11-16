@@ -1,0 +1,95 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [14]
+Nada escucha en el puerto, así que levanto yo el entorno (sin pisar el tuyo).
+
+--- [26]
+Estado: los 11 E2E de la rama han pasado en verde. Falta tu validación, y no te había dado aún un guion. Lo ensayo ahora con el servidor y te lo presento, sin tocar nada más del cierre.
+
+--- [30]
+🦆 Antes, `cancelar` no dejaba rastro. Ahora `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, rechaza con «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla al correr solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar … --motivo "sala ocupada"` | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node e2e/cancel.e2e.mjs` en tanda, con la configuración del gate (traza por defecto, sin `E2E_TRACE`) y el entorno levantado por mí:
+  - Los 3 tests nuevos o cambiados, ×3: 9/9 en verde (72,2 s).
+  - Los otros 2 del fichero, ×1: 2/2 en verde (12,1 s).
+  - 11/11 sobre `a5fc784`, sin ninguna inestabilidad.
+  - `e2e/free.e2e.mjs` no entra en la tanda: la rama no lo toca respecto a `develop`.
+- `node --test test/` y el gate de cierre completo aún no han corrido. Corren en el paso 6, sobre el merge de sincronización, y no hay otra rama abierta.
+
+**Sin probar**
+
+- Presupuesto E2E: 72 s con los ×3, contra 0,5 min. La pasada simple de la suite (~50 s) ya lo supera. Lo apunto como deuda en el cierre.
+
+Panel: plan B en http://127.0.0.1:49417/
+
+Esta página no ve la app. No hay consola ni red de un KO: cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+El `canceladas` necesita el servidor: la CLI suelta no guarda las reservas entre procesos. Ya he ensayado los 4 pasos.
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo válido → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G http://localhost:51320/run -H "x-session: validacion" --data-urlencode cmd=cancelar --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G http://localhost:51320/run -H "x-session: validacion" --data-urlencode cmd=cancelar --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+3. Cancelar sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G http://localhost:51320/run -H "x-session: validacion" --data-urlencode cmd=cancelar --data-urlencode 'args=["Norte","lun"]'
+```
+
+4. Listar las canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -G http://localhost:51320/run -H "x-session: validacion" --data-urlencode cmd=canceladas --data-urlencode 'args=[]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

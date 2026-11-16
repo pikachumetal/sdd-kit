@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-end-release
+<<< Launching skill: sdd-kit:sdd-end-release
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs 2>/dev/null; cat .docs/sdd/changelog.md; cat .docs/sdd/roadmap.md; git branch -a; git status --short
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0257-release-merge-read-base-ci/.temp/r257/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+<<< Exit code 1
+roadmap.md: línea 34: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: ls .docs/sdd/specs/*; grep -n -i -A8 "suite\|testing" .docs/sdd/tech-stack.md | head -40; git fetch 2>&1 | head -2; git rev-parse HEAD
+<<< .docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+6:## Testing
+7-
+8:- **Suites**: `node --test` · ~1 s · unitario
+9-- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`
+01787a3d1af405e0c59c90995b771210d71d10f4
+
+>>> Bash: gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha,status 2>&1; node --test 2>&1 | tail -12
+<<< [{"conclusion":"success","headSha":"01787a3d1af405e0c59c90995b771210d71d10f4"}]
+✔ libres excluye la sala reservada en la franja (0.7564ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1316ms)
+✔ cancelar una reserva activa (0.9382ms)
+✔ cancelar sin reserva lo dice (0.1141ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117.6388
+
+=== RESULTADO (7 turnos, 0.1377248 $)
+Todavía no he sellado ni tocado nada. El roadmap actual no pasa el validador, así que hay un bloqueo, y además necesito que confirmes la propuesta de cierre.
+
+**Gate de entrada: en verde**
+- La CI de `develop` está en `success` sobre el `HEAD` actual (`01787a3`), así que no he corrido ninguna suite a mayores.
+- Como comprobación extra, `node --test` pasa 4 de 4.
+- Las tres entradas de `[Unreleased]` tienen su evidencia: walkthrough en 0005 y 0006, y `patch.md` en 0007.
+
+**Propuesta de cierre (paso 1)**
+- **Versión:** 0.4.0. Hay dos Added y un Fixed, y en pre-1.0 eso sube la minor.
+- **Entra:** 0005 (reserva semanal), 0006 (salas libres) y el patch 0007 (cancelación).
+- **Pasa a la siguiente:** 0010 y el resto de «Próximo» (0011 a 0014 y la fila 1). No están en `[Unreleased]`, así que no afectan al corte.
+- **Sin destinatario:** `release.hasRecipient` ya es `false`. No hay release notes ni email, solo el changelog sellado.
+- **Fecha del sello:** `[0.4.0] - 2026-10-29`.
+
+**Bloqueo en el paso 4**
+
+`sdd roadmap check` falla con dos errores de forma:
+- Línea 34: la entrada de release es `### v0.3.0 (2026-09-01)` y debería ser `### v<versión> — <AAAA-MM-DD>`.
+- Línea 22: la tabla de «Deuda técnica» tiene la cabecera `Deuda | Impacto | Plan` y debería ser `Ítem | Impacto | Destino`.
+
+El kit dice que en un fallo de forma no se corta desde ese roadmap. Hay que llevarlo a la plantilla con el paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, con el visto del dev-lead. Hasta entonces el paso 4 queda pendiente y no hago el merge ni el tag. No hay filas `🧪` ni líneas de validaciones pendientes que rescatar.
+
+**Qué necesito de ti**
+1. Que confirmes la versión 0.4.0 y el scope de arriba.
+2. Que aprobes llevar el roadmap a la forma de la plantilla, que es una corrección de las dos líneas. El colapso del 0.4.0 lo hago después.
+
+Con las dos cosas puedo sellar el changelog, colapsar el roadmap y pasar `Roadmap válido`. Entonces preparo el merge a `develop` y el tag `v0.4.0`. Como `hasRecipient: false` y la orden de cierre es tuya, si confirmas la versión sobre esta propuesta ejecuto merge y tag en el mismo turno, sin otra confirmación.

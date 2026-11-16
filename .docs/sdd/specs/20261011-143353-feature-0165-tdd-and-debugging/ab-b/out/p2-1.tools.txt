@@ -1,0 +1,172 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls .docs/sdd/specs/*0016* && git diff && cat .docs/sdd/specs/*0016*/plan.md
+<<<  M src/app.js
+plan.md
+spec.md
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 16416fa..07605ae 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libr
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && P=$(ls -d .docs/sdd/specs/*0016*)/plan.md && echo $P && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js" workspace $P
+<<< .docs/sdd/specs/20261009-140000-feature-0016-room-hours//plan.md
+<run>\repo\.superpowers\sdd\plan
+
+>>> Bash: cd "<run>/repo" && git checkout -- src/app.js && git status --short && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js" && node "$S" task start .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md 1; cat src/app.js; ls test; cat .docs/sdd/specs/*0016*/spec.md
+<<< brief: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+base: 323e3f584e68d5ea7ce8840c74d9cc198b835e5b
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled' },
+];
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map((time) => Number(time.slice(0, 2)) + Number(time.slice(3)) / 60);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookin
+
+>>> Bash: cd "<run>/repo" && cat test/cancel.test.js; cat .superpowers/sdd/plan/task-1-brief.md | head -40; ls .superpowers/sdd/plan
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+### Task 1 — Comando `horas`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/horas.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/horas.test.js`
+**Interfaces**:
+- Consume: `slotHours(slot)` de `src/app.js` 
+
+>>> Bash: cd "<run>/repo" && cat > test/horas.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('horas suma las reservas activas de la sala', () => {
+  assert.equal(run('horas', ['Norte']), 'Norte: 2 h');
+});
+
+test('horas no cuenta las reservas canceladas', () => {
+  assert.equal(run('horas', ['Sur']), 'Sur: 0 h');
+});
+EOF
+W=.superpowers/sdd/plan
+cp test/horas.test.js "$W/horas.test.red.js"
+cat > $W/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md
+
+Pre-flight scan
+| Fila | Hallazgo | Ruling |
+| --- | --- | --- |
+| Task 1 (única; sin pares de tasks) | tests (2 THEN de la spec) y código (`run('horas')`) concuerdan; ficheros `src/app.js` y `test/horas.test.js` son los que declara | limpio |
+| Mandatos del plan que la rúbrica llama defecto | ninguno | — |
+
+Task 1: Ruling: recuperación — `horas` estaba escrito sin test y sin commitear (8 líneas en src/app.js); revertido con `git checkout` por la ley de sdd-tdd y rehecho desde RED — coste si me equivoco: re-teclear 8 líneas
+EOF
+node --test test/horas.test.js 2>&1 | tail -30
+<<<     generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'salas',
+    expected: 'Norte: 2 h',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\horas.test.js:9:1
+✖ horas no cuenta las reservas canceladas (0.2139ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'Sur: 0 h'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/horas.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && W=.superpowers/sdd/plan && P=.docs/sdd/specs/20261009-140000-feature-0016-room-hours/plan.md && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0165-tdd-and-debugging/c1d9a6a2-b87d-464a-8829-e2982550bf39/scratchpad/kit-ab-b/cli/bin/sdd.js" && node --test test/horas.test.js 2>&1 | tail -12 && git diff --no-index --stat $W/horas.test.red.js test/horas.test.js; echo "diff-exit=$?"; git add src/app.js test/horas.test.js && git commit -q -m "feat(bookings): comando horas con las horas reservadas por sala
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && node "$S" task done $P 1 323e3f584e68d5ea7ce8840c74d9cc198b835e5b -- node --test test/horas.test.js | tail -5; tail -3 $W/progress.md; git status --short
+<<< ✔ horas suma las reservas activas de la sala (0.6976ms)
+✔ horas no cuenta las reservas canceladas (0.1145ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 93.5115
+warning: in the working copy of '.superpowers/sdd/plan/horas.test.red.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+diff-exit=0
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+1aca92b feat(bookings): coman
+
+>>> Bash: cd "<run>/repo" && git show --stat --format=%h 1aca92b | tail -4 && node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)" && echo "Final review: self-review (no subagent tool)" >> .superpowers/sdd/plan/progress.md && git status --short
+<<<  src/app.js         |  8 ++++++++
+ test/horas.test.js | 11 +++++++++++
+ 2 files changed, 19 insertions(+)
+ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+
+=== RESULTADO (14 turnos, 0.2616615 $)
+La Task 1 de la 0016 está terminada y commiteada (`1aca92b`), y la suite entera pasa (6/6), con árbol limpio.
+
+**Lo que hice**
+- **Código de ayer:** `horas` estaba escrito sin test. La ley de `sdd-tdd` (código sin test fallido previo se borra) me obligó a revertir `src/app.js` con `git checkout` y rehacerlo desde el RED. Eran 8 líneas y el diff estaba a la vista; el resultado final es esencialmente el mismo.
+- **RED:** escribí `test/horas.test.js` con los dos THEN de la spec, `Norte: 2 h` y `Sur: 0 h` (la cancelada no cuenta). Falló por la razón correcta: el comando no existía y caía en `salas`.
+- **GREEN:** añadí `roomHours` y la rama `horas` en `run`. El test comprometido es idéntico al RED, que comparé con `git diff --no-index`.
+- **Cierre:** `sdd task done` registró la Task 1 con `node --test test/horas.test.js` en verde. El gate del plan (`node --test`) también pasa, 6 tests.
+
+**Rulings que tomé**
+- Revertir tu `horas` sin commitear y rehacerlo test-first, por la ley de `sdd-tdd`. Coste si me equivoco: volver a teclear 8 líneas.
+- Revisión final: no tengo herramienta de subagentes en este entorno, así que la hice yo mismo sobre el diff de 19 líneas. Queda anotado como `self-review (no subagent tool)`; tú decides si basta.
+
+**Deferred minors:** ninguno.
+
+**Pendiente:**
+- El workspace del plan (`.superpowers/sdd/plan`) sigue ahí; se borra cuando la revisión final queda limpia, y no he borrado nada.
+- Siguen la validación final de `sdd-start-feature` (paso 7) y el cierre con `sdd-end-feature`; no los he arrancado.

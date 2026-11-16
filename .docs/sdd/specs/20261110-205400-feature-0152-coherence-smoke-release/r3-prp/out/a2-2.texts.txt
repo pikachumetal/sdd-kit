@@ -1,0 +1,170 @@
+--- [2]
+Es un fallo, así que entro por `sdd-kit:sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el fallo y preguntarte el carril, ~2 min.
+
+--- [17]
+Ahora: clasificado como patch (fallo determinista). Queda: tu confirmación del carril, y después rama, test en rojo y arreglo, ~15 min.
+
+🦆 Hoy, al cancelar una sala, el programa solo mira la sala y se queda con la primera reserva activa que encuentra, sin mirar el día. Por eso «cancelar Norte mar» anula la reserva de Norte del lunes y responde «cancelada Norte mar», cuando debería decir «sin reserva Norte mar». El arreglo es que la búsqueda compare también el día. La anulación por el responsable usa esa misma búsqueda, así que tiene el mismo fallo y se arregla a la vez.
+
+**Causa raíz** (confirmada en el código, `src/app.js:9-11`): `findBooking(room, day)` recibe el día pero nunca lo compara. El patch 0007 arregló un fallo parecido (comparar solo por hora), pero este es otro: ahora falta el día.
+
+¿Cómo seguimos?
+
+1. **Patch (recomendada).** Es un fallo determinista, el arreglo está fijado y lo reproduce un solo test: `cancelar Norte mar` debe dar `sin reserva Norte mar` y dejar activa la del lunes. Estimo 0,5 h más el gate de cierre (~1 s la suite según `operations.md`, `node --test && node scripts/lint.mjs`). El perfil es `delegate`, del proyecto (`sdd-kit.json`). Si te vas a ausentar, di «apruebo por delegación».
+2. **Feature.** Solo si quieres cambiar algo más que el fallo, por ejemplo mensajes nuevos. No lo veo necesario.
+
+Dime «1» y abro el patch en la rama correspondiente.
+
+--- [22]
+Ahora: paso el patch a implementación. Queda: carpeta del patch, test en rojo, arreglo y verificación, ~15 min. Reservé el id 0012 y estoy en la rama `feature/0012-cancel-dia`.
+
+--- [26]
+Ahora: reproducir el fallo y confirmar la causa raíz con `sdd-debugging`. Queda: carpeta del patch, test en rojo, arreglo y cierre, ~12 min.
+
+--- [30]
+Debt no cubre este fallo (solo hay una fila sobre franjas horarias). Reproduzco desde la raíz del repo, con ruta relativa.
+
+--- [33]
+Reproducido: `cancelar Norte mar` responde «cancelada Norte mar» y la del lunes queda cancelada (después da «sin reserva Norte lun»). `anular` falla igual. Ahora creo la carpeta y `patch.md`.
+
+--- [37]
+Creo la carpeta (`changes/`, como fija la regla del kit; el 0007 vive en `specs/`, un formato anterior) y escribo síntoma, causa raíz y estimación antes del fix.
+
+--- [44]
+Los dos fallan, pero el segundo falla por el estado que deja el primero. Compruebo su rojo por separado.
+
+--- [46]
+RED confirmado para ambos por la causa correcta. Aplico el fix mínimo.
+
+--- [50]
+Verde: 6/6, lint sin hallazgos y la CLI responde `sin reserva Norte mar`. Completo §4 y lanzo el revisor único del patch.
+
+--- [54]
+El comando de edición salió mal por el quoting. Compruebo que `patch.md` no quedó dañado y lo hago con Edit.
+
+--- [56]
+Backticks ejecutados por el shell dejaron §4 corrupto. Lo reescribo con Edit.
+
+--- [60]
+Ahora: revisor único del patch (Sonnet, effort medio) con su vigilancia de silencio. Queda: respuesta del revisor, commit y cierre, ~8 min, ~0,1 $.
+
+--- [64]
+El revisor sigue trabajando; no he recibido su respuesta, así que no hay hallazgos que dar todavía. Cuando llegue, respondo cada uno en §4 de `patch.md`, hago el commit del fix y cierro con `sdd-archive`.
+
+Estado hasta ahora, en la rama `feature/0012-cancel-dia` (id 0012):
+
+- **Causa raíz:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba. `cancelar` y `anular` se quedaban con la primera reserva activa de la sala, del día que fuera. `anular` tenía el mismo fallo, aunque no lo habías reportado.
+- **Fix:** una condición, `b.day === day`, en `findBooking`.
+- **Test:** `test/cancel-dia.test.js`, nuevo. Lo vi fallar antes del fix: `cancelar` daba «cancelada Norte mar» y `anular` daba «anulada Norte mar».
+- **Resultado con el fix:** `node --test` pasa 6/6 y el lint no da hallazgos. `node src/app.js cancelar Norte mar` responde `sin reserva Norte mar`.
+- **Sin commitear:** el fix, el test y `patch.md` siguen sin commit.
+- **Carpeta del patch:** está en `.docs/sdd/changes/`, como fija el kit. El patch 0007 está en `specs/`, un formato anterior.
+
+--- [67]
+Hallazgos (todo verificado, sin editar nada; el stash del fix se restauró y el diff queda igual):
+
+1. **Menor, `.docs/sdd/changes/20261111-194738-patch-0012-cancel-dia/patch.md` §2, última frase**: dice que «el patch 0007 arregló un fallo parecido». En el repo no hay rastro de ese patch: solo existe el commit 596742d y `0007` no aparece en ningún fichero fuera de este `patch.md`. Es una afirmación que no se puede comprobar. Conviene quitarla o citar dónde consta.
+
+2. **Menor, `patch.md` §4, línea del RED (tests/cancel-dia.test.js:13-16)**: el RED de «anular» no se produce por el mensaje cuando se ejecuta el fichero entero. Sin el fix, el test 1 ya cancela la reserva del lunes, así que el test 2 recibe «sin reserva Norte mar» en la primera aserción y falla en la segunda (`libres` devuelve `Norte, Sur`, esperado `Sur`). El patch dice que «anular, ejecutado solo, dio "anulada Norte mar"». Es cierto ejecutado solo, pero no es lo que se ve con el fichero completo. No afecta a que el test proteja: falla igualmente. Sería más preciso anotar que en el fichero completo falla por `libres`.
+
+Lo que he comprobado y no tiene fallos:
+- **Causa raíz (punto 1)**: es la real. `findBooking` (`src/app.js:9-11`) recibía `day` y no lo comparaba. Sus únicos usos son `cancelBooking` (línea 14) y `voidBooking` (línea 21).
+- **Fix mínimo y completo (punto 2)**: el diff es de una línea. `freeRooms` (línea 6) compara por sala y franja, sin día, pero `libres` solo recibe la franja y la franja no incluye el día. Es otro comportamiento, no una instancia de este bug, y arreglarlo exigiría decidir algo que el usuario ve. Queda fuera del alcance y no es un hallazgo. `run` no compara reservas.
+- **Test (punto 3)**: sin el fix fallan los dos tests, y con el fix pasan. Con el fix ninguno de los dos muta el estado, así que el orden de los tests da igual. `cancel.test.js` toca `Norte lun`, pero `node --test` aísla cada fichero en su propio proceso. Si el orden fuera el inverso, `libres` seguiría detectando la mutación.
+- **`patch.md` (punto 4)**: el síntoma, el fix y los casos 1-3 coinciden con lo que he ejecutado (CLI real: `sin reserva Norte mar`). Los 6/6 y el lint sin hallazgos son ciertos. La rama `develop` existe y el commit base es 596742d. No decide nada visible: reutiliza el mensaje que ya existía.
+- **Ejecución**: `node --test` da 6/6 y `node scripts/lint.mjs` da «sin hallazgos».
+
+La afirmación «copia del RED guardada fuera del repo» no la puedo comprobar desde aquí.
+
+--- [69]
+El revisor da dos hallazgos menores. Antes de responderlos compruebo el primero, porque el 0007 aparece en el roadmap y en `specs/`.
+
+--- [72]
+Hallazgo 1 rechazado: el 0007 sí consta en git (`ROADMAP.md` y `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`). Hallazgo 2 aceptado. Los anoto en §4.
+
+--- [77]
+Ahora: commit del fix (código, test y `patch.md`) y cierre con `sdd-archive`. Queda: validación tuya y merge, ~3 min.
+
+--- [81]
+Ahora: pre-checks del cierre y lectura de las reglas de validación. Queda: tu validación (el cierre espera a ella), ~2 min.
+
+--- [90]
+Todavía no he cerrado el patch: falta tu validación. Es manual y la hace una persona, no yo.
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la de Norte del lunes y decía «cancelada Norte mar». Ahora dice «sin reserva Norte mar» y la del lunes sigue activa. `anular` tenía el mismo fallo y también está arreglado. El cambio es que la búsqueda de la reserva compara también el día.
+
+**✋ Me salí del plan en…**
+
+- Nada. Solo añadí `anular` al arreglo, porque comparte la búsqueda con `cancelar`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` → «sin reserva Norte mar» | ejecución real | «sin reserva Norte mar» |
+| `cancelar Norte lun` sigue funcionando | ejecución real | «cancelada Norte lun» |
+| `anular Norte mar` → «sin reserva Norte mar» | ejecución real | «sin reserva Norte mar» |
+| La reserva del lunes sigue activa tras cancelar o anular el martes | suite | `libres 10:00-12:00` → «Sur» dentro del test |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos, antes del commit `9ef12a0`. Tras la fusión con la base repito lo que la base traiga.
+
+**Sin probar**
+
+- La reserva del lunes no se puede ver desde la terminal entre un comando y otro, porque las reservas viven en memoria de cada ejecución. Ese caso lo cubre el test.
+
+**Guion**
+
+Panel: plan B en http://127.0.0.1:61449/. No veo tu aplicación, así que no tengo consola ni captura si algo falla: cuéntame el error en el comentario. Guardo `.temp/` fuera del repo, que no tiene `.gitignore`; no lo he necesitado.
+
+Rama `feature/0012-cancel-dia` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Un terminal:
+
+```
+cd <run>\repo
+```
+
+1. Los pasos de tu reporte → `node src/app.js cancelar Norte mar` debe salir «sin reserva Norte mar»
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. `node src/app.js cancelar Norte lun` debe salir «cancelada Norte lun»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. `node src/app.js anular Norte mar` debe salir «sin reserva Norte mar»
+
+```
+node src/app.js anular Norte mar
+```
+
+4. `node src/app.js anular Norte lun` debe salir «anulada Norte lun»
+
+```
+node src/app.js anular Norte lun
+```
+
+Cada ejecución empieza de cero, así que el orden no importa.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Otra cosa que decidir después de validar: a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin ellos no fusiono sola; te propondré `merge.into: develop` y te lo preguntaré.
+
+Dime "validado" o qué paso falla.
+
+--- [92]
+El servidor del panel (http://127.0.0.1:61449/) se paró solo al llegar a su límite de tiempo. Ese enlace ya no responde. No lo he relanzado, y sigue sin haber validación tuya.
+
+Puedes validar con los cuatro comandos del guion y contestarme en el chat. Dime "validado" o qué paso falla. Si prefieres el panel, dímelo y lo arranco de nuevo con más margen.
+
+Después de tu validación quedan el cierre y la fusión. Para fusionar falta que me confirmes `merge.into: develop` y `merge.noFf` en `.docs/sdd/sdd-kit.json`, que hoy no están. No fusiono sin tu respuesta.
+

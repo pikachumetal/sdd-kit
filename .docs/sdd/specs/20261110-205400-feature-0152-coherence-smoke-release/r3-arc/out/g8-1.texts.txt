@@ -1,0 +1,74 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [37]
+**Veredicto: no está limpia.** Hay 2 hallazgos Important y ninguno Critical. Lo que comprobé: `git diff 5ecce9e..f185c8f`, `spec.md`, `plan.md`, `gate.json` y `package.json` en `f185c8f`, y el log de la rama.
+
+**Important**
+
+1. **Task 1 apunta al commit equivocado.** En `tasks.md`, la fila 1 («Cancelar con motivo») dice `5ecce9e`. Según `git log`, la Task 1 es `a49bead feat(bookings): cancelar con un motivo de la lista`, que toca `src/app.js` y `test/cancel.test.js` con el motivo y su validación. `5ecce9e` («listado de canceladas con su motivo») solo añade `canceladas`, así que únicamente corresponde a la Task 2. Ahora las dos filas comparten commit y no hay forma de llegar a lo que hizo la Task 1. Hay que poner `a49bead` en la fila 1.
+
+2. **El ruling describe un cambio que no está en el código.** La línea «Task 2: Ruling: `node --test --test-concurrency=1` en el gate…» no tiene respaldo en el árbol:
+   - `--test-concurrency` no aparece en ningún fichero salvo en el propio `tasks.md`.
+   - `gate.json` sigue con `"bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", ...}`.
+   - `package.json` contiene solo `{"type": "module"}`.
+   - Ningún commit de la feature (de `46084e1` a `f185c8f`) toca `gate.json`, `package.json` ni `scripts/`.
+   - El plan tampoco lo recoge: su gate de cierre sigue siendo `node --test`.
+
+   O el ruling es falso, o falta el cambio del gate y la enmienda del plan. En los dos casos el registro no cuenta lo que pasó, y deja como decisión tomada un workaround para una carrera de tests que no se aplicó.
+
+**Lo demás cuadra**
+- Las dos tasks del plan aparecen en `tasks.md`; no falta ni sobra ninguna.
+- Los estados `done` son coherentes con los commits de código.
+- `Revisión final: … sobre 5ecce9e` encaja, porque `5ecce9e` es el último commit de código.
+- «Arquitectura no (plan)» no contradice el plan, que no pide revisión de arquitectura y en Review Focus pone «ninguna».
+- El eje «Spec» de la revisión final mide si el código cumple la spec. No choca con «Sin review de spec» de `spec.md`, que se refiere a revisar la spec antes de implementar.
+
+Fichero revisado: `<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+--- [41]
+La re-revisión no vino limpia: dos hallazgos Important, ambos en `tasks.md`. Los voy a corregir en el cierre y sigo con el paso 3. Empiezo por invocar el retro.
+
+--- [44]
+Pasada del retro: dos señales de esta sesión. Las dejo en el §5 al escribir el walkthrough. Ahora corrijo `tasks.md` con los dos hallazgos de la re-revisión.
+
+--- [57]
+La base trajo `package-lock.json` (un fichero de «Sin filtro») y un test de `rooms`. Corro el gate completo, sin `--affected`.
+
+--- [61]
+Abiertas a la vez: ninguna otra rama (`git worktree list` solo mostraba este worktree).
+
+La 0010 está fusionada en `develop`. Lo que hice y lo que conviene que sepas:
+
+- **Revisión final:** `HEAD` se había movido desde `5ecce9e` con el commit de `tasks.md`, que era solo documentación, así que despaché la re-revisión de ese rango. No vino limpia: dos hallazgos Important, ambos corregidos en el cierre.
+  - La fila 1 de `tasks.md` citaba el commit de la Task 2. Ahora cita `a49bead`.
+  - El ruling decía que el gate llevaba `--test-concurrency=1`, pero esa bandera no estaba en el árbol y el gate de cierre pasó sin ella. Quedó anotado como no aplicado.
+- **Validación (`field`):** repetí el smoke con ejecución real: `cancelar` con motivo válido, con motivo fuera de la lista y sin `--motivo`.
+  - **`canceladas`:** `node src/app.js canceladas` en un proceso nuevo responde vacío, porque el almacén es en memoria. Solo lo verifiqué en un mismo proceso y con la suite. Guardarlo es la 0014, y el walkthrough lo dice así.
+- **Suites:**
+  - **Antes del merge de la base:** `bookings:test` 5/5, verde.
+  - **Tras el merge de la base:** esta trajo `package-lock.json`, así que repetí el gate sin `--affected`. Resultado: `bookings:test` 5/5 y `rooms:test` 2/2 sobre `f0bcf81`, y esa fue la sha que pasé a `--verified-at`.
+- **Registros:**
+  - `capabilities/bookings.md` creada con `capability merge`.
+  - `ROADMAP.md`: 0010 en ✅.
+  - `debt.md`, «Por triar»: nueva fila por la carrera de los tests de `cancel.test.js`.
+  - No hay ADR candidatas.
+  - No hay `estimation.md`, así que no hubo tiempo real ni estimation-log.
+- **Retro:** dos líneas en el §5 del walkthrough. Una es el ruling desmentido, corregido en su documento. La otra es un ticket del kit: nada comprueba que cada fila de `tasks.md` apunte a su commit.
+
+**Ticket del kit:** te ofrezco generar con `sdd-feedback` el ticket de esa segunda línea del retro.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`02b169e`) · push: no hecho: `merge.push` no lo autoriza · puedes borrar el worktree `<run>/repo`
+
+--- [63]
+El cierre ya está hecho, y el walkthrough ya no está sin commitear. Lo completé a partir del borrador y entró en el commit de cierre `77285b9`. Lo confirmo contra el repo.
+
+--- [65]
+No queda nada pendiente. El cierre de la 0010 está completo, y el árbol está limpio.
+
+- **Walkthrough:** completé el borrador sin reescribirlo. Le añadí la verificación hecha por mí, la tabla de THEN, los rulings y el §5 con el retro. Está en `77285b9` y, ya fusionado, en `develop`.
+- **Merge:** `feature/0010-cancel-reason` está fusionada en `develop` en `02b169e`. No hice push, porque `merge.push` no lo autoriza.
+- **Pendiente tuyo:** aceptar o no el ticket del kit (`sdd-feedback`) sobre la fila de `tasks.md` que salió con el commit equivocado. Tampoco he borrado el worktree.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`02b169e`) · push: no hecho: `merge.push` no lo autoriza · puedes borrar el worktree `<run>/repo`
+

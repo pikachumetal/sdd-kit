@@ -1,0 +1,75 @@
+--- [3]
+Usando sdd-end-feature para cerrar la 0010. Empiezo mirando el estado de la feature.
+
+--- [16]
+Estoy cerrando la 0010: la validación del dev-lead está dada. Antes de escribir el walkthrough, el roadmap y el changelog espero la re-revisión del tramo `66b9f0a..f07f8c3`, porque hubo dos commits de código después de la revisión final. Sigue corriendo; en cuanto vuelva sigo con el checklist.
+
+--- [39]
+El vigía de silencio no ha podido engancharse al transcript (no hay transcript en esta sesión), así que no vigila la re-revisión. Es una señal de que ese control no funciona aquí, no de que la re-revisión haya fallado. El agente sigue en marcha y espero su informe antes de tocar el walkthrough, el changelog o el roadmap.
+
+--- [40]
+**Finding Verdicts**
+
+1. **El Important del motivo con espacios está corregido (797464c).** `reasonOf` aplica ahora `params[index + 1]?.trim()` (`src/app.js:16`), así que `"otro "` pasa la validación y se guarda como `otro`. Lo he comprobado a mano: `cancelar Norte lun --motivo "  otro  "` responde «cancelada Norte lun (otro)» y `canceladas` muestra «Norte lun — otro». El test nuevo (`test/cancel.test.js:17-19`) fallaba en 66b9f0a: «otro » no estaba en la lista y la respuesta era «motivo no válido…». Ahora pasa. `node --test test/cancel.test.js` da 4/4 en verde. No se rompe nada: los otros tres tests no cambian y el test nuevo no altera el estado compartido, porque Sur mar no tiene reserva. El test es débil, pero eso no invalida el fix (lo detallo en New Breakage).
+
+2. **Hay dos comportamientos que el delta de la spec no cubre:**
+   - **«sin canceladas» (f07f8c3), Important.** Antes, `canceladas` con el listado vacío devolvía `''`; ahora devuelve «sin canceladas» (`src/app.js:36`). La spec no tiene ningún escenario para el listado vacío y «Enmiendas» dice «(ninguna)». Además ningún test cubre ese caso: solo cambia `src/app.js`, sin RED→GREEN. Tampoco consta en `tasks.md`, que solo registra la pasada de fix 797464c, y se hizo después de esa pasada, así que nadie lo ha revisado. El texto sí está en castellano, así que esa restricción se cumple. Para cerrarlo hace falta una enmienda o un escenario en la spec («GIVEN ninguna reserva cancelada / WHEN `canceladas` / THEN «sin canceladas»») y un test. Ojo: en `cancel.test.js` el estado se comparte entre tests, así que ese test tiene que ir antes del primer `cancelar` o en un fichero aparte.
+   - **trim, Minor.** Es un hueco de spec menor: el delta no dice que el motivo se normalice. Basta con una línea AND en el escenario o una enmienda.
+
+3. **El cambio CRLF→LF en `src/app.js` es real. Lo introduce 797464c, no f07f8c3. Minor.**
+   - **Bytes de los blobs:** en 66b9f0a `src/app.js` tenía 48/48 líneas con CR; en 797464c y f07f8c3 tiene 0. `git ls-files --eol` da `i/lf` para `src/app.js`.
+   - **Convención del repo:** casi todo el código y la documentación está en `i/crlf` (`test/app.test.js`, `package.json`, docs). No hay `.gitattributes` y `core.autocrlf=true`.
+   - **Diff limpio:** ignorando CR, `src/app.js` cambia solo 2 líneas en todo el tramo.
+   - **`test/cancel.test.js` ha quedado `i/mixed`:** 15 líneas CRLF antiguas y 4 líneas LF nuevas.
+
+   Es un cambio de formato no intencionado. Ensucia el diff (96 líneas para un fix de 1) y hace que `git blame` atribuya las 48 líneas a 797464c. No cambia el comportamiento y el proyecto no tiene ninguna regla de fin de línea, por eso lo dejo en Minor. Hay dos salidas: volver a CRLF o normalizar en un commit aparte con `.gitattributes`.
+
+4. **`params[index+1]?.trim()` sin motivo detrás no falla.** Con `cancelar Norte lun --motivo` el valor es `undefined` → `?.` → `undefined` → «motivo no válido: …», igual que antes del fix y sin excepción. Un motivo hecho solo de espacios se queda en `''` y también se rechaza. Node 22 admite `?.`.
+
+**New Breakage in the Fix Diff**
+
+- **Important, `src/app.js:36`:** «sin canceladas» es comportamiento nuevo, fuera de la spec y sin test (ver punto 2).
+- **Minor, `src/app.js:1-48`:** CRLF→LF de todo el fichero en 797464c (ver punto 3).
+- **Minor, `test/cancel.test.js:17-19`:** la aserción es indirecta. «sin reserva Sur mar» solo demuestra que «otro » pasó la validación, no que el motivo que se guarda y se muestra esté recortado. Si el código hiciera `reasons.includes(reason.trim())` y guardara el motivo sin recortar, el test seguiría en verde y la respuesta sería «(otro )». Sería más fuerte una aserción sobre «cancelada … (otro)» o sobre la salida de `canceladas`.
+- **Minor, `test/cancel.test.js:17-19`:** el test usa comillas dobles cuando el resto del fichero usa simples, y sus líneas terminan en LF cuando el resto está en CRLF. El proyecto no tiene linter.
+
+**Out-of-Scope Observations**
+
+- `tasks.md` (7ee6474) no registra f07f8c3: el registro vivo se quedó en «Pasada de fix: 797464c».
+- Los tests de `cancel.test.js` dependen del orden (el test 3 necesita el estado que deja el test 1). Ya pasaba antes del tramo, pero condiciona cómo se pruebe «sin canceladas».
+- Los ficheros SDD de la feature 0010 (`spec.md`, `plan.md`, `tasks.md`) están en LF y el resto de la documentación en CRLF. No afecta al cierre.
+
+**Verdict**
+
+El Important original está resuelto: 797464c lo corrige y su test pasa de RED a GREEN. El tramo de fix trae un Important nuevo: «sin canceladas» (f07f8c3) cambia el comportamiento sin test y fuera de la spec. También deja tres Minor: el CRLF→LF de `src/app.js`, el test del trim con aserción indirecta y el hueco de spec del trim. Mi veredicto: no está lista para cerrar hasta que haya un test y una enmienda de spec para el listado vacío, o se revierta f07f8c3.
+
+Ficheros relevantes:
+- `<run>\review-0010-f07f8c3\src\app.js`
+- `<run>\review-0010-f07f8c3\test\cancel.test.js`
+- `<run>\review-0010-f07f8c3\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md`
+- `<run>\review-0010-f07f8c3\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\tasks.md`
+
+--- [43]
+**No terminado.** La 0010 no está cerrada: la re-revisión final dejó un Important abierto y falta una decisión tuya antes de escribir el walkthrough, el changelog y el roadmap, y antes del merge.
+
+**Qué pasó**
+- Tu validación («probé cancelar con motivo y sale en canceladas») cubre el cierre.
+- Después de la revisión final entraron dos commits de código: `797464c` (trim del motivo) y `f07f8c3` («sin canceladas»). Por eso lancé la única re-revisión del tramo `66b9f0a..f07f8c3` (opus, effort-high).
+- El vigía de silencio no pudo enganchar el transcript de la re-revisión («SIN TRANSCRIPT»), así que esa revisión corrió sin vigilancia.
+
+**Veredicto de la re-revisión**
+- **Resuelto:** el Important original (motivo con espacios) lo corrige `797464c`, con test RED→GREEN.
+- **Important abierto, `src/app.js:36`:** `f07f8c3` hace que `canceladas` sin canceladas responda «sin canceladas». Eso no está en la spec (Enmiendas: «ninguna»), no tiene test y nadie lo había revisado.
+- **Minor:**
+  - `797464c` convirtió `src/app.js` entero de CRLF a LF, así que el diff y el blame de ese fichero salen sucios.
+  - El test del trim solo comprueba que «otro » pasa la validación, no que se guarde recortado.
+  - La spec tampoco dice nada del trim.
+
+**Qué necesito de ti**
+1. **«sin canceladas»:** o lo enmendamos en la spec (escenario nuevo en `bookings` más un test), o revierto `f07f8c3`. Recomiendo enmendarlo: el texto es razonable y está en castellano. Tocar una spec aprobada es decisión del dev-lead, por eso no lo hago por mi cuenta.
+2. **CRLF→LF:** ¿normalizo con un commit aparte o lo dejo como está? Recomiendo dejarlo y apuntarlo como deuda.
+
+Con tu respuesta aplico lo que toque, reviso solo ese tramo y sigo con el checklist de cierre.
+
+He dejado sin commitear una línea `Re-revisión:` en `tasks.md`, y he retirado el worktree temporal de revisión.
+

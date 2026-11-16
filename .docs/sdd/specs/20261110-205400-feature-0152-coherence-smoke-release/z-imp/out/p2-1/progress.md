@@ -1,0 +1,2 @@
+Task 1: Ruling: el código de `horas` llegó escrito antes que el test (dos horas de trabajo del dev-lead, sin commitear) — no lo borré: lo aparté con `git stash`, vi el RED real (`run('horas',…)` respondía `salas`), lo restauré y vi el GREEN — el test sale de los THEN de la spec, no del código — si falla, el RED no prueba que el test no se ajustó a un código ya visto
+Task 1: complete (commits 8a768d2..730f713, tests: node --test test/horas.test.js → ℹ duration_ms 157.237)

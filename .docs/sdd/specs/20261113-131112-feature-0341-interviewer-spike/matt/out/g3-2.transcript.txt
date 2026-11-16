@@ -1,0 +1,120 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+## agente
+Voy a leer el contexto SDD del proyecto antes de clasificar el cambio.
+> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; ls -R src test; cat package.json
+> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references"; cat control-profiles.md; cat nombrado.md | head -
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && pwd && git status --short | head; K="D:/code/.worktrees/sdd-kit/fe
+## agente
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas de diseño, la spec para que la apruebes, y luego el plan y la implementación, ~10 min hasta tu aprobación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** cuando intentas reservar una sala y ya está ocupada en esa franja, en vez de quedarte sin nada quieres apuntarte a una lista de espera de esa sala y esa franja. Es una feature nueva (no toca ninguna capacidad documentada) y la prevé en unas 2-3 tareas, así que no propongo dividirla.
+
+Dos hechos del código que condicionan el diseño:
+- `src/app.js` guarda las reservas en memoria (`bookings`) y cada comando es un proceso nuevo, así que hoy nada sobrevive entre ejecuciones.
+- `reservar` solo reconoce `--cada-semana` y `cancelar` solo devuelve un texto: aún no hay reserva ni cancelación reales sobre las que colgar la lista.
+
+❓ **¿Qué pasa cuando la sala se libera?**
+Es la decisión de la que cuelga todo lo demás (si hace falta guardar datos, qué hace `cancelar`, qué texto ves).
+1️⃣ **Se te reserva sola:** al cancelarse la reserva que la ocupaba, la primera persona apuntada en la lista pasa a tener la sala. Coste: `cancelar` pasa a tener efectos más allá de borrar.
+2️⃣ **Solo se te avisa:** la lista queda registrada y `libres` o un comando nuevo (p. ej. `espera`) te muestra que tu sala ya está libre. Tú reservas a mano. Coste: un paso más para ti, pero no se reserva nada sin que lo decidas.
+3️⃣ **Solo la lista, sin automatismo:** `reservar` te apunta y `espera` enseña quién espera qué. No pasa nada al liberarse. Es lo mínimo.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y apuntarte a la lista significa que quieres esa sala: reservarla sola es lo que esperas de una lista de espera. A cambio, `cancelar` deja de ser solo un borrado y la spec tendrá que fijar el orden y qué pasa si la reserva automática choca con otra.
+
+¿Qué opción prefieres?
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Ahora: creo la rama, reservo el id y escribo la spec con lo que has decidido (opción 1: se reserva sola). Queda: repaso de coherencia y revisión de la spec, y te la presento para aprobar, ~8 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp
+## agente
+Ahora la plantilla de spec, la pasada de coherencia y la revisión.
+> Bash: K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-templates/SKILL.md | head -40; ls $K/sdd-templates/ $K/sdd-tem
+> Bash: K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-propose/references/coherence-pass.md; echo =====; cat $K/sdd-p
+> Bash: K="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills"; cat $K/sdd-templates/templates/spec-template.md; cat $K/sdd-templates/tem
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo"; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; cat 
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt"; ls; grep -rn "sdd/specs" --include=*.md --include=*.ts --include=*.js --include
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt"; grep -n "specs" skills/sdd-upgrade/references/migrations/v3.0.0.md | head -8
+## agente
+Ahora escribo la spec en `changes/`, que es donde nacen los cambios nuevos.
+> Write: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+## agente
+Repaso de coherencia: un ajuste (los tests actuales y el almacén por defecto) y la prueba del delta sobre una copia.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && python - <<'E' 2>/dev/null || node -e " const fs=require('fs');con
+> Edit: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+## agente
+Añado el resultado de la fusión de prueba al ✋ y lanzo la revisión.
+> Edit: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+> Skill: sdd-kit:sdd-parallel-agents
+## agente
+Ahora: lanzo los dos revisores de la spec en paralelo (dominio en opus, técnica en sonnet). Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~5 min, ~2 $.
+> Agent: Revisión spec lente dominio
+> Agent: Revisión spec lente técnica
+## agente
+Los dos revisores siguen trabajando; espero sus resultados antes de presentarte la spec.
+(aviso de una tarea en segundo plano)
+## agente
+El revisor técnico ya ha terminado; falta el de dominio. Espero su resultado para integrar los hallazgos de los dos a la vez.
+(aviso de una tarea en segundo plano)
+## agente
+Los dos revisores han devuelto hallazgos, y cinco son Críticos que acepto. Reescribo la spec integrándolos.
+> Write: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec
+## agente
+Actualizo la decisión 14 con el resultado real de la prueba y lanzo la segunda ronda de revisión (un revisor, porque acepté Críticos).
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec
+> Agent: Segunda ronda revisión spec
+## agente
+La segunda ronda de revisión está en marcha. Cuando termine, integro lo que salga y te presento la spec para aprobar.
+(aviso de una tarea en segundo plano)
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo/.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md
+## agente
+Integro la segunda ronda (sin Críticos, así que no hay tercera ronda).
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && F=.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec
+## agente
+La spec de la lista de espera está escrita y revisada, y espera tu aprobación. No he escrito el plan ni código.
+
+Está en `.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. Todavía no la he commiteado: la commiteo junto con el plan cuando la apruebes.
+
+🦆 Si Norte está ocupada el lunes de 10:00 a 12:00, `reservar Norte lun 10:00-12:00` te apunta en una lista de espera. Cuando se ejecute `cancelar lun 10:00`, la sala pasa a ser tuya sin que hagas nada más. Para que funcione entre comandos, las reservas y la lista se guardan en `salas.json`, porque hoy viven en memoria y se pierden al acabar cada comando. `espera` te muestra en qué listas estás.
+
+## Lo que necesito que valides
+
+1. **Asunción importante (✋ 12).** La herramienta solo conoce las reservas de su propio fichero. Si la reserva que ocupa Norte la cancela otra persona en el coworking, `salas` no se entera y tu entrada sigue esperando. Asumo que registras tú las reservas ajenas con `reservar` y las quitas con `cancelar`. Si no es así, falta importar o sincronizar reservas, y eso sería otra feature.
+2. **Persistencia (✋ 1).** Paso las reservas y la lista a `salas.json`, en la carpeta desde la que ejecutas el comando. Sin esto la lista moriría con cada comando. Descarté dejarlo todo en memoria y guardar solo la lista en fichero.
+3. **Ocupada es franja exacta (✋ 2).** Misma sala, día y franja. Los solapes quedan fuera.
+4. **Textos nuevos (✋ 4).** Por ejemplo `Norte ocupada lun 10:00-12:00: apuntado en la lista de espera`.
+5. **Sin comando para salir de la lista (✋ 8).** Una entrada se borra editando `salas.json`.
+6. **Cancelar de verdad (✋ 6).** `cancelar` hoy solo devuelve un texto. Pasa a quitar de verdad las reservas de ese día y hora, y a promover después a quien espera.
+
+El resto de decisiones mías está en el ✋ de la spec.
+
+## Alcance y revisión
+
+- **Capacidades nuevas:** `bookings` (reservar libre, cancelar, `libres`) y `waitlist`. Entre las dos hay 16 requisitos, y la fusión de prueba sobre una copia de `.docs/sdd` no dio rechazos.
+- **Revisión:** dos revisores independientes (dominio y técnica) y una segunda ronda con un tercero. Los hallazgos están integrados en la spec, salvo uno que rechacé (normalizar mayúsculas, con su motivo).
+- **Plan previsto:** unas 3 tareas, así que no la divido.
+
+## Aprobación
+
+1. **Apruebo (Recomendada):** escribo el plan y sigo con la implementación.
+2. **Cambios:** dime qué ajustar, por ejemplo la asunción del punto 1.

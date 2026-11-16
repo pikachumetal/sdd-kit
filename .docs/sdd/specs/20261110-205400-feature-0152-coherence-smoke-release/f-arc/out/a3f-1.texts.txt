@@ -1,0 +1,61 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [26]
+**Veredicto: limpia**
+
+Hallazgos: ninguno.
+
+1. **La tabla de tasks coincide con el historial.** `git log --oneline e963be1` da 2bcf266 («cancelar con un motivo de la lista») y e963be1 («listado de canceladas con su motivo»), en ese orden y después de 6c95fae, que abre la feature. Las líneas 10–11 de `tasks.md` asignan Task 1 → 2bcf266 y Task 2 → e963be1, y los nombres de las tasks son los del plan (`plan.md`, líneas 36 y 42). Los dos commits tocan solo `src/app.js` y `test/cancel.test.js`, que son los ficheros que el plan da a cada task. La línea 13 («Revisión final … sobre e963be1») también cuadra: el plan es Native, sin superficie que pida el eje Arquitectura, así que «no (plan)» es correcto.
+2. **El ruling coincide con el test.** En `test/cancel.test.js` de e963be1, el test `canceladas enseña sala, día y motivo` (líneas 13–15) no prepara datos propios. Espera `'Norte lun — sala ocupada'`, que es exactamente lo que cancela el primer test (línea 6). Es la dependencia de orden que describe el ruling (`tasks.md`, línea 17), con su coste: falla si se ejecuta solo o en otro orden.
+3. **El diff solo añade documentación.** `git diff --stat e963be1 3de557f` muestra un único fichero, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (+17); no toca código ni tests. Como no hay texto de interfaz nuevo, la restricción de castellano no aplica.
+
+--- [28]
+El fichero solo pasa en la rama y en la base. Eso todavía no lo hace «flaky»: ejecuto la suite entera en la base y leo el test.
+
+--- [39]
+Escribo el walkthrough con lo verificado y lo reportado por separado.
+
+--- [50]
+Deuda y retro hechas. Ahora `tasks.md`, la fila del roadmap y el delta de capacidad.
+
+--- [53]
+Todo válido. Junto el cierre en un commit desde el de la última task (sin merges ni remoto en el rango).
+
+--- [56]
+**No terminado:** la 0010 está cerrada en su rama, pero no la he fusionado en `develop`. Hay un test en rojo que también falla sin la rama, y fusionar encima de eso lo decides tú.
+
+**Decisión que tomé sin el dev-lead (Task 2):** el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Falla si corre solo o en otro orden, y tiene fila en la deuda.
+
+**Lo que falta: el merge, por un rojo que no es de la rama**
+- **Comando:** `node --test`, que dio salida 1 sobre `3de557f`. Es el árbol que luego se juntó en `d79690d`, sin cambios de código.
+- **Log:** `D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/close-0010/suite.txt`
+- **Resultado:** 5 de 6 tests pasan. Falla `test/ids.test.js`: `TypeError [Error]: Cannot read properties of undefined (reading 'trim')` en `test/ids.test.js:12:19`.
+- **Causa:** el test lee `.git/ids-store`, un fichero fuera del árbol, y falla si no existe. Lo crea al fallar, así que el segundo pase da 6/6.
+- **Contraste con la base:** el fichero solo pasa en la rama y en `develop`. Borré `ids-store` y, desde ese estado limpio, falla igual en `develop` con el mismo `TypeError`. Recreé el fichero al terminar.
+- **Estado de `develop`:** sin tocar, en `48992a9`.
+- **`base: en rojo: el mismo comando también falla sin la rama`**
+- **Deuda:** no había fila que lo nombrara. Abrí una en «Por triar», más otra por el test de `canceladas` que depende del orden.
+
+Qué hago si me dices que fusione:
+```
+node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" merge --project-root "<run>/repo" --verified-at d79690d
+```
+Sin `--push`, porque `merge.push` es `false`. Si prefieres arreglar `ids.test.js` antes, eso es un patch aparte.
+
+**Cierre hecho**
+- **Revisión final:** `HEAD` se había movido (`3de557f`, solo `tasks.md`, 17 líneas). Despaché la re-revisión de `e963be1..HEAD` con `sdd-kit:effort-high` y `opus`, y volvió limpia.
+- **Validación en campo:** corrí el smoke, 4 de 4 THEN con ejecución real.
+  - Motivo válido: responde `cancelada Norte lun (sala ocupada)`.
+  - Motivo fuera de la lista: responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+  - Sin `--motivo`: responde lo mismo.
+  - `canceladas`: responde `Norte lun — sala ocupada`, pero solo en un único proceso.
+- **Registros:** walkthrough, `tasks.md` y la capacidad `bookings` (delta fusionado y validado). La fila 0010 queda en ✅.
+- **Retro:** una señal, `error que cazaría un chequeo`, con salida en la deuda.
+- **Historia:** el cierre está en un solo commit, `d79690d`. La base ya estaba al día, así que no hubo merge de sincronización.
+- **No aplican:** estimación y ADR, porque el proyecto no tiene `estimation.md` ni hay ADR candidata.
+
+**Para el dev-lead:** por la CLI en procesos separados, `canceladas` sale vacío, porque las reservas viven en memoria. Ya lo cubre la fila 0014 («Motivo guardado») y no abrí otra.
+
+**No terminado.** Falta el merge de `feature/0010-cancel-reason` en `develop`. No borres todavía el worktree `<run>/repo`.
+

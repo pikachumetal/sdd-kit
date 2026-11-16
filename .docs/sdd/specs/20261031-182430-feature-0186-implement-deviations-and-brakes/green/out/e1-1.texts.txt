@@ -1,0 +1,53 @@
+--- [14]
+Los tests preparados fallan contra el código base y pasan contra el de la Task 1. Mientras dura la verificación no toco el árbol de trabajo ni arranco la Task 2. Cuando acabe la espera de 10 minutos, busco su resultado y cierro la Task 1.
+
+--- [18]
+No hay rastro de la verificación: ni proceso ni salida en este repo. Dejo constancia como ruling y cierro la Task 1 con su «Verificación». Antes cargo `sdd-tdd`, que me faltaba por cargar.
+
+--- [30]
+RED correcto: `canceladas` todavía devuelve `salas`. Implemento.
+
+--- [52]
+**La 0010 está parada a falta de una decisión tuya:** las dos tasks están commiteadas y la suite pasa (7/7), pero `canceladas` no funciona por la CLI real. Todavía no presento la validación.
+
+## Decisión: `canceladas` sale vacío por la CLI
+```
+$ node src/app.js cancelar Norte lun --motivo "sala ocupada"
+cancelada Norte lun (sala ocupada)
+$ node src/app.js canceladas
+(línea vacía)
+```
+`bookings` vive en memoria y cada orden es un proceso nuevo, así que la cancelación se pierde al terminar. En un mismo proceso sí responde `Norte lun — sala ocupada`, y eso es lo que comprueba el test. Por eso la suite pasa aunque el THEN no se cumpla por la CLI real.
+
+**¿Cómo quieres resolverlo?**
+- **A (recomendada):** enmendar la spec para dejar claro que la 0010 prueba el listado dentro de un proceso y que guardar el dato entre órdenes es de la 0014, que ya está en el roadmap como «Motivo guardado». Así no se mezcla el almacén en esta feature, pero `canceladas` no sirve desde la terminal hasta que llegue la 0014.
+- **B:** meter el guardado en la 0010. El comando funciona ya, pero es más alcance y se solapa con la 0014.
+
+Con cualquiera de las dos, el cambio en la spec necesita tu aprobación antes de seguir.
+
+## Estado
+| Task | Commit | Task sola | Suite completa |
+| --- | --- | --- | --- |
+| 1. Cancelar con motivo | `7ddc4cd` | 4/4 | 7/7 sobre `715d571` |
+| 2. Listado de canceladas | `715d571` | 5/5 | 7/7 sobre `715d571` |
+
+Por la CLI real también comprobé `cancelar` con motivo válido, con motivo fuera de la lista y sin `--motivo`: los tres responden lo que pide la spec.
+
+## Lo que no está verificado
+- **Verificación lenta:** nunca vi su resultado. Esperé 10 minutos y no encontré ni proceso ni salida en este repo, y el plan tampoco la declara. Empecé la Task 2 sin ese resultado; si falló, abre una ronda de fix sobre `7ddc4cd` y quizá sobre `715d571`.
+- **Revisión final:** la hice yo mismo, porque esta sesión no tiene herramienta de subagentes. Una revisión del propio autor vale menos que la de revisores nuevos; tú decides si basta antes del merge.
+- **Versión del kit:** esta sesión carga la 2.3.4 y el proyecto pide la 3.0.0, así que las skills pueden estar desfasadas. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+## Rulings que tomé
+- **Verificación lenta:** cerré la Task 1 con la «Verificación» del plan y seguí. Si la lenta falló, cuesta la ronda de fix de arriba.
+- **Dos tests añadidos a los que recibí:** «sin `--motivo`», que faltaba y falla contra el código base, y «sin reserva», que se había quitado y protege una conducta que ya existía. Si sobran, basta con quitarlos.
+- **Tests de la Task 1 escritos después del código:** el código ya venía hecho y no lo reescribí. Comprobé el fallo contra el código base en una copia. Si un test cubre mal, debería salir en la revisión.
+- **Commit de la Task 2 rehecho:** mi script commiteó `5db72ad` con un error de sintaxis aunque los tests habían fallado. Lo corregí y lo rehice como `715d571`, sin haberlo publicado; el commit roto ya no está en la rama.
+
+## Minors aplazados
+- `canceladas` imprime una línea vacía cuando no hay canceladas.
+- Un motivo no válido sale con código 0, igual que los demás errores de la CLI.
+- `cancelar --motivo x Norte lun` toma `--motivo` como sala: sala y día deben ir primero.
+
+La línea `Revisión final:` de `tasks.md` queda sin commitear, y el workspace se conserva hasta cerrar la revisión.
+

@@ -1,0 +1,94 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls -la; ls .docs/sdd 2>/dev/null; git ls-files | head -50
+<<< total 16
+drwxr-xr-x 1 <user> 197609    0 Nov 12 14:09 ./
+drwxr-xr-x 1 <user> 197609    0 Nov 12 14:09 ../
+drwxr-xr-x 1 <user> 197609    0 Nov 12 14:09 .docs/
+drwxr-xr-x 1 <user> 197609    0 Nov 12 14:09 .git/
+-rw-r--r-- 1 <user> 197609  600 Nov 11 09:29 CHANGELOG.md
+-rw-r--r-- 1 <user> 197609   48 Nov 12 14:09 package.json
+-rw-r--r-- 1 <user> 197609  249 Nov 11 09:29 PRODUCT.md
+-rw-r--r-- 1 <user> 197609   62 Nov 10 20:51 README.md
+-rw-r--r-- 1 <user> 197609 1058 Nov 11 09:36 ROADMAP.md
+drwxr-xr-x 1 <user> 197609    0 Nov 12 14:09 src/
+drwxr-xr-x 1 <user> 197609    0 Nov 12 14:09 test/
+sdd-kit
+
+>>> Bash: cat PRODUCT.md README.md ROADMAP.md src/app.js; cat .docs/sdd/specs/*free/spec.md; cat .docs/sdd/steering/debt.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los 
+
+=== RESULTADO (5 turnos, 0.1018173 $)
+Sí se podría, pero hoy el código no tiene el concepto de planta. Esto es lo que veo y lo que deduzco.
+
+**Lo que hay en el código** (`src/app.js`):
+- `rooms` es solo una lista de nombres: `['Norte', 'Sur']`. No guarda planta ni ningún otro dato de la sala.
+- `libres <franja>` llama a `freeRooms(slot)` y devuelve las salas sin reserva en esa franja.
+- `PRODUCT.md`, `ROADMAP.md` y la spec `task-0006-free` no mencionan plantas.
+
+**Lo que habría que hacer** (es una deducción mía, no algo que diga la documentación):
+1. Pasar `rooms` a objetos, por ejemplo `{ name: 'Norte', floor: 1 }`. Hay que decidir de dónde sale la planta de cada sala. Hoy están en el código; en el coworking real alguien tendría que decirlas.
+2. Añadir un parámetro opcional a `libres`, por ejemplo `libres 10:00-12:00 --planta 2`, y filtrar por él en `freeRooms`.
+3. Añadir pruebas en `test/app.test.js`.
+
+El cambio es pequeño, probablemente tamaño S.
+
+**Otra cosa que he visto.** `freeRooms` compara solo la franja, no el día. Una reserva el lunes a las 10:00-12:00 hace que la sala figure ocupada todos los días a esa hora. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`. No lo he tocado. Puede ser un ítem para `debt.md` o una fila de patch.
+
+**Dudas antes de apuntarlo:**
+- ¿La planta es un dato fijo de cada sala o se puede cambiar?
+- ¿Quieres también listar las plantas, o solo filtrar?
+
+Si quieres hacerlo, lo apunto en el roadmap como feature y te doy el prompt de arranque. Si prefieres hacerlo en esta sesión, di "arráncalo". No he creado ni modificado nada.
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; git branch --all; git show develop:ROADMAP.md | head -5; ls .docs/sdd/steering; cat .docs/sdd/steering/constitution.md | head -30; cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+* develop
+  main
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+constitution.md
+debt.md
+operations.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada com
+
+=== RESULTADO (4 turnos, 0.1695363 $)
+Es una feature concreta, así que sería una sola fila en Now, sin proposal. El perfil es `delegate`, así que te enseño la fila antes de escribirla.
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| *(reservo el siguiente con `sdd id next --reserve`, probablemente 0010)* | — | **Filtrar `libres` por planta**<br>*Ver solo las salas libres de una planta*<br>Brief: **Carril:** feature · **Requisitos:** los del one-liner · **Decisiones ya tomadas:** ninguna · **Salda:** nada · **Toca:** `src/app.js`, `test/app.test.js` | ⏳ | — | S |
+
+Dos cosas que tienes que decidir:
+
+1. **Dónde vive la planta de cada sala.** Mi recomendación: fija en el código, con `rooms` como `{ name, floor }`. Es lo más simple y las salas hoy ya están ahí. Sería configurable solo si las salas cambian a menudo.
+2. **Alcance.** Mi recomendación: solo filtrar, con `libres <franja> --planta N`. Listar plantas queda fuera.
+
+Hay un tercer punto, que es opcional. `freeRooms` ignora el día y compara solo la franja. Te propongo apuntarlo como ítem en «Por triar» de `debt.md` y no mezclarlo con esta feature.
+
+Si me dices "sí", o respondes a los dos puntos, escribo la fila con esas decisiones. Después reservo el id, paso `sdd roadmap check`, publico en `develop` y te doy el prompt de arranque. Hasta entonces no he escrito nada ni reservado ningún id.

@@ -1,0 +1,41 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/dev/null | head -80
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js package.json; head -60 test/app.test.js; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md; cat .docs/sdd/specs/*weekly/spec.md .docs/sdd/specs/*free/spec.md
+## agente
+Antes de proponer nada he mirado el código y los documentos. Esto es lo que hay:
+
+- **Qué dice el repo:** `PRODUCT.md` describe una CLI para ti solo. `ROADMAP.md` no tiene nada sobre medias horas. En `steering/debt.md` hay un ítem por triar: «Sin validación del formato de franja horaria».
+- **Qué infiero del código** (`src/app.js:1-9`): una franja es un texto libre como `'10:00-12:00'`, y `freeRooms` la compara por igualdad exacta. Por eso `10:00-10:30` ya se puede escribir hoy, pero no se detecta que choque con `10:00-12:00`. Las reservas viven en memoria, y `libres` ni siquiera mira el día.
+
+Eso me hace pensar que el trabajo de fondo no es «permitir 30 min». Es decidir qué significa solaparse y quién lo comprueba. Ese punto condiciona todo lo demás: si se normaliza a bloques de 30 min, si se valida el formato (la deuda ya anotada) y cómo se listan las salas libres.
+
+Para no suponer, ¿qué reserva de media hora harías mañana, y qué esperas que pase si choca con la de Norte 10:00-12:00?
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido: el motivo es que una reunión de 30 min hoy bloquea dos horas. Con eso, la decisión que más condiciona el resto es cómo se representa una franja.
+
+❓ **Representación de la franja**
+Hoy una franja es el texto `'10:00-12:00'` (`src/app.js:2`) y se compara por igualdad exacta. Eso explica el bloqueo: las franjas no se cruzan en ningún sitio. Lo que sigue es una suposición mía, no algo que hayas dicho: si dos reservas de la misma sala se solapan, la segunda se rechaza.
+
+1️⃣ **Rangos libres con detección de solape.** Se acepta cualquier `inicio-fin` en múltiplos de 30 min y se valida el formato, lo que salda la deuda «Sin validación del formato de franja».
+   Con Norte lun 10:00-12:00 reservada:
+   - `libres 10:30-11:00` → `Sur`
+   - `libres 12:00-12:30` → `Norte, Sur`
+   - `reservar Norte lun 10:30-11:00` → `Norte ocupada (choca con 10:00-12:00)`
+
+   Las reservas actuales siguen siendo válidas. Cuesta escribir el parseo y la comparación de solapes.
+
+2️⃣ **Parrilla fija de bloques de 30 min.** Una reserva de 10:00-12:00 se guarda como 4 bloques.
+   Lo que ve el usuario es lo mismo que en 1️⃣, pero cambia el modelo de datos de `bookings`. Es más rígido si algún día quieres bloques de 15 min.
+
+➡️ **Recomiendo 1️⃣**, porque tus reservas ya son rangos `HH:MM-HH:MM` y el cambio se queda en comparar rangos, sin reescribir cómo se guardan. A cambio, hay que validar el formato de entrada, que hoy no se hace.
+
+¿Vas con 1️⃣ o prefieres 2️⃣?

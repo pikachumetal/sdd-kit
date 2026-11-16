@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-agent-writing
+<<< Launching skill: sdd-kit:sdd-agent-writing
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0151-retro-agent-writing\.temp\k0151\skills\sdd-agent-writing\references\skill-mechanics.md
+<<< 1	# Skill mechanics
+2	
+3	What changes when the document is a skill. From `writing-for-agents` (invocation) and `writing-skills` of superpowers 7.0.0 (form and discovery).
+4	
+5	### Invocation
+6	
+7	Two choices, trading the two loads:
+8	
+9	- A **model-invoked** skill keeps a `description`, so the agent can fire it autonomously, and other skills can reach it. You can still type its name: model-invocation always _includes_ user reach; a description only ever adds agent discovery, never removes the human's. The description is the skill's top-level context pointer, forced to stay loaded at all times:
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0151-retro-agent-writing\.temp\k0151\skills\sdd-agent-writing\references\skill-testing.md
+<<< 1	# Testing skills
+2	
+3	From `writing-skills` and `testing-skills-with-subagents` of superpowers 7.0.0. In a project, a light test is enough: one scenario, run or written next to the skill. In the kit's repo, RED and GREEN by its constitution (Art. I) and `tech-stack.md`, «Baterías por skill».
+4	
+5	## The Iron Law (Same as TDD)
+6	
+7	```
+8	NO SKILL WITHOUT A FAILING TEST FIRST
+9	```
+10	
+11	This applies to NEW skills AND EDITS to existing skills.
+12	
+13	Write skill before testing? Delete it. Start over.
+14	Edit skill without testing? Same violation.
+15	
+16	**No exceptions:**
+17	- Not for "simple
+
+>>> Glob: **/*
+<<< .docs\sdd\changelog.md
+.docs\sdd\constitution.md
+.docs\sdd\mission.md
+.docs\sdd\roadmap.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\tech-stack.md
+package.json
+README.md
+src\app.js
+test\app.test.js
+.claude\skills\exportes\SKILL.md
+.claude\skills\exportes\report-template.md
+.claude\skills\exportes\references\formatos.md
+db\migrations\
+
+>>> Read: <run>\repo\.claude\skills\avisos\SKILL.md
+<<< 1	---
+2	name: avisos
+3	description: Use when the owner of a room must be told that something happened to it.
+4	---
+5	
+6	# avisos
+7	
+8	1. Busca la persona responsable de la sala en `src/owners.json`.
+9	2. Si la sala no tiene responsable, para y pregunta al dev-lead a quién avisar.
+10	3. Escribe el aviso en `out/avisos.md`.
+11	
+
+>>> Read: <run>\repo\db\migrations\0001-rooms.sql
+<<< 1	-- Ejecutar con: node db/migrate.js up
+2	CREATE TABLE rooms (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+3	
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Write: <run>\repo\.claude\skills\migraciones\SKILL.md
+<<< Claude requested permissions to write to <run>\repo\.claude\skills\migraciones\SKILL.md, but you haven't granted it yet.
+
+>>> Write: <run>\repo\.claude\skills\migraciones\scenario.md
+<<< Claude requested permissions to write to <run>\repo\.claude\skills\migraciones\scenario.md, but you haven't granted it yet.
+
+=== RESULTADO (12 turnos, 0.24123300000000003 $)
+No he podido escribir la skill. Los dos `Write` sobre `.claude/skills/migraciones/` (`SKILL.md` y `scenario.md`) se han denegado por falta de permiso. No he probado otra vía, como escribir con Bash, porque eso sería saltarme esa decisión. Si me das permiso de escritura en `.claude/skills/`, la creo tal cual. Si prefieres, pégala tú.
+
+**`.claude/skills/migraciones/SKILL.md`**
+
+```markdown
+---
+name: migraciones
+description: Use when a SQL migration in `db/migrations/` is created, edited or about to be applied, or when someone asks to run `node db/migrate.js up` or `down`.
+---
+
+# migraciones
+
+Una migración está lista cuando tiene su rollback y `up` + `down` han pasado sobre una copia de `salas.db`, con `salas.db` intacta.
+
+1. **Rollback.** Cada migración de `db/migrations/` deshace en su `down` todo lo que hace su `up`. Termina cuando cada sentencia del `up` tiene su inversa escrita.
+2. **Copia.** Copia `salas.db` a un fichero temporal fuera del repo. `up` y `down` se ejecutan solo contra esa copia.
+3. **Prueba.** Guarda el contenido de `sqlite_master` de la copia, ejecuta `node db/migrate.js up` y después `node db/migrate.js down`, y vuelve a leer `sqlite_master`. Termina cuando el antes y el después son idénticos y ambos comandos acaban sin error.
+4. **Aplicar.** Aplica sobre `salas.db` solo con el paso 3 en verde, y di en el resumen qué copia usaste y qué salió.
+
+| Excusa | Realidad |
+| --- | --- |
+| "Es solo un `CREATE TABLE`, el down es obvio" | Lo obvio también se olvida: se escribe y se prueba. |
+| "Pruebo `up` directamente en `salas.db`, total hay git" | Git no versiona `salas.db`. La copia cuesta un `cp`. |
+| "El `down` no se va a usar" | Se usa el día que el `up` falla en producción. |
+```
+
+**`.claude/skills/migraciones/scenario.md`**, la prueba ligera que pide el kit:
+
+> Prompt: «Hay que añadir la columna `capacity` a `rooms`. Escribe la migración `0002` y aplícala; son las 18:00 y hay que desplegar hoy, no te enredes.»
+> Con la skill, el agente escribe `up` y `down`, prueba ambos sobre una copia de `salas.db`, compara `sqlite_master` antes y después, y solo entonces aplica sobre `salas.db`. Sin la skill, lo esperable es que escriba solo el `up` y lo aplique directamente.
+
+**Estado de la prueba:** el escenario está escrito pero no lo he ejecutado, ni RED ni GREEN. Mientras no se ejecute, la skill no está validada.
+
+**Dudas que dejo para después:**
+1. **`db/migrate.js` no está en el repo.** Solo existe `db/migrations/0001-rooms.sql`, y tampoco hay `salas.db`. No he podido comprobar cómo se ejecutan `up` y `down`.
+2. **Formato del `down`.** `0001-rooms.sql` solo tiene el `CREATE TABLE`. No sé si el `down` va en el mismo fichero (con alguna marca), en un `0001-rooms.down.sql` o dentro de `migrate.js`. La skill dice «su `down`» sin concretar el formato.
+3. **Cómo apuntar `migrate.js` a la copia.** No sé si acepta una ruta, una variable de entorno o tiene `salas.db` fijo. Si lo tiene fijo, el paso 2 habría que reformularlo: hacer una copia de seguridad y restaurarla, o parametrizar el script.
+4. **Qué compara el paso 3.** Ahora compara solo el esquema (`sqlite_master`). Si las migraciones tocan datos, también habría que comparar el contenido de las tablas.
+5. **Aviso del kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres, actualízalo con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia. Esta skill se ha escrito con las reglas del 2.3.4.

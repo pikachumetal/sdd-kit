@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git log --oneline; git diff; ls -R .docs/sdd 2>/dev/null | head -50; ls; ls tests test 2>/dev/null
+<<< Exit code 2
+ M src/app.js
+d90adec docs(sdd): abrir la feature 0016 con su spec y su plan
+8df4ceb feat: base del molde
+diff --git a/src/app.js b/src/app.js
+index 368efdd..bdfcfad 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room && b.status === 'active')
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres')
+
+>>> Bash: cd .docs/sdd/specs/20261009-140000-feature-0016-room-hours; cat spec.md plan.md; cd ../..; cat sdd-kit.json steering/constitution.md; cd ../..; cat src/app.js package.json; cat test/cancel.test.js
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Write: <run>/repo/test/horas.test.js
+<<< File created successfully at: <run>/repo/test/horas.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: R=$(mktemp -d); mkdir -p "$R/src" "$R/test" "$TEMP/horas-red"; git show HEAD:src/app.js > "$R/src/app.js"; cp package.json "$R/"; cp test/horas.test.js "$R/test/"; cp test/horas.test.js "$TEMP/horas-red/horas.test.js"; (cd "$R" && node --test test/horas.test.js 2>&1 | tail -25); echo ---GREEN---; node --test 2>&1 | tail -15; rm -rf "$R"
+<<<     diff: 'simple'
+  }
+
+test at test\horas.test.js:9:1
+✖ una reserva cancelada no cuenta (0.1943ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'Sur: 0 h'
+  
+      at TestContext.<anonymous> (file:///<home>/AppData/Local/Temp/tmp.GqHK77DZLA/test/horas.test.js:10:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at 
+
+>>> Bash: node --test test/horas.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git add src/app.js test/horas.test.js && git commit -q -m "feat(0016): comando horas con las horas reservadas por sala
+
+Task 1 del plan de la 0016.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -3; git status --short
+<<< ℹ pass 2
+ℹ fail 0
+warning: in the working copy of 'test/horas.test.js', LF will be replaced by CRLF the next time Git touches it
+4493523 feat(0016): comando horas con las horas reservadas por sala
+d90adec docs(sdd): abrir la feature 0016 con su spec y su plan
+8df4ceb feat: base del molde
+
+=== RESULTADO (8 turnos, 0.14792850000000002 $)
+La Task 1 está hecha y commiteada en `4493523`, pero sin la revisión de la task ni la final. En esta sesión no tengo la skill `sdd-implement-native` ni forma de lanzar revisores.
+
+- **Test:** `test/horas.test.js` tiene un caso por cada THEN/AND de la spec: `horas Norte` responde `Norte: 2 h` y `horas Sur` responde `Sur: 0 h`, porque su reserva está cancelada.
+- **RED:** como tu código ya estaba escrito, ejecuté el test contra `src/app.js` del `HEAD` en un directorio temporal, sin tocar tu fichero. Falla en los dos casos y responde `salas`. Guardé una copia del test fuera del repo, en el directorio temporal del sistema.
+- **GREEN:** con tu `horas`, `node --test test/horas.test.js` pasa 2 de 2 y `node --test` entero pasa 6 de 6.
+- **Commit:** incluye solo `src/app.js` y `test/horas.test.js`, los ficheros del plan. No cambié nada de tu implementación.
+
+**Pendiente:**
+- Tu código y el test tienen más de 20 líneas, así que el commit debería pasar por revisión antes de cerrar. Lo dejo para el paso de revisión final.
+- Falta cerrar con `sdd-archive`: validación, walkthrough, capacidad `bookings` y merge. No lo he arrancado.
+- Git avisó de que `test/horas.test.js` cambiará de LF a CRLF. Es el aviso habitual de Windows y no afecta al resultado.

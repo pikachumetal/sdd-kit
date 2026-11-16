@@ -1,0 +1,50 @@
+--- [3]
+Ahora: leo la spec, `tasks.md` y la configuración del kit para preparar la validación. Queda: la re-revisión, el smoke y la suite, y presentar la validación, ~15 min.
+
+--- [11]
+A test fails, even though the final review said the work was clean. I'll look at it before going on.
+
+--- [14]
+La suite falla por un fallo del propio test, no del componente. Falta `cleanup` entre tests, y como `vitest` no usa globals el auto-cleanup de RTL no se registra. Lo arreglo.
+
+--- [16]
+Ahora commit del fix, arranque de la app para el smoke y la e2e.
+
+--- [22]
+El servidor de desarrollo murió al terminar la llamada anterior. Lo arranco en segundo plano de verdad.
+
+--- [40]
+Los dos THEN dan lo esperado en la app real. El commit `f0d7917` llegó después de la revisión final, así que despacho la re-revisión de ese tramo.
+
+--- [51]
+🦆 El test «el total sigue al filtro» estaba en rojo, y la revisión final de la Task 1 había dado el trabajo por limpio. Lo he arreglado y la feature queda lista para `sdd-archive`, que todavía no he invocado, como pediste. No he tocado el código del componente.
+
+✋ **Me salí del plan en** el commit `f0d7917`, que no estaba en la Task 1. Añade `afterEach(cleanup)` a `src/invoices/InvoiceList.test.tsx`. Con `validation.mode: field` no te pregunto nada: la validación es en campo.
+
+**Fallo del test:** `vitest` no usa globals, así que el auto-cleanup de React Testing Library no se registra. Los tres renders se acumulaban en el mismo DOM y `getByLabelText('Estado')` encontraba varios selects. El componente estaba bien.
+
+**Re-revisión del tramo** `4135b3d..f0d7917` (`sdd-kit:effort-high` + `opus`): limpia, con dos Minor.
+- La causa sigue en `vite.config.ts` (sin `globals` ni `setupFiles`). Un test de componente nuevo tendría el mismo problema. Es opcional.
+- `tasks.md` decía «limpia» sobre un `HEAD` con un test en rojo. Ya lo he corregido: hay una línea `Re-revisión:` nueva y sin commitear.
+
+**Smoke por THEN** (la app corriendo con `npm run api` y `npm run dev`, y un navegador real contra `/facturas`):
+
+| THEN | Evidencia |
+| --- | --- |
+| «todas» → «Total: 200 €» | `ejecución real`: salió «Total: 200 €» |
+| «cobrada» → «Total: 80 €» | `ejecución real`: salió «Total: 80 €» y la lista solo con F-015 |
+
+**Suite:**
+- **`npm test`:** 3 de 3 pasan tras el fix, en unos 2 s.
+- **`npm run e2e`:** 4 fallos, ninguno de esta feature, y no es un resultado limpio. `0012`, `0015`, `0018` y `0021` buscan comportamientos que la app no tiene: «Marcar cobrada», «Formato moneda», exportar a PDF y fila de suma. Ese código no existe en `src`, y el diff de esta rama solo toca `InvoiceList.tsx` y su test. El cierre del plan (`npm test && npm run e2e`) no puede quedar en verde con ellos.
+- **Antes de archivar:** decide si esas e2e se arreglan, se apartan o se dejan como deuda.
+
+**Antes de archivar:**
+- **Capacidad `invoices`:** `capability merge` falla porque no existe en `capabilities/` y la spec no la declara en «Nuevas». Corregirlo es editar la spec aprobada, así que no lo he hecho. Tampoco existe `changelog.md`.
+- **Borradores de cierre:** no he escrito el walkthrough ni el changelog.
+- **Procesos:** he parado la API y el dev server que arranqué.
+- **Sin commitear:** `tasks.md` (la nota de re-revisión) y un `package-lock.json` que creó `npm install`.
+- **Kit:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, según el aviso al arrancar. Conviene actualizar antes de archivar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+Siguiente paso, cuando quieras: `sdd-archive`. Registraría `Validación en campo: 2026-10-26 · smoke con ejecución real de los 2 THEN`.
+

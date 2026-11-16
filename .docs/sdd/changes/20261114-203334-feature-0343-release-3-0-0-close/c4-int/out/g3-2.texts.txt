@@ -1,0 +1,47 @@
+--- [4]
+Ahora: leer el contexto SDD del proyecto (docs, sin código). Queda: clasificar el cambio y anunciar el carril, ~2 min.
+
+--- [23]
+Sigo con el aviso de carril: reservé el id 0010 y ahora creo la rama y lo confirmo con el remoto.
+
+--- [25]
+Ahora: entender el cambio y empezar la entrevista de la spec. Queda: unas pocas preguntas, la spec con su aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no lo fija)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Rama `feature/0010-lista-espera` creada (id 0010 reservado).
+
+**Lo que he entendido, corrígeme:** hoy `reservar` solo existe en su variante semanal y no hay noción de «sala ocupada» al reservar; `libres` es lo único que mira las reservas (`src/app.js`). Quieres que, si la sala que pides ya está ocupada en esa franja, no te quedes sin nada: que quede apuntada una petición en lista de espera. Cuántas tasks prevé: unas 3, así que no propongo dividir.
+
+Antes de nada, necesito lo que solo sabes tú:
+
+¿Qué quieres poder hacer con la lista de espera, y qué te pasa hoy cuando la sala que quieres está ocupada?
+
+--- [27]
+Entendido: feature full, delegate. Tu motivo es dejar de mirar `libres` a mano. Eso deja una decisión que condiciona casi todo lo demás.
+
+Cuando alguien cancele la reserva de Norte y la sala quede libre, ¿qué quieres que pase con tu petición en espera?
+
+❓ **Qué ocurre al liberarse la sala**
+Hoy `cancelar` solo devuelve `cancelada lun 10:00-12:00` y `libres` solo lista salas. Nada sabe que alguien espera.
+
+1️⃣ **Se convierte sola en reserva.**
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   - Después alguien ejecuta `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte pasa a tu espera (1.º): reservada`
+   - Coste: reservas sin confirmarlas. Si ya no la quieres, tienes que cancelarla.
+
+2️⃣ **Solo te avisa, y tú confirmas.**
+   - La misma cancelación → `cancelada lun 10:00-12:00; Norte libre, tienes espera (1.º)`
+   - El mismo aviso sale en `libres`, y después reservas tú con `reservar Norte lun 10:00-12:00`.
+   - Coste: otro paso a mano, y alguien puede quitarte la sala antes.
+
+3️⃣ **Solo apunta la petición.**
+   - Hay un comando `espera` que lista tus peticiones. No hay aviso ni conversión automáticos.
+   - Coste: sigues mirando a mano, que es lo que quieres evitar.
+
+➡️ **Recomiendo 1️⃣**, porque quitarte el sondeo a mano es tu motivo y solo 1️⃣ lo cierra sin ninguna acción tuya. A cambio, puede dejarte una reserva que ya no quieras. Se arregla con `cancelar`, y eso ya existe.
+

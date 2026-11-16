@@ -1,0 +1,33 @@
+--- [3]
+Ahora: compruebo el modo de validación y el estado de la 0010 para el paso 7. Queda: la re-revisión del tramo, el smoke y la presentación, o el cierre si el modo es `field`.
+
+--- [16]
+Sigo con el paso 7. Ya pasé la suite y el smoke, y ahora levanto el panel de validación (plan B) antes de presentar.
+
+--- [18]
+🦆 La 0010 está implementada y la revisión final está limpia, pero falta tu validación. Hasta que me cuentes qué has probado y que funciona, la feature queda en espera y no invoco `sdd-archive`.
+
+✋ **Me salí del plan en** dos puntos de la Task 2. Los dos están como rulings en `tasks.md`, porque la spec no los fija:
+- `canceladas` lista las reservas en el orden en que se cancelaron.
+- Las reservas anuladas (`anular`) no salen en `canceladas`. El listado de la 0011 tendrá que sumarlas si hace falta.
+
+Panel: plan B en http://127.0.0.1:8649/ (no hay herramientas de Chrome, y la página no ve la app).
+
+**Lo que he comprobado**
+- **Suite:** `node --test` pasa con 5 de 5 tests en 0,1 s. `package.json` no tiene script `test`, así que no sirve `npm test`.
+- **THEN 1** (cancelar con motivo de la lista): `ejecución real`. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` responde `cancelada Norte lun (sala ocupada)`.
+- **THEN 2** (motivo fuera de la lista): `ejecución real`, provocado con la entrada que falla. Con `--motivo "me aburro"` responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+- **THEN 3** (el listado enseña el motivo): solo `ejecución real` parcial. `canceladas` desde un proceso nuevo sale vacío, porque `src/app.js` guarda las reservas en memoria. Importando `run` y encadenando `cancelar` y `canceladas` en el mismo proceso sale `Norte lun — sala ocupada`. Desde la CLI sola no se puede ver ese THEN.
+- **Test del listado:** el test `canceladas enseña sala, día y motivo` solo pasa porque el test anterior ya canceló esa reserva. Depende del orden de los tests.
+
+**Guion**, con la app en `<run>\repo` y sin nada más que arrancar. Parte de la base limpia y no hay estado que restaurar.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js canceladas` → `Norte lun — sala ocupada`. Este paso saldrá vacío desde la CLI por lo que he dicho arriba: no ensayado, y dime si lo das por bueno con la comprobación en el mismo proceso.
+
+**Re-revisión del tramo:** no abro otra. Lo único posterior a la revisión final es `2f53ff9`, que toca solo `tasks.md`, sin código. Aviso de que la línea `Revisión final:` dice `sobre (HEAD)` en vez de un sha, y habría que fijarlo al cerrar.
+
+**Borradores de cierre:** todavía no los he escrito. Los hago junto al cierre, tras tu validación. En el proyecto no existe `.docs/sdd/capabilities/` ni `.gitignore`. Antes de arrancar el panel iba a proponer añadir `.temp/` al `.gitignore`: dime si lo añado.
+
+¿Qué has probado tú y funciona? Con el hueco del listado, dime si lo das por bueno o si lo anoto como ticket aparte.
+

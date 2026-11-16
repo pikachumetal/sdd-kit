@@ -1,0 +1,121 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [20]
+Gate verde: 5 tests unitarios y 7 E2E. El E2E tardó 48,1 s con un presupuesto de 0,5 min, así que lo apunto como deuda. Levanto el entorno de nuevo para la tanda.
+
+--- [25]
+La tanda salió verde: 11 de 11. Paro el entorno que levanté y ensayo el guion tal como lo vas a teclear.
+
+--- [28]
+El CLI no guarda estado entre procesos, así que el guion tiene que ir por el servidor. Lo ensayo ahí con una sesión mía.
+
+--- [33]
+El ensayo coincide con la spec. Paro el entorno, porque no hay `validation.startEnvironment`, y levanto el panel plan B, porque no tengo herramientas de Chrome.
+
+--- [35]
+Todo lo que necesito de ti está abajo. **No he escrito ningún registro ni he fusionado nada**: con `validation.mode: manual` el cierre espera a tu validación.
+
+**Abiertas a la vez:** ninguna. `git worktree list` solo muestra este worktree.
+
+**Pre-checks**
+- La rama no tiene cambios sin commitear.
+- `sdd merge --check` dice que `develop` está listo.
+- La spec está `approved`, firmada por Laura.
+- La revisión final fue sobre `ffea67f`. `HEAD` solo añadió `tasks.md`, que es documentación, así que no hace falta re-revisión.
+
+**La tanda ×3 que pediste (ya hecha, antes de darte el guion)**
+- La tanda va antes porque, con el guion en tus manos, no puedo tocar el servidor. Se levantó el entorno con `env-up` y se comprobó con `/health` antes.
+- El alcance es la diferencia con `develop`, la base de fusión. Solo cambia `e2e/cancel.e2e.mjs`: tres tests cambiados y dos que no. `free.e2e.mjs` no se toca, así que no lo repetí.
+
+```
+# Tanda: 3 tests cambiados ×3 + los 2 demás de cancel.e2e.mjs ×1 = 11 ejecuciones · ~1,3 min (7,2 s × 11 ÷ 1 worker)
+```
+
+| Test | Pasadas | Resultado |
+| --- | --- | --- |
+| `cancela una reserva con su motivo` | ×3 | 3/3 verdes |
+| `rechaza un motivo fuera de la lista` | ×3 | 3/3 verdes |
+| `la cancelada sale en canceladas con su motivo` | ×3 | 3/3 verdes |
+| `anula una reserva` y `anular sin reserva avisa` | ×1 | 2/2 verdes |
+
+- **Tiempo:** la tanda tardó 72,3 s los cambiados y 12,2 s el resto, 84,5 s en total. Salieron 11 de 11 verdes, **sin ninguna inestable**.
+- **Salidas:** están en el scratchpad, en `g2-1-0010/`: `gate.txt`, `tanda-cambiados.txt` y `tanda-resto.txt`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista responde «cancelada Norte lun (sala ocupada)» | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | el mismo literal |
+| `canceladas` responde «Norte lun — sala ocupada» | `ejecución real` | «Norte lun — sala ocupada» |
+
+**Suites** (en el gate no usé ningún interruptor que no declare `operations.md`)
+- `node --test test/`: 5/5 sobre `bdce0de`.
+- `node e2e/run.mjs`: 7/7 sobre `bdce0de`, en 48,1 s. El presupuesto es 0,5 min, así que lo apunto como deuda al cerrar.
+- **README:** el gate corrió con la traza completa. No usé el `E2E_TRACE=light` que sugiere el README de la máquina de Laura, porque con ese interruptor el gate ya no es el declarado.
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y el test falla si corre solo o en otro orden.
+
+**Sin probar**
+- Nada.
+
+🦆 Al cancelar una reserva ahora hay que decir por qué, con un motivo de una lista cerrada. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Y `canceladas` te enseña cada una con su motivo: «Norte lun — sala ocupada».
+
+Panel: plan B en http://127.0.0.1:63170/
+- No tengo herramientas de Chrome, así que el panel es una página aparte que no ve la app. Si algo falla, cuéntame el error en el comentario del paso.
+- Está en `.temp/validation/`, que ya está en `.gitignore`.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd "<run>/repo"
+node scripts/env-up.mjs
+```
+
+Terminal 2. Cada comando guarda sus datos en tu sesión `dev`, distinta de la mía. Los pasos van en este orden, porque los dos primeros se hacen antes de cancelar:
+
+```
+cd "<run>/repo"
+```
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -G http://localhost:50166/run -H "x-session: dev" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -G http://localhost:50166/run -H "x-session: dev" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+3. Motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -G http://localhost:50166/run -H "x-session: dev" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+4. Listado → «Norte lun — sala ocupada»
+
+```
+curl -G http://localhost:50166/run -H "x-session: dev" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

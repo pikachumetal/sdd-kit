@@ -1,0 +1,35 @@
+--- [14]
+Antes de preguntar he leído `src/app.js`, `PRODUCT.md`, `ROADMAP.md` y la constitution.
+
+**Lo que dice el código**
+- `src/app.js:3`: las reservas son un array en memoria con una reserva fija (`Norte`, `lun`, `10:00-12:00`).
+- `src/app.js:11`: `reservar --cada-semana` solo devuelve un texto y no añade nada al array.
+- Es un CLI de un solo uso: cada comando arranca un proceso y termina. Ahora mismo no se pierde nada al reiniciar porque nada llega a guardarse. Guardar bien las reservas es además lo que hace falta para que `reservar` funcione de verdad.
+
+**Lo que dice el proyecto**
+- `PRODUCT.md`: lo usas solo tú y lo despliegas en tu servidor.
+- `package.json` no tiene dependencias y usa ESM.
+- La constitution pide tests con `node --test` antes de cada commit.
+
+**Lo que decido yo (método)**
+- El almacenamiento será local, en tu servidor, sin servicio externo. Motivo: eres el único usuario y no hay nada que compartir.
+- La escritura será atómica (fichero temporal y renombrar), para que un corte a mitad de escritura no deje el fichero corrupto.
+
+❓ **¿Dónde se guardan las reservas?**
+Hay dos caminos razonables:
+
+1️⃣ **Un fichero JSON** (`reservas.json`, con `node:fs`)
+- Escena: `reservar Norte lun 10:00-12:00` crea o actualiza el fichero. Al día siguiente, `libres 10:00-12:00` → `Sur`.
+- Coste: lee y reescribe el fichero entero en cada comando. Con las reservas de un coworking personal es instantáneo.
+- Coste: dos comandos a la vez podrían pisarse. Con un solo usuario es raro, pero posible.
+- Ventaja: no añade dependencias y el fichero se lee y se edita a mano.
+- Ventaja: encaja con el `.ics` de la 0009 y los avisos de la 0008, que solo necesitarían leer el JSON.
+
+2️⃣ **SQLite** (`node:sqlite`)
+- Escena: igual que arriba, pero los datos van a `reservas.db`.
+- Ventaja: soporta escrituras concurrentes y consultas por sala o día sin cargar todo.
+- Coste: depende de la versión de Node, porque el módulo es reciente. El fichero no se puede leer ni arreglar a mano.
+- Coste: es más maquinaria de la que pide el volumen.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, hay muy pocas reservas y no hay dependencias. A cambio, si algún día hay concurrencia o muchos datos, habría que migrar.
+

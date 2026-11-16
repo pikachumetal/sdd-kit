@@ -1,0 +1,28 @@
+--- [11]
+Reading the project docs is done. The change is a feature, so I'm now loading the interview skill before the first design question.
+
+--- [14]
+Ahora: I've read the project docs and the code I need to classify. This is a feature, so I'm starting the interview. Queda: a few design questions, then the spec for your approval, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, default del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+I read no `sdd-kit.local.json`, so there are no local keys to ignore. There is also no roadmap row for this, so it will get a new id (`sequence` mode) once the scope is clear.
+
+**What I understood, correct me:**
+- Today `src/app.js` only has `libres`, a weekly `reservar` and `cancelar`. Nothing yet refuses a booking when a room is taken.
+- You want a waitlist: when someone tries to book a room that is full for a slot, they join a queue for that room and slot.
+- Interface text in Spanish, tests first with `node --test`, no dependencies.
+- I foresee about 3 tasks (join the queue, view and leave the queue, promotion when a slot frees up). That's one surface, so I wouldn't split it.
+
+❓ **What happens when a booked slot is cancelled and someone is waiting?**
+Today `cancelar` only prints `cancelada <día> <franja>`. The first person in the queue could get the room automatically, or just be told it's free.
+1️⃣ **Automatic promotion.** `cancelar lun 10:00-12:00` prints `cancelada lun 10:00-12:00; Norte pasa a <quien esperaba> (1.º en espera)`. The room is booked straight away. The cost: someone gets a booking they might no longer want, and they have to cancel it.
+2️⃣ **Notify only.** The same cancel prints `cancelada lun 10:00-12:00; Norte libre, 1.º en espera: <quien esperaba>`. The person still has to run `reservar`, and someone else could take the slot first.
+3️⃣ **Hold for a limited time.** The room stays held for the first in line for N minutes. This is the most complex option, and it needs clocks and expiry, which this CLI doesn't have.
+
+➡️ **I recommend 1️⃣**, because this is a command-line tool with no push notifications. A message printed at cancel time is easy to miss, and the slot would go unclaimed. In exchange, someone can get a booking they didn't confirm.
+

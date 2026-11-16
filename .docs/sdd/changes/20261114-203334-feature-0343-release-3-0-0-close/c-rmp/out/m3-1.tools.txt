@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls; git branch --all; cat .docs/sdd/steering/debt.md; cat .docs/sdd/sdd-kit.json; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+* develop
+  main
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de plant
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat ROADMAP.md; find src test -type f | head -50; cat package.json; git log --oneline | head
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:** f
+
+>>> Bash: cat src/app.js; cat test/app.test.js; git log --all --oneline; ls docs docs/qa; node --test 2>&1 | tail -15
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -5; node src/app.js exportar > /tmp/o.csv; od -c /tmp/o.csv | head -3; file src/app.js; grep -rn "1.4.2" . --include=* -r 2>/dev/null | grep -v node_modules | head; head -20 CHANGELOG.md
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+0000047
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+src/app.js: JavaScript source, Unicode text, UTF-8 text, with CRLF line terminators
+./.docs/sdd/steering/debt.md:7:| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026
+
+=== RESULTADO (7 turnos, 0.14418720000000002 $)
+Estoy triando las dos filas de «Por triar». Ya he reproducido ambas contra el código y ahora te presento la propuesta, sin escribir nada todavía.
+
+## Propuesta de triaje
+
+El perfil es `delegate`, así que propongo y espero tu decisión antes de tocar `debt.md`. Con «decide tú» lo escribo tal cual y dejo las razones en el cuerpo del commit.
+
+**1. CSV pierde las tildes → «En espera»**
+- No lo he reproducido. `node src/app.js exportar` devuelve `sala,día,franja` con la `í` bien codificada en UTF-8 (`303 255`), tanto por pantalla como redirigido a fichero.
+- El informe dice que sale `d?a`. Lo más probable es que el fallo esté en quien abre el CSV (Excel sin BOM o una consola con otra codificación), no en el producto.
+- Fila propuesta: Causa `sin determinar`, Falta `reproducirlo`, Fecha 2026-11-14.
+- Para reproducirlo hace falta saber con qué se abrió el CSV en QA. Tampoco he podido verificar «desde la 1.4.2»: el `CHANGELOG.md` solo llega a la 1.4.1 y no hay historial que lo confirme.
+
+**2. `salas libres --planta 2` incluye la planta 1 → «Lista»**
+- Reproducido: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- Causa: `defecto del producto`. `roomsOnFloor` en `src/app.js:12` filtra con `floors[room] <= floor` y debería comparar con `===`.
+- Evidencia: el comando anterior con su salida.
+- Remedio temporal: `ninguno`. Lo he mirado y no hay ticket ni workaround.
+- Arreglo: `—`, que es lo que corresponde a `defecto del producto`.
+- Destino: una fila nueva en Now, tamaño S, `**Carril:** patch`. Es un cambio de una línea con un solo test nuevo. Su id lo reservo con `sdd id next --reserve` al escribir. Preferiría la fila a `sin fila` para que no se pierda.
+- No incluyo solución ejecutada en «Decisiones ya tomadas». Escribiría «solución por confirmar», porque no he probado el cambio en una copia.
+
+**3. Fila caducada en «En espera» → descartar**
+- «Las reservas de más de 8 h no avisan al responsable» lleva en espera desde 2026-07-01, con dos releases sin segundo caso.
+- `sdd roadmap check` avisa de que caduca, y su cuenta es la que decide.
+- Propongo descartarla con razón `caducada`. La fila sale de `debt.md` y el motivo queda en el commit.
+
+## Qué decides tú
+- Si apruebo los tres resultados tal como están.
+- Si la fila nueva de Now (patch, S) te vale, o prefieres `sin fila`.
+
+Con tu visto bueno reservo el id, escribo, ejecuto `roadmap check`, publico en `develop` y te doy el prompt de lanzamiento de la fila nueva. Si prefieres hacerlo en esta sesión, di «arráncalo».

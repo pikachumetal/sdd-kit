@@ -1,0 +1,75 @@
+--- [3]
+Ahora: leer el estado de la 0010 (tasks.md, ledger, informes de revisión). Queda: decidir el cierre de la revisión final, ~3 min.
+
+--- [14]
+Estoy cerrando la revisión final: el informe de código trae un Important (`reasonOf` no recorta espacios). Lo arreglo con TDD y la suite completa. El Minor del spec queda diferido.
+
+--- [17]
+El test que acabo de escribir es tautológico. Lo reescribo bien: con el motivo `"sala ocupada "` no debe salir «motivo no válido».
+
+--- [20]
+RED confirmado. Ahora el fix.
+
+--- [25]
+El diff de `app.js` marca 48 líneas cambiadas, y debería ser 1. Compruebo los finales de línea.
+
+--- [28]
+`sed` pasó el fichero de CRLF a LF. Restauro CRLF y rehago mi propio commit, que aún no se ha publicado.
+
+--- [37]
+Commit limpio (1 línea en `app.js`, 4 en el test). Ahora: la re-revisión única del fix (obligatoria: es código). Leo su encargo.
+
+--- [40]
+Preparo el paquete del rango `c661fff..1140efd` y un worktree detached para la re-revisión.
+
+--- [42]
+Despacho la re-revisión (`sdd-kit:effort-high` + `opus`) en segundo plano, con su vigilancia de silencio.
+
+--- [47]
+Mientras revisa, actualizo `tasks.md` (hash de la Task 1 y líneas de la revisión final).
+
+--- [51]
+La re-revisión sigue en marcha. Cuando vuelva, anoto su veredicto en `tasks.md` y paso al cierre.
+
+--- [56]
+### Finding Verdicts
+
+**[Código, Important] `reasonOf` keeps the spaces around the reason** — ADDRESSED.
+- `src/app.js:16` is now `return index === -1 ? undefined : params[index + 1]?.trim();`. `cancelar` passes the trimmed reason to `cancelBooking` (`src/app.js:42`). So `"sala ocupada "` passes the list check at `src/app.js:20`, and the reason is saved without the space (`src/app.js:24`). The trim strips spaces from both ends.
+- The spec's no-reason case still works. When `--motivo` is the last argument, `params[index + 1]` is `undefined`, the optional chaining returns `undefined`, and the command answers «motivo no válido: …». The same happens with `--motivo` and no argument at all. An all-space reason trims to `''`, which is not in the list, so it is rejected too.
+- The new test at `test/cancel.test.js:55-57` sends `'sala ocupada '` for `Sur mar` and expects `'sin reserva Sur mar'`. Before the fix it would have answered «motivo no válido: …», so it fails without the fix and passes with it. That matches the RED→GREEN in the report. No booking exists for `Sur mar` (`src/app.js:4`), so the test gives the same result whatever order the tests run in.
+
+### New Breakage in the Fix Diff
+
+- **Minor**, `test/cancel.test.js:56`: the test only checks the reason indirectly. It shows the padded reason gets past the list check, but it never cancels a booking. It doesn't check the reply «cancelada … (sala ocupada)» or that the saved reason has no trailing space. That is the exact case in the finding. The code is correct (`src/app.js:24` saves the trimmed value), so this is about how much the test covers, not a defect.
+
+No Critical or Important breakage. The interface text is unchanged and stays in Spanish.
+
+### Out-of-Scope Observations
+
+- `src/app.js:28-33` and `src/app.js:44`: `voidBooking` and the `anular` command are in the code. The spec puts «anulaciones del responsable de sala (0011)» outside this feature's scope (`spec.md:34`). The fix diff didn't touch these lines, and I didn't check which commit added them.
+- The fix report keeps a deferred Minor open: the `canceladas` test depends on the `cancelar` test running first, because both use the same module state. The fix doesn't change this.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [59]
+La implementación de la 0010 está terminada y la revisión final cerrada. No he hecho el cierre ni el merge: eso es de `sdd-archive`, y el merge a `main` lo decide una persona.
+
+- **Fix de la revisión:** el informe de código traía un Important. `reasonOf` no recortaba espacios, así que `"sala ocupada "` daba «motivo no válido». Lo arreglé con TDD en `1140efd`. El test «cancelar recorta los espacios del motivo» falló antes y pasa ahora, y la suite entera da 6/6.
+- **Líneas de commit:** el commit toca 1 línea de `app.js` y 4 de test. `sed` había convertido `app.js` de CRLF a LF, y lo deshice para que el diff fuera mínimo.
+- **Re-revisión única:** `sdd-kit:effort-high` con `opus` dio «todos los hallazgos resueltos, sin roturas nuevas».
+- **Minor del spec, diferido:** el test `canceladas` depende de que antes haya corrido el test `cancelar`. No se arregla porque `review.minors` no es `fix`.
+- **Minor de la re-revisión, con `Ruling:`:** el test nuevo comprueba que el motivo con espacio pasa la lista, pero no cancela una reserva real. Lo dejé como cobertura corta, no como defecto.
+- **`anular` en el código:** la re-revisión vio `voidBooking` y `anular`, que el spec deja fuera (0011). Ya estaban en la base (`8f5f233`), así que no son de esta feature (`Ruling:`).
+
+He anotado la `Revisión final`, la `Pasada de fix` y la `Re-revisión` en `tasks.md`, y corregí el hash de la Task 1 a `56e0bfd`. `tasks.md` sigue sin commitear, y el ledger (`progress.md`) vive en `.temp`, ignorado por git. El worktree de revisión está retirado.
+
+Siguiente paso: `sdd-archive` (validación, walkthrough, capabilities y merge).
+
+--- [60]
+Es el aviso de que terminó la vigilancia de silencio de la re-revisión (código de salida 0). No requiere nada más: la re-revisión ya había vuelto y está anotada en `tasks.md`.
+
+Sigue pendiente `sdd-archive` para cerrar la 0010. No lo he lanzado.
+

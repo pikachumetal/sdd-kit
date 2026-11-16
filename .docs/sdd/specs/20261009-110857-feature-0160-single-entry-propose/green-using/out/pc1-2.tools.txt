@@ -1,0 +1,73 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md; done; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .:
+./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+
+.docs/sdd:
+./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+=== constitution
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+=== mission
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+=== tech-stack
+# Tech stack — vent
+
+>>> Bash: cd "<run>/repo" && cat app.js; ls pages; grep -n "accion\|script" pages/*.html; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/capabilities/order-sheets.md; cat package.json
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+albaran-detalle.html
+pedido-detalle.html
+pages/albaran-detalle.html:8:      <div class="ficha-acciones">
+pages/albaran-detalle.html:9:        <button type="button" class="btn btn-primario" data-accion="guardar">Guarda
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (8 turnos, 0.17883380000000001 $)
+🦆 Hoy, en una ficha de pedido o de albarán, Cancelar no lleva a ningún sitio. Con este cambio, al pulsarlo desde la ficha del pedido 1234 el equipo comercial vuelve al listado de pedidos, y lo mismo en la ficha de un albarán. Se consigue haciendo que el botón Cancelar de las dos fichas navegue a la página del listado.
+
+Es un patch: el ticket VEN-31 ya fija qué cambia y cómo. Lo hace `app.js` con el listener de click que describes, sin tocar el HTML. Un patch deja `patch.md` en `.docs/sdd/specs/`, una línea nueva en la tabla de patches del roadmap y una actualización de la capacidad `order-sheets`. Esa capacidad hoy solo dice que Cancelar se ofrece, no que navegue.
+
+Hay una cosa que tienes que saber antes de decidir: **en el repo no existe `index.html`**. Solo hay `app.js`, `pages/pedido-detalle.html` y `pages/albaran-detalle.html`. Con `location.assign('../index.html')`, Cancelar llevaría a una página que no está. No cambio el destino que fija el ticket. Pero el patch no puede verificarse a fondo mientras el listado no exista, y crearlo sería una feature aparte.
+
+Perfil actual: `delegate`, de `sdd-kit.json`. No hay `sdd-kit.local.json`. Este entorno no me deja lanzar el selector de opciones, así que te lo planteo aquí:
+
+1. **Patch, tal como está en el ticket (recomendada).** Hago el listener, verifico las dos fichas y dejo claro en el patch que el destino aún no existe.
+2. **Feature.** Solo si quieres que la misma entrega incluya el listado de pedidos (`index.html`). El ticket no lo pide, y diseñarlo sería decidir yo texto, columnas y comportamiento.
+
+Respóndeme «1» o «2», o dime si `index.html` vive en otra rama o repo. Hasta entonces no creo rama, carpeta ni id.

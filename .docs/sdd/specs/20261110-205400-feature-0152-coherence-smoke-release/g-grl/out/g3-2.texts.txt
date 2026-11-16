@@ -1,0 +1,33 @@
+--- [11]
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas de diseño, la spec para tu aprobación y el plan, ~15 min.
+
+**Entendido:** quieres que, si intentas reservar una sala en una franja ya ocupada, la herramienta te apunte en una lista de espera en lugar de limitarse a fallar.
+
+Carril: feature, modo full · Perfil: delegate, por defecto (`sdd-kit.json` no fija ninguno)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+Lo que he visto en el código y condiciona el diseño:
+- `src/app.js` guarda las reservas en un array en memoria: nada persiste entre ejecuciones.
+- `reservar` solo devuelve un texto fijo; todavía no comprueba si la sala está ocupada.
+- Hasta ahora no hay ninguna capacidad documentada en `.docs/sdd/`.
+
+Estimo unas 3 tasks, así que no propongo dividirla.
+
+❓ ¿Qué quieres que pase exactamente cuando la sala que querías quede libre: qué esperas ver o recibir y cuándo?
+
+--- [18]
+Rama `feature/0010-lista-espera` creada y id 0010 reclamado (no hay remoto, vale el contador local). Antes de seguir, un hallazgo que cambia el diseño.
+
+Mirando el código, `bookings` es un array en memoria y cada ejecución de `node src/app.js` parte de cero. Dos ejecuciones distintas, una para `cancelar` y otra para esperar, no se ven entre sí. Y como eres el único usuario, una «lista» con varias personas esperando no aporta nada. Lo que necesitas es que alguien mire `libres` por ti.
+
+❓ **¿Cómo te enteras de que Norte ha quedado libre?**
+1️⃣ **Comando que espera y te avisa.** `esperar Norte 10:00-12:00` se queda en marcha mirando y termina con `Norte libre en 10:00-12:00`.
+   - Cuesta: tiene que estar abierto en una terminal, y no funciona hasta que las reservas se guarden en un fichero que todos los comandos compartan.
+2️⃣ **Lista guardada en fichero, que se mira al ejecutar cualquier comando.** `reservar Norte 10:00-12:00` responde `Norte ocupada; en espera`. La próxima vez que uses la herramienta, por ejemplo con `libres`, te dice `Norte ya está libre en 10:00-12:00`.
+   - Cuesta: no te avisa sola, solo te lo cuenta cuando vuelves a usarla. También exige guardar las reservas en fichero.
+3️⃣ **Lista guardada y, al liberarse, reserva sola.** Al cancelar la reserva de Norte, la espera pasa a ser tuya sin que hagas nada.
+   - Cuesta: es lo más completo, pero reservar por ti sin preguntar puede chocar con otra cosa que tengas en esa franja.
+
+➡️ **Recomiendo 1️⃣**, porque es lo más cercano a lo que haces hoy a mano: mirar `libres` cada rato, pero sin que tengas que hacerlo tú. A cambio, tendrás que dejar una terminal abierta.
+

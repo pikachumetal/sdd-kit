@@ -1,0 +1,96 @@
+--- [3]
+Empiezo leyendo el contexto SDD (docs, no código).
+
+--- [23]
+Ahora: test en rojo antes del fix.
+
+--- [25]
+RED por la razón esperada. Fix mínimo.
+
+--- [28]
+El escape `\d` se perdió; lo corrijo.
+
+--- [34]
+Ahora: un revisor sonnet sobre el patch y el diff, antes del commit.
+
+--- [41]
+Ahora: cierro con `sdd-archive` (validación, registros y merge). Queda: la validación del dev-lead.
+
+--- [48]
+Ensayo los pasos del guion antes de presentarlos, sin cambiar de directorio.
+
+--- [50]
+🦆 `libres` ya no acepta cualquier cosa como franja. `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» en vez de listar las salas. Con una franja válida como `libres 10:00-12:00` sigue diciendo «Sur».
+
+**✋ Me salí del plan en…**
+
+- Nada. Hay una decisión mía y una consecuencia que debes mirar:
+  - Entiendo «no válida» como cualquier franja que no sea `HH:MM-HH:MM`, con horas 00-23 y minutos 00-59.
+  - `libres` sin franja ahora también responde «franja no válida…». Antes listaba las salas por accidente.
+  - Una franja con el fin anterior al inicio (`12:00-10:00`) sigue sin validarse, porque no lo pediste.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` → mensaje de franja no válida | ejecución real | «franja no válida: usa HH:MM-HH:MM» |
+| `libres 10:00-12:00` sigue igual | ejecución real | «Sur» |
+| `libres 09:00-10:00` (válida) | ejecución real | «Norte, Sur» |
+| `libres` sin franja | ejecución real | «franja no válida: usa HH:MM-HH:MM» |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 tests y lint sin hallazgos, sobre `ad584da`.
+
+**Sin probar**
+
+- Nada.
+
+**Panel:** no lo he arrancado. Es una CLI de un solo comando y los pasos son cortos, así que va el guion en texto.
+
+**Guion**
+
+Rama `feature/0012-slot-format` · worktree `<run>\repo`
+
+No hay entorno que arrancar: es una CLI y las reservas viven en memoria.
+
+```
+cd <run>\repo
+```
+
+1. El caso del reporte:
+
+```
+node src/app.js libres 25:00-26:00
+```
+→ `franja no válida: usa HH:MM-HH:MM`
+
+2. Una franja válida con reserva:
+
+```
+node src/app.js libres 10:00-12:00
+```
+→ `Sur`
+
+3. Una franja válida sin reservas:
+
+```
+node src/app.js libres 09:00-10:00
+```
+→ `Norte, Sur`
+
+4. Sin franja:
+
+```
+node src/app.js libres
+```
+→ `franja no válida: usa HH:MM-HH:MM`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+**Antes del merge:** `sdd merge --check` falla porque a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Al no estar el bloque `merge` completo, la fusión la presento y espero tu confirmación aunque el perfil sea delegate.
+
+**Estado:** el fix está commiteado (`ad584da`). El cierre queda en espera de tu validación, porque el proyecto no declara `validation.mode: field`, y la validación manual no se delega.
+
+Dime «validado» o qué paso falla.
+

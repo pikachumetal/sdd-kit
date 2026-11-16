@@ -1,0 +1,15 @@
+❓ **¿Dónde se guardan las reservas entre ejecuciones?**
+Lo que he encontrado:
+- `tech-stack.md`: Node 22, **sin dependencias externas**, y ahora mismo las reservas viven en memoria y se pierden al salir.
+- La documentación de Node 22 (nodejs.org/docs/latest-v22.x/api/sqlite.html) dice que Node trae una base de datos integrada, `node:sqlite`. Está en estado *«1.1 – Active development»*. Se añadió en la v22.5.0 detrás de `--experimental-sqlite`, y desde la v22.13.0 ya no hace falta la opción, pero sigue siendo experimental.
+
+1️⃣ **Un archivo JSON** (`fs` lee el archivo al arrancar y lo escribe tras cada `reservar` o `cancelar`). Funciona con cualquier Node 22, no añade dependencias y puedes abrir el archivo y leerlo. El coste es que, si dos personas reservan a la vez, la última que guarda borra la reserva de la otra:
+`[terminal A] reservar Norte lunes 10:00` → `reservada`
+`[terminal B] reservar Sur lunes 10:00` → `reservada`
+`[luego] libres 10:00` → `Norte` aparece libre (se ha perdido la reserva de A)
+
+2️⃣ **SQLite integrado (`node:sqlite`)**. Cada reserva se guarda en una transacción, así que dos ejecuciones a la vez no se pisan:
+`[A] reservar Norte…` y `[B] reservar Sur…` → `libres 10:00` no muestra ni Norte ni Sur.
+El coste es que necesita Node ≥ 22.13 (o la opción en versiones anteriores de la 22), usa un módulo que todavía es experimental y cuya API puede cambiar, y el archivo no se puede leer a simple vista.
+
+➡️ **Te recomiendo 1️⃣**, porque `salas` es una CLI de un solo proceso por ejecución y el proyecto se plantea sin dependencias. Un JSON cumple eso con cualquier Node 22 y sin depender de un módulo experimental. A cambio, si varias personas reservan exactamente a la vez, se puede perder una reserva. Si eso puede pasar en tu caso, elige 2️⃣.

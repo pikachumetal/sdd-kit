@@ -1,0 +1,61 @@
+--- [3]
+Ahora: leo el plan y la spec de la 0022 para ver la línea `Ejecución` y elegir el método. Queda: preparar la Task 1, ~2 min.
+
+--- [8]
+Ahora: spec aprobada y plan en Native (`execution: native`). Invoco `sdd-implement-native` para la Task 1. Queda: la task y la revisión final, ~10 min.
+
+--- [11]
+Ahora: preparo workspace, ledger y miro `scripts/` y los tests existentes. Queda: Task 1 completa, ~8 min.
+
+--- [17]
+Baseline en verde (4 tests). Ahora: compruebo la base, abro el ledger y `tasks.md`.
+
+--- [25]
+RED por las razones correctas. Ahora el GREEN: los dos scripts a Node.
+
+--- [27]
+`git rm` borró el directorio `scripts/` entero, así que los ficheros nuevos no se crearon. Los creo de nuevo.
+
+--- [33]
+Task 1 completa (commit `1f91d48`). Ahora: invoco `sdd-verify` para la revisión final de la rama. Queda: revisión y cierre, ~10 min.
+
+--- [39]
+Autorrevisión: miro el diff, el modo del hook y los finales de línea guardados. Luego corro el gate completo.
+
+--- [47]
+Ahora: pre-checks de solo lectura del cierre. Queda: presentar la validación, porque no hay `validation.mode: field` y valida la persona.
+
+--- [51]
+La Task 1 de la 0022 está implementada y commiteada, pero el cierre está parado: falta tu validación y la política de merge está incompleta.
+
+La rama `feature/0022-scripts-to-node` tiene el commit `1f91d48`:
+- **`scripts/deploy.sh` → `scripts/deploy.mjs`**: sigue imprimiendo `desplegado`.
+- **`scripts/hooks/pre-push`**: ahora usa shebang `#!/usr/bin/env node` y sigue lanzando `node --test`.
+- **`test/no-bash.test.js`**: recorre `scripts/` y falla si queda algún `.sh` o shebang de `sh`/`bash`. Lo vi fallar antes de escribir el código.
+
+`node --test` entero da 6/6 en verde. Antes de empezar daba 4/4.
+
+La revisión final la hice yo como autorrevisión por pasadas, porque esta sesión no tiene herramienta de subagentes. Es más débil que revisores con contexto limpio, y tú decides si basta antes de fusionar. No encontré hallazgos Critical ni Important, y el eje Arquitectura no sale (sin módulo, dependencia ni contrato nuevos).
+
+## Rulings que tomé
+1. **`scripts/hooks/pre-push` también se pasa a Node.** Tenía shebang de bash y el Scope dice «todo script de `scripts/`». Si me equivoco, es un fichero más en el diff.
+2. **El hook mantiene el nombre sin extensión, con `#!/usr/bin/env node`.** Node lo ejecuta como ESM por `"type": "module"`, y lo probé a mano. Si se instala con `core.hooksPath` en un equipo sin `node` en el PATH de git, no arranca, igual que antes sin bash.
+
+## Deferred minors
+- `test/no-bash.test.js:25` construye la ruta con `pathname` y una regex, así que con espacios en la ruta del repo no la decodifica. Lo correcto sería `fileURLToPath`. Es el RED del hilo y no lo toco sin enmienda.
+
+## Validación
+La validación no está en `field`, así que la hace una persona. Ejecuté yo estos pasos con el resultado esperado:
+
+1. `node scripts/deploy.mjs` → `desplegado`.
+2. `node --test test/no-bash.test.js` → 2 pasan, 0 fallan (ningún script de `scripts/` corre con bash).
+3. `git ls-files scripts` → solo `scripts/deploy.mjs` y `scripts/hooks/pre-push`.
+
+Panel: no arrancado. Esta sesión no tiene herramientas de Chrome ni `sdd validation serve` en marcha, así que va solo en texto.
+
+## Qué necesito de ti
+- **Validación:** dime qué probaste y que funciona, o «validado» si te basta con los pasos de arriba.
+- **Política de merge:** `sdd merge --check` dice que `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime a qué rama fusiono (en el repo hay `develop` y `main`) y si va con `--no-ff`.
+
+**No terminado.** Falta tu validación y la política de merge; la rama no está fusionada. No borres todavía el worktree `<run>/repo`.
+

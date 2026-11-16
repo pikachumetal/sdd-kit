@@ -1,0 +1,67 @@
+--- [19]
+RED confirmado. Ahora el fix.
+
+--- [28]
+Preparo el paquete del rango `33d91a5..14dbe72` en un worktree aparte y despacho la única re-revisión.
+
+--- [34]
+La re-revisión está en marcha en segundo plano, con su vigilancia de silencio. Mientras tanto no toco el repo; espero su informe para escribir la línea `Re-revisión:` en `tasks.md` y pasar a la validación.
+
+Estado hasta ahora:
+- **Revisión final**: el eje Spec dio «Ready» con un Minor (un test dependía del orden). El eje Código dio «With fixes» con un Important (`reasonOf` no recortaba los espacios del motivo). El eje Arquitectura no salió, porque el plan dice `no`.
+- **Pasada de fix**: commit `14dbe72`. Escribí un test en RED para los espacios y lo vi fallar, y luego puse el `trim()` en `reasonOf`. Arreglé también el Minor, porque `review.minors: fix` lo pide. La suite completa está en 6/6 y el test de `canceladas` pasa también solo.
+- **Pendiente**: las líneas `Revisión final:` y `Pasada de fix:` de `tasks.md` y el ledger siguen sin commitear (solo documentación). Las commiteo junto con la línea `Re-revisión:` cuando vuelva el informe.
+
+--- [41]
+### Finding Verdicts
+
+**1. [Código · Important] `src/app.js:14-17`, `reasonOf` keeps the spaces: ADDRESSED.**
+`src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. The trimmed value goes to `cancelBooking` at `src/app.js:42`, so the check at line 20 and the stored `booking.reason` at line 24 both use the trimmed text. The `?.` keeps the existing behaviour when nothing follows `--motivo`: the value stays `undefined` and the reply is still «motivo no válido: …», which matches spec line 54.
+The new test at `test/cancel.test.js:54-56` sends `' sala ocupada '` for `Sur mar` and expects `'sin reserva Sur mar'`. It tells the two versions apart: without trim the reply is «motivo no válido: …», and with trim the reason passes and the lookup fails because only Norte lun has a booking (`src/app.js:4`). So the claimed RED→GREEN is believable from the diff. The test's weak spot is listed under New Breakage below.
+
+**2. [Spec · Minor] `test/cancel.test.js:13`, the `canceladas` test depends on test order: ADDRESSED.**
+The test now cancels the booking itself at `test/cancel.test.js:59` with `run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada'])` before it asserts.
+- **Run alone:** the booking is cancelled with «sala ocupada», and `canceladas` returns «Norte lun — sala ocupada».
+- **Run in the full suite:** that setup call answers «sin reserva Norte lun» and changes nothing, so the listing is the same.
+
+The new trim test touches no booking, so the listing has no extra rows. The assertion and the test name are unchanged, so the RED test was not modified in the forbidden sense. Adding the setup line is the decoupling the finding asked for, and it matches the spec's GIVEN «la reserva de Norte del lunes cancelada con "sala ocupada"» (spec.md:57).
+
+### New Breakage in the Fix Diff
+- **Minor**, `test/cancel.test.js:54-56`: the new test proves that the padded reason passes the list check, but only through the «sin reserva» reply. It does not cover the case the finding describes: someone cancels Norte lun with a padded reason and gets «cancelada Norte lun (sala ocupada)», with the trimmed reason stored. The code does handle that case (`src/app.js:16,24`). The gap is that nothing would catch a future change that, for example, stored the untrimmed reason. The cause is that the only fixture booking (Norte lun) is shared state that the first test uses up.
+
+### Out-of-Scope Observations
+- The spec's AND «sin `--motivo` responde lo mismo» (spec.md:54) has no test in `test/cancel.test.js`. The code covers it (`reasonOf` returns `undefined` and the list check rejects it), but the scenario is not tested.
+- All tests share the module-level `bookings` array (`src/app.js:4`). This is the root cause of both the original order dependence and the weak trim test above.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [43]
+Re-revisión limpia. Ahora: la cierro (ledger, `tasks.md`, quito el worktree de revisión) y commiteo los documentos.
+
+--- [49]
+La revisión final de la 0010 está cerrada y la re-revisión salió limpia. Los dos hallazgos están arreglados en `14dbe72` y la suite completa pasa (6/6), con lo que el único trabajo pendiente es validar y archivar la feature.
+
+**Qué se arregló** (con `review.minors: fix`, el Minor entra en la pasada):
+- **Código, Important:** `reasonOf` no recortaba los espacios del motivo, así que `"sala ocupada "` daba «motivo no válido». Escribí el test primero, lo vi fallar y añadí `?.trim()` en `src/app.js:16`.
+- **Spec, Minor:** el test de `canceladas` dependía de que corriera antes el de `cancelar`. Ahora hace su propio `cancelar` y pasa también solo.
+
+**Re-revisión** (`33d91a5..14dbe72`, opus + high): los dos hallazgos quedan ADDRESSED y no hay roturas nuevas Critical ni Important. Es la única que se abre; no habrá otra.
+
+**Para tu decisión**, dos puntos que dejé como `Final: Ruling:` en el ledger:
+- **Test del trim:** solo prueba que el motivo con espacios pasa la comprobación (responde «sin reserva Sur mar»). No comprueba que se guarde recortado. Una regresión que lo guardara sin recortar no la vería ningún test.
+- **Sin `--motivo`:** el AND «sin `--motivo` responde lo mismo» no tiene test. El código lo cubre, pero una regresión ahí pasaría la suite.
+
+Los dos vienen de que `bookings` es estado compartido con una sola reserva de ejemplo.
+
+**Estado:**
+- **Commits:** `tasks.md` y el ledger están commiteados en `554918a`, con las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`. El árbol está limpio.
+- **Sin revisar:** no hay commits de código sin revisar. Los dos documentales son de solo docs y me los leí yo.
+- **Worktree de revisión:** quité el registro de git, pero la carpeta `review-0010-14dbe72` sigue en disco porque Windows la marca como ocupada. Se puede borrar a mano.
+- **Borradores de cierre:** todavía no he escrito el walkthrough ni el merge de `capabilities/`. Quedan para `sdd-archive`.
+
+--- [50]
+El aviso es solo de que terminó la vigilancia de silencio de la re-revisión (salió con código 0, sin alertas). No cambia nada de lo que dije antes.
+
+Sigue pendiente la validación y el archivo (`sdd-archive`), que incluye el walkthrough y el merge de `capabilities/`. No he empezado ninguno de los dos.
+

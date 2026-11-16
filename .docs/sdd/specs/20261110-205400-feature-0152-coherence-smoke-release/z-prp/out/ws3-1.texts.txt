@@ -1,0 +1,31 @@
+--- [11]
+Ahora: clasifico la 0012 y te hago la pregunta del carril, sin crear rama ni carpeta todavía. Queda: tu respuesta, y luego abrir la spec o el patch, ~10 min.
+
+No he ejecutado nada: el proyecto no tiene `node_modules` y no hacía falta para leer el código. Si sigue, lo primero será el setup de `sdd-worktrees`.
+
+🦆 Hoy `libres` compara la franja como un texto cualquiera. `libres 25:00-26:00` no encuentra reserva y devuelve las dos salas, así que parece que están libres a una hora que no existe. Lo que pides es que, si la franja no es una hora real, responda «franja no válida: usa HH:MM-HH:MM» en vez de listar salas. Sale de `freeRooms` en `src/app.js`. La deuda «Sin validación del formato de franja horaria» apunta a lo mismo.
+
+Pides carril patch, pero veo uno más pesado. El ejemplo fija el texto y un caso, pero no la regla de qué franja vale:
+
+- ¿Vale `24:00`?
+- ¿Vale `12:00-10:00`, con el fin antes del inicio?
+- ¿Vale `abc`, o `10:00` sin fin?
+
+Esas respuestas cambian lo que ve el usuario. Fijarlas yo sería diseñar la solución, y cada una pide su propio test. Un patch es lo que reproduce un solo test.
+
+**¿Cómo lo llevamos?**
+
+1. **Lite (recomendada).** Cumple las condiciones, una por una:
+   - El flujo ya existe y se lee en `src/app.js`.
+   - No cambia contratos públicos: `libres` mantiene su entrada y su salida.
+   - No toca esquema de datos: no hay base de datos, las reservas viven en memoria.
+   - Cabe en un solo módulo.
+   - La estimación es ≤ medio día, unas 0,5 h (como el patch 0007) más el gate de cierre. En los walkthroughs no hay un gate medido, solo `node --test && node scripts/lint.mjs`, de ~1 s según operations.
+
+   Con lite la spec corta recoge las reglas de validez y las apruebas. No hay `plan.md`.
+2. **Patch, si fijas tú la regla.** Por ejemplo: «válida = `HH:MM-HH:MM` con HH 00–23, MM 00–59 y fin posterior al inicio; todo lo demás, el mensaje». Con eso queda un solo test rojo y el fix. Estimación igual, 0,5 h más gate.
+
+El perfil es `delegate`, del proyecto (`sdd-kit.json`). Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».
+
+Respóndeme 1 o 2. Con la 2, dame la regla o confirma la del ejemplo.
+

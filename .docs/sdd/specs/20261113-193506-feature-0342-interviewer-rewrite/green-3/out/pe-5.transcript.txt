@@ -1,0 +1,74 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/steering/*.md; ls src test; cat package.json; cat src/*.js | head -150; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/control-profiles.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/nombrado.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git remote -v; git branch -a; S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git checkout -b feature/0010-exportar-csv && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" id claim --project-root .; git status --short
+> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: abro la feature y te cuento lo que he entendido antes de la primera pregunta. Queda: entrevista corta, spec con su parada de aprobación y luego plan e implementación, ~10 min hasta la aprobación de la spec.
+
+Ya he creado la rama `feature/0010-exportar-csv`. La 0010 está reservada, sin remoto, con el contador local.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+- Quieres un comando nuevo de `salas`, junto a `libres`, `reservar` y `cancelar`, que dé las reservas de **una sala** en formato CSV.
+- El uso real es que el responsable de cada sala las abre los lunes en su hoja de cálculo para cuadrarlas. El CSV tiene que abrirse bien en esa hoja.
+- Hoy cada reserva en `src/app.js` tiene solo `room`, `day` (como `lun`) y `slot` (como `10:00-12:00`). No tiene fecha, ni quién reservó, ni si es semanal.
+- La feature entra en `src/app.js` y no añade dependencias.
+- `ROADMAP.md` tiene la 0009, «Exportar reservas a calendario (.ics)», en Later. Es otra salida de datos y no la toco. Esta feature no tiene fila propia.
+- Por ahora lo veo en 2 o 3 tasks, así que no propongo dividirla.
+
+❓ **¿Qué reservas tiene que contener el CSV cuando lo pide el responsable de una sala?**
+
+# turno 2
+## persona
+Las reservas de esa sala, solo de la semana que empieza el lunes que viene. Columnas: sala, día y franja.
+## agente
+Un matiz antes de seguir. Cada reserva de `src/app.js` solo guarda el día de la semana (`lun`) y no una fecha. Por eso «la semana que empieza el lunes que viene» no se puede filtrar con los datos de hoy: todas las reservas valen para cualquier lunes.
+
+❓ **¿Cómo resolvemos lo de la semana?**
+Tampoco hay forma de saber si una reserva es de una semana concreta o semanal. `reservar --cada-semana` solo devuelve el texto «reserva semanal creada» y no guarda nada.
+
+1️⃣ **Exportar todas las reservas de la sala, sin filtro de semana.** El CSV queda así:
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+No cambia el modelo de datos y cabe en 2 tasks. Como cada reserva solo tiene día de la semana, el CSV siempre equivale a «la semana tipo». Si más adelante hay reservas con fecha, el filtro se añadirá entonces.
+
+2️⃣ **Hacer que las reservas guarden fecha y filtrar por la semana del próximo lunes.** El CSV saldría con `Norte,2026-11-16,10:00-12:00`, o con `lun` si prefieres el día de la semana. Obliga a cambiar `reservar`, `cancelar` y `libres`, que hoy no manejan fechas. Es otra feature y no cabe en esta (más de 5 tasks).
+
+3️⃣ **Aceptar un parámetro de semana (`--semana 2026-11-16`) que hoy no filtraría nada.** Se cobraría el argumento y se tendría que documentar que no hace nada hasta que existan fechas. No lo veo defendible.
+
+➡️ **Recomiendo 1️⃣**, porque los datos de hoy no permiten otra cosa sin rehacer las reservas. A cambio, no cumple el «solo la semana que empieza el lunes que viene» al pie de la letra. Si lo necesitas, la opción 2️⃣ iría como una feature propia con su fila en el roadmap.
+
+# turno 3
+## persona
+déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+Vale, lo dejamos aquí. No he escrito spec ni plan, y no he tocado código ni documentos. Lo único que queda hecho es esto:
+
+- **Rama:** `feature/0010-exportar-csv`, creada desde `develop`. Está vacía, sin commits propios.
+- **Id:** la 0010 está reservada con el contador local, porque no hay remoto. No tiene fila en `ROADMAP.md`.
+
+**Pendiente de tu decisión:** cómo tratamos «la semana que empieza el lunes que viene». Las reservas solo guardan el día de la semana, sin fecha. Mis tres opciones eran:
+
+1. Exportar todas las reservas de la sala, sin filtro de semana. Es la que recomiendo.
+2. Añadir fecha a las reservas y filtrar por semana. Sería otra feature.
+3. Aceptar un parámetro de semana que hoy no filtraría nada.
+
+Ya tengo cerradas las columnas (sala, día y franja) y que el CSV sea de una sola sala.
+
+Cuando vuelvas, dime la opción o «retoma la feature» y sigo desde la pregunta de la semana. Si prefieres no mantener la rama abierta, dímelo y la borro. No toca nada más.

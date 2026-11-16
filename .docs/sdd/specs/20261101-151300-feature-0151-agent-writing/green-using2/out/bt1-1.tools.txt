@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1 | head -60; done; git ls-files | head -40
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+.docs/sdd:
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+
+.docs/sdd/capabilities:
+order-sheets.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+- `order-sheets` — Las fichas de pedido y de al
+<<< === constitution
+# Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+=== mission
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+=== tech-stack
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+=== roadmap
+# Roadmap — ventas
+
+## Features
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/order-sheets.md app.js pages/pedido-detalle.html; cat "D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/skills/sdd-propose/references/spec-writing.md"
+<<< # Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- WHEN se abre la ficha
+- THEN la columna «Total con IVA» muestra `36,26 €`
+
+### La ficha ofrece guardar, cancelar y borrar
+
+- GIVEN una ficha de pedido o de albarán
+- WHEN se abre
+- THEN ofrece las acciones Guardar, Cancelar y Borrar
+function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.18838470000000002 $)
+❓ **¿Cómo le sale el aviso al usuario?**
+Lo que he encontrado en el código:
+- `app.js` solo calcula el total de cada línea. No hay total del pedido.
+- Los botones Guardar, Cancelar y Borrar no tienen lógica. Las fichas solo se muestran, no se editan.
+
+Ejemplo para las alternativas: un pedido con dos líneas, 600,00 € y 500,00 € con IVA, suma 1.100,00 €.
+
+1️⃣ **Mensaje fijo en la ficha, junto al total.** Al abrir la ficha, bajo la tabla de líneas, se ve «Total: 1.100,00 €» y, debajo, un aviso «El total del pedido supera los 1.000 €». Con 900,00 € no sale el aviso. No bloquea nada y no exige ninguna interacción.
+2️⃣ **Aviso al pulsar Guardar.** Al pulsar Guardar sale una ventana «El total supera los 1.000 €. ¿Guardar igualmente?». Hay que crear la lógica de Guardar, que hoy no existe. Obliga a confirmar. Si el usuario no pulsa Guardar, nunca lo ve.
+3️⃣ **Las dos cosas.** Es el mensaje fijo más la confirmación al guardar. Es lo más completo, pero es doble trabajo y la ventana es una decisión de producto que nadie ha pedido.
+
+➡️ **Recomiendo 1️⃣**, porque pediste «avisar», no impedir ni confirmar. Además es lo único que funciona hoy sin inventar el comportamiento de Guardar. A cambio, el aviso se puede ignorar, porque no pide ninguna respuesta.
+
+Lo que decido yo y dejaré en la spec para que lo valides:
+- El total es la suma de los «Total con IVA» de las líneas.
+- «Pase de 1.000 €» es estrictamente mayor. Exactamente 1.000,00 € no avisa.
+- El texto del aviso.

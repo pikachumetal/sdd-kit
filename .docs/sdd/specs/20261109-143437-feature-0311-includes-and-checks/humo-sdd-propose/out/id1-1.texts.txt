@@ -1,0 +1,41 @@
+--- [26]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`). Un solo fichero de entrada y 3 tasks previstas en una capacidad, así que no propongo partirla.
+
+Para ausentarte puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, «perfil `<otro>` para esta feature».
+
+La spec está escrita en `.docs/sdd/specs/20261109-162253-feature-0013-export-csv/spec.md`. No he escrito el plan ni código, y no he hecho commit.
+
+## Spec 0013 — Exportar las reservas a CSV
+
+🦆 Hoy las reservas solo se ven una a una desde la terminal. Con esta feature, `exportar` escribe un fichero `reservas.csv` con una fila por reserva, por ejemplo `Norte,lun,10:00-12:00,activa`, que se abre en una hoja de cálculo. Por dentro, una función pura arma el texto CSV y `run` lo guarda en disco.
+
+**Validación**: dev-lead. Es un fichero que una persona abre en su hoja de cálculo, así que hay que verlo.
+
+### ✋ Decisiones que he tomado yo — valida estas
+El roadmap solo decía «un fichero con una fila por reserva», así que todo esto es mío:
+
+1. Comando `exportar [ruta]`. Sin ruta escribe `reservas.csv` en el directorio actual.
+2. Si el fichero ya existe, se sobrescribe.
+3. Columnas en este orden: `sala,dia,franja,estado`.
+4. Entran todas las reservas, también las canceladas y las anuladas. El `estado` las distingue.
+5. Valores de `estado`: `activa`, `cancelada`, `anulada`.
+6. La primera fila es una cabecera con los nombres de columna.
+7. CSV estándar: coma como separador y saltos `\n`. Un valor con coma, comilla o salto va entre comillas dobles, con la comilla interna duplicada.
+8. Respuesta: `exportadas 1 reservas en reservas.csv`. Sin reservas, `exportadas 0 reservas en reservas.csv`, y el fichero lleva solo la cabecera.
+9. Capacidad nueva `booking-export`.
+10. Enfoque: función pura `toCsv(bookings)` más escritura en `run`. Descarto escribir a la salida estándar, porque el roadmap pide un fichero, y construir todo dentro de `run`.
+11. El CSV no lleva motivo de cancelación, porque la 0010 aún no existe.
+12. Si la ruta no se puede escribir, sale el error de Node, sin captura propia.
+
+La spec no tuvo revisor aparte: nivel mínimo, con un solo revisor que no aportaba más que mi repaso de coherencia. Queda sin cubrir una lectura independiente. La política de modelos y los escenarios (con datos) están en la spec.
+
+**Id**: la 0012 ya la tenía otro en `origin/develop`, así que la 0012 pasa a 0013. La rama es ahora `feature/0013-export-csv`.
+
+La spec está en espera y no sigo hasta que respondas:
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 3 tasks)**. Esta opción baja la sesión de modelo (`/model`, Sonnet con effort medium) antes de implementar. La sesión no puede cambiarlo sola.
+
+**Aviso del kit**: esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres las skills al día, usa `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

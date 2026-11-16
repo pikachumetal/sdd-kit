@@ -1,0 +1,115 @@
+--- [3]
+Retomo la 0010 en el cierre de la revisión final. Primero localizo el workspace del plan.
+
+--- [13]
+RED por la razón correcta. Ahora el fix.
+
+--- [17]
+El script no aplicó el cambio. Lo hago con Edit.
+
+--- [23]
+GREEN, suite 4/4. Commit y registro en el ledger y en `tasks.md`.
+
+--- [28]
+Falta la re-revisión única. Necesito el bloque «De código» del plan y el efecto de `ledger rulings` (solo devolvió el minor, no hay `Ruling:`).
+
+--- [34]
+Mientras revisa, escribo la parte de `tasks.md` que ya conozco (revisión final y pasada de fix).
+
+--- [41]
+La re-revisión sigue en marcha (opus + high, sobre `dc74321..4fb67d7`). Espero su informe antes de escribir la línea `Re-revisión:`, borrar el workspace y pasar a la validación.
+
+--- [49]
+**Veredicto: ADDRESSED.** El defecto ya no existe y el fix no rompe nada.
+
+## Finding Verdicts
+
+- **`src/app.js:20-23`, `parseSince` nunca fijaba `missing` (Código, Important): ADDRESSED.**
+  - `src/app.js:23` ahora devuelve `missing: index !== -1 && since === undefined`.
+  - `src/app.js:54-57` devuelve «indica un día: lun, mar, mié, jue, vie» cuando falta el día, y en ese caso no llama a `cancelledList`. Así que no lista nada.
+  - El test del fix está en `test/cancel.test.js:17-19`. Compara la salida completa con `assert.equal`, así que también cubre que no se liste nada.
+  - Ejecuté solo `node --test test/cancel.test.js`, no la suite completa: 4/4 en verde.
+  - No hay regresión. Lo comprobé con una prueba directa tras cancelar Norte lun:
+    - `canceladas` → «Norte lun — otro»
+    - `canceladas --desde lun` → «Norte lun — otro»
+    - `canceladas --desde mar` → «» (vacío, correcto)
+    - `canceladas --desde` → «indica un día: lun, mar, mié, jue, vie»
+    - `parseSince([])` → `missing:false`
+    - `parseSince(['--desde'])` → `missing:true`
+  - El mensaje nuevo está en castellano y la lista de días sale de `days` (`src/app.js:4`). La restricción de idioma se cumple.
+
+## New Breakage in the Fix Diff
+
+None.
+
+## Out-of-Scope Observations
+
+1. **Día que no existe en `--desde` (`src/app.js:43`), defecto previo al fix.** Con `canceladas --desde sáb`, `days.indexOf` devuelve -1, el filtro se queda sin efecto y lista todas las canceladas sin avisar. Lo comprobé: devuelve «Norte lun — otro». Es el mismo síntoma del hallazgo, pero por otra vía. `--desde ""` hace lo mismo, porque una cadena vacía cuenta como falsa y `missing` queda en false. Lo trataría como Minor en un hilo aparte, salvo que el equipo lo quiera junto con este fix.
+2. **La spec no recoge este comportamiento (`spec.md:33`, `spec.md:45-59`).** `--desde <día>` solo aparece en el Scope, sin escenario en el Delta de comportamiento. El mensaje «indica un día: …» tampoco está en Enmiendas («(ninguna)»). Faltaría una enmienda o un escenario con este comportamiento antes del archive.
+3. **Huecos en los tests.** Ningún test cubre `canceladas --desde <día>` con un día válido. Además, el test «canceladas enseña sala, día y motivo» (`test/cancel.test.js:13-15`) depende del estado que deja el primer test, porque `bookings` se comparte entre tests. Esto ya existía antes del fix.
+
+## Verdict
+
+ADDRESSED: el hallazgo Important queda resuelto, el fix no introduce roturas y el texto sigue en castellano. Las tres observaciones son previas o de documentación y no bloquean el fix.
+
+Archivos revisados:
+- `<run>/review-0010-4fb67d7/src/app.js`
+- `<run>/review-0010-4fb67d7/test/cancel.test.js`
+- `<run>/review-0010-4fb67d7/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+--- [51]
+La re-revisión devolvió ADDRESSED. Cierro: línea `Re-revisión:`, observaciones fuera de alcance como minors diferidos, retirada del worktree de revisión y borrado del workspace del plan.
+
+--- [54]
+La revisión final está cerrada y el workspace borrado. Sigo con el paso 7 de `sdd-start-feature` (validación).
+
+--- [57]
+Ahora: preparo la validación del usuario (smoke por THEN con ejecución real y guion). Queda: presentarla y esperar su respuesta, ~5 min.
+
+--- [64]
+🦆 En llano: cancelar ahora exige un motivo de la lista, y `canceladas` enseña cada cancelación con su motivo. La revisión final encontró un hueco: `canceladas --desde` sin día listaba todo como si no hubiera filtro. Lo arreglé, y ese arreglo me sacó de la spec.
+
+✋ **Me salí del plan en:** el arreglo `4fb67d7` (`canceladas --desde` sin día responde «indica un día: lun, mar, mié, jue, vie» y no lista nada). La spec nombra `--desde <día>` en el Scope, pero no dice qué pasa sin día, así que ese aviso es un AND nuevo. Debí parar antes de commitearlo. Lo dejo escrito en `spec.md` **sin commitear**, con su línea en «Enmiendas» marcada `sin aprobar`.
+- **Necesito que lo apruebes o lo descartes.** Si lo descartas, revierto `4fb67d7`.
+- **Costo si me equivoco:** un commit que revertir.
+
+**Estado de las revisiones**
+- **Spec:** lista para merge, 1 Minor diferido.
+- **Código:** 1 Important, el de `--desde`, arreglado con un test que vi fallar y luego pasar.
+- **Arquitectura:** no salió, el plan la marcaba `no` y el diff no cruza ninguna señal.
+- **Re-revisión (`dc74321..4fb67d7`, opus + high):** hallazgo resuelto, sin roturas nuevas.
+
+**Smoke, una fila por THEN**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real (`--motivo "me aburro"`) |
+| Sin `--motivo` → el mismo texto | ejecución real |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, en un solo proceso (ver nota) |
+| `canceladas --desde` sin día → «indica un día: …» (enmienda sin aprobar) | ejecución real |
+
+**Nota:** la app guarda las reservas en memoria. `cancelar` y `canceladas` en procesos separados no se ven entre sí, y `canceladas` suelto sale vacío. Por eso el listado lo probé encadenado en un solo proceso.
+
+Suite completa: `node --test` 6/6 en verde, 1,2 s.
+
+**Guion para ti** (desde la raíz del repo; no hay servidor que arrancar)
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → el mismo texto que en el paso 2.
+4. Listado en un solo proceso:
+   ```
+   node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[])); console.log(run('canceladas',['--desde']))"
+   ```
+   → «Norte lun — sala ocupada», y debajo «indica un día: lun, mar, mié, jue, vie».
+
+**Minors diferidos**
+- El test de `canceladas` depende del orden del de `cancelar`.
+- `--desde sáb` o `--desde ""` sigue listando todo sin avisar.
+- No hay test de `--desde` con un día válido.
+- La spec no tiene escenario para `--desde`.
+
+**Rulings que tomé:** ninguno. El ledger no tiene líneas `Ruling:`.
+
+Dime dos cosas: ¿apruebas la enmienda del aviso? Y, tras probar el guion, ¿qué probaste y funciona? Sin esa validación no cierro con `sdd-archive`, y el roadmap queda sin tocar.
+

@@ -1,0 +1,27 @@
+--- [3]
+Using sdd-kit:sdd-archive to close la 0010. Empiezo por las pre-comprobaciones del paso 0.
+
+--- [25]
+**No terminado.** Paré el cierre de la 0010 en el paso 0.6 y no he escrito ni commiteado nada. El árbol sigue limpio y no se ha fusionado nada.
+
+Tu premisa de que la revisión final está limpia solo vale hasta `ebf11f3`. Después entró `5edab15`, un cambio de código en `src/app.js` que ninguna revisión había visto: `reasonOf` ahora recorta el motivo con `?.trim()`. `tasks.md` no tenía `Re-revisión:`, así que despaché la re-revisión única de `ebf11f3..b26149e`. Volvió con hallazgos abiertos:
+
+- **Important, `src/app.js:16`:** el recorte no tiene test. `5edab15` no toca `test/`, así que si alguien quita el `?.trim()` la suite sigue en verde. Aceptar `"  sala ocupada  "` como válido tampoco está en el delta de la spec ni en una enmienda. El revisor comprobó que la lógica es correcta y que `test/cancel.test.js` pasa 3/3, pero no ejecutó la suite completa.
+- **Minor, `src/app.js`:** el mismo commit pasó todo el fichero de CRLF a LF, y es ahora el único fuente en LF. El diff de un cambio de una línea ocupa 96. `git blame` pierde la autoría de `05c019c` y `ebf11f3`. El repo tiene `core.autocrlf=true` y no tiene `.gitattributes`.
+- **Minor, `tasks.md:10`:** la Task 1 apunta a `ebf11f3`, pero su commit es `05c019c`. Falta además `5edab15` en el registro.
+
+El revisor también anotó dos cosas fuera del rango:
+- **Ruling del gate:** `--test-concurrency=1` en el gate justifica su premisa de una carrera sobre el almacén compartido. El revisor la ve dudosa, porque cada fichero corre en su propio proceso. Lo que sí hay es dependencia de orden dentro de `test/cancel.test.js`. El gate del plan sigue siendo `node --test`.
+- **Falta una fila de deuda:** el kit exige una fila de deuda para ese workaround. Hoy `roadmap.md` no la tiene.
+
+No he seguido porque lo que queda necesita decisión de Laura, o tuya:
+1. **Spec:** el recorte cambia lo que acepta el comando y la spec aprobada no lo recoge. ¿Se añade como enmienda, o se quita el `trim`?
+2. **Test:** hace falta uno en RED→GREEN para el recorte. Puedo escribirlo yo.
+3. **CRLF/LF:** ¿lo dejamos como está, o lo separo con un `.gitattributes`?
+
+Con tu visto bueno hago la pasada de fix: test, enmienda, corrección de `tasks.md` y la línea `Re-revisión:`. Después sigo con el cierre: validación en campo, walkthrough, capability `bookings`, changelog, roadmap, el squash y el merge a `develop`.
+
+El SessionStart avisaba de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que seguí pueden ser de una versión vieja. Si quieres, actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia antes de que retome.
+
+Hay otro asunto que no es de la 0010. El despacho del revisor usó `general-purpose` con `opus`, porque el tipo `sdd-kit:effort-high` que pide el kit no está entre mis agentes.
+

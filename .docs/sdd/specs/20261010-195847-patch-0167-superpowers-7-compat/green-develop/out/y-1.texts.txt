@@ -1,0 +1,57 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitution, mission, tech-stack, roadmap, capabilities). Queda: clasificar y anunciar, ~1 min.
+
+--- [15]
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme): la fila 0011 del roadmap pide «Avisos por correo antes de la reserva». Es decir, que el sistema mande un correo antes de que empiece una reserva.
+
+**Lo que he encontrado en el código**, y que condiciona el diseño:
+
+- `Booking` solo tiene `Id`, `Room`, `Start`, `End` y `Owner`. `Owner` es un texto libre: no hay dirección de correo en ningún sitio (`backend/src/Bookings.Api/Data/Booking.cs`).
+- No existe nada de envío de correo ni de tareas en segundo plano. La API solo tiene `GET /bookings` (`BookingsEndpoints.cs`).
+- Por tanto, esta feature trae al menos tres piezas nuevas: de dónde sale la dirección, qué dispara el aviso en su momento y cómo se envía.
+
+❓ **¿A quién le tiene que llegar el aviso, y para qué lo necesita esa persona?**
+
+Cuéntamelo con tus palabras, por ejemplo con un caso real. De la respuesta depende de dónde sale la dirección de correo, porque hoy no se guarda.
+
+--- [17]
+Entendido: escribo la spec con lo que hay y las lagunas van a «Decisiones que he tomado yo». La puerta de aprobación sigue en pie. Ahora: leo la plantilla y el nombrado de carpetas. Queda: spec, coherencia y aprobación.
+
+--- [28]
+Ahora: spec escrita y revisada por coherencia. Queda: tu aprobación (y la review), después el plan y la implementación, ~2 min de lectura.
+
+La spec está en `.docs/sdd/specs/20261010-203954-feature-0011-avisos-correo-reserva/spec.md`, en la rama `feature/0011`, modo full, perfil delegate.
+
+🦆 Cuando falten 30 minutos para que empiece una reserva, quien la hizo recibe un correo con la sala y la hora. Ejemplo: Ana reserva Norte de 10:00 a 11:00 con `ana@example.com`; a las 09:30 le llega «Recordatorio: reserva de Norte a las 10:00», y no recibe otro. Por dentro, un proceso de la API mira cada minuto qué reservas entran en esa ventana y las marca como avisadas.
+
+**✋ Decisiones que he tomado yo — valida estas.** Como me has pedido saltar las preguntas, las he tomado todas yo:
+
+1. El aviso va a la persona que reservó, en una dirección nueva `OwnerEmail`. Hoy `Owner` es un texto sin correo.
+2. Las reservas sin `OwnerEmail` (todas las existentes) no reciben aviso y no dan error.
+3. Antelación fija de 30 minutos, no configurable.
+4. Un solo aviso por reserva (`ReminderSentAt`).
+5. Una reserva creada con menos de 30 minutos de margen se avisa en la siguiente comprobación; una que ya empezó no se avisa nunca.
+6. Si el envío falla, se reintenta cada minuto hasta que empiece la reserva.
+7. La comprobación corre cada minuto dentro de la propia API.
+8. Asunto «Recordatorio: reserva de {sala} a las {HH:mm}»; cuerpo «Hola {Owner}: tu reserva de {sala} empieza a las {HH:mm} y termina a las {HH:mm}.», sin conversión de zona horaria.
+9. Sin servidor de correo configurado, la API arranca igual y deja un aviso en el log.
+10. `GET /bookings` no expone `OwnerEmail` ni `ReminderSentAt`: devuelve el mismo JSON de hoy.
+11. No hay pantalla ni endpoint nuevos. Las reservas no se crean por la API hoy, así que `OwnerEmail` se informa donde ya se crean, fuera de esta feature.
+12. Capacidad nueva `booking-reminders`.
+13. La librería SMTP y las claves de configuración se deciden en el plan.
+
+**Review de la spec.** Cuento 4 señales: capacidad nueva, datos con migración, dependencia externa (servidor de correo) y contrato público (el JSON de la lista no debe cambiar). Recomiendo **dos revisores, ambos en Sonnet**: dominio (reservas sin correo, creadas tarde, reintentos) y técnica (migración y arranque sin correo). El mínimo razonable es solo la técnica, que deja sin mirar los casos de borde del aviso. Dime cuál prefieres.
+
+Para continuar necesito dos respuestas:
+
+- **Review:** dos revisores (recomendada), solo técnica, o ninguna.
+- **Spec:** «Apruebo» o «Cambios». Sin un «apruebo» explícito, la spec queda en espera aunque el perfil sea delegate. Saltarte las preguntas no cuenta como aprobarla.
+
+Si prefieres no volver a pararte, di «apruebo la spec por delegación, nos vemos en la validación» y sigo con la review que elijas, el plan y la implementación.
+

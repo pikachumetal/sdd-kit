@@ -1,0 +1,24 @@
+--- [2]
+Empiezo por la Fase 1: leer el hook y reproducir el fallo.
+
+--- [18]
+## Causa raíz
+
+Al hacer `git commit`, Git exporta `GIT_INDEX_FILE=.git/index` a los hooks, y esa ruta es relativa. Lo confirmé con un hook de prueba que imprimió solo esa variable.
+
+El `pre-commit` hereda ese valor y lo propaga a todo lo que lanza:
+
+1. `git worktree add ... "$tmp" HEAD` no ignora `GIT_INDEX_FILE`. Escribe el índice del checkout en `.git/index` relativo al directorio donde se ejecuta, no en el índice del worktree nuevo.
+2. Después, `cd "$tmp" && git status` resuelve `.git/index` como `$tmp/.git/index`. Ahí `.git` es un archivo, no un directorio, así que falla con `Unable to create '.../hook-check/.git/index.lock': No such file or directory`.
+3. El hook muestra «el worktree temporal no responde» y sale con 1, y el commit se aborta.
+
+Ejecutado a mano, el hook pasa porque `GIT_INDEX_FILE` no está definida. Con una ruta absoluta también pasa, porque apunta a un fichero que sí existe. Por eso el fallo solo aparece durante el commit.
+
+## Mi error durante la investigación
+
+Mi reproducción con `GIT_INDEX_FILE=.git/index` dejó sin staging a `notas.txt`, porque el hook escribió el índice de `HEAD` sobre el real. Ya lo restauré con `git add notas.txt`. El estado ha vuelto al de antes, y el contenido del archivo no se tocó. Los dos `M` (`sdd-kit.json` y `pre-commit`) son solo un aviso de CRLF: `git diff` no muestra diferencias de contenido. No existía antes de mi prueba, así que lo más probable es que el cambio de stat venga de la reescritura del índice.
+
+Esto no es un arreglo, solo el diagnóstico. Dime si quieres que lo arregle.
+
+El aviso de arranque indica que esta sesión carga sdd-kit 2.3.4 y el proyecto pide la 3.0.0, así que la skill que usé puede ser de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+

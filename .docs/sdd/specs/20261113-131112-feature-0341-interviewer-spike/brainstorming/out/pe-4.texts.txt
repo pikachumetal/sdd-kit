@@ -1,0 +1,52 @@
+--- [3]
+Voy a cargar el contexto SDD del proyecto (documentación, no código).
+
+--- [13]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json` no fija `control.profile`, rige el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido (corrígeme):**
+- Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV.
+- El motivo es que el responsable de cada sala las pasa a su hoja de cálculo los lunes para cuadrarlas. Eso me importa más que el formato: el CSV tiene que abrirse bien en esa hoja y servir para cuadrar.
+- Hoy una reserva solo tiene `room`, `day` y `slot` (por ejemplo `Norte · lun · 10:00-12:00`), y las reservas viven en memoria dentro de `src/app.js`.
+- Preveo 2 o 3 tasks en una sola superficie (la CLI), así que no propongo partirla.
+
+Lo que aún no sé es cómo usa el responsable ese CSV. Y la respuesta decide qué columnas salen, qué periodo cubre y cómo se escribe el fichero.
+
+Cuéntame cómo es ese lunes: ¿qué mira el responsable en su hoja cuando cuadra las reservas de su sala?
+
+--- [15]
+Entendido. Con eso decido yo el resto y lo dejo en la spec, en «✋ Decisiones que he tomado yo», para que lo valides. Ahora: preparar la rama y el id, y leer las plantillas y la revisión de spec. Queda: escribir la spec y pararme en tu aprobación, ~8 min.
+
+--- [18]
+La rama y el id van antes que la carpeta, porque esta feature no tiene fila en el roadmap y `ids.mode` es `sequence`. Sigo trabajando en el repo del proyecto, no en la carpeta del kit.
+
+--- [26]
+Ahora el repaso de coherencia: compruebo la búsqueda que cité y pruebo el delta sobre una copia fuera del repo.
+
+--- [30]
+Ahora: presentar la spec y esperar tu aprobación. Queda: tu respuesta; después el plan y la implementación, ~15 min.
+
+La spec está en `.docs/sdd/changes/20261113-151047-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`. Todavía no he escrito el plan ni código, y no he hecho ningún commit.
+
+🦆 Con `salas exportar Norte > norte.csv` sale un CSV con las reservas de esa sala, y el responsable lo abre en su hoja el lunes y las cuadra. Con `Norte` reservada el lunes de 10:00 a 12:00 sale `Norte;lun;10:00-12:00` bajo la cabecera `sala;dia;franja`. Se separa con punto y coma, que es lo que una hoja en castellano parte en columnas sin preguntar. Es un comando nuevo en `src/app.js`; los demás no cambian.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+1. **Comando `exportar <sala>`**: escribe por pantalla y tú lo redirigís a un fichero con `>`.
+2. **Cabecera `sala;dia;franja`**, sin tilde en `dia`.
+3. **No hay filtro de semana.** Una reserva solo guarda el día de la semana y la franja, sin fecha. Por eso «la semana que empieza el lunes que viene» no se puede calcular, y salen todas las reservas de la sala. Es la decisión que más conviene que mires. Si quieres el filtro, antes hay que guardar fechas en las reservas, y eso es otra feature.
+4. **Orden**: lunes a domingo y, dentro del día, por franja.
+5. **Sala sin reservas**: sale solo la cabecera.
+6. **Sala que no existe**: `sala desconocida: Este`.
+7. **Sin sala**: `uso: exportar <sala>`.
+8. **Formato**: `;` como separador, `\n` como salto de línea, sin BOM y sin comillas.
+9. **Capacidad nueva `room-booking-export`**.
+10. **Enfoque**: una función pura `bookingsCsv` más el comando, todo en `src/app.js`. Descarto un fichero aparte y un comando genérico con `--formato`.
+
+**La revisión de la spec no se ha hecho con revisores independientes.** El kit pide dos, pero esta sesión no tiene herramienta para lanzar subagentes. He leído yo la spec con los siete puntos, y eso no sustituye a un revisor con contexto limpio. Quedó registrado en la spec. El delta sí lo he probado sobre una copia de `.docs/sdd` con `sdd capability merge`, sin rechazos.
+
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajusto, por ejemplo la cabecera, el orden o el filtro de semana.
+

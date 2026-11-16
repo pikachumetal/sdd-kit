@@ -1,0 +1,53 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md package.json; ls -R src test .docs/sdd/specs | head -50; ls node_m
+> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/steering/debt.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references"; cat nombrado.md; cat control-profiles.md | hea
+## agente
+Sigo con la propuesta: ya he leído el contexto del proyecto y es una feature. Ahora reservo el id y creo la rama, volviendo al directorio del repo, porque mi `cd` anterior me sacó de él.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git status --short | head; git branch --show-current; node "D
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git checkout -b feature/0010-lista-espera && node "D:/code/.w
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references/spec-writing.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: dejo la rama `feature/0010-lista-espera` creada y empiezo la entrevista para escribir la spec. Queda: la entrevista, la spec con su aprobación y el plan, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», con el modelo más capaz y más de una task)
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no controla si la sala ya está ocupada en esa franja. Solo `libres` sabe qué salas lo están. Quieres que, al pedir una sala ocupada, la herramienta te apunte en una lista de espera para esa sala y esa franja. Es una función nueva que toca `src/app.js`, no un arreglo. No veo motivo para partirla en varias features. Corrígeme si algo de esto no es así.
+
+❓ Antes de diseñar nada: ¿qué quieres hacer tú con esa lista de espera cuando la sala que quieres está ocupada?
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Entendido: el problema es que tienes que volver a mirar `libres` a mano. Lo que más condiciona el diseño es qué debe pasar cuando la sala se libere.
+
+Hay un hecho del código que nos ayuda. Una sala solo se libera con `cancelar` en esta misma herramienta (`src/app.js`), así que en ese momento la herramienta puede hacer algo por ti.
+
+❓ **¿Qué pasa cuando se libera la sala en la que esperas?**
+
+1️⃣ **Reserva automática.** Al cancelar, la primera espera de esa sala y franja se convierte en reserva.
+   - Escena: `cancelar lun 10:00` → `cancelada lun 10:00; reserva Norte lun 10:00 creada desde la espera`.
+   - No vuelves a mirar nada.
+   - Coste: reserva sin preguntarte. Si ya no la querías, tienes que cancelarla.
+
+2️⃣ **Aviso al cancelar y confirmas tú.**
+   - Escena: `cancelar lun 10:00` → `cancelada lun 10:00; Norte lun 10:00 libre: tienes espera, reserva con «reservar Norte»`.
+   - Coste: un paso manual más. Pero solo si tú ejecutas ese `cancelar`, no si el cambio llega por otro lado.
+
+3️⃣ **Solo la lista, sin reacción.**
+   - Escena: `reservar Norte` → `Norte ocupada; en espera (1.º)`, y un comando `espera` que lista tus esperas.
+   - Coste: sigues mirando a mano, solo que en otro comando. No resuelve lo que cuentas.
+
+➡️ **Recomiendo 1️⃣**, porque dices que el problema es tener que volver a mirar, y es la única opción en la que no haces nada. A cambio, reserva sin confirmar. Como la usas solo tú y `cancelar` es tu propia acción, me parece un riesgo bajo.

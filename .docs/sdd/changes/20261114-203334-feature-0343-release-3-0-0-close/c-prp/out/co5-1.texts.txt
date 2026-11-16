@@ -1,0 +1,117 @@
+--- [3]
+Ahora: leo la spec escrita y las referencias del paso 4. Queda: pasada de coherencia, revisión de la spec y presentártela para aprobar, ~10 min.
+
+--- [23]
+Delta aceptado en la copia. Corrijo una frase de la decisión 8 y añado esa línea de resultado; después lanzo la review.
+
+--- [37]
+Los dos revisores (dominio y técnica, en paralelo) están en marcha. Espero a que terminen para incorporar sus hallazgos y presentarte la spec.
+
+--- [47]
+1. Importante · Delta `reports` / Decisión 6 · «El informe cuenta las reservas activas» dice que el informe «cuenta dos». La decisión 6 declara que no hay total general, solo subtotales por planta. Eso cambia el requisito vivo, y aquí entra como `ADDED`, o sea, un `MODIFIED` sin declarar. · Pasar la cuenta a `MODIFIED` sobre ese requisito, o dejar escrito que el subtotal por planta es compatible con él.
+
+2. Importante · Delta `rooms` · Se añade como requisito la planta de Norte, Sur y Este, pero la decisión 4 admite que el dato es «de ejemplo del encargo, a confirmar contra el edificio real». Un dato sin confirmar quedaría como verdad viva en `capabilities/`. · Confirmar las plantas con el dev-lead antes de aprobar, o redactar el requisito sin valores concretos y dejar los valores solo en el fixture.
+
+3. Importante · Datos de planta (límites) · No hay regla de límites. Falta decir si valen enteros negativos (sótano), si hay máximo, y qué pasa con `01`, `1.5` o `+1`. La decisión 1 solo dice «enteros, baja = 0». · Declarar el rango admitido y cómo se valida `--planta`, o decir «no aplica» con motivo.
+
+4. Importante · Datos de planta (regla de conflicto) · No se declara qué pasa si `--planta` va repetida, si no lleva valor o si va antes de la franja. Tampoco qué pasa si una sala no tiene planta o si hay dos salas con el mismo nombre. La decisión 7 solo cubre «sin salas» y «no entero». · Añadir la regla o escribir «no aplica» para cada caso. Los casos de argumentos pueden ir como escenario de `cli`.
+
+5. Importante · Datos de planta (avisos) · No se declara si algo avisa al usuario. Una planta inexistente responde vacío en silencio, mientras que un valor no entero da error. Esa asimetría no está justificada como regla. · Declarar «avisos: ninguno» o decidir que una planta inexistente avise.
+
+6. Importante · Decisión 7 / `cli` · «Responde vacío, como `libres` cuando no queda ninguna libre». Ni `cli` ni ningún otro documento que haya leído define esa salida vacía, así que se cita un comportamiento no escrito. Tampoco hay un `THEN` para una planta vacía en el informe frente al filtro, que es justo lo que pide el revisor de dominio. · Escribir qué se imprime exactamente (cadena vacía o línea en blanco) y añadir un escenario de `cli` para planta sin salas.
+
+7. Importante · Delta `reports` / Intent · El informe «cuenta reservas activas», pero no dice sobre qué periodo. Las reservas son por día y franja (`reservar Norte lun`). No dice si se cuentan todas, las de hoy o las de la semana. `PRODUCT.md` también distingue cancelación y anulación, y solo se excluyen las canceladas. · Declarar el periodo del informe y si una reserva anulada cuenta como activa.
+
+8. Menor · Datos de planta (idioma de nombres) · No se declara la regla de idioma. Las salidas están en castellano (`planta`, `planta no válida…`), y el campo `floor` del enfoque A y el flag `--planta` mezclan inglés y castellano sin decirlo. · Escribir una línea: texto de interfaz en castellano (constitución 4), identificadores de código fuera de regla.
+
+9. Menor · Capacidades / `rooms` · Dice «`rooms` modificada: el catálogo pasa a tener también Este», pero `rooms` ya exige Este. Es una divergencia código–capacidad, no un cambio de la capacidad. Además `PRODUCT.md` (Terminology) sigue diciendo «Norte, Sur». · Reformular la línea (el código se alinea con `rooms`) y anotar que `PRODUCT.md` queda desfasado, o corregirlo.
+
+10. Menor · Intent / `PRODUCT.md` · El Intent habla de «conserjería» y de «quien reserva» como usuarios. `PRODUCT.md` dice que no hay más usuarios que el autor. Los escenarios son coherentes con `reports`, pero el actor no cuadra con el producto. · Alinear la redacción del Intent con `PRODUCT.md`, o señalar que `PRODUCT.md` está desactualizado.
+
+--- [50]
+Ha vuelto el revisor de dominio. Falta el técnico, así que no toco la spec hasta tener los dos informes y poder incorporar todo de una vez.
+
+--- [51]
+1. Crítico · Dónde se prueba / Delta `reports` y `cli` · Los escenarios de `reports` (dos reservas activas en Norte, una activa en Este, una cancelada en Sur) no se pueden montar con `run()`. `bookings` es un `const` de módulo, no exportado, con una sola reserva fija. `reservar` no crea nada: solo devuelve un texto con `--cada-semana`. Tampoco hay forma de crear dos activas en Norte ni una cancelada en Sur, y los tests no pueden fijar el estado de partida. · Decidir cómo se siembra el estado, por ejemplo exportar una función que reemplace `bookings` o aceptar `bookings` como parámetro de `run`. Declararlo en Scope y en las decisiones, porque toca el contrato interno del módulo y la forma de testear. O bien reducir los escenarios a los datos fijos.
+
+2. Importante · Delta `rooms` ADDED «Cada sala tiene planta» · «WHEN se consulta la planta de cada sala» no corresponde a ningún comando ni salida. "Dónde se prueba" dice que se prueba vía `run('libres', ...)`, pero el escenario no menciona `libres`. Pasaría con un valor puesto a ojo en la lista, sin que nada lo ejercite. · Reescribir el escenario sobre salida observable, por ejemplo `libres 10:00-12:00 --planta 0` responde `Sur`. O declarar que la planta se cubre solo por los escenarios de `cli` y `reports`.
+
+3. Importante · Delta `cli` MODIFIED «Consultar las salas libres» · El `AND libres no acepta más argumentos ni opciones que la franja y --planta <n>` no tiene escenario que lo haga fallar. El código actual ya ignora argumentos extra y lo seguiría haciendo. No se dice qué responde con una opción desconocida (`--otra`) ni con un argumento sobrante. · Añadir un escenario con la respuesta literal ante una opción o argumento no admitido, y declarar ese literal en las decisiones. O quitar el AND de la modificación.
+
+4. Importante · Decisiones / Delta `cli` · No hay escenario para dos comportamientos de `libres` que la spec promete. El primero es `libres 10:00-12:00` sin `--planta`, que debe dar `Sur, Este` (el fracaso del Intent: «que `libres` sin `--planta` cambie»). El segundo es `--planta 5` con una planta sin salas, que debe dar vacío (decisión 7). · Añadir los dos escenarios (ADDED o dentro de MODIFIED), con el resultado exacto.
+
+5. Importante · Decisiones (falta) · Nadie ha decidido la posición ni la forma de `--planta`. `freeRooms(params[0])` toma el primer parámetro como franja, así que `libres --planta 1 10:00-12:00` toma `--planta` como franja y devuelve todas las salas sin error. Tampoco se dice qué pasa con `libres 10:00-12:00 --planta` sin valor, con `--planta=1`, ni con `--planta` repetido. · Añadir una decisión sobre orden y sintaxis de `--planta`, y el literal de error para valor ausente. Cubrirlo con escenario.
+
+6. Importante · Decisión 1 y 7 · «Entero» no está definido: no se dice si `-1`, `01`, `+1`, `1.0` o `1e0` son válidos. Con la regla «las plantas son enteros y la baja es la 0» queda abierto si una planta negativa (sótano) es válida y devuelve vacío, o da error. · Fijar la regla de validación (por ejemplo, solo `/^-?\d+$/` o solo no negativos) y añadir un escenario con un caso límite.
+
+7. Menor · Decisión 6 / Delta `reports` · Hay decisiones de borde que no están declaradas ni tienen escenario. El informe ignora los estados distintos de `active`, y `anular` deja `voided` y `cancelar` deja `cancelled`; el escenario solo prueba `cancelled`. El informe cuenta reservas de todos los días y franjas, y nada lo dice. `ocupacion` con argumentos sobrantes tampoco está tratado. · Declarar en las decisiones que se cuentan todas las reservas activas sin filtrar por día o franja. Añadir `voided` al GIVEN de un escenario.
+
+8. Menor · «Lo que se retira o cambia de forma» · La referencia `src/app.js:30-34` para `run()` no coincide con el fichero. `run()` ocupa las líneas 27-33 y el `return 'salas'` está en la 32. · Corregir a `src/app.js:27-33` (el `return` en la 32).
+
+9. Menor · Scope / Approach (contratos tocados) · La spec dice que `rooms` pasa de lista de textos a `{ name, floor }`, pero no lo declara como cambio de la forma de datos ni lista el efecto en `freeRooms` y en `bookings.some(b.room === room)`. Hay que comparar con `room.name` y con el lookup room→planta del informe. Tampoco dice qué hace el informe con una reserva cuya sala no está en el catálogo. · Añadir al Scope el cambio de comparación y decidir qué hace el informe con una sala desconocida: ignorarla, contarla o fallar.
+
+10. Menor · Scope · `README.md` entra en Scope («explica cómo leer el informe»), pero no hay escenario ni verificación que lo cubra. La cabecera cuenta "~65 líneas en 4 ficheros", sin que la spec nombre cuáles son. · Nombrar los cuatro ficheros. Añadir un criterio comprobable para el README o sacarlo de Scope.
+
+--- [63]
+Ahora: segunda ronda de review, porque acepté un hallazgo Crítico (no se podían montar los escenarios del informe). Queda: incorporar sus hallazgos y presentarte la spec para aprobar, ~5 min. El delta vuelve a salir con 0 en la copia: 11 cambios, 2 sustituidos y 9 añadidos.
+
+--- [74]
+1. Crítico · Delta `reports`, MODIFIED «El informe cuenta las reservas activas» · El THEN «cuenta dos, repartidas por planta» no dice qué sale. La decisión 13 descarta el total general, y el GIVEN no fija las salas de las reservas ni sus plantas. El escenario pasa con cualquier salida que mencione un dos, aunque no haya reparto, y el mismo texto vale sin agrupar. · Dar un GIVEN con salas y plantas concretas y un THEN con las líneas literales (`planta 0: 2`, `planta 1: 0`). Sin total. O quitar el «repartidas por planta», que ya cubren los ADDED.
+
+2. Importante · Decisión 11 y «Dónde se prueba» · Los tests fijan el estado con `bookings.length = 0` y `push` sobre un estado compartido del módulo. El test actual de `libres` (`test/app.test.js:5-7`) depende de la reserva por defecto de Norte. Un test que vacíe `bookings` antes lo rompe, y el resultado depende del orden. Además la decisión 11 dice que «el contrato público no cambia», pero se añade un export mutable. · Exigir que cada test fije y restaure el estado, por ejemplo con `beforeEach` o `afterEach` que dejen la reserva de partida. Cambiar la frase del contrato público por «se añade un export, solo para tests».
+
+3. Importante · Decisión 6 y Delta `reports` · Dos comportamientos declarados no tienen escenario: «de cualquier día y franja» y «una reserva de una sala desconocida se ignora». Se puede implementar mal cualquiera de los dos con todos los tests en verde. · Añadir un ADDED en `reports`. Por ejemplo, dos reservas activas en días y franjas distintos que cuentan las dos, y una reserva de sala fuera del catálogo que no cuenta.
+
+4. Importante · Decisión 5 y Delta `cli`, «Informe de ocupación» · «Los argumentos que se le pasen se ignoran» es un requisito sin GIVEN/WHEN/THEN. Tampoco hay escenario con las reservas por defecto del estado de partida (la de Norte el lunes). · Añadir `ocupacion extra` → mismo informe, o quitar la decisión.
+
+5. Importante · Decisión 7 y escenarios de error de `cli` · No se fija la precedencia cuando coinciden errores. Por ejemplo `libres 10:00-12:00 --planta alta --otra`, `--planta` sin valor más un sobrante, o `--planta 1 --planta alta`. «Entero» queda sin definir: `01`, `+1`, `1.0` y `1e1` no tienen resultado. Tampoco se dice qué hace `libres` sin franja o con una franja inválida, que hoy devuelve todas las salas. · Fijar el orden de comprobación (uso antes que valor), la forma admitida (`/^\d+$/`) y el comportamiento sin franja, con un escenario cada uno o una exclusión explícita.
+
+6. Importante · Intent, decisión 8 y Scope de `PRODUCT.md` · `PRODUCT.md` dice «No hay más usuarios». El Intent pone como solicitantes a conserjería y a «quien reserva», y esta última frase no tiene fuente. El Scope solo toca Terminology, así que Purpose queda contradictorio con el producto que describe la feature. Es un cambio de fondo sobre quién usa la herramienta, no un detalle. · O Scope actualiza Purpose, o se reescribe el Intent sin usuarios inventados. Si se mantiene, subir la decisión 8 a una confirmación bloqueante antes de aprobar.
+
+7. Menor · Decisión 4 · El reparto Norte y Sur en la 0 y Este en la 1 es «dato de ejemplo, a confirmar», y todos los escenarios dependen de él. Se aprobaría una spec con datos sin validar. · Confirmarlo con el dev-lead antes de aprobar, o marcarlo como pregunta abierta fuera de las decisiones ya tomadas.
+
+8. Menor · Decisión 10 y Hallazgos · «Delta probado… se vuelve a probar tras la review» no es verificable. Los deltas cambiaron tras la review (MODIFIED en `reports`, escenarios nuevos de `cli`) y el resultado es anterior. · Volver a ejecutar `sdd capability merge` sobre la copia y registrar el resultado vigente, o quitar la afirmación.
+
+9. Menor · Delta `cli`, ADDED «Consultar las salas libres sin planta» y MODIFIED «Consultar las salas libres» · El ADDED depende de que Norte esté reservada en `10:00-12:00`. Ese es el estado por defecto del código, no una declaración del escenario, y con `bookings` exportado conviene fijarlo. En la práctica el ADDED trata un requisito vivo («lista las salas libres») como nuevo. · Fundirlo como segundo escenario del MODIFIED, o pasarlo a un MODIFIED con título propio.
+
+10. Menor · Delta `cli`, «Una planta sin salas» · «Responde vacío» no distingue la cadena vacía de una línea en blanco o de `undefined`. `console.log('')` imprime una línea en blanco, y el escenario pasa con cualquiera de las dos. · Decir que el resultado de `run` es la cadena vacía (`''`) y que se prueba como tal.
+
+--- [78]
+Python no está instalado, así que esas ediciones no se aplicaron (el 11 es del delta anterior). Las rehago con Node.
+
+--- [82]
+Ahora: spec lista en el gate de aprobación. Queda: tu aprobación; después escribo el plan (~4 tasks, nativo) y sigo a la implementación.
+
+Spec: `.docs/sdd/specs/20261008-140000-feature-0029-room-floors/spec.md` (carril feature, modo full, perfil `delegate` del proyecto).
+
+## 🦆 Qué cambia
+Cada sala tiene planta: Norte y Sur en la 0, Este en la 1. `ocupacion` saca el informe por planta. Con una reserva activa en Norte sale `planta 0: 1` y `planta 1: 0`. `libres 10:00-12:00 --planta 1` lista solo las salas libres de esa planta, aquí `Este`. Por dentro, la lista de salas guarda `{ name, floor }`. Se añade Este, que hoy no está en el código. Se exporta `bookings` para que los tests fijen las reservas.
+
+## ✋ Decisiones que he tomado yo
+Las que más conviene que mires:
+- **Confirma estas dos antes de aprobar (decisiones 4 y 8).**
+  - Las plantas de las salas son un dato de ejemplo. No sé si son las del edificio real.
+  - Los solicitantes (conserjería y «quien reserva») vienen de la spec ya escrita. La fila 0029 del roadmap no trae brief, y `PRODUCT.md` dice que no hay más usuarios que el autor. No he tocado el Purpose de `PRODUCT.md`.
+- **Este (3):** se añade al catálogo. `rooms` ya dice que existe. `libres 10:00-12:00` pasa de `Sur` a `Sur, Este`, y se actualiza el test actual.
+- **`bookings` exportado (11):** los tests lo fijan y lo restauran en cada test.
+- **`ocupacion` (5, 6, 13):**
+  - Cuenta todas las reservas activas, de cualquier día y franja.
+  - Ignora canceladas, anuladas y salas que no están en el catálogo.
+  - Saca una línea por planta, también con 0, y no hay total general.
+- **Errores de `--planta` (7, 12):**
+  - Se comprueba primero la forma y después el valor.
+  - Forma incorrecta: `uso: libres <franja> [--planta <n>]`.
+  - Valor que no es entero no negativo: `planta no válida: usa un número entero`.
+  - Una planta sin salas devuelve `''`.
+- **Resto:** el orden de las plantas es de menor a mayor (2), el enfoque elegido es A (la planta junto al nombre) y `PRODUCT.md` gana el término Planta (15).
+
+## Revisión y comprobaciones
+- **Review:** dos revisores en sonnet (dominio y técnica) y una segunda ronda con otro, porque acepté un hallazgo Crítico: los escenarios del informe no se podían montar sin exportar `bookings`. Los hallazgos aceptados y rechazados, con motivo, están en la spec. El Crítico de la segunda ronda (el `MODIFIED` de `reports` sin líneas literales) también lo acepté y está corregido.
+- **Delta:** probado en una copia con `sdd capability merge`. Sale con 0: 2 requisitos sustituidos y 10 añadidos, en `rooms`, `reports` y `cli`. El `capabilities/` del repo no se ha tocado.
+- **Reparto:** preveo 4 tasks, todas sobre la misma superficie (la CLI) y sin migración, así que no propongo partir la feature.
+- **Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada).** Escribo el plan y paso a la implementación.
+2. **Cambios.** Dime cuáles, por ejemplo las plantas reales o quién usa el informe.
+

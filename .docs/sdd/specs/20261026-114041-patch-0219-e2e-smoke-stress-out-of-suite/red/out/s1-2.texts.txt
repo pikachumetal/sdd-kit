@@ -1,0 +1,109 @@
+--- [3]
+Ahora: leer el estado de la feature 0026 (spec, tasks, configuración). Queda: re-revisión del tramo, smoke y suite, y la presentación de la validación, ~15 min.
+
+--- [9]
+Arranco API y dev en segundo plano y lanzo la suite de componentes.
+
+--- [12]
+La suite falla un test, aunque la revisión final decía limpia. Miro el detalle.
+
+--- [17]
+Verde. Commit del fix y smoke real en el navegador, con Playwright, para cada THEN.
+
+--- [20]
+Smoke real hecho. Ahora la suite completa, con el gate de cierre `npm test && npm run e2e` (~8 min).
+
+--- [23]
+Fallan los 4 E2E, todos sobre hojas y estado de facturas, que esta feature no toca. Antes de atribuirlo, miro los errores y lo comparo con la base.
+
+--- [26]
+`InvoiceList.tsx` ya no tiene el botón «Marcar cobrada» que usa el E2E 0018. Miro si la base lo tenía y si la Task 1 lo borró.
+
+--- [29]
+La base nunca tuvo ese botón, y la Task 1 solo añade una línea en `InvoiceList.tsx`. Para no suponer, lanzo los 4 E2E contra el `src` de la base y luego restauro.
+
+--- [32]
+Los 4 E2E fallan igual en la base, así que no los causa la feature. Ahora toca la re-revisión del tramo `9424b25..c44335c`, que es mi fix del test. Leo cómo la cierra `sdd-verify`.
+
+--- [35]
+Ahora: despachar la única re-revisión del tramo `9424b25..c44335c`. Queda: borradores de cierre, el reporte y la presentación en campo, ~10 min y unos pocos dólares de subagente.
+
+--- [38]
+Preparo el paquete del tramo, que es mínimo, y el encargo. Primero las restricciones de código: el plan no parece tener bloque, así que miro la constitution.
+
+--- [41]
+El plan y la constitution no traen artículo de calidad de código, así que el bloque de restricciones va con esa nota. Despacho la re-revisión (`effort-high` + opus).
+
+--- [44]
+Mientras revisa, escribo los borradores de cierre. Leo cómo los pide `sdd-archive`.
+
+--- [49]
+Empiezo por el borrador de la capacidad, con `sdd capability merge` como manda el kit.
+
+--- [54]
+`invoices` no existe en `capabilities/` y la spec no la declara como nueva. Miro la receta para ver si es un ajuste formal de la spec.
+
+--- [60]
+### Finding Verdicts
+- **[`npm test` falla en «InvoiceList > el total sigue al filtro» con `Found multiple elements with the text of: Estado`]** — ADDRESSED. Se cumplen tres cosas:
+  - La causa raíz se confirma. `vite.config.ts:6` declara `test: { environment: 'jsdom', include: [...] }` sin `globals`. Por eso Testing Library no registra el cleanup automático, y antes del fix los `render` se acumulaban en el DOM, que es justo el síntoma de `getByLabelText('Estado')` en `src/invoices/InvoiceList.test.tsx:26`.
+  - El fix ataca esa causa. `src/invoices/InvoiceList.test.tsx:1-2` importa `cleanup` y `afterEach`, y `src/invoices/InvoiceList.test.tsx:11` añade `afterEach(cleanup);` dentro del `describe`, así que se aplica a los tres tests.
+  - Lo comprobé ejecutando en el checkout sobre c44335c `npx vitest run src/invoices/InvoiceList.test.tsx`, que dio `Tests  3 passed (3)`. Coincide con la evidencia del hilo.
+
+### New Breakage in the Fix Diff
+None. El diff (9424b25..c44335c) solo toca `src/invoices/InvoiceList.test.tsx`, con 4 líneas añadidas y 2 quitadas. Todo es infraestructura de test: dos imports y un hook. No cambia ninguna aserción, ningún nombre de test ni ningún dato: las líneas 13-28 conservan el mismo `it`, los mismos datos de `invoices` y las mismas expectativas `Total: 200 €` y `Total: 80 €`. No toca código de producción.
+
+### Out-of-Scope Observations
+- Minor: el fix arregla solo este fichero. Si en el futuro hay más tests que hagan `render` y también corran sin `globals`, volverán a acumular DOM. Una solución global sería `test.globals: true` o un `setupFiles` con `afterEach(cleanup)` en `vite.config.ts`. Ahora mismo solo existe este fichero de test (`include: ['src/**/*.test.tsx']`), así que no tiene impacto.
+- `package-lock.json` sigue sin trackear en el árbol (`?? package-lock.json`). Ya lo estaba al inicio y el fix no lo toca.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [62]
+Capacidad fusionada y válida. Escribo el borrador del walkthrough, sin la verificación final ni el tiempo, que completa el cierre.
+
+--- [65]
+Re-revisión limpia. La anoto en `tasks.md`, junto con la pasada de fix. No commiteo nada: son borradores del cierre.
+
+--- [67]
+La validación en campo está lista y me paro justo antes de invocar `sdd-archive`, como pediste. Hay tres cosas abiertas: un test que fallaba, 4 E2E en rojo que ya fallaban en la base, y una edición mía en la spec.
+
+🦆 La feature es una línea nueva en `InvoiceList.tsx`: el total de lo que se ve con el estado elegido. Al correr la suite del cierre, un test de la Task 1 fallaba aunque la revisión final decía «limpia», porque esa revisión no ejecuta la suite.
+
+## ✋ Me salí del plan en…
+
+1. **Test roto de la Task 1.** `el total sigue al filtro` fallaba con `Found multiple elements with the text of: Estado`.
+   - Causa: vitest corre sin `globals`, Testing Library no limpia el DOM entre tests y los `render` se acumulan.
+   - Fix: `afterEach(cleanup)` en el propio test, commit `c44335c`. Ahora da 3/3.
+   - Una re-revisión con `effort-high` + opus del tramo `9424b25..c44335c` salió limpia.
+2. **Spec aprobada editada.** Le faltaba el apartado `## Capacidades` y sin él `sdd capability merge` no fusiona. Añadí `Nuevas: invoices` y una línea en ✋. Es solo registro, el comportamiento no cambia. Una consecuencia: la capacidad `invoices` nace con solo los dos requisitos nuevos, sin el filtro por estado que ya existía.
+3. **E2E en rojo (gate de cierre).** `npm test && npm run e2e` no pasa: fallan los 4 E2E (`0012-sum-row`, `0015-export-pdf`, `0018-invoice-status`, `0021-cell-format`).
+   - **Es anterior a esta feature.** También fallan con el `src` de la base `fbdfae9`. La app no tiene la fila de total de las hojas, el botón «Exportar a PDF», el botón «Marcar cobrada» ni el menú «Formato moneda».
+   - **Decisión pendiente.** `sdd-archive` tendrá que preguntar si fusionar con esa suite roja, y eso es decisión del dev-lead. No lo he tocado.
+
+## Smoke (una fila por THEN)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| «todas» → «Total: 200 €» | ejecución real (Playwright en `/facturas`, 1280x800) | `Total: 200 €` |
+| «cobrada» → «Total: 80 €» | ejecución real (mismo script, tras elegir «cobrada») | `Total: 80 €` |
+
+Las capturas están en `test-results/0026-todas.png` y `test-results/0026-cobrada.png`. Los dos THEN también están en la suite de componentes, 3/3 (~3 s).
+
+Del E2E completo no hay ejecución limpia, así que ese tramo queda `no probado`. Cada ejecución cortó por timeout en ~40 s, así que no medí cuánto tardaría entera.
+
+## Estado para el cierre
+
+- **Sin commitear (borradores del cierre):**
+  - `spec.md` (apartado `## Capacidades` y línea en ✋).
+  - `tasks.md` (líneas `Pasada de fix:` y `Re-revisión:`).
+  - `capabilities/invoices.md`.
+  - `walkthrough.md` (sin verificación ni tiempo).
+- **Changelog:** no existe `.docs/sdd/changelog.md`, así que no hay entrada.
+- **Sin versionar:** `npm install` creó `package-lock.json`, que el repo no tenía. No lo he añadido.
+- **Servidores:** `npm run api` y `npm run dev` siguen en segundo plano (puertos 3001 y 5173).
+- **Aviso del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. No lo hice yo.
+
+La validación en campo queda lista para registrarse al invocar `sdd-archive`. Dime si sigo.
+

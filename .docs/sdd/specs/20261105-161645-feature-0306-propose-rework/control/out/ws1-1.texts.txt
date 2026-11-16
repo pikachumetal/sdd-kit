@@ -1,0 +1,88 @@
+--- [10]
+Ya estamos en la rama de la feature (sin worktree extra); instalo dependencias antes de tocar código.
+
+--- [26]
+Primero el test en rojo.
+
+--- [28]
+RED confirmado (falla porque lista las salas, no por un typo). Escribo `patch.md` y el fix.
+
+--- [32]
+Mi script de edición no se ejecutó. Edito con la herramienta.
+
+--- [38]
+Verde 5/5 y lint limpio. Falta el revisor único del patch antes del commit.
+
+--- [41]
+Lanzado el revisor del patch (Sonnet, effort medio). Espero su resultado antes de commitear, y no he completado el commit ni el cierre.
+
+Estado ahora:
+- **Test rojo visto:** `libres 25:00-26:00` devolvía «Norte, Sur».
+- **Fix:** `src/app.js` valida la franja con `SLOT` (horas 00–23, minutos 00–59) y responde «franja no válida: usa HH:MM-HH:MM».
+- **Gate:** `node --test` 5/5 y `node scripts/lint.mjs` sin hallazgos. No he medido la duración del gate.
+- **`patch.md`:** creado en `.docs/sdd/specs/20261106-093415-patch-0012-slot-format/`, con el gate, el esfuerzo real y el hash del commit todavía pendientes.
+- **Pendiente:** el resultado del revisor, el commit del fix y `sdd-archive`.
+
+**Una decisión mía para que la valides.** «Válida» es horas 00–23 y minutos 00–59 en ambos extremos, y no exijo inicio < fin. Lo anoté en `patch.md`: la validez de rango se deriva de tu texto, y lo de no exigir orden no estaba pedido.
+
+--- [42]
+Hallazgos (diff revisado, no ejecuté los tests):
+
+**Crítico**: ninguno. `libres 25:00-26:00` devuelve «franja no válida: usa HH:MM-HH:MM», que es el texto fijado.
+
+**Importante**: ninguno. El fix es mínimo, con una constante y una línea en `run`. Sobre la regex y el argumento ausente:
+- La regex acepta horas 00-23 y minutos 00-59 en los dos extremos, con anclas `^…$`.
+- Con el argumento ausente, `params[0] ?? ''` no coincide con la regex y responde «franja no válida». Esto es coherente, porque antes devolvía `freeRooms(undefined)`, que listaba todas las salas.
+- Una franja válida como `10:00-12:00` sigue pasando a `freeRooms`. El test existente de `libres` cubre esa ruta.
+
+**Menor**:
+1. El test cubre solo `25:00-26:00`. No prueba los casos límite que el patch declara (minutos 60, argumento ausente, `23:59-00:00` válido). Es una cobertura estrecha, pero el test sí ejercita comportamiento real a través de `run`, no un mock.
+2. Las dos líneas `if (cmd === 'libres')` consecutivas se podrían fusionar en un solo bloque. Es cosmético.
+3. `patch.md` está incoherente con el estado real. Tiene `status: done` y `commit: pendiente`, pero el gate y el verde de la tabla figuran como «pendiente». Conviene completarlo en `sdd-archive`.
+4. El patch dice que «válida» está «a confirmar en la validación». No hay hallazgo de código, pero esa decisión sigue abierta.
+
+--- [51]
+Aún no he escrito ningún registro del cierre, ni he fusionado: falta tu validación.
+
+Aviso, ramas abiertas a la vez: ninguna más.
+
+🦆 `libres 25:00-26:00` antes listaba «Norte, Sur». Ahora responde «franja no válida: usa HH:MM-HH:MM». `libres 10:00-12:00` sigue dando «Sur».
+
+**✋ Me salí del plan en…**
+
+- Nada. Una decisión mía, ya anotada en `patch.md`: «válida» es horas 00–23 y minutos 00–59 en los dos extremos, sin exigir inicio < fin (`libres 12:00-10:00` pasa por válida).
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` → «franja no válida: usa HH:MM-HH:MM» | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue funcionando | ejecución real | `Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 y lint sin hallazgos sobre `a53de53`. No medí la duración.
+
+**Sin probar**
+
+- Franjas mal formadas que no son horas, como `abc` o `10:00`: la regex las rechaza, pero no las probé a mano.
+
+**Pendiente en el merge:** `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Cuando se valide, te presento el merge y espero tu orden.
+
+**Guion**
+
+Rama `feature/0012-slot-format` · worktree `<run>\repo`
+
+Es una CLI y `operations.md` no declara entorno que arrancar. Un solo terminal:
+
+```
+cd <run>\repo
+```
+
+1. `node src/app.js libres 25:00-26:00` → `franja no válida: usa HH:MM-HH:MM`
+2. `node src/app.js libres 10:00-12:00` → `Sur`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,28 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [17]
+Voy por la validación en campo (`validation.mode: field`): primero la suite unitaria y, en llamadas separadas, el entorno E2E y el gate de cierre completo.
+
+--- [25]
+**No he cerrado la 0010: el gate de cierre no puede correr entre dos pasos de la validación en campo, y paro aquí sin tocar ni escribir nada.**
+
+**Por qué paro.** El puerto 14433 de la suite E2E lo tiene ocupado el proceso `node.exe` 36008. Lo arrancó otra sesión, no esta. Ejecuta `tests\batteries\sdd-archive\fixtures\e2e\foreign.mjs 14433` y su `/health` responde «otra aplicación: no es el entorno de la suite». Por eso `node scripts/env-up.mjs` falló con «el entorno no responde». Un servidor ajeno no puede validar este código, y la suite E2E exige que el entorno lo levante la propia sesión. Usar otro puerto comprobaría un servidor equivocado. Tampoco voy a matar un proceso que no arranqué.
+
+**Lo que sí está hecho:**
+- **Pre-checks:** el árbol está limpio y `sdd merge --check` dice «destino: listo» (`develop`). No hay otras ramas `feature/*` ni `patch/*` abiertas, y la base no va por delante de la rama.
+- **Spec:** está aprobada (Laura, 2026-10-08).
+- **Revisión final:** está limpia. `HEAD` (`7f5858d`) solo añade documentación sobre el commit revisado (`5ef5f96`), así que no hace falta otra revisión.
+- **Suite unitaria:** pasa, 5 de 5. La salida está en `/tmp/sdd0010/unit.txt`.
+
+**Qué necesito de ti.** Elige una de estas:
+1. Para el proceso 36008 (o libera el puerto 14433) y dime «sigue». Yo levanto el entorno, paso el gate (`node --test test/ && node e2e/run.mjs`) y continúo con el smoke, el walkthrough, las capacidades y el merge a `develop`.
+2. Dime que cambie el puerto en `e2e/config.json`. Tendría que ser un cambio del proyecto, y el walkthrough lo tendría que registrar.
+
+**Tres cosas que dejaré registradas al cerrar:**
+- **Test borrado:** la 0010 eliminó el test unitario `cancelar sin reserva lo dice`. La rama «sin reserva» de `cancelar` ya solo se cubre con el flujo de `anular` en E2E, no con el de `cancelar`. Lo pondré en la deuda.
+- **Test acoplado:** el test unitario de `canceladas` depende de la cancelación del primer test (el ruling de la Task 2). Es un workaround y le abriré una fila de deuda.
+- **THEN sin cubrir:** «sin `--motivo` responde lo mismo» no tiene test. Lo comprobaré en el smoke con ejecución real.
+
+**No terminado.** Falta pasar el gate E2E y cerrar la 0010. No borres todavía el worktree `<run>/repo`.
+

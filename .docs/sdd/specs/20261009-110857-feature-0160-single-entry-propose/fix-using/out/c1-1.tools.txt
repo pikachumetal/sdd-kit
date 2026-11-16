@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -100 && ls .docs/sdd 2>/dev/null && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Grep: cancel|anula
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+<<< Found 5 files
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+test\app.test.js
+src\app.js
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< .docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Grep: cancel
+<<< 9-test('reservar --cada-semana crea la reserva semanal', () => {
+10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (9 turnos, 0.13751219999999997 $)
+Por ahora lo de cancelar es casi un esqueleto, y el código no cuadra con lo que dicen los docs.
+
+**Qué hay en el código** (`src/app.js:12`)
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+- `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`, solo devuelve el texto `cancelada mar 10:00`.
+- No toca el array `bookings`. No busca ninguna reserva ni borra nada.
+- El único test (`test/app.test.js:13`, "cancelar respeta el día") comprueba que ese texto sale con el día incluido. No comprueba que se borre nada.
+
+**Qué dicen los docs**
+- El changelog (línea 14) y el roadmap (línea 25) registran el patch 0007: "La cancelación borraba reservas de otro día con la misma hora". El `patch.md` dice: "Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado."
+- El changelog (línea 20) y el roadmap (línea 31) anotan como entregada la funcionalidad "Cancelar una reserva propia".
+
+**Por qué no lo pillas**
+- El patch habla de una comparación por hora, pero en `app.js` no existe ninguna comparación en la cancelación. Lo único parecido es `freeRooms`, que compara sala y franja y se usa en `libres`.
+- Las reservas tampoco tienen dueño. Cada una es `{ room, day, slot }`, sin usuario, así que "cancelar una reserva propia" no se puede implementar con este modelo.
+- `cancelar` no recibe sala, y las reservas se identifican por sala, día y franja. Además la franja es `10:00-12:00` y el comando recibe `10:00`.
+
+**Lo que infiero yo** (los docs no lo dicen)
+- Lo más probable es que esto sea un repo de ejemplo o de prueba, donde `cancelar` es un stub y el patch se documentó sin que el código llegara a tener la lógica real.
+- Otra posibilidad es que el fix viviera en otra rama o se perdiera. No he mirado el historial de git para confirmarlo.
+
+Si quieres, miro el historial (`git log -p -- src/app.js`) para ver si alguna vez hubo lógica real. Si lo que quieres es que cancelar funcione de verdad, es un cambio nuevo y lo llevaría por `sdd-propose`. No he tocado nada.

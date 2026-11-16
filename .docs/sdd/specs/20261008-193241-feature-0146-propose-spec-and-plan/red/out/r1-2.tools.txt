@@ -1,0 +1,132 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose\16ab1702-4486-46cf-bfc8-df4bdc691799\scratchpad\kit-red\skills\sdd-start-feature\references\review-spec.md
+<<< 1	# Review de la spec — rúbrica de complejidad y revisor adversarial
+2	
+3	Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gate. En modo lite no se aplica.
+4	
+5	## 1. Cuenta las señales (observables en la spec)
+6	
+7	| Señal | Se cumple si… |
+8	| --- | --- |
+9	| Capacidad nueva | «Decisiones a validar» declara una capacidad nueva en `capabilities/` |
+10	| Contrato público | el delta toca una API, un formato de fichero o una interfaz que consume otro módulo o sistema |
+11	| `MODIFIED` / `REMOVED` | el delta cambia o quita un requisito existente |
+12	| Tres o más capac
+
+>>> Glob: .docs/sdd/specs/20261008-110000-feature-0011-void-others/*
+<<< .docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Modificadas: `bookings` — anular una reserva de otra persona exige ser responsable de la sala.
+22	
+23	## Decisiones que he tomado yo — valida estas
+24	
+25	1. Capacidad 
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md; git ls-files | head -50; grep -rniE "anular|managers" --exclude-dir=.git --exclude-dir=specs . | head -30
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+.do
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js; cat .docs/sdd/specs/*cancel/patch.md; cat PRODUCT.md .docs/sdd/mission.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (12 turnos, 0.329686 $)
+Ahora: repaso de coherencia hecho y señales contadas. Queda: tu respuesta sobre la review, luego te presento la spec con el gate de aprobación, ~2 min.
+
+Repasé la spec contra `src/app.js`, `PRODUCT.md` y la constitution, y corregí cuatro cosas. Están en «Decisiones que he tomado yo», números 3 a 6:
+- **Titular de la reserva:** `src/app.js` no guarda de quién es cada reserva, así que «la reserva de Pedro» no existía. Añadí `owner` al Scope.
+- **Anular la propia:** la spec no decía si el titular puede anular la suya. Propongo que no, porque `PRODUCT.md` reserva la anulación al responsable. Es decisión tuya.
+- **Fallo cerrado:** sin `--como`, o en una sala sin responsable, `anular` rechaza. Añadí los escenarios.
+- **Capacidades:** `capabilities/` no existe, así que `bookings` no tiene nada que fusionar. Lo declaré en la spec.
+
+El Scope ahora lista `src/app.js`, el test nuevo y las dos capacidades.
+
+**Señales** (rúbrica de `review-spec.md`): cuento 5 de 8.
+- **Capacidad nueva:** `room-managers`.
+- **MODIFIED:** `bookings`.
+- **Datos:** `managers.json` y el `owner` de las reservas.
+- **Permiso:** quién no puede anular.
+- **Contrato público:** discutible. `anular` pasa a exigir `--como`, lo que rompe las invocaciones actuales. Con solo las 4 primeras ya llegaría igual a 4.
+- **No cuentan:** tres capacidades (son 2), dependencia externa, área no explorada (leí `app.js` y los tests).
+
+**Tamaño:** ~60 líneas en 5 ficheros, por encima de las ~50 que bajan un escalón. Por eso el nivel es dos revisores.
+
+```text
+Review de spec propuesta: dos revisores — señales: capacidad nueva (`room-managers`), MODIFIED (`bookings`), datos (`managers.json`, `owner`), permiso (quién no puede anular), contrato público (`--como` obligatorio) · tamaño: ~60 líneas en 5 ficheros
+- Dominio: si el complemento del permiso está completo: titular que anula la suya, `--como` ausente, sala sin responsable, y si «solo Ana anula…» contradice `PRODUCT.md` (señal: permiso + MODIFIED)
+- Técnica: formato y ubicación de `data/managers.json` (`tech-stack.md` dice un solo fichero de entrada y sin dependencias) y la migración del `owner` en las reservas (señal: datos + contrato público)
+- Mínimo razonable: solo dominio — deja sin mirar el formato de `managers.json` y el `owner`, que tocan datos que hoy no se persisten
+```
+
+**Pregunta:** ¿activo la review con dos revisores (~200k tokens), solo el de dominio o ninguna?
+
+Recomiendo solo dominio. El hueco de permiso es el que no se ve hasta que alguien anula lo que no debía, y el delta es pequeño para pagar los dos.

@@ -1,0 +1,70 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [25]
+Está en marcha la re-revisión de `5d9dea7..1ac5156`. El cierre espera a que termine.
+
+- **Por qué hace falta:** la revisión final fue sobre `5d9dea7`. Después hubo dos commits: `79883f1`, que solo toca documentación, y `1ac5156`, que añade un script en `package.json` y no es documentación. Sin ninguna línea `Re-revisión:` en `tasks.md`, la regla me obliga a lanzarla.
+- **Cómo corre:** un subagente `sdd-kit:effort-high` con opus, en un worktree aparte fijado en `1ac5156`, con su vigilancia de silencio.
+- **Otras abiertas:** no hay más ramas `feature/*` ni `patch/*`.
+- **Resto de pre-checks:** el árbol está limpio y `merge --check` da `destino: listo` para `develop`.
+- **Validación:** con `validation.mode: field` la hago yo, sin pedirte nada.
+- **Qué falta:** cuando vuelva la re-revisión, anoto su veredicto en `tasks.md` y sigo con la validación, el walkthrough, las capacidades, el roadmap, el commit de cierre y el merge.
+
+No escribo ningún registro hasta que la re-revisión esté cerrada.
+
+--- [36]
+**New Breakage in the Fix Diff**
+
+None.
+
+- `package.json:1`: the change only adds a `scripts` key, and `"type": "module"` stays. It adds no dependencies, `devDependencies` or install step.
+- The script works with the CLI. `npm run cancelar -- Norte lun --motivo "sala ocupada"` becomes `node src/app.js cancelar Norte lun --motivo "sala ocupada"`. npm keeps the quoted value as one argument, so `src/app.js:1` gets `['Norte', 'lun', '--motivo', 'sala ocupada']`. `reasonOf` (`src/app.js:14-17`) finds `sala ocupada`, and `cancelBooking` answers «cancelada Norte lun (sala ocupada)», as the spec says. Without the `--`, npm treats `--motivo` as its own config flag and the app answers «motivo no válido…». That is how npm always works, not a defect in this change. I worked this out by reading the code and did not run it.
+- Spec Scope: the script is only a shortcut for `cancelar <sala> <día> --motivo <motivo>`, which is in scope. It adds no new behaviour and does not touch `anular` (0011). It does not change the in-memory behaviour in the Approach either: each `npm run` is a new process, which the spec already accepts until 0014.
+- Constitution: the script name `cancelar` is in Spanish, so the Spanish-text rule (point 4) holds. `scripts/gate.mjs` reads only `gate.json`, not `package.json` scripts, so the closing gate and its `--affected` inputs are unchanged.
+- `tasks.md` (79883f1) is documentation only. Its frontmatter and table match the commits 456e21e and 5d9dea7, and its review line matches the earlier review on 5d9dea7. It is in Spanish.
+
+**Out-of-Scope Observations**
+
+- The Ruling in `tasks.md:17` says the `canceladas` test depends on the cancellation from the first test, so it fails if run alone or in another order. That test was already there at 5d9dea7, so this range did not cause it. The workaround is only written in `tasks.md`; `.docs/sdd/steering/debt.md` has no entry for it. Closing the feature (sdd-archive) is the point to carry it to the debt file.
+
+**Verdict**
+
+All clear, no new Critical/Important breakage.
+
+--- [43]
+Suite en verde. Ahora el smoke con ejecución real, una fila por THEN, en un solo proceso porque el estado vive en memoria.
+
+--- [53]
+Ahora el walkthrough, `tasks.md`, la deuda y el roadmap.
+
+--- [65]
+Ya está el commit de cierre y la base está al día. Ahora hago el merge a `develop`, que va sin push porque no hay remoto.
+
+--- [68]
+🦆 Ahora cancelar una reserva exige un motivo de la lista (cambio de planes, sala ocupada, otro), y `canceladas` lista cada cancelada con su motivo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Falla si corre solo o en otro orden. Lo apunté en «Por triar» de `debt.md`.
+- Script `cancelar` en `package.json`, el último commit de la rama: no estaba en la spec, es solo un atajo de un comando que ya está en scope. Si está mal, se quita una línea.
+
+**Lo que hice en el cierre**
+- **Re-revisión:** la revisión final fue sobre `5d9dea7` y `HEAD` ya era `1ac5156`, que toca `package.json`. Lancé una re-revisión (opus, effort high) de `5d9dea7..1ac5156` y salió limpia: ninguna incidencia nueva, 0 sin revisar. En `tasks.md` la línea queda como «juntada en el cierre».
+- **Validación en campo:** hecha por mí. Suite 2/2 en verde. Gate 6/6 en verde, sin `--affected` porque `package.json` es de «Sin filtro». Smoke con 4 THEN con ejecución real, incluido `npm run cancelar -- …`. El detalle está en el walkthrough.
+- **Registros:**
+  - Walkthrough escrito, con `Retro: sin señales`.
+  - Capacidad nueva `bookings`, mezclada con `sdd capability merge`.
+  - Roadmap con la 0010 en ✅; `roadmap check` y `decision check` pasan.
+  - Sin `estimation.md` en el proyecto, no hay tiempo real que registrar.
+- **Historial:** junté los commits posteriores a la Task 2 y el cierre en uno, `72b14a2`.
+- **Reparado de paso:** mi primera edición de `debt.md` mezcló los finales de línea del fichero y lo dejé de nuevo en CRLF.
+
+**Pendiente**
+- Ninguna otra rama abierta.
+- Push: no hecho. `merge.push` es `false` y no hay remoto.
+- `Gate:` `node --test test/app.test.js` · `node scripts/gate.mjs run bookings:test rooms:test --base develop` → bookings:test: corrió 5/5 (sin filtro: cambia el build) · rooms:test: corrió 1/1 (sin filtro: cambia el build). Después, `--sync` dijo «al día», así que no corrió nada más, y el merge llevó `--verified-at 72b14a2`.
+
+La sesión no dejó ninguna línea `Retro: … → ticket del kit`. Si quieres igualmente el ticket de mejora del kit sobre esta sesión, dímelo y lanzo `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (53cfcc9) · push: no hecho: `merge.push` es `false` y no hay remoto
+

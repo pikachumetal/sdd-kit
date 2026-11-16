@@ -1,0 +1,125 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto del proyecto (producto, roadmap, steering). Queda: clasificar y abrir la entrevista de diseño, ~3 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .d
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && for f in PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; do ec
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js package.json README.md; head -40 test/app.test
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references" && cat control-profiles.md nombrado.md; cat ../
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills" && cat sdd-propose/references/nombrado.md | head -80; echo ======; cat
+## agente
+Ahora: reservo el id y creo la rama (el proyecto usa ids en secuencia y esta feature no tiene fila en el roadmap). Queda: anuncio y primera pregunta de diseño, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git checkout -b feature/0010-exportar-reservas-csv && node "D
+## agente
+Ahora: abrir la entrevista de diseño. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He creado la rama `feature/0010-exportar-reservas-csv` (id 0010 reservado) y todavía no hay carpeta ni spec.
+
+**Lo que he entendido:** el responsable de cada sala quiere sacar a CSV las reservas de **esa sala** y cuadrarlas los lunes en su hoja de cálculo. Hoy `src/app.js` guarda las reservas en memoria como `{ room, day, slot }`, por ejemplo `Norte · lun · 10:00-12:00`. No guarda fechas, solo el día de la semana. Por eso no entra ningún filtro por periodo: se exportan todas las reservas de la sala con esas tres columnas. Corrígeme si esperabas otra cosa.
+
+❓ **Separador del CSV**
+Lo que abra el fichero es tu hoja de cálculo. Un Excel o LibreOffice en configuración regional española espera `;` como separador. Con `,` lo abren todo en una sola columna, salvo que importes el fichero a mano.
+1️⃣ **`;` (punto y coma)**: `sala;día;franja` / `Norte;lun;10:00-12:00`. Se abre en columnas con doble clic en una hoja en castellano. En una hoja configurada en inglés saldría todo en una columna.
+2️⃣ **`,` (coma, el CSV estándar)**: `sala,día,franja` / `Norte,lun,10:00-12:00`. Es lo que esperan Google Sheets y las hojas en inglés. En una hoja en castellano tendrías que importarlo a mano.
+➡️ **Recomiendo 1️⃣**, porque el producto y sus documentos están en castellano (constitución, art. 4), así que lo normal es que tu hoja también lo esté. A cambio, si algún día la abres en una hoja en inglés, tendrás que importarla a mano.
+
+¿Qué separador usa tu hoja de cálculo?
+
+# turno 2
+## persona
+Punto y coma (`;`), porque el Excel del responsable está en castellano.
+## agente
+Entendido: separador `;`.
+
+❓ **Dónde sale el CSV**
+Hoy todos los comandos de `src/app.js` devuelven un texto y lo imprimen por pantalla (`libres`, `cancelar`). Por eso hay dos formas razonables de entregar el CSV.
+1️⃣ **Por pantalla, como el resto de comandos**: `node src/app.js exportar Norte` imprime `sala;día;franja` / `Norte;lun;10:00-12:00`. Para tener el fichero lo rediriges tú: `node src/app.js exportar Norte > norte.csv`. Cada lunes tendrías que redirigirlo tú, o quien lo cuadre. En PowerShell 5 esa redirección guarda el fichero en UTF-16, y Excel puede mostrar mal la tilde de «día».
+2️⃣ **Escribe un fichero**: `node src/app.js exportar Norte` crea `reservas-Norte.csv` en la carpeta actual y responde `exportadas 1 reservas de Norte en reservas-Norte.csv`. No tienes que redirigir nada, y el programa controla la codificación del fichero. A cambio, es el primer comando que escribe en disco y hay que decidir qué pasa si el fichero ya existe.
+➡️ **Recomiendo 2️⃣**, porque el uso es siempre «sacar el fichero para la hoja de cálculo», y con 2️⃣ no dependes de cómo redirige tu terminal ni de la codificación. A cambio, añade la decisión de si se sobrescribe un fichero existente.
+
+¿Quieres que el comando escriba el fichero (2️⃣) o que lo imprima por pantalla (1️⃣)?
+
+# turno 3
+## persona
+1️⃣, por pantalla. Yo redirijo la salida a un fichero.
+## agente
+Entendido: el comando imprime por pantalla y tú rediriges.
+
+❓ **Sala que no existe**
+Las salas que conoce `src/app.js` son `Norte` y `Sur`. Hoy solo `Norte` tiene una reserva. Me falta decidir qué hace el comando cuando escribes mal el nombre de la sala.
+1️⃣ **Error claro**: `exportar Oeste` responde `sala desconocida: Oeste (salas: Norte, Sur)` y no imprime ningún CSV. Si redirigiste a `oeste.csv`, ese fichero tendrá el mensaje en lugar de datos, pero lo ves enseguida y no cuadras un fichero vacío por error.
+2️⃣ **Solo la cabecera**: `exportar Oeste` imprime `sala;día;franja` y nada más, igual que `exportar Sur` (una sala real sin reservas). La hoja sale vacía, y no sabrías si la sala no tiene reservas o si te equivocaste de nombre.
+➡️ **Recomiendo 1️⃣**, porque con 2️⃣ un error de escritura se parece a una sala sin reservas, y esa confusión es justo lo que arruina cuadrar el lunes. A cambio, la salida de una sala mal escrita no es un CSV válido.
+
+¿Qué hace `exportar` con una sala que no existe: error (1️⃣) o solo la cabecera (2️⃣)?
+
+# turno 4
+## persona
+No sé, decide tú.
+## agente
+Decidido por mí: error claro (1️⃣), con mi motivo en la spec. Ahora: escribo la spec en su carpeta, con la pasada de coherencia y la revisión. Queda: parada para que apruebes la spec, ~8 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills" && ls sdd-templates sdd-templates/* | head -40; cat sdd-propose/refere
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-templates/templates" && cat spec-template.md; cat "D:/code/.worktre
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-templates/templates" && cat capability-template.md; node -e "consol
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git grep -niE "export|csv|0010" -- . ':!.docs/sdd/specs' ; ec
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && mkdir -p ".docs/sdd/changes/20261113-155128-feature-0010-expo
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -la .docs/sdd/changes/*/ 2>&1; git status --short
+## agente
+Estoy escribiendo la spec en su carpeta. El primer intento por shell falló y no escribió nada, así que uso la herramienta de escritura.
+> Write: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-155128-feature-0010-exportar-reservas-csv\
+## agente
+Ahora: pasada de coherencia, comprobando el delta en una copia fuera del repo. Queda: revisión de la spec por dos revisores y la parada de aprobación.
+> PowerShell: $repo = "D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo" $tmp = Join-Path $env:TEMP "sdd-copy-0010" if (Test-Path $t
+> Edit: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-155128-feature-0010-exportar-reservas-csv\
+> Edit: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-155128-feature-0010-exportar-reservas-csv\
+> Edit: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-155128-feature-0010-exportar-reservas-csv\
+> Edit: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-155128-feature-0010-exportar-reservas-csv\
+## agente
+La spec está escrita y sigue **en espera de tu aprobación**: todavía no he escrito el plan ni tocado código. Está en `.docs/sdd/changes/20261113-155128-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`.
+
+🦆 Habrá un comando nuevo, `exportar Norte`, que imprime las reservas de esa sala como una tabla de tres columnas: `sala;día;franja` y debajo `Norte;lun;10:00-12:00`. Tú rediriges esa salida a un fichero (`> norte.csv`) y lo abres en tu Excel en castellano, que lo separará en columnas por el punto y coma. Si escribes mal la sala (`exportar Oeste`), el aviso sale por pantalla y el fichero queda vacío, así no cuadras un fichero con un mensaje dentro. Ojo: hoy `reservar` y `cancelar` no guardan nada, así que el CSV solo mostrará la reserva que ya viene cargada en el programa.
+
+**✋ Decisiones que he tomado yo — valida estas**
+- **Revisión sin revisores independientes.** La sesión no tiene herramienta para lanzar subagentes, así que no pude lanzar los dos revisores que pedía la regla. Repasé los siete puntos yo mismo y corregí dos cosas: un escenario que faltaba para el salto de línea y las reglas de la capacidad sin declarar.
+- **Error por la salida de error, con código 1 (decisión 6).** Difiere de lo que te describí en la entrevista, donde el mensaje habría caído en tu fichero. Con `> oeste.csv` el fichero queda vacío y el mensaje lo ves en pantalla. Los textos son `sala desconocida: Oeste (salas: Norte, Sur)` y `uso: exportar <sala>`.
+- **Límite de datos (decisión 9).** `reservar` y `cancelar` no modifican la lista, así que el CSV de hoy solo muestra la reserva `Norte · lun · 10:00-12:00`. Para cuadrar de verdad los lunes hace falta que las reservas se guarden, y eso queda fuera de esta feature.
+- **Tilde de «día» (decisión 3).** No he medido cómo la abre tu Excel, sobre todo si redirigiste desde PowerShell 5 (guarda en UTF-16). Queda marcado `sin medir` y lo comprobarás tú en la validación.
+- **Resto.**
+  - El comando se llama `exportar`.
+  - La sala se compara exacta, con mayúsculas.
+  - Una sala sin reservas imprime solo la cabecera.
+  - Un campo con `;` o `"` sale entre comillas.
+  - Sin filtro por periodo.
+  - Capacidad nueva `room-booking-export`.
+  - Enfoque: una función en `src/app.js`, sin ficheros nuevos.
+
+**Qué entra:** el comando, sus tests y una línea en `README.md`. **Qué no entra:** guardar reservas, reservas semanales, filtros, que el programa escriba el fichero y el `.ics` de la fila 0009.
+
+Antes de redactar la spec comprobé con `git grep` que no hay más sitios que toquen esto. El delta de la spec se fusiona sin errores sobre una copia de `.docs/sdd`.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a la implementación.
+2. **Cambios**: dime qué ajustar y vuelvo a presentarla.
+
+¿Apruebas la spec?
+
+# turno 5
+## persona
+Déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+De acuerdo. La spec sigue en espera: no hay plan ni código. Tampoco he hecho ningún commit.
+
+- **Rama:** `feature/0010-exportar-reservas-csv`, con el id 0010 reservado.
+- **Spec:** `.docs/sdd/changes/20261113-155128-feature-0010-exportar-reservas-csv/spec.md`, sin commitear. Es lo único que ha cambiado en el árbol de trabajo.
+- **Estado:** `draft`, con la aprobación pendiente.
+
+Cuando quieras seguir, di «retoma la feature» (o «apruebo» si la das por buena). También puedes decirme qué cambiar en las decisiones ✋. Las que más conviene que mires son la 6 (el error va a la salida de error y el fichero queda vacío) y la 9 (hoy el CSV solo muestra la reserva ya cargada en el programa).

@@ -1,0 +1,54 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && ls .docs/sdd 2>/dev/null
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js package.json; cat .docs/s
+## agente
+Ya miré el código y los documentos. Esto es lo que hay y lo que sale de ahí.
+
+**Lo que dice el repo**
+- `src/app.js`: una franja es un texto libre como `'10:00-12:00'`. `freeRooms` y `cancelar` comparan franjas **por igualdad de texto**, no por solape.
+- No hay noción de duración. Tampoco hay un `reservar` real, solo la rama `--cada-semana`, que devuelve un texto fijo.
+- `debt.md` ya tiene anotado «Sin validación del formato de franja horaria».
+- El roadmap no tiene nada de medias horas. En `Now` está la 0008 (avisos por correo) y en `Later` la 0009 (.ics).
+
+**Lo que deduzco (no lo dice ningún documento)**
+Si hoy alguien reserva `10:00-10:30`, `libres 10:00-12:00` seguiría diciendo que Norte está libre, porque los textos no son iguales. Dejar reservar medias horas no es solo admitir un valor nuevo. Obliga a **detectar solapes**, y eso es lo que tiene más peso en el diseño.
+
+```text
+ hoy:      "10:00-12:00" == "10:00-12:00"   -> ocupada
+ con 1/2h: "10:00-10:30"  vs "10:00-12:00"  -> igualdad dice "libre" (mal)
+                                               solape dice "ocupada" (bien)
+```
+
+❓ **¿Qué es una «media hora» para ti?**
+1️⃣ **Cuadrícula de 30 min con duración libre en múltiplos de 30.** Se puede reservar `10:00-10:30`, `10:00-11:30`, `10:30-12:00`, etc. Hace falta validar que los extremos caigan en :00 o :30 y comparar por solape. Esto cierra de paso la deuda del formato de franja.
+2️⃣ **Franjas fijas de 30 min.** Cada reserva es exactamente un hueco de media hora y las largas se piden como varias. El solape se reduce a igualdad de hueco. Es más simple, pero reservar 2h son 4 comandos y se rompe la `10:00-12:00` actual.
+3️⃣ **Duración libre, sin cuadrícula.** Cualquier hora de inicio y fin, por ejemplo `10:10-10:40`. Es lo más flexible, pero «media hora» deja de significar algo y la validación se complica.
+
+➡️ **Recomiendo 1️⃣.** Mantiene compatible la franja `10:00-12:00` que ya hay en los datos y en los tests, y exige comparar por solape, algo que necesitas igualmente. A cambio, tocas `freeRooms` y `cancelar`, y toca definir qué hace `cancelar` cuando le das solo una hora (`mar 10:00`) y hay una reserva de varias horas que la contiene.
+
+Dime cuál prefieres. Según eso, vemos el siguiente punto, que sería si las reservas semanales también pasan a medias horas.
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Con ese motivo, 1️⃣ encaja. Tu problema es que una reunión corta ocupa toda la franja de dos horas, y con duración libre en múltiplos de 30 puedes reservar `10:00-10:30` sin perder las reservas largas. La opción 2️⃣ también lo resolvería, pero te obligaría a reservar 2h como 4 huecos.
+
+**Registro hasta ahora**
+- **Decidido por ti:** quieres reservar medias horas porque las reuniones cortas bloquean franjas de 2h.
+- **Propuesto por mí, sin confirmar:**
+  - Cuadrícula de 30 min, con extremos en :00 o :30 y duración libre en múltiplos de 30 (opción 1️⃣).
+  - `libres` y `cancelar` pasan a comparar por solape en vez de por texto.
+  - La validación de formato de franja entra en el mismo cambio y salda la deuda de `debt.md`.
+- **Pendiente (decisiones menores, que se pueden dejar para la spec):**
+  - Qué hace `cancelar mar 10:00` si esa hora cae dentro de una reserva más larga.
+  - Si `--cada-semana` admite también medias horas. Por defecto diría que sí, ya que usa la misma franja.
+
+Lo veo como una **feature**, no como un patch. Cambia el modelo de reserva y no corrige un fallo. Toca solo `src/app.js` y sus tests, y de tamaño es una M.
+
+¿Te vale la opción 1️⃣ como base para pasarlo al roadmap, con esas dos preguntas pendientes anotadas para la spec?

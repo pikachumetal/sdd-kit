@@ -1,0 +1,40 @@
+--- [11]
+Sigo en el repo de salas (el directorio de la shell cambió, uso rutas absolutas). Es una feature en modo full; reservo el id y la rama antes de abrir la spec.
+
+--- [17]
+Ahora: abro la feature (rama `feature/0010-lista-espera`, id 0010 reservado) y te cuento lo que he entendido antes de preguntar. Queda: una entrevista corta, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (el proyecto no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `reservar` no tiene en cuenta que la sala pueda estar ocupada. `libres <franja>` solo lista las que no tienen reserva en esa franja. Quieres que, cuando la sala que pides ya está reservada, en vez de limitarte a recibir un «ocupada» te apuntes a una lista de espera para esa sala. No está en el roadmap (la 0008 son avisos por correo y la 0009 el `.ics`), así que es una fila nueva.
+
+Cosas que veo en el código y que condicionan el diseño: `bookings` es un array en memoria dentro de `src/app.js` y no hay persistencia. Tampoco hay noción de usuario, y `cancelar` solo recibe día y hora. Lo que decidamos sobre quién espera y qué pasa al liberarse la sala depende de esto.
+
+❓ Antes de entrar en el cómo: ¿qué vas a hacer con la lista de espera, es decir, qué situación concreta te ha hecho pedirla?
+
+--- [19]
+Anotado. Lo que quieres es dejar de mirar `libres` a mano, y eso reshapea el resto: como el programa termina tras cada comando, la lista no puede avisarte por sí sola de que Norte se ha liberado. La decisión que más cosas condiciona es qué pasa cuando alguien cancela la reserva de Norte.
+
+❓ **Qué ocurre al liberarse la sala**
+Hoy `cancelar` solo devuelve `cancelada mar 10:00`, y no hay usuarios ni persistencia (`bookings` es un array en memoria en `src/app.js`).
+
+1️⃣ **Promoción automática.** Al cancelar, la primera espera de esa sala y franja se convierte en reserva en el acto.
+   `cancelar mar 10:00` → `cancelada mar 10:00; Norte pasa a tu reserva (1.ª en espera)`
+   Coste: reservas algo que quizá ya no quieras. Cancelas la espera con un comando.
+
+2️⃣ **Solo aviso.** La espera se queda anotada y un comando nuevo te dice si ya hay hueco, y tú reservas.
+   `esperas` → `Norte mar 10:00: libre ahora`
+   Coste: sigues mirando a mano, ahora `esperas` en vez de `libres`. No resuelve lo que pides.
+
+3️⃣ **Promoción con confirmación.** Al liberarse, la espera pasa a «pendiente de confirmar» y la reserva solo se hace cuando la confirmas.
+   `esperas` → `Norte mar 10:00: libre, confirma con reservar Norte mar 10:00`
+   Coste: un paso más y la sala queda sin dueño hasta que confirmes.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que cumple tu objetivo de no volver a mirar nada: la espera se resuelve sola en el momento de cancelar. A cambio, puedes acabar con una reserva que ya no quieres.
+
+¿Con cuál de las tres te quedas?
+

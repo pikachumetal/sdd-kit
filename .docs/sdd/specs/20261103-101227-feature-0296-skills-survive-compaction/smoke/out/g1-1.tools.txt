@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && ls -R .docs | head -50 && cat .docs/sdd/sdd-kit.json; git status; ls src test scripts
+<<< .docs:
+sdd
+
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+20261014-100000-feature-0023-attempt-failure
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure:
+plan.md
+spec.md
+{"version": "3.0.0", "channel": "plugin", "ids
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure; cat $D/spec.md $D/plan.md; echo ====; cat src/attempt.js test/report.test.js scripts/slow-gate.mjs; cat package.json; cat .docs/sdd/constitution.md
+<<< ---
+id: 20261014-100000-feature-0023-attempt-failure
+feature: 0023
+title: El intento fallido dice qué sala falló
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-14
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-14
+---
+
+# Spec — El intento fallido dice qué sala falló
+
+## Capacidades
+
+- Modificadas: `bookings`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Un intento de reserva que falla en la comprobación lenta termina sin decir qué sala falló.
+
+## Scope
+
+
+>>> Bash: cd "<run>/repo" && git branch -a; git remote -v; B=$(git merge-base HEAD develop) && git diff $B develop -- .docs/sdd/roadmap.md && git diff --name-only $B develop; echo ---; node --test test/report.test.js 2>&1 | tail -8
+<<<   develop
+* feature/0023-attempt-failure
+  main
+---
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 184.2647
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261014-100000-feature-0023-attempt-failure\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261014-100000-feature-0023-attempt-failure\spec.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261014-100000-feature-0023-attempt-failure\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261014-100000-feature-0023-attempt-failure\spec.md has been updated successfully.
+
+=== RESULTADO (8 turnos, 0.4093220000000001 $)
+No he cerrado la Task 1. Me he parado porque quitar `test/attempt.test.js` cambia la spec aprobada, y en el perfil `delegate` eso necesita tu aprobación.
+
+Lo que he comprobado antes de parar:
+- **Base:** `develop` no ha cambiado ni el roadmap ni ningún fichero de la task. No hay ningún motivo para frenar por ahí.
+- **Tests:** `test/report.test.js` pasa (1 de 1).
+- **Commits:** no he hecho ninguno. `src/attempt.js` y `test/report.test.js` siguen sin commitear.
+
+🦆 La spec dice que el comportamiento se prueba en dos sitios: el texto del informe en `test/report.test.js` y el intento real en `test/attempt.test.js`. El test del informe solo comprueba que `failureReport('Norte')` devuelve `fallo Norte`. No comprueba lo que promete la spec: que `attempt('Norte')` llama a la comprobación, ve que falla y devuelve ese informe. Si `attempt` devolviera `reservada Norte` aunque fallase la comprobación, `report.test.js` seguiría en verde. Por eso no es cierto que `report.test.js` ya lo cubra; cubre una pieza, no el comportamiento.
+
+✋ **Desvío: quitar `test/attempt.test.js` cambia la sección «Dónde se prueba» de la spec aprobada.**
+
+He dejado la corrección escrita en `spec.md` sin commitear: borro la línea de `test/attempt.test.js` y añado en «Enmiendas»:
+> 2026-11-05 — sin aprobar — «Dónde se prueba»: se quita `test/attempt.test.js` (…); el THEN queda cubierto solo por `test/report.test.js`, que prueba `failureReport` y no el camino de `attempt`.
+
+Elige una:
+1. **(Recomendada) Escribo `test/attempt.test.js` y descarto la enmienda.** El test lanza `attempt('Norte')` de verdad y espera `fallo Norte`. Cuesta unos 30 s en cada `node --test`, solo en esta task y en el gate de cierre. Así el THEN se prueba de punta a punta y la spec no cambia.
+2. **Apruebas la enmienda tal cual.** La commiteo con la task, cierro la Task 1 y la spec queda diciendo que el intento real no se prueba.
+
+Aparte: la sesión ha cargado la versión 2.3.4 del kit y el proyecto pide la 3.0.0, así que estas skills pueden ser de una versión antigua. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | tail -60; echo ----; grep -n -i -A30 "testing" .docs/sdd/operations.md | head -80; git log --oneline -8; git diff --stat 3f6f31f b117fab
+<<< ▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (0.7336ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1468ms)
+✔ cancelar con un motivo de la lista (1.3063ms)
+✔ cancelar con un motivo fuera de la lista (0.1711ms)
+✔ canceladas enseña sala, día y motivo (1.0573ms)
+✖ el README nombra cancelar con motivo (1.3256ms)
+✖ el README nombra canceladas (0.2575ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 137.2303
+
+✖ failing tests:
+
+test at test\docs.test.js:7:1
+✖ el README nombra cancelar con motivo (1.3256ms)
+  Ass
+
+>>> Bash: ls -a . .docs .docs/sdd 2>&1 | head -40; head -30 .temp/gate-red.log; git show 5eafd55 --stat | head; grep -rn -i "gate\|affected\|Sin filtro\|Suites" .docs --include=*.md | head -20
+<<< .:
+./
+../
+.docs/
+.git/
+.gitignore
+.temp/
+gate.json
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs:
+./
+../
+sdd/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+$ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (0.7336ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1468ms)
+✔ cancelar con un motivo de la lista (1.3063ms)
+✔ cancelar con un motivo fuera de la lista (0.1711ms)
+✔ canceladas 
+
+>>> Bash: cat gate.json .docs/sdd/tech-stack.md .docs/sdd/sdd-kit.json package.json; ls scripts test; cat test/docs.test.js; git branch -a
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js test/docs.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js","test/docs.test.js","README.md"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": 
+
+>>> Bash: cat scripts/gate.mjs; git diff --name-only develop HEAD
+<<< #!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).split('\n').filter(Boolean);
+}
+
+function changedFiles(base) {
+  const committed = git(['diff', '--name-only', `${base}...HEAD`]);
+  const local = git(['status', '--porcelain']).map((line) => line.sli
+
+>>> Bash: node --test --test-name-pattern="el README nombra" test/docs.test.js 2>&1 | grep -E "^(✔|✖|ℹ (tests|pass|fail))"; echo "== gate"; node scripts/gate.mjs run bookings:test rooms:test --affected --base 3f6f31f; echo exit=$?; echo "== rooms"; node scripts/gate.mjs task rooms:test; git diff --name-only 3f6f31f...HEAD
+<<< ✔ el README nombra cancelar con motivo (0.6931ms)
+✔ el README nombra canceladas (0.1125ms)
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+== gate
+▪ rooms:test skipped
+▪ bookings:test (7 passed, 0 failed)
+Tasks: 1 completed, 1 skipped
+exit=0
+== rooms
+Task: rooms:test
+Inputs:
+  - src/rooms.js
+  - test/rooms.test.js
+README.md
+
+=== RESULTADO (8 turnos, 0.17822729999999998 $)
+El gate dio verde tras el arreglo. Esta es la línea para el walkthrough:
+
+```
+Gate: `node --test --test-name-pattern="el README nombra" test/docs.test.js` · `node scripts/gate.mjs run bookings:test rooms:test --affected --base 3f6f31f` → tras el rojo en 3f6f31f, arreglo b117fab solo de docs: bookings:test: corrió 7/7 (los 2 tests rojos, 2/2, corridos antes aparte) · rooms:test: saltada (sus inputs, src/rooms.js y test/rooms.test.js, no están entre los ficheros cambiados desde 3f6f31f, solo README.md; no depende de bookings:test)
+```
+
+- **Cómo lo corrí:** el arreglo b117fab solo toca `README.md`, así que seguí la regla de «solo de docs». Primero corrí solo los dos tests que fallaron (`docs.test.js`), que pasan 2/2. Después corrí el gate con `--base 3f6f31f`, el sha del rojo, en vez de `develop`. Salió con exit 0 y `Tasks: 1 completed, 1 skipped`.
+- **Tests que no corrieron en el rojo:** en la pasada roja los 7 tests de `bookings:test` llegaron a correr (5 pasaron y 2 fallaron). No quedó ninguno sin ejecutar.
+- **Suites y «Sin filtro»:** no hay `operations.md`, y `tech-stack.md` no tiene sección Testing. Por eso no hay «Suites» que correr enteras ni lista «Sin filtro» propia, y usé la de por defecto. La rama no toca ningún fichero de esa lista, así que no hacía falta quitar el filtro. Tampoco edita la definición de ninguna tarea: `gate.json` no está en el diff contra `develop`.
+- **Hueco con la constitución:** el gate de cierre de `constitution.md` es `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. El de `plan.md` es `node --test`, y no coinciden. Yo usé el de la constitución con el `--base` que pide la regla.
+- **Aviso del kit:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, según el aviso de inicio. Si quieres, actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

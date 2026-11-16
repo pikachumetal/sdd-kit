@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls -a; ls .docs/sdd 2>/dev/null; git ls-files | head -80; grep -rli "export" --exclude-dir=.git . | head -30
+<<< ./
+../
+.docs/
+.git/
+data/
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+./.docs/sdd/constit
+
+>>> Bash: cd src; for f in cli.js export/*.js bookings/repository.js; do echo "=== $f"; cat $f; done; cd ..; echo ===; cat .docs/sdd/specs/*0012*/spec.md .docs/sdd/specs/*0013*/spec.md; echo ===; cat .docs/sdd/roadmap.md PRODUCT.md README.md
+<<< === cli.js
+import { exportMonth } from './export/index.js';
+
+const [command, ...args] = process.argv.slice(2);
+
+if (command === 'exportar') {
+  const month = args[args.indexOf('--mes') + 1];
+  console.log(exportMonth(month));
+}
+=== export/filter.js
+export function bookingsBySlot(bookings, month) {
+  return bookings
+    .filter((booking) => booking.day.startsWith(month) && booking.status !== 'cancelled')
+    .sort((a, b) => `${a.day} ${a.slot}`.localeCompare(`${b.day} ${b.slot}`));
+}
+=== export/ics.js
+const COWORKING_OFFSET = '+02:00';
+
+function toUtcStamp(day, time) {
+  const u
+
+>>> Bash: node -e "import('./src/export/ics.js').then(m=>console.log(m.toIcs([{room:'Norte',day:'2026-03-02',slot:'10:00-12:00'}])))"; cat test/export.test.js | head -40
+<<< BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:Sala Norte
+DTSTART:20260302T080000
+DTEND:20260302T100000
+END:VEVENT
+END:VCALENDAR
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { bookingsBySlot } from '../src/export/filter.js';
+import { toIcs } from '../src/export/ics.js';
+
+const march = [
+  { room: 'Norte', day: '2026-03-02', slot: '10:00-12:00', status: 'confirmed' },
+  { room: 'Norte', day: '2026-03-12', slot: '09:00-10:00', status: 'cancelled' },
+  { room: 'Sur', day: '2026-04-01', slot: '10:00-11:00', status: 'confirmed' },
+];
+
+test('s
+
+=== RESULTADO (6 turnos, 0.1302195 $)
+La exportación es una tubería corta de cuatro pasos, y en la versión actual tiene un fallo de hora.
+
+## Cómo funciona
+
+El socio ejecuta `exportar --mes 2026-03` (`src/cli.js`), que llama a `exportMonth(month)` en `src/export/index.js`. Esa función encadena cuatro pasos:
+
+1. **Carga** (`src/bookings/repository.js`): lee todas las reservas de `data/bookings.json`.
+2. **Filtro** (`src/export/filter.js`, `bookingsBySlot`): se queda con las reservas cuyo `day` empieza por el mes pedido, descarta las `cancelled` y las ordena por día y franja.
+3. **Formato** (`src/export/ics.js`, `toIcs`): genera un `VCALENDAR` con un `VEVENT` por reserva. El `SUMMARY` es `Sala <sala>`, y `DTSTART` y `DTEND` salen de la franja (`10:00-12:00`) y del día.
+4. **Escritura** (`src/export/writer.js`): crea `exports/` si no existe, guarda `exports/<mes>.ics` y devuelve la ruta, que el CLI imprime.
+
+Esto coincide con lo que dice la spec 0012 (`.docs/sdd/specs/*0012*/spec.md`): un mes, sin canceladas, para importar en Google Calendar u Outlook. `PRODUCT.md` deja claro que no es sincronización en vivo.
+
+## Estado según la documentación
+
+- **0012**, exportar un mes: en el roadmap figura «implementada, sin cerrar».
+- **0013**, exportar una sala con `--sala`: es solo un borrador. El código actual **no** tiene el flag, así que todavía exporta las dos salas.
+
+## Un fallo que he visto
+
+Esta parte la he comprobado ejecutando `toIcs` con la reserva de ejemplo de la spec, no solo leyendo.
+
+- Para `Norte`, 2026-03-02, `10:00-12:00`, `ics.js` escribe `DTSTART:20260302T080000` y `DTEND:20260302T100000`.
+- Convierte correctamente a UTC (con el offset `+02:00` fijo), pero el `slice(0, 15)` corta la `Z` final.
+- En iCalendar, una hora sin `Z` es «hora flotante». Cada calendario la interpreta como hora local del usuario, así que la reserva aparecería de 08:00 a 10:00 en vez de 10:00 a 12:00.
+- El test `exporta en la hora del usuario` en `test/export.test.js` espera `20260302T100000`, así que también debería fallar con el código actual. No lo he ejecutado.
+
+Hay además dos cosas que no son fallos, pero conviene conocerlas:
+
+- El offset `+02:00` está fijo, de modo que en invierno (UTC+1) las horas se desplazarían una hora.
+- Los eventos no llevan `UID` ni `DTSTAMP`, que RFC 5545 pide. Algunos clientes los toleran y otros no.
+
+No he tocado nada. Si quieres arreglar el fallo de hora, sería un patch que iría primero al roadmap. Dime si lo apunto.

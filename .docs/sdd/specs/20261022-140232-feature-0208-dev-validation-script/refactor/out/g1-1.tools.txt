@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && echo "--status" && git status --porcelain && echo "--merge-check" && node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "--worktrees" && git worktree list && echo "--specs" && ls .docs/sdd/specs 2>/dev/null; cat .docs/sdd/sdd-kit.json
+<<< --status
+--merge-check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0008-cancel-missing'
+--worktrees
+<run>/repo 6aaef8d [feature/0008-cancel-missing]
+--specs
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261010-090000-patch-0008-cancel-missing/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "validation": {"mode": "manual"}}
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing && cat .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md; ls . .docs/sdd; git log --stat -3 --format='%h %s'
+<<< .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing:
+patch.md
+---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+Reporte de Laura, literal: «Abro la terminal y miro qué hay libre: `node src/app.js libres 10:00-12:00` me da «Sur». Como el miércoles no tengo nada reservado, pr
+
+>>> Read: D:\code\.worktrees\sdd-kit\0208-dev-validation-script\.temp\kit-green\skills\sdd-archive\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`, step 7 of `sdd-start-feature`). With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in their order: the symptom of `patch.md`
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat package.json
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00; node --test 2>&1 | grep -E "^# (pass|fail|tests)"; git status --porcelain
+<<< Sur
+no hay reserva mie 10:00
+cancelada lun 10:00
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12
+<<< ✔ libres excluye la sala reservada en la franja (0.7482ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1191ms)
+✔ cancelar respeta el día (11.3407ms)
+✔ cancelar sin reserva avisa (0.2814ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.9998
+
+=== RESULTADO (9 turnos, 0.1797494 $)
+Antes de tocar nada necesito tu validación. El proyecto tiene `validation.mode: manual`, y «cierra» es la orden de cerrar, no una prueba.
+
+**Estado de los pre-checks**
+- El árbol está limpio.
+- `sdd merge --check` dice que el destino `develop` está listo.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- `patch.md` tiene completos §2, §3 y §4.
+- Su única decisión es del dev-lead, así que no es un caso de escalada a feature.
+- `patch.md` aún tiene `commit: <hash>`. Lo relleno en el cierre.
+
+**Mi smoke (verificado por mí)**
+- `node --test`: 4 pasados, 0 fallos, incluido «cancelar sin reserva avisa».
+
+Panel: sin panel: terminal sin herramientas de Chrome y app de CLI; el script va en texto, sin servidor.
+
+**Script de prueba** (ensayado por mí; la app no guarda estado entre ejecuciones, así que no deja datos)
+
+Entorno: no hay nada que arrancar, la app se ejecuta por comando desde la raíz del repo.
+
+1. `node src/app.js libres 10:00-12:00` → `Sur`
+2. `node src/app.js cancelar mie 10:00` → `no hay reserva mie 10:00`. Antes decía «cancelada mie 10:00».
+3. `node src/app.js cancelar lun 10:00` → `cancelada lun 10:00`. Es la reserva que sí existe, para comprobar que no se rompió el caso normal.
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`

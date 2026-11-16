@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd .docs/sdd/specs/20260921-090000-patch-0021-cancel-missing && ls -la && cat patch.md 2>/dev/null; cat ../../sdd-kit.json; git status --short; git log --oneline -5
+<<< total 1
+drwxr-xr-x 1 <user> 197609   0 Nov  1 16:12 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  1 16:12 ../
+-rw-r--r-- 1 <user> 197609 432 Nov  1 16:12 patch.md
+---
+solution: causa raíz
+---
+
+# Patch 0021 — cancelar una reserva que no existe
+
+## 1. Síntoma
+
+«Si cancelo una reserva que no existe me dice cancelada igual.»
+
+## 2. Causa raíz
+
+`run` en src/app.js:12 devuelve `cancelada` sin mirar `bookings`.
+
+## 3. Fix
+
+Si no hay reserva de esa sala y día, responde `no existe`. Decisiones: texto, dev-lead.
+
+## 4. Verificación
+
+Pendiente.
+
+## 5. Tiempo
+
+- Inicio: 2026-09-21T09:00:00Z
+{"version": "3.0.0", 
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0116-session-start-and-resume\.temp\claude\D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume\74405bf9-2b85-4c04-8d5c-2fde2a174cfe\scratchpad\kit-base\skills\sdd-implement\references\patch-flow.md
+<<< 1	# The patch flow
+2	
+3	A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/SKILL.md#is-it-really-a-patch)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+4	
+5	One todo per step.
+6	
+7	1. **Root cause, MANDATORY in a failure** (the intent, in a visual adjustment; the fixed solution, in a closed request) — `sdd-debugging` BEFORE proposing the fix. Never 
+
+>>> Bash: cd <run>/repo && ls -a && cat -n src/app.js && cat package.json; ls test* tests* 2>/dev/null; ls .docs/sdd; cat .docs/sdd/estimation.md 2>/dev/null | head -20
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+     1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+     4	
+     5	function freeRooms(slot) {
+     6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+     7	}
+     8	
+     9	export function run(cmd, params) {
+    10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+    11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semana
+
+>>> Bash: cat test/app.test.js; grep -n -i -A3 "testing" .docs/sdd/tech-stack.md; node --version; git branch --show-current
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+v26.10.0
+patch/0021-cancel-missing
+<<< Launching skill: sdd-kit:sdd-tdd
+
+=== RESULTADO (11 turnos, 0.31637200000000004 $)
+Me paro antes de escribir el test, porque el `patch.md` y el código no coinciden en lo que identifica una reserva.
+
+- **Causa raíz:** confirmada. `src/app.js:12` devuelve `cancelada …` sin mirar `bookings`.
+- **Qué dice el fix:** el `patch.md` habla de «reserva de esa sala y día». Pero `cancelar` recibe `params[0]` y `params[1]`, que en el test son día y franja (`mar 10:00`). No recibe sala.
+- **Qué no he podido resolver:** `bookings` guarda `{room, day, slot}`. No sé qué dos campos identifican la reserva a cancelar, y esa decisión cambia lo que ve el usuario.
+- **Test existente:** `cancelar respeta el día` cancela `mar 10:00`, que no existe. Ese test da por bueno el bug, así que tendrá que cambiar. Usaría `lun 10:00-12:00`, que sí existe.
+
+¿Cómo identificamos la reserva a cancelar?
+
+1. **Por día y franja (recomendada):** `cancelar <día> <franja>` busca `b.day === params[0] && b.slot === params[1]`. Es lo que ya recibe el comando, y no cambia su firma. Corrijo en `patch.md` «sala y día» por «día y franja».
+2. **Por sala y día:** `cancelar` pasaría a recibir la sala, lo que cambia la firma y deja de ser un patch. Habría que subirlo a feature.
+
+El texto `no existe` ya está fijado por el dev-lead. Con la opción 1, escribo el test en rojo, lo veo fallar, aplico el fix y corro `node --test`. No hay `estimation.md`, así que no hay estimación que registrar.
+
+Aviso, por si te sirve: el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0.

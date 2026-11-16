@@ -1,0 +1,39 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/dev/null | 
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js; cat .docs/sdd/specs/*0005*/s
+## agente
+Antes de proponer nada he mirado el repo. Esto es lo que hay y lo que deduzco.
+
+**Lo que dicen los documentos y el código**
+- `PRODUCT.md`: es una CLI para reservar las salas del coworking. La usas solo tú.
+- `src/app.js:1-8`: una franja es una cadena libre, por ejemplo `'10:00-12:00'`. `freeRooms` solo comprueba igualdad exacta de texto.
+- `deuda.md`: ya hay un ítem por triar, «Sin validación del formato de franja horaria».
+
+**Lo que deduzco (no está escrito)**
+Hoy ya podrías escribir `10:00-10:30` y nada te lo impediría. El problema es que no chocaría con `10:00-12:00` de Norte, porque el texto es distinto, aunque se solapen. Así que «dejar reservar medias horas» no es solo permitir un formato nuevo. Es decidir cómo se entiende una franja y cómo se detectan los solapes.
+
+❓ **¿Qué te falta hoy que te lleva a querer medias horas? ¿Qué situación del coworking quieres resolver con ello?**
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Tu motivo cambia el problema. Lo que necesitas es que una reunión de 30 min deje libre el resto de las dos horas. Eso exige detectar solapes por tiempo y no por texto igual, que es lo que hace hoy `freeRooms`. Con la reserva `Norte lun 10:00-12:00` que ya existe, así se vería cada opción:
+
+❓ **¿Cómo se entiende una franja?**
+1️⃣ **Rejilla de 30 min.** Las horas de inicio y fin deben caer en :00 o :30, y dos franjas chocan si comparten algún bloque de 30 min.
+   - `libres lun 10:00-10:30` → `Sur` (Norte está ocupada por la de 10:00-12:00).
+   - `libres lun 12:00-12:30` → `Norte, Sur`.
+   - `reservar Norte lun 10:15-10:45` → error: «las franjas van de media en media hora».
+   - Coste: si algún día quieres reuniones de 15 min, hay que cambiar el tamaño del bloque. Es un cambio pequeño, pero existe.
+2️⃣ **Minutos libres.** Cualquier hora de inicio y fin, y chocan si los intervalos se cruzan.
+   - `reservar Norte lun 10:15-10:45` → ocupa Norte, que ya estaba ocupada.
+   - `libres lun 12:00-12:20` → `Norte, Sur`.
+   - Coste: es más general que lo que has pedido. Tienes que decidir qué pasa con franjas raras, como `10:07-10:12`, y la validación de formato crece.
+
+➡️ **Recomiendo 1️⃣**, porque tus reuniones son de media hora y las reservas ya existentes (`10:00-12:00`) caben en la rejilla sin migrarlas. Además la validación de formato de la deuda se resuelve de paso. A cambio, las franjas de 15 o 45 min quedan fuera hasta que se amplíe.

@@ -1,0 +1,95 @@
+--- [9]
+Ahora: leer los informes de la revisión final y clasificar sus hallazgos. Queda: pasada de fix, re-revisión y presentación, ~15 min.
+
+--- [12]
+Ahora: clasificar los tres hallazgos y reproducir los que entran en la pasada de fix. Queda: pasada de fix, re-revisión y presentación, ~15 min.
+
+--- [16]
+Reproducido: el test de `canceladas` falla solo. Escribo los tests de los dos hallazgos que entran en la pasada (espacios en el motivo y dependencia de orden) y los veo en RED.
+
+--- [20]
+RED del recorte confirmado; el de `canceladas` pasa ya solo. Arreglo `reasonOf`.
+
+--- [24]
+Suite 6/6 en verde. Escribo el ledger y `tasks.md` y hago el commit de la pasada.
+
+--- [27]
+Python no está en esta máquina, así que `tasks.md` entró en el commit sin los cambios. Lo corrijo con Edit.
+
+--- [33]
+Ahora: lanzar la única re-revisión (opus+high) sobre `78f68fc..968a858`. Queda: re-revisión y presentación, ~10 min, ~1 $.
+
+--- [44]
+La revisión final de la 0010 tiene hecha la pasada de fix y en commit. La única re-revisión permitida (opus+high, sobre `78f68fc..968a858`) sigue en marcha, así que la revisión todavía no está cerrada.
+
+**Cómo quedan los hallazgos**
+- **Código, Important: `reasonOf` no quitaba los espacios del motivo.** Arreglado en `7855f13`: ahora recorta el motivo antes de compararlo con la lista. El test «cancelar acepta el motivo con espacios alrededor» falló antes del arreglo y pasa después.
+- **Spec, Minor: el test de `canceladas` dependía del orden.** Ejecutado solo fallaba porque devolvía una cadena vacía. Ahora el test cancela la reserva él mismo y pasa también solo. Va en el mismo commit.
+- **Código, Minor: el ` — ` de `canceladas` sale como `ÔÇö` en una consola cp850.** No lo he cambiado y lo he dejado anotado como decisión en el registro. El THEN aprobado y la decisión 4 de la spec fijan literalmente «Norte lun — sala ocupada». Pasar a ` - ` cambia la spec, así que lo tiene que decidir el dev-lead. Si lo quieres cambiar, lo registro como enmienda.
+
+**Pruebas:** `node --test` → 6/6 en verde.
+
+**Otros cambios**
+- No he lanzado el eje de Arquitectura: el diff no toca ningún manifiesto, módulo, contrato ni datos.
+- En `tasks.md` la Task 1 apuntaba al commit de la Task 2. Lo he corregido a `0f5c197` y he añadido las líneas `Revisión final:` y `Pasada de fix:`. Va en `968a858`, que solo cambia documentación y he revisado yo mismo.
+- El AND «sin `--motivo` responde lo mismo» no tiene test propio, y ninguno de los dos revisores lo señaló. El código ya lo cubre: sin motivo, el valor queda vacío y no está en la lista.
+
+Cuando vuelva la re-revisión, escribo su línea `Re-revisión:` en `tasks.md`, quito el worktree y te presento el cierre con lo que encuentre.
+
+--- [49]
+### Finding Verdicts
+
+- **[Code, Important] `reasonOf` keeps the spaces around the reason, so a copied reason like "sala ocupada " is rejected** — ADDRESSED. `src/app.js:16` now reads `params[index + 1]?.trim()`, so the value is trimmed before `reasons.includes` checks it at `src/app.js:20`.
+  - The spec's AND "sin `--motivo` responde lo mismo" still holds. With no `--motivo`, or with `--motivo` as the last argument, `undefined?.trim()` gives `undefined` and the answer is «motivo no válido: …».
+  - The new test `test/cancel.test.js:12-14` pins it. The fix report says it returned «motivo no válido» before the fix and «sin reserva Sur mar» after.
+
+- **[Spec, Minor] the `canceladas` test only passes after the `cancelar` test has run** — ADDRESSED. `test/cancel.test.js:17` now cancels Norte lun inside the test before it calls `canceladas`, so the test sets up its own GIVEN. The report shows the test run alone with `--test-name-pattern=canceladas`: it failed before the fix (actual `''`) and passes after (1/1).
+
+- **[Code, Minor] ` — ` in `canceladas` breaks on a Windows cp850 console** — NOT ADDRESSED. `src/app.js:36` still uses ` — `. The controller's ruling holds against the spec:
+  - The approved THEN at `spec.md:60` says literally «Norte lun — sala ocupada».
+  - Decision 4 at `spec.md:26` fixes the separator ` — `.
+  - Changing it to ` - ` would break an approved THEN, so it is a spec amendment for the dev-lead to decide, not a code fix. It stays open until the dev-lead rules (amend the spec, or accept the console limitation).
+
+### New Breakage in the Fix Diff
+
+- **Minor, `test/cancel.test.js:17`.** The order dependence now runs the other way. `canceladas` cancels Norte lun on the shared module state (`src/app.js:4`). If it ran before `cancelar con un motivo de la lista` (`test/cancel.test.js:5-7`), that test would get «sin reserva Norte lun» and fail. With node's default in-file order it passes, but the two tests still share mutable state instead of each pinning its behavior on its own state.
+- **Minor, `test/cancel.test.js:13`.** The new test proves the trimmed reason gets past validation only through the «sin reserva Sur mar» message. It never pins a successful cancellation with the reason trimmed in the answer (`cancelada … (otro)`), which is the scenario in the finding. The code is correct because `trim` happens at the source, so this is a gap in coverage, not a bug.
+- **Minor, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:12-13`.** The record says «Código … con fixes (1 Important, 1 Minor)» and «2 hallazgos RED→GREEN». It does not record that the Code Minor (the cp850 separator) went unfixed and is waiting on a dev-lead decision. The fix log leaves out an open item.
+
+### Out-of-Scope Observations
+
+None.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage. The cp850 ` — ` Minor stays NOT ADDRESSED, correctly: it goes to the dev-lead as a possible spec amendment and does not reopen the code loop.
+
+--- [51]
+Ahora: cerrar la re-revisión (registrar el veredicto, decidir sus tres Minors y quitar el worktree). Queda: presentarte el cierre, ~3 min.
+
+--- [55]
+La re-revisión no encontró nada Critical ni Important, y la revisión final de la 0010 está cerrada. La feature puede ir a validación, salvo una decisión que te toca a ti.
+
+🦆 Los revisores encontraron tres cosas. Dos estaban mal y ya están arregladas: el motivo con espacios alrededor se rechazaba, y el test del listado de canceladas solo pasaba si antes se había ejecutado el de cancelar. La tercera no la puedo arreglar yo sin tocar la spec: el separador ` — ` del listado se ve como `ÔÇö` en una consola Windows cp850.
+
+**Re-revisión** (opus+high, `78f68fc..968a858`):
+- Los dos arreglos están confirmados y no han roto nada.
+- Encontró tres Minors nuevos:
+  - Los dos tests siguen compartiendo el estado del módulo, así que la dependencia de orden ahora va al revés. Lo dejo así: `node --test` ejecuta los tests en el orden del fichero, cada uno pasa también solo, y si alguien los reordena el fallo se ve en rojo.
+  - El test del recorte no comprueba una cancelación con éxito con el motivo recortado. Lo dejo así: el recorte se hace al leer el motivo, antes de validarlo y de responder, así que llega el mismo valor a los dos sitios.
+  - A `tasks.md` le faltaba anotar el Minor que quedó sin arreglar. Corregido en `0b6a823`, que solo cambia documentación y he revisado yo.
+- Las dos decisiones sobre los tests están anotadas en el registro, con lo que costaría si me equivoco.
+
+**Commits de esta pasada:** `7855f13` (los dos arreglos), `968a858` y `0b6a823` (solo `tasks.md`). Los tests (`node --test`) pasan 6 de 6.
+
+**Worktree de la revisión:** git ya no lo tiene registrado, pero Windows no dejó borrar la carpeta `review-0010-968a858` porque estaba en uso. Se puede borrar a mano cuando quieras.
+
+✋ **Tu decisión:** el separador ` — ` del listado de canceladas. Lo fijan el THEN aprobado («Norte lun — sala ocupada») y la decisión 4 de la spec, así que cambiarlo es una enmienda:
+- **A (recomendada si recepción usa una consola cp850):** enmendar la spec a ` - `, con una task de enmienda y su test.
+- **B:** dejar ` — ` y aceptar que en esa consola se ve mal.
+
+Si eliges B, o ya tienes clara la respuesta, el siguiente paso es cerrar la feature con `sdd-archive` (validación, walkthrough y merge).
+
+--- [57]
+El vigilante de silencio de la re-revisión ha terminado sin avisos; la re-revisión ya había vuelto completa. Queda pendiente tu decisión sobre el separador ` — `: enmendar la spec a ` - ` (A) o dejarlo como está (B).
+

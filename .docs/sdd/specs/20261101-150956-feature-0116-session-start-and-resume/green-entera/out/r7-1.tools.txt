@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; echo ---; git branch --all; echo ---; cat ROADMAP.md 2>/dev/null; echo ---; cat .docs/sdd/steering/debt.md 2>/dev/null; ls .docs/sdd .docs/sdd/steering
+<<< Exit code 2
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+---
+* develop
+  main
+---
+---
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/roadmap.md; ls -R .docs/sdd/specs | head -30; cat .docs/sdd/constitution.md | head -40; cat package.json; ls src test
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js | head -40; cat .docs/sdd/specs/*0007*/patch.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres "99:99-xx"; node src/app.js libres ""; node src/app.js libres "10:00-12:00"
+<<< Norte, Sur
+Norte, Sur
+Sur
+
+=== RESULTADO (7 turnos, 0.15194450000000004 $)
+Triaje de la deuda: hay una sola fila, y propongo un destino sin escribir nada todavía.
+
+**Estado del proyecto:** no hay `ROADMAP.md`, así que está en la forma 2.x (`.docs/sdd/roadmap.md`). No hay ramas `feature/*` abiertas. Aquí no existe «Por triar»: cada deuda pasa a una fila con `Destino` = **Actuar**, **Esperar 2.º ticket** o **Descartada**.
+
+**Deuda: «Sin validación del formato de franja horaria»** (impacto bajo, plan actual «Patch cuando moleste»)
+
+La he reproducido:
+
+```
+$ node src/app.js libres "99:99-xx"
+Norte, Sur
+$ node src/app.js libres ""
+Norte, Sur
+```
+
+Una franja inválida se acepta y devuelve todas las salas como libres, en lugar de dar error. Con una franja válida, `libres "10:00-12:00"` devuelve `Sur`, que es lo esperado.
+
+**Mi recomendación:** **Actuar**, con `sin fila` por ahora. Está reproducida, así que no hace falta esperar a un segundo caso. El impacto es bajo y encaja con el carril patch (un solo comportamiento nuevo y un test), pero ningún usuario se ha quejado, así que no hace falta gastar una fila de «Próximo». La fila quedaría así:
+
+| Deuda | Impacto | Destino |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | **Actuar**: sin fila. Evidencia: `node src/app.js libres "99:99-xx"` → `Norte, Sur` (debería rechazar la franja) |
+
+**Alternativas:**
+- **Actuar con fila:** la apunto en «Próximo» como `Patch:` con id reservado, si quieres hacerla pronto. Tendría que ir antes o junto a «Avisos por correo», que también toca franjas.
+- **Descartada:** solo si decides que no merece la pena.
+
+Dime cuál prefieres, o «decide tú», y lo escribo. Después pasaré `sdd roadmap check` y `sdd roadmap publish`. No he tocado ningún fichero.

@@ -1,0 +1,84 @@
+--- [10]
+# Spec-axis review: spike 0030 (`799f4f7..96250ce`)
+
+I reviewed it in one pass. The package is small: 2 commits, `src/app.js`, plus `research.md` and `evidence/` read from the repo.
+
+### Strengths
+- The research table keeps one row per objective and follows the template's labels for O2, O3 and O4. O3 is honestly marked «no medido con una persona» even though the agent ran it (`evidence/o3.txt`: «Prueba hecha por el agente, sin ninguna persona»). O2 and O4 are marked «no medido» rather than given figures.
+- The raw evidence files exist for the rows that cite them (O1, O3), so the plan's Verificación line holds literally.
+- ADR 0003, Confirmación «`src/` no importa `node:fs` ni ningún paquete de base de datos»: a search of `src/` finds no `node:fs` import and no database package. **Met.**
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **O1 is marked `cumple`, but its own evidence shows it fell short.** `research.md:20`
+   - **What's wrong:** O1 requires `libres` to run without errors for «≥ 5 min seguidos». `evidence/o1.txt` says «libres en bucle, 2 min 30 s, 0 errores», which is half the threshold.
+   - **Template rule:** «Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione».
+   - **Why it matters:** the spike exists to unblock a purchase («Si compramos el quiosco este trimestre»). A false `cumple` puts a wrong fact in front of that decision.
+   - **Fix:** re-run for ≥ 5 min, or mark the row `no cumple tal como se definió` with «2 min 30 s».
+   - **Gap:** `contradicts`. **Source:** spec objective O1.
+
+2. **The recommendation rests on an objective that was never measured.** `research.md:27`
+   - **What's wrong:** «Elegida: comprar el quiosco · Por qué: aguanta (O1) y el consumo de memoria con 1.000 reservas es bajo (O2)».
+     - O2's row says «no medido · no dio tiempo», so the claim about low memory use has no evidence behind it.
+     - O1, the other reason given, does not pass either (issue 1).
+     - O4 is not measured, and O3 is not measured with a person.
+   - **Template rule:** «Solo cita filas medidas; no dar por cumplido un `no cumple` ni un `no medido`».
+   - **Why it matters:** none of the four objectives is met, yet the document recommends spending money.
+   - **Fix:** the evidence only supports «no seguir» or «medir antes de decidir». Rewrite the recommendation to cite only measured rows.
+   - **Gap:** `contradicts`. **Source:** spec «Decisión que desbloquea» and objectives O1–O4.
+
+#### Important (Should Fix)
+
+3. **The spike changes production code, which both the plan and the template rule out.** `src/app.js:40`
+   - **What's wrong:**
+     - The commit adds `export const kioskMode = true;`. Nothing reads it.
+     - The commit also rewrites the whole file, converting CRLF line endings to LF: 40 lines added, 39 removed, almost all of it noise.
+   - **Rules it breaks:**
+     - The plan says «Eje Arquitectura: no — no cambia código».
+     - The template says «el spike no deja código de producción».
+     - The research's «Lo que sale: nada» is therefore false.
+   - **Also:** the commit is typed `docs(sdd)` but touches `src/`. The new export changes no behavior of the `availability` capability, but it is unrequested surface added to production code.
+   - **Fix:** revert `src/app.js` to `799f4f7`. If a kiosk flag is wanted, record it in «Lo que sale» as a roadmap row.
+   - **Gap:** `unrequested`. **Source:** the plan's Arquitectura line and the spike's «Capacidades: Ninguna».
+
+4. **The required «Aguante» section is missing, and O4 was measured below the worst load.** `research.md` (section 3 absent; O4 row at line 23)
+   - **What's wrong:** O2 and O4 are performance objectives. The dev-lead confirmed 1,000 active bookings as the worst load («esa es la peor, sí»).
+     - The template requires section 3 to show ≥ 10 consecutive repetitions at that load.
+     - The section is missing.
+     - O4 was run «solo con 100 reservas», with no evidence file.
+   - **Fix:** measure O2 and O4 with 1,000 active bookings over ≥ 10 repetitions, saving the raw output in `evidence/`.
+   - **Gap:** `missing`. **Source:** spec objectives O2 and O4, and the dev-lead's confirmation of the worst load.
+
+5. **The research is marked done although the plan's Task 1 is unfinished.** `research.md:5`
+   - **What's wrong:** the frontmatter says `status: done`. Task 1's Evidencia line asks for «O1 a O4 · salidas en bruto de `evidence/`», but O2 and O4 have no raw output. All plan steps are still `[ ]`.
+   - **Gap:** `partial`. **Source:** plan Task 1's Evidencia line.
+
+#### Minor (Nice to Have)
+
+6. **The discarded option has a weak reason.** «Descartadas: esperar al trimestre siguiente, porque nada lo pide» (`research.md:28`). Once the objectives are reported honestly, the reason runs the other way: the unmet objectives are what would argue for waiting.
+
+### Ledger
+There is no ledger, so there are no deferred minors or rulings to weigh.
+
+### Declined to judge
+- Whether `freeRooms` would actually meet O2 or O4 at 1,000 bookings: that is the spike's measurement to make. I cannot settle it without running code, which this review must not do.
+- The CRLF→LF conversion as a repository-wide convention, such as a `.gitattributes` policy: that is a code-quality matter. I only flag it here as part of the unrequested change in issue 3.
+- Code constraints: the diff adds no interface text and no comments, so I found nothing to judge against them.
+
+### Not verified
+- The closing gate `node --test`: no verificado. The brief forbids running the suite and the package contains no test report.
+- The template check: I compared against the copy of `research-template.md` in the kit at the scratchpad path, not against a version pinned by the project. No verificado that it is the exact version the executor used.
+
+### Recommendations
+- Before the dev-lead sees this spike, add a check that every `cumple` in the research table matches the figure in its evidence file.
+- Fill section 3 with the 1,000-booking repetitions, and keep spike commits limited to `.docs/`.
+- Heavy verification to add: re-run O1 for ≥ 5 min and O2/O4 at 1,000 bookings, saving the raw output in `evidence/`.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The research says O1 passes when its own evidence shows it failed, and it recommends buying the kiosk on the strength of O2, which was never measured. On top of that, the spike leaves an unrequested export in `src/app.js`. The recommendation must be rewritten from measured rows only, and the code change reverted.
+

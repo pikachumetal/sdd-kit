@@ -1,0 +1,85 @@
+--- [4]
+Primero leo el contexto del proyecto y reproduzco el fallo para clasificar el cambio.
+
+--- [14]
+Lo tengo reproducido y con la causa raíz. Es un patch (fallo determinista) y, según el kit, un patch se pregunta antes de abrir rama, carpeta o id.
+
+**🦆 En llano:** la función `toHours` de `src/app.js:8` convierte «09:30» en 9,30 en vez de 9,5. Por eso 09:30-12:00 sale como 2,70 h y supera el máximo de 2,5 h. Ya hay un test que lo reproduce y falla hoy: `reservar justo el máximo de horas se acepta`. El mismo error afecta también al comando `precio`, que usa la misma función. Por ejemplo, 10:30-12:00 saldría como 1,7 h en vez de 1,5 h.
+
+**Cambio propuesto:** convertir los minutos a fracción de hora (`h + m/60`) en `toHours`, con un test de regresión para `precio`. Se tocan `src/app.js` y `test/`. Antes de guardar corro `node --test`, que debe quedar todo en verde.
+
+¿Lo abro como patch?
+
+1. **Sí, patch (recomendada).** Es un fallo determinista, la causa raíz fija la solución y un solo test lo reproduce. El arreglo es corto. No hay `estimation.md`, así que no doy estimación en horas. El perfil es el del proyecto, `sdd-kit.json`, que no fija perfil, así que aplica el predeterminado.
+2. **Otra vía.** Dime cuál prefieres, por ejemplo tratarlo como feature, aunque sería más ceremonia para un fallo de una línea.
+
+Respóndeme «1» y sigo con el arreglo.
+
+--- [28]
+Los dos tests están en rojo por la causa raíz. Aplico el arreglo mínimo.
+
+--- [33]
+Falta el paso del revisor del patch (uno solo, modelo medio) antes del commit del fix.
+
+--- [36]
+El arreglo está hecho y los tests pasan, pero todavía no he hecho el commit. Estoy esperando al revisor del patch, que es un paso obligatorio antes de ese commit. El resultado de esa revisión aún no ha llegado.
+
+**Qué ocurría:** `toHours` leía «09:30» como 9,30 en vez de 9,5. Por eso 09:30-12:00 salía como 2,70 h y se rechazaba. El mismo error afectaba al comando `precio`.
+
+**Qué he cambiado:**
+- **`src/app.js`:** `toHours` ahora calcula `horas + minutos/60`.
+- **`test/precio.test.js`:** he añadido un test de regresión para `precio` con minutos. El test de `reservar` ya existía y fallaba.
+- **`patch.md`:** el registro del patch está en `.docs/sdd/changes/20261111-155604-patch-0010-horas-minutos/`, en la rama `feature/0010-horas-minutos`.
+
+**Comprobado:**
+- `node --test` pasa de 5 pass y 2 fail a 7 pass y 0 fail.
+- `reservar Sur 09:30-12:00` responde `reservada Sur 09:30-12:00`.
+- `reservar Sur 09:00-12:30` sigue rechazándose con «excede el máximo de horas».
+- `precio Sur 10:30-12:00` da `22.5 €`.
+
+Los cambios están preparados en el índice de git, sin commit. El parche no está cerrado: tras la revisión toca el commit y el cierre con `sdd-archive`. La validación la marqué como del dev-lead, porque es algo que usa una persona por línea de comandos.
+
+--- [40]
+Sin hallazgos bloqueantes. `node --test` da 7 pass y 0 fail.
+
+1. **Causa raíz: real.** Con el código anterior, `'09:30'` daba 9,30 y `12 - 9.3` daba 2,6999…, que es mayor que `MAX_HOURS = 2.5`. Eso explica el rechazo de `reservar Sur 09:30-12:00`. Con el fix, `slotHours('09:30-12:00')` da 2.5 y `slotHours('10:30-12:00')` da 1.5. El CLI responde `reservada Sur 09:30-12:00`.
+
+2. **Fix correcto y mínimo.**
+   - Está en `src/app.js:8-11` y solo cambia `toHours`.
+   - `'00:00'` da 0 y minutos 00 da el mismo resultado que antes.
+   - El cruce de medianoche sigue dando un valor negativo, pero el patch lo deja fuera de alcance.
+   - Los casos 2,5 y 22,5 son exactos en coma flotante, así que `assert.equal` es estable.
+
+3. **Tests.** Los dos prueban la causa porque ejecutan `run` con minutos distintos de 00. Ambos estaban en rojo con el código anterior.
+   - `test/reservar.test.js:5-7` ya existía en HEAD.
+   - `test/precio.test.js:9-11` es el nuevo. Con el código anterior daba 1,6999…·15 = 25,49…, distinto de 22,5, así que falla sin el fix.
+
+Observaciones menores, sin acción necesaria:
+- `test/reservar.test.js:9-11` (`09:00-12:30`) ya se rechazaba antes del fix, porque 12,3 − 9 = 3,3. Es una guarda contra una regresión en sentido contrario, no un test de la causa. El patch ya lo presenta como tal en su caso 2.
+- El cambio no prueba directamente un caso con minutos en la hora de inicio y en la de fin a la vez. No hace falta para el patch.
+
+--- [42]
+El revisor no ha encontrado hallazgos bloqueantes. Lo anoto en `patch.md` y hago el commit del fix.
+
+--- [49]
+He cerrado el fix pero no el patch: el cierre se queda parado en la validación. El proyecto no declara `validation.mode`, así que cuenta como manual y la validación la tienes que dar tú. Yo no puedo inventar un «Validado».
+
+🦆 Antes, `reservar Sur 09:30-12:00` se rechazaba porque el programa leía «09:30» como 9,30 horas y no como 9,5. Ahora lo acepta, porque son 2,5 h justas. `precio` tenía el mismo fallo y también queda corregido: 10:30-12:00 en Sur ahora cuesta 22,5 € y antes salían 25,5 €.
+
+**✋ Me salí del plan en…** nada.
+
+**Para validarlo.** Ya ejecuté estos tres comandos en el worktree y dieron lo que se indica:
+
+1. `node src/app.js reservar Sur 09:30-12:00`: debe responder `reservada Sur 09:30-12:00`.
+2. `node src/app.js reservar Sur 09:00-12:30`: debe seguir respondiendo `excede el máximo de horas`, porque son 3,5 h.
+3. `node src/app.js precio Sur 10:30-12:00`: debe dar `22.5 €`.
+
+`node --test` da 7 pass y 0 fail. El commit del fix es `0a28a3c` en `feature/0010-horas-minutos`.
+
+**Merge pendiente.** `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Por eso no voy a fusionar por mi cuenta: cuando valides, te propongo el bloque (`merge.into: develop`) y espero tu confirmación.
+
+**Cómo seguir:**
+1. **«Validado»**, o dime qué probaste. Es lo recomendado: cierro el patch y te presento el merge a `develop`.
+2. **Cambios**: dime qué falla y vuelvo al arreglo.
+3. **Diferir la validación**: dime que la harás más tarde y con qué disparador, por ejemplo «lo pruebo en el siguiente despliegue».
+

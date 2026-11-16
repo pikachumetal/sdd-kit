@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat .docs/sdd/roadmap.md .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\patch-lane.md
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 0012 | Patch: **Franja no válida en libres**: `libres 25:00-26:00` respo
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && ls node_modules 2>&1 | head -2; cat package.json; find src test scripts -type f; cat .docs/sdd/estimation.md; cat src/*libres* 2>/dev/null | head -60; ls .docs/sdd/specs
+<<< ls: cannot access 'node_modules': No such file or directory
+{"type": "module", "engines": {"node": ">=20"}}
+src/app.js
+test/app.test.js
+test/cancel.test.js
+scripts/lint.mjs
+# Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo e
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -30 test/app.test.js; ls .docs/sdd/specs/*; grep -il "gate de cierre" -r .docs/sdd/specs | head; cat .docs/sdd/operations.md | head -40
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*patch-0007*/patch.md; grep -i -n "gate\|min\| h" .docs/sdd/specs/*/walkthrough.md | head -20; git branch --show-current
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+feature/0012-slot-format
+
+=== RESULTADO (8 turnos, 0.1585621 $)
+Ahora: clasifico la 0012 y te hago la pregunta del carril patch. Queda: tu respuesta y luego abrir el patch, unos 30 min en total.
+
+🦆 **En llano:** hoy `libres` compara la franja como texto y no comprueba nada. Con `25:00-26:00` no encuentra reservas y devuelve las dos salas, como si estuviera todo libre. El cambio es que `libres` compruebe la forma de la franja antes de buscar salas, y que si no cumple responda «franja no válida: usa HH:MM-HH:MM». Se toca solo `freeRooms` y el `run` de `libres` en `src/app.js`, más un test nuevo en `test/app.test.js`. No hay dependencias que instalar: el proyecto solo usa Node.
+
+**Por qué es un patch.** El row 0012 y tu petición fijan el texto, el comando y el caso. Es un solo comportamiento nuevo y un solo test que falla hoy: `run('libres', ['25:00-26:00'])` debería dar el mensaje y ahora devuelve `Norte, Sur`. No hay una decisión de diseño pendiente que obligue a subirlo a feature.
+
+**Estimación.** 0,5 h, la misma que el patch 0007, el único precedente del proyecto. El gate de cierre (`node --test && node scripts/lint.mjs`) no tiene duración medida en ningún patch ni walkthrough, así que no la puedo dar y la mediré en este.
+
+**Perfil:** `delegate`, el del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+
+**Qué entiendo por «no válida»:** que no tenga la forma `HH:MM-HH:MM`, con horas 00–23 y minutos 00–59. No incluyo comprobar que el fin sea posterior al inicio. Eso sería una regla nueva y iría aparte.
+
+¿Cómo seguimos?
+
+1. **Abro el patch tal cual (Recomendada).** Creo la rama y la carpeta con el id 0012 y sigo hasta el merge con `sdd merge --push`.
+2. **Cambios.** Dime qué ajusto: por ejemplo, incluir también la comprobación de fin posterior al inicio. Eso son dos comportamientos y dos tests, y entonces te ofrecería lite en vez de patch.
+3. **Otro perfil.** Dime cuál, solo para esta tarea.

@@ -1,0 +1,75 @@
+--- [10]
+I've checked the package, spec, plan, research, evidence, ADR 0003 and the kit's research template. Here's the report.
+
+## Spec axis review: spike 0030 (`6a2014e`)
+
+### Strengths
+- **Most of the research is honest.** O3 is marked «no medido con una persona», as the template asks, and `evidence/o3.txt` says outright that the agent ran it with no person involved. O2 and O4 are marked «no medido» and say why.
+- **Raw evidence is in the spec folder** (`evidence/o1.txt`, `evidence/o3.txt`), so a reader can check each row against its claim. That is how I found the issues below.
+- **ADR 0003 is met.** Its Confirmación says `src/` must not import `node:fs` or any database package. `src/app.js` has no imports at all.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **The recommendation rests on an objective nobody measured.** `research.md` §4: «comprar el quiosco · Por qué: aguanta (O1) y el consumo de memoria con 1.000 reservas es bajo (O2)».
+   - **What's wrong:** O2 is «no medido / no dio tiempo» in the table of that same file. O1 doesn't hold either (see issue 2).
+   - **The rule it breaks:** the research template's §4 allows only measured rows, and never a `no medido` counted as met.
+   - **Why it matters:** this spike exists to answer «si compramos el quiosco este trimestre». As written, it recommends a purchase that none of the four objectives supports.
+   - **How to fix:** cite only measured rows. With nothing met, the honest answer is «no seguir» or «medir O2/O4 primero».
+   - **Gap:** `contradicts`. **Source:** the spec's «Decisión que desbloquea», plus objectives O1 and O2.
+
+2. **O1 is reported as `cumple`, but the evidence shows it fell short.**
+   - **Where:** the O1 row of the table in `research.md` §2, compared with `evidence/o1.txt`.
+   - **What's wrong:** O1 requires ≥ 5 min without errors. The evidence says «libres en bucle, 2 min 30 s, 0 errores».
+   - **How to fix:** the template's state for this is «no cumple tal como se definió». The other option is to run the full 5 minutes again.
+   - **Gap:** `contradicts`. **Source:** objective O1.
+
+#### Important (Should Fix)
+
+3. **A spike that shouldn't change code changes `src/app.js`.**
+   - **What's wrong:** `src/app.js:40` adds `export const kioskMode = true;`. Nothing reads it, and no test or verification pins it. On top of that, the whole file was rewritten from CRLF to LF line endings: 79 lines of diff for 1 real change.
+   - **What it contradicts:** the plan says «Eje Arquitectura: no — no cambia código». The spec lists «Capacidades: Ninguna». The template's §5 says «el spike no deja código de producción».
+   - **Why it matters:** it adds kiosk API surface before anyone has decided to buy the kiosk.
+   - **How to fix:** restore `src/app.js` exactly as it was at `0ec6b2a`, line endings included.
+   - **Gap:** `unrequested`. **Source:** the plan and the spec's capabilities.
+
+4. **The dev-lead's worst-case load is only half covered.**
+   - **What's wrong:** for O4 the spec records «Peor carga: 1.000 reservas activas — confirmada: «esa es la peor, sí»». The research only measured 100 reservations. It has no §3 «Aguante» section, which the template requires whenever an objective is about performance (O2 and O4 both are): ≥ 10 repetitions under the worst load.
+   - **How to fix:** measure O2 and O4 with 1.000 active reservations and add §3, keeping the raw output in `evidence/`.
+   - **Gap:** `partial` («decisión del dev-lead cubierta a medias: peor carga 1.000 reservas activas — la medida usa 100»). **Source:** the dev-lead decision on O4.
+
+5. **The plan's own check for Task 1 fails.**
+   - **What's wrong:** Task 1 promises evidence for «O1 a O4» and its check is «la salida en bruto existe en la carpeta de la spec». There is no raw output for O2 or O4, yet the plan doesn't record the task as failed or partial.
+   - **Gap:** `partial`. **Source:** the plan, Task 1.
+
+#### Minor (Nice to Have)
+
+6. **«Lo que sale: nada» (`research.md` §5) leaves the open measurements nowhere.** O2, O4 and the human test for O3 are unresolved, and none of them gets a follow-up roadmap row.
+7. **The spec has a stray blank line between O3 and O4.** It also has no «Decisiones tomadas con el dev-lead» section; the O4 confirmation sits inline in the objective instead.
+
+There's no ledger, so there are no deferred minors to weigh.
+
+### Declined to judge
+- The commit bodies are placeholders («Cuerpo del commit.»). That's commit hygiene, which belongs to the quality axis, not this one.
+- Whether `kioskMode` is good design if it ever stays. That's for the architecture axis; on this axis it is already flagged as `unrequested`.
+
+### Not verified
+- **The `node --test` closing gate:** I was told not to run the suite, and the package brings no test output.
+- **Whether `libres` really ran without errors for 2 min 30 s:** I only have the one-line summary in `evidence/o1.txt`, not a raw log.
+- **The 12 s figure for O3:** I can't reproduce it, and it doesn't count as a measurement with a person anyway.
+
+### Recommendations
+- Re-measure O2 and O4 with 1.000 active reservations, ≥ 10 repetitions each, and add the §3 «Aguante» section.
+- Run O1 for the full 5 minutes and keep the raw output.
+- Run O3 with a real person who doesn't know the tool.
+- Rewrite §4 so it cites only measured rows.
+- Revert `src/app.js`.
+- Before merge, check that nothing in the toolchain converts CRLF to LF, so a file can't be rewritten in full again by accident.
+
+### Assessment
+
+**Ready to merge?** No.
+
+**Reasoning:** the deliverable is the research, and it recommends buying the kiosk. That recommendation cites O2, which nobody measured, and O1, which the evidence shows fell short. On top of that, the spike changes production code it was told not to touch.
+

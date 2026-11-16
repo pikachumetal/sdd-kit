@@ -1,0 +1,67 @@
+--- [3]
+Ahora: reviso el estado de la 0010 (config de validación, spec, tasks) para preparar la validación. Queda: re-revisión del tramo, smoke por THEN y presentar la validación, ~10 min.
+
+--- [16]
+Estoy en el paso 7 de la 0010: la validación en campo no para. Presento el mensaje de validación y paso a `sdd-archive`.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, como «me aburro», responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista cada cancelación como «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Nada fuera del plan. Hay dos rulings que la spec no fijaba, de la task 2:
+  - `canceladas` lista en el orden en que se cancelaron. Ordenar por sala es un cambio de una línea.
+  - `canceladas` no incluye las reservas anuladas con `anular`. El listado de la 0011 tendrá que sumarlas si hace falta.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real (`node src/app.js cancelar …`) | «cancelada Norte lun (sala ocupada)» |
+| un motivo fuera de la lista responde «motivo no válido: …» | ejecución real, provocado con `--motivo "me aburro"` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real, pero en un solo proceso (`run('cancelar')` y luego `run('canceladas')`), y además `suite` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test`: 5/5 sobre 6b0994b. La duración es de unos 105 ms.
+
+**Sin probar**
+
+- `canceladas` lanzado como una invocación de CLI aparte, justo después de `cancelar`, imprime una línea vacía. Las reservas viven en memoria y cada invocación de `node src/app.js` empieza de cero. Ya era así antes de la 0010 y la spec no pedía persistencia. El comportamiento de la spec solo se observa dentro de un mismo proceso. Si quieres que el CLI recuerde las cancelaciones entre invocaciones, es una feature aparte.
+- Re-revisión del tramo: no he despachado ninguna. Lo único posterior a la revisión final es el commit `6b0994b`, que solo toca `tasks.md`. Además, la línea `Revisión final:` de `tasks.md` dice «sobre (HEAD)» en vez de un sha, así que no puedo comprobar el tramo exacto.
+- Con `validation.mode: field` no hay guion ni espera. La verificación del agente queda registrada como «Validación en campo».
+
+--- [19]
+Ahora: paso 0 de `sdd-archive` (pre-checks) y luego los registros del cierre. Queda: walkthrough, capability, changelog, roadmap, commit y merge, ~10 min.
+
+--- [31]
+Estoy escribiendo los registros del cierre de la 0010: walkthrough, tasks, changelog y roadmap. Después va el commit.
+
+--- [37]
+**Rama sin fusionar: la 0010 está cerrada en `feature/0010-cancel-reason` (4988248), pero falta fusionarla.**
+
+`.docs/sdd/sdd-kit.json` no tiene el bloque `merge` con `merge.into` y `merge.noFf`. `sdd merge --check` y `sdd merge --sync` fallan por eso, y sin el bloque la política obliga a presentar el merge y esperar. Tampoco hay remoto. Dime a qué rama va (¿`develop`, por git-flow?) y si con `--no-ff`. Con eso lo ejecuto con `sdd merge`, o añade tú el bloque.
+
+**Lo que ha quedado hecho**
+- **Validación:** en campo, sin guion ni espera. Está registrada en el walkthrough con la suite `node --test` 5/5 y el smoke de los 3 THEN.
+- **Walkthrough:** `walkthrough.md` con el tiempo y los tokens de `sdd session tokens`. No hay precio porque falta la tabla `pricing`.
+- **Tasks:** `tasks.md` con los commits reales 400862d y a0e5039. La línea `Revisión final:` decía «sobre (HEAD)» y la he fijado en a0e5039.
+- **Capacidad:** `bookings.md` creada con `capability merge`. `capability check` y `decision check` están en verde.
+- **Roadmap:** la fila 0010 pasa a ✅.
+- **Changelog y deuda:** entrada en el changelog y una fila nueva en la deuda técnica sobre la persistencia del CLI.
+- **Commit de cierre:** el commit 6b0994b (el del registro de `tasks.md`) se ha juntado en este commit, así que ya no existe como tal.
+
+**Decisiones tomadas sin el dev-lead**
+- `canceladas` lista en el orden en que se cancelaron, porque la spec no fija el orden.
+- Las reservas anuladas con `anular` no salen en `canceladas`. La 0011 tendrá que sumarlas si hace falta.
+- **Enmienda sin aprobar:** el proyecto no tenía `capabilities/`, así que `capability merge` falló con `bookings` en «Modificadas». Lo cambié a «Nuevas» en la spec, con una decisión 4 y una enmienda registradas. El delta no cambia. Corrígelo si prefieres otra salida.
+
+**Pendiente y avisos**
+- **Persistencia:** `canceladas` lanzado como invocación de CLI aparte imprime una línea vacía, porque las reservas viven en memoria. El THEN solo se observó en un mismo proceso. Ya era así antes de la 0010; está en la deuda como «Por triar».
+- **`roadmap check`:** falla en 2 líneas que no toqué (la cabecera de «Deuda técnica» y el título «v0.3.0»). Las arregla el paso «Roadmap en la forma de la plantilla» de la migración 2.3.0.
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Ticket del kit:** ¿quieres el ticket de mejora del kit con `sdd-feedback`?
+
+**Para acabar la 0011 y el resto:** la 0011 («Anular reservas de otros») no declara `parent:` ni `proposal:`, así que no hay familia que cerrar.
+
+**No terminado.** Falta fusionar la rama: sin `merge.into`/`merge.noFf` no hay política de merge. No borres todavía el worktree `<run>/repo`.
+

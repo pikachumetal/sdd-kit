@@ -1,0 +1,180 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Glob: .docs/sdd/**/*
+<<< .docs\sdd\tech-stack.md
+.docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+<<< 1	# Spec — weekly
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<<< 1	# Spec — free
+2	
+3	status: done
+4	
+
+>>> Glob: {src,test}/**/*
+<<< src\app.js
+test\app.test.js
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Read: <run>\repo\.docs\sdd\changelog.md
+<<< 1	# Changelog
+2	
+3	Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+4	
+5	## [Unreleased]
+6	
+7	### Added
+8	
+9	- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+10	- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](specs/20260917-090000-task-0006-free/)
+11	
+12	### Fixed
+13	
+14	- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+15	
+16	## [0.3.0] - 2026-09-01
+17	
+18	### Added
+19	
+20	- Cancelar u
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+=== RESULTADO (17 turnos, 0.1776054 $)
+Lo que he encontrado en el código (`src/app.js`):
+
+- **Las franjas son texto.** `libres` descarta una sala solo si la franja de la reserva es idéntica a la consultada (`b.slot === slot`). No hay parseo ni validación. Es la deuda técnica del roadmap, «Sin validación del formato de franja horaria».
+- **Las medias horas rompen esa comparación.** Con `Norte lun 10:00-10:30` reservada, `libres 10:00-12:00` diría que Norte está libre, y eso permitiría una doble reserva. Hoy no se nota porque todas las franjas son de 2 h.
+- **`reservar` aún no guarda nada.** Solo devuelve el texto «reserva semanal creada». Las reservas viven en un array fijo en memoria.
+- **`cancelar` compara por día y hora de inicio.** Es lo que arregló el patch 0007, así que también le afecta la elección.
+
+Este cambio tiene comportamiento, así que acabaría en `sdd-start-feature`. Por ahora es solo pensarlo, sin tocar nada.
+
+❓ **¿Cómo decide el sistema que una sala está ocupada?**
+Es la decisión que más condiciona las demás: validación, `cancelar`, la reserva semanal y los tests.
+
+🅰️ **Intervalos con solape.** Se guarda inicio y fin, en múltiplos de 30 min. Una sala está ocupada si algún tramo se solapa con la consulta.
+- `libres 10:00-12:00` con `Norte lun 10:00-10:30` reservada → `Sur` (Norte ocupada 30 min).
+- `libres 10:30-11:00` → `Norte, Sur`.
+- Coste: hay que parsear y validar el formato. Eso paga de paso la deuda técnica, pero toca `cancelar` y la reserva semanal.
+
+🅱️ **Rejilla de bloques de 30 min.** Una reserva de `10:00-12:00` se guarda como 4 bloques, y la comparación sigue siendo igualdad exacta por bloque.
+- `libres 10:00-12:00` → `Sur`. `libres 10:30-11:00` → `Norte, Sur`.
+- Coste: el resultado es el mismo, pero cada reserva se multiplica en bloques. Cancelar una reserva de 2 h pasa a ser cancelar 4 bloques, o hay que guardar un id de reserva.
+
+➡️ **Recomiendo 🅰️**, porque guardar inicio y fin mantiene una reserva como un solo registro y `cancelar` sigue sencillo. El solape son dos comparaciones. A cambio, hay que escribir el parser de franjas, y eso alarga un poco el cambio.
+
+¿Vas por 🅰️ o por 🅱️?

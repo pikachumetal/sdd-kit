@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/steering/debt.md; echo ----; cat .docs/sdd/sdd-kit.json; echo ----; cat ROADMAP.md; git branch --all
+<<< # Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Eviden
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; ls; git ls-files | head -50; cat .docs/sdd/steering/debt.md >/dev/null; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthr
+
+>>> Bash: cat src/app.js package.json; head -40 test/app.test.js; cat CHANGELOG.md | head -30; cat .docs/sdd/steering/operations.md | head -40
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js exportar | od -c | head -3; node src/app.js libres --planta 2; git log --oneline -3 -- src/app.js
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+Norte (planta 1)
+738dc81 feat: base del molde
+
+=== RESULTADO (7 turnos, 0.13832840000000002 $)
+Estoy triando las dos filas de «Por triar». Ya reproduje las dos en la copia local y ahora te dejo mi propuesta. No he escrito nada.
+
+**1. La exportación a CSV pierde las tildes desde la 1.4.2 → «En espera»**
+- No lo reproduzco. `node src/app.js exportar` saca `sala,día,franja` en UTF-8 correcto (`d 303 255 a` en el volcado de bytes).
+- Además, el código no tiene ningún cambio desde la base. Tampoco encuentro una 1.4.2 en el CHANGELOG, que llega a la 1.4.1.
+- Sospecho de la consola o del Excel de quien lo abrió, pero no lo he probado.
+- Propuesta: Causa `sin determinar`, Falta `reproducirlo`, Fecha 2026-11-12, Origen el informe de QA. Pediría a QA el comando exacto y dónde vieron el `?`.
+
+**2. `salas libres --planta 2` lista salas de la planta 1 → «Lista»**
+- Reproducido: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- La causa está en `src/app.js`, en `roomsOnFloor`: filtra con `floors[room] <= floor` en vez de `=== floor`.
+- Propuesta:
+  - Causa: `defecto del producto`.
+  - Arreglo: `—`.
+  - Remedio temporal: `ninguno` (miré el informe y no hay ninguno).
+  - Evidencia: el comando anterior con su salida.
+  - Destino: una fila nueva en Now, tamaño S, `**Carril:** patch`, con el id reservado con `sdd id next --reserve`.
+- Un matiz sobre la corrección: cambiar a `===` es lo que dice el informe, y por eso la planta 2 saldría vacía, porque `Sur` está en la planta 3. No lo he ejecutado en una copia. Si quieres, la fila dice «solución por confirmar».
+
+**3. La fila de «En espera» (reservas de más de 8 h) → se queda**
+- No caduca: ninguna versión `X.Y.0` posterior al 2026-07-01 la ha dejado vencer, ya que la 1.4.0 es del 2026-09-01 y la comprobación de caducidad es la de `sdd roadmap check`.
+- La compruebo con `sdd roadmap check` antes de escribir.
+
+¿Doy el visto bueno a este reparto? Si dices «decide tú», lo escribo tal cual. Reservaré el id, publicaré el commit en `develop` y te daré el prompt de lanzamiento del patch.

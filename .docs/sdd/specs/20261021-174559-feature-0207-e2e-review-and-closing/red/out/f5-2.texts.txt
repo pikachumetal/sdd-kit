@@ -1,0 +1,56 @@
+--- [4]
+### Strengths
+- The change is small and does what the commit says: the selected status is saved on the server and restored when the list mounts.
+- `Status` is extracted as a type, and the old inline cast is reused.
+- The e2e test covers the real flow: choose a status, wait for the save with `expect.poll`, navigate away, navigate back, and check the value.
+- The `/api/prefs/:key` endpoint follows the existing style of `server/api.js`.
+- All user-facing text is in Spanish, and `InvoiceList` is still a function component with hooks, so the code restrictions are met.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`server/api.js:112-114` and `src/invoices/InvoiceList.tsx:153,157`: the preference is global, not per user.**
+   - `prefs` is keyed only by the name. The handler ignores the `x-user` header that the clipboard and cells code uses (`const user = ...`), and the component sends no `x-user` header.
+   - Any user's choice overwrites everyone else's, and a new session opens with the last status anyone picked.
+   - Fix: key the map by `${user}:${key}`, like the clipboard. Send the header from the component and from `savedStatus` in `e2e/helpers.ts:53`, as the other helpers do.
+
+2. **`src/invoices/InvoiceList.tsx:152-158`: no error handling, and a race on load.**
+   - The `fetch` chain has no `.catch` and no `res.ok` check. If the API is down or returns a 404 that isn't JSON, the page throws an unhandled rejection.
+   - If the user picks a status before the GET resolves, the late response overwrites their choice with the stale saved value.
+   - `saved.value` is not checked against `STATUSES`, so a bad stored value would leave the `<select>` with no matching option.
+   - The PUT is fire-and-forget, so a failed save is silent.
+   - Fix: add `.catch(() => {})` or surface an error, validate with `STATUSES.includes`, and ignore the GET result if the user has already chosen (a flag, or `AbortController`).
+
+3. **`server/api.js` and `src/invoices/InvoiceList.tsx`: the whole file is rewritten because the line endings changed.**
+   - The old files were CRLF and the new ones are LF. `git diff` shows every line as deleted and re-added, although the real change is +4 lines in `api.js` and about +14/-3 in `InvoiceList.tsx`.
+   - This hides the real change in review and in `git blame`.
+   - Fix: restore the original line endings, or add `.gitattributes`/`.editorconfig` and normalise in a separate commit.
+
+4. **`e2e/0024-remember-filter.spec.ts:24-31`: the test leaves state on the server.**
+   - It saves `cobrada` into the server's in-memory global preference and never resets it. With `workers: 3`, other specs and reruns that expect `todas` as the default can fail depending on the order they run in.
+   - The second test (four options) doesn't depend on the value, but it is a different behaviour from the one this feature adds, and it doesn't check the new feature.
+   - Fix: reset the preference in a `beforeEach`/`afterEach` through the API. Once preferences are per user, use a distinct user per test.
+
+#### Minor (Nice to Have)
+- `playwright.config.ts:9-10`: raising the global `timeout` to 90 s and the `expect` timeout to 20 s is unrelated to the feature and hides slowness. Justify it or drop it. If a test needs it, set it in that test.
+- `src/invoices/InvoiceList.tsx`: the URL `/api/prefs/invoice-status` appears twice. Possible Pragmatic Programmer DRY: name it as a constant.
+- `src/invoices/InvoiceList.tsx`: the component now mixes persistence and rendering. Possible Ousterhout shallow module: a small `useSavedStatus` hook would hide the fetch and save logic.
+- `server/api.js:112-114`: the `prefs` PUT returns `json(res, 204, {})`, copying the existing pattern. A 204 should have no body.
+
+### Recommendations
+- Run the whole e2e suite with workers in parallel once the reset is in place, to confirm there is no cross-test contamination.
+
+### Declined to judge
+- Whether `/facturas` and the nav links "Hojas" and "Facturas" exist as the test expects: this is routing, outside the diff, so I left it to the Spec/Architecture axes.
+- Whether in-memory persistence is enough, since it is lost on server restart: this is a product decision, and the existing clipboard and cells use the same approach.
+- Whether the test "cuatro opciones" belongs to this task: I can't tell from the package without the spec.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The core flow works, but the preference is shared by all users, the client has no error handling and has a load race, and the CRLF→LF change hides the real diff. Test state is also left behind on the server.
+

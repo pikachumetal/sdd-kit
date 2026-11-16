@@ -1,0 +1,59 @@
+--- [2]
+### Strengths
+- The change is small and uses function components with hooks, as the constraints ask.
+- `Status` is extracted as a type, so the `as` casts are shorter.
+- The server endpoint is simple and matches the existing style.
+- The UI text is in Spanish.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`e2e/0024-remember-filter.spec.ts:24`: the new E2E test names none of the core flows.**
+   - The test is `recuerda el filtro de estado al volver a facturas`.
+   - The core flows are sum a column, export to PDF, and mark an invoice as paid. This test covers none of them.
+   - Remembering a filter should be tested one layer down, for example a component test of `InvoiceList` with `fetch` mocked.
+   - The second test, `el desplegable de estado tiene cuatro opciones`, has the same problem. It only counts the options in a dropdown, which is a unit-level check.
+
+2. **`playwright.config.ts:8-9`: the timeouts are raised without a reason in `operations.md`.**
+   - `timeout: 90_000` and `expect.timeout: 20_000` replace the defaults, but the declared value is "por defecto".
+   - I can't find a reason in the diff, and `operations.md` is not in the package.
+   - These values also hide slowness for every test in the suite, not just this one. Remove them, or document the reason.
+
+3. **`e2e/0024-remember-filter.spec.ts:27`: the test waits on internal state between two user actions.**
+   - `expect.poll(() => savedStatus(request))` reads `/api/prefs/invoice-status` directly, which is server state the user doesn't see.
+   - There is no explaining comment.
+   - Without this wait, the navigation could happen before the PUT finishes. That is the race the test should catch, so the poll masks it.
+   - Drop the poll and assert only on what the user sees after navigating back. If the PUT really isn't guaranteed to finish, the app needs fixing (see item 4).
+   - `savedStatus` in `e2e/helpers.ts:53` exists only for this poll. It also calls the endpoint without the `x-user` header the other helpers send, and the endpoint isn't scoped per user.
+
+4. **`src/invoices/InvoiceList.tsx:114-120`: there is no error handling, and the initial fetch can overwrite a choice made while it is loading.**
+   - A failed or non-JSON response gives an unhandled rejection on both `fetch` calls.
+   - If the user picks a status before the GET resolves, the late response overrides it.
+   - Also, `saved.value && setStatus(saved.value)` sets any string the server returns without checking it against `STATUSES`.
+   - Fix: add a `.catch`, validate the value, and ignore a late response if the user has already chosen.
+
+5. **`server/api.js:94-96`: the preference is global, not per user.**
+   - `prefs` is keyed only by the name, while `clipboard` is keyed by the `x-user` header.
+   - With more than one user, the last person to choose a status sets it for everyone.
+   - Key it by `user` like the clipboard.
+
+#### Minor (Nice to Have)
+- `InvoiceList.tsx:115`: `.then(...)` returns the result of `&&` as an expression. A plain `if` would be clearer.
+- `server/api.js:95`: `JSON.parse` in `read` throws on malformed JSON and has no handler. This was already the case before this change, but the new PUT route adds another place that can hit it.
+
+### Declined to judge
+- Whether remembering the filter on the server instead of in `localStorage` is the right design. That is the Spec and Architecture axes.
+- Whether `/api/prefs` should be its own module. That is the Architecture axis.
+
+### Recommendations
+- Move the "remembers the filter" check to a component test with mocked `fetch`. Keep the E2E suite to the declared core flows.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works for the happy path. The new E2E tests don't cover a core flow, the Playwright timeouts are raised without a documented reason, the test waits on server state, and the component has no error handling and a race on load.
+

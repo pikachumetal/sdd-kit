@@ -1,0 +1,66 @@
+--- [27]
+Estoy terminando el repaso que exige la parada: la prueba del delta ha rechazado la spec, así que corrijo lo que rechaza y te la presento.
+
+--- [35]
+# Spec 0010: Motivo al cancelar
+
+🦆 Quien cancela una reserva tiene que elegir un motivo de una lista: cambio de planes, sala ocupada u otro. Por ejemplo, al cancelar la sala Norte del lunes con «sala ocupada», la respuesta es «cancelada Norte lun (sala ocupada)». Un motivo que no está en la lista se rechaza, y la respuesta enseña los tres válidos. Un listado nuevo de canceladas enseña la sala, el día, el motivo y quién canceló, por ejemplo «Norte lun — sala ocupada — Ana». Las anulaciones del responsable de sala no entran aquí.
+
+**No te recomiendo aprobarla todavía:** quedan cuatro huecos sin resolver, y dos de ellos impiden que funcione en uso real. Por eso la opción recomendada abajo es «Cambios», no «Apruebo», que es lo que marca el kit por defecto.
+
+## ✋ Sin resolver
+
+- **A. Quién canceló.** `cancelar` no recibe ninguna persona y la reserva no guarda ninguna, así que «Ana» no tiene de dónde salir. El roadmap solo pide el motivo; «quién» viene de la petición que cita la decisión 2.
+- **B. Conservar el motivo.** Las reservas viven en memoria y cada comando arranca de cero. Un `canceladas` lanzado después de `cancelar` no vería nada, aunque los tests pasen, porque corren en un solo proceso.
+- **C. `cancelar` sin `--motivo`.** Ningún escenario lo cubre, y `test/cancel.test.js` espera hoy «cancelada Norte lun» sin motivo.
+- **D. `canceladas` sin canceladas.** Ningún escenario dice qué responde.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Lista cerrada de motivos:** cambio de planes, sala ocupada, otro. La spec dice que lo decidiste en la entrevista, pero no trae tu frase literal, así que sigue en este bloque.
+2. **El listado enseña** sala, día, motivo y quién canceló (depende de A).
+3. **Sin review de spec:** son tres señales (capacidad nueva, cambio de la respuesta actual de `cancelar`, datos), y de 0 a 3 no se propone. La spec decía dos; el resultado no cambia.
+4. **Capacidad nueva `bookings`:** el proyecto aún no tiene `capabilities/`.
+5. **Textos de respuesta:** «cancelada Norte lun (sala ocupada)», «motivo no válido: cambio de planes, sala ocupada, otro» y «Norte lun — sala ocupada — Ana». No salen del roadmap.
+6. **Prueba del delta en una copia:** añade «Cancelar pide un motivo de la lista» y «El listado de canceladas enseña el motivo y quién canceló».
+7. **Política de modelos:**
+   - Revisores de la spec: ninguno.
+   - Revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan.
+   - Otros despachos en paralelo: ninguno. El tope es `control.maxParallelAgents`.
+   - Al aprobar, esta línea confirma el paralelismo que nombra.
+
+**Cambios que he hecho en el repaso:** aunque venía repasada, la prueba del delta la rechazaba porque declaraba `bookings` como «Modificadas» sin que exista el fichero. La he pasado a «Nuevas» y la prueba ya pasa. También he añadido el 🦆, los huecos A a D, los textos de respuesta y las líneas 6 y 7. No he tocado ningún escenario y nada está commiteado.
+
+## La spec
+
+**Intent:** hoy cancelar no deja rastro y nadie sabe por qué se liberó una sala. Se quiere el motivo de cada cancelación.
+
+**Scope**
+- Entra: `cancelar <sala> <día> --motivo <motivo>` y el comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+**Approach:** el motivo se guarda con la reserva cancelada, y `canceladas` lista las reservas con estado cancelada.
+
+**Dónde se prueba:** el motivo por el comando `cancelar` y el listado por la salida de `canceladas`, ambos en `test/cancel.test.js`.
+
+**Delta de `bookings`**
+- **ADDED: Cancelar pide un motivo de la lista**
+  - GIVEN la reserva de Norte del lunes, 10:00-12:00
+  - WHEN `cancelar Norte lun --motivo "sala ocupada"`
+  - THEN responde «cancelada Norte lun (sala ocupada)»
+  - AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro»
+- **ADDED: El listado de canceladas enseña el motivo y quién canceló**
+  - GIVEN la reserva de Norte del lunes cancelada por Ana con «sala ocupada»
+  - WHEN `canceladas`
+  - THEN responde «Norte lun — sala ocupada — Ana»
+
+**Aviso del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que estas reglas pueden ser de la versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project`, y después reinicia Claude Code.
+
+## ¿Apruebas la spec?
+
+La spec queda en espera hasta tu respuesta. Si eliges «Cambios», dime también qué hacemos con A a D.
+
+1. **Cambios (Recomendada):** resolver A a D antes de aprobar.
+2. **Apruebo:** tal como está, con los huecos abiertos.
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media.** El proyecto fija Native, así que esta sesión implementaría cada task, y eso va bien con Sonnet y effort medium. Bajar solo el effort de Opus no es gama media, y la sesión no puede cambiar su propio modelo. Después de aprobar no hay otra parada donde hacerlo.
+

@@ -1,0 +1,41 @@
+--- [24]
+Ahora: repaso de coherencia de la spec (búsqueda en el repo y fusión del delta sobre una copia). Queda: revisión con un revisor y presentarte la spec para aprobar, ~8 min.
+
+--- [43]
+Ahora: la spec está escrita, revisada en dos rondas y con la fusión del delta limpia. Queda: tu aprobación. Después escribo el plan y paso a la implementación, ~15 min.
+
+Estoy en la rama `feature/0010-lista-espera`. La spec está en `.docs/sdd/changes/20261114-170049-feature-0010-lista-espera/spec.md`, sin commit todavía.
+
+🦆 Hoy, si la sala que quieres está ocupada, solo puedes mirar otra franja con `libres`. Con esto, `esperar Norte lun 10:00-12:00` te apunta en la espera de esa sala, día y franja y te responde «Norte ocupada lun 10:00-12:00: apuntado en la lista de espera (posición 1)». Si la sala está libre, no apunta a nadie y te lo dice. La lista está solo en memoria y cada `node src/app.js …` es un proceso nuevo, así que desde la línea de comandos siempre sale posición 1. Las posiciones 2, 3… solo se ven en los tests.
+
+**✋ Decisiones que he tomado yo — valida estas** (como dijiste «empieza ya», no te pregunté nada y los huecos están aquí):
+1. **Comando**: `esperar <sala> <día> <franja>`, nuevo. No toco `reservar`, `libres` ni `cancelar`.
+2. **Ocupada** significa misma sala, mismo día y misma franja exacta. `Norte mar 10:00-12:00` está libre aunque `Norte lun 10:00-12:00` no. Una franja solapada no cuenta como ocupada.
+3. **Textos**, literales:
+   - `Norte ocupada lun 10:00-12:00: apuntado en la lista de espera (posición N)`
+   - `Sur libre lun 10:00-12:00: no hace falta lista de espera`
+   - `sala desconocida: Oeste`
+   - `uso: esperar <sala> <día> <franja>`
+4. **Sin validar** día ni franja, igual que la deuda ya anotada. `norte` en minúscula es sala desconocida y los argumentos de más se ignoran.
+5. **Orden de comprobación**: faltan datos, sala desconocida, libre, ocupada. Si faltan datos, no se miran las demás comprobaciones.
+6. **Posición** es el orden de llegada. Sin usuarios no hay duplicados, así que apuntarse dos veces da 1 y 2.
+7. **Solo en memoria**, como `bookings`. Descarté guardarla en un fichero JSON porque sería lo primero persistente de la herramienta.
+8. **Fuera**: avisar o pasar a reservada al cancelar (`cancelar` hoy no libera nada), ver la lista y salir de ella.
+9. **Salida**: `run` devuelve solo texto y se imprime con `console.log`. Lo único nuevo que exporta `src/app.js` es `resetEspera()`, para aislar los tests.
+10. **Pieza de base**: sin avisos al cancelar, la lista no sirve todavía por sí sola.
+11. **Enfoque**: comando nuevo `esperar`. Descarté que `reservar` apunte solo a la espera, o un flag `--espera`, porque `reservar` hoy es un esbozo.
+12. **Capacidad nueva**: `room-waitlist`.
+13. **Sin `§Frontend`**: es una CLI.
+14. **Id 0010**: lo reservó `sdd id next`. Ninguna fila del roadmap lo nombra y no he añadido fila.
+
+**Revisión** (un revisor en sonnet, más una segunda ronda por un Crítico aceptado):
+- Aceptado: quité la promesa de posición 2 por línea de comandos, completé los textos literales, añadí los escenarios que faltaban y las cinco reglas de la capacidad.
+- Rechazado: un accesor de test para detectar entradas fantasma en otra clave, porque no hay comportamiento observable que lo delate.
+- Rechazado: la duda sobre la rama, que sale de `develop`.
+
+El detalle está en «Hallazgos» dentro de la spec. Planeo 1 o 2 tasks, todas en `src/app.js` y `test/app.test.js`, así que no propongo dividirla.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a la implementación.
+2. **Cambios**: dime qué decisión cambias, por ejemplo guardar la lista en disco.
+

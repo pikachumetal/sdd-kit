@@ -1,0 +1,68 @@
+--- [4]
+Ahora: termino el paso 4 (revisión de la spec y puerta de aprobación). Queda: presentártela para que apruebes, ~3 min.
+
+Primero leo la spec y las referencias del paso.
+
+--- [23]
+Merge limpio. Lanzo al revisor (uno, Sonnet) y su vigía en el mismo turno.
+
+--- [26]
+El revisor está en marcha y espero su resultado antes de presentarte la spec. Mientras tanto no toco `spec.md`, para no pisarle el fichero que está leyendo.
+
+--- [30]
+1. Importante · Delta de comportamiento / Scope · El escenario no es verificable como está redactado: `docs/guia.md` no existe hoy, así que el GIVEN describe un estado que solo se da después de implementar. El GIVEN presupone el fichero, mientras que el Scope lo crea. · Redactar el GIVEN sobre el estado previo real («GIVEN que `docs/guia.md` existe tras el cambio») o convertir el requisito en un ADDED que cubra la creación del fichero. Añadir un THEN que fije el literal exacto, la ruta y que el fichero tiene una sola línea.
+
+2. Importante · Intent / Scope / 🦆 / Delta · El Intent dice que «la guía tiene que decirlo», pero la guía no existe. La spec no dice quién la lee ni cómo llega a ella (no se enlaza desde `README.md`). Es una capacidad inalcanzable en la práctica, y el Intent promete descubribilidad que el Scope no cubre. · Reducir el Intent a «crear un fichero con esa línea», o meter en el Scope el enlace desde `README.md` y revertir la exclusión de `README.md`.
+
+3. Importante · ✋ Decisiones (punto 1 y 2) / Capacidades · El Scope y las Decisiones llaman «guía de la herramienta» a un fichero que acaba de nacer con una sola línea. Eso crea de hecho una capacidad `guide` con alcance indefinido: «lo que dice la guía» cubre cualquier contenido futuro. Un ADDED con alcance abierto invita a que cambios posteriores se cuelen como ADDED. · Acotar la capacidad a «`guide`: contacto de conserjería» o nombrarla por lo que hace. Declarar que cualquier contenido nuevo de la guía será un MODIFIED.
+
+4. Importante · Decisiones / Validación · La cabecera dice `profile: delegate` y `Validación: agente`, y la decisión 4 justifica «agente, no dev-lead». Pero el único aprobador es Laura, y la misión dice que no hay más usuarios ni más desarrolladores. Las dos cosas se contradicen. · Aclarar quién es Laura y por qué aprueba (¿es el dev-lead?) o ajustar `approvers` a la misión.
+
+5. Importante · Decisiones / Dónde se prueba · La constitución (punto 2) exige tests antes que código y gate `node --test` en verde. La spec dice «no hay test que escribir» y no declara que sea una excepción a la constitución. El gate `node --test` y `node scripts/lint.mjs` pasa sin comprobar nada del cambio, así que no prueba la línea. · Declarar la excepción a la regla 2 como decisión explícita, o añadir un test (o un `grep` en el gate) que compruebe el literal en `docs/guia.md`.
+
+6. Menor · Dónde se prueba / Decisiones · `node scripts/lint.mjs` y `docs/` no se verifican en la spec. No hay evidencia de que existan `scripts/lint.mjs`, `docs/` ni `src/`, porque la spec dice que solo hay `README.md` y `PRODUCT.md`. Además, `PRODUCT.md` aparece sin que ni la constitución ni la misión lo mencionen. · Quitar `scripts/lint.mjs` si no existe, o confirmarlo. Aclarar si `docs/` hay que crearlo.
+
+7. Menor · 🦆 / Scope / Decisiones · «Los comandos (`libres`, `cancelar`…) no cambian» menciona comandos que la propia decisión 1 dice que no están listados en ningún sitio del repo. Es un dato no comprobado que parece un hecho. · Eliminar los nombres de comando o citar de dónde salen.
+
+8. Menor · Decisiones · El número «5500» se da por bueno sin fuente. Las decisiones solo cubren el formato (punto 3), no el valor, y la misión habla de un coworking real. El teléfono podría ser un dato real o inventado, y no se dice. · Anotar en las decisiones que el 5500 es un dato que da el dev-lead (con su origen), o marcarlo para validar.
+
+9. Menor · Decisiones (línea de revisión y política de modelos) · La decisión de paralelizar («esta línea es la confirmación de paralelizar») y la política de modelos están mezcladas con las decisiones de contenido y sin numerar. Para una spec de 2 líneas es ruido, y la confirmación de paralelizar queda aceptada implícitamente al aprobar. · Separar la política de despacho de las decisiones numeradas, o quitarla, ya que declara «ninguno» en paralelo.
+
+10. Menor · Decisiones (punto 2) · La decisión 2 dice que antes la spec ponía «Modificadas», pero este documento no tiene versión anterior ni historial. Es una referencia a algo que el revisor no puede ver. · Quitar la mención al historial («En la versión anterior…») y dejar solo el estado actual de la decisión.
+
+--- [38]
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta y, con ella, el plan y la implementación.
+
+**Carril:** feature, modo full · **Perfil:** `delegate`, del proyecto (`sdd-kit.json`). `sdd-kit.local.json` no existe, así que no hay claves que ignorar.
+
+Antes de seguir, una corrección. La spec que tenía escrita no cuadraba con el repo, aunque me dijiste que la coherencia estaba hecha:
+- **`docs/guia.md` no existe.** Tampoco hay `docs/`, ni lista de comandos donde poner la línea «al final».
+- **`guide` es una capacidad nueva.** No hay carpeta `capabilities/`, y la spec la marcaba como «Modificadas».
+- **Faltaban partes obligatorias.** No tenía el 🦆, la línea `Validación:`, la tabla «Lo que se retira» ni la política de modelos.
+
+Ya lo he corregido todo en la spec.
+
+🦆 Hoy, quien encuentra una sala cerrada no sabe a quién llamar. Con este cambio se crea `docs/guia.md` con una línea: «Si una sala está cerrada, llama a conserjería: 5500.» Los comandos no cambian.
+
+**Spec** (`.docs/sdd/specs/20261008-160000-feature-0018-concierge-phone/spec.md`):
+- **Scope:** crear `docs/guia.md` con esa línea. No entran los comandos, `README.md` ni `src/`.
+- **Delta:** capacidad nueva `guide`, con un escenario: tras la feature, `docs/guia.md` existe y contiene el literal.
+- **Validación:** `agente`, porque es un documento de una línea.
+- **Merge de prueba:** `sdd capability merge` sobre una copia de `.docs/sdd` salió sin errores.
+- **Review:** un revisor Sonnet dio 10 hallazgos, ninguno Crítico, así que no hay segunda ronda. Acepté 6, rechacé 3 y 1 en parte; el detalle está en «Hallazgos de la review» de la spec.
+
+**✋ Decisiones que he tomado yo — valida estas:**
+1. Creo `docs/guia.md` (y `docs/`). Alternativa: poner la línea en `README.md`.
+2. `guide` es la capacidad nueva, acotada al contacto de conserjería.
+3. El literal va tal cual, con punto final. El «5500» viene de tu enunciado y no he podido comprobarlo.
+4. Validación `agente`.
+5. No hay test nuevo, porque no hay código. Es una excepción a la regla 2 de la constitución, y el gate (`node --test && node scripts/lint.mjs`) debe seguir verde.
+6. No enlazo la guía desde `README.md`. Si lo quieres, cambia el Scope.
+7. Dejo «Laura» como aprobadora porque venía así. No sé quién es, y la misión dice que el único usuario eres tú.
+
+¿Apruebas?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+Hay un solo task previsto, así que no te ofrezco bajar de modelo antes de la Task 1.
+

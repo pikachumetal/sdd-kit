@@ -1,0 +1,63 @@
+--- [5]
+Ya estoy en la rama de la feature. Leo spec y plan.
+
+--- [10]
+Uso sdd-worktrees. Ya estoy en un worktree de la rama de la feature, así que no creo otro. Compruebo el aislamiento, abro el workspace y miro el código.
+
+--- [13]
+Es un checkout normal, pero ya está en la rama `feature/0032-free-rooms-fast`, no en `main`. Trabajo aquí sin crear otro worktree. Ahora corro la línea base en un worktree desacoplado.
+
+--- [19]
+La task es un spike: «Evidencia» sustituye a los tests RED. Escribo el script de medida en la carpeta de la spec y lo ejecuto con 10 repeticiones, que es lo que pide el apartado de aguante.
+
+--- [22]
+La medida está hecha. En caliente son unos 0,021 ms por llamada, pero la primera llamada en frío tarda 0,137 ms, así que `research.md` tiene que recoger las dos cifras.
+
+--- [27]
+Task 1 completa. Ahora la revisión final de la rama con `sdd-verify`.
+
+--- [30]
+En un spike solo sale el eje Spec. No tengo herramienta de subagentes, así que hago la revisión yo mismo y lo digo. Leo el brief del eje.
+
+--- [36]
+Ese comando no hizo nada. Uso Edit.
+
+--- [40]
+El `node` de reserva sí había aplicado los cambios. Compruebo el resultado.
+
+--- [42]
+Las correcciones están aplicadas. Compruebo el gate de cierre completo antes de dar nada por bueno, y luego hago el commit y cierro el ledger y `tasks.md`.
+
+--- [48]
+Voy con el cierre. Primero los pre-checks: árbol limpio, `merge --check`, otros worktrees y el estado del roadmap.
+
+--- [51]
+Implementé el plan completo (una sola task) y la revisión final está hecha, pero no he cerrado la feature. El cierre se queda en el pre-check de `sdd-archive`, que falla: a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`.
+
+## Resultado del spike
+- **Medida:** con 1.000 reservas activas en la misma franja, cargadas con `seed`, `libres` tarda de media 0,0208 ms por llamada. El rango es 0,0198–0,0234 ms en 10 repeticiones de 1.000 llamadas, y el tiempo se mantiene estable.
+- **O1 (< 0,05 ms):** cumple en caliente. La primera llamada tras cargar el módulo tardó 0,1369 ms, por encima del umbral. Es una sola muestra y no he medido el arranque de `node src/app.js libres` por proceso.
+- **Memoria:** el heap sube 0,04 MB en las 10 repeticiones. No sé si es ruido o una fuga.
+- **Recomendación:** no abrir la caché por rendimiento en caliente. Si la oficina usa `libres` como CLI de un proceso por consulta, hay que medir el arranque por proceso antes de dar la decisión por cerrada.
+- **Lo que sale:** `freeRooms` hace `bookings.slice().sort(...)` y descarta el resultado, un coste sin efecto en cada llamada. Hay que abrir una fila de roadmap para quitarlo. No lo toqué porque el spike no deja código de producción, y no medí cuánto bajaría el tiempo.
+- **Gate:** `node --test` da 4/4 en verde, en el baseline y al final.
+- **Commits:** `fca7726` (medida y `research.md`) y `683c9c9` (ajuste de la recomendación y `tasks.md`). Los ficheros están en la carpeta de la spec: `research.md`, `salida-bruta.txt`, `measure-libres.mjs` y `tasks.md`.
+
+## Rulings I made
+1. **Spike con una sola task, sin `tasks.md` de varias filas:** lo escribí igualmente para el registro. Si fallara, el coste es ninguno.
+2. **Revisión final del eje Spec hecha por mí:** no tengo herramienta de subagentes, así que es una autorrevisión, con menos independencia que un revisor con contexto limpio. Encontré dos fallos y los corregí en `683c9c9`:
+   - La recomendación afirmaba que una caché no mejora la llamada en frío, sin haberlo medido.
+   - El estado de O1 usaba un vocabulario fuera de la plantilla.
+
+   Esa pasada de fix no tiene test RED porque es un documento, y no hubo re-revisión independiente.
+3. **Sin worktree nuevo:** la rama ya era la de la feature, no `main`. Si fallara, el coste es ninguno.
+
+## Deferred minors
+Ninguno.
+
+## Pendiente
+- **Cierre bloqueado:** falta `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Con el bloque incompleto, el merge hay que presentarlo y esperar a que lo decidas. No fusioné nada.
+- **Versión del kit:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Antes de escribir walkthrough, roadmap y changelog conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code. El roadmap actual es de forma 2.x y la 0032 no está en él.
+
+Dime cuál es la rama destino, y si quieres `--no-ff`. Dime también si cierro ahora con el kit cargado o prefieres actualizarlo antes.
+

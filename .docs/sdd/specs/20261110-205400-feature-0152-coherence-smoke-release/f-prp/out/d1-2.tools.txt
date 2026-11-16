@@ -1,0 +1,80 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -1
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md .docs/sdd/sdd-kit.json package.json; cat src/app.js test/cancel.test.js; cat .docs/sdd/specs/*patch-0007-cancel/patch.md
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-f-0152\skills\sdd-propose\references\patch-lane.md
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md; grep -il "cancel\|findBooking" .docs/sdd/specs/*/*.md; grep -n -i "gate\|min" .docs/sdd/specs/*/walkthrough.md | head -20; git log --oneline | head; git branch --show-current
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+=== RESULTADO (10 turnos, 0.165633 $)
+🦆 Hoy, al cancelar una reserva, el programa busca solo la sala y no mira el día. Con Norte reservada el lunes, «cancelar Norte mar» encuentra esa reserva, la anula y responde «cancelada Norte mar», aunque el martes no tuviera nada. La reserva del lunes queda perdida y nadie se entera. La corrección es que la búsqueda compare también el día. Entonces el martes responderá «sin reserva Norte mar» y el lunes seguirá en pie. El mismo fallo afecta a «anular», porque comparte la búsqueda, y la corrección lo arregla también.
+
+Es un patch. La causa es determinista: la búsqueda de reservas ignora el día, y es el mismo tipo de fallo que el patch 0007, que solo corrigió la hora. Un test lo reproduce hoy: reservar Norte el lunes, cancelar Norte el martes y esperar «sin reserva Norte mar». El arreglo lo pone en verde y no hay nada que decidir de diseño. Ninguna feature con walkthrough abierto toca esto.
+
+**Estimación:** 0,5 h, más 0,02 h del gate de cierre (`node --test && node scripts/lint.mjs`, unos 1 s según operations; no hay un cierre medido todavía). Perfil actual: `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Lo abro como patch?
+
+1. **Sí, patch (Recomendada).** Creo la rama, la carpeta y el id, escribo el test que falla y lo arreglo.
+2. **Sí, patch, y cambio el perfil** a `pair` o `unattended` para este patch.
+3. **No, mejor como feature**, con spec y plan completos. Es más pesado y no veo qué decidir de diseño.

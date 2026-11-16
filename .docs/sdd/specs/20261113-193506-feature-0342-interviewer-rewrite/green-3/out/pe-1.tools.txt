@@ -1,0 +1,266 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las s
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json; ls src test; cat src/*.js | head -150; ls node_modules 2>&1 | head -2; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references" && cat nombrado.md control-profiles.md | head -200
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" id next --project-root . --reserve; git status --short; git branch --show-current; git remote -v
+<<< 0010
+develop
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0010-exportar-reservas-csv && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" id claim --project-root .; git status --short; cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/spec-writing.md"
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0010-exportar-reservas-csv'
+sin remoto: la 0010 vale (contador local)
+# Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get ther
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.26779600000000003 $)
+Ahora: entrevista de diseño de la spec, con la rama `feature/0010-exportar-reservas-csv` ya creada. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** un comando nuevo (por ejemplo `exportar Norte`) que saca las reservas de una sala en CSV. El responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Hoy las reservas son `sala · día · franja` (`Norte · lun · 10:00-12:00`), sin fechas. Calculo 1–3 tasks, así que no propongo partir la feature. Corrígeme lo que no case.
+
+❓ **¿Con qué separador sale el CSV?**
+Lo decide cómo abre el fichero tu hoja de cálculo. Según tengo entendido, Excel en castellano espera `;` como separador y, con `,`, mete cada fila entera en una sola columna. No lo he comprobado aquí. Un ejemplo del resultado en cada caso:
+
+1️⃣ **`;` y UTF-8 con BOM**
+```
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Se abre bien en columnas en Excel en castellano. En una hoja configurada en inglés o en otras herramientas, podría quedar en una sola columna.
+
+2️⃣ **`,` estándar (RFC 4180)**
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Es el CSV universal, pero en Excel en castellano puede abrirse sin separar columnas.
+
+➡️ **Recomiendo 1️⃣**, porque el caso es una hoja de cálculo de uso diario, y es probable que sea en castellano. A cambio, otras herramientas pueden necesitar indicar el separador al importar.
+
+¿Qué hoja de cálculo usa el responsable (Excel, Google Sheets, LibreOffice) y en qué idioma?
+
+=== RESULTADO (1 turnos, 0.2877253 $)
+Decidido: separador `;` y UTF-8 con BOM, porque lo abren en Excel en castellano.
+
+❓ **¿Dónde sale el CSV?**
+Hoy todos los comandos escriben su resultado por pantalla (`libres` → `Norte, Sur`).
+
+1️⃣ **Por pantalla, y redirigís vosotros**
+`exportar Norte > norte.csv` deja `norte.csv` listo para abrir. Es lo mismo que hacen los demás comandos y no hay opciones nuevas. Si lo lanzan desde PowerShell clásico, el `>` puede reescribir el fichero en UTF-16 y estropear el BOM.
+
+2️⃣ **Por pantalla, y con `--salida` opcional**
+`exportar Norte --salida norte.csv` escribe el fichero y responde `Exportadas 3 reservas de Norte a norte.csv`. Sin `--salida` sale por pantalla como en 1️⃣. Evita el problema de la codificación, pero añade una opción y escribir en disco, con sus errores (ruta inválida, fichero que ya existe).
+
+➡️ **Recomiendo 1️⃣**, porque es el comportamiento del resto de comandos y el responsable lo ejecuta en tu servidor, donde `>` no toca la codificación. A cambio, quien lo lance desde PowerShell clásico en Windows tendrá que usar otra consola o redirigir con otra herramienta.
+
+¿Quién ejecuta el comando: tú en el servidor y les pasas el fichero, o lo lanzan ellos desde su equipo?
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills"; ls "$K/sdd-templates/templates"; cat "$K/sdd-templates/templates/spec-template.md"; cat "$K/sdd-propose/references/coherence-pass.md"; cd "<run>/repo"; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat test/app.test.js
+<<< adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+patch-template.md
+plan-template.md
+PRODUCT-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+retro-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+validation-template.md
+walkthrough-template.md
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gesto
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills"; cat "$K/sdd-propose/references/review-spec.md"; cat "$K/sdd-templates/templates/capability-template.md"; cat "$K/sdd-rubber-duck/SKILL.md" | head -60
+<<< # Spec review — the complexity rubric and the adversarial reviewer
+
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate; the message that dispatches it opens with the phase notice. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+
+## 1. Count the signals (observable in the spec)
+
+| Signal | Holds if… |
+| --- | --- |
+| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+| Public contract | the delta touches
+
+>>> Bash: date -u +%Y%m%d-%H%M%S; git -C "<run>/repo" config user.name; git -C "<run>/repo" grep -nEi "export|csv" -- . ':!.docs/sdd/specs' | head
+<<< 20261114-160012
+Fixture
+ROADMAP.md:19:| 0009 | — | **Exportar reservas a calendario (.ics)**<br>*Idea propia* | ⏳ | — | — |
+src/app.js:9:export function run(cmd, params) {
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md"; echo "exit $?"; ls "$T/sdd/capabilities" 2>&1; cat "$T/sdd/capabilities/bookings.md" 2>&1 | head -30; git status --short
+<<< bookings.md: añadido «Exportar las reservas de una sala a CSV»
+bookings.md: añadido «Una sala sin reservas se exporta con solo la cabecera»
+bookings.md: añadido «Un valor con el separador se entrecomilla»
+bookings.md: añadido «Exportar una sala que no existe es un error y no ensucia el fichero»
+exit 0
+bookings.md
+# Capacidad — bookings
+
+## Propósito
+
+las reservas de las salas y cómo se consultan y se sacan de la herramienta.
+
+## Requisitos
+
+### Exportar las reservas de una sala a CSV
+
+- GIVEN la sala Norte tiene una reserva el lunes de 10:00-12:00
+- WHEN se ejecuta `exportar Norte`
+- THEN sale
+
+>>> Bash: cd "<run>/repo" && grep -n "BOM UTF-8" .docs/sdd/specs/*0010*/spec.md | cat -A | cut -c1-200
+<<< 102:- THEN sale por pantalla el texto que empieza por el BOM UTF-8 (`M-oM-;M-?`) seguido de `sala;dM-CM--a;franja` y, en la lM-CM--nea siguiente, `Norte;lun;10:00-12:00`$
+
+>>> Bash: cd "<run>/repo" && F=$(ls .docs/sdd/specs/*0010*/spec.md) && node -e '
+const fs=require("fs");let s=fs.readFileSync(process.argv[1],"utf8");
+s=s.replace("\uFEFF","U+FEFF");
+s=s.replace("- Política de modelos:","- Pasada de coherencia: nada se retira; el delta probado sobre una copia de `.docs/sdd` con `sdd capability merge` — 4 requisitos añadidos a `bookings.md`, sin rechazos.\n- Política de modelos:");
+fs.writeFileSync(process.argv[1],s)' "$F" && grep -n "U+FEFF\|Pasada de coh" "$F" | cut -c1-160; grep -c $'\xEF\xBB\xBF' "$F"
+<<< 42:- Pasada de coherencia: nada se retira; el delta probado sobre una copia de `.docs/sdd` con `sdd capability merge` — 4 requisitos añadidos a `bookings.md`
+103:- THEN sale por pantalla el texto que empieza por el BOM UTF-8 (`U+FEFF`) seguido de `sala;día;franja` y, en la línea siguiente, `Norte;lun;10:00-12:00`
+0
+
+=== RESULTADO (8 turnos, 0.5478439000000002 $)
+Ahora: puerta de aprobación de la spec. Queda: tu respuesta; después el plan (sin parada en `delegate`) y la implementación, ~15 min.
+
+La spec está en `.docs/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md`, sin commit hasta que la apruebes.
+
+🦆 Con `exportar Norte` sale por pantalla el CSV de las reservas de esa sala: una cabecera `sala;día;franja` y una línea por reserva, por ejemplo `Norte;lun;10:00-12:00`. Redirigido a un fichero (`exportar Norte > norte.csv`), el responsable de la sala lo abre los lunes en Excel en castellano y le salen tres columnas, con tildes bien. Si la sala no existe, no sale nada por pantalla: el error va aparte, para que no acabe dentro del fichero. Por dentro, el comando arma las líneas a partir de las reservas que ya conoce la herramienta.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Capacidad nueva `bookings`, porque hoy no hay ninguna y esta es la primera.
+2. Comando `exportar <sala>`.
+3. Enfoque: una función pura `toCsv` más `exportBookings(sala)`. Descarto escribirlo todo a mano en `run` y la opción `--salida`.
+4. Cabecera `sala;día;franja`, y las filas en el orden en que están las reservas.
+5. Una sala sin reservas sale con solo la cabecera.
+6. Sala desconocida o ausente: error por la salida de errores y código 1, sin nada por la salida normal. Si no, `> norte.csv` guardaría el mensaje como una fila más. Literales: `sala desconocida: Oeste (salas: Norte, Sur)` y `falta la sala: exportar <sala>`.
+7. Un valor con `;`, `"` o salto de línea sale entre comillas, con las comillas internas duplicadas. La franja no se valida hoy, así que un valor así puede existir.
+8. El nombre de sala se compara tal cual (`Norte`, no `norte`), como en los demás comandos.
+9. Las líneas acaban en `\n`.
+
+**Lo que no entra:**
+- Filtrar por día o franja.
+- `--salida`.
+- El `.ics`, que es la fila 0009.
+- Neutralizar celdas que empiezan por `=`.
+- Guardar las reservas de `reservar`: hoy no guarda nada y las reservas salen de una lista fija en el código, así que `exportar` muestra lo mismo que ve `libres`.
+
+**Dos avisos:**
+- **La review de la spec no se ha despachado.** El rubric pide dos revisores, por el contrato público del formato del fichero. Esta sesión no tiene herramienta de subagentes, así que me he releído la spec con los siete puntos y no he encontrado contradicciones. Eso no es una revisión independiente.
+- **Hay un punto pendiente:** quién ejecuta el comando, tú en el servidor o el responsable desde su equipo. No cambia el comportamiento, pero sí cómo le llega el fichero. Si lo lanzan desde PowerShell clásico en Windows, el `>` puede reescribir el fichero en UTF-16 y estropear el BOM.
+
+El delta lo probé sobre una copia con `sdd capability merge`, sin rechazos. Validación: dev-lead, porque lo que hay que mirar es el fichero abierto en Excel.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+¿Apruebas la spec?
+
+=== RESULTADO (1 turnos, 0.5641266000000001 $)
+De acuerdo. La spec queda en espera: sin aprobar, sin plan y sin código.
+
+Lo que queda en el repo:
+- **Rama:** `feature/0010-exportar-reservas-csv`, con el id 0010 ya reservado.
+- **Spec:** `.docs/sdd/specs/20261114-160012-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft` y sin commit.
+- **Roadmap:** todavía no hay fila 0010 en `ROADMAP.md`. La añadiré con el commit de apertura cuando apruebes.
+
+Cuando vuelvas, di «retoma la feature» y presento otra vez la puerta de aprobación. Para aprobar basta con «apruebo». Si prefieres cambios, dime cuáles. También puedes decirme quién ejecuta el comando, que es el punto pendiente.
+
+=== RESULTADO (3 turnos, 0.5700217800000001 $)
+conversación con persona: 3 respuestas

@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-end-release
+<<< Launching skill: sdd-kit:sdd-end-release
+
+>>> Bash: cd "<run>/repo" && git status --short && git branch -a && cat .docs/sdd/sdd-kit.json && ls .docs/sdd .docs/sdd/specs 2>/dev/null && cat .docs/sdd/changelog.md && cat .docs/sdd/roadmap.md
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0257-release-merge-read-base-ci/.temp/r257/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd; cat .docs/sdd/operations.md | head -80
+<<< * develop
+  main
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
+<<< roadmap.md: línea 34: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+cat: .docs/sdd/operations.md: No such file or directory
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd/specs; grep -n -i -A12 "testing\|suites\|CI de la base" .docs/sdd/tech-stack.md; ls .github/workflows 2>/dev/null; cat package.json; git fetch 2>&1 | head -3; git rev-parse HEAD
+<<< .docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+6:## Testing
+7-
+8:- **Suites**: `node --test` · ~1 s · unitario
+9:- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`
+ci.yml
+{"type": "module"}
+3d5694510d8a99e9f1063d501846c667b4ffa17f
+
+>>> Bash: cd "<run>/repo" && gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha 2>&1
+<<< [{"conclusion":"success","headSha":"7712caab1bd82b6d8655304ca0108a11a4d182ba"}]
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -15
+<<< ✔ libres excluye la sala reservada en la franja (0.6137ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1019ms)
+✔ cancelar una reserva activa (0.6183ms)
+✔ cancelar sin reserva lo dice (0.1013ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101.4464
+
+=== RESULTADO (8 turnos, 0.1481983 $)
+La release 0.4.0 está sin cerrar: el roadmap no tiene la forma de la plantilla, así que no he cortado nada. El changelog, el roadmap, el tag y el merge siguen como estaban.
+
+**Entrada**
+- **Evidencia:** las features 0005 y 0006 tienen walkthrough y el patch 0007 tiene `patch.md`.
+- **Suite:** `node --test` pasa, 4 de 4, sobre `3d56945`, el HEAD de `develop`.
+- **CI de la base:** el último run está en `success`, pero sobre `7712caa`, no sobre `3d56945`. Por eso corrí la suite en local, como pide el gate.
+
+**Scope (paso 1)**
+- **Entra:** todo lo de `[Unreleased]`: 0005 y 0006 (Added) y el patch 0007 (Fixed).
+- **Pasa a la siguiente:** la 0010 se queda en «Próximo», junto con 0011-0014 y el 1. Eso no requiere tocar nada.
+- **Versión:** 0.4.0 es un minor pre-1.0 con funcionalidades nuevas. Tu orden y esa versión cumplen dos de las tres condiciones del atajo. La tercera no se cumple: `release.hasRecipient: false` ya está en el JSON, pero no veo que lo hayas escrito tú en esta conversación. Por eso el merge y el tag esperan tu confirmación.
+- **Release notes (paso 3):** sin destinatario, el paso se omite.
+
+**Lo que bloquea (paso 4)**
+`sdd roadmap check` da dos fallos de forma:
+- `roadmap.md:34`: «v0.3.0 (2026-09-01)» debería ser «### v<versión> — <AAAA-MM-DD>».
+- `roadmap.md:22`: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |».
+
+Para llevarlo a la forma, la skill remite al paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, que tiene su gate de dev-lead. Mientras no lo pase, el paso 4 queda pendiente y el 5 no se ejecuta.
+
+**Aviso del kit**
+El hook avisa de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Puedes actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+**Siguiente paso**
+Dime si quieres que lleve el roadmap a la forma con esa migración. Si el dev-lead da su visto, sello el changelog como `[0.4.0] - 2026-10-29` y colapso el roadmap. Luego preparo el merge de `develop` a `main` y el tag anotado `v0.4.0`, que ejecuto cuando me lo confirmes.

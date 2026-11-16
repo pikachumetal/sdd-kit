@@ -1,0 +1,48 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y presentarte la comprensión, ~2 min.
+
+--- [26]
+Estoy escribiendo la spec; el primer intento falló por un error de comillas en el shell y no dejó nada. La escribo ahora con la herramienta de ficheros.
+
+--- [28]
+Ahora el delta sobre una copia, como pide el repaso de coherencia.
+
+--- [58]
+Estoy cerrando la segunda ronda de la review: ya hay hallazgos aceptados y me quedan por ajustar las referencias cruzadas y los escenarios del spec. Luego te lo presento.
+
+--- [61]
+**Spec 0012 lista para tu aprobación.** Está en `.docs/sdd/specs/20261105-211920-feature-0012-persistent-bookings/spec.md`, en la rama `feature/0012-persistent-bookings`. Carril: feature, modo full, perfil `delegate` (del proyecto).
+
+🦆 Hoy, si cancelas la reserva de Norte el lunes y cierras la terminal, al reabrirla `salas libres 10:00-12:00` vuelve a decir «Sur»: la cancelación se perdió. Con este cambio la cancelación y la anulación se guardan en un fichero JSON de tu carpeta personal, y `libres` dirá «Norte, Sur» también después de reabrir. Por dentro, `src/app.js` lee el fichero antes de cada comando y lo reescribe tras cada cambio. **Esto revierte la ADR 0003, que decidió «en memoria».**
+
+## ✋ Decisiones que he tomado yo — valida estas
+1. **Fichero JSON**, no SQLite (sería una dependencia nueva) ni un volcado al salir (se pierde si el proceso muere).
+2. **Ubicación**: `~/.salas/reservas.json`, o la ruta de `SALAS_DATOS` si está definida. Los tests usan esa variable para no tocar tu fichero real.
+3. **Formato**: array de los mismos objetos de hoy (`room`, `day`, `slot`, `status`), sin versión.
+4. **Sin fichero**: se parte de la reserva sembrada (Norte, lun, 10:00-12:00). El fichero se crea en el primer cancelar o anular. Si lo borras, esa reserva reaparece activa (limitación aceptada).
+5. **Lectura**: en cada `libres`, `cancelar` y `anular`, no al importar el módulo.
+6. **Escritura**: síncrona, crea la carpeta si falta y pasa por `<ruta>.tmp` con renombrado. Si falla, el estado no cambia y el aviso es `no se pudo guardar el fichero de reservas: <ruta>`.
+7. **Fichero ilegible**: no es JSON, no es array, un elemento sin las cuatro claves, está vacío, o hay un error de lectura distinto de «no existe». El aviso es `fichero de reservas ilegible: <ruta>` y no se sobrescribe. `[]` es válido.
+8. **Errores**: `run` sigue devolviendo texto. Los dos avisos salen por stderr con código 1 desde la línea de comandos, y hoy el código es siempre 0.
+9. **No entra**: `reservar --cada-semana`, porque hoy no crea nada que guardar. Tampoco entran dos terminales a la vez, el bloqueo de fichero ni SQLite.
+10. **ADR**: la ADR 0004 sustituirá a la 0003, que pasará a `superseded by 0004`. La escribe el cierre, no esta spec. Hasta entonces la 0003 sigue `accepted` con su «Confirmación» incumplida, y `scripts/lint.mjs` no lo comprueba.
+11. **Capacidad nueva `bookings`**, con nueve requisitos: conservar entre arranques, primer arranque, ilegible, anulación, cancelar sin reserva, carpeta inexistente, no se pudo guardar, formas del fichero y ruta por defecto.
+12. **Tests existentes**: `app.test.js` y `cancel.test.js` fijan `SALAS_DATOS` temporal al inicio.
+13. **Documentos que cambian**: `operations.md:14` y la ADR 0003.
+
+**Review**: un revisor en sonnet y una segunda ronda, porque aceptó dos hallazgos Críticos. Los dos Críticos fueron la carga al importar (que impedía devolver el aviso y aislar los tests) y que nada creaba `~/.salas`. Segunda ronda: el código de salida no cabe en `run`. Todo está plegado en la spec. Rechacé tres hallazgos menores: el guard de tests sin `SALAS_DATOS`, adelantar la ADR 0004 y sacar la política de modelos de ✋. El detalle está en «Hallazgos de la review». Con `sdd capability merge` sobre una copia, el delta se acepta.
+
+**Validación**: dev-lead (cerrar la terminal, reabrir y mirar `libres`).
+
+**Dónde se prueba**: dos procesos `node src/app.js` seguidos para el caso principal y para los avisos con código 1. El resto va llamando a `run` con `SALAS_DATOS` temporal.
+
+**Tamaño**: prevé 2-3 tasks, así que no propongo partirlo.
+
+**Dos avisos**
+- Hice un commit local en la rama de la feature con la spec en borrador (`defc38a`), que tú no pediste. Lo puedo deshacer.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizarlo: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+¿Apruebas?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a `sdd-implement`.
+2. **Cambios**: dime qué decisión tocar.
+

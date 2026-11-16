@@ -1,0 +1,41 @@
+--- [11]
+Ya tengo la causa y falta tu confirmación del carril, porque en un patch la pregunta va antes de crear rama o carpeta.
+
+🦆 Hoy la reserva de Sur de 09:30 a 12:00 se rechaza con «excede el máximo de horas», aunque dura justo 2,5 horas, el máximo permitido. El programa lee «09:30» como el número 9,30, y 9,30 no son 9 horas y media: la mitad de una hora son 0,5, no 0,30. Por eso calcula 12 − 9,30 = 2,7 horas y supera el límite. El mismo error falla con cualquier hora que no sea «en punto» y también falsea el cálculo del precio. Ya existe un test que lo reproduce y falla hoy: «reservar justo el máximo de horas se acepta».
+
+Falta decidir el carril.
+
+1. **Patch (recomendada).** El fallo es determinista y la causa fija la solución: convertir los minutos a fracción de hora (30 min = 0,5 h). El test que ya falla pasa a verde, y añadiría uno para `precio` con una hora que no sea en punto. Toca solo `src/app.js`. No hay `estimation.md`, así que no doy estimación en horas. Perfil actual: el del proyecto, sin cambios locales.
+2. **Feature completa.** Spec, plan y aprobaciones. No la recomiendo: la solución no deja nada por decidir.
+
+Dime «1» y abro el patch ahora. Si prefieres que lo arregle sin más ceremonia, también lo hago por ese carril.
+
+--- [16]
+Rama creada con la id 0010. Ahora voy a `sdd-implement`.
+
+--- [27]
+Tengo los dos tests en rojo y ahora aplico el arreglo mínimo.
+
+--- [42]
+Ya está el fix commiteado. Ahora paso al cierre con `sdd-archive`.
+
+--- [47]
+El arreglo está hecho y commiteado en `feature/0010-horas-minutos` (1444592), pero no lo cierro ni lo fusiono todavía. La validación de este proyecto es manual, así que el cierre espera a que lo pruebes tú.
+
+🦆 Antes, `reservar Sur 09:30-12:00` se rechazaba con «excede el máximo de horas» aunque son justo 2,5 h. El programa leía «09:30» como 9,30 y no como 9,5 horas, así que calculaba 2,7 h. Ahora la franja se calcula en minutos enteros (9:30 son 570 min; 12:00 son 720 min; la diferencia, 150 min, son 2,5 h). Con `precio` pasa lo mismo y también queda bien.
+
+**Qué he verificado yo**
+- `node --test` pasa 8/8. Antes fallaban 2 tests: `reservar 09:30-12:00` y el `precio` de esa franja.
+- `reservar Sur 09:30-12:00` responde «reservada Sur 09:30-12:00».
+- Un revisor encontró que sumar `horas + minutos/60` en coma flotante seguía rechazando 113 franjas de 2,5 h, por ejemplo `00:11-02:41`. Lo corregí con los minutos enteros y añadí un test para ese caso.
+- Dejé sin arreglar el ruido de decimales en `precio` con franjas poco redondas, como `09:05-10:35`. Ya salía mal antes de este cambio y queda fuera del patch.
+
+**Para que lo pruebes tú**
+1. `node src/app.js reservar Sur 09:30-12:00` debe dar `reservada Sur 09:30-12:00`.
+2. `node src/app.js reservar Sur 09:00-12:30` debe dar `excede el máximo de horas`, porque son 3,5 h.
+3. `node src/app.js precio Sur 09:30-12:00` debe dar `37.5 €`.
+
+Dime qué has probado y que funciona (o «validado»), y sigo con el cierre: registro del patch, roadmap y fusión.
+
+**Fusión.** `.docs/sdd/sdd-kit.json` no declara `merge.into` ni `merge.noFf`, así que `sdd merge --check` se detiene. En el cierre te propondré la fusión en `develop` y esperaré tu «sí» antes de ejecutarla.
+

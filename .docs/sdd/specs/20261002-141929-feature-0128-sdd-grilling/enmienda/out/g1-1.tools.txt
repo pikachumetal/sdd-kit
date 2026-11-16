@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Glob: .docs/sdd/**/*
+<<< .docs\sdd\tech-stack.md
+.docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+
+>>> Grep: reserv|slot|hora|booking
+<<< Found 7 files
+test\app.test.js
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+src\app.js
+README.md
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.2025958 $)
+Antes de proponer nada he leído `mission`, `roadmap`, `constitution` y `src/app.js`. Esto es lo que hay:
+
+- Una franja es un texto libre, por ejemplo `'10:00-12:00'`.
+- `freeRooms` compara franjas por igualdad exacta de texto.
+- El roadmap ya apunta como deuda que no se valida el formato de la franja.
+
+Con eso, lo que más condiciona el resto es cómo se decide que dos reservas chocan.
+
+❓ **¿Qué significa que una franja choque con otra?**
+Hoy, con `Norte` reservada el lunes de `10:00-12:00`, esto ocurre:
+
+- `libres 10:30-11:00` → `Norte, Sur`. Norte aparece libre estando ocupada, porque el texto no coincide.
+- Reservar medias horas con ese comparador abriría la puerta a dobles reservas solapadas.
+
+🅰️ **Solapamiento por intervalos.** Una franja es inicio y fin, en múltiplos de 30 min. Dos reservas chocan si sus intervalos se pisan.
+- Escena: `libres 10:30-11:00` → `Sur`. Y `reservar Norte lun 11:30-12:30` → `Norte ocupada de 11:30 a 12:00`.
+- Coste: hay que cambiar `freeRooms` y validar el formato. Eso cierra de paso la deuda del roadmap. Las reservas ya existentes siguen valiendo.
+
+🅱️ **Igualdad exacta, solo con franjas de media hora permitidas.** Se mantiene el comparador actual y se acepta cualquier franja que cumpla el formato.
+- Escena: `libres 10:30-11:00` → `Norte, Sur`, igual que hoy.
+- Coste: es un cambio mínimo, pero una reserva de 2 h no bloquea sus medias horas y se puede reservar encima.
+
+➡️ **Recomiendo 🅰️**, porque la herramienta existe para no pisar reservas. Con 🅱️ la media hora nace con el fallo que `patch-0007` ya corrigió para el caso de la cancelación (reservas de otro día con la misma hora). A cambio, 🅰️ toca la lógica de disponibilidad y es más trabajo que 🅱️.

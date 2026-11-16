@@ -1,0 +1,44 @@
+--- [9]
+Ya he mirado el código y la causa está clara. Antes de abrir nada necesito tu confirmación.
+
+🦆 **Qué pasa:** `findBooking(room, day)` en `src/app.js:9` recibe el día pero no lo usa. Solo compara la sala y que la reserva esté activa. Al cancelar Norte el martes, encuentra la reserva de Norte del lunes, la cancela y responde con el día que le pasaste, por eso sale «cancelada Norte mar». `voidBooking` (`anular`) usa la misma función, así que tiene el mismo fallo.
+
+**Por qué es un patch:** el fallo es determinista y la solución no se decide. Basta comparar también `b.day === day`. Un solo test lo reproduce: `cancelar Norte mar` debería devolver `sin reserva Norte mar` y dejar la reserva del lunes activa. Hoy ese test falla.
+
+**Qué haría:**
+- Test de regresión rojo con `cancelar Norte mar` (y lo mismo con `anular`).
+- Arreglo de una línea en `findBooking`.
+- Gate de cierre: `node --test` entero en verde (constitución, art. 2).
+- Carpeta `patch-` con su `patch.md`. Perfil `delegate`, del proyecto. No hay `estimation.md`, así que no doy estimación.
+
+¿Abro el patch?
+1. **Sí, abre el patch (Recomendada).**
+2. Sí, pero solo `cancelar`, sin tocar `anular`. No lo recomiendo: dejaría el mismo fallo en `anular`.
+3. No, déjalo apuntado en el roadmap sin hacerlo todavía.
+
+--- [10]
+Hand-off a sdd-implement.
+
+--- [19]
+Reproducido: `cancelar Norte mar` y `anular Norte mar` responden con éxito sin tener reserva el martes. Reservo id y rama.
+
+--- [25]
+The shell edit didn't apply; I'll use Edit.
+
+--- [35]
+Estoy cerrando el patch: el fix está en verde (6/6 tests). Ahora escribo `patch.md` y hago el commit.
+
+--- [38]
+El fix está hecho y commiteado en `feature/0015-cancel-day`, y `node --test` pasa 6/6.
+
+- **Causa:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba. Devolvía la primera reserva activa de la sala, que era la del lunes. `anular` usa la misma función y tenía el mismo fallo.
+- **Fix:** una línea, `b.day === day` en `findBooking`. Ahora `cancelar Norte mar` responde `sin reserva Norte mar` y la reserva del lunes sigue activa.
+- **Tests:** dos tests nuevos en `test/cancel.test.js`, uno para `cancelar` y otro para `anular`. Comprueban que el martes responde «sin reserva» y que el lunes se puede cancelar después. Antes del fix fallaban los dos, con `cancelada Norte mar` y `anulada Norte mar`.
+- **Commits:** `5a44490` (fix, tests y `patch.md`) y `003b6ef` (solo el hash del fix en `patch.md`).
+- **Id:** reservé el 0015 con `sdd id next --reserve`. Sin remoto, `id claim` lo da por bueno con el contador local.
+- **Patch:** `.docs/sdd/specs/20261101-124232-patch-0015-cancel-day/patch.md`. No hay `estimation.md`, así que no lleva estimación. Tampoco hay `capabilities/`, así que no lleva delta.
+
+La skill remite a `references/patch-flow.md`, que no existe en este kit. Seguí el flujo de `sdd-start-patch/SKILL.md`, que es lo más parecido.
+
+Falta tu validación, que `patch.md` deja como «dev-lead». No he cerrado con `sdd-archive` ni he hecho merge a `develop`.
+

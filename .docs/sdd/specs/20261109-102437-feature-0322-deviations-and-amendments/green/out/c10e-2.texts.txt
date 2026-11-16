@@ -1,0 +1,94 @@
+--- [10]
+Voy a aplicar los hallazgos de la revisión final. Empiezo por los tests en RED: el espacio sobrante del motivo y el guion de `canceladas`. También hago autónomo el test de `canceladas`.
+
+--- [14]
+Los dos tests nuevos fallan, como debe ser. Ahora el código.
+
+--- [25]
+Los dos commits de arreglo entran en la única re-revisión del rango `83cdccc..HEAD`. Lanzo un revisor y su vigilancia de silencio.
+
+--- [31]
+Ya apliqué los hallazgos de los dos informes. La re-revisión del rango `83cdccc..HEAD` está en marcha y todavía no tengo su resultado.
+
+**Qué cambié** (commits `3901b5a` y `2887e6a`, `node --test` 6/6 en verde):
+- **Motivo con espacios (Important del informe de código):** `reasonOf` hace `trim()`, así que `"sala ocupada "` ya se acepta. Escribí el test antes y falló con el código viejo.
+- **Guion de `canceladas` (Minor del informe de código):** el listado separa con ` - `, es decir, `Norte lun - sala ocupada`.
+- **Orden de los tests (Minor del informe de spec):** el test de `canceladas` cancela por sí mismo antes de listar. El test del motivo con espacios usa una reserva que no existe, así que tampoco depende del orden.
+
+**✋ Cosas que debes validar**
+- **Enmienda sin aprobar:** el THEN de «El listado de canceladas enseña el motivo» decía `—`. Lo cambié a ` - ` en `spec.md` y lo anoté en «Enmiendas» como `sin aprobar`. Aplica literalmente la decisión del dev-lead («con guion normal, que en recepción la raya sale rota»).
+- **El `trim` no toca la spec:** ningún THEN ni AND cambia, y lo traté como arreglo del hallazgo de código. Pero acepta una entrada que la spec no menciona (`"sala ocupada "`). Si prefieres tratarlo como desvío, dímelo y lo paso por la enmienda.
+
+**Pendiente**
+- Sigue la re-revisión del rango, con su vigilancia de silencio. Después quedan el gate de cierre `node --test` y `sdd-archive`.
+- Los dos arreglos, y la enmienda que va con uno, quedan sin revisar hasta que vuelva ese revisor.
+
+--- [35]
+## Re-revisión de `83cdccc..HEAD` (feature 0010)
+
+`node --test` pasa: 6 tests, 0 fallos. Con `--test-name-pattern="canceladas"` el test de `canceladas` también pasa solo. No he podido ejecutar mi comprobación del orden inverso, porque el script falló con un error de ruta de Windows. La conclusión sobre el orden sale de leer el código.
+
+### Strengths
+- El trim del motivo está en el sitio correcto. `reasonOf` aplica `?.trim()` en `src/app.js:16` y sigue devolviendo `undefined` si falta `--motivo` o su valor. Eso mantiene el THEN «sin `--motivo`».
+- `src/app.js:36` usa ` - `. Coincide con la decisión del dev-lead de `spec.md:29` y con el THEN de `spec.md:63`.
+- El test nuevo `test/cancel.test.js:13` prueba el trim sin alterar el estado: usa `Sur mar`, que no existe, y espera `sin reserva Sur mar`. Si el motivo no pasara la validación, devolvería «motivo no válido».
+- No hay cambios fuera de lo pedido. Los únicos ficheros tocados son `app.js`, el test, `spec.md` y `tasks.md`.
+
+### Issues
+
+#### Critical
+Ninguno.
+
+#### Important
+Ninguno.
+
+#### Minor
+1. **`test/cancel.test.js:17-18`: el hallazgo de dependencia de orden queda resuelto a medias.**
+   - `canceladas` ya hace su propio `cancelar`, así que pasa también ejecutado solo.
+   - Pero el módulo `src/app.js` mantiene estado compartido: `bookings` es global. Si `canceladas` corriera antes que `cancelar con un motivo de la lista` (`test/cancel.test.js:6`), la reserva Norte lun ya estaría cancelada. El test de `:6` devolvería entonces `sin reserva Norte lun` y fallaría. La dependencia de orden pasa de un test al otro.
+   - La llamada de `:17` descarta su resultado. Con el orden actual devuelve `sin reserva` y no se nota.
+   - Arreglo: aislar el estado, por ejemplo con una función de reinicio exportada o un `beforeEach`. Alternativa: que cada test use su propia reserva.
+2. **`spec.md:63` y `spec.md:67`: la enmienda reescribe el THEN aprobado y además lo registra.**
+   - La enmienda es literal con la decisión del dev-lead y no toca nada más. La marca «sin aprobar» es correcta.
+   - Sin embargo, el diff cambia el THEN del cuerpo (`spec.md:63`) además de añadir la nota en «Enmiendas». La tabla de Aprobaciones (`spec.md:73`) sigue en «aprobada» con fecha 2026-10-08.
+   - Resultado: el texto del cuerpo ya no es el que se aprobó, y el único aviso es la línea de «Enmiendas».
+   - Si el protocolo manda dejar el cuerpo intacto hasta que se apruebe, hay que revertir `:63`. Si manda reflejarlo en el cuerpo, está bien. Conviene confirmar con el dev-lead.
+3. **`tasks.md:9`: el commit de la Task 1 es incorrecto.**
+   - Indica `83cdccc`, pero `progress.md` da `a502e44..c126433` para la Task 1.
+   - La ronda de fixes (`2887e6a`, `3901b5a`) no tiene fila.
+4. **`src/app.js:16`: el trim está en `reasonOf`, no en `cancelBooking`.** Una llamada directa a `cancelBooking(..., 'sala ocupada ')` seguiría fallando. Hoy solo se llama por CLI, así que no pasa nada.
+
+### Hallazgos previos
+
+| Hallazgo | Estado |
+| --- | --- |
+| review-code Important 1 (espacios en el motivo) | Resuelto, `src/app.js:16` y test en `:13` |
+| review-code Minor 1 (` — ` roto en `cp850`) | Resuelto, `src/app.js:36` |
+| review-spec Minor 1 (test dependiente del orden) | Parcial, ver Minor 1 |
+
+### Assessment
+**Ready to merge?** Sí, con reservas menores. No hay regresiones funcionales y los tres puntos de la revisión están aplicados. Antes de cerrar, hay que aislar el estado de los tests (Minor 1) y confirmar el tratamiento de la enmienda sobre el cuerpo aprobado (Minor 2).
+
+Ficheros relevantes:
+- `src/app.js`
+- `test/cancel.test.js`
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+--- [38]
+La re-revisión del rango `83cdccc..HEAD` volvió sin Critical ni Important. Confirma que los tres hallazgos previos están aplicados, pero uno solo a medias. `node --test` da 6/6 en verde y todavía no he ejecutado el gate de cierre completo.
+
+**✋ Para decidir**
+- **Enmienda sin aprobar:** el THEN de `canceladas` ahora dice ` - ` en el cuerpo de `spec.md`, con su línea en «Enmiendas» marcada `sin aprobar`. La tabla de Aprobaciones sigue en «aprobada» del 2026-10-08. Hace falta que Laura la apruebe. Si prefieres el cuerpo intacto hasta entonces, revierto esa línea.
+- **Estado compartido en los tests (Minor 1, sin arreglar):** `bookings` es global en `src/app.js`. Hoy los tests pasan, pero si `canceladas` corriera antes que `cancelar con un motivo de la lista`, este último fallaría con `sin reserva`. Arreglarlo exige un reinicio exportado o un `beforeEach` en la app. Eso es código nuevo, y la re-revisión única ya se gastó. Dime si lo hago, y ese commit saldría como `sin revisar`.
+- **Trim solo en `reasonOf` (Minor 4):** una llamada directa a `cancelBooking(..., 'sala ocupada ')` seguiría fallando. Hoy solo se llama por la línea de comandos, así que no pasa nada.
+
+**Sin revisar:** `fcc3e3d`. Es un commit de documentación de 2 líneas que leí yo mismo (`revisado en el hilo`). Corrige el commit de la Task 1 en `tasks.md` (`c126433`) y añade la fila de la ronda de fixes.
+
+**Siguiente:** el gate de cierre `node --test` y `sdd-archive`.
+
+--- [39]
+Ese aviso es solo que terminó la vigilancia de silencio del revisor. La re-revisión ya había vuelto, así que no cambia nada de lo anterior.
+
+Queda lo mismo: decidir las dos cosas de ✋ (aprobar la enmienda del THEN y si arreglo el estado compartido de los tests), correr el gate de cierre `node --test` y pasar a `sdd-archive`. Dime cómo quieres resolver esas dos y sigo.
+

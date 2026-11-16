@@ -1,0 +1,137 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md package.json; cat .docs/sdd/steering/*.md; find src test -type f; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/*0006*/spec.md | head -60; cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/skills/sdd-propose/references/control-profiles.md" | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/skills/sdd-propose/references" && cat spec-writing.md nombrado.md; cat ../../sdd-grilling/SKILL.md
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+If neither the user nor the project says why they want it, ask that first, 
+
+>>> Bash: cd "<run>/repo" && git branch -a && cat .docs/sdd/specs/*0006*/spec.md .docs/sdd/specs/*0007*/patch.md | head -80
+<<< * develop
+  main
+# Spec — free
+
+status: done
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+
+=== RESULTADO (8 turnos, 0.18258010000000002 $)
+Ahora: abro la feature con el anuncio, mi lectura del flujo y la primera pregunta. Queda: la entrevista (unas pocas preguntas), la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido**
+
+Una reserva tiene un estado, que puede ser pendiente, confirmada o cancelada. Las transiciones que me das son:
+
+```text
+            confirmar
+ pendiente ───────────▶ confirmada
+   ▲   │                    │
+   │   │ cancelar           │ cancelar
+   │   ▼                    ▼
+   └─ cancelada ◀───────────┘
+     (reabrir → pendiente)
+```
+
+En el código hoy no hay estado:
+- Las reservas son una lista fija en `src/app.js`.
+- `cancelar` solo devuelve un texto (`cancelada mar 10:00`).
+- No hay `confirmar`.
+- `libres` cuenta como ocupada cualquier reserva de la lista.
+
+**Sobre si el flujo está bien**
+
+Sobre el papel es coherente: no hay estados sin salida y no hay saltos raros, porque no se puede confirmar una cancelada sin pasar por pendiente. Lo único que no cierra solo es `cancelada → pendiente`: si mientras estaba cancelada alguien reservó esa sala en esa franja, reabrirla chocaría con la otra reserva. Eso lo decidiremos más adelante. Ahora necesito entender para qué quieres el flujo.
+
+❓ **¿Qué vas a hacer con estos estados, y qué te ha hecho dudar de que el flujo esté bien?**

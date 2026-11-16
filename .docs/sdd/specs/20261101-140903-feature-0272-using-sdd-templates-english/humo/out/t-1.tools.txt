@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0272-using-sdd-templates-english\.temp\k\skills\sdd-templates\templates\adr-template.md
+
+>>> Bash: ls -R .docs/sdd 2>/dev/null | head -50; cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< 1	---
+2	status: proposed
+3	date: <AAAA-MM-DD>
+4	rutas:
+5	  - <glob, p. ej. src/db/**>
+6	---
+7	
+8	# <Título corto de la decisión>
+9	
+10	> ADR del proyecto: el porqué de una decisión, en `.docs/sdd/decisions/NNNN-<slug-en-inglés>.md`, con el número siguiente al mayor de la carpeta. Se ofrece solo si se cumplen las tres a la vez: es difícil de deshacer, sorprende a quien la lea sin contexto y hubo una alternativa real. Es inmutable: una decisión nueva escribe otra ADR y esta solo cambia `status` a `superseded by NNNN`.
+11	>
+12	> Frontmatter: `status` es `proposed`, `accepted`, `rejected`, `deprec
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+
+>>> Bash: cat .docs/sdd/tech-stack.md; echo ----; cat .docs/sdd/mission.md; echo ----; git ls-files | head -50; grep -rniE "json|reservas?\b" --include=*.js --include=*.ts --include=*.json -l . 2>/dev/null | grep -v node_modules | head
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+----
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+----
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task
+
+>>> Bash: cat src/app.js | head -60; grep -n "json" -i README.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Write: <run>\repo\.docs\sdd\decisions\0001-bookings-in-json-file.md
+<<< File created successfully at: <run>\repo\.docs\sdd\decisions\0001-bookings-in-json-file.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/cli/bin/sdd.js" decision check --path ".docs/sdd"
+<<< Decisiones válidas
+
+=== RESULTADO (9 turnos, 0.14674199999999998 $)
+He escrito la ADR en `.docs/sdd/decisions/0001-bookings-in-json-file.md`, con la plantilla del kit. `sdd decision check` la da por válida («Decisiones válidas»). No la he commiteado.
+
+- **Estado y alcance:** la dejé como `accepted`, con fecha 2026-11-01 y `rutas: src/**`.
+- **Opciones:** fichero JSON, base de datos embebida (SQLite) y servidor de base de datos (PostgreSQL).
+- **Decisión:** el fichero JSON, porque la herramienta la usa una sola persona y el stack es Node 22 sin dependencias (`mission.md` y `tech-stack.md`). Los motivos y las consecuencias salen de ahí. Son que cada operación reescribe el fichero entero, que no hay control de concurrencia y que, si crece el uso, habrá que escribir otra ADR y migrar los datos.
+- **Confirmación:** propone un test que cree una reserva y la relea desde una ejecución nueva.
+
+Hoy `src/app.js` guarda las reservas en un array en memoria. Ese test describe un comportamiento que todavía no existe.
+
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. La ADR no depende de esa diferencia, pero conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.

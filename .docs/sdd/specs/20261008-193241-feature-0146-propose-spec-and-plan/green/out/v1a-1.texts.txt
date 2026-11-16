@@ -1,0 +1,40 @@
+--- [3]
+Ahora: preparo la validación del trabajo de la 0010 (re-revisión del tramo si hace falta, smoke por THEN y guion de pruebas). Queda: presentártela y esperar tu validación, ~10 min.
+
+--- [11]
+Ahora: la validación de la 0010 está lista para que la pruebes. Queda: tu validación. Después va `sdd-end-feature`, que no he lanzado.
+
+## 🦆 Lo hecho
+`cancelar` ahora exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). Si el motivo no está en la lista, rechaza la cancelación. `canceladas` lista cada reserva cancelada con su sala, su día y su motivo.
+
+## ✋ Me salí del plan en…
+Dos rulings de la Task 2. Ninguno cambia la spec.
+- `canceladas` lista en el orden en que se cancelaron. La spec no fija el orden.
+- Las anuladas (`anular`) no salen en `canceladas`. La spec no lo dice, y la 0011 tendrá que sumarlas si quiere verlas.
+
+## Antes de validar
+- **Re-revisión.** El único commit posterior al código es `d96088b`, que solo toca `tasks.md`. Son 21 líneas, así que supera el límite de 20 para revisarlo en el hilo.
+- **Registro de revisión.** La línea `Revisión final: … sobre (HEAD)` de `tasks.md` tiene un marcador sin sha, y las dos tasks tienen `(commit de la task N)` en vez del hash. No he inventado los hashes.
+- **Qué falta.** No he lanzado el revisor de ese tramo, ni he rellenado el sha y los hashes: lo hago antes del cierre.
+
+## Smoke (un THEN por fila)
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (`node src/app.js …`) |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real, con «me aburro». Sin `--motivo` da el mismo mensaje. |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, pero solo en el mismo proceso que `cancelar`. Ver el aviso de abajo. |
+
+La suite (`node --test`, 5 tests) pasa entera en 0,35 s. El proyecto no tiene script `test` ni build.
+
+## ⚠️ Lo que he visto al ejecutarlo
+Las reservas viven en memoria (`src/app.js`), y la spec no lo toca. Por eso `node src/app.js canceladas` en un proceso nuevo sale vacío, aunque antes hayas cancelado desde otra terminal. El listado solo funciona dentro de un mismo proceso, como en el test. Si esperabas verlo desde la línea de comandos, falta persistencia y sería otra feature. No lo he arreglado.
+
+## Guion de pruebas
+No hay nada que arrancar ni puerto que parar. Desde la raíz del repo:
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"` → `cancelada Norte lun (sala ocupada)` y, en la línea siguiente, `Norte lun — sala ocupada`
+4. `node src/app.js canceladas` → sale vacío (el límite de arriba)
+
+Dime qué has probado y si funciona. Sin esa respuesta la feature queda en espera, con el roadmap sin tocar.
+

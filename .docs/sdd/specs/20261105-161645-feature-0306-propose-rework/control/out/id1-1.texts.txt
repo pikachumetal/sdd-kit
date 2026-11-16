@@ -1,0 +1,109 @@
+--- [27]
+Ya está escrita la spec, y su delta se fusiona sin rechazos en una copia. Ahora lanzo en paralelo los dos revisores, uno de dominio y otro técnico, con su vigilancia de silencio.
+
+--- [41]
+Los dos revisores de la spec están en marcha, cada uno con su vigilancia de silencio. Espero a que terminen y no adelanto nada de lo que encuentren. Cuando vuelvan, incorporo los hallazgos y presento la spec para su aprobación.
+
+--- [42]
+1. Importante · Delta / Decisión 4 / Intent · La spec no resuelve qué significa exportar el estado `cancelled` (Cancelación del cliente) y `voided` (Anulación del responsable). PRODUCT.md distingue ambas con nombres propios, pero el CSV vuelca los valores internos en inglés y ningún escenario cubre una fila `cancelled`. El Intent dice que el fracaso es «dejar fuera las canceladas sin decirlo», y solo se prueba `voided`. · Añadir un escenario con una reserva `cancelled` y fijar que el CSV las incluye con el valor `cancelled`.
+
+2. Importante · Decisión 3 / Delta (escenario 1) / 🦆 · Los valores del estado son los internos en inglés (`active`, `cancelled`, `voided`), pero la hoja de cálculo la lee una persona. El producto habla de Cancelación y Anulación, y la constitución exige castellano en el texto de la interfaz. Un fichero que se abre en una hoja es interfaz de cara al usuario. La spec no dice si los valores son contrato público ni si la cabecera `sala,dia,franja,estado` y los valores deben ir en castellano. · Decidir y justificar por escrito: o valores en castellano (`activa`, `cancelada`, `anulada`) o valores internos declarados como contrato. Si se dejan en inglés, anotar la excepción a la regla 4 de la constitución.
+
+3. Importante · Intent / Scope / Delta · El Intent promete «con sala, día, franja y estado», pero PRODUCT.md define Reserva como «a nombre de quien la pide». El CSV omite quién la pidió, y la spec no lo menciona. Sin ese dato no se puede distinguir la Cancelación (el cliente) de la Anulación (el responsable) más allá del valor del estado. · Declarar en «No entra» que el nombre de quien reserva queda fuera a propósito. Si no, añadir la columna.
+
+4. Importante · Decisión 4 / Scope · «Una fila por reserva» y «tantas filas como reservas hay en memoria» se contradicen con la contabilidad de la respuesta. `exportadas <n> reservas` cuenta también las canceladas y anuladas, y con ellas el mensaje sobreinforma frente a las reservas vigentes que el usuario ve en el resto de la herramienta. · Fijar si `<n>` cuenta todas las filas, o mostrar el desglose por estado en la respuesta. Añadir un escenario que lo pruebe con reservas de estados mixtos.
+
+5. Menor · Decisión 8 / Capacidades · La capacidad se llama `booking-export`, pero PRODUCT.md marca «booking» como término a evitar y usa Reserva. La regla de idioma de los nombres choca con el término del producto. Tampoco se dice si el slug en inglés es la convención del proyecto, porque no hay capacidades previas. · Justificar el slug en la spec como excepción deliberada, o renombrarlo a `reserva-export` según el glosario. Si se usa `booking`, anotar que es un identificador interno.
+
+6. Menor · Delta (escenario «Fichero existente») / Decisión 7 · La sobrescritura silenciosa es un aviso o conflicto no declarado. El `reservas.csv` por defecto en el directorio actual se pisa sin aviso, y la respuesta no indica que se ha reemplazado un fichero. Una exportación antigua se pierde sin rastro. · Decidir si la respuesta avisa de la sobrescritura, o dejar escrito que el silencio es deliberado porque hay un único usuario (misión). La decisión 7 ya dice «sin preguntar»; falta la razón.
+
+7. Menor · Delta (escenario «Valores con separador») / Decisión 5 · Los límites del formato no están cerrados. Falta decir qué pasa con una ruta inexistente o sin permisos y con valores que empiezan por `=`, `+`, `-` o `@`, porque la hoja de cálculo los interpreta como fórmula. El Intent apuesta por «abrir en una hoja de cálculo». · Declarar en «No entra» el error de escritura y la inyección de fórmulas, o cubrirlos con un escenario y un mensaje en castellano.
+
+8. Menor · Delta (escenario 1) y 🦆 · Los ejemplos usan `/tmp/r.csv`, ruta POSIX que en Windows no existe, y el texto «exportadas 1 reservas» es incorrecto en singular. La spec lo fija como respuesta literal sin avisar de que es deliberado. · Aclarar si la concordancia de número (`1 reserva`) queda fuera a propósito. Usar una ruta neutra (carpeta temporal del test) en los ejemplos.
+
+--- [44]
+Ha vuelto el revisor de dominio y falta el técnico. Cuando llegue, incorporaré los hallazgos de los dos a la spec.
+
+--- [45]
+1. Crítico · Delta «Fichero existente» · El GIVEN dice «con otro contenido» sin fijar cuál, y el THEN («solo el contenido nuevo») no dice qué contenido nuevo esperar. Con un fichero previo más largo o con otra cabecera, el test no sabe qué comparar. · Fijar un contenido previo literal (por ejemplo `viejo\n`) y un conjunto de reservas conocido. Que el THEN dé el contenido exacto, con `\n` y cabecera. Si no, el test pasa con un `appendFileSync`.
+
+2. Crítico · Delta «Valores con separador» · El THEN solo comprueba el prefijo de la fila (`"Sala ""A"", planta 1",`). No cubre el salto de línea dentro de un valor, que la decisión 5 sí promete. No fija el fichero entero ni el fin de línea, y no dice qué hacer con `\r`. · Añadir un escenario con un valor que lleve `\n`, con su fila literal entre comillas. Dar la fila completa en el escenario de la coma y las comillas, con día, franja y estado.
+
+3. Crítico · Delta «Ruta por defecto» · El THEN dice «termina en `en reservas.csv`» y «cualquier conjunto de reservas». La respuesta completa no está fijada (falta `<n>`), y no se comprueba el contenido del fichero. «Termina en» no se puede fallar con una ruta absoluta mal resuelta. · Fijar un conjunto concreto de reservas. Escribir la respuesta literal (`exportadas 1 reservas en reservas.csv`) y el contenido del fichero.
+
+4. Importante · Delta «Exportar las reservas…» / 🦆 / decisión 6 · El texto de respuesta es `exportadas <n> reservas en <ruta>`. Con n=1 sale «exportadas 1 reservas». El 🦆 lo da por bueno. No hay decisión sobre el plural, y un revisor o un implementador lo puede «arreglar» y romper el test. · Declarar en las decisiones que no hay plural (`reservas` siempre) y fijarlo en un escenario con n=1. O decidir el plural y reflejarlo en el delta.
+
+5. Importante · Delta, escenario 1 · El ejemplo mezcla activa y anulada, pero ninguno cubre `cancelled`. La decisión 3 promete los valores internos `active`, `cancelled` y `voided`. El requisito dice que entran las canceladas y no hay escenario que lo pruebe. El orden de las filas tampoco se verifica de forma independiente. · Añadir una reserva cancelada al escenario (o uno nuevo «Entran canceladas y anuladas»). Que las filas se vean en el orden fijado.
+
+6. Importante · ✋ Decisiones / Approach · Hay decisiones tomadas en el cuerpo y no listadas en ✋. Una es el orden de las filas: el orden de inserción en memoria, que el escenario 1 da por hecho sin decirlo. Otra es el CSV sin línea final vacía de más (cada fila termina en `\n`, también la última). Otra es la implementación en `src/app.js` y no en un módulo aparte, con `writeFileSync`. Es una desviación de lo que dice el enfoque 1. · Añadir a ✋ una decisión sobre el orden de las filas (el de creación) y otra sobre el `\n` final en la última fila. Dejar claro que `toCsv` vive en `src/app.js`.
+
+7. Importante · ✋ Decisiones 2 y 7 / contratos · Errores no contemplados: ruta con directorio inexistente, ruta sin permiso de escritura o una ruta que sea un directorio. No hay requisito ni texto de respuesta para ellos. Tampoco se dice qué hace la `ruta` relativa (relativa al directorio actual, `process.cwd()`). Esto toca el contrato del comando. · Decidir el comportamiento de error (mensaje en castellano, sin traza, o dejarlo como excepción) y añadir un escenario. Declarar que la ruta relativa se resuelve contra `process.cwd()`.
+
+8. Importante · ✋ Decisión 5 / contratos · La decisión de UTF-8 sin BOM se justifica con una hoja de cálculo (el Intent dice que es lo que se usa). Excel abre un UTF-8 sin BOM con los acentos rotos (`Sala Reunión`). Es un riesgo para el criterio de éxito. Ningún escenario cubre un carácter no ASCII. · Confirmar con el dev-lead que sin BOM es lo querido, y dejarlo anotado como riesgo. Añadir un escenario con un valor con acento que fije los bytes UTF-8.
+
+9. Menor · Delta «Sin reservas» · El escenario no dice cómo se logra el estado «ninguna reserva» (si las reservas viven en memoria, hay que decir cómo se vacían en el test). Con `run` y un estado global, el test puede quedar acoplado al orden de ejecución. · Indicar en «Dónde se prueba» cómo se inyecta o se resetea el listado (la sección ya habla de «añadida al listado»), para que los 5 escenarios sean independientes.
+
+10. Menor · Delta, escenarios 1, 3 y 5 · Usan la ruta fija `/tmp/r.csv`. En Windows, donde se desarrolla (win32), `/tmp` no existe, y «Dónde se prueba» habla de una ruta temporal. El literal de la respuesta `en /tmp/r.csv` no coincide con lo que haría un test con `os.tmpdir()`. · Usar un marcador (`<ruta>`) en el delta. Decir en «Dónde se prueba» que la respuesta se compara con la ruta que se pasó.
+
+--- [49]
+Mi comando de shell ha mutilado los backticks. Reescribo la spec entera con Write y reviso el resultado.
+
+--- [59]
+La spec está reescrita y su delta se fusiona sin rechazos en una copia: añade 8 requisitos a `booking-export`. Como se aceptaron tres hallazgos Críticos, falta la segunda ronda con un revisor nuevo, que ya está lanzado. Espero su resultado antes de presentarte la spec para aprobar.
+
+--- [60]
+1. Crítico · Delta «Una sola reserva» y decisión 6 · El texto `exportadas 1 reservas` es gramaticalmente incorrecto en una interfaz en castellano (regla 4), y se fija a propósito como contrato. Es una decisión de producto con un coste visible, y solo se defiende con «sin plural». · Dejar la decisión 6 marcada como pregunta explícita para el dev-lead, con la alternativa `exportada 1 reserva`, o justificar en la decisión que el literal único es intencionado para que lo valide.
+2. Importante · Delta, escenario «Ruta por defecto» y «Dónde se prueba» · El escenario dice «se ejecuta `exportar` sin ruta», pero el test llama a `run('exportar', [])` con el directorio actual cambiado. Cambiar el directorio con `process.chdir` es estado global, lo contrario de lo que dice la decisión 9 («sin estado global»). La spec no dice cómo se hace ese cambio ni si `run` devuelve la respuesta o la imprime. · Precisar cómo se captura la respuesta (valor de retorno o salida estándar) y cómo se fija el directorio actual (`chdir` con restauración), o dejar que `run` acepte el directorio base.
+3. Importante · Delta, escenarios «Valores con coma o comillas» y «Valores con salto de línea» · Solo comprueban la fila y no la cabecera ni la respuesta. Tampoco hay ningún escenario con coma o comillas en `dia`, `franja` o `estado`. «Un valor» en la decisión 5 afirma más de lo que se prueba. · Acotar la decisión 5 a «sala», o añadir un escenario que cubra las demás columnas.
+4. Importante · Delta, escenario «Acentos» · «Está en UTF-8 sin BOM» no se puede comprobar contra una cadena leída. Hace falta leer los bytes, y el escenario no lo dice. · Reformular: «los primeros bytes del fichero no son EF BB BF y los bytes de `é` son C3 A9», o comparar con `Buffer`.
+5. Importante · Decisiones 3 y 4, y escenario «Estado» · El estado `anulada` no se describe en ningún sitio. PRODUCT.md define Cancelación y Anulación, pero la spec no dice cómo se calcula el estado ni de dónde sale (campo de la reserva o derivado). Un estado fuera de los tres valores no tiene regla. · Declarar el origen del estado y qué pasa con cualquier otro valor, o decir que los tres valores son los únicos posibles.
+6. Importante · Decisión 4 y Delta · «Orden en que están en memoria» no se verifica en ningún escenario salvo el primero, y ahí depende de que `lista` se pase en ese orden. · Anotar en el primer escenario que el orden de la lista es el del fichero, o añadir un escenario específico.
+7. Importante · Decisión 2 y Delta · «Una ruta relativa se resuelve contra el directorio actual» no tiene escenario. Tampoco lo tiene el caso en que el directorio de la ruta no existe, que cae en «errores de escritura» (decisión 10) sin decir qué ocurre. · Añadir un escenario de ruta relativa explícita, o retirar la afirmación de la decisión.
+8. Menor · Frontmatter y «Decisiones tomadas con el dev-lead» · La spec lleva `profile: delegate` y «Validación: dev-lead», pero `approvers` está en `TBD`. Las «Decisiones tomadas con el dev-lead» son dos y no son del dominio de la spec (perfil, push); mezclan la numeración con la lista de arriba, que sí es numerada. · Poner un aprobador real o dejarlo explícitamente pendiente, y separar la numeración de los dos bloques.
+9. Menor · «✋ Decisiones» · La línea «Delta probado en copia: pendiente de repetir tras esta revisión» es un estado de proceso metido entre las decisiones, y la gate lo puede leer como un pendiente abierto. · Resolverla antes de aprobar, o moverla fuera de la lista de decisiones.
+10. Menor · 🦆 y «Lo que se retira o cambia de forma» · El 🦆 usa el ejemplo `Norte,lun,10:00-12:00,activa`, que es coherente con el delta. En cambio, «Filas que implementa» apunta a `roadmap.md:9` y `git grep` por una renumeración 0012→0013 que no se puede comprobar con lo leído, y la sección menciona un hecho de proceso (`sdd id claim`) que no aporta al comportamiento. · Quitar la referencia de proceso o verificar el número de línea antes de cerrar.
+
+--- [64]
+La spec de la 0013 está escrita y revisada. Necesito tu aprobación antes de escribir el plan.
+
+## Ahora, y lo que queda
+- **Ahora:** la spec espera tu aprobación, y no sigo hasta que la des.
+- **Queda tras aprobar:** el plan, de unas 2 tasks, y la implementación. No hay más paradas hasta la validación. Estimo ~15 min, ~1–2 $.
+
+**Carril:** feature, modo full. **Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+## 🦆 Qué cambia para ti
+`node src/app.js exportar` escribe `reservas.csv` con una fila por reserva, cabecera incluida. Por ejemplo, `Norte,lun,10:00-12:00,activa`. Responde `exportadas 1 reservas en reservas.csv`. Con `exportar mi.csv` lo escribe en esa ruta. Entran también las canceladas y anuladas, con el estado en castellano.
+
+## ✋ Decisiones que he tomado yo
+La fila 0012 solo decía «un fichero con una fila por reserva». Todo lo demás lo decidí yo.
+- **Comando:** `exportar [ruta]`. Sin ruta, escribe `reservas.csv` en el directorio actual.
+- **Columnas:** `sala,dia,franja,estado`. Los estados salen como `activa`, `cancelada` y `anulada`.
+- **Filas:** entran todas las reservas, en el orden en que están en memoria.
+- **Formato:**
+  - Separador coma y `\n` tras cada fila.
+  - UTF-8 sin BOM.
+  - Un valor con coma, comillas o salto de línea va entre comillas dobles, y las comillas se duplican.
+- **Respuesta:** `exportadas <n> reservas en <ruta>`, sin plural (`exportadas 1 reservas`). Si prefieres `exportada 1 reserva`, dímelo al aprobar.
+- **Fichero existente:** se sobrescribe sin avisar.
+- **Capacidad nueva:** `booking-export`. Hoy no hay ninguna.
+- **Enfoque:** una función `exportBookings(lista, ruta)` que escribe el fichero. Descarté sacar el CSV por la salida estándar para redirigirlo.
+- **Fuera de la spec:** quién reservó, los errores de escritura y las celdas que empiezan por `=`, `+`, `-` o `@`.
+
+**Riesgo:** Excel puede abrir mal los acentos si el fichero no lleva BOM. ¿Lo quieres con BOM?
+
+**Review:** dos revisores y una segunda ronda por tres hallazgos Críticos. Acepté casi todo. Rechacé dos cosas:
+- **Plural:** se queda el literal único.
+- **Slug de la capacidad:** se queda en inglés.
+
+El detalle está en «Hallazgos de la review» de la spec. El delta se fusiona sin rechazos en una copia (8 requisitos).
+
+## Renumeración de la 0012 a la 0013
+`sdd id claim` ha movido la rama de la 0012 a la **0013** (`feature/0013-export-csv`). Otro clon ya tenía publicada en `origin/develop` una 0012, «Informe de ocupación». En mi roadmap esta fila ya figura como 0013. Al fusionar habrá que mirar el conflicto con esa fila 0012.
+
+La spec está en `.docs/sdd/specs/20261105-211440-feature-0013-export-csv/spec.md`.
+
+¿Apruebas?
+1. **Apruebo (Recomendada)**
+2. **Cambios** (dime cuáles: plural, BOM u otro)
+

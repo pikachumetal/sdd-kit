@@ -1,0 +1,106 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd . && D=.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note; ls -R $D; echo ---; cat $D/green/h1.txt; echo ---; git status --short; git diff; ls .docs/sdd/changes 2>/dev/null
+<<< Exit code 2
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green:
+h1.txt
+---
+# Humo h1 — guardar-nota (Task 1 de la 0019)
+
+Petición al sujeto: «guarda la nota "Reunión lunes": "mover la reunión al martes"».
+Estado previo: `notas/reunion-lunes.md` ya existía, con el acta de la reunión del lunes.
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-lunes.md — «mover la reunión al martes»
+2. Texto al usuario: «ya existe una nota "Reunión lunes"». Guardada en notas/reunion-lunes.md.
+
+Es
+
+>>> Bash: D=.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note; cat $D/spec.md; echo ------; cat $D/plan.md; cat skills/guardar-nota/SKILL.md; git log --stat --oneline | head -20
+<<< ---
+id: 20261010-110000-feature-0019-duplicate-note
+feature: 0019
+title: Aviso de nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-10
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-10
+---
+
+# Spec — Aviso de nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Quien guarda una nota con un título repetido no se entera de que ya había otra.
+
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/sdd-kit.json .gitignore; cat notas/reunion-lunes.md; ls -a; ls tests 2>/dev/null
+<<< Exit code 2
+# Constitution — notas
+
+## Art. I — Pruebas de skills
+
+Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+
+## Art. II — Spec
+
+La spec aprobada es la fuente de verdad: un cambio a un requisito o a un THEN lo aprueba el dev-lead.
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.superpowers/
+.temp/
+node_modules/
+data/
+Act
+
+>>> Write: <run>\repo\skills\guardar-nota\SKILL.md
+<<< The file <run>\repo\skills\guardar-nota\SKILL.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: T=$(mktemp -d); mkdir -p $T/notas $T/.claude/skills; cp notas/reunion-lunes.md $T/notas/; cp -r skills/guardar-nota $T/.claude/skills/; echo $T; cd $T && timeout 240 claude -p 'guarda la nota "Reunión lunes": "mover la reunión al martes"' --permission-mode acceptEdits --output-format text 2>&1 | tail -20; echo ---; cat $T/notas/reunion-lunes.md
+<<< /tmp/tmp.qIKy12uPkz
+claude anidado bloqueado en un sujeto: run.mjs no ve su coste
+---
+Acta de la reunión del lunes: se aprueba el presupuesto de 2027.
+Shell cwd was reset to <run>\repo
+
+>>> Bash: rm -rf /tmp/tmp.qIKy12uPkz; git status --short
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/
+
+=== RESULTADO (9 turnos, 0.1572556 $)
+La Task 1 no está cerrada. He hecho el REFACTOR, pero el humo `h1` no he podido relanzarlo y no he hecho commit.
+
+🦆 **Qué pasó.** El humo falló por el orden de los pasos. La skill escribía el fichero y avisaba después, así que `reunion-lunes.md` quedó sobrescrito antes de que llegara el aviso.
+
+**El REFACTOR.** En `skills/guardar-nota/SKILL.md` el paso 2 ahora comprueba si `notas/<slug>.md` existe y, si existe, avisa antes de escribir. El paso 3 escribe y el 4 da la ruta. Esto sigue el THEN de la spec («el agente le avisa»), así que no cambia la spec.
+
+**El humo no se ha podido relanzar.** Lo intenté con un `claude -p` en una copia temporal fuera del repo. El entorno lo bloqueó con «claude anidado bloqueado en un sujeto: run.mjs no ve su coste». Ya borré esa copia y `notas/reunion-lunes.md` del repo está intacto. El artículo I exige que el humo vuelva a pasar, así que sin eso no puedo marcar la task como hecha.
+
+✋ **Necesito tu decisión antes de seguir:**
+
+1. **Reordenar no evita la pérdida del acta.** Con el nuevo orden el sujeto avisa primero, pero escribe igualmente y el acta se sigue perdiendo. La spec solo exige el aviso, y el veredicto de `h1` cuenta la pérdida como fallo.
+   - Si quieres que no se sobrescriba o que se pida confirmación, eso añade un THEN o un AND. Es una desviación y, según el artículo II, la aprueba el dev-lead (Laura).
+   - Recomiendo la enmienda «THEN no se sobrescribe la nota existente hasta que el usuario confirme». No la he escrito en `spec.md`.
+   - Si basta con el aviso previo, relanzo `h1` tal cual.
+2. **Cómo lanzar el humo.** Hace falta que lo lances tú, o que me indiques cómo ejecutarlo con `run.mjs`, para dejar la salida en `green/h1.txt`.
+
+Cuando tengas ambas cosas, relanzo el humo y, con el resultado en verde, hago el commit de la task con `SKILL.md` y `green/`.

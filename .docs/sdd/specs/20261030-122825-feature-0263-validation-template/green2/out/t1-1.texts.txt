@@ -1,0 +1,82 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [7]
+Los pre-checks pasan. Falta la validación: el usuario solo ha dicho que está implementada y la revisión limpia, y eso no la cuenta. Leo la plantilla del mensaje de validación.
+
+--- [10]
+Antes de presentar el guion tengo que ensayarlo con los comandos reales.
+
+--- [17]
+El E2E falló porque el entorno no estaba arrancado, no por el código. Lo levanto con `env-up` y lo repito.
+
+--- [20]
+Ya está el smoke ensayado. No hay herramientas de Chrome, así que levanto el panel plan B.
+
+--- [22]
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` muestra «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1` para esquivar una carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test. Si fuera erróneo, la suite tardaría el doble.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | ejecución real (un solo proceso) y suite | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre fa5ca8d.
+- `node e2e/run.mjs`: 7/7 sobre fa5ca8d, 48 s. La primera pasada falló con `ERR_CONNECTION_REFUSED` porque el entorno no estaba arrancado. Con `env-up` pasa. Ya lo he parado.
+
+**Sin probar**
+
+- Que `canceladas` muestre lo cancelado entre procesos distintos. La app guarda las reservas en memoria, así que `node src/app.js canceladas` en un proceso aparte sale vacío. Es el comportamiento actual y la spec no lo cubre. El paso 4 se hace en un solo proceso por eso.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Panel: plan B en http://127.0.0.1:8728/ (esta página no ve la app. Si algo falla, cuéntalo en el comentario del paso.)
+
+La app es una CLI y no necesita entorno. Cada comando va en su propia llamada y parte de cero.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Este comando debe responder «cancelada Norte lun (sala ocupada)»:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Este debe responder «motivo no válido: cambio de planes, sala ocupada, otro»:
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Este debe dar la misma respuesta que el paso 2:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso debe dar dos líneas, «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada»:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

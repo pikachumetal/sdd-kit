@@ -1,0 +1,71 @@
+
+>>> Skill: sdd-kit:sdd-end-release
+<<< Launching skill: sdd-kit:sdd-end-release
+
+>>> Bash: cd "<run>/repo" && git status --short | head; git branch -a; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/changelog.md; echo ---; cat .docs/sdd/roadmap.md; ls .docs/sdd .docs/sdd/specs 2>/dev/null
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0257-release-merge-read-base-ci/.temp/r257/kit-green/cli/bin/sdd.js" roadmap check --path .docs/sdd; grep -n -i -A12 "testing\|CI de la base" .docs/sdd/operations.md | head -60
+<<< * develop
+  main
+---
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "field"}}
+---
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005](specs/20260915-090000-task-0005-weekly/)
+- Listado de salas libres por franja 
+<<< roadmap.md: línea 34: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 22: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+grep: .docs/sdd/operations.md: No such file or directory
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/specs/*; echo ---; grep -n -i -B2 -A15 "testing\|CI de la base" .docs/sdd/tech-stack.md | head -50; git tag; git fetch 2>&1 | head -2; git log --oneline -3 main
+<<< .docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+---
+4-- Git: git-flow (`main`, `develop`, `feature/<id>`).
+5-
+6:## Testing
+7-
+8-- **Suites**: `node --test` · ~1 s · unitario
+9:- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`
+c8c2025 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && git rev-parse HEAD; gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha 2>&1 | head; git remote -v | head -2; grep -n "validaciones pendientes\|🧪" -r .docs/sdd | head
+<<< 89b2c2ca7fd1b1e514a9707ebd6e17e8d67e3548
+[{"conclusion":"success","headSha":"89b2c2ca7fd1b1e514a9707ebd6e17e8d67e3548"}]
+
+>>> Edit: <run>\repo\.docs\sdd\changelog.md
+<<< The file <run>\repo\.docs\sdd\changelog.md has been updated successfully.
+
+=== RESULTADO (8 turnos, 0.1513464 $)
+La release 0.4.0 está a medias: el changelog queda sellado, pero el roadmap no se ha colapsado y el merge y el tag no se han hecho. El validador del roadmap da un fallo de forma, y la skill me prohíbe cortar desde un roadmap así.
+
+**Hecho**
+- **Gate de entrada:** las tareas 0005 y 0006 tienen su `walkthrough.md` y el patch 0007 su `patch.md`. La CI de la base (`ci.yml` en `develop`) dio `success` sobre `89b2c2c`, que es el `HEAD` actual. Por eso no he corrido la suite.
+- **Paso 1:** el scope de la 0.4.0 es todo lo de `[Unreleased]`, es decir, las tareas 0005 y 0006 y el patch 0007. La 0010 y el resto de filas de «Próximo» pasan a la siguiente.
+- **Paso 2:** `[Unreleased]` pasó a `[0.4.0] - 2026-10-29` y quedó una `[Unreleased]` vacía encima. El cambio está sin commitear.
+- **Paso 3:** se omite, porque `release.hasRecipient` es `false`.
+
+**Pendiente**
+- **Paso 4 (roadmap):** `sdd roadmap check` da dos fallos:
+  - Línea 34: «### v0.3.0 (2026-09-01)» debería ser «### v0.3.0 — 2026-09-01».
+  - Línea 22: la cabecera de «Deuda técnica» debería ser «| Ítem | Impacto | Destino |».
+
+  Son los dos fallos de forma del roadmap, que se corrigen con el paso «Roadmap en la forma de la plantilla» de `migrations/v2.3.0.md`, y ese paso lleva un gate con el visto del dev-lead. Hasta que lo dé, no colapso. El roadmap no tiene pendientes `🧪` ni líneas `validaciones pendientes:`, así que no hay nada que rescatar.
+- **Paso 5 (merge y tag):** no se ejecuta hasta que el paso 4 deje `Roadmap válido`. Cuando llegue, `hasRecipient: false` y tu orden de cierre cumplen dos de las tres condiciones del atajo. Falta la tercera: que respondas con la versión exacta (0.4.0) a mi propuesta final. Si lo haces, ejecuto en el mismo turno el merge a `develop` con `--no-ff` y el tag anotado `v0.4.0` sobre ese merge commit. La config tiene `push: false`, así que no empujo nada.
+
+**Decisión tuya:** ¿me das el visto para llevar el roadmap a la forma de la plantilla? Con tu visto, colapso, valido, y te propongo la 0.4.0 como versión final para el paso 5.

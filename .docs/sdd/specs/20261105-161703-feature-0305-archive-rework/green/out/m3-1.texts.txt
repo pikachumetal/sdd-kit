@@ -1,0 +1,115 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [10]
+Mi `cd` anterior me dejó en la carpeta de la skill, así que esos `ls` y `git log` leyeron el repo del kit, no el proyecto. Los repito con rutas absolutas.
+
+--- [24]
+Mientras revisa, no toco los ficheros que lee. Preparo en paralelo lo que no depende de la revisión: el smoke real y la suite sobre `HEAD`. Guardo la salida completa en un fichero antes de leerla.
+
+--- [34]
+Hasta aquí, sin escribir ningún registro todavía:
+
+- **Pre-checks:**
+  - El árbol está limpio.
+  - `sdd merge --check` da `destino: listo` (`develop`).
+  - No hay otras ramas `feature/*` o `patch/*` abiertas.
+  - La spec está `approved` y firmada por Laura.
+- **Revisión final:** fue sobre `814a0a9`. Desde entonces hay dos commits de documentación (`8b5bdcd` y `4e2b442`, 17 y 1 líneas) y no hay `Re-revisión:`. La regla del cierre exige una única re-revisión de ese tramo, y está en marcha con `sdd-kit:effort-high` + opus y su vigía. No escribo `walkthrough.md`, la capacidad, el roadmap ni el changelog hasta que vuelva.
+- **Validación:** el modo es `field`, así que la hago yo y no te pido que valides.
+  - `node --test` pasa 5/5 sobre `4e2b442`.
+  - `node --test --test-concurrency=1`, la variante de tu ruling de la Task 2, también pasa 5/5.
+  - Los THEN de cancelar con motivo válido, motivo inválido, sin `--motivo` y listado de canceladas dan lo que dice la spec, ejecutando `run()` en un mismo proceso.
+- **Limitación del almacén:** por la CLI, en procesos separados, `canceladas` sale vacío, porque el almacén es en memoria. La spec no lo exige y lo cubre la 0014 del roadmap. Lo dejo como `no probado` entre procesos.
+- **Workaround sin deuda:** el ruling de `--test-concurrency=1` es un workaround. Cuando cierre añadiré su fila en «Deuda técnica» del roadmap.
+- **Aviso del hook de sesión:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Se arregla con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+Sigo cuando termine la re-revisión.
+
+--- [38]
+## Finding Verdicts
+
+Ninguno abierto. La revisión final sobre `814a0a9` fue limpia, así que no había nada que verificar.
+
+## New Breakage in the Fix Diff
+
+El paquete contiene un solo cambio. `8b5bdcd` (tasks.md) está excluido del paquete. Ese cambio no rompe código, tests ni comportamiento: es una línea de documentación en un fichero que nada del repo lee. No contradice ningún escenario del Delta de comportamiento de la spec. El texto sigue en castellano, así que cumple la restricción de código.
+
+- **Minor**: `migrations/v3.0.0.md:3`. Es un cambio sin justificar en la spec ni en el plan de la 0010. La línea pasa de «**Escribe**: `sdd-kit.json`.» a «**Escribe**: `sdd-kit.json`, `operations.md`.».
+  - El Scope de la spec solo incluye `cancelar … --motivo` y `canceladas`.
+  - El plan solo declara los ficheros `src/app.js` y `test/cancel.test.js` en sus dos tasks.
+  - Ninguno de los dos menciona migraciones ni `operations.md`.
+  - En `4e2b442` el repo no tiene ningún `operations.md`, y ningún otro fichero lo menciona: la única aparición es esta línea, según `git grep`.
+  - La migración no tiene más contenido que el título y esta línea. Por eso no se puede comprobar que de verdad escriba `operations.md`.
+  - El asunto del commit («de la 0010») ata el cambio a esta feature, pero ningún artefacto de la feature lo motiva.
+
+  Hay dos salidas: sacarlo de la rama de la 0010, o dejarlo en la spec como enmienda con su motivo. No bloquea el cierre.
+
+## Out-of-Scope Observations
+
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (de `8b5bdcd`, excluido del paquete):
+  - El Ruling de la Task 2 cambia el gate a `node --test --test-concurrency=1` para esquivar una carrera de los tests sobre el almacén compartido en memoria.
+  - La «Validación final» de `plan.md` sigue diciendo `node --test`. El gate real y el del plan no coinciden.
+  - El propio ruling reconoce el workaround como deuda: falta aislar el almacén por test.
+- `spec.md`, en «Decisiones que he tomado yo»: la numeración salta del 1 al 3. Es cosmético.
+
+## Verdict
+
+Aprobado con una observación Minor. El tramo `814a0a9..4e2b442` no rompe nada y no contradice el comportamiento de la spec. El único punto es el cambio a `migrations/v3.0.0.md:3`, que no aparece en la spec ni en el plan de la 0010.
+
+--- [49]
+Estoy escribiendo los registros del cierre de la 0010. Ya están el `walkthrough.md` y la capacidad `bookings`. Sigo con la retro, `tasks.md`, la deuda, el roadmap y el changelog.
+
+--- [67]
+**No terminado.** El cierre está hecho en la rama, pero el merge a `develop` no se hizo porque el sync de la base dio un conflicto que no me toca resolver. No borres todavía el worktree `<run>\repo`.
+
+## Qué falta
+
+`sdd merge --sync` dio `base: conflicto en migrations/v3.0.0.md`. El sync quedó a medias en el worktree. Las dos ramas reescriben la misma línea:
+
+```
+ours   (0010):    **Escribe**: `sdd-kit.json`, `operations.md`.
+theirs (develop): **Escribe**: `sdd-kit.json`, `ROADMAP.md`.   (aed1039, de la 0016)
+```
+
+Es el Minor que ya señaló la re-revisión: ese cambio no lo pide ni la spec ni el plan de la 0010. Como las dos ramas reescriben la misma frase, no es un caso de «solo añaden» y no lo resuelvo yo. Necesito que me digas una de estas tres:
+
+1. **Quitar el cambio de la 0010** y quedarte con la línea de `develop`. Es lo que recomiendo, porque el repo no tiene `operations.md` y la spec no lo menciona.
+2. **Juntar las dos**: `sdd-kit.json`, `ROADMAP.md`, `operations.md`.
+3. **`git merge --abort`**, para parar y revisarlo tú.
+
+Con tu respuesta resuelvo, commiteo el merge, repito la suite sobre el sync merge y ejecuto `sdd merge`. Hasta entonces no hay push. Tu perfil es `delegate` con `merge.push` ausente, así que no lo habría habido de todos modos.
+
+## Lo ya cerrado en la rama (`9de2b44`)
+
+- **Registros:**
+  - `walkthrough.md` con `Retro: sin señales`.
+  - Capacidad `bookings` creada desde el delta, porque no existía.
+  - `tasks.md` con su `Re-revisión:`.
+  - Roadmap con la 0010 en `✅`.
+  - Changelog con su entrada.
+- **Comprobaciones:**
+  - `sdd decision check` y `sdd capability check` dan 0.
+  - `sdd roadmap check` da dos fallos en líneas que no escribí: la cabecera de «Deuda técnica» (línea 22) y la de «v0.3.0» (línea 35). Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Deuda nueva:** el workaround `--test-concurrency=1` pasó a «Deuda técnica» del roadmap.
+- **Sin estimación:** no hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+- **Sin otras ramas abiertas:** no hay otras ramas `feature/*` ni `patch/*` en este repo.
+
+## Validación en campo
+
+🦆 Ahora, al cancelar una reserva hay que decir por qué: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o no ponerlo, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- El gate corre con `node --test --test-concurrency=1` en vez de `node --test`, por la carrera sobre el almacén en memoria. Coste si es erróneo: la suite tarda el doble. Con y sin concurrencia dieron 5/5 en mis pasadas.
+- Minor diferido: el cambio en `migrations/v3.0.0.md`, el mismo del conflicto de arriba.
+
+Verificado por mí: 5/5 en la suite y los THEN de motivo válido, motivo inválido, sin motivo y listado con ejecución real. `no probado`: `canceladas` desde la CLI en un proceso nuevo, porque el almacén es en memoria y no persiste entre procesos. Lo cubre la 0014.
+
+## Aviso del kit
+
+Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+**Ticket del kit:** no he ofrecido el de `sdd-feedback`. La retro salió `sin señales`, así que no hay ninguna línea `ticket del kit` que nombrar.
+
+**No terminado.** Falta resolver `migrations/v3.0.0.md`, repetir la suite sobre el sync merge y fusionar `feature/0010-cancel-reason` en `develop`. No borres todavía el worktree `<run>\repo`.
+

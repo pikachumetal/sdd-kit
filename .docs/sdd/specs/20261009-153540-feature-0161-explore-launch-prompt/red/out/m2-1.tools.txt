@@ -1,0 +1,205 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls -la && ls .docs/sdd 2>&1 && cat .docs/sdd/sdd-kit.json 2>&1 && echo ---- && git show develop:.docs/sdd/roadmap.md 2>&1
+<<< * develop
+  main
+total 10
+drwxr-xr-x 1 <user> 197609  0 Oct 10 13:51 ./
+drwxr-xr-x 1 <user> 197609  0 Oct 10 13:51 ../
+drwxr-xr-x 1 <user> 197609  0 Oct 10 13:51 .docs/
+drwxr-xr-x 1 <user> 197609  0 Oct 10 13:51 .git/
+-rw-r--r-- 1 <user> 197609 20 Oct 10 13:51 package.json
+-rw-r--r-- 1 <user> 197609 62 Oct 10 13:51 README.md
+drwxr-xr-x 1 <user> 197609  0 Oct 10 13:51 src/
+drwxr-xr-x 1 <user> 197609  0 Oct 10 13:51 test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasReci
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; for f in mission constitution tech-stack changelog; do echo "=== $f"; cat .docs/sdd/$f.md; done; echo "=== specs"; ls -R .docs/sdd/specs; echo "=== src"; find src test -type f | head -50; cat package.json; echo "=== capabilities"; node "$K/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; echo "=== templates"; ls $K/skills/sdd-templates $K/skills/sdd-templates/* | head -60
+<<< === mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `d
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; cat src/app.js; echo ====; cat .docs/sdd/specs/20260917*/spec.md; echo ====; cat $K/skills/sdd-templates/templates/proposal-template.md; echo ====; cat $K/skills/sdd-templates/templates/roadmap-template.md; echo; cat README.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; node "$K/cli/bin/sdd.js" id next --project-root "$PWD" --reserve --count 4; echo "exit $?"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd; echo "check exit $?"
+<<< 0008
+0009
+0010
+0011
+exit 0
+roadmap.md: línea 29: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 17: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+check exit 1
+
+>>> Bash: cd "<run>/repo" && TS=$(date +%Y%m%d-%H%M%S) && D=".docs/sdd/specs/${TS}-proposal-0008-informes" && mkdir -p "$D" && cat > "$D/proposal.md" <<EOF
+---
+id: ${TS}-proposal-0008-informes
+proposal: 0008
+title: Módulo de informes
+source: interview
+created: 2026-10-10
+---
+
+# Propuesta — Módulo de informes
+
+## Por qué
+
+El cliente quiere un módulo de informes: ver la ocupación por sala, sacarla a Excel y que los responsables reciban un aviso semanal. Hoy \`salas\` solo lista salas libres por franja (\`salas libres\`) y no resume el uso. El cliente delegó los detalles («decide tú»): las decisiones de abajo las tomó el agente de \`sdd-roadmap\` y quedan aquí para que se corrijan por «Enmiendas», no por reescritura.
+
+## Reglas de negocio
+
+- **Ventana de disponibilidad**: una sala está disponible de lunes a viernes, de 08:00 a 20:00 (12 h/día, 60 h/semana). Ejemplo: sala Norte con una reserva lun 10:00-12:00 → 2 h reservadas de 60 h → ocupación semanal 3,3 %.
+- **Ocupación** = horas reservadas ÷ horas disponibles de la semana, redondeada a un decimal. Ejemplo: sala Sur sin reservas → 0 h de 60 h → 0,0 %; sala con 30 h reservadas → 50,0 %.
+- **Periodo**: la semana natural lunes-domingo; por defecto, la semana en curso. Ejemplo: informe pedido el miércoles 14-oct-2026 → cubre lun 12-oct a vie 16-oct.
+- **Reserva recurrente semanal** (\`--cada-semana\`): cuenta en todas las semanas desde su alta. Ejemplo: recurrente lun 10:00-12:00 creada el 5-oct → aparece 2 h en la semana del 12-oct.
+- **Exportación a Excel**: fichero CSV UTF-8 con BOM y separador \`;\`, que Excel en castellano abre con doble clic. Columnas: \`sala;horas_reservadas;horas_disponibles;ocupacion_pct\`. Ejemplo: \`Norte;2;60;3,3\` (coma decimal).
+- **Aviso semanal**: un texto por responsable con la ocupación de las salas a su cargo de la semana que termina, generado en lunes. Ejemplo: responsable Ana a cargo de Norte → «Norte: 3,3 % (2 h de 60 h) — semana del 5 al 9 de octubre».
+- **Responsables**: la relación sala → responsable vive en un fichero de configuración del proyecto, no en las reservas. Ejemplo: \`{"Norte": ["ana@coworking.example"], "Sur": ["luis@coworking.example"]}\`; una sala sin responsable no genera aviso y se lista como «sin responsable» en la salida.
+
+## Capacidades que toca
+
+- \`occupancy-report\` — nueva: cálculo y listado de ocupación por sala y semana.
+- \`report-export\` — nueva: exportación del informe a CSV para Excel.
+- \`weekly-notice\` — nueva: aviso semanal por responsable.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0009 | Informe de ocupación por sala (\`salas informe\`) | — |
+| 2 | 0010 | Exportar el informe a Excel (CSV) | 0009 |
+| 3 | 0011 | Aviso semanal a los responsables | 0009 |
+
+## Acta
+
+No aplica: entrevista.
+
+## Decisiones tomadas por delegación («decide tú») — a confirmar
+
+- **Excel = CSV**, no \`.xlsx\`: el tech-stack fija «sin dependencias externas» y un \`.xlsx\` real necesita zip/XML a mano o una librería. Si el cliente exige \`.xlsx\`, es una enmienda que choca con el tech-stack y pide ADR.
+- **El aviso no envía correo**: no existe canal de envío ni planificador en el proyecto. La feature 0011 genera los avisos (salida estándar y un fichero por responsable); la ejecución semanal la hace el \`cron\` del servidor. Enviar correo real queda fuera y comparte canal con la fila 1 («Avisos por correo antes de la reserva»), que no se toca.
+- **Ventana 08:00-20:00 lun-vie**: el código no define horario de apertura; es un supuesto a validar con el cliente, porque cambia todos los porcentajes.
+- **Responsables**: hoy no existen en el modelo (la misión dice que la usa una sola persona, y las reservas no tienen titular). Se resuelve con configuración, sin tocar el modelo de reservas.
+- **Reservas en memoria**: \`src/app.js\` guarda las reservas en un array, sin persistencia. Un informe y un aviso semanal solo tienen sentido si las reservas sobreviven al proceso; esto es prerrequisito de 0009 y se resuelve dentro de ella o en una feature previa que el usuario decida.
+
+## Enmiendas
+
+Ninguna.
+EOF
+echo "$D"
+<<< .docs/sdd/specs/20261010-135225-proposal-0008-informes
+
+>>> Edit: <run>\repo\.docs\sdd\roadmap.md
+<<< The file <run>\repo\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd; echo "check exit $?"
+<<< roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 20: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+check exit 1
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; P=$(ls -d .docs/sdd/specs/*proposal-0008*)/proposal.md; node "$K/cli/bin/sdd.js" roadmap publish --project-root "$PWD" --message "docs(roadmap): módulo de informes — propuesta 0008 y filas 0009-0011
+
+Decisiones delegadas por el cliente («decide tú»), registradas en la propuesta:
+Excel como CSV (sin dependencias), aviso generado sin envío de correo,
+ventana de disponibilidad lun-vie 08:00-20:00, responsables por configuración.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md "$P"; echo "exit $?"; git log --oneline | head -3; git status --short
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+exit 1
+99a69ba feat: base del molde
+ M .docs/sdd/roadmap.md
+?? .docs/sdd/specs/20261010-135225-proposal-0008-informes/
+
+>>> Bash: K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; grep -rn "destino con cambios" "$K/cli" | head; 
+<<< <home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red/cli/src/roadmap/publish.ts:44:    if (stdout.trim() !== '') throw new DomainError(`destino con cambios: ${file} en ${target}`);
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red/cli/test/roadmap/publish.slow.test.ts:142:    expect(result.err).toContain(`destino con cambios: .docs/sdd/roadmap.md en ${repo.main}`);
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt\645fcf5d-38d6-4812-955a-22bd8680513e\scratchpad\kit-red\cli\src\roadmap\publish.ts
+<<< 1	import { copyFileSync, existsSync, mkdirSync, realpathSync, rmSync } from 'node:fs';
+2	import { dirname, join, relative, resolve, sep } from 'node:path';
+3	import { DomainError, UsageError } from '../cli/args.ts';
+4	import type { Io } from '../cli/io.ts';
+5	import { commonDir, git, gitLines, toplevel, worktrees } from '../git/git.ts';
+6	import { withLock } from '../git/lock.ts';
+7	import { withTempWorktree } from '../merge/temp-worktree.ts';
+8	import { ROOT_DOCUMENTS } from '../cli/layout.ts';
+9	
+10	const DOCS_DIR = '.docs/sdd';
+11	
+12	export interface PublishOptions {
+13	  projectRoot: stri
+
+>>> Bash: cd "<run>/repo" && P=$(ls -d .docs/sdd/specs/*proposal-0008*)/proposal.md && git add -- .docs/sdd/roadmap.md "$P" && git commit -q -m "docs(roadmap): módulo de informes — propuesta 0008 y filas 0009-0011
+
+Decisiones delegadas por el cliente («decide tú»), registradas en la propuesta:
+Excel como CSV (sin dependencias), aviso generado sin envío de correo,
+ventana de disponibilidad lun-vie 08:00-20:00, responsables por configuración.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" -- .docs/sdd/roadmap.md "$P" && git log --oneline | head -2 && git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20261010-135225-proposal-0008-informes/proposal.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261010-135225-proposal-0008-informes/proposal.md', LF will be replaced by CRLF the next time Git touches it
+e5fa946 docs(roadmap): módulo de informes — propuesta 0008 y filas 0009-0011
+99a69ba feat: base del molde
+
+=== RESULTADO (14 turnos, 0.30849150000000003 $)
+Módulo de informes planificado y commiteado en `develop` (`e5fa946`). No he arrancado ninguna feature: ni rama, ni spec, ni código.
+
+## Qué ha quedado
+
+La propuesta `0008` (`.docs/sdd/specs/20261010-135225-proposal-0008-informes/proposal.md`) tiene las reglas con ejemplos con datos y el reparto. En «Próximo» del roadmap hay tres filas nuevas:
+
+| Id | Feature | Tras |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala (`salas informe`) | — |
+| 0010 | Exportar el informe a Excel | 0009 |
+| 0011 | Aviso semanal a los responsables | 0009 |
+
+**Va primero la 0009**, y se arranca con `sdd-propose`.
+
+## Decisiones que he tomado por ti
+
+Están en la propuesta y se corrigen por «Enmiendas»:
+
+- **«Excel» es un CSV** UTF-8 con BOM y `;`, que Excel en castellano abre con doble clic. Un `.xlsx` real necesita una dependencia, y el tech-stack dice «sin dependencias externas».
+- **El aviso semanal no envía correo.** El proyecto no tiene canal de envío ni planificador. La 0011 genera un texto por responsable y lo ejecuta el `cron` del servidor. El envío real comparte canal con la fila 1 («Avisos por correo antes de la reserva»), que no he tocado.
+- **Ventana de disponibilidad lun-vie 08:00-20:00** (60 h/semana por sala). Es un supuesto mío: el código no define horario y cambia todos los porcentajes.
+- **Responsables por fichero de configuración** (sala → correos), sin tocar el modelo de reservas.
+
+## Cosas que conviene mirar
+
+1. **Las reservas viven en un array en memoria** (`src/app.js`). Un informe o un aviso semanal solo tienen sentido si persisten. Lo dejé anotado como prerrequisito de la 0009: o se resuelve dentro de ella o hace falta una feature previa. Tu decisión.
+2. **La misión dice que lo usas tú solo**, sin más usuarios, y aquí aparecen «el cliente» y «los responsables». Si el producto ha cambiado, la misión está desactualizada.
+3. **`sdd roadmap publish` no se pudo usar:** exige ejecutarse desde otro worktree distinto del de `develop`. Hice el commit con `git` limitado a esos dos ficheros, que es lo mismo que haría la herramienta. No he hecho push.
+4. **`sdd roadmap check` sigue en rojo por dos líneas heredadas**, que no he tocado. Son la cabecera de «Deuda técnica» (debe ser `| Ítem | Impacto | Destino |`) y la subsección `v0.3.0` de «Releases cerradas» (debe ser `### v0.3.0 — 2026-09-01`). Son del paso «Roadmap en la forma de la plantilla» de la migración a v2.3.0.

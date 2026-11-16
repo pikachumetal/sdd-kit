@@ -1,0 +1,139 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y hacerte la pregunta del carril patch.
+
+--- [11]
+Ahora: el carril patch queda confirmado y reservo el id. Queda: pasar a `sdd-implement`, sin parada intermedia.
+
+--- [20]
+Ahora: reproduzco el fallo y confirmo la causa raíz. Queda: abrir `patch.md`, test en rojo, fix, revisor, commit y cierre, ~25 min.
+
+--- [31]
+RED: los dos tests nuevos fallan porque la validación no existe. Ahora hago el fix mínimo.
+
+--- [34]
+El edit con script no se aplicó. Lo hago con Edit.
+
+--- [39]
+GREEN: 6/6 y lint limpio. Ahora relleno §4 y paso el parche a su revisor.
+
+--- [42]
+Revisor lanzado. Espero su informe antes del commit del fix; no hay nada más que pueda avanzar sin tocar los mismos ficheros.
+
+--- [48]
+Sin hallazgos de gravedad alta o media. Hay dos observaciones menores. Lo corrí todo en solo lectura: `node --test && node scripts/lint.mjs` da 6/6 tests en verde y `lint: sin hallazgos`.
+
+1. **Causa raíz (§2): cierta.** En `HEAD`, `src/app.js:28` hace `freeRooms(params[0])` sin validar nada. `src/app.js:6` solo compara `b.slot === slot`. Las citas de línea del patch coinciden con la base, aunque en el árbol modificado ya se han desplazado. La fila de `debt.md:7` («Sin validación del formato de franja horaria») existe.
+
+2. **Fix mínimo.** El diff añade una constante `SLOT_FORMAT` y un guard de una línea en `libres` (`src/app.js:5` y `src/app.js:30-33`). No hay refactor ni comportamiento nuevo. Los demás comandos no se tocan.
+
+3. **Tests.**
+   - Los dos tests nuevos llaman a `run('libres', …)` y comparan el mensaje exacto. Sin el fix devolverían `Norte, Sur`, así que fallarían. Es coherente con el RED que declara §4.
+   - Es el comportamiento real, aunque no pasan por el CLI (`node src/app.js`).
+
+4. **Casos límite.** Ejecuté `node src/app.js libres <arg>` con cada uno:
+
+   | Argumento | Resultado |
+   | --- | --- |
+   | `24:00-25:00` | Rechazado |
+   | `9:00-10:00` | Rechazado (se exige `HH` de dos dígitos) |
+   | `10:00-12:00` | `Sur` |
+   | `09:00-10:30` | `Norte, Sur` |
+   | `12:00-10:00` (orden invertido) | `Norte, Sur` (§3 lo deja fuera a propósito) |
+   | `23:59-00:00` | `Norte, Sur` |
+   | argumento ausente | Rechazado, gracias al `?? ''` |
+   | espacio inicial o final | Rechazado |
+
+   - **Franjas hoy válidas:** solo hay una reserva, `10:00-12:00`, y sigue funcionando. Cambia el resultado de lo que antes devolvía todas las salas con basura, y es lo que pide el patch.
+   - **Menor, `test/app.test.js:13-20`:** no hay test de `9:00-10:00`, argumento ausente, espacios ni franja válida sin reserva. El patch dice haber medido `09:00-10:30` en §4, pero no lo cubre ningún test. No bloquea.
+
+5. **§3 y decisiones del usuario.**
+   - El texto del mensaje y la regla de «válida» están atribuidos a dev-lead, y el mensaje coincide con el de la fila del roadmap.
+   - **Menor, patch.md §3:** rechazar `9:00-10:00` y los espacios, y aceptar el orden invertido, es una decisión sobre lo que el usuario ve y puede hacer. §3 solo la justifica con «lo fija el mensaje `HH:MM-HH:MM`». Para `9:00` y los espacios eso es defendible, pero conviene que dev-lead lo confirme explícitamente. Lo del orden invertido sí queda declarado como no validado.
+
+Dejé el repo igual que estaba. Hice un `git stash` y `stash apply` al comprobar y luego borré la entrada del stash, así que `git status` queda igual y `stash list` vacío.
+
+--- [50]
+El revisor no encuentra nada de gravedad alta ni media. Respondo a sus dos observaciones menores en §4 y hago el commit del fix.
+
+--- [54]
+Ahora: compruebo el estado previo al cierre y leo cómo se valida. Queda: pedirte la validación antes de tocar nada más.
+
+--- [61]
+Ensayo ya los pasos del guion (los mismos comandos que corrí). Preparo el panel plan B.
+
+--- [64]
+Ahora el cierre queda parado en la validación. Antes de fusionar necesito dos cosas tuyas.
+
+**Fusión.** `sdd merge --check` dice que a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Con el bloque incompleto, aunque el perfil sea delegate, tengo que presentarte la fusión y esperar. Tu orden de usar `--push` la tengo anotada. Propongo `merge.into: develop` y `merge.noFf: true`; dime si te vale o qué prefieres.
+
+**Panel.** `.temp/` no está en el `.gitignore` (el proyecto no tiene `.gitignore`). Propongo crearlo con `.temp/` para que el panel no entre en el repo.
+
+🦆 `libres` ya comprueba la franja. Antes, `libres 25:00-26:00` o `libres abc` listaban `Norte, Sur`, como si estuvieran libres. Ahora responden `franja no válida: usa HH:MM-HH:MM`. `libres 10:00-12:00` sigue dando `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Decisiones tomadas sin el dev-lead**
+
+- Ninguna en `patch.md` §3. Pido tu confirmación en dos reglas que salen de leer «HH:MM» al pie de la letra:
+  - Rechazo `9:00-10:00` (se exigen dos dígitos) y las franjas con espacios.
+  - No valido el orden: `12:00-10:00` se acepta y responde `Norte, Sur`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` rechaza | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres abc` rechaza | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00` rechaza | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue igual | ejecución real | `Sur` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 tests y `lint: sin hallazgos`, sobre `c91c623`, ~1 s. Volverá a correr sobre el árbol que fusiona, tras sincronizar con la base.
+
+**Sin probar**
+
+- Nada.
+
+Panel: plan B en http://127.0.0.1:54137/ (no ve la aplicación: si algo falla, cuéntamelo en el comentario del paso).
+
+**Guion**
+
+Rama `feature/0013-slot-format` · worktree `<run>\repo`
+
+Es una CLI sin servidor, así que no hay entorno que arrancar. Terminal:
+
+```
+cd <run>\repo
+```
+
+1. El síntoma del reporte: pega el comando de abajo → debe salir `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+2. Pega el comando de abajo → debe salir `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres abc
+```
+
+3. Pega el comando de abajo → debe salir `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 10:00
+```
+
+4. Pega el comando de abajo → debe salir `Sur`
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla. Dime también si te vale el bloque de fusión y el `.gitignore`.
+

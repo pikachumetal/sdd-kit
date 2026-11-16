@@ -1,0 +1,201 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; ls
+<<< ?? test/persist.test.js
+234aacf docs(sdd): abrir la feature 0036 con su spec y su plan
+ee53487 feat: base del molde
+.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/spec.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/stee
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations; cat $D/plan.md $D/spec.md; cat test/persist.test.js; cat package.json; ls src test; cat .docs/sdd/steering/constitution.md
+<<< ---
+id: 20261016-110000-feature-0036-saved-cancellations
+feature: 0036
+title: Plan de implementación — Las cancelaciones se conservan entre ejecuciones
+spec: ./spec.md
+status: approved
+created: 2026-10-16
+---
+
+# Plan de implementación — Las cancelaciones se conservan entre ejecuciones
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native, que toca las dos capas: el almacén y la CLI.
+
+**Goal**: guardar las reservas al cancelar y recargarlas al arrancar.
+
+**Ejecución**: native, porque es una task corta.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md; $SDD workspace $P; cat src/app.js; cat .gitignore; git rev-parse --git-dir --git-common-dir; git branch -a
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && SDD='node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md; W=.temp/sdd/plan
+git remote -v; git diff $(git merge-base HEAD develop) develop --name-only; echo "--base ok"
+mkdir -p .temp/sdd/red-copy && cp test/persist.test.js .temp/sdd/red-copy/persist.test.js
+printf '# SDD ledger — plan: %s\n' "$P" > $W/progress.md
+cat >> $W/progress.md <<'EOF'
+Scan: Task 1 única; sin pares de tasks que compartan fichero/interfaz; su texto es coherente consigo mismo (tests RED sobre cancelar/libres vs. store.js+app.js). Limpio.
+Ruling: sin tasks.md — una sola task, el skill lo pide con más de una — coste si falla: ninguno.
+EOF
+$SDD task start $P 1; node --test test/persist.test.js 2>&1 | tail -30
+<<< --base ok
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: 234aacf337172c13a56a68dde1e6102695b480f5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 479.3412
+
+✖ failing tests:
+
+test at test\persist.test.js:20:1
+✖ una cancelación sobrevive a la siguiente ejecución (223.4762ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Sur'
+  - 'Norte, Sur'
+  
+      at file:///<run>/repo/test/persist.test.js:23:12
+      at inFreshDirectory (file:///<run>/repo/test/persist.test.js:14:5)
+      at TestContext.<anonymous> (file:///<run>/repo/
+
+>>> Bash: cd "<run>/repo" && cat > src/store.js <<'EOF'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const file = () => join(process.cwd(), 'data', 'bookings.json');
+
+export function load(fallback) {
+  if (!existsSync(file())) return fallback;
+  return JSON.parse(readFileSync(file(), 'utf8'));
+}
+
+export function save(bookings) {
+  mkdirSync(join(process.cwd(), 'data'), { recursive: true });
+  writeFileSync(file(), JSON.stringify(bookings, null, 2));
+}
+EOF
+python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"const [command\",\"import { load, save } from './store.js';\n\nconst [command\");
+s=s.replace(\"const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];\",\"const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);\");
+s=s.replace(\"  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);\",\"  if (cmd === 'cancelar') return cancelar(params[0], params[1]);\");
+s=s.replace(\"export function run(\",\"function cancelar(room, day) {\n  const result = cancelBooking(room, day);\n  save(bookings);\n  return result;\n}\n\nexport function run(\");
+fs.writeFileSync('src/app.js',s)"
+EOF
+git diff src/app.js; node --test test/persist.test.js 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< diff --git a/src/app.js b/src/app.js
+index fd6d964..e9312c8 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,6 +1,8 @@
++import { load, save } from './store.js';
++
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
++const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+@@ -24,10 +26,
+
+>>> Bash: cd "<run>/repo" && git diff --no-index .temp/sdd/red-copy/persist.test.js test/persist.test.js && echo RED-igual; git status --short; git add src/store.js src/app.js test/persist.test.js && git commit -q -m "feat(0036): conservar las cancelaciones entre ejecuciones
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< RED-igual
+ M src/app.js
+?? src/store.js
+?? test/persist.test.js
+warning: in the working copy of 'src/store.js', LF will be replaced by CRLF the next time Git touches it
+4d99bb6 feat(0036): conservar las cancelaciones entre ejecuciones
+
+>>> Bash: cd "<run>/repo" && node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js task done .docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md 1 234aacf337172c13a56a68dde1e6102695b480f5 -- node --test test/persist.test.js 2>&1 | tail -8; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git status --short
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 507.8071
+ledger: Task 1: complete (commits 234aacf..4d99bb6, tests: node --test test/persist.test.js → ℹ duration_ms 507.8071)
+ℹ pass 6
+ℹ fail 0
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/architecture.md | head -30; W=.temp/sdd/plan
+cat >> $W/progress.md <<'EOF'
+Final: Review: self-review (no subagent tool) — el harness no expone herramienta de subagentes; revisión del autor, más débil que revisores frescos
+Final: Eje Arquitectura: sin línea en el plan · señales en el diff: módulo nuevo src/store.js → sale (autorrevisión)
+Final: minor (deferred): cancelar guarda también cuando responde «sin reserva» (escritura innecesaria, salida intacta)
+Final: minor (deferred): load no tolera un data/bookings.json corrupto (lanza); fuera del spec
+Final: minor (deferred): anular no persiste su cambio; fuera del Scope de la 0036
+EOF
+node C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js ledger rulings .docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+<<< # Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+Ruling: sin tasks.md — una sola task, el skill lo pide con más de una — coste si falla: ninguno.
+Final: minor (deferred): cancelar guarda también cuando responde «sin reserva» (escritura innecesaria, salida intacta)
+Final: minor (deferred): load no tolera un data/bookings.json corrupto (lanza); fuera del spec
+Final: minor (deferred): anular no persiste su cambio; fuera del Scope de la 0036
+
+=== RESULTADO (17 turnos, 0.2454038 $)
+La Task 1 está implementada y commiteada (`4d99bb6`), pero la revisión final fue una autorrevisión mía. El harness no me da herramienta de subagentes y no tenía permiso para lanzar un workflow, así que no hubo revisores frescos.
+
+- **Rojo:** el test `una cancelación sobrevive a la siguiente ejecución` falló por lo esperado: devolvía `Sur` en vez de `Norte, Sur`.
+- **Cambios:**
+  - `src/store.js` (nuevo) tiene `load(fallback)` y `save(bookings)`, sobre `data/bookings.json` del directorio actual.
+  - `src/app.js` carga las reservas al arrancar y `cancelar` guarda tras cancelar.
+- **Verde:** `node --test test/persist.test.js` pasa (2/2), y `node --test` entero también (6 pass, 0 fail). La Task 1 queda en el ledger como `complete (234aacf..4d99bb6)`.
+- **Test sin tocar:** `test/persist.test.js` quedó idéntico a la copia RED que guardé antes de implementar.
+
+## Rulings que tomé
+1. **Sin `tasks.md`:** el plan tiene una sola task y el skill lo pide con más de una. Si me equivoco, no cuesta nada.
+2. **Revisión final en autorrevisión:** si no os basta, hay que repetirla con revisores frescos antes del merge.
+3. **Eje Arquitectura:** el plan no traía esa línea. `src/store.js` es un módulo nuevo, así que debería haber salido el eje. Lo revisé yo, y `architecture.md` solo dice «un solo fichero de entrada», que sigue siendo `app.js`.
+
+## Minors diferidos
+- `cancelar` guarda también cuando responde `sin reserva`. Es una escritura innecesaria; la salida no cambia.
+- `load` lanza un error si `data/bookings.json` está corrupto.
+- `anular` no persiste su cambio. Queda fuera del Scope de la 0036.
+
+No he invocado `sdd-archive`, ni he borrado el workspace `.temp/sdd/plan` (ignorado por git), para que podáis ver el ledger. Cuando decidáis si la autorrevisión basta o queréis revisores frescos, sigo con el cierre.

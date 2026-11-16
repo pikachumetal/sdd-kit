@@ -1,0 +1,98 @@
+--- [32]
+Ahora: escribo los tests en rojo, antes de tocar el código. Queda: verlos fallar, arreglar `findBooking`, pasar el gate y cerrar, ~10 min.
+
+--- [42]
+Rojo por la causa esperada. El segundo fallo de `cancelar` es el test existente, que ya sufre el bug porque el `mar` erróneo le gasta la reserva del lunes. Ahora el fix mínimo.
+
+--- [49]
+Ahora el revisor único del patch (Sonnet, effort medium), antes del commit.
+
+--- [52]
+El arreglo está hecho y probado, pero todavía no hay commit. Falta la revisión del patch, que está en marcha, y esperarla antes de commitear y cerrar con `sdd-archive`.
+
+- **Causa:** `findBooking` en `src/app.js` no comparaba el día, así que `cancelar Norte mar` cancelaba la única reserva de Norte, la del lunes. `anular` usa la misma función y tenía el mismo fallo.
+- **Fix:** una condición más, `b.day === day`. Ahora `cancelar Norte mar` devuelve `sin reserva Norte mar`.
+- **Tests:** los dos nuevos (`cancelar` en `test/cancel.test.js`, `anular` en el nuevo `test/void.test.js`) fallaron antes del fix y pasan ahora. `node --test` da 6/6 y el lint no encuentra nada.
+- **Carpeta del patch:** `.docs/sdd/changes/20261112-152419-patch-0012-cancel-day/patch.md`. El patch anterior, 0007, está en `specs/`; este va en `changes/` porque es la carpeta que fija el kit.
+- **Rama:** `feature/0012-cancel-day`.
+
+--- [55]
+Hallazgos:
+
+1. **Importante: el test nuevo de `cancel.test.js` depende del orden.** Comparte el estado de módulo `bookings` con «cancelar una reserva activa», que cancela Norte lun. El caso nuevo afirma `libres` = `'Sur'`, y eso solo es cierto si corre antes de ese test. Está colocado el primero y ahora pasa. Si alguien lo mueve, o se ejecuta con `--test-name-pattern` o con tests en paralelo, `libres` devolvería `'Norte, Sur'` y fallaría sin que haya ningún bug. Para arreglarlo, el test debería comprobar el efecto de forma independiente del orden. Por ejemplo, `run('cancelar', ['Norte','lun'])` debería devolver `cancelada Norte lun` después de la cancelación fallida de `mar`. O el estado debería poder reiniciarse. `test/void.test.js` no tiene el problema, porque `node --test` ejecuta cada fichero en su propio proceso y no hay más tests en ese fichero.
+
+2. **Menor: el test de `anular` no cubre el caso positivo.** No hay ningún test de que `anular Norte lun` devuelva `anulada Norte lun` y marque la reserva como `voided`. El fix cambia el comportamiento de `voidBooking`, que comparte `findBooking`. Habría que añadir ese caso, aunque el riesgo de regresión es bajo.
+
+3. **Menor: `patch.md` tiene una cifra que no coincide con el diff.** En §3 «Fichero(s)» solo figuran `src/app.js` y `test/cancel.test.js`. Falta `test/void.test.js`, que el propio apartado «Tests» sí menciona. La cifra «6/6 tests» y el lint limpio sí coinciden: lo he ejecutado y pasan los 6 tests y el lint (`lint: sin hallazgos`).
+
+4. **Menor: aviso de CRLF.** Git avisa de que `src/app.js` pasará de LF a CRLF. Si el repo normaliza finales de línea, conviene comprobarlo para que el diff no se llene de ruido. No afecta a la lógica.
+
+Comprobaciones sin hallazgo:
+- **Causa raíz (§2):** es real. `findBooking` ignoraba `day` y devolvía la primera reserva activa de la sala. Eso explica tanto el síntoma de `cancelar` como el de `anular`.
+- **Fix:** es mínimo y correcto, un solo `&& b.day === day`. Corrige `voidBooking` a la vez y no cambia el comportamiento de `libres`.
+- **RED previo:** no he ejecutado los tests sin el fix, porque es solo lectura. Por lectura del código, sin la comparación de día, `cancelar Norte mar` devolvía `cancelada Norte mar` y los dos tests nuevos fallaban. La afirmación de patch.md es coherente con eso.
+- **Comportamiento frente a implementación:** los tests prueban la salida pública vía `run` y el efecto en `libres`, no detalles internos.
+- **Contradicciones:** no he encontrado ninguna entre `patch.md` y el código, salvo la omisión del punto 3.
+
+Rutas relevantes:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel.test.js`
+- `<run>\repo\test\void.test.js`
+
+--- [57]
+Acepto los hallazgos 1, 2 y 3. El 4 es el aviso de CRLF que ya salía antes de mis cambios. Dejo los tests independientes del orden y completo el caso positivo de `anular`.
+
+--- [59]
+Sin el fix fallan 2 de 5 y con el fix pasan los 5. Actualizo `patch.md` y commiteo.
+
+--- [68]
+**Validación del patch 0012: necesito tu respuesta antes de seguir con el cierre.**
+
+🦆 Antes, `cancelar Norte mar` te decía `cancelada Norte mar` y te quitaba la reserva del lunes. Ahora dice `sin reserva Norte mar` y no toca nada. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada. La única decisión es mía: arreglé también `anular`, porque comparte la función con `cancelar` y falla igual.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar` un día sin reserva | ejecución real | `sin reserva Norte mar` |
+| la reserva del lunes sigue activa | ejecución real | `cancelada Norte lun` |
+| `anular` un día sin reserva | ejecución real | `sin reserva Norte mar` |
+| `anular` el día reservado | ejecución real | `anulada Norte lun` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 5/5 y lint sin hallazgos, sobre `f5892fb`. Volverá a correr tras el merge de sincronización.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente del cierre, aparte de tu validación:** `sdd merge --check` falla porque `sdd-kit.json` no define `merge.into` ni `merge.noFf`. Si no lo añades, cuando valides te presentaré el merge para que lo confirmes.
+
+Panel: plan B en http://127.0.0.1:54846/ (esta página no ve la aplicación, así que si algo falla cuéntamelo en el comentario del paso).
+
+**Guion**
+
+Rama `feature/0012-cancel-day` · worktree `<run>/repo`
+
+Es una CLI sin entorno que arrancar. Las reservas viven en memoria, así que cada comando empieza con la reserva de Norte del lunes.
+
+Terminal 1:
+
+```
+cd <run>/repo
+node src/app.js cancelar Norte mar
+node src/app.js cancelar Norte lun
+node src/app.js anular Norte mar
+```
+
+1. `cancelar Norte mar` debe imprimir `sin reserva Norte mar`.
+2. `cancelar Norte lun` debe imprimir `cancelada Norte lun`.
+3. `anular Norte mar` debe imprimir `sin reserva Norte mar`.
+
+Dime «validado», o qué falla.
+

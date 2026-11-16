@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && git ls-files | grep -i gate; ls node_modules 2>&1 | head -1; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kfix\skills\sdd-propose\references\config-lane.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+gate.json
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+gate.json
+scripts/gate.mjs
+ls: cannot access 'node_modules': No such file or directory
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+
+>>> Bash: cd "<run>/repo" && cat gate.json package.json; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.json
+<<< {"tasks": {
+  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+}}
+{"type": "module", "engines": {"node": ">=20"}}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delega
+
+=== RESULTADO (6 turnos, 0.18321169999999998 $)
+Esto es un cambio de **config**: toca los inputs de una tarea del gate y no cambia nada de lo que ve o puede hacer el usuario del producto. Antes de tocar nada necesito que confirmes el carril.
+
+🦆 Voy a editar `gate.json` y añadir `src/shared/**` a la lista `inputs` de `rooms:test`, para que esa tarea se vuelva a ejecutar cuando cambie algo en `src/shared`. Antes de guardar corro el gate de cierre de `operations.md` (o el de la constitución). Si sale en verde, hago un solo commit con la línea `Gate:`. No hay spec, plan, id ni entrada de changelog. Estás en `develop`, así que el commit queda ahí y no hago merge.
+
+1. **Config (recomendada):** hago el cambio, corro el gate y commiteo si sale en verde. Perfil `delegate`, el del proyecto (`sdd-kit.json`).
+2. **Otro carril:** si quieres spec o plan para esto, dime cuál.
+
+¿Sigo con la 1?
+
+>>> Bash: cd "<run>/repo" && sed -i 's#"inputs": \["src/rooms.js", "test/rooms.test.js"\]#"inputs": ["src/rooms.js", "src/shared/**", "test/rooms.test.js"]#' gate.json && git diff --stat && grep -n -i -A8 "gate de cierre\|## Build\|Testing" .docs/sdd/steering/operations.md | head -40; grep -n -i "gate" .docs/sdd/steering/constitution.md | head; cat scripts/gate.mjs | head -40
+<<< warning: in the working copy of 'gate.json', LF will be replaced by CRLF the next time Git touches it
+ gate.json | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+7:## Testing
+8-
+9-- **Suites**: `unit` · `node --test` · ~1 s
+10-- **Lo afectado**: `node --test <fichero de test>`
+11:- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+12-- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13-- **Acceso a la aplicación**: `sin login`
+14-- **Motor de producción**: sin base de datos; las reservas viven en memoria
+4:2. Tests antes q
+
+>>> Bash: cd "<run>/repo" && git diff | cat -A | head -20; git ls-files --eol gate.json
+<<< warning: in the working copy of 'gate.json', LF will be replaced by CRLF the next time Git touches it
+diff --git a/gate.json b/gate.json$
+index a4b8fbd..c5f2b50 100644$
+--- a/gate.json$
++++ b/gate.json$
+@@ -1,4 +1,4 @@$
+-{"tasks": {^M$
+-  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},^M$
+-  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}^M$
+-}}^M$
++{"tasks": {$
++  "bookings:test": {"command": "node --test test/app.test.js test/can
+
+>>> Bash: cd "<run>/repo" && sed -i 's/$/\r/' gate.json && git diff --stat && git diff | cat -A | grep '^[+-]'; ls node_modules 2>&1 | head -1; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+<<<  gate.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+--- a/gate.json$
++++ b/gate.json$
+-  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}^M$
++  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "src/shared/**", "test/rooms.test.js"]}^M$
+ls: cannot access 'node_modules': No such file or directory
+No tasks affected by changed files. Unable to execute action pipeline.
+
+>>> Bash: cd "<run>/repo" && node scripts/gate.mjs run rooms:test; echo exit=$?
+<<< ▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit=0
+
+>>> Bash: cd "<run>/repo" && node scripts/gate.mjs run bookings:test --affected --base develop; echo exit=$?
+<<< No tasks affected by changed files. Unable to execute action pipeline.
+exit=0
+
+>>> Bash: cd "<run>/repo" && git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → rooms:test: corrió 1/1 (sin filtro, por editar su definición) · bookings:test: saltada (ningún fichero afectado)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< a3b5e12 chore: añade src/shared/** a los inputs de rooms:test
+a308054 feat: base del molde
+
+=== RESULTADO (7 turnos, 0.2659501 $)
+Añadí `src/shared/**` a los inputs de `rooms:test` en `gate.json` y lo dejé commiteado en `develop` (`a3b5e12`). El diff es una sola línea.
+
+- **Finales de línea:** mi primera edición convirtió el fichero de CRLF a LF y reescribía las cuatro líneas. Restauré CRLF antes de commitear.
+- **`rooms:test`:** como edité su definición, la corrí sin el filtro `--affected`. Pasó 1 test y no falló ninguno.
+- **`bookings:test`:** con `--affected` se saltó, porque ningún fichero cambiado cae en sus inputs.
+- **Commit:** lleva la línea `Gate:` con esas dos entradas. No hice merge porque la rama es `develop`, no una `feature/*`.

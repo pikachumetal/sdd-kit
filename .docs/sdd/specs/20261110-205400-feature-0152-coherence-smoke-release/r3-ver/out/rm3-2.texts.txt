@@ -1,0 +1,62 @@
+--- [12]
+### Strengths
+
+- The commit is small and stays inside the plan: only `src/app.js` and `test/void.test.js` change, which are the two files Task 1 lists.
+- Decision 1 in «Decisiones que he tomado yo» holds: `anular Norte lun` still returns «anulada Norte lun» (`src/app.js:19`), and `test/void.test.js:5-7` pins it.
+- `anular-todas` is left alone, as the Scope says (`src/app.js:22-26`).
+- ADR 0003 is met. Its Confirmación says `src/` may not import `node:fs` or a database package, and `src/app.js` has no imports at all.
+- The UI text stays in Spanish, and the diff adds no comments.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The REMOVED requirement «Avisar por correo» still runs.** `src/app.js:18`
+- **What's wrong:** `voidBooking` still pushes `{ to: 'responsable', body: 'anulada <sala> <día>' }` into `outbox`. `salida` (`src/app.js:28-30`, `run` at `:36`) still prints it.
+- **Proof:** The removed requirement (deleted from `bookings.md` in 6e5998d) said: «`salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo». After this commit, `anular Norte lun` followed by `salida` prints `responsable: anulada Norte lun`. That is the same output as before the change.
+- **Why it matters:** The commit only drops `subject` and the «(enviado por correo)» suffix. `pending()` never read either of them, so nothing the user sees changes. The office will keep receiving the notice that the spec removes.
+- **How to fix:** Delete the `outbox.push(...)` line in `voidBooking`. If nothing else writes to `outbox`, also remove `outbox` and `salida` / `pending`, or have `salida` return an empty output. That choice is the dev-lead's; see Recommendations.
+- **Gap:** `contradicts`
+- **Source:** REMOVED — Avisar por correo (spec delta, `bookings`)
+
+#### Important (Should Fix)
+
+**2. The dev-lead's decision is not covered.** `src/app.js:18`
+- **What's wrong:** «decisión del dev-lead cubierta a medias: El aviso por correo al anular desaparece — the rule only changes the shape of the outbox entry; the notice to the responsable is still produced and still listed in `salida`».
+- **Gap:** `contradicts`
+- **Source:** Decisiones tomadas con el dev-lead
+
+**3. The test named in «Dónde se prueba» does not check the absence of the notice.** `test/void.test.js:5-7`
+- **What's wrong:** The test is called «anular responde sin aviso», but it only asserts the reply text, which was already true before the change. It never looks at `outbox` or at `run('salida', [])`.
+- **Why it matters:** That is how issue 1 passed green. The test does not pin the THEN of the change.
+- **How to fix:** After `run('anular', ['Norte', 'lun'])`, add `assert.equal(run('salida', []), '')`. An alternative is `assert.deepEqual(outbox, [])`; `outbox` is already exported. Write that assertion first so it fails red against the current code.
+- **Gap:** `partial`
+- **Source:** «Dónde se prueba — Anular sin aviso: por el comando `anular`, como `test/void.test.js`»
+
+#### Minor (Nice to Have)
+
+- None.
+
+### Declined to judge
+
+- **`test/app.test.js` and `test/cancel.test.js`:** they call `reservar` and `cancelar`, which `run()` does not handle. Both would get `'salas'` back, so they look red. This predates the branch and is outside the diff. The main thread should confirm it when it runs the full suite.
+- **Commit 6e5998d («fusionar el delta de la 0024»):** it already deleted «Avisar por correo» from `capabilities/bookings.md`, before this feature (0025) removes it. This looks like a mis-merge of 0024 or an early merge of 0025. It is outside the reviewed range (`6e5998d..HEAD`), and I can't check it without 0024's spec.
+- **Shared module state between test files:** `bookings` and `outbox` live in the module, and the tests change them without resetting. Each file runs in its own process under `node --test`, so I left it aside. It is the quality axis's area.
+
+### Not verified
+
+- no verificado: there is no task report in the package, so I have no evidence that `node --test test/void.test.js` was run. I did not run it, as instructed.
+- no verificado: whether 0024's delta was meant to remove «Avisar por correo» (its spec folder is not in the package).
+
+### Recommendations
+
+- Ask the dev-lead whether `salida` should disappear or stay as an empty command once the notice is gone. With the notice removed, nothing writes to `outbox`.
+- Have the main thread run the full suite to confirm the state of `app.test.js` and `cancel.test.js`.
+- There is no ledger, so there are no deferred minors to rule on.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The one behavior the spec removes, the notice to the responsable listed in `salida`, still runs unchanged. The test that should pin its absence only asserts the reply text, which was already true before the change.
+

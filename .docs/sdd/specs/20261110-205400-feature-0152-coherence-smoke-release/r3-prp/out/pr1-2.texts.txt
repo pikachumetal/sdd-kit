@@ -1,0 +1,67 @@
+--- [7]
+Ahora miro el código para clasificar.
+
+--- [30]
+Estoy arreglando un fallo de mi propio test: los dos casos comparten la reserva en memoria del lunes, y el primero la consume. Lo parto en dos ficheros para que cada uno arranque con estado limpio.
+
+--- [34]
+Tests en verde: 6/6 y lint limpio. Falta abrir `patch.md`, pasar el revisor y hacer el commit.
+
+--- [37]
+Estoy esperando al revisor del patch (un solo agente, Sonnet). Cuando devuelva sus hallazgos los contesto en `patch.md`, hago el commit del fix y paso al cierre.
+
+--- [41]
+Hallazgos (no he editado nada):
+
+1. **Causa raíz: correcta.** `findBooking(room, day)` recibía `day` y no lo comparaba. `cancelBooking` y `voidBooking` comparten esa función, así que los dos tenían el fallo.
+2. **Fix: mínimo y correcto.** Es una sola condición, `b.day === day`, en `src/app.js:10`. Cubre `voidBooking` sin tocarlo y no cambia los textos de salida.
+3. **Tests: prueban el comportamiento y habrían fallado antes.** Antes del fix, `cancelar Norte mar` devolvía `cancelada Norte mar` y `anular Norte mar` devolvía `anulada Norte mar`. Los dos primeros `assert` de cada fichero fallan, y los segundos comprueban que la reserva del lunes sigue intacta. Cada fichero corre en su propio proceso con `node --test`, así que el estado compartido de `bookings` no los contamina. No he ejecutado el código antiguo para confirmarlo. Lo deduzco del código.
+
+`node --test` da 6/6 en verde y `node scripts/lint.mjs` da «sin hallazgos».
+
+Hallazgos menores:
+- **Bajo:** en `patch.md`, la fila 2 de la tabla describe el RED como «`anular Norte lun` tras `anular Norte mar` daba `sin reserva Norte lun`». Es cierto como efecto del bug, pero el test falla antes, en la primera aserción (`anular Norte mar` esperaba `sin reserva`). Conviene reformularlo.
+- **Bajo:** `patch.md` trae `status: done` y `commit: <hash>`, pero el cambio sigue sin commitear. Hay que rellenar el hash al cerrar.
+- **Informativo:** los tests nuevos no cubren un día distinto cuando existe una reserva en ese día. Es un caso fuera de alcance y la comparación `===` lo resuelve.
+
+--- [44]
+RED confirmado con los ficheros definitivos. Corrijo la fila 2 de `patch.md`, como pidió el revisor, y lo contesto en §4.
+
+--- [51]
+El fix está hecho y commiteado, pero no he cerrado el patch porque faltan dos cosas tuyas.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva del lunes porque el programa no miraba el día. Ahora mira sala y día: `cancelar Norte mar` dice «sin reserva Norte mar» y la del lunes sigue. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…** nada.
+
+**Lo que hice**
+- **Fix:** commit `a3a563f` en `feature/0012-cancel-dia`. Es una condición más en `findBooking` (`src/app.js:10`) y dos tests de regresión nuevos.
+- **Verificación:** vi cada test fallar antes del fix y pasar después. El gate `node --test && node scripts/lint.mjs` da 6/6 y lint sin hallazgos. Un revisor independiente dio por buenos la causa, el fix y los tests. En `patch.md` queda anotado cómo contesté cada uno de sus puntos.
+
+**Lo que falta**
+1. **Tu validación.** Este proyecto valida a mano, así que el cierre espera a que lo pruebes. He ensayado estos cuatro comandos con el resultado de la derecha:
+
+   | Comando | Debe decir |
+   | --- | --- |
+   | `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+   | `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+   | `node src/app.js anular Norte mar` | `sin reserva Norte mar` |
+   | `node src/app.js anular Norte lun` | `anulada Norte lun` |
+
+   Las reservas viven en memoria y cada comando arranca de cero, así que van en cualquier orden. Dime «validado» o qué probaste. Si prefieres diferirlo, dame una frase y un disparador.
+2. **Falta `merge` en `sdd-kit.json`.** La comprobación previa dice que no tiene `merge.into` ni `merge.noFf`. Dime a qué rama fusiono (supongo `develop`) y si con `--no-ff`. Sin eso no fusiono sin preguntarte.
+
+Con las dos respuestas termino el cierre: hash en `patch.md`, tiempo real, fila del roadmap, fusión y limpieza del worktree.
+
+**No terminado.** Falta tu validación y la política de fusión. No borres todavía el worktree `<run>/repo`.
+
+--- [53]
+El commit del fix ya estaba hecho, así que me paro ahí: `a3a563f` en `feature/0012-cancel-dia`, como patch (id 0012). El gate está en verde con 6/6 tests y lint sin hallazgos.
+
+No he fusionado ni cerrado nada. Tampoco he tomado tu «sí» como validación ni como política de fusión, porque pediste seguir solo hasta el commit del fix. Sigue pendiente lo del mensaje anterior:
+
+1. **Validación:** probar los cuatro comandos y decirme «validado» o qué probaste.
+2. **Fusión:** a qué rama va (supongo `develop`) y si con `--no-ff`.
+
+Cuando me lo des, cierro el patch: hash en `patch.md`, tiempo real, fila del roadmap y fusión.
+

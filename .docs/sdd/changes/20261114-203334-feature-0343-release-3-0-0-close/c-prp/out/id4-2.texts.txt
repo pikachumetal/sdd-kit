@@ -1,0 +1,140 @@
+--- [26]
+Ahora: muevo el patch a `changes/` y escribo el test en rojo. Queda: arreglo mínimo, revisión, commit y cierre, ~10 min.
+
+--- [29]
+RED comprobado: devuelve «Norte, Sur» en vez del aviso. Ahora el arreglo mínimo.
+
+--- [33]
+Las `\d` se perdieron al escapar; lo corrijo.
+
+--- [38]
+Verde: 6/6 y lint limpio. Ahora redacto `patch.md` con la plantilla y despacho el revisor del patch.
+
+--- [48]
+El diff reescribe el fichero entero: se me han cambiado los finales de línea. Restauro CRLF para que el diff sea solo el arreglo.
+
+--- [55]
+Ahora el diff es solo el arreglo: 6 líneas añadidas y 1 cambiada. Despacho el revisor del patch, uno solo y en Sonnet.
+
+--- [57]
+Dejo el patch a la espera del revisor. Su veredicto llegará por notificación y sin él no hago el commit del fix.
+
+--- [62]
+He revisado el patch y el diff, y no hay hallazgos bloqueantes ni de severidad media. Solo hay dos hallazgos bajos. También he ejecutado el CLI para comprobar el comportamiento. No he podido confirmar el «6/6 tests» del patch, porque el filtro que usé sobre la salida de `node --test` no devolvió nada.
+
+## (1) Solución fijada y alcance: correcto
+
+- `src/app.js:30-33` hace lo que pide la petición y nada más. Una franja que no encaja con `HH:MM-HH:MM` devuelve exactamente `franja no válida: usa HH:MM-HH:MM`. Con una franja válida se sigue llamando a `freeRooms`.
+- El patch deja fuera del alcance «fin posterior al inicio» y «`libres` sin franja». El código respeta ambas exclusiones. Sin franja, `params[0] === undefined` salta la validación y el comportamiento sigue como antes (`src/app.js:31`).
+- Leer «HH:MM» como hora de reloj válida (00–23, 00–59) queda registrado como decisión del dev-lead en `patch.md` §3. Es necesario, porque con `\d\d:\d\d` la franja `25:00-26:00` seguiría pasando. Esa decisión no amplía el alcance.
+- El texto con tilde coincide con la petición, y el test usa el mismo texto.
+
+## (2) Regex y casos límite: correcto
+
+La regex es `/^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$/` (`src/app.js:5`). No lleva flags `g` ni `m`, así que no hay problema de `lastIndex` ni de saltos de línea finales.
+
+| Entrada | Resultado |
+| --- | --- |
+| `25:00-26:00` | `franja no válida: usa HH:MM-HH:MM` (medido con el CLI) |
+| `24:00-25:00` | `franja no válida: usa HH:MM-HH:MM` (medido con el CLI) |
+| `10:00-12:00` | `Sur` (medido con el CLI) |
+| `""` (vacío) | `franja no válida: usa HH:MM-HH:MM` (medido con el CLI) |
+| `10:00` (sin rango) | `franja no válida: usa HH:MM-HH:MM` (medido con el CLI) |
+| `23:59` | válido, por la regex (no ejecutado) |
+| `10:60` | inválido, porque `[0-5]\d` no admite el 60 (no ejecutado) |
+
+## (3) Test: falla sin el fix y prueba comportamiento real
+
+- Sin el fix, `run('libres', ['25:00-26:00'])` devuelve `Norte, Sur`. El primer test (`test/slot-format.test.js:5-6`) falla, y es un RED legítimo.
+- El test llama a `run` real, sin mocks. Comprueba el valor devuelto, no la implementación.
+- El segundo test (`test/slot-format.test.js:9-10`) ya pasaba antes del fix. Sirve de guarda de regresión, y el patch lo presenta como tal (caso 2 de la tabla).
+
+## Hallazgos
+
+1. **Baja.** Los límites de la regex no tienen test. `test/slot-format.test.js` solo cubre `25:00-26:00` y `10:00-12:00`. Si alguien cambiara `[0-5]\d` por `\d\d` (aceptaría `10:60`), o `2[0-3]` por `2[0-4]` (aceptaría `24:00`), los dos tests seguirían pasando. Los casos `10:60`, `24:00`, `10:00` y vacío funcionan hoy, pero ninguna prueba los protege. Se arregla con un test parametrizado de entradas inválidas y uno de `23:59-23:59`.
+2. **Baja, informativa.** `24:00` como fin de día se rechaza. Es coherente con la decisión «00–23» del patch y no es un defecto. Si el proyecto quiere franjas hasta medianoche, habrá que reabrir esa decisión.
+
+El informe está en este mensaje; no he editado ni commiteado nada.
+
+Ficheros relevantes:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\slot-format.test.js`
+- `<run>\repo\.docs\sdd\changes\20261116-111001-patch-0013-slot-format\patch.md`
+
+--- [64]
+Acepto el hallazgo 1 y añado los tests de límites. El 2 lo rechazo: `24:00` inválido es lo que fija la decisión «00–23».
+
+--- [76]
+Ahora: el cierre se para en la validación. Queda: tu «validado» y el bloque `merge` del proyecto, y luego cierro y fusiono (~5 min).
+
+Ya implementé el patch 0013 y los 11 tests pasan con el lint limpio. El cierre no puede seguir solo por dos razones:
+
+- **Validación.** `patch.md` pide `Validación: dev-lead`, y tu petición no trae ninguna frase de delegación para validarlo yo. En `delegate` el cierre espera.
+- **Bloque `merge`.** `sdd merge --check` dice que falta `merge.into` y `merge.noFf` en `sdd-kit.json`. Con el bloque incompleto, el kit manda presentarlo y esperar. Tu `sdd merge --push` tampoco lo suple: `merge.push` solo cuenta si va en `sdd-kit.json`, no en el fichero local.
+
+🦆 `libres 25:00-26:00` pasa de listar «Norte, Sur» a responder «franja no válida: usa HH:MM-HH:MM». Valen las horas 00–23 y los minutos 00–59. `libres 10:00-12:00` sigue dando «Sur».
+
+**✋ Me salí del plan en…**
+
+- Nada. El id pasó de 0012 a **0013** porque `origin/develop` ya tenía otra tarea con la 0012 («Informe de ocupación»). Renombré también la fila del roadmap.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` avisa | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue igual | ejecución real | `Sur` |
+| límites `24:00`, `10:60`, `10:00`, vacío, `23:59-23:59` | suite | 11/11 |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 11/11 y lint sin hallazgos sobre `9aa127e`.
+
+**Sin probar**
+
+- Nada. `libres` sin franja queda como hoy y fuera del alcance.
+
+Panel: plan B en http://127.0.0.1:13928/. Pesa lo que pierde esa página: no ve la app, así que si algo falla cuéntamelo en el comentario. `.temp/` no está en `.gitignore` porque el proyecto no tiene ninguno. Propongo crearlo con `.temp/`.
+
+**Guion**
+
+Rama `feature/0013-slot-format` · worktree `<run>\repo`. Es una CLI y no hay entorno que arrancar.
+
+```
+cd <run>\repo
+```
+
+1. Franja con horas inexistentes → `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+2. Franja válida ocupada → `Sur`
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+3. Franja válida libre → `Norte, Sur`
+
+```
+node src/app.js libres 08:00-09:30
+```
+
+**Para fusionar**, dime también el bloque `merge` para `sdd-kit.json`. Recomiendo `into: develop`, `noFf: true` y `push: true`, que es lo que pediste con `--push`.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+
+--- [79]
+El panel sigue arriba en http://127.0.0.1:13928/. Esa notificación es del sistema y no es tu validación, así que el cierre sigue parado.
+
+Para continuar necesito dos cosas de ti:
+
+1. **Validación.** Prueba los tres pasos del guion y dime «validado» o qué paso falla. Si prefieres que la valide yo, dame la frase de delegación.
+2. **Bloque `merge` de `sdd-kit.json`.** Recomiendo `into: develop`, `noFf: true` y `push: true`.
+
+Con tu «validado» y el bloque, cierro `patch.md` con el hash del fix, el roadmap y el tiempo real. Después ejecuto `sdd merge --push`.
+

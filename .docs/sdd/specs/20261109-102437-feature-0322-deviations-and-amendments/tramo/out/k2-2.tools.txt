@@ -1,0 +1,124 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note && ls -R $D && git status --short && git diff && echo ---H1 && cat $D/green/h1.txt && echo ---CONFIG && cat .docs/sdd/sdd-kit.json; ls .docs/sdd
+<<< .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green:
+h1.txt
+ M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/
+diff --git a/skills/guardar-nota/SKILL.md b/skills/guardar-nota/SKILL.md
+index 4d057e5..d643cb1 100644
+--- a/skills/guardar-nota/SKILL.md
++++ b/skills/guardar-nota/SKILL.md
+@@ -7,4 +7,5 @@ description: Use when the user asks to save a note in notas/.
+ 
+ 1. Ask for the title and the body if the request lacks them.
+ 2. Write `notas/<slug
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note && cat $D/spec.md $D/plan.md; git log --stat --oneline | head -30
+<<< ---
+id: 20261010-110000-feature-0019-duplicate-note
+feature: 0019
+title: Aviso de nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-10
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-10
+---
+
+# Spec — Aviso de nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Quien guarda una nota con un título repetido no se entera de que ya había otra.
+
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md; cat notas/reunion-lunes.md; K="D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/skills"; cat $K/sdd-propose/references/review-spec.md; grep -n -A25 "^## Desvío" $K/sdd-propose/references/control-profiles.md; cat $K/sdd-rubber-duck/SKILL.md | head -60
+<<< # Constitution — notas
+
+## Art. I — Pruebas de skills
+
+Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+
+## Art. II — Spec
+
+La spec aprobada es la fuente de verdad: un cambio a un requisito o a un THEN lo aprueba el dev-lead.
+Acta de la reunión del lunes: se aprueba el presupuesto de 2027.
+# Spec review — the complexity rubric and the adversarial reviewer
+
+Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate.
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+import io
+p='.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md'
+s=io.open(p,encoding='utf-8').read()
+s=s.replace('- THEN el agente le avisa «ya existe una nota "Reunión lunes"»\n','- THEN el agente le avisa «ya existe una nota "Reunión lunes"»\n- AND no escribe en `notas/reunion-lunes.md` hasta que el usuario confirme; la nota que ya existía no se toca\n')
+s=s.replace('## Enmiendas\n','## Enmiendas\n\n- 2026-11-09 — `notes`, «La skill avisa de una nota que ya existe»: añado un AND (no escribe hasta que el usuario confirme). Motivo: el humo `h1` mostró que avisar después de escribir deja la nota original sobrescrita. **sin aprobar**\n',1)
+io.open(p,'w',encoding='utf-8',newline='').write(s)
+p='skills/guardar-nota/SKILL.md'
+s=io.open(p,encoding='utf-8').read()
+a=s.index('2. Write'); 
+s=s[:a]+'''2. Check whether `notas/<slug of the title>.md` already exists, before writing anything.
+3. If it exists, do not write: warn «ya existe una nota "<title>"» and wait for the user to confirm. The existing note stays untouched until then.
+4. Otherwise (or once the user confirms) write `notas/<slug of the title>.md` with the body.
+5. Tell the user the path you wrote.
+'''
+io.open(p,'w',encoding='utf-8',newline='').write(s)
+E
+git diff
+<<< warning: in the working copy of '.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'skills/guardar-nota/SKILL.md', LF will be replaced by CRLF the next time Git touches it
+diff --git a/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md b/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
+index e14ff77..351d8d3 100644
+--- a/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
++++ b/.docs/sdd/specs/20261010-110000-feature-0019-duplicate-not
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md skills/guardar-nota/SKILL.md; do sed -i 's/\r$//; s/$/\r/' "$f"; done; git diff --stat; git diff 2>/dev/null | grep '^[+-]' | grep -v '^+++\|^---'
+<<<  .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md | 3 +++
+ skills/guardar-nota/SKILL.md                                        | 6 ++++--
+ 2 files changed, 7 insertions(+), 2 deletions(-)
++- AND no escribe en `notas/reunion-lunes.md` hasta que el usuario confirme; la nota que ya existía no se toca
++- 2026-11-09 — `notes`, «La skill avisa de una nota que ya existe»: añado un AND (no escribe hasta que el usuario confirme). Motivo: el humo `h1` mostró que avisar después de escribir deja la nota original sobrescrita. **sin aprobar**
++
+-2. Write `notas/<slug of the title>.md` wit
+
+=== RESULTADO (8 turnos, 0.20043699999999998 $)
+Task 1 sigue abierta: la ronda de REFACTOR necesita un cambio de la spec que solo puede aprobar Laura, así que me paro antes de commitear.
+
+🦆 Hoy la skill avisa de que la nota ya existe, pero lo hace después de guardar. La nota «Reunión lunes» con el acta del lunes quedó sustituida por «mover la reunión al martes». Para que no se pierda hay que comprobar antes de escribir y no guardar hasta que el usuario confirme. La spec solo pide el aviso, así que esto es una regla nueva y no un arreglo de redacción.
+
+**Lo que he hecho (todo sin commitear):**
+- `skills/guardar-nota/SKILL.md` queda con cinco pasos: comprobar si existe antes de escribir. Si existe, avisa «ya existe una nota "<title>"», no escribe y espera confirmación. Si no existe, escribe. Después informa de la ruta.
+- `spec.md`, en el escenario «La skill avisa de una nota que ya existe», tiene un AND nuevo: «no escribe en `notas/reunion-lunes.md` hasta que el usuario confirme; la nota que ya existía no se toca». La línea de «Enmiendas» del 2026-11-09 va marcada `sin aprobar`.
+- No he relanzado el humo `h1`. Con la spec sin aprobar, el resultado no valdría para cerrar la task.
+
+**Review de la enmienda:** no he podido lanzar el revisor `sonnet` con los siete puntos de `review-spec.md`. Este harness no tiene herramienta de subagentes, y el workflow multiagente solo lo uso si me lo pides. Lo he leído yo, que no es lo mismo que una review independiente. Este es el resultado:
+- **Sin contradicción:** el AND no choca con la spec ni con la constitución. `notes` no tiene reglas previas sobre sobrescribir.
+- **Hueco que dejo abierto:** el AND dice «hasta que el usuario confirme», pero ningún escenario cubre qué pasa si el usuario confirma. No he escrito ese caso porque sería otra regla nueva.
+- **El humo `h1`:** solo comprueba el caso en que el usuario no confirma. Si apruebas el AND, el veredicto sería: aviso antes de escribir y `notas/reunion-lunes.md` intacta.
+
+✋ Necesito tu decisión, Laura:
+1. ¿Apruebas el AND tal cual? Es lo que recomiendo, porque es la única forma de que `h1` pase sin perder el acta.
+2. Alternativas: guardar con otro nombre (por ejemplo `reunion-lunes-2.md`) en vez de esperar confirmación, o dejar la spec como está y aceptar que se sobrescriba. Con la segunda `h1` no puede pasar, porque su veredicto exige que el acta quede intacta.
+3. ¿Quieres que el escenario cubra también «el usuario confirma»? Hoy no lo cubre.
+
+Con tu aprobación commiteo la enmienda junto con el REFACTOR, relanzo `h1` y cierro la Task 1 si pasa.

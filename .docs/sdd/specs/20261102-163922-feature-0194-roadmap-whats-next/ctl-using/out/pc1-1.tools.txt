@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -1; git ls-files | head -50
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat constitution.md mission.md tech-stack.md roadmap.md; node "D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/cli/bin/sdd.js" capability index --path .
+<<< ./
+../
+.docs/
+.git/
+.gitignore
+app.js
+package.json
+pages/
+README.md
+styles/
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+ls: cannot access 'node_modules': No such file or directory
+.docs/sdd/capabilities/order-sheets.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mi
+<<< # Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+# Roadmap — ventas
+
+## Features
+
+| id | Feature | Estado |
+| --- | --- | --- |
+| 001
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/order-sheets.md app.js pages/*.html package.json; grep -n cancel -i README.md
+<<< # Capacidad — order-sheets
+
+## Propósito
+
+Las fichas de pedido y de albarán: qué acciones ofrecen y cómo calculan el total de cada línea.
+
+## Requisitos
+
+### El total de la línea incluye el IVA
+
+- GIVEN una línea de 3 unidades a 9,99 € con IVA del 21 %
+- WHEN se abre la ficha
+- THEN la columna «Total con IVA» muestra `36,26 €`
+
+### La ficha ofrece guardar, cancelar y borrar
+
+- GIVEN una ficha de pedido o de albarán
+- WHEN se abre
+- THEN ofrece las acciones Guardar, Cancelar y Borrar
+function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) 
+
+=== RESULTADO (6 turnos, 0.1545552 $)
+Ahora: clasifico el cambio. Queda: que confirmes el carril; después abro el patch y lo implemento, ~15 min.
+
+🦆 Hoy, al pulsar Cancelar en la ficha de pedido o de albarán, no pasa nada: no hay ningún listener. Con el cambio, Cancelar te llevará al listado de pedidos, en las dos fichas. Se toca solo `app.js` (un listener sobre `[data-accion="cancelar"]`) y la capacidad `order-sheets`, que hoy solo dice que Cancelar existe.
+
+**Carril: patch, de petición cerrada.** El ticket fija la solución: el selector, la llamada `location.assign('../index.html')` y las dos fichas. Cambia una sola cosa, el destino de Cancelar, y eso es un único test. No sale feature ni lite.
+
+Antes de empezar, dos cosas que he visto en el código:
+
+- **`index.html` no existe en el repo.** Solo hay `pages/`, `styles/` y `app.js`. Con `../index.html` desde `pages/`, Cancelar llevaría a una página inexistente. Si el listado vive fuera de este repo, la ruta del ticket está bien. Si no, hace falta que alguien lo confirme, y no voy a inventar esa página.
+- **No hay tests automáticos** (`tech-stack.md`). La verificación será abrir las dos fichas en el navegador. Hoy Cancelar no navega, y después sí lo hará. No existe `estimation.md`, así que no hay estimación en horas.
+
+¿Abro el patch?
+
+1. **Sí, patch con la ruta `../index.html` tal cual está en el ticket (Recomendada).** Implemento el listener, actualizo `order-sheets` y dejo anotado en el patch que `index.html` no está en este repo.
+2. **Antes confirma la ruta.** Paro hasta que me digas dónde está el listado de pedidos, o si hay que crearlo. Si hay que crearlo, deja de ser patch y pasa a feature.
+3. **Otro carril.** Dime cuál.
+
+El perfil es `delegate`, del proyecto (`sdd-kit.json`). Si te vas a ausentar, puedes elegir la 1 y decir «apruebo por delegación, nos vemos en la validación».

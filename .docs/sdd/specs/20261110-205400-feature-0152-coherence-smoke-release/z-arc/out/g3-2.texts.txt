@@ -1,0 +1,91 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [7]
+Pre-checks 1 y 2 pasan (árbol limpio, destino `develop` listo). Ahora leo la spec, el tasks.md y las referencias del cierre.
+
+--- [20]
+Gate verde (5/5). Levanto el entorno y ensayo cada paso del guion como lo hará la persona.
+
+--- [25]
+Todo lo que toca al entorno ya está hecho. Desde aquí no lanzo nada más contra él hasta que contestes.
+
+El cierre se queda parado en el paso 1: `validation.mode` es `manual`, y «ciérrala» es la orden de cerrar, no una validación. Todavía no he escrito ningún registro.
+
+**Pre-checks**
+- El árbol está limpio y `sdd merge --check` sale bien: la fusión irá a `develop`.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, firmada por Laura.
+- La revisión final de `tasks.md` está limpia sobre `c7431b3`. `HEAD` solo añade ese `tasks.md` (documentación), así que no hace falta re-revisión.
+- La feature no tiene `walkthrough.md`. Lo redacto en el cierre con tu validación.
+
+🦆 Cancelar ahora exige un motivo de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, rechaza la cancelación. `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla al correrlo solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real (HTTP, sesión propia) | `cancelada Norte lun (sala ocupada)` |
+| Un motivo fuera de la lista responde «motivo no válido: …» | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` responde lo mismo | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+- `node --test test/`: 5/5 sobre `d543376`, 0,12 s. Es el gate de cierre, y la salida completa está guardada.
+- `e2e` (`node e2e/run.mjs`): no la he corrido, porque el gate de cierre del proyecto la excluye.
+
+**Sin probar**
+- Nada, salvo la dependencia de orden del test de `canceladas` que ya figura en los rulings.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Panel: plan B en http://127.0.0.1:58526/ — esa página no ve la app. Si un paso falla, cuéntame el error en el comentario.
+
+El entorno ya está arrancado en el puerto 55515. Usa tu propia sesión (`x-session: persona`), que empieza vacía. Los pasos 1 y 2 comparten esa sesión. Cada paso es un comando de un solo bloque, para copiarlo tal cual.
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar Norte lun con «sala ocupada» → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: persona" -G http://localhost:55515/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+2. Ver las canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: persona" -G http://localhost:55515/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+3. Motivo fuera de la lista (sesión `persona3`, con la reserva aún activa) → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: persona3" -G http://localhost:55515/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"me aburro\"]"
+```
+
+4. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: persona3" -G http://localhost:55515/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

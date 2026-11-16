@@ -1,0 +1,107 @@
+--- [3]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y preguntarte por el carril patch, ~2 min.
+
+--- [18]
+Ahora: abrir la carpeta del patch y escribir el test en rojo. Queda: fix, reviewer, commit y cierre, ~0,5 h.
+
+--- [25]
+The fix didn't apply; I'll use Edit instead.
+
+--- [31]
+Ahora: escribir `patch.md` y pasar el reviewer. Queda: commit y cierre.
+
+--- [34]
+El reviewer está en marcha. Espero su resultado antes de hacer el commit del fix.
+
+--- [39]
+**Sin hallazgos en el código ni en el test.** Hay un único detalle menor en el `patch.md`.
+
+**Solución fijada.** Es la frase literal del dev-lead: `libres 25:00-26:00` debe responder «franja no válida: usa HH:MM-HH:MM». La respuesta de `run` coincide carácter por carácter.
+
+**Fix (`src/app.js`).**
+- La regex `SLOT` exige `HH:MM-HH:MM`, con hora 00–23 y minuto 00–59.
+- La validación está antes de `freeRooms`, así que `25:00-26:00` ya no lista salas.
+- `params[0] ?? ''` hace que `libres` sin argumento también devuelva «franja no válida». Es coherente con el formato, aunque la petición no lo menciona.
+- No se comprueba que el fin sea posterior al inicio. El `patch.md` lo declara como decisión fuera de alcance, y es correcto.
+
+**Test.** Hay un test nuevo con la entrada y el texto exactos de la petición. Los otros cuatro ya existían y siguen en verde, incluido `libres 10:00-12:00` → `Sur`. Comprobé que:
+- `node --test` da 5/5.
+- `node scripts/lint.mjs` da «sin hallazgos».
+- La CLI responde bien en los tres casos: `libres 25:00-26:00`, `libres 10:00-12:00` y `libres` sin argumento.
+
+**Reflejo en `patch.md`.**
+- La solución fijada, el fix, las decisiones, el gate (5/5, lint) y la tabla de verificación reflejan fielmente el diff.
+- No pude comprobar la afirmación «RED antes (`actual: 'Norte, Sur'`)». Es verosímil, porque el código anterior devolvía eso, pero no lo ejecuté sin el fix.
+- El campo `status: done` con `commit: pendiente` y «Esfuerzo real: pendiente» es coherente con un patch sin cerrar. Si el patch ya se da por terminado, habría que rellenar esos dos campos al archivarlo.
+- La fila de la petición (0012 renumerada a 0013) casa con los commits recientes del log.
+
+Ruta revisada: `<run>/repo`.
+
+--- [41]
+Ahora: anotar la revisión en `patch.md` y hacer el commit del fix. Queda: cierre con `sdd-archive`, donde pararé para tu validación.
+
+--- [46]
+Ahora: comprobaciones previas al cierre. Queda: la validación, donde paro y te la pido, ~2 min.
+
+--- [54]
+**Smoke que he corrido** (ejecución real: lo corrí con la CLI, no con la suite)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` responde el aviso | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue igual | ejecución real | `Sur` |
+| `libres 09:00-10:00`, una franja válida y libre | ejecución real | `Norte, Sur` |
+
+**Suites**
+- `node --test`: 5/5 sobre `8035007`.
+- `node scripts/lint.mjs`: sin hallazgos.
+
+**Sin probar**
+- Nada.
+
+🦆 `libres` ya no lista salas cuando la franja no es una hora real en formato `HH:MM-HH:MM`. `libres 25:00-26:00` pasa de `Norte, Sur` a `franja no válida: usa HH:MM-HH:MM`.
+
+**✋ Me salí del plan en…**
+- Nada.
+
+**Decisiones sin el dev-lead**
+- Ninguna.
+- Decidí por mi cuenta una cosa: «válida» significa horas 00–23 y minutos 00–59. La apunté en `patch.md` como derivada del formato que pediste.
+- `libres` sin argumento también da el aviso, y no comprobé el orden inicio/fin. Si quieres que `10:00-09:00` también sea no válida, es una decisión tuya y aún no está en el patch.
+
+**Avisos antes de cerrar**
+- **Id:** la 0012 pasó a 0013, y el roadmap ya lo recoge (commit `5fc0e3c`).
+- **El merge no puede ir solo:** `sdd merge --check` dice que `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Al fusionar con `--push` necesito que me digas el destino, que supongo `develop`, y si va con `--no-ff`.
+- **Carpeta del patch:** la creé en `.docs/sdd/changes/`, como manda el kit. Las specs anteriores del proyecto están en `specs/`.
+- **`.temp/` sin ignorar:** el panel escribe en `.temp/validation/`, y el proyecto no tiene `.gitignore`. Te propongo añadir `.temp/` al `.gitignore`, y no lo he hecho.
+
+**Guion**
+
+Panel: plan B en http://127.0.0.1:60185/
+
+Rama `feature/0013-slot-format` · worktree `<run>/repo`
+
+El panel no ve la app, así que no registra consola ni red. Si un paso falla, cuéntame el error en su comentario.
+
+Es una CLI y no tiene entorno que arrancar. Abre un terminal:
+
+```
+cd <run>/repo
+```
+
+1. Ejecuta este comando y debe salir `franja no válida: usa HH:MM-HH:MM`:
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+2. Ejecuta este otro y debe salir `Sur`:
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

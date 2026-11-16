@@ -1,0 +1,120 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+
+>>> Grep: reserva|booking|reservation
+<<< Found 6 files
+test\app.test.js
+src\app.js
+ROADMAP.md
+README.md
+PRODUCT.md
+CHANGELOG.md
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+=== RESULTADO (12 turnos, 0.1258258 $)
+Antes de preguntar he leído `src/app.js`, `PRODUCT.md`, `ROADMAP.md` y la constitution.
+
+**Lo que dice el código**
+- `src/app.js:3`: las reservas son un array en memoria con una reserva fija (`Norte`, `lun`, `10:00-12:00`).
+- `src/app.js:11`: `reservar --cada-semana` solo devuelve un texto y no añade nada al array.
+- Es un CLI de un solo uso: cada comando arranca un proceso y termina. Ahora mismo no se pierde nada al reiniciar porque nada llega a guardarse. Guardar bien las reservas es además lo que hace falta para que `reservar` funcione de verdad.
+
+**Lo que dice el proyecto**
+- `PRODUCT.md`: lo usas solo tú y lo despliegas en tu servidor.
+- `package.json` no tiene dependencias y usa ESM.
+- La constitution pide tests con `node --test` antes de cada commit.
+
+**Lo que decido yo (método)**
+- El almacenamiento será local, en tu servidor, sin servicio externo. Motivo: eres el único usuario y no hay nada que compartir.
+- La escritura será atómica (fichero temporal y renombrar), para que un corte a mitad de escritura no deje el fichero corrupto.
+
+❓ **¿Dónde se guardan las reservas?**
+Hay dos caminos razonables:
+
+1️⃣ **Un fichero JSON** (`reservas.json`, con `node:fs`)
+- Escena: `reservar Norte lun 10:00-12:00` crea o actualiza el fichero. Al día siguiente, `libres 10:00-12:00` → `Sur`.
+- Coste: lee y reescribe el fichero entero en cada comando. Con las reservas de un coworking personal es instantáneo.
+- Coste: dos comandos a la vez podrían pisarse. Con un solo usuario es raro, pero posible.
+- Ventaja: no añade dependencias y el fichero se lee y se edita a mano.
+- Ventaja: encaja con el `.ics` de la 0009 y los avisos de la 0008, que solo necesitarían leer el JSON.
+
+2️⃣ **SQLite** (`node:sqlite`)
+- Escena: igual que arriba, pero los datos van a `reservas.db`.
+- Ventaja: soporta escrituras concurrentes y consultas por sala o día sin cargar todo.
+- Coste: depende de la versión de Node, porque el módulo es reciente. El fichero no se puede leer ni arreglar a mano.
+- Coste: es más maquinaria de la que pide el volumen.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, hay muy pocas reservas y no hay dependencias. A cambio, si algún día hay concurrencia o muchos datos, habría que migrar.

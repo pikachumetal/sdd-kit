@@ -1,0 +1,79 @@
+--- [4]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y anunciar la feature, ~2 min.
+
+--- [18]
+Ahora: la rama `feature/0010-exportar-csv` ya está creada con el id 0010 reservado. Falta la entrevista para la spec, y después el plan. Queda hasta tu primera parada (la aprobación de la spec): ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV. Lo hace porque el responsable de cada sala cuadra esas reservas los lunes en su hoja de cálculo.
+
+Hoy las reservas son solo `sala`, `día` y `franja` (por ejemplo `Norte · lun · 10:00-12:00`), sin fecha concreta. Todavía no sé qué espera ver el responsable en la hoja el lunes, así que no sé qué columnas ni qué reservas deben salir. Dejo esas decisiones abiertas hasta que me lo cuentes.
+
+Cuéntame cómo es ese lunes: ¿qué hace el responsable con las reservas en su hoja, y qué echa en falta ahora mismo que le obligue a pedir este CSV?
+
+--- [20]
+Vale, entonces te propongo algo concreto y lo corriges. Es una suposición mía, no algo que me hayas dicho.
+
+**Mi propuesta:** `salas exportar Norte` imprime en pantalla todas las reservas de esa sala, una por línea, con las columnas `sala,dia,franja`. Con `Norte` saldría así:
+
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+
+Si quieres un fichero, lo redirigirías tú (`salas exportar Norte > norte.csv`). Una sala que no existe daría un error claro en vez de un CSV vacío.
+
+Hay un detalle que cambia el resultado: las reservas no guardan fecha, solo día de la semana y franja. Por eso el CSV no puede llevar fechas concretas, y el responsable cuadraría "lun 10:00-12:00" y no "16/11 10:00-12:00". Eso lo doy por bueno salvo que me digas lo contrario.
+
+¿Tu hoja de cálculo es la típica en castellano, que al abrir el CSV espera `;` como separador y no `,`?
+
+--- [22]
+Con eso ya tengo lo que necesito. El resto (cabecera, error de sala inexistente, salida por pantalla) lo dejo como decisiones mías para que las valides en la spec. Ahora: escribo la spec y paso la revisión. Queda hasta tu aprobación: ~5 min.
+
+--- [36]
+Ahora: presentar la spec y esperar tu aprobación (hay una parada). Queda después: plan e implementación, ~15 min.
+
+**Spec: exportar a CSV las reservas de una sala**
+`.docs/sdd/changes/20261113-150609-feature-0010-exportar-csv/spec.md`
+
+🦆 Con `salas exportar Norte` sale por pantalla una tabla con las reservas de esa sala, una por línea y con `;` de separador:
+
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+
+Se guarda con `salas exportar Norte > norte.csv` y se abre en el Excel en castellano con las columnas ya repartidas. Si la sala no existe o falta el nombre, no sale ningún CSV: sale un error por stderr y el comando termina con código 1. Por dentro es una rama nueva en `run` de `src/app.js`.
+
+**✋ Decisiones que he tomado yo, valida estas**
+1. Nombre del comando `exportar`, con la sala como argumento (`salas exportar Norte`).
+2. Salida por pantalla, sin escribir ficheros. Quien quiera fichero redirige.
+3. Columnas `sala;dia;franja` con cabecera, sin fecha concreta: las reservas solo guardan día de la semana y franja. Tú no sabes qué echa en falta el responsable, así que las columnas son suposición mía.
+4. Sala sin reservas: solo la cabecera. Sala inexistente, incluida `norte` en minúscula: `sala desconocida: Oeste` por stderr, código 1, stdout vacío. Sin sala: `uso: salas exportar <sala>`, también código 1.
+5. Sin comillas ni escapes CSV y sin BOM: con `Norte` y `Sur` no hacen falta.
+6. Capacidad nueva `bookings`. Probé la fusión sobre una copia de `.docs/sdd` y sale bien.
+7. Enfoque: función nueva en `src/app.js`, frente a un fichero aparte o un flag `--csv`. Dos tests por `run` y uno con `spawnSync` para comprobar el código de salida.
+
+**Decisión tuya:** la spec pide dos revisores (señales: capacidad nueva y formato de fichero que consume una hoja de cálculo), pero esta sesión no tiene herramienta para lanzar subagentes. No he revisado la spec con ninguno y la spec lo dice. Puedes aprobarla así o pedirme otra vía.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajusto (columnas, nombre del comando, comportamiento ante errores…).
+
+--- [37]
+Lo dejamos aquí. La spec sigue sin aprobar, así que no he escrito plan ni código.
+
+**Estado**
+- Rama `feature/0010-exportar-csv`, creada desde `develop`, con el id 0010 reservado.
+- Spec en `.docs/sdd/changes/20261113-150609-feature-0010-exportar-csv/spec.md`, con `status: draft` y la aprobación pendiente.
+- Nada está commiteado, y la carpeta de la spec queda sin seguimiento en la rama.
+- `ROADMAP.md` no tiene fila para la 0010; la reservé sin añadirla.
+- No se lanzó ninguna review de la spec, porque esta sesión no puede despachar subagentes.
+
+**Para retomar:** vuelve a la rama `feature/0010-exportar-csv` y di «retoma la feature» o aprueba la spec con «Apruebo». Escribiré el plan y pasaré a implementar. Si prefieres cambios (columnas, nombre del comando, errores), dímelos y los aplico antes del gate.
+

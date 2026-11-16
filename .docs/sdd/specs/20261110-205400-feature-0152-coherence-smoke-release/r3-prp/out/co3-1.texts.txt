@@ -1,0 +1,40 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, config). Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [22]
+Ahora: el repaso de coherencia ya está hecho y despacho al revisor único de lite. Queda: integrar sus hallazgos y presentarte la spec, ~3 min.
+
+--- [35]
+Ahora: segunda ronda. Acepté un Crítico, así que un revisor nuevo relee la spec corregida. Queda: presentártela, ~2 min.
+
+--- [50]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta. La spec está en `.docs/sdd/changes/20261111-192347-feature-0015-paths-in-fast/spec.md` (sin commit todavía).
+
+🦆 Hoy, si alguien añade un fichero con una ruta de más de 140 caracteres, el pre-commit lo deja pasar y el fallo sale tarde, en la tarea lenta. Con el cambio, la comprobación de rutas corre junto a la de reservas y esa ruta hace que `fast` salga rojo. Como la comprobación mira los nombres de todos los ficheros del repo, `fast` tiene que volver a correr ante cualquier cambio, no solo cuando cambia `src/`. Cuesta 0,37 s por pasada.
+
+**El cambio en `gate.json`**
+- `fast` pasa a `node --test test/app.test.js test/paths.test.js`.
+- Los `inputs` de `fast` pasan a `["**/*"]`. Con los `inputs` actuales la caché se saltaría el test justo al añadir un fichero largo, y no frenaría nada.
+- La tarea `slow` desaparece, porque su único comando era ese test.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Carril.** Por el kit esto es carril config, que no lleva spec. La has pedido, así que la escribí en modo lite y justifico sus condiciones una a una. Si prefieres no tener spec, va por config con un solo commit.
+2. **`**/*` en `fast`.** Es el patrón que ya tenía `slow`. Coste: `fast` corre también ante cambios solo de documentos.
+3. **Retirar `slow`.** Ningún otro fichero del repo la nombra. No he comprobado si la herramienta de gate exige que exista (está marcado `sin medir`). Si la exige, se conserva con un comando vacío.
+4. **La duración.** El test de rutas tarda 0,35 s de reloj (0,14 s el test), no 1 s, y `fast` entera tarda 0,37 s. Tu decisión sigue en pie, solo cambia el coste.
+5. **Límite.** El test lee `git ls-files`, así que un fichero largo sin `git add` no lo frena, ni antes ni después de este cambio.
+6. **Caché `sin medir`.** No sé si la herramienta calcula su clave por contenido, por rutas o por fecha. Si un renombrado con contenido idéntico no hace volver a correr `fast`, o si `**/*` no cubre los directorios con punto, `**/*` no basta. Pararía y te pediría enmendar la spec. La alternativa es una tarea `paths` aparte.
+7. **Pre-commit.** No hay hook instalado en este clon, así que «el pre-commit corre `fast`» es lo que dice `operations.md`, no algo que haya visto ejecutarse. El éxito de la spec es «`fast` sale rojo».
+8. **Fuera de alcance:** `test/cancel.test.js` no está en ninguna tarea de `gate.json`. Solo lo corre el gate de cierre.
+9. **Validación:** `agente`, porque es configuración de herramientas.
+
+**Pruebas previstas:** `git clone` a una ruta corta, con una pasada en verde antes de cada escenario. Los escenarios son ruta larga con `git add`, ruta larga bajo `.docs/`, `git mv` sin tocar contenido, `git rm`, cambio solo en un `.md`, y el gate arrancando sin `slow`.
+
+**Review:** un revisor (lite) y una segunda ronda, porque acepté un hallazgo Crítico. Aceptados casi todos los hallazgos. Rechacé uno: actualizar `operations.md`, porque su texto sigue siendo cierto.
+
+La 0015 no tiene fila en `ROADMAP.md` y no he tocado el roadmap.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

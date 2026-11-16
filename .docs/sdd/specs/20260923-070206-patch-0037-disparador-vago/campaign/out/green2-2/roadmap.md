@@ -5,7 +5,7 @@
 | # | Ítem | Estado |
 | --- | --- | --- |
 | 0008 | Avisos por correo antes de la reserva | ⏳ |
-| 0009 | Validar el formato de la franja horaria (`HH:MM-HH:MM`) en `libres` y `reservar`: si viene mal, mensaje de error en castellano y no se consulta ni se reserva nada | 🧪 validación diferida a uso en producción tras merge a `develop` (Àngel Delgado) |
+| 0009 | Validar el formato de la franja horaria (`HH:MM-HH:MM`) en `libres` y `reservar`: si viene mal, mensaje de error en castellano y no se consulta ni se reserva nada | 🧪 validación diferida a uso en producción tras merge a `develop` (<git-user>) |
 
 ## Backlog
 

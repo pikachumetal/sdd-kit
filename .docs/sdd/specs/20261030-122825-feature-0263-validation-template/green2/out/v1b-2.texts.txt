@@ -1,0 +1,42 @@
+--- [3]
+Ahora: compruebo el estado de la 0010 (config, spec, tasks) para preparar la validación. Queda: re-revisión del tramo, smoke por THEN y suite, y presentar la validación, ~10 min.
+
+--- [21]
+Estoy cerrando la re-revisión del tramo: salió sin críticos, y ahora registro el resultado en `tasks.md` antes de presentar la validación.
+
+--- [24]
+Ahora: presento el mensaje de validación de la 0010. Queda: tu decisión sobre un hallazgo del smoke y, con ella, el cierre con `sdd-archive`, ~5 min.
+
+🦆 Con la 0010, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo que no esté en la lista (por ejemplo «me aburro») se rechaza con «motivo no válido: cambio de planes, sala ocupada, otro». El comando `canceladas` está pensado para listar «Norte lun — sala ocupada». **En la CLI real ese listado sale vacío**: mira «Sin probar».
+
+**✋ Me salí del plan en…**
+
+- Nada fuera del plan. Los dos rulings de la task 2 siguen en `tasks.md`: el orden de `canceladas` es el de cancelación, y las anuladas (`anular`) no salen.
+- La re-revisión de `5195f8c..a6ea18f` dio 0 Critical y 2 Important, que ya corregí en `tasks.md` sin commitear: los marcadores de commit y el sha de la revisión final. También dejó 2 Minor, que quedan abiertos:
+  - Ya no hay test de «sin reserva», y el test de `canceladas` depende de que antes corra el de cancelar.
+  - La numeración de «Decisiones» en la spec salta del 1 al 3.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Responde «cancelada Norte lun (sala ocupada)» | `ejecución real` y `suite` | `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | `ejecución real` y `suite` | `--motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» | `suite` solamente; `ejecución real` falla | En la CLI, `node src/app.js canceladas` en un proceso aparte imprime una línea vacía. La suite pasa porque `cancelar` y `canceladas` comparten el estado en memoria de un mismo proceso. |
+
+**Suites**
+
+- `node --test`: 5/5 sobre a6ea18f, 0,23 s.
+
+**Sin probar**
+
+- El listado `canceladas` tras una cancelación hecha desde la CLI real. Las reservas viven solo en memoria (`bookings` en `src/app.js`), así que cada invocación empieza de cero. La spec no pide persistencia y la base ya era así, pero con el uso real el listado sale siempre vacío.
+- Los borradores de cierre (walkthrough, delta de `capabilities/` y changelog) no están escritos. Los dejo para `sdd-archive`.
+- Los cambios de `tasks.md` están sin commitear.
+
+No invoco `sdd-archive` todavía: no voy a marcar ✅ un THEN que falla en ejecución real sin que decidas tú. ¿Qué hacemos?
+
+1. **Cerrar la 0010 tal cual**, con el THEN 2 como `suite` y la limitación anotada en el walkthrough y en una deuda del roadmap. Es mi recomendación: la spec no incluye persistencia.
+2. **Ampliar la spec** para guardar las reservas, con una enmienda y más trabajo en esta misma feature.
+3. **Abrir una feature aparte** para persistir las reservas y cerrar esta con la limitación anotada.
+

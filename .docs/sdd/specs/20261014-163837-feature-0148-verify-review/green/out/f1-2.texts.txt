@@ -1,0 +1,98 @@
+--- [3]
+Retomo la 0010: miro el plan y el ledger.
+
+--- [14]
+Paquete de revisión listo (95 líneas, worktree desanclado en 5c40e50); ahora leo las plantillas de los ejes Spec y Código para despacharlos en paralelo.
+
+--- [22]
+Los dos ejes (Spec con opus, Código con sonnet, ambos effort-high) están en marcha en segundo plano sobre 5c40e50. Espero sus informes; después re-gradúo los hallazgos y hago, si hace falta, la pasada de fix.
+
+--- [31]
+Sin hallazgos Critical ni Important. La rama hace lo que pide la spec, y cada THEN/AND tiene un test que lo fija. Hay dos hallazgos Minor, los dos sobre los tests.
+
+**Cobertura de la spec**
+
+| Requisito de la spec | Código | Test |
+| --- | --- | --- |
+| THEN `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | `src/app.js:19-25` y `:42` | `test/cancel.test.js:5-7` |
+| AND un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | `src/app.js:20` | `test/cancel.test.js:9-11` |
+| THEN `canceladas` → «Norte lun — sala ocupada» | `src/app.js:35-37` y `:43` | `test/cancel.test.js:13-15` |
+
+- **Lista cerrada de motivos (Decisión 1):** se cumple en `src/app.js:3`.
+- **Scope "No entra" (anulaciones, 0011):** se respeta. `voidBooking` no se toca y `canceladas` filtra solo `status === 'cancelled'`, así que las anuladas no salen.
+- **Comportamiento que la spec no pide:** no hay nada añadido.
+- **Restricción de idioma:** todos los textos nuevos de la interfaz están en castellano, así que se cumple.
+
+**Hallazgos**
+
+1. Minor · cobertura perdida · `src/app.js:22` / `test/cancel.test.js` · La rama borra el test `cancelar sin reserva lo dice`. La respuesta «sin reserva <sala> <día>» sigue existiendo, pero ahora solo se llega a ella con un motivo válido, y ningún test la cubre ya. Lo que se perdió es un test, no el comportamiento: si esa rama se rompe, la suite no lo detecta. Bastaría con un test que llame a `cancelar Sur mar --motivo "otro"` y espere «sin reserva Sur mar». La spec no dice nada sobre este caso: el delta solo añade («ADDED — Cancelar pide un motivo de la lista»), no quita nada.
+
+2. Minor · test acoplado · `test/cancel.test.js:13` · El test de `canceladas` no prepara su propio GIVEN. Depende de que el test de `:5` haya cancelado antes la reserva de Norte en el array `bookings`, que es un estado mutable compartido por todo el módulo (`src/app.js:4`). Pasa porque `node:test` ejecuta los tests de un fichero en orden. Si se ejecuta solo (por ejemplo con `--test-name-pattern`) o se reordena, `canceladas` devuelve `''` y falla. El GIVEN de la spec es «la reserva de Norte del lunes cancelada con «sala ocupada»», y el test debería prepararlo él mismo.
+
+**Declined to judge**
+
+- **`canceladas` sin ninguna cancelada:** devuelve `''`, y en la consola sale una línea vacía. La spec no define este caso, así que la decisión de producto queda para el dev-lead.
+- **`cancelar` sin `--motivo`:** responde «motivo no válido: …» porque `undefined` no está en la lista (`src/app.js:20`). Es coherente con «cancelar pide un motivo», pero ningún test lo fija y la spec no define el texto exacto para este caso.
+- **`--motivo` sin comillas** (`--motivo sala ocupada`): solo toma la palabra `sala` y lo rechaza como motivo no válido. Es lo esperable con argumentos de shell y la spec usa comillas, así que no lo trato como defecto.
+
+**Verificación recomendada al hilo principal:** ejecutar `node --test` completo, que es el gate de cierre del plan, para confirmar que ningún otro fichero de test llama a `cancelar` sin `--motivo`. En el worktree no he encontrado otras llamadas.
+
+Ficheros revisados:
+- `<run>/review-0010-5c40e50/src/app.js`
+- `<run>/review-0010-5c40e50/test/cancel.test.js`
+- `<run>/review-0010-5c40e50/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+
+--- [32]
+El eje Spec ha vuelto sin Critical ni Important: dos Minor. Espero al eje Código antes de cerrar.
+
+--- [34]
+Revisión del eje Código de `5c40e50`: sin hallazgos Critical ni Important. Solo leí el diff, los dos tests y `package.json` del worktree, sin ejecutar nada.
+
+**Restricciones de código**
+- El texto de interfaz está en castellano (`motivo no válido: …`, `cancelada … (motivo)`, `sin reserva …`).
+- `5c40e50` solo añade un test a `test/cancel.test.js` y no cambia ninguna aserción, nombre ni dato.
+- Los dos tests que cambiaron en el commit anterior (`29b2324`) no son RED de este commit.
+
+**Hallazgos**
+
+- Minor · `test/cancel.test.js:13-15` · el test `canceladas enseña sala, día y motivo` solo pasa porque el test 1 ya canceló `Norte lun` en el estado global del módulo (`bookings` en `src/app.js`), y no prepara nada por sí mismo. · Es frágil: si se reordenan, se filtran con `--test-name-pattern` o se ejecuta solo, falla o da un resultado distinto sin que cambie el código.
+
+- Minor · `test/cancel.test.js:9-11` (cambio de `29b2324`, visible en el diff completo) · se eliminó `cancelar sin reserva lo dice` y el test que lo sustituye usa un motivo inválido, así que corta en la validación del motivo. · La rama `sin reserva ${room} ${day}` de `cancelBooking` con un motivo válido queda sin cubrir, igual que el hecho de que el motivo se valida antes que la existencia de la reserva.
+
+- Minor · `src/app.js:56-58` · `cancelledList()` devuelve `''` cuando no hay canceladas, y `console.log` imprime una línea vacía. · Es una salida poco clara para el usuario; sería mejor un mensaje tipo `sin canceladas`. No hay test que fije el comportamiento.
+
+- Minor · `src/app.js:34-37` y `src/app.js:64` · `reasonOf` busca `--motivo` en cualquier posición, pero `cancelBooking` toma room y day por posición (`params[0]`, `params[1]`). · Con `cancelar Norte --motivo otro`, `day` vale `--motivo` y el resultado es `sin reserva Norte --motivo`, un mensaje confuso. Es un caso límite menor que no afecta al camino principal.
+
+**Verificación pesada**: no hace falta ninguna extra. Con el hilo principal ejecutando la suite basta, y conviene que incluya `test/cancel.test.js` por separado y el filtrado por nombre para confirmar el acoplamiento de estado del primer hallazgo.
+
+--- [36]
+Ningún eje trae Critical ni Important, así que no hay pasada de fix. Cierro la revisión: retiro el worktree, ledger los minors y los rulings de «Declined to judge».
+
+--- [40]
+La revisión final de la 0010 está cerrada sin Critical ni Important, y el gate `node --test` pasa 5/5 con el árbol limpio.
+
+## Revisión final (sobre `5c40e50`)
+
+- **Spec**: opus + effort-high, sin Critical ni Important. Cada THEN y AND tiene su test, y no hay nada añadido fuera de la spec.
+- **Código**: sonnet + effort-high, sin Critical ni Important.
+- **Pasada de fix**: no ha hecho falta.
+- **Registro**: no hay `tasks.md` en esta feature, así que este mensaje lleva el veredicto en su lugar.
+- **Limpieza**: el worktree de revisión y el workspace del plan están borrados.
+
+## Rulings I made
+
+1. **`canceladas` sin cancelaciones** devuelve cadena vacía. La spec no define el caso. Si estaba mal, se imprime una línea en blanco en lugar de un mensaje tipo «sin canceladas».
+2. **`cancelar` sin `--motivo`** responde «motivo no válido: …», coherente con «cancelar pide un motivo de la lista». Si estaba mal, el texto es menos específico que un «falta el motivo».
+3. **`--motivo` sin comillas** solo toma la primera palabra y se rechaza. Es lo esperable en argumentos de shell, y la spec usa comillas. Si estaba mal, el usuario recibe un rechazo que corrige con comillas.
+
+## Deferred minors
+
+- Se borró el test «cancelar sin reserva lo dice»; la rama «sin reserva» con motivo válido queda sin cubrir (`src/app.js:22`).
+- El test de `canceladas` depende del estado global que deja el test 1 y no prepara su propio GIVEN (`test/cancel.test.js:13`).
+- `canceladas` sin canceladas imprime una línea vacía (`src/app.js:56`).
+- `cancelar Norte --motivo otro` toma `--motivo` como día y responde «sin reserva Norte --motivo» (`src/app.js:34-37`).
+
+## Siguiente paso
+
+Queda el paso 7 de `sdd-start-feature` (validación). El perfil es `delegate`: el siguiente paso es la presentación para el dev-lead, y el merge a `main` lo decide una persona.
+

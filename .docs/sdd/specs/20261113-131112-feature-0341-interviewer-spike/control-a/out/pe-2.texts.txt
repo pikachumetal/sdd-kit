@@ -1,0 +1,53 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar, anunciar y abrir la entrevista de diseño, ~3 min.
+
+--- [16]
+Reservé el id 0010 y creo la rama antes que la carpeta.
+
+--- [20]
+Ahora: dejo hecha la apertura (rama `feature/0010-exportar-csv`, id 0010 reservado) y arranco la entrevista de diseño. Queda: unas pocas preguntas, una por turno, y luego la spec para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** quieres un comando de `salas` que, dada una sala, saque sus reservas en formato CSV, para que quien responsable de esa sala las pase a su hoja de cálculo y las cuadre los lunes. No hay fila en el roadmap, así que es una feature nueva (0010). Veo en `src/app.js` que cada reserva tiene solo `room`, `day` (`lun`…) y `slot` (`10:00-12:00`), sin fecha concreta. Corrígeme si algo de esto no es así.
+
+❓ **¿Qué reservas entran en el CSV de una sala?**
+Como las reservas solo llevan día de la semana y franja, no existe «la semana pasada» como filtro; las opciones son estas:
+1️⃣ **Todas las de la sala**, una fila por reserva: `salas exportar Norte` → 
+```
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Cada lunes filtras o ordenas en la hoja; no hay nada más que mantener.
+2️⃣ **Todas, con filtro opcional por día**: `salas exportar Norte --dia lun` saca solo las del lunes. Más cómodo si la hoja es por día, pero es una opción más que probar y documentar.
+➡️ **Recomiendo 1️⃣**, porque la hoja de cálculo ya filtra por día y el modelo no tiene fechas que justifiquen un filtro más fino. A cambio, el fichero trae también las reservas que no te interesan ese lunes.
+
+--- [30]
+Ahora el repaso de coherencia: la búsqueda en el repo y el delta probado en una copia fuera del repo.
+
+--- [34]
+Ahora: presento la spec para tu aprobación. Queda: tu «apruebo», y después el plan y la implementación sin más paradas hasta la validación, ~15 min.
+
+🦆 Con `exportar Norte` sale por pantalla un CSV con las reservas de la sala Norte para la semana que empieza el lunes que viene: si hoy es viernes 13/11/2026, la reserva del lunes 10:00-12:00 sale como `Norte,2026-11-16,lun,10:00-12:00`. Redirigiendo la salida a un fichero, el responsable de la sala lo abre en su hoja de cálculo. Las reservas solo guardan el día de la semana, no una fecha, así que el comando pone a cada una la fecha de ese día en la semana siguiente; no puede saber si una reserva puntual era de esta semana.
+
+Spec: `.docs/sdd/changes/20261113-143209-feature-0010-exportar-csv/spec.md` (rama `feature/0010-exportar-csv`, id 0010).
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Comando `exportar <sala>`, CSV por la salida estándar (se guarda con `> norte.csv`).
+2. La semana es la del lunes siguiente a hoy (si hoy es lunes, el de dentro de 7 días) y **toda reserva guardada se pone en esa semana**. Riesgo: una reserva puntual de esta semana saldría también en el CSV de la semana que viene.
+3. Columnas `sala,fecha,dia,franja`, con cabecera y fecha `AAAA-MM-DD`.
+4. Separador coma. Si tu Excel en castellano abre todo en una columna, cambiar a `;` es una línea.
+5. Orden por fecha y franja.
+6. Sala sin reservas: solo la cabecera. Sala inexistente: `sala desconocida: Oeste`. Sin sala: `uso: exportar <sala>`.
+7. Capacidad nueva `booking-export`.
+8. Enfoque: función en `src/app.js` que recibe la fecha de hoy, frente a un módulo aparte o guardar fechas en cada reserva (esto último cambia el modelo y no se pidió).
+
+**Review de la spec: no la he lanzado.** El nivel que toca son dos revisores, pero esta sesión no tiene subagentes para despacharlos. El repaso de coherencia sí está hecho y el delta se fusiona sin rechazos en una copia. Si quieres la review, hay que lanzarla desde una sesión que pueda.
+
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajusto (por ejemplo el separador `;`, o el supuesto de la decisión 2).
+

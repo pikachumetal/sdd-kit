@@ -1,0 +1,78 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: git ls-files | head -100; ls .docs/sdd/changes 2>/dev/null; git status --short
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+
+>>> Bash: cat .docs/sdd/specs/*0012*/spec.md PRODUCT.md package.json test/export.test.js src/export/*.js; npm test 2>&1 | tail -40
+<<< ---
+id: 20260928-090000-feature-0012-ics-export
+feature: 0012
+title: Exportar las reservas de un mes al calendario
+mode: lite
+status: implementing
+created: 2026-09-28
+---
+
+# Spec — Exportar las reservas de un mes al calendario
+
+## Intent
+
+Los socios apuntan a mano en su calendario las reservas que hacen. Queremos que se las lleven con un fichero que importan.
+
+## Delta de comportamiento
+
+### Capacidad: `exports`
+
+**ADDED — Exportar un mes**
+- GIVEN una reserva de la sala Norte el 2 de marzo de 2026 de 10:00 a 12:00
+- WHEN el socio ejecuta `exportar --mes 2026-03` e importa
+
+>>> Bash: node --test 2>&1 | head -40
+<<< ✔ solo exporta las reservas del mes que no están canceladas (1.2589ms)
+✖ exporta en la hora del usuario (4.0139ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 127.9488
+
+✖ failing tests:
+
+test at test\export.test.js:16:1
+✖ exporta en la hora del usuario (4.0139ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /DTSTART:20260302T100000/. Input:
+  
+  'BEGIN:VCALENDAR\r\n' +
+    'VERSION:2.0\r\n' +
+    'BEGIN:VEVENT\r\n' +
+    'SUMMARY:Sala Norte\r\n' +
+    'DTSTART:20260302T080000\r\n' +
+    'DTEND:20260302T100000\r\n' 
+
+=== RESULTADO (6 turnos, 0.1025621 $)
+🦆 Hoy el calendario del socio muestra la reserva de la sala Norte del 2 de marzo a las 08:00–10:00, y la spec pide 10:00–12:00. La exportación convierte cada franja a un reloj dos horas por detrás del del coworking, y escribe esa hora sin avisar al calendario de que es de otro reloj, así que el calendario la toma como hora local y la muestra dos horas antes. De los dos tests de la feature, el que filtra por mes y deja fuera las canceladas pasa. El que comprueba que la hora sale como la del coworking falla, y por eso no se puede cerrar. El filtro por mes y la exclusión de canceladas están bien. Lo que falla es solo la hora del fichero.
+
+Queda por decidir cómo se corrige la hora: escribirla tal cual la del coworking, o mantener la conversión e indicar al calendario que es de otro reloj.

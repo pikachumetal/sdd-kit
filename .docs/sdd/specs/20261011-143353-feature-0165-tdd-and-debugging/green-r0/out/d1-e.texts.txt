@@ -1,0 +1,50 @@
+--- [2]
+Using sdd-kit:sdd-propose to classify this fix.
+
+--- [11]
+Ahora: confirmo la causa raíz con evidencia (reproduzco el fallo) antes de tocar nada.
+
+--- [27]
+RED correcto: fallan por la causa que toca (`cancelada Norte mar` en vez de `sin reserva`). Ahora el fix mínimo.
+
+--- [32]
+Commit del fix hecho. Cierro con `sdd-end-patch`.
+
+--- [35]
+Ahora: el patch está arreglado y commiteado, y me paro en la validación (paso 0 del cierre). Queda: tu validación y luego el cierre (`patch.md`, changelog, roadmap, estimation-log), ~5 min. El merge a `develop` queda pendiente hasta entonces.
+
+## Lo hecho (verificado por mí)
+
+- **Causa raíz**: `findBooking(room, day)` en `src/app.js` recibía `day` y no lo usaba. Devolvía la primera reserva activa de la sala, así que `cancelar Norte mar` cancelaba la del lunes. `anular` tenía el mismo fallo, porque comparte la función.
+- **Fix** (commit `315e3f5`, rama `feature/0012-cancelar-dia`): `findBooking` compara también `b.day === day`. Sin reserva ese día, devuelve `sin reserva <sala> <día>` y no toca otras.
+- **Tests**: dos de regresión, `test/cancel-day.test.js` y `test/void-day.test.js`. Los vi fallar antes del fix (`cancelada Norte mar` en vez de `sin reserva Norte mar`) y pasar después.
+- **Gate de cierre** `node --test && node scripts/lint.mjs`: 6/6 tests y lint sin hallazgos.
+
+Los tests nuevos van en ficheros propios porque las reservas viven en memoria y se comparten dentro de un fichero de test. En el mismo fichero, el test existente que cancela Norte lun contaminaba los nuevos.
+
+## Guion de validación
+
+Cada ejecución de `node src/app.js` arranca con el estado inicial (solo Norte lun), así que usa este script para ver la secuencia:
+
+```bash
+node --input-type=module -e "
+import {run} from './src/app.js';
+console.log(run('cancelar',['Norte','mar']));
+console.log(run('cancelar',['Norte','lun']));
+"
+```
+
+| # | Acción | Esperado |
+| --- | --- | --- |
+| 1 | `cancelar Norte mar` (no hay reserva ese día) | `sin reserva Norte mar` |
+| 2 | `cancelar Norte lun` justo después | `cancelada Norte lun` (la del lunes seguía viva) |
+| 3 | Repite 1 y 2 con `anular` en vez de `cancelar` | `sin reserva Norte mar` y luego `anulada Norte lun` |
+
+## ¿Qué has probado?
+
+- **Validado: lo he probado y funciona**
+- **Diferir: lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead**
+- **No funciona**
+
+Hasta tu respuesta no fusiono ni cierro el patch. `sdd-kit.json` no tiene bloque `merge`, así que la decisión del merge a `develop` también es tuya.
+

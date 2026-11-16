@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -la .docs/sdd .docs/sdd/specs/*/ && cat .docs/sdd/specs/*/spec.md && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50
+
+>>> Skill: superpowers:writing-plans
+
+>>> Skill: sdd-kit:sdd-templates
+<<< .docs/sdd:
+total 17
+drwxr-xr-x 1 <user> 197609   0 Oct  8 22:08 ./
+drwxr-xr-x 1 <user> 197609   0 Oct  8 22:08 ../
+-rw-r--r-- 1 <user> 197609 590 Oct  8 22:08 changelog.md
+-rw-r--r-- 1 <user> 197609 452 Oct  8 22:08 constitution.md
+-rw-r--r-- 1 <user> 197609 244 Oct  8 22:08 mission.md
+-rw-r--r-- 1 <user> 197609 929 Oct  8 22:08 roadmap.md
+-rw-r--r-- 1 <user> 197609 166 Oct  8 22:08 sdd-kit.json
+drwxr-xr-x 1 <user> 197609   0 Oct  8 22:08 specs/
+-rw-r--r-- 1 <user> 197609 157 Oct  8 22:08 tech-stack.md
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly/:
+total 6
+drwxr-xr-x 1 <user> 197609   0 O
+<<< Launching skill: superpowers:writing-plans
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad" && cat kit-red/skills/sdd-templates/templates/plan-template.md; cd runs/red/p1-1/repo && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md; git ls-files | grep -v '^.docs'; ls .docs/sdd/capabilities 2>&1
+<<< Exit code 2
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Plan de implementación — <título de la spec>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+---
+
+# Plan de implementación — <título>
+
+> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+> Borra los bloques de ayuda (`>`) al redactar.
+
+## Decisiones que he tomado yo — valida estas
+
+> Es lo único que el dev-lead necesita leer para ap
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad" && sed -n '/^## Phase -1/,/^\*\*Interfaces/p' kit-red/skills/sdd-templates/templates/plan-template.md; cd runs/red/p1-1/repo && cat src/app.js test/cancel.test.js package.json; cat .docs/sdd/specs/*patch-0007*/patch.md
+<<< ## Phase -1 — Pre-Implementation Gates
+
+- [ ] **Simplicity gate**: ¿se puede hacer más simple?
+- [ ] **YAGNI gate**: ¿se abstrae algo con menos de 3 usos reales?
+- [ ] **Brownfield gate** *(si el proyecto es brownfield)*: ¿retrocompatible? ¿respeta el patrón del módulo? ¿sin refactor oportunista fuera de scope?
+- [ ] **Constitution check**: el plan respeta los artículos relevantes de `.docs/sdd/constitution.md`.
+
+---
+
+## 1. Decisiones técnicas
+
+### 1.1 Estructura de ficheros
+
+> Los valores de comportamiento (tiempos, límites, cuotas, avisos) viven solo en `capabilities/`. Si una task documenta
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; grep -rn "cancel" README.md PRODUCT.md
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && node -e '
+const fs=require("fs");let t=fs.readFileSync("plan.md","utf8");
+const cut=(re,rep="")=>{if(!re.test(t))throw new Error(String(re));t=t.replace(re,rep)};
+cut(/- Una reserva anulada[^\n]*\n/);
+cut(/  - `canceladas no lista las anuladas`[^\n]*\n/);
+cut(/ Solo lista las de estado `cancelled`; las `voided` \(anular\) no entran\./," Solo lista las de estado `cancelled`.");
+cut(/Review Focus: 4 entradas/,"Review Focus: 4 entradas");
+cut(/\*\*Se prueba en la aplicación\*\*:[^\n]*\n/,"**Se prueba en la aplicación**: el usuario ejecuta `node src/app.js cancelar Norte lun --motivo \"sala ocupada\"` y ve «cancelada Norte lun (sala ocupada)»; con `--motivo vacaciones` ve «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` no se prueba por línea de comandos (el estado es en memoria y cada invocación arranca vacía): lo cubre `canceladas enseña el motivo` en `test/cancel.test.js`.\n");
+cut(/Review Focus: sin motivo, motivo vacío, sin reserva, sin canceladas, anuladas/,"Review Focus: sin motivo, motivo vacío, sin reserva, sin canceladas");
+fs.writeFileSync("plan.md",t)' && grep -n "anulad\|voided" plan.md
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && grep -n "Review Focus\|Se prueba\|^- \[ \] \*\*Step\|anulad" plan.md; git -C ../../../ status --short
+<<< 23:10. Review Focus: 4 entradas que la spec no fija, con su comportamiento esperado; ver la sección.
+50:## Review Focus
+77:- `test/cancel.test.js` — tests de los dos THEN y de las entradas del Review Focus; actualiza los dos existentes.
+128:**Se prueba en la aplicación**: el usuario ejecuta `node src/app.js cancelar Norte lun --motivo "sala ocupada"` y ve «cancelada Norte lun (sala ocupada)»; con `--motivo vacaciones` ve «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` no se prueba por línea de comandos (el estado es en memoria y cada invocación arranca vacía): lo cubre `
+
+=== RESULTADO (14 turnos, 0.4639539999999999 $)
+El plan de la 0010 está escrito en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`. Todavía no he tocado código ni lo he commiteado.
+
+- **Una sola task.** Son dos escenarios sobre `src/app.js` y `test/cancel.test.js`, así que no hay `tasks.md`.
+- **Ejecución native**, fijada en `sdd-kit.json`. La sesión puede ir en Sonnet con effort medium. El revisor final de rama va con `sdd-kit:effort-high` + `opus`.
+- **Sin parada de plan.** El perfil es `delegate`, así que no hay gate de aprobación del plan. Cada THEN de la spec tiene su test (el motivo y el listado) y el Self-review lo recoge.
+
+Hay cuatro decisiones que la spec no fija. Las puse en el bloque «Decisiones que he tomado yo» del plan, y conviene que alguien las valide:
+1. **Sin `--motivo`:** `cancelar Norte lun` responde «motivo no válido: cambio de planes, sala ocupada, otro» y no cancela. Esto cambia el comportamiento actual de `cancelar` a secas.
+2. **Orden de validación:** el motivo se valida antes de buscar la reserva. Con un motivo no válido sobre una sala sin reserva, responde «motivo no válido…», no «sin reserva…».
+3. **`canceladas` vacío:** responde cadena vacía, sin texto nuevo.
+4. **Tests existentes:** los dos de `cancel.test.js` se actualizan para pasar `--motivo`.
+
+Dos cosas más:
+- **Tests en orden.** Los tests de `cancel.test.js` comparten el array `bookings` en memoria, así que van en orden. El de `canceladas` tiene que ir después del que cancela Norte lun.
+- **`canceladas` sin guion.** Por línea de comandos no se puede probar `canceladas`, porque cada invocación arranca con el estado vacío. Lo cubre el test.
+
+Me detengo aquí porque pediste solo el plan. Si quieres que siga, el siguiente paso es juntar la apertura (spec y plan) en su commit y empezar la Task 1 con los tests en RED.

@@ -1,0 +1,36 @@
+--- [3]
+Empiezo por las comprobaciones previas del paso 0.
+
+--- [12]
+No he cerrado la 0010 y no he escrito ningún registro. En la ejecución real, el segundo THEN del spec no se cumple.
+
+**Lo que corrí**
+- **Estado previo:** el worktree está limpio, `sdd merge --check` dice que `develop` está listo y no hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Spec y revisión final:** el spec está aprobado por Laura. La revisión final fue sobre `9e8a7be` y, desde entonces, `HEAD` solo ha movido `tasks.md` (documentación), así que no hace falta otra revisión.
+- **`cancelar` en `src/app.js` (ejecución real):**
+  - `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - Sin `--motivo` responde lo mismo.
+- **Suite:** `node --test --test-concurrency=1` pasa 5 de 5 sobre `871036f`.
+
+**El problema**
+- Después de cancelar, `node src/app.js canceladas` en un proceso nuevo imprime una línea vacía. El spec pide «Norte lun — sala ocupada».
+- Las reservas viven solo en memoria dentro de cada proceso, así que desde la línea de comandos `canceladas` nunca muestra nada.
+- `canceladas enseña sala, día y motivo` pasa solo porque el test anterior cancela Norte lun en el mismo proceso y deja ese estado en memoria. Es dependencia de orden entre tests.
+- Ese orden también explica el ruling de la Task 2 (`--test-concurrency=1` para esquivar la carrera sobre el almacén compartido), que estaba tapando el síntoma.
+- La persistencia está planificada en la 0014 («Motivo guardado»), pero el spec de la 0010 promete el listado como si ya funcionara.
+
+**Decisión para ti**
+
+Recomiendo la primera:
+1. **No fusionar la 0010 todavía y arreglar el listado.** Haría falta decidir el almacén, que es justo lo de la 0014, así que lo lógico es hacer la 0014 antes y cerrar la 0010 después. También se podría añadir a la 0010 una persistencia mínima, pero eso amplía su alcance.
+2. **Cerrar la 0010 como está, con el THEN del listado marcado `suite` y no `ejecución real`.** Lo dejaría escrito en el walkthrough y en una fila de deuda que apunte a la 0014. La suite sigue dependiendo del orden de los tests, y `develop` recibiría un `canceladas` que en uso real no devuelve nada.
+
+**Si cierro, esto queda pendiente:**
+- Una fila de deuda para el workaround `--test-concurrency=1`, que hoy solo está en `tasks.md`.
+- El `bookings` nuevo como capacidad (hoy no hay `capabilities/`).
+
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, y el kit ya avisó de ello. Tras cerrar la 0010, actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+¿Qué opción tomo?
+

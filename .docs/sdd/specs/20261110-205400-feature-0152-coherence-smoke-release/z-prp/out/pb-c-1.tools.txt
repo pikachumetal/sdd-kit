@@ -1,0 +1,387 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/ROADMAP.md .docs/sdd/steering/*.md 2>/dev/null | head -300
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md && git branch --show-current && ls node_modules 2>&1 | head -2; cat package.json
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-propose/references" && cat spec-writing.md nombrado.md
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview 
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js"; node "$SDD" id next --project-root . --reserve; git status --short
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js"; git checkout -b feature/0012-libres-por-planta && node "$SDD" id claim --project-root . ; git branch --show-current; git status --short
+<<< Switched to a new branch 'feature/0012-libres-por-planta'
+sin remoto: la 0012 vale (contador local)
+feature/0012-libres-por-planta
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills" && cat sdd-propose/references/coherence-pass.md sdd-propose/references/review-spec.md; ls sdd-templates; cat sdd-templates/spec-template.md 2>/dev/null || find . -name "spec-template.md"
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md | head -40; git log --oneline | head
+<<< ## Coherence pass
+
+In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+
+**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —the literal and the function or step that applie
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+9b6ee7b feat: base del molde
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills" && cat sdd-templates/templates/spec-template.md; sed -n 1,200p sdd-propose/references/control-profiles.md | grep -n -i -A6 "Política de modelos\|silence" | head -60
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
+title: <título corto descriptivo>
+mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
+profile: <pair|delegate|unattended>   # opcional; omitido = hereda de la
+
+>>> Bash: cd "<run>/repo" && git grep -n -iE "planta|freeRooms|libres|\brooms\b" -- . ':!.docs/sdd/specs' ; echo ---; git grep -n -iE "libres|planta" -- .docs/sdd/specs | head; echo ---; cat README.md scripts/lint.mjs | head -40; date -u +%Y%m%d-%H%M%S; git config user.name
+<<< CHANGELOG.md:10:- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](.docs/sdd/specs/20260917-090000-task-0006-free/)
+src/app.js:2:const rooms = ['Norte', 'Sur'];
+src/app.js:5:function freeRooms(slot) {
+src/app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+src/app.js:28:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+test/app.test.js:6:  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+--
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta && mkdir -p $D && cat > $D/spec.md <<'EOF'
+---
+id: 20261112-155723-feature-0012-libres-por-planta
+feature: 0012
+title: Filtrar las salas libres por planta
+mode: full
+profile: delegate
+status: draft
+created: 2026-11-12
+author: Fixture
+approvers:
+  - name: TBD
+    approved_at: null
+---
+
+# Spec — Filtrar las salas libres por planta
+
+🦆 Hoy `libres 14:00-16:00` te lista todas las salas libres: `Norte, Sur`. Con esta feature, `libres 14:00-16:00 --planta 2` te lista solo las de la planta 2: `Sur`. Sin `--planta`, todo sigue igual que hoy. Para que se pueda filtrar, cada sala pasa a tener una planta (Norte, la 1; Sur, la 2). Por dentro, la lista de salas pasa de nombres sueltos a nombre y planta.
+
+Validación: dev-lead — lo usa una persona desde la terminal y el filtro es lo que ella ve en pantalla.
+
+## Capacidades
+
+- Nuevas: `free-rooms` — listado de salas libres de una franja, con filtro opcional por planta.
+- Modificadas: ninguna
+- Retiradas: ninguna
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+Review de spec propuesta: un revisor con los siete puntos — señales: capacidad nueva (`free-rooms`), contrato público (la sintaxis de `libres`, que consume quien escribe el comando) · tamaño: ~25 líneas en 2 ficheros (`src/app.js`, `test/app.test.js`)
+- Dominio+técnica (sonnet): si el requisito «Listado de salas libres de una franja» refleja lo que hace hoy `libres` (franja, estado `active`) y si los THEN de `--planta` (planta sin salas, falta el valor) dicen lo mismo que las decisiones 3 y 4 (señal: capacidad nueva + contrato público)
+- Mínimo razonable: sin revisión — deja sin mirar que la capacidad nueva describa fielmente la conducta que ya existe, el tipo de hueco que luego obliga a una enmienda
+
+1. Planta de cada sala: Norte, planta 1; Sur, planta 2 — la entrevista fijó el filtro pero no los datos; una planta distinta por sala deja el filtro observable. Son datos de ejemplo de este proyecto (viven en el código, `rooms`, sin base de datos).
+2. Sintaxis: `libres <franja> --planta <n>`, con `--planta` después de la franja — la franja es hoy `params[0]`; admitir la opción antes obligaría a reinterpretar los parámetros.
+3. Una planta sin salas libres (o sin salas, p. ej. `--planta 3`) devuelve la salida vacía, igual que hoy `libres` cuando no queda ninguna sala libre — no invento un mensaje nuevo para un caso que ya se comporta así.
+4. `--planta` sin valor (`libres 14:00-16:00 --planta`) responde `falta la planta: usa --planta <n>` — sin avisarlo, el filtro compararía contra `undefined` y devolvería vacío, igual que «planta sin salas»: se confundirían.
+5. La planta se compara como texto literal del valor (`--planta 2` coincide con la planta 2); un valor que no es una planta existente (`--planta abc`) es el caso de la decisión 3.
+6. Capacidad nueva `free-rooms` (inglés, kebab-case) — el proyecto no tiene `capabilities/`; el requisito del listado sin filtro documenta lo que `libres` ya hace (feature 0006) para que el filtro tenga base viva, no lo cambia.
+7. Enfoque: A (salas como objetos `{ name, planta }`) frente a B (mapa aparte `plantaPorSala`) y C (deducir la planta del nombre) — ver Approach.
+- Política de modelos: un revisor de spec en sonnet · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sin otros despachos en paralelo · en paralelo hasta `control.maxParallelAgents` — al aprobar la spec, esta línea es la confirmación de paralelizar que pidan las instrucciones del usuario.
+
+### Decisiones tomadas con el dev-lead
+
+- Filtrar las libres por planta con la opción `--planta` — «filtrar libres por planta con la opción --planta»
+- Sin `--planta`, `libres` lista todas las salas — «sin --planta, lista todas las salas»
+- Perfil delegate — «Perfil delegate»
+
+## Intent
+
+Hoy `libres <franja>` devuelve todas las salas libres sin distinguir dónde están. Quien busca sala en una planta concreta tiene que descartar a mano las de las demás. Éxito: `libres 14:00-16:00 --planta 1` devuelve `Norte` y `--planta 2` devuelve `Sur`. Fracaso, aunque funcione: que `libres` sin `--planta` cambie su salida, o que una planta inexistente se confunda con un error de uso.
+
+## Scope
+
+- Entra: planta como dato de cada sala; opción `--planta <n>` en `libres`; mensaje cuando falta el valor.
+- No entra: reservar, cancelar o anular por planta; mostrar la planta en la salida de `libres`; el día en `libres` (hoy solo mira la franja); validar el formato de la franja (deuda ya anotada); persistencia de las salas.
+
+## Lo que se retira o cambia de forma
+
+| Qué | Dónde aparece | Destino |
+| --- | --- | --- |
+| `rooms` pasa de `['Norte', 'Sur']` a objetos `{ name, planta }` | `src/app.js:2`; lo lee `freeRooms` (`src/app.js:5-6`) | Scope y Approach: lo implementa el plan; no hay más lectores (`git grep -n "rooms"`) |
+| La firma de `freeRooms(slot)` gana la planta | `src/app.js:5`, llamada en `src/app.js:28` | Approach |
+
+- Filas que implementa: nada: comprobado con `git grep -niE "planta" -- . ':!.docs/sdd/specs'` (sin resultados) y el ROADMAP, que no tiene fila para esta feature; el id 0012 sale de `sdd id next --reserve`. El `CHANGELOG.md:10` cita `salas libres 10:00-12:00` y no cambia: la forma sin `--planta` queda igual.
+
+## Approach
+
+- A. Salas como objetos `{ name, planta }`, y `freeRooms(slot, planta)` filtra por planta si viene — un solo sitio donde vive el dato y una función con un parámetro opcional; el coste es tocar la forma de `rooms` y su único lector.
+- B. Mapa aparte `plantaPorSala = { Norte: 1, Sur: 2 }` — no toca `rooms`, pero deja dos estructuras que mantener a la vez y una sala nueva se puede olvidar en una de ellas.
+- C. Deducir la planta del nombre de la sala — descartada: «Norte» y «Sur» no dicen la planta.
+- Elegido: A — el dato de la sala vive con la sala, y `rooms` solo lo lee `freeRooms`.
+
+`run('libres', params)` toma la franja de `params[0]`; si `params[1] === '--planta'`, el valor es `params[2]`. Con `--planta` sin valor, devuelve el texto de la decisión 4 y no llama a `freeRooms`.
+
+## Dónde se prueba
+
+- Listado de libres sin y con `--planta`, planta sin salas y falta de valor: por `run('libres', [...])` en `test/app.test.js`, como el test de `libres` actual. La pantalla no cambia, no lleva captura.
+
+## Términos y ADR
+
+- Términos resueltos: planta — piso del edificio donde está una sala (se escribe «planta», no «piso» ni «floor»).
+- ADR candidatas: ninguna
+
+## Delta de comportamiento
+
+### Capacidad: `free-rooms`
+
+#### ADDED — Listado de salas libres de una franja
+
+- GIVEN las salas Norte y Sur, y una reserva activa de Norte el lun 10:00-12:00
+- WHEN se ejecuta `libres 10:00-12:00`
+- THEN la salida es `Sur`
+- AND con `libres 14:00-16:00`, sin reservas en esa franja, la salida es `Norte, Sur`
+
+#### ADDED — Filtro de libres por planta
+
+- GIVEN Norte en la planta 1, Sur en la planta 2 y una reserva activa de Norte el lun 10:00-12:00
+- WHEN se ejecuta `libres 14:00-16:00 --planta 2`
+- THEN la salida es `Sur`
+- AND con `--planta 1`, la salida es `Norte`
+- AND con `libres 10:00-12:00 --planta 1` (Norte reservada), la salida es vacía
+- AND con `libres 14:00-16:00 --planta 3` (sin salas en esa planta), la salida es vacía
+- AND con `libres 14:00-16:00 --planta` (sin valor), la salida es `falta la planta: usa --planta <n>`
+- AND con `libres 14:00-16:00` sin `--planta`, la salida sigue siendo `Norte, Sur`
+
+## Enmiendas
+
+## Aprobaciones
+
+| Nombre | Fecha | Estado |
+| --- | --- | --- |
+| | | pendiente |
+EOF
+T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" && node "$SDD" capability merge --path "$T/sdd" --artifact "$T/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md"; echo rc=$?; git status --short
+<<< Exit code 2
+/usr/bin/bash: -c: line 78: unexpected EOF while looking for matching `''
+
+>>> Bash: cd "<run>/repo" && git status --short; ls .docs/sdd/changes 2>&1
+<<< Exit code 2
+ls: cannot access '.docs/sdd/changes': No such file or directory
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md"; echo rc=$?; ls "$T/sdd/capabilities" 2>&1; git status --short
+<<< free-rooms.md: añadido «Listado de salas libres de una franja»
+free-rooms.md: añadido «Filtro de libres por planta»
+rc=0
+free-rooms.md
+?? .docs/sdd/changes/
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" watch subagent --description "Revisión adversarial de la spec 0012 libres por planta"
+<<< Command running in background with ID: b4lu603yb. Output is being written to: D:\code\git\sdd-kit\.temp\claude\7d49c060e13bfc6d\fe6e17b7-c9c1-443a-bade-cf9b3841557d\tasks\b4lu603yb.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión adversarial de la spec 0012 libres por planta
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: acb01ddae69fb2498 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< 1	---
+2	id: 20261112-155723-feature-0012-libres-por-planta
+3	feature: 0012
+4	title: Filtrar las salas libres por planta
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-12
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Filtrar las salas libres por planta
+16	
+17	🦆 Hoy `libres 14:00-16:00` te lista todas las salas libres: `Norte, Sur`. Con esta feature, `libres 14:00-16:00 --planta 2` te lista solo las de la planta 2: `Sur`. Sin `--planta`, todo sigue igual que hoy. Para que se pueda filtrar, cada sala pasa a tener una planta 
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>/repo/.docs/sdd/steering/architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+
+>>> Bash: cd "<run>/repo" && python3 --version 2>&1 | head -1; node --version
+<<< Python 3.15.2
+v26.10.0
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$T/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md"; echo rc=$?
+<<< free-rooms.md: añadido «Listado de salas libres de una franja»
+free-rooms.md: añadido «Filtro de libres por planta»
+free-rooms.md: regla «Dónde viven los datos» añadida
+free-rooms.md: regla «Idioma de los nombres» añadida
+free-rooms.md: regla «Límites» añadida
+free-rooms.md: regla «Avisos» añadida
+free-rooms.md: regla «Regla ante conflicto» añadida
+rc=0
+
+=== RESULTADO (20 turnos, 0.6361651 $)
+El revisor de la spec está en marcha. Espero su resultado antes de seguir; no puedo presentar el gate sin los hallazgos.
+
+=== RESULTADO (8 turnos, 0.6361651 $)
+Ahora: gate de aprobación de la spec. Queda: tu respuesta; después el plan y el paso a implementación, ~15 min.
+
+**🦆 Spec 0012 — Filtrar las salas libres por planta**
+
+Hoy `libres 14:00-16:00` lista todas las salas libres: `Norte, Sur`. Con esta feature, `libres 14:00-16:00 --planta 2` lista solo las de la planta 2: `Sur`. Sin `--planta` todo sigue igual. Para poder filtrar, cada sala pasa a tener una planta: Norte la 1 y Sur la 2. Por dentro, `rooms` pasa de nombres sueltos a `{ name, planta }`.
+
+Está en `.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md`, en la rama `feature/0012-libres-por-planta`. El delta se probó en una copia de `.docs/sdd` y se fusiona sin rechazos.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Norte está en la planta 1 y Sur en la 2. La entrevista no fijó los datos.
+2. La sintaxis es `libres <franja> --planta <n>`, con la opción después de la franja.
+3. Una planta sin salas libres (o `--planta 3`) da salida vacía, como hoy cuando no queda ninguna.
+4. `--planta` sin valor responde `falta la planta: usa --planta <n>`.
+5. La planta se guarda como texto y se compara con `===`. `--planta 02` y `--planta abc` dan salida vacía.
+6. Capacidad nueva `free-rooms`, porque el proyecto no tiene `capabilities/`. Documenta lo que `libres` ya hace, sin cambio de conducta.
+7. Enfoque A (objetos `{ name, planta }`), frente a B (mapa aparte) y C (deducir la planta del nombre).
+8. Solo se interpreta `--planta` si es el segundo argumento. Los argumentos sobrantes se ignoran, como hoy.
+9. El mensaje de la decisión 4 sale por la salida normal, con código de salida 0.
+
+**Review:** un revisor en sonnet, con 10 hallazgos y ninguno Crítico. Acepté 9 y rechacé 1. Rechacé el #10: PRODUCT.md dice que el dev-lead y el único usuario son la misma persona, así que «Validación: dev-lead» es coherente. El detalle está en `### Hallazgos de la review`.
+
+**Validación:** dev-lead, porque lo usa una persona desde la terminal.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 2–3 tasks)**. Esta opción te sirve solo si esta sesión corre en el modelo más capaz.
+
+La spec queda en espera hasta tu respuesta. Aunque el perfil sea `delegate`, no la apruebo yo.

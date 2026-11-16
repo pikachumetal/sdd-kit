@@ -1,0 +1,72 @@
+--- [3]
+Empiezo por las comprobaciones previas del paso 0.
+
+--- [27]
+Lanzo la vigía de silencio y, mientras la re-revisión corre, hago el humo real y la suite (no escriben registros).
+
+--- [40]
+La re-revisión del tramo `c8fdf01..2801fe4` está en marcha. Hasta que vuelva no escribo ningún registro.
+
+Esto es lo que ya tengo comprobado:
+- **Paso 0:** el árbol está limpio, `merge --check` da `destino: listo` y no hay otras ramas abiertas. La spec está `approved` con la firma de Laura.
+- **Humo con ejecución real:** hecho. Los dos THEN de `cancelar` se ven por CLI, incluidos el motivo fuera de lista y el caso sin `--motivo`. El THEN de `canceladas` solo se puede ver dentro de un mismo proceso, porque el almacén vive en memoria. Lo ejecuté con `run()` importado y respondió «Norte lun — sala ocupada».
+- **Suite:** `node --test` da 5/5 en verde sobre `2801fe4`, con y sin `--test-concurrency=1`.
+- **Base:** `develop` no ha avanzado, no hay remoto y `--sync` dirá «al día». El gate no se repite después.
+
+Me avisarán cuando termine la re-revisión.
+
+--- [44]
+### Veredictos
+1. OK. `spec.md:61-64` solo añade la sección «Términos y ADR». El diff (paquete, líneas 85-109) no toca requisitos, THEN, Scope ni «Dónde se prueba». La ADR candidata («el motivo se guarda en la propia reserva») cuadra con `src/app.js:23-24` (`booking.reason = reason` sobre la misma reserva) y con `src/app.js:36`.
+2. PROBLEMA, en dos puntos:
+   - `tasks.md:10`: la Task 1 apunta a `c8fdf01`. Según `git log --oneline`, la Task 1 («Cancelar con motivo») es `7507118 feat(bookings): cancelar con un motivo de la lista` y la Task 2 es `c8fdf01`. Las dos filas tienen el mismo commit. El número de tasks (2) sí coincide con `plan.md:36-46`.
+   - `tasks.md:17`: el Ruling fija el gate en `node --test --test-concurrency=1`. Choca con `plan.md:50` y con la constitution, art. 2 (ver «Roturas nuevas»).
+3. OK. `0001-bookings-in-memory.md:1-29` y `0002-node-test.md:1-25` tienen frontmatter con `status`, `date` y `rutas`, y las secciones «Contexto y problema», «Opciones consideradas» y «Decisión». Ninguno contradice el código: las reservas viven en memoria (`src/app.js:4`) y no hay dependencias, porque `package.json` solo contiene `{"type": "module"}` y los tests usan node:test. Tampoco contradicen la spec.
+4. OK. `git show --stat` de `b62d21e` y `2801fe4` solo toca `.docs/sdd/**`. Ni `src/` ni `test/` cambian en el tramo.
+
+### Roturas nuevas en el tramo
+- **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El Ruling de la Task 2 cambia el gate de cierre a `node --test --test-concurrency=1` para esquivar una carrera entre tests que comparten el almacén en memoria. La constitution, art. 2, exige `node --test` entero en verde, y eso mismo dice el plan en `plan.md:50`. El propio Ruling lo llama workaround, así que con `node --test` sin la opción la suite puede no salir verde. Esto incumple un artículo de la constitution, y por eso es Important. La revisión final sobre `c8fdf01` no lo vio porque `tasks.md` no existía todavía. Hay dos salidas: cumplir el gate tal como está (aislar el almacén por test y que `node --test` salga verde), o abrir una enmienda explícita con la aprobación del dev-lead. Un Ruling en `tasks.md` no basta.
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. La Task 1 apunta al commit equivocado (`c8fdf01` en lugar de `7507118`). Rompe la trazabilidad entre task y commit que usará el cierre.
+
+### Observaciones fuera de alcance
+- `0002-node-test.md` no tiene la sección «Confirmación», que `0001-bookings-in-memory.md:27-29` sí tiene. No es una sección que se pidiera comprobar, pero los dos ADR quedan con formatos distintos. No he podido contrastarlo con la plantilla del kit porque no tuve permiso para buscarla.
+- El mensaje de `2801fe4` dice «ADR candidata y decisiones del proyecto», pero no añade ningún ADR para la candidata de `spec.md:64`. Los dos ADR nuevos son decisiones anteriores del proyecto (fechas 2026-09-15 y 2026-09-20) que se documentan ahora, dentro de una feature que no las cambia. No es incorrecto: a la candidata le toca promoverse en el archivo.
+- El Ruling de `tasks.md:17` apunta a un problema real en los tests (comparten estado en memoria) que no se ha tocado en el código. Conviene registrarlo como deuda técnica, sea cual sea la salida que se elija para el gate.
+
+### Veredicto
+**Re-revisión:** hallazgos abiertos:
+1. Important, `tasks.md:17`: el gate se cambió a `--test-concurrency=1` frente a la constitution, art. 2, y `plan.md:50`.
+2. Minor, `tasks.md:10`: la Task 1 debe apuntar a `7507118`.
+
+--- [46]
+La re-revisión devuelve dos hallazgos. Antes de actuar compruebo el Important: ¿pasa el gate tal como lo fija la constitution, `node --test` a secas?
+
+--- [54]
+El `decision check` falla por un ADR de esta misma rama (0002 sin «Confirmación»). Lo arreglo, porque los ADR no admiten fallos parciales.
+
+--- [69]
+Paso 6: base integrada. Corro `--sync` en su propia llamada.
+
+--- [75]
+🦆 Cancelar una sala ahora exige `--motivo` con uno de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo que no está en la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- **Gate de la Task 2** (ruling de la ejecución): `node --test --test-concurrency=1` para esquivar una carrera sobre el almacén en memoria. La re-revisión lo marcó Important porque se aparta del gate de la constitution. El cierre no lo usa: `node --test` a secas sale verde 5/5, y también en 8 pasadas seguidas. Dejé el workaround como fila de deuda.
+- **ADR 0002:** le añadí la sección «Confirmación» que faltaba, porque `sdd decision check` no deja pasar un ADR sin ella.
+
+**Validación en campo (2026-11-05):** la hice yo, no el usuario.
+- **Suite:** 5/5 en verde.
+- **Humo con ejecución real:** 4/4 THEN. `canceladas` solo se puede ver en un mismo proceso, porque el almacén vive en memoria, así que lo ejecuté con `run()` importado.
+- **Revisión final:** limpia sobre `c8fdf01`.
+- **Re-revisión de `c8fdf01..2801fe4`:** 1 Important (el gate) y 1 Minor. El Minor era que la Task 1 apuntaba al commit equivocado, y ya apunta a `7507118`. Tuve que lanzar la re-revisión porque `2801fe4` tiene 59 líneas de docs, más de las 20 que se dejan pasar.
+- **Gate:** `node --test` → corrió 5/5 · 119 ms · sobre el commit de cierre `faac3a1`. `--sync` dijo «base: al día», así que no hubo segunda suite.
+
+**Pendiente**
+- `sdd roadmap check` falla en 2 líneas que no escribí: la cabecera de «Deuda técnica» y el encabezado de la release v0.3.0. Es formato 2.x anterior; lo arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La fila 0014 («Motivo guardado») describe lo que esta feature ya hace. No la he tocado; decide tú si se cierra.
+- El `SessionStart` avisó de que la sesión cargaba el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que usé venían de otro árbol del kit. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+El retro salió `Retro: sin señales`, así que no hay ticket del kit pendiente. Si quieres igualmente el feedback de mejora, lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`e3584d9`) · push: no hecho: `merge.push` no lo autoriza. El worktree es el checkout principal del repo, así que no hay nada que borrar.
+

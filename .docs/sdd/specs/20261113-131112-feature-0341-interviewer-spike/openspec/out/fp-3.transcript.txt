@@ -1,0 +1,57 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar y presentarte la nota de comprensión, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.j
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spik
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs
+## agente
+Lo que pides ya existe, así que no abro la feature todavía.
+
+`libres <franja>` está implementado en `src/app.js:4-10`. Por ejemplo, `libres 10:00-12:00` devuelve `Sur`. Tiene test en `test/app.test.js` y spec archivada en `.docs/sdd/specs/20260917-090000-task-0006-free/`.
+
+Lo que sí le falta es el día. `freeRooms` compara solo la franja y la reserva guardada tiene `day: 'lun'`. Por eso `libres 10:00-12:00` da `Sur` aunque preguntes por un martes en que `Norte` está libre. Es el mismo fallo de fondo que ya corregiste en `cancelar` (patch 0007).
+
+¿Qué quieres que haga?
+
+1. **Feature en modo full: `libres` por día y franja** (recomendada). Sería `libres <día> <franja>`. Hay que decidir qué pasa con la forma actual de un solo argumento y con las reservas semanales (`--cada-semana`). Eso son decisiones de producto, y por eso es feature y no patch.
+2. **Otra cosa que no he visto**, por ejemplo un listado de todas las franjas libres de un día. Dime cuál.
+3. **Nada**: si pensabas en otra rama o repo y `libres` te vale tal cual.
+
+Sigo en cuanto contestes.
+
+# turno 2
+## usuario
+mantengo lo que dije
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-openspec/skills/sdd-propose/references/spec-writing.md
+> Read: D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-openspec/skills/sdd-propose/references/control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: te presento lo que he entendido y planteo la primera decisión de diseño. Queda: la entrevista corta, las aproximaciones, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+
+- Mantienes el encargo: ver qué salas están libres en una franja. Ya te dije que `libres <franja>` existe, así que no voy a crear un comando duplicado.
+- Esta feature cubre lo que ese comando no hace: tener en cuenta el día. Hoy las reservas guardan `day` (`lun`, `mar`…), pero `freeRooms` en `src/app.js:4` lo ignora.
+  - Ejemplo: con `Norte` reservada el lunes de 10:00 a 12:00, `libres 10:00-12:00` dice `Sur`.
+  - Para el martes a esa hora debería decir `Norte, Sur`.
+- Si lo que querías era otra cosa, dímelo ahora y rehago la nota.
+
+❓ **¿Qué pasa con la forma actual `libres <franja>`?**
+Hoy se usa con un solo argumento (`test/app.test.js:5`) y no hay más usuario que tú.
+
+1️⃣ **`libres <día> <franja>` y la forma de un solo argumento deja de valer.** Responde un error de uso. El resultado siempre es exacto, pero hay que cambiar el test existente.
+2️⃣ **El día es opcional.** `libres <franja>` sigue como hoy y `libres <día> <franja>` filtra por día. No rompe nada, pero el resultado sin día sigue siendo el engañoso de hoy.
+3️⃣ **El día es opcional y, sin él, asume el día de hoy.** El día de la semana sale de la fecha actual. Es cómodo, pero el resultado depende del reloj y es más difícil de probar.
+
+➡️ **Recomiendo 1️⃣**, porque el comando de un solo argumento da respuestas incorrectas cuando hay reservas en otros días, y eres su único usuario. A cambio, hay que reescribir su test y tu hábito de teclearlo.

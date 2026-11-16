@@ -1,0 +1,95 @@
+--- [15]
+Estoy reservando el id 0010 y creando la rama de la feature antes de abrir la spec.
+
+--- [17]
+Ahora: he reservado el id 0010 y creado la rama `feature/0010-exportar-reservas-csv`. Sigo con la entrevista para escribir la spec. Queda: unas pocas preguntas, el enfoque, la spec y la parada de aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Quieres un comando de `salas` que, dada una sala, escriba en CSV sus reservas. Cada responsable de sala lo abre los lunes en su hoja de cálculo para cuadrar las reservas.
+
+En el código, `src/app.js` guarda las reservas en memoria como `{ room, day, slot }`, por ejemplo `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`. Las reservas semanales (`--cada-semana`) hoy solo devuelven un texto y no se guardan.
+
+Antes de decidir el formato necesito saber qué hace el responsable con el fichero. Una de las decisiones que dependen de eso es en qué hoja de cálculo se abre, porque eso condiciona el separador y la codificación del CSV.
+
+❓ **¿Qué hace el responsable de cada sala con el CSV el lunes, y en qué hoja de cálculo lo abre?**
+
+--- [19]
+Anotado: Excel en castellano. Eso fija dos cosas que decido yo y que irán a «✋ Decisiones que he tomado yo»:
+
+- **Separador `;`.** Con la configuración regional española Excel no separa columnas con comas.
+- **UTF-8 con BOM.** Sin él Excel rompe las tildes de «lun», «miércoles» y similares.
+
+También he mirado los datos. Cada reserva guarda solo `room`, `day` (día de la semana) y `slot`, sin fecha. Por eso «las de la semana» y «todas las de la sala» son lo mismo hoy. Lo trato como que se exportan todas las reservas de la sala, con columnas `día;franja`.
+
+❓ **¿Dónde sale el CSV?**
+La decisión cambia cómo lo usa el responsable y qué hay que probar. La BOM y los acentos solo funcionan bien si el fichero lo escribe el propio programa.
+
+1️⃣ **Escribe un fichero** `salas exportar Norte` crea `reservas-Norte.csv` en la carpeta actual y responde `exportadas 1 reservas de Norte en reservas-Norte.csv`. El responsable hace doble clic y Excel lo abre con las tildes bien. Si el fichero ya existe, lo sobrescribe, y eso lo anoto como decisión mía.
+
+2️⃣ **Lo imprime por pantalla** `salas exportar Norte` imprime `día;franja` y `lun;10:00-12:00`. El responsable tendría que redirigirlo (`> norte.csv`). La redirección de PowerShell, que es lo habitual en Windows, escribe en UTF-16 o con BOM según la versión. Excel puede abrirlo con las tildes rotas, y eso no puedo controlarlo desde el programa.
+
+➡️ **Recomiendo 1️⃣**, porque el responsable no es técnico y abre el fichero con doble clic en Excel. Solo escribiéndolo el programa garantizo `;` y BOM. A cambio, el comando toca el disco y, si el fichero existe, lo sobrescribe sin avisar, aunque es un fichero generado que se rehace cada lunes.
+
+--- [21]
+Decidido, y lo anoto con tus palabras: «Por la salida estándar. Yo la redirijo a un fichero.» Lo implemento así.
+
+Esto cambia lo que te prometí sobre la BOM, que Excel necesita para leer bien las tildes. Con la salida estándar, lo que llega al fichero depende de cómo redirijas. Si redirigieras con `>` desde PowerShell 5.1, ese programa reescribe la salida en UTF-16 y la BOM que imprima yo no llega tal cual. En otras shells los bytes pasan sin tocar. No sé cuál usas, y el resultado en Excel depende de eso.
+
+❓ **¿Desde qué shell o terminal lanzas `salas` y haces la redirección al fichero?**
+
+--- [23]
+Lo dejo como pendiente. Decido yo la BOM y la dejo en ✋ con su motivo. Voy a escribir la spec: miro la plantilla y las referencias de revisión.
+
+--- [36]
+Estoy corrigiendo una línea del Approach de la spec que quedó mal. Después hago el repaso de coherencia.
+
+--- [48]
+Ya tengo la spec escrita y repasada. Te la presento para que la apruebes. Está en `.docs/sdd/changes/20261114-161151-feature-0010-exportar-reservas-csv/spec.md`.
+
+🦆 Hoy `salas` no puede sacar las reservas de una sala a una hoja de cálculo. Con esta feature, `salas exportar Norte` imprime `día;franja` y una línea por reserva, por ejemplo `lun;10:00-12:00`. Tú rediriges esa salida a un fichero y lo abres en Excel en castellano. Por dentro es una rama nueva en `run` de `src/app.js` que filtra las reservas por sala y las une con `;`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Comando:** `salas exportar <sala>`, como `reservar`, `cancelar` y `libres`.
+2. **Separador `;`:** Excel con configuración regional española separa columnas así.
+3. **UTF-8 con BOM al inicio de la salida:** sin ella Excel rompe la tilde de `día`.
+4. **Columnas `día;franja`:** con cabecera, en el orden en que están guardadas. No hay columna de sala ni de fecha, porque las reservas no guardan fecha.
+5. **Se exportan todas las reservas de la sala:** no hay nada que filtrar por «semana».
+6. **Nombre de sala exacto:** `Norte` vale y `norte` no.
+7. **Sala sin reservas:** salen solo la BOM y la cabecera.
+8. **Sala desconocida:** responde `sala desconocida: Oeste`. Sin argumento responde `uso: salas exportar <sala>`.
+9. **Las reservas `--cada-semana` quedan fuera:** hoy no se guardan, solo devuelven un texto.
+10. **Enfoque:** una rama nueva en `run`, frente a un módulo `src/export.js` o a una librería de CSV. La librería rompe tu regla de no usar dependencias externas.
+11. **Capacidad nueva `booking-export`:** es la primera de `capabilities/`.
+
+**Dos cosas que debes saber**
+- **Redirección sin confirmar:** no sé desde qué shell rediriges. Si tu redirección reescribe la codificación (por ejemplo `>` en PowerShell 5.1), la BOM no llega tal cual al fichero. Lo comprobarás tú en la validación, abriendo el CSV en Excel con tu redirección real.
+- **Review sin lanzar:** el criterio pedía dos revisores independientes (hay contrato público y capacidad nueva). Esta sesión no tiene herramienta de subagentes y no los he despachado. Hice yo los siete puntos y no encontré nada que cambiar, pero eso no sustituye a un revisor independiente. Va anotado en la spec.
+
+También he probado el delta sobre una copia de `.docs/sdd`: `sdd capability merge` lo acepta sin rechazar nada.
+
+1. **Apruebo (Recomendada).** Escribo el plan y paso a implementar.
+2. **Cambios.** Dime qué ajusto.
+
+¿Qué eliges?
+
+--- [49]
+Vale, lo dejamos aquí. La spec queda **sin aprobar** (`status: draft`) y no he escrito plan ni código.
+
+**Qué queda en el repo**
+- Rama `feature/0010-exportar-reservas-csv`, creada desde `develop`.
+- El id 0010 está reservado.
+- La spec está en `.docs/sdd/changes/20261114-161151-feature-0010-exportar-reservas-csv/spec.md`.
+- Nada está commiteado todavía. La spec y la rama son locales y no hay remoto.
+- `ROADMAP.md` no tiene fila para la 0010. Se añadirá al cerrar la feature.
+
+**Para retomar**
+- Dime «retoma la feature» y respóndeme a la pregunta del gate: «Apruebo» o «Cambios».
+- Las decisiones que debes validar son las 11 del apartado «✋ Decisiones que he tomado yo» de la spec.
+- Dos puntos merecen tu atención al leerla: la BOM y tu redirección (no sé desde qué shell rediriges), y la review sin lanzar.
+- Si prefieres que la review la haga un revisor independiente antes de aprobar, dímelo al retomar. Necesito una sesión que tenga herramienta de subagentes.
+

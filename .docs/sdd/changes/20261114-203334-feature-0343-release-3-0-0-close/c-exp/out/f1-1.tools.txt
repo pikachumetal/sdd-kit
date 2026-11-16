@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -100 && ls .docs/sdd 2>/dev/null
+
+>>> Grep: libres|Norte
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+<<< Found 3 files
+test\app.test.js
+src\app.js
+CHANGELOG.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<<< 1	# Spec — free
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+=== RESULTADO (10 turnos, 0.1168859 $)
+Porque, tal como está el código, cancelar no cancela nada. Lo que sigue sale de leer `src/app.js` y los tests. Ningún documento del proyecto lo describe.
+
+**Lo que dice el código**
+- `bookings` (`src/app.js:3`) es una lista fija en memoria con una sola reserva: Norte, lunes, 10:00-12:00.
+- `cancelar` (`src/app.js:12`) solo devuelve el texto `cancelada <día> <hora>`. No toca `bookings`, así que la reserva de Norte sigue ahí.
+- `libres` (`src/app.js:5-7`) filtra con `b.room === room && b.slot === slot`. Ignora el día y compara el slot completo.
+
+**Por qué no ves Norte**
+1. Aunque `cancelar` borrara algo, la CLI es un proceso por comando (`node src/app.js ...`). El estado vive en un array que se reconstruye en cada ejecución. Un `cancelar` seguido de un `libres` siempre vería la reserva original.
+2. `cancelar` ni siquiera recibe la sala. Sus parámetros son día y hora, como en `cancelar mar 10:00`, así que no sabría qué reserva quitar.
+3. Aunque la cancelaras de verdad, `libres 10:00-12:00` no recibe el día. Compara solo el slot, así que cualquier reserva en esa franja, de cualquier día, ocuparía la sala.
+
+**Lo que no cuadra con la documentación**
+- El ROADMAP marca la 0007, «La cancelación borraba reservas de otro día con la misma hora», como ✅. Su `patch.md` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado».
+- Ese fix no se ve en el código. El único test de `cancelar` comprueba que se devuelve un texto con el día (`test/app.test.js:13`), no que se borre una reserva.
+- La spec 0006 (`libres`) solo contiene `status: done`, sin requisitos, así que no dice si `libres` debía tener en cuenta el día.
+
+Es posible que estés viendo otra versión del código que la de esta rama. Aquí no hay persistencia, ni cancelación real, ni filtro por día.
+
+**Cómo se arreglaría**
+Habría que hacer tres cosas:
+- Que `cancelar` reciba sala, día y hora, y quite la reserva de `bookings`.
+- Que `libres` reciba el día y lo compare.
+- Que el estado se guarde entre ejecuciones, por ejemplo en un fichero JSON.
+
+Esto es trabajo nuevo, no una pregunta. Lo natural es apuntarlo en el roadmap como patch o como feature, según si quieres persistencia. No he creado nada ni tocado ningún fichero.
+
+¿Lo apunto en el roadmap? Si prefieres hacerlo en esta sesión, di «arráncalo».

@@ -1,0 +1,241 @@
+--- [3]
+Ahora: leo la guía de escritura del plan y la spec aprobada. Queda: escribir `plan.md` y pasar a la implementación.
+
+--- [19]
+Estoy escribiendo `plan.md` del spike 0031. Va con una sola task de medición en Native, y luego lo commiteo como apertura.
+
+--- [23]
+Ahora: juntar spec y plan en el commit de apertura. Queda: pasar a la implementación, sin parada (perfil delegate).
+
+--- [27]
+Ahora: preparo el entorno de implementación (worktree, workspace y ledger). Queda: la Task 1 de medición, la revisión final y la validación, ~1 h.
+
+--- [29]
+Uso la skill sdd-worktrees para preparar un espacio aislado.
+
+--- [39]
+Escribo primero el test RED de la siembra, tal como dice el plan.
+
+--- [43]
+RED correcto: el módulo que crea la task no existe. Ahora la implementación mínima.
+
+--- [49]
+Medidas obtenidas. Escribo `research.md` con la plantilla del spike.
+
+--- [55]
+Task 1 completa. Ahora: la revisión final de la rama con `sdd-verify`. Queda: cierre de esa revisión y validación.
+
+--- [62]
+Ahora despacho el eje Spec en segundo plano, con su vigía de silencio.
+
+--- [66]
+La revisión del eje Spec está en marcha en segundo plano. Espero a que termine; hasta entonces no puedo dar el spike por revisado.
+
+--- [80]
+### Strengths
+
+- `src/` is unchanged. `git diff --name-only 0f01982 HEAD` shows only the six files in the spec folder. No dependencies were added (`package.json` is still `{"type":"module", ...}`), and neither `.mjs` file has tabs or comments.
+- The script measures the real code. It loads a copy of `src/app.js` with only the `bookings` line swapped (`bench-libres.mjs:10-25`) and times `app.run('libres', [FRANJA])` (`:32`). The `freeRooms` it runs is therefore the production one, reached through `run`.
+- The load layout really is the worst case for two rooms. Because `some` short-circuits, the first entry always ends one room's scan. Putting `Sur` at index 999 forces the longest possible scan (1 + 1000 comparisons). With only `Norte` and `Sur`, no layout of 1,000 active bookings in the time slot costs more.
+- Review Focus 1 is met. There is no warm-up call. The script prints `frio`, `mediana` and `max` (`:51-53`). The threshold is judged against `max`, which includes the cold call, not against an average (`:54`). `research.md` §2 reports the cold call separately.
+- `research.md` §3 matches `evidencia-libres.txt` exactly. I checked all 20 times and all 20 `heapUsed` values. The heap delta (5,667,328 − 5,635,760 = 31,568 B, about 1.6 KB per call), the peak in rows 5-7 and the drop in row 8 are all correct. §3 does state whether the resource grows, and it does not overclaim.
+- The `cumple` status in §2 is supported by the raw output (`max: 0.0903 ms` < 50). §5 is consistent with §4, and §2 states what the measurement excludes (the `node` startup).
+
+### Issues
+
+#### Critical (Must Fix)
+
+None.
+
+#### Important (Should Fix)
+
+1. **`bench-libres.mjs:12-19` and `bench-libres.test.mjs:8-15`: the abort that Review Focus 2 promises does not exist.**
+   - **What's wrong:** Review Focus 2 says the script aborts if the load is not 1,000 active bookings in the time slot. The only abort in the code fires when the `bookings` declaration is missing (`:13`). `seed(source, 5)` returns a 5-booking load and nothing rejects it. The test `Rechaza_una_carga_distinta_de_1000` only checks `seed('const otra = [];')`, which is a missing declaration, not a wrong count. Its name claims something the code does not do.
+   - **Why the existing tests don't cover it:** `Siembra_1000_activas_en_la_franja` would pass with just 2 bookings, because `libres` returns `''` as soon as both rooms have one. `Sur_recorre_las_1000` counts 999 `Norte` entries in the text, but checks neither `slot` nor `status`. If a bug in `seed` moved most bookings out of the time slot, the measurement would be optimistic and every test would still pass. That is exactly the risk Review Focus 2 describes.
+   - **Why it matters:** today's measurement is correct only because the default `count = 1000` builds the right load. No guard backs the Review Focus line, so the evidence can't stop a badly seeded run.
+   - **Fix:** in `seed`, after building the bookings, count those with `slot === FRANJA && status === 'active'`. Throw `Error('seed: la carga no son 1.000 activas en la franja')` if the count is not 1,000. The plan says «Sin tamaños distintos de 1.000», so rejecting `count !== 1000` is the simplest option. Add a new test, e.g. `assert.throws(() => seed(source, 999), /no son 1.000 activas/)`. Don't rename the existing RED test unless the dev-lead agrees, since renaming counts as modifying it.
+   - **Gap:** `missing` (the abort) and `contradicts` (test name versus behaviour).
+   - **Source:** plan, Review Focus line 2. The plan contradicts itself here: Step 1 defines the test as the missing-declaration case.
+
+2. **`research.md:20` and `research.md:55`: the second run's figures have no raw output behind them.**
+   - **What's wrong:** §2 cites a second full run («máximo 0,0910 ms, mediana 0,0100 ms»). §4 builds its argument on «el peor caso medido (0,0910 ms)». Neither number appears in `evidencia-libres.txt`, which holds only one run (max 0.0903).
+   - **Why it matters:** §4 must cite only measured rows that the evidence supports. The number §4 relies on cannot be checked from the files. The conclusion (`cumple`, no cache) would not change, since both values are far below 50 ms. But in a spike whose only output is evidence, a figure with no raw data behind it doesn't count as measured.
+   - **Fix:** append the second run's raw output to `evidencia-libres.txt` (or save it as `evidencia-libres-2.txt` and cite it). Alternatively, cite only 0,0903 ms in §4 and remove the second-run figures.
+   - **Gap:** `partial`.
+   - **Source:** plan Task 1 Step 3 (the second run) and the spike evidence rule (§4 cites only measured rows).
+
+#### Minor (Nice to Have)
+
+3. **`bench-libres.test.mjs:17-21`: this RED test differs from the one the plan defines, and the ledger has no Ruling for it.**
+   - **What's wrong:** the plan defines it as one `assert.match(code, /room: 'Sur'[^}]*\}\s*\]/)`. The committed test adds an assertion (`match(/room: 'Norte'/g).length === 999`) and adds `;` to the regex. `Siembra_...` also reads `src/app.js` from a path relative to the test file instead of `readFileSync('src/app.js')`, but that is the same data.
+   - **Why it matters:** both changes make the test stricter. Still, adding an assertion counts as modifying the test, and there is no `Ruling:` line in `progress.md` for it.
+   - **Fix:** add the Ruling to the ledger.
+   - **Gap:** `unrequested`.
+   - **Source:** plan Task 1 Step 1.
+
+4. **`bench-libres.mjs:39-42`: `mediana` returns the upper middle value for an even count, not the true median.**
+   - **What's wrong:** with 20 values it returns `orden[10]` = 0.0095. The true median is (0.0085 + 0.0095) / 2 = 0.0090.
+   - **Why it matters:** the effect on the decision is nil, but the label «mediana» is off by about 5 %.
+   - **Fix:** average the two middle values, or call it «mediana superior».
+   - **Gap:** `partial`.
+   - **Source:** plan Task 1 Step 2.
+
+5. **`research.md:22` and plan decision 6: the 50 ms threshold leaves out `node` startup, even though `libres` is a CLI.**
+   - **What's wrong:** each real call to `libres` is a new process making a single cold call. Someone reading «responde en < 50 ms» may picture the whole command.
+   - **Why it matters:** `research.md` states this exclusion clearly. The decision being unblocked (whether to add a cache) doesn't depend on startup time, which a cache wouldn't fix anyway.
+   - **Fix:** a one-off end-to-end measurement of `node <copia sembrada> libres 10:00-12:00` would tell the dev-lead how much of the 50 ms startup takes. It's optional.
+   - **Gap:** `partial`.
+   - **Source:** plan decision 6, which the executor made and the dev-lead was asked to validate.
+
+The ledger has no `minor (deferred)` or `parked` lines, so none are pending before merge. The `cargar` export Ruling is reasonable: the test and the script share it, and it costs one export.
+
+### Not verified
+
+- **RED before the implementation:** not verified. Tests and code are in a single commit (`eea5491`), so the failing state described in Step 1 was never committed.
+- **That `evidencia-libres.txt` really came from `node …/bench-libres.mjs` with `NO_COLOR=1`:** not verified. I did not run the script, as instructed.
+- **That the second run gave 0,0910 / 0,0100:** not verified. There is no raw output for it (see Important #2).
+- **That the dev-lead approved the plan decisions:** not verified. The plan has `status: draft`, and its «valida estas» decisions have no record of approval. That covers decision 3 (reading «cargadas con `seed`» as a new `seed()` function, since the project has none) and decision 6 (leaving out startup).
+- **That the gate `node --test` does not pick up `.docs/**/bench-libres.test.mjs`:** not verified. The plan says it only runs when its path is given. That depends on how Node's default glob treats folders whose names start with a dot.
+- **The suite, the lint and the test result in the ledger (`duration_ms 97`):** not verified. I didn't run them, by instruction.
+
+### Recommendations
+
+- After fixing Important #1, run `node --test .docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/bench-libres.test.mjs` and the script again, and regenerate `evidencia-libres.txt` together with the second run.
+- When the main thread runs the closing gate (`node --test && node scripts/lint.mjs`), check whether the output lists the spec folder's tests. Either way, record whether they ran.
+- Optional: measure `libres` once end to end through the CLI (Minor #5).
+
+### Declined to judge
+
+- **Code quality of the script:** for example, the temp files that `cargar` never deletes, and `main` being exported or not. That belongs to the Quality axis.
+- **Loads above 1,000 bookings or more than two rooms:** outside the spec. `research.md` §4 already says its recommendation doesn't cover them.
+- **Whether the heap growth (about 1.6 KB per call) is a leak:** 20 repetitions can't settle it, and §3 says so. Pursuing it would need another spike.
+- **The model named in the commit's `Co-Authored-By` (Sonnet 5.5):** a process matter, not a Spec one. It is consistent with the plan's execution model.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The measurement is faithful: real `run('libres', …)` calls, the worst load for two rooms, the cold call reported, and §2/§3 matching the raw output. But the abort that Review Focus 2 promises is missing, and §4's argument rests on a figure (0,0910 ms) that isn't in the evidence. Both fixes are small and won't change the conclusion.
+
+--- [82]
+Ahora: cierro la revisión con una sola pasada de fix (los dos Important). Queda: re-revisión única y validación.
+
+--- [85]
+RED confirmado (falla el test nuevo). Ahora el guard mínimo y la evidencia de la segunda ejecución.
+
+--- [88]
+El edit con script no se aplicó. Lo hago con Edit.
+
+--- [94]
+Fix verificado: test nuevo RED→GREEN, gate `node --test && node scripts/lint.mjs` verde (4/4, lint sin hallazgos). Commiteo la pasada y la dejo en el ledger.
+
+--- [97]
+Era solo el vigía del eje Spec, que terminó. Sigo con la re-revisión única.
+
+--- [103]
+La re-revisión única está en marcha en segundo plano, sobre `eea5491..b241698`. Hasta que vuelva no puedo dar la revisión por limpia.
+
+Estado hasta ahora:
+- **Plan:** escrito y aprobado por delegación. Un spike va siempre en Native, con una sola task.
+- **Task 1:** hecha. Mide `libres` con 1.000 reservas activas en la misma franja y 20 repeticiones, y deja `research.md`.
+- **Medida:** O1 sale `cumple`. El máximo fue 0,0903 ms en la primera ejecución y 0,1096 ms en la segunda, frente al umbral de 50 ms. La recomendación es no poner caché a `libres`.
+- **Revisión final:** solo salió el eje Spec, porque es un spike. Encontró dos Important, y los dos están corregidos en `b241698`:
+  - `seed` no rechazaba una carga distinta de 1.000.
+  - `research.md` citaba una segunda ejecución que no estaba en `evidencia-libres.txt`.
+- **Gate de cierre:** `node --test && node scripts/lint.mjs` salió verde: 4 tests y lint sin hallazgos.
+- **Lo que queda abierto:** esperar el veredicto de la re-revisión. Luego, borrar el workspace del plan y pasar a `sdd-archive` para la validación.
+
+Lo que ya está apuntado en el ledger:
+- **Rulings:**
+  - Exporté `cargar()` porque el test y el script lo comparten.
+  - El paquete de revisión sale vacío, porque excluye la carpeta de la spec y el spike solo deja ficheros ahí. Le pasé al revisor las rutas de esos ficheros.
+  - El test `Sur_recorre_las_1000` lleva una aserción más que el plan.
+  - Los RED y el código van en un solo commit de task.
+- **Minors diferidos:**
+  - `mediana` devuelve el valor superior cuando hay un número par de repeticiones.
+  - El arranque de `node` por la CLI no entra en la medida.
+
+--- [109]
+### Finding Verdicts
+
+- **Important #1: `seed` did not abort on a load other than 1.000 active bookings in the slot.** ADDRESSED.
+  - `bench-libres.mjs:10` adds `const CARGA = 1000;`. `bench-libres.mjs:13-15` sets `count = CARGA` as the default and adds the guard `if (count !== CARGA) throw new Error('seed: la carga no son 1.000 activas en la franja');`. `seed(source, 5)` now throws.
+  - Checking the input count is enough. `seed` replaces the whole `bookings` declaration (`:20`) and gives every booking `slot: FRANJA` and `status: 'active'` (`:18`). So `count` is exactly the number of active bookings in the slot, and no booking can fall outside the slot.
+  - The guard uses `!==`, so it also rejects loads larger than 1.000, not only smaller ones.
+  - `bench-libres.test.mjs:83-85` adds the new test `Rechaza_una_carga_con_menos_de_1000_activas_en_la_franja` (`seed(source, 999)`, error matched by `/no son 1\.000 activas en la franja/`). The three existing tests are unchanged, so no RED test was modified.
+  - I can't confirm "RED first (3/1), then 4/4" from a single commit, but the test fails without the guard and passes with it, which fits.
+  - The code meets the restrictions: two-space indent, no comments, Spanish message, no dependencies, `src/` untouched.
+- **Important #2: `research.md` cited a second run with no raw output in the evidence file.** ADDRESSED.
+  - `evidencia-libres.txt:28-54` now holds the raw second run: the `--- 2ª ejecución completa` separator line, 20 rows in exactly the format `main()` prints (`bench-libres.mjs:50-57`), then `frio`, `mediana`, `max`, the threshold line and `ok`.
+  - I recomputed the figures from the 20 rows:
+    - The maximum is 0,1096 ms, the cold call (rep 1).
+    - `mediana()` takes `orden[10]` (`bench-libres.mjs:41-44`). That is the 11th of the sorted values, 0,0090 ms, which matches `:51`.
+  - `research.md:20` (§2) cites max 0,1096 ms («también la fría») and median 0,0090 ms. The ratio holds: 50 / 0,1096 ≈ 456, so «unas 450 veces» is right.
+  - `research.md:55` (§4) cites 0,1096 ms as the worst case measured.
+  - The old figures (0,0910 / 0,0100) no longer appear in `research.md`.
+
+### New Breakage in the Fix Diff
+
+None at Critical or Important. One Minor point:
+- **Minor:** `bench-libres.mjs:13-15`. The `count` parameter is now effectively dead: every value except the default throws. Dropping it, and using `CARGA` directly at `:16-17`, would say the same thing more simply.
+
+### Out-of-Scope Observations
+
+- `plan.md:55` and `plan.md:167` still trace the Review Focus abort to `Rechaza_una_carga_distinta_de_1000`. That test (`bench-libres.test.mjs:73-75`) checks the "declaración no encontrada" error, not the load guard. The test that actually covers the abort is the new `Rechaza_una_carga_con_menos_de_1000_activas_en_la_franja`. Not renaming the old test was correct under the RED-test rule, but the plan's trace now points to the wrong test, and the old test's name doesn't match its assertion. Both predate this fix.
+- The 0,0910 / 0,0100 figures that `research.md` cited in `eea5491` were never backed by raw output. The fix replaces them with a new run instead of recovering the old one. That is acceptable, but nothing in the research says the earlier figures were dropped.
+- `research.md` §3 tabulates only the first run. The second run is a bit slower in reps 2–7 (0,018–0,033 ms) before settling. That doesn't contradict «plano / no crece», but §3 doesn't reflect it.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical or Important breakage.
+
+--- [111]
+La re-revisión salió limpia: los dos Important quedan resueltos, sin roturas nuevas. Cierro: dejo el plan coherente con el test nuevo, recojo los rulings y borro el workspace.
+
+--- [117]
+Ahora: pre-comprobaciones del cierre. Queda: validación por el agente (la spec dice «Validación: agente»), walkthrough, roadmap y merge.
+
+--- [122]
+Ahora: validación por el agente. Corro la suite entera y la medida real una vez más, guardando la salida.
+
+--- [125]
+Era solo el vigía de la re-revisión. Sigo: tiempo real, tokens y estimation-log.
+
+--- [137]
+Añado la fila del spike al roadmap (no tenía), commiteo el cierre juntado desde la última task y sincronizo con la base.
+
+--- [140]
+**No terminado.** El spike está cerrado en la rama `feature/0031-free-rooms-load`, pero no he fusionado nada. Falta el bloque `merge` en `.docs/sdd/sdd-kit.json`, que solo tiene `ids`, `release`, `control` y `execution`. Tanto `merge --check` como `merge --sync` lo señalan con «falta 'merge.into' o 'merge.noFf'», así que la fusión espera a que tú la decidas. No borres todavía el worktree `<run>/repo`.
+
+🦆 **Respuesta del spike:** `libres` aguanta 1.000 reservas activas en la misma franja con mucho margen. La peor llamada fue la primera, en frío, con 0,0903 ms en la primera ejecución y 0,1096 ms en la segunda, frente al umbral de 50 ms. Recomiendo no poner caché antes de abrirlo a toda la oficina. La medida es de `run('libres', …)` en proceso; el arranque de `node` por la CLI no entra.
+
+**Cierre**
+- **Validación:** la spec dice `Validación: agente`, así que no hay guion ni espera. Registrado como «Validación por el agente».
+- **Gate de cierre:** `node --test && node scripts/lint.mjs` → 4/4 y lint sin hallazgos, corrido antes de juntar el commit de cierre. Desde entonces solo cambió documentación. El test del spike pasa 4/4 con su ruta; el gate no lo recoge solo.
+- **Revisión final:** solo el eje Spec (es un spike), con dos Important que corregí en una pasada: `seed` no rechazaba una carga distinta de 1.000, y `research.md` citaba una ejecución sin salida en bruto. La re-revisión salió limpia.
+- **Historial:** 3 commits sobre la base: apertura (`69026d5`), task (`eea5491`) y cierre (`19bd755`).
+- **Tiempo real:** 0,13 h frente a 1 h estimada.
+
+**Decisiones que tomé sin ti**
+- Exporté `cargar(code)` además de `seed` y `medir`; el test y el script lo comparten. Coste si está mal: quitar un export.
+- El paquete de revisión salió vacío, porque la receta excluye la carpeta de la spec y el spike solo deja ficheros ahí. Le pasé al revisor las rutas de los cuatro ficheros.
+- `Sur_recorre_las_1000` lleva una aserción más que el plan (cuenta 999 reservas en `Norte`) y un `;` más en el regex.
+- Test y código van en un solo commit de task, sin commit en rojo.
+- Dos decisiones del plan siguen sin validación tuya:
+  - Leí «cargadas con `seed`» como una función `seed()` nueva, porque el proyecto no tenía ninguna.
+  - Dejé fuera de la medida el arranque de `node`.
+- No añadí entrada al changelog: el spike no cambia nada visible. Sí añadí al roadmap la fila 0031 con ✅.
+- `roadmap check` sigue señalando 2 líneas viejas del roadmap. No las toqué; las arregla la migración v2.3.0 del kit.
+
+**Minors diferidos**
+- `mediana` devuelve el valor superior cuando hay un número par de repeticiones.
+- El arranque de `node` por la CLI no entra en la medida; una medida de punta a punta es opcional.
+- El parámetro `count` de `seed` ya solo admite su valor por defecto.
+- `research.md` §3 solo tabula la primera ejecución.
+
+**Siguiente:** el spike no tiene `parent:` ni `proposal:`, así que no hay piezas de familia por recomendar.
+
+**Ticket del kit:** hay una línea `Retro: … → ticket del kit`. La receta del paquete de revisión de `encargo-revision.md` excluye la carpeta de la spec, y un spike deja ahí todo su trabajo. ¿Quieres que lo escriba con `sdd-feedback` ahora?
+
+**Para fusionar:** dime `merge.into` y `merge.noFf`, o que fusione a mano. No hago push ni PR sin que lo pidas.
+

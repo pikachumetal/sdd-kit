@@ -1,0 +1,124 @@
+--- [2]
+Ahora: retomar el paso 6 invocando `sdd-implement`. Queda: terminar la Task 2 y siguientes, revisión final y validación, ~minutos según las tasks pendientes.
+
+--- [5]
+Ahora: recuperación tras el corte por cuota — releer ledger, `git log` y informes del workspace. Queda: retomar la Task 2 (y las siguientes), revisión final y validación.
+
+--- [11]
+El informe de la Task 2 llegó completo (`Status: DONE`, commit `95f472b`), así que cuenta como devuelto: el fallo por cuota se ignora y pasa a su revisión de task.
+
+--- [27]
+Ahora: lanzo la revisión final (opus, effort high) sobre `95f472b` en un worktree aparte. Queda: su informe, pasada de fix si hay hallazgos y la validación, ~10 min.
+
+--- [41]
+Retomé la feature 0010 tras el corte por cuota y la revisión final está en marcha; aún no hay veredicto.
+
+**Estado**
+- **Task 1:** completa, `2aa628b`.
+- **Task 2:** su informe llegó completo (`Status: DONE`, commit `95f472b`), así que el fallo por cuota no obligó a relanzarla. Pasó a su revisión de task: limpia, sin Critical ni Important.
+- **Tests:** `node --test test/cancel.test.js` da 3/3. El informe decía 4/4, un error del informe, no del código.
+- **Revisión final:** despachada en segundo plano (opus, effort high) sobre `95f472b`, en un worktree desanclado `review-0010-95f472b`. Cuando vuelva hay que retirarlo.
+
+**Minors diferidos**
+- El test de `canceladas` depende del estado que deja el primer test.
+- Sin canceladas, `canceladas` devuelve una cadena vacía; la spec no define ese caso.
+
+**Fuera de scope**
+- `sdd-kit.json` dice `execution: native`, pero el plan fija SDD y manda el plan, así que seguí con SDD.
+
+**Pendiente**
+- Esperar el informe de la revisión final y arreglar los Critical o Important si los hay.
+- Escribir `Revisión final:` en `tasks.md`, que creé sin commitear.
+- Correr el gate `node --test` completo y preparar el walkthrough y los borradores de cierre.
+- Presentar la validación con smoke por THEN y guion. Con `delegate` y sin `validation.mode: field`, ahí espero tu validación explícita antes de `sdd-end-feature`.
+
+--- [50]
+**Veredicto: With fixes.** Los tres THEN de la spec se cumplen y `anular`, `libres` y `reservar --cada-semana` no cambian. Pero la rama borra el único test del repo que cubría «cancelar sin reserva» (`sin reserva <sala> <día>`), y esa ruta queda sin test.
+
+### Strengths
+- **Cancelar con motivo de la lista:** `cancelBooking` comprueba el motivo antes de buscar la reserva y antes de cambiar nada. Un motivo no válido nunca cancela, y responde exactamente «cancelada Norte lun (sala ocupada)» (`src/app.js`).
+- **Motivo fuera de la lista:** el mensaje coincide palabra por palabra con la spec. Además, el test usa una reserva que no existe (Sur mar), así que solo pasa si el motivo se comprueba primero. Fija bien el orden.
+- **Listado de canceladas:** filtra solo `status === 'cancelled'`, así que las anuladas (`voided`) no salen y el alcance de la 0011 queda fuera. El formato «Norte lun — sala ocupada» coincide con la spec.
+- **Alcance limpio:** `voidBooking` está intacto, `test/app.test.js` (libres, reservar semanal) no se toca y no hay más llamadas a `cancelBooking` que dependan de la firma antigua. Todo el texto de la interfaz está en castellano.
+
+### Issues
+
+#### Critical (Must Fix)
+- Ninguno.
+
+#### Important (Should Fix)
+- **Se pierde el test de «cancelar sin reserva».** Archivo `test/cancel.test.js`, commit `2aa628b`.
+  - **Qué pasó:** el test previo `cancelar sin reserva lo dice` (`run('cancelar', ['Sur','mar'])` → `'sin reserva Sur mar'`) no se adaptó añadiéndole `--motivo`. Se sustituyó por otro test con otro nombre, otros datos y otra aserción.
+  - **Qué queda sin cubrir:** la ruta `if (!booking) return \`sin reserva ...\`` sigue en el código y nadie la prueba. Es además el único test que comprobaba que `cancelar` busca por sala y día, el arreglo publicado en el patch 0007 («La cancelación ya no borra reservas de otro día con la misma hora», según el changelog).
+  - **Efecto:** hoy nadie nota nada, porque el código sigue bien. El riesgo es que, si alguien vuelve a romper esa búsqueda, ningún test lo avise.
+  - **Arreglo:** recuperar el test con el motivo, por ejemplo `run('cancelar', ['Sur','mar','--motivo','otro'])` → `'sin reserva Sur mar'`.
+
+#### Minor (Nice to Have)
+- **`cancelar Norte lun` sin `--motivo`** responde «motivo no válido: cambio de planes, sala ocupada, otro». El mensaje no dice que falta el motivo ni cómo pasarlo (`--motivo "<motivo>"`). La spec no define este caso, pero quien use el comando no sabrá qué le falta. Tampoco hay test.
+- **Si el motivo va sin comillas**, por ejemplo `--motivo sala ocupada`, solo se coge `sala` y se rechaza. El resultado es correcto, pero convendría documentar el uso con comillas.
+- **El orden de los argumentos importa.** `reasonOf` busca `--motivo` en cualquier posición, pero sala y día se toman siempre de `params[0]` y `params[1]`. Con `cancelar --motivo otro Norte lun` se interpreta la sala como `--motivo`. No es un uso de la spec.
+- **Ya diferidos en el ledger, no los cuento de nuevo:** el test `canceladas` depende del estado que deja el primer test; la lista vacía devuelve `''`; el informe decía 4/4 tests y son 3/3.
+
+### Declined to judge
+- **`canceladas` no tiene nada que listar desde la terminal.** Las reservas viven en memoria dentro de cada ejecución (`const bookings = [...]`). Por eso `salas cancelar ...` seguido de `salas canceladas` en otra invocación no enseña nada: con el `''` diferido, sale una línea vacía. Esto ya pasaba antes con `cancelar`, y guardar el motivo es la 0014 del roadmap («Motivo guardado»). No lo gradúo, pero conviene decirlo en el walkthrough o el changelog para que nadie espere ver el listado entre ejecuciones.
+- **Comprobación recomendada para el hilo principal:** pasar el gate `node --test` completo, que incluye `test/app.test.js`. Los informes de las tasks solo verificaron `test/cancel.test.js`. No hay ningún test de `anular` en el repo, ni antes ni ahora. Su código no cambia, pero una comprobación manual o un test pequeño confirmaría que no le afecta.
+
+### Assessment
+**Ready to merge:** With fixes
+**Reasoning:** La funcionalidad cumple la spec y no rompe nada visible. Antes de mergear hay que recuperar, con `--motivo`, el test previo de «cancelar sin reserva», que además guardaba el arreglo del patch 0007.
+
+--- [52]
+Ahora: la revisión final devolvió un Important (se perdió el test «cancelar sin reserva»). Verifico el hallazgo, retiro el worktree y despacho una sola pasada de fix. Queda: re-revisión del tramo, gate completo y validación, ~10 min.
+
+--- [78]
+Ahora: validación (paso 7). Implementación y revisión final terminadas; queda solo tu validación, y después el cierre con `sdd-end-feature`.
+
+## 🦆 Qué hay
+
+La feature 0010 «Motivo al cancelar» está implementada, revisada y verde en la rama `feature/0010-cancel-reason`.
+
+- **Cancelar con motivo:** `cancelar <sala> <día> --motivo <motivo>` solo acepta cambio de planes, sala ocupada u otro. Con otro valor responde «motivo no válido: …».
+- **Listado:** `canceladas` enseña «Norte lun — sala ocupada».
+- **Commits:** `2aa628b` (Task 1), `95f472b` (Task 2) y `e5c8808` (pasada de fix).
+
+## ✋ Me salí del plan en…
+
+- **Quota cut:** el informe de la Task 2 llegó completo, así que no la relancé y pasé directo a su revisión.
+- **Pasada de fix:** la revisión final encontró un Important. La Task 1 había sustituido el test «cancelar sin reserva» y esa ruta (patch 0007) quedó sin cubrir. Lo recuperó `e5c8808`, con RED→GREEN y re-revisión limpia.
+- **Ejecución:** `sdd-kit.json` dice `native` y el plan fija SDD; seguí con SDD.
+
+## Smoke que he ejecutado
+
+La suite completa `node --test` da 6/6 en 90 ms.
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | `ejecución real`: `node src/app.js cancelar Norte lun --motivo "sala ocupada"` |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | `ejecución real`: lo provoqué con `--motivo "me aburro"` |
+| `canceladas` → «Norte lun — sala ocupada» | `ejecución real` solo dentro de un mismo proceso (`node -e` con `run`); `suite` en el test. Por el CLI en dos invocaciones no se puede observar |
+| `anular` sin cambios (alcance) | `ejecución real`: «anulada Norte lun»; no hay test de `anular` en el repo |
+
+**Lo que el smoke no cubre:** las reservas viven en memoria y cada invocación de `node src/app.js` empieza de cero. Por eso `canceladas` por el CLI, en una ejecución aparte, imprime una línea vacía. Es la 0014 del roadmap («Motivo guardado») y lo dejé como ruling; el walkthrough lo dirá.
+
+## Guion de pruebas para ti
+
+No hay nada que arrancar: es un CLI sin servidor.
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js cancelar Sur mar --motivo otro` → `sin reserva Sur mar`.
+4. `node src/app.js canceladas` → línea vacía, por la limitación de arriba.
+5. `node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[]))"` → `Norte lun — sala ocupada`.
+
+## Decisiones tuyas, en este turno
+
+- **Minors que no arreglé** (en `tasks.md`):
+  - `cancelar` sin `--motivo` no dice que falta el motivo.
+  - El listado vacío imprime una línea en blanco.
+  - `--motivo` sin comillas toma una sola palabra.
+  
+  ¿Quieres alguno ahora o van a ticket aparte? Mi recomendación es ticket aparte, porque la spec no los define.
+- **Walkthrough, changelog y delta de `capabilities/`:** no los he adelantado; los escribe `sdd-end-feature` tras tu validación.
+
+**Dime qué has probado tú y si funciona.** Hasta entonces la feature queda en espera, con `tasks.md` sin commitear y el roadmap intacto.
+

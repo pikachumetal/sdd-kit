@@ -1,0 +1,111 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar, anunciar y abrir la spec, hasta la primera parada.
+
+--- [23]
+Sigo con la spec: el heredoc falló al escribirla, así que la escribo con la herramienta de ficheros y luego pruebo el delta sobre una copia.
+
+--- [25]
+Ahora: coherence pass, delta sobre una copia fuera del repo. Queda: review de la spec y parada en el gate.
+
+--- [33]
+Ya tengo la rama `feature/0010-lista-espera` y la spec escrita en `.docs/sdd/changes/20261112-133622-feature-0010-lista-espera/spec.md`. Falta la review y la aprobación. Ahora mismo hay un revisor (Sonnet) leyendo la spec, y su resultado todavía no ha llegado.
+
+- **Reglas del proyecto:** el carril es feature en modo full, con el perfil `delegate` por defecto. Dije «empieza ya, no me preguntes más», así que no hice entrevista. Hay 12 decisiones mías en «✋ Decisiones que he tomado yo».
+- **Qué recoge la spec:** el comando `esperar <sala> <día> <franja>` y un aviso en `cancelar` cuando se libera una sala con espera apuntada. La capacidad nueva se llama `waitlist`.
+- **Comprobaciones hechas:** `git grep` y el delta probado sobre una copia de `.docs/sdd` salieron limpios. Aún no he escrito el plan ni el código.
+
+Lo más importante de revisar es la decisión 2. La espera vive en memoria, como las reservas, y cada ejecución del CLI es un proceso nuevo. Si haces `esperar` y luego `cancelar` en dos comandos separados, el segundo no ve la espera. El aviso de cancelar solo se vería en los tests, no en la terminal. Guardarla en un fichero es una decisión de datos nueva y no la tomé sola.
+
+Dos cosas más: no toqué `ROADMAP.md`, y la carpeta va en `changes/` aunque las tres anteriores de este proyecto están en `specs/`.
+
+Cuando llegue la review, la integro y te presento la spec con su 🦆 para el gate de aprobación.
+
+--- [34]
+1. Crítico · Delta «Avisar al cancelar…» y decisión 7 · `cancelar` no recibe sala y casa solo por día y franja. Una espera de `Sur lun 10:00-12:00` se avisa y se retira aunque la reserva cancelada fuera la de Norte, y Sur sigue ocupada. El aviso «sala libre» es falso, y el Intent promete avisar cuando se cancela «la reserva que la bloquea». · Cambiar `cancelar` para que reciba la sala, o declarar la limitación como decisión validada. Añadir un escenario en el que se cancela una sala y la espera de otra sala con el mismo día y franja no se avisa, o aceptar y documentar que sí se avisa.
+
+2. Crítico · Decisión 2 y Reglas «Dónde viven los datos» · La espera vive en memoria del proceso. Por cada ejecución del CLI el array arranca vacío, así que el aviso de `cancelar` nunca se ve en la terminal. El Intent y la validación «dev-lead» lo tratan como funcionalidad real, y el éxito del Intent es inalcanzable por CLI. La decisión se marca como «la más importante», pero el escenario sigue pasando solo en tests. · Resolver antes del gate: persistir (y declarar el dato nuevo, su ubicación y su formato) o replantear el Intent como lógica interna sin valor por terminal. Quitar la validación manual de la terminal, que no puede observar el aviso.
+
+3. Importante · Delta, escenarios `esperar` y `cancelar` · Los GIVEN de estado («ya apuntada la espera», «esperas apuntadas», «Norte reservada») no dicen cómo se construye el estado. `bookings` es un array fijo y la espera solo existe dentro del proceso. Al Sur del escenario 2 y del 5 le faltan datos: ¿está reservada o no el lun 10:00-12:00? El escenario 5 dice «esperas apuntadas Sur…» pero `esperar` rechazaría una espera de Sur libre. · Concretar en cada GIVEN las reservas fijas de `bookings` y la secuencia de comandos, o el estado inicial, y hacer coherente que Sur esté reservada en el escenario 5.
+
+4. Importante · Delta, escenario «Cancelar sin espera no cambia» · El GIVEN usa `mar 10:00` (franja sin rango) y nada dice si hay una reserva que cancelar. El escenario pasa también si `cancelar` no comprueba nada, y su `src/app.js:12` cita código que no se ha leído. Además `cancelar` sobre algo que no existe no está definido. · Fijar una reserva existente en `mar 10:00-12:00` en el GIVEN y usar el formato real de franja. Definir qué responde `cancelar` cuando no hay reserva y si en ese caso se avisa de la espera.
+
+5. Importante · Delta «Rechazar argumentos inválidos» · Mezcla dos casos en un escenario (falta de franja y sala desconocida) con un AND en vez de WHEN propio. Quedan sin cubrir: exceso de argumentos, día o franja con formato inválido y `esperar` sin ningún argumento. «Sala desconocida» depende de la lista de salas, que no se cita. El orden de validación (¿sala desconocida antes que uso?) no está fijado. · Separar en dos escenarios. Declarar el conjunto de salas válidas y la validación de día y franja, o decir «no aplica» en Límites con motivo.
+
+6. Importante · Reglas de la capacidad, «Límites» · «no aplica» es dudoso: hay días y franjas con formato, salas conocidas y una espera que puede crecer sin tope. Es una de las cinco reglas, y el valor viene de la constitución o la capacidad, que no dice nada de esto. · Declarar los límites reales (formato de día y franja, salas conocidas, sin tope de esperas por ser un solo usuario) o justificar el «no aplica» con una frase concreta.
+
+7. Importante · «Decisiones que he tomado yo» · Hay decisiones tomadas en el cuerpo que no aparecen como decisión ni como pregunta: el aviso retira las esperas al cancelar (sí está en 7), pero no la elección de que `esperar` con una espera duplicada responda con error en vez de ser idempotente; que `cancelar` avise aunque la sala no hubiera estado reservada; ni el formato del separador ` · `. La decisión 1 («no hubo entrevista») hace que todo el contenido sea decisión del agente sin validación del usuario. · Listar esas decisiones en el apartado numerado y marcar cuáles necesitan validación humana antes del gate.
+
+8. Menor · «Decisiones que he tomado yo» · Decisión 12 («Carpeta en `changes/`, aunque las tres anteriores están en `specs/`») y decisión 11 («sin fila en el roadmap») son procedimiento del kit, no decisiones de producto, y mezclan ruido con la decisión 2. La decisión 13 es un repaso de coherencia, no una decisión. Además, la sección contiene el plan de revisión («Review de spec propuesta», «Política de modelos») sin numerar, entre las decisiones. · Mover revisión y política de modelos a su sección y dejar solo decisiones de producto.
+
+9. Menor · «Lo que se retira o cambia de forma» · La tabla dice «nada se retira», pero su fila apunta a `src/app.js:12` y `test/app.test.js:13` como si `cancelar` cambiase de forma. Eso contradice el «delta sin MODIFIED» del encabezado: la salida de `cancelar` sí cambia cuando hay espera, y es un requisito ADDED que altera de hecho el comportamiento de `cancelar`. No hay capacidad `cancelar` que lo declare. · Aclarar que `cancelar` queda ampliado, y valorar si `cancelar` debería ser capacidad propia. Si `capabilities/` está vacío, avisar de que `waitlist` sustituye a la capacidad de reservas, que no existe.
+
+10. Menor · Ejemplos y Términos · El término «espera — sala + día + franja que quiero y hoy está ocupada» contradice el escenario 2 de rechazo y no cubre el caso de esperas ya retiradas. La decisión 6 cita PRODUCT.md solo para justificar la ausencia de cola, y «Norte/Sur/Oeste» son salas inventadas sin que conste que coincidan con las de `bookings`. · Verificar que Norte y Sur existan en `bookings` (o declararlas como fixture) y reformular el término para que coincida con el comportamiento.
+
+--- [36]
+Dos Críticos aceptados (el aviso casaba por día y franja sin sala, y la espera en memoria nunca se ve desde el CLI). Los integro y relanzo un segundo revisor.
+
+--- [39]
+El heredoc vuelve a fallar en este shell. Reescribo la spec entera con Write.
+
+--- [46]
+He integrado la primera review en la spec, y el delta sigue fusionando bien sobre una copia (rc=0). Ahora hay un segundo revisor leyendo la spec corregida. Su resultado todavía no ha llegado, y hasta entonces la spec sigue sin pasar al gate de aprobación.
+
+Los dos Críticos de la primera ronda quedaron resueltos así:
+- **Aviso al cancelar:** `cancelar` admite ahora una sala opcional (`cancelar lun 10:00-12:00 Norte`). Solo avisa de la espera de esa sala, así que no avisa de una sala que sigue ocupada por otra reserva.
+- **Espera persistente:** ya no vive en memoria. Se guarda en `.salas-espera.json` en la carpeta de ejecución, y habrá que añadirlo a `.gitignore`. Así el aviso se puede ver desde la terminal entre dos ejecuciones.
+
+Esta segunda decisión es una que tomé yo, porque dijiste que no preguntara. Guardar un fichero es un dato persistente nuevo que las reservas no tienen, y la spec la marca como lo primero que revisar. Si prefieres no persistir, la opción de «Cambios» en el gate es volver a solo memoria.
+
+Cuando llegue la segunda review, integro lo que salga y te presento la spec con su 🦆 para que la apruebes. Aún no he escrito el plan ni el código.
+
+--- [48]
+1. Crítico · Delta, escenarios «Apuntarse…» (AND «sigue apuntada») y «Avisar al cancelar» · La decisión 10 habla de un array `waiting` y los tests llaman a `run(...)` dentro del mismo proceso. Una implementación que guarde la espera solo en memoria pasa los escenarios, y justo eso es lo que la ronda 1 declaró inútil. · Exigir que cada `run` lea el fichero desde cero, sin caché a nivel de módulo, y añadir un escenario que lea `SALAS_ESPERA_FILE` tras `esperar`, o que lance un proceso hijo.
+
+2. Crítico · Decisión 7, «Avisar al cancelar…» y «Dónde viven los datos» · Las esperas se persisten pero las reservas no (siguen siendo un array fijo). Tras `cancelar lun 10:00-12:00 Norte`, en la ejecución siguiente Norte vuelve a estar ocupada. El aviso «sala libre» es falso y la espera se retira sin que la sala se haya liberado de verdad. · Declarar como decisión que el aviso solo vale dentro de esa ejecución, o decir qué efecto tiene `cancelar` sobre `bookings` y cómo se refleja en la ejecución siguiente. Añadir un escenario que lo fije.
+
+3. Importante · Delta, «Avisar al cancelar…» · El GIVEN incluye la espera `Norte mar 10:00-12:00`, pero Norte no está ocupada el martes. Con el propio comando `esperar` no se puede llegar a ese estado, así que el escenario obliga a sembrar el fichero a mano. · Sembrar el fichero de forma explícita en el GIVEN, o usar un par de esperas alcanzables (por ejemplo, otra franja de Norte con una reserva ocupada).
+
+4. Importante · Delta, «No apuntarse dos veces» · El THEN solo comprueba el mensaje. Una implementación que duplique la espera y devuelva el error pasa el escenario, aunque la regla de conflicto diga «no se duplica». · Añadir un AND: tras la segunda llamada hay una sola espera. Por ejemplo, un `cancelar … Norte` posterior avisa una vez y el siguiente ya no avisa.
+
+5. Importante · Decisión 7 y delta de `cancelar` · No define qué pasa en tres casos: `cancelar <día> <franja> <sala>` con una sala que no existe (`Oeste`), con una sala que no tiene reserva en ese día y franja, y con más de tres argumentos. El aviso puede dispararse sin que se haya cancelado nada que bloqueara la sala. · Fijar el texto y el comportamiento de cada caso. Condicionar el aviso a que exista la reserva de esa sala, día y franja, con su escenario.
+
+6. Importante · Cabecera de las decisiones («sin contrato público ni MODIFIED») y tabla «Lo que se retira o cambia de forma» · La CLI es el contrato público y `cancelar` cambia de firma (`[sala]`). Aparece además un fichero persistente nuevo en la carpeta de ejecución y una variable de entorno nueva, y la cabecera lo niega. · Corregir la señal para declarar que se toca el contrato de `cancelar`, el fichero `.salas-espera.json` y `SALAS_ESPERA_FILE`. Anotar el cambio en «Lo que se retira o cambia de forma».
+
+7. Importante · Reglas de la capacidad, «Dónde viven los datos» · No se declara qué pasa con el fichero ausente (cubierto por el estado inicial), con el JSON corrupto o vacío, ni con un fallo de escritura. Tampoco que la ruta depende del cwd, de modo que desde otra carpeta se pierde la lista. · Declarar el comportamiento ante fichero ilegible, con mensaje en castellano y un escenario. Anotar la dependencia del cwd como decisión.
+
+8. Importante · Decisiones 4 y 5 · No se declara la sensibilidad a mayúsculas (`norte`) ni el orden de las comprobaciones cuando se combinan casos (sala desconocida frente a libre frente a duplicada). Solo se fija «tras el número de argumentos». · Añadir decisión y escenario: `esperar norte lun 10:00-12:00` es `sala desconocida: norte`, o se normaliza. Dar el orden completo.
+
+9. Menor · Decisión 6 · «Orden de apuntado» no se puede observar, porque no hay listado (decisión 8). Es una decisión sin THEN que la pruebe y sin efecto. · Quitarla o decir que es solo el orden de almacenamiento en el fichero y no es un requisito.
+
+10. Menor · Bloque inicial de «Decisiones que he tomado yo» · Mezcla la política de revisión, la política de modelos y el proceso con las decisiones de producto, sin numerar. Dificulta que quien valida distinga qué debe aprobar. · Mover la revisión y los modelos a la sección de proceso o a «Hallazgos de la review», y dejar solo las decisiones 1 a 10 bajo el encabezado.
+
+--- [50]
+Segunda ronda hecha, sin tercera. Integro los hallazgos en la spec.
+
+--- [61]
+Ahora: la spec está lista para tu aprobación. Queda: tu respuesta. Después escribo el plan y paso a la implementación, ~15 min.
+
+La spec es `.docs/sdd/changes/20261112-133622-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`.
+
+## 🦆 Qué cambia para ti
+
+Si Norte está reservada el lunes de 10:00 a 12:00, podrás escribir `esperar Norte lun 10:00-12:00` y te responderá `en espera: Norte lun 10:00-12:00`. Si luego cancelas esa reserva con `cancelar lun 10:00-12:00 Norte`, en otra ejecución, la salida añade `· sala libre para tu espera: Norte lun 10:00-12:00`. La espera se guarda en `.salas-espera.json`. No reserva sola ni lista las esperas.
+
+## ✋ Decisiones mías que debes validar
+
+Dijiste «no me preguntes más», así que todas son mías:
+
+1. **La espera se guarda en un fichero** (`.salas-espera.json`, ignorado por git). Es un dato persistente nuevo que las reservas no tienen. Sin él, el aviso solo se vería en los tests. Es la más importante.
+2. **`cancelar` admite una sala opcional** y solo avisa si esa sala tiene la reserva y hay espera apuntada.
+3. **`cancelar` sigue sin tocar las reservas.** Siguen siendo un array fijo, así que en la ejecución siguiente Norte vuelve a figurar ocupada. El aviso es solo un aviso. Arreglarlo es otra feature.
+4. **Solo Norte y Sur son salas válidas.** La comparación distingue mayúsculas: `norte` da `sala desconocida: norte`. Una espera repetida es error. Un fichero ilegible da `espera ilegible: .salas-espera.json`.
+5. **Fuera de alcance:** listar la espera, salir de ella, reservar sola, validar el formato de franja y los avisos por correo (eso es la 0008).
+
+## Review
+
+Pasaron dos revisores (Sonnet). Aceptados los 4 Críticos: el aviso sin sala, la espera solo en memoria, que una implementación en memoria pasara los escenarios, y el aviso falso de «sala libre». Rechazados 2 hallazgos, con su motivo en la spec. No hubo tercera ronda. El delta se fusiona bien sobre una copia, con 10 requisitos.
+
+**Pendiente de tu respuesta:**
+1. **Apruebo (Recomendada).**
+2. **Cambios.** Por ejemplo, no persistir y dejar la espera solo en memoria.
+

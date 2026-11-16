@@ -1,0 +1,95 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y anunciar la feature, ~2 min.
+
+--- [18]
+Rama `feature/0010-lista-espera` creada y id 0010 confirmado. Leo las referencias que tocan antes de escribir la spec.
+
+--- [29]
+Ahora: despacho el revisor adversarial de la spec (uno, sonnet, según la rúbrica) con su vigilancia de silencio. Queda: integrar sus hallazgos y parar en tu aprobación, ~5 min, ~0,3 $.
+
+--- [35]
+Tengo la spec escrita y el revisor trabajando. Espero su resultado, que llega solo, antes de integrar hallazgos y presentarte la spec.
+
+--- [37]
+1. Crítico · Delta de comportamiento (Apuntarse) · El escenario fija GIVEN «Norte reservada» pero la spec admite en la decisión 7 que `reservar` con sala libre «responde `salas`» y que hoy `bookings` es una constante en memoria. Ningún requisito ADDED cubre el caso «sala libre → sigue como hoy», aunque el Intent lo llama fracaso. · Añadir un ADDED o un escenario de no regresión («GIVEN Norte libre WHEN `reservar Norte 10:00-12:00` THEN responde `salas` y la lista no cambia»), con su test en «Dónde se prueba».
+
+2. Crítico · Approach / Scope · `reservar` con sala ocupada cambia el comportamiento de un comando existente y la spec dice «Modificadas: ninguna». Si hoy `reservar <sala> <franja>` responde `salas` siempre, esto es un MODIFIED encubierto de un contrato existente (no hay capabilities/ que lo recoja, pero el comportamiento actual es la verdad viva). · Declarar la modificación de `reservar` en «Capacidades» o dejar explícito que `reservar` nunca tuvo capacidad propia y por qué no se modela como MODIFIED.
+
+3. Importante · Dónde se prueba / Approach · El estado `libre` depende de exportar `bookings` y mutarlo desde el test. Eso cambia la superficie del módulo y deja el estado compartido entre tests. Tampoco hay aislamiento de `waitlist`, y los escenarios «vacía» y «Apuntarse» (GIVEN lista vacía) fallan si un test anterior ya apuntó algo. · Declarar un reset de `waitlist` (o exportarla) y de `bookings` entre tests, y listarlo como contrato nuevo del módulo.
+
+4. Importante · Delta (Consultar) · El escenario pasa con una implementación que no recalcula el estado. Si `libre` se guarda al apuntar y no se evalúa al consultar, el test solo con Sur libre y Norte ocupada lo cumple. El Intent promete que cambia a `libre` cuando la reserva desaparece, y ningún escenario lo prueba. · Añadir un ADDED o un escenario: «GIVEN Norte en lista y ocupada, `espera` → ocupada; se quita la reserva; `espera` → libre».
+
+5. Importante · Decisiones (4 y 6) vs Delta · Faltan escenarios para: sala que no existe, franja con formato inválido, `reservar` sin argumentos. La spec no declara qué pasa con una sala desconocida: ¿se apunta a la lista? Es una decisión no declarada, y la regla de límites («sin tope») no cubre la validación. · Declarar en las decisiones y en «Reglas» cómo se valida sala y franja, o marcarlo «no aplica» en No entra, con un escenario.
+
+6. Importante · Reglas de la capacidad · Las cinco reglas están declaradas, pero «Idioma de los nombres» solo cita el castellano en comandos y mensajes, y la capacidad se llama `room-waitlist` y la lista `waitlist` en inglés. Falta decir que los identificadores internos y el slug van en inglés. · Ampliar la regla para separar interfaz (castellano) de código y slug (inglés), ya que la decisión 8 lo menciona fuera de las reglas.
+
+7. Importante · Reglas (Conflicto) / Delta · No se define la identidad de «misma sala y franja»: sensibilidad a mayúsculas (`norte` frente a `Norte`) y espacios o formato de franja (`10:00-12:00` frente a `10:00 - 12:00`). Dos entradas distintas podrían colarse como duplicados. · Fijar la normalización (exacta, sin normalizar) en las Reglas y añadir un escenario.
+
+8. Menor · Intent vs Scope · El Intent habla de «ver de un vistazo cuáles de las salas que espero están ya libres», y el Scope solo lista `espera` con estado. Es coherente, pero la 🦆 admite que con la CLI de una sola ejecución la lista no sirve entre procesos, de modo que el éxito del Intent no se puede observar fuera de los tests. · Reformular el criterio de éxito del Intent como verificable solo en tests, o decir en «Validación dev-lead» cómo se verá funcionar una persona (¿un modo REPL?).
+
+9. Menor · Decisiones · La decisión 6 («sin quitar») deja que una entrada `libre` quede para siempre y hace crecer la lista, mientras «Límites» dice «sin tope». No hay aviso de que la lista de espera con entradas libres es ruido, y no se declara qué ocurre si la sala libre se reserva mientras tanto. · Añadir a «Reglas» la interacción: ¿una entrada libre se reserva aparte o se queda? Anotar la deuda en el roadmap.
+
+10. Menor · «Decisiones» (líneas 28-29) · «Hallazgos de la review» está vacío (pendiente) y la propuesta de review declara «tamaño ~35 líneas en 2 ficheros» sin sustento, además de pie «dev-lead» sin aprobador (TBD). La spec no se puede aprobar tal cual. · Rellenar hallazgos tras esta review y nombrar al aprobador antes de pasar a `approved`.
+
+--- [41]
+Ahora: integro los hallazgos en la spec. Queda: segunda ronda de un revisor (hay un Crítico aceptado) y parar en tu aprobación, ~5 min.
+
+--- [49]
+La segunda revisión está en marcha. Espero a que termine para integrar lo que salga y presentarte la spec en el gate de aprobación.
+
+--- [50]
+1. Crítico · Delta «Apuntarse a una sala ocupada» y «Sala libre» · `reservar` con sala libre responde `salas` y `reservar` con sala ocupada pasa a otra respuesta. Eso modifica el comportamiento de un comando que ya existe. Que `capabilities/` no exista no vuelve nuevo ese comportamiento. Los escenarios solo prueban una sala ya ocupada, sin la reserva real. · Declarar `reservar` como comportamiento modificado (la regla de la decisión 7 pasaría a ser explícita), o añadir a «Lo que se retira o cambia de forma» la fila «`reservar` con sala ocupada: antes `salas`, ahora mensaje de espera».
+
+2. Importante · Delta «El estado se recalcula al consultar» · El GIVEN dice que `espera` ya respondió antes, pero el escenario no comprueba que el estado se vuelva a calcular. Un `libre` guardado al apuntarse también pasaría el THEN, y el test que el spec describe lo permitiría. · Reformular de modo que el estado cambie sin tocar la lista: apuntar con sala ocupada, `espera` da `ocupada`, quitar la reserva, `espera` da `libre`, y la lista no se ha modificado entre medias.
+
+3. Importante · «Delta» y «Reglas», comparación exacta · La regla de comparación exacta (`norte` ≠ `Norte`, espacios en la franja) solo figura en la decisión 10 y en la regla ante conflicto. No hay un GIVEN/WHEN/THEN que la cubra. Además, `reservar norte 10:00-12:00` con la lista ya con `Norte` respondería `salas`, y eso sería un comportamiento sin escenario. · Añadir un escenario que pruebe que `norte` y `Norte` son entradas distintas, o quitar la afirmación de comparación exacta del spec.
+
+4. Importante · «Dónde se prueba» y Approach, contrato exportado · Exportar `bookings` y `waitlist` cambia la superficie del módulo (contrato nuevo), y las decisiones lo recogen solo como un detalle del Approach. Un test que restablece estado compartido también puede tener que vaciar el array con `length = 0`. Si se reasigna una constante, no funciona. · Decirlo en «✋ Decisiones» con su alternativa (por ejemplo, una función `reset()` o un parámetro de estado inyectado), y precisar que `bookings` se muta in situ.
+
+5. Importante · «Revisión de spec propuesta» y «Hallazgos de la review» · El spec dice que el repaso de coherencia añadió «4 requisitos y 5 reglas (antes de la review)». Ahora hay 6 requisitos ADDED, y las reglas se ampliaron. El dato queda desfasado y el gate de coherencia puede fallar o dar una falsa confianza. · Volver a ejecutar `sdd capability merge` sobre el delta final y actualizar los números (6 requisitos).
+
+6. Importante · «Hallazgos de la review», rechazo del Crítico sobre `MODIFIED` · El rechazo se basa en que el `return 'salas'` final no es un comportamiento diseñado. Pero el spec lo conserva expresamente como contrato para la sala libre (escenario «Sala libre: reservar no cambia»), así que sí lo trata como comportamiento vivo. La justificación se contradice con el propio spec. · Reescribir la justificación o aceptar el hallazgo (ver 1).
+
+7. Menor · Sección «Intent» y 🦆 · El 🦆 y el Intent prometen que se ve «cuáles de esas salas ya se han quedado libres», pero la decisión 3 dice que en la CLI eso nunca ocurre. Todo estado de espera vive dentro de un único proceso. La promesa solo se cumple en los tests. · Quitar «ya se han quedado libres» del párrafo principal, o decirlo ahí mismo: «solo observable en tests hasta que haya persistencia».
+
+8. Menor · Frontmatter y «Aprobaciones» · `approvers: TBD` y la tabla vacía son el estado previo al gate, pero `status: draft` con el aprobador `TBD` puede hacer fallar la validación de gate si exige un nombre. · Dejar claro en el gate que el aprobador se rellena en la aprobación, o poner el nombre del dev-lead desde ahora.
+
+9. Menor · «Términos y ADR» y «Validación» · La validación `dev-lead` se justifica por «interacción de línea de comandos que usa una persona». Pero lo que ve esa persona es solo el mensaje de apuntarse, y `espera` con contenido no se ve fuera de los tests. La validación no puede comprobar el valor de la feature. · Añadir qué comprobará el dev-lead de `espera` (por ejemplo, un test o una sesión de demo con el módulo importado).
+
+10. Menor · Reglas de la capacidad, «Avisos» · «Solo la respuesta del propio comando; no hay avisos activos» repite el scope y la decisión 4. No es una regla comprobable por un escenario, y solo dice lo que no se hace. · Quitarla o convertirla en «no aplica» con una frase, para que las cinco reglas queden declaradas con contenido propio.
+
+--- [55]
+Ahora: la spec está lista y pasa por su puerta de aprobación. Queda: tu respuesta. Sin ella no escribo el plan ni toco código.
+
+Rama `feature/0010-lista-espera`, spec en `.docs/sdd/changes/20261112-183112-feature-0010-lista-espera/spec.md`. Carril feature, modo full, perfil delegate. Como pediste empezar ya, no hubo entrevista: lo que no me dijiste lo decidí yo y está abajo para que lo valides.
+
+🦆 Hoy, si pides una sala ocupada, `reservar` no te dice nada útil. Con esto, `reservar Norte 10:00-12:00` responde «Norte está ocupada en 10:00-12:00: apuntada en la lista de espera» y la guarda. `espera` lista tus salas esperadas y marca cada una como `ocupada` o `libre`. **Eso último solo se ve en los tests**: la lista vive en memoria y se vacía al terminar cada ejecución, como las reservas actuales. Tampoco te avisa sola.
+
+**✋ Decisiones que he tomado yo, valida estas**
+1. **Enfoque**: lista en memoria junto a `bookings`. Descarté un fichero JSON (es otra feature) y la reserva automática al liberarse (`cancelar` hoy no borra nada).
+2. **Comandos**: `reservar <sala> <franja>` apunta si la sala está ocupada, y `espera` consulta. La franja va sin día, como `libres`.
+3. **Sin persistencia.** Con la CLI de una sola ejecución, la lista solo sirve dentro de un proceso y en los tests. Si la quieres entre ejecuciones, lo apunto como feature aparte.
+4. **«Enterarse» = consultar `espera`.** No hay aviso activo ni reserva automática. Los avisos por correo son la 0008.
+5. **Textos**:
+   - Ocupada: `Norte está ocupada en 10:00-12:00: apuntada en la lista de espera`.
+   - Repetida: `Norte ya está en la lista de espera para 10:00-12:00`.
+   - Listado: `1. Norte 10:00-12:00 (ocupada)`.
+   - Vacía: `lista de espera vacía`.
+6. **Sin tope y sin quitar**: no existe `espera --quitar`, y una entrada ya libre se queda hasta que termine el proceso.
+7. **Sala libre: `reservar` queda como hoy** (responde `salas`, no crea reserva). `--cada-semana` tampoco cambia. Es un cambio de respuesta solo para la sala ocupada. Va en la tabla «cambia de forma» y no como `MODIFIED`, porque no hay requisito vivo.
+8. **Capacidad nueva `room-waitlist`**.
+9. **Validación `dev-lead`**: tú ves el mensaje de apuntarse en una ejecución suelta. Lo de `espera` lo compruebas con sus tests en verde y una sesión importando `run`.
+10. **Sin validar sala ni franja**: una sala sin reserva, exista o no, cuenta como libre. La comparación es exacta, así que `norte` ≠ `Norte`.
+11. **Exportar `bookings` y `waitlist`** para que los tests los restablezcan. Descarté una función `reset()` o inyectar el estado.
+
+**Revisión de la spec**: un revisor en sonnet y una segunda ronda porque aceptamos un Crítico.
+- Aceptados: 9 en la primera ronda y 8 en la segunda. Los detalles están en «Hallazgos de la review».
+- Rechazados: 2 en la primera y 2 en la segunda. En la primera rechacé el Crítico de «`reservar` modificado encubierto». El segundo revisor señaló que mi razón se contradecía con el escenario de sala libre. Lo rectifiqué: ahora hay una fila en «Lo que se retira o cambia de forma».
+- El delta, probado en una copia con `sdd capability merge`, da 7 requisitos y 5 reglas sin rechazos.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué decisión ajustar. La 3 (persistencia) y la 4 (consultar en vez de avisar) son las que más cambian el valor de la feature.
+
+Si quieres otro perfil para esta feature, dilo: «perfil `<otro>` para esta feature».
+

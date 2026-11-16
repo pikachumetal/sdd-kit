@@ -1,0 +1,58 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [14]
+La suite sale en rojo (`bookings:test`, 1 fallo). Leo el fallo del fichero guardado antes de contrastarlo.
+
+--- [17]
+Esta vez pasa los 6: es intermitente. Repito por fichero para cazar cuál falla y con qué error.
+
+--- [22]
+Solo he visto el rojo una vez, y el gate se traga la salida de `node --test`, así que no tengo la línea del error. Intento reproducirlo guardando la salida completa, también con carga.
+
+--- [25]
+0 fallos en 40 pasadas, con carga. Hago el contraste en la base como pide el paso 6: worktree desacoplado de `develop`.
+
+--- [33]
+**No terminado.** He parado el cierre antes de escribir ningún registro, porque la suite salió en rojo una vez y no he podido contrastar ese rojo. No he tocado nada: ni `walkthrough.md`, ni changelog, ni roadmap, ni merge. El worktree sigue limpio en `892a782`.
+
+**Pre-checks (paso 0)**
+- `git status` estaba limpio y `merge --check` dio `destino: listo` (`develop`).
+- No hay otras ramas `feature/*` o `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- Revisión final: `Revisión final:` sobre `5cd8f5f`. `HEAD` solo añade 17 líneas de documentación en `tasks.md`, que entran en la excepción, así que no hace falta otra revisión.
+
+**Validación en campo (paso 1)**
+- La primera pasada de `gate.mjs run bookings:test rooms:test` salió en rojo: `bookings:test (5 passed, 1 failed)`, `rooms:test (1 passed)`.
+- El gate solo imprime el resumen y se traga la salida de `node --test`, y yo solo guardé ese resumen. No tengo ni el fichero que falló ni la línea del error.
+- Después no se ha vuelto a repetir:
+  - 5 pasadas más del gate, todas en verde (6 passed).
+  - 8 pasadas secuenciales de los tres ficheros de `bookings:test`.
+  - 40 pasadas en paralelo, con carga, sin ningún fallo.
+  - Cada fichero suelto en la rama (3 veces cada uno), en verde.
+  - Cada fichero suelto en un worktree desacoplado de `develop` (3 veces cada uno), en verde. Lo he borrado después.
+- El smoke de la spec da lo esperado:
+  - `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - Un motivo fuera de la lista y la falta de `--motivo` responden «motivo no válido: cambio de planes, sala ocupada, otro».
+  - `canceladas` no lo he podido comprobar por CLI: cada ejecución parte de un almacén vacío. Esa parte solo la cubren los tests.
+
+**Por qué no sigo**
+- El paso 6 pide abrir una fila de deuda por tests intermitentes con el test y su línea de error copiada entera. No la tengo y no me la voy a inventar.
+- El contraste salió en verde en la rama y en la base, pero sin saber qué fichero falló no puedo decir que haya contrastado ese rojo.
+
+**Una incoherencia que he visto**
+- El ruling de la Task 2 de `tasks.md` dice que el gate lleva `--test-concurrency=1` para esquivar una carrera en el almacén compartido. Ni `gate.json` ni `scripts/gate.mjs` lo tienen, y `gate.json` no se ha tocado desde `3504811`.
+- O el ruling describe algo que no llegó al código, o la carrera sigue ahí sin esa protección, y eso encajaría con un fallo intermitente.
+- Hay que corregir el ruling o aplicar el flag antes del walkthrough, que recoge los rulings.
+
+**Qué decides tú**
+1. **Seguir y registrarlo como intermitente sin la línea del error.** Lo apunto en la deuda como «visto 1 vez, no reproducido en 40+ pasadas, error no capturado», y sigo con el cierre. Es tu decisión, no mía.
+2. **Intentar capturar el error primero.** Hago una pasada del gate que guarde la salida completa. Sirve de poco si no vuelve a fallar.
+3. **Arreglar la carrera.** Si añades `--test-concurrency=1` al comando de `bookings:test` en `gate.json`, el ruling queda cierto y el riesgo baja. Eso es un commit más en la rama, con la revisión que corresponda.
+
+Recomiendo la 3 y, después, la 1 si ves que no se repite.
+
+Aparte: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar antes de cerrar, porque algunas reglas de esta skill pueden ser las de una versión vieja.
+
+**No terminado.** Falta contrastar el rojo y el cierre completo (registros, merge a `develop`). No borres el worktree `...\a3a-1\repo`.
+

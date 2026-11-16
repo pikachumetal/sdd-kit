@@ -1,0 +1,113 @@
+--- [3]
+Ahora: leo el spec, el plan y `tasks.md` de la 0010 para ver la Task 2 y qué dice exactamente su THEN. Queda: decidir si es una desviación y pararme si lo es, ~2 min.
+
+--- [15]
+Estoy esperando el resultado del revisor. Después me paro con el ✋ y no empiezo la Task 2.
+
+--- [20]
+1. Crítico · Enmiendas / Aprobaciones / front-matter (`status: approved`) · La enmienda cambia el THEN, el GIVEN y la decisión 2 de una spec aprobada por Laura, pero queda «sin aprobar». La tabla de Aprobaciones sigue en «aprobada 2026-10-08» y la Task 2 (`canceladas`) está `in_progress`. Con eso se implementa un comportamiento que el aprobador no ha visto. · Parar la Task 2 hasta que Laura apruebe. Después, anotar la aprobación de la enmienda, con su fecha, en Aprobaciones, o devolver `status` a pendiente.
+
+2. Crítico · Intent / Scope / Capacidades · «Quién» ya no está en ninguna parte. La petición original decía «saber quién y por qué». El Intent dice solo «el motivo», pero no declara que «quién» queda fuera. El Scope no lo pone en «No entra». Capacidades dice «el listado lo enseña» sin precisar qué enseña. Dejar caer una parte de la petición sin decirlo es un recorte de alcance oculto. · Añadir en «No entra»: «quién canceló: la aplicación no tiene usuarios ni guarda actor; se reabre si aparece identidad». Dejar la decisión 2 como decisión explícita y reflejarla en el Intent.
+
+3. Importante · Delta de comportamiento / Capacidades · No existe `.docs/sdd/capabilities/` ni `bookings`. No se puede comprobar si estos ADDED contradicen la verdad viva. Capacidades marca `bookings` como «Modificadas» pero el delta solo tiene ADDED. Si `cancelar` ya existe (patch 0007), pedir `--motivo` y fallar sin él cambia el comportamiento de `cancelar`. Eso es un MODIFIED no declarado. · Separar el primer requisito en MODIFIED de «Cancelar» (con el comportamiento previo citado) más un ADDED para el motivo. Si el comportamiento previo no está documentado en capabilities, crear o referenciar `bookings`.
+
+4. Importante · Delta, requisito 1 · El caso «sin `--motivo` responde “motivo no válido…”» rompe el contrato actual de `cancelar <sala> <día>`. Es un cambio incompatible sin decisión en «Decisiones que he tomado yo». Hoy no hay una decisión sobre el motivo obligatorio. · Añadir una decisión: «el motivo es obligatorio, cancelar sin él deja de funcionar». Declarar el cambio incompatible, o hacer el motivo opcional.
+
+5. Importante · Delta, requisito 1 · Los escenarios mezclan tres comportamientos (éxito, motivo inválido, sin motivo) en un solo GIVEN/WHEN. Los AND de error no tienen su propio WHEN. Un test podría pasar solo con el caso feliz. · Un escenario por comportamiento, cada uno con su WHEN: `cancelar Norte lun --motivo "x"` y `cancelar Norte lun`.
+
+6. Importante · Delta, requisito 2 · No hay escenarios para casos que el Approach admite. No cubre `canceladas` sin canceladas (lista vacía), varias canceladas (orden), ni reservas activas, que no deben aparecer. El único escenario pasaría con un `canceladas` que devuelva una cadena fija. · Añadir escenarios: lista vacía, dos canceladas (con orden), y una reserva activa que no aparece.
+
+7. Importante · Delta y Approach · Los datos y el contrato no se declaran. «El motivo se guarda con la reserva cancelada» añade un campo al modelo de reserva y hay un comando nuevo `canceladas`. La spec no dice nada de persistencia ni de reservas ya canceladas sin motivo. El «Sin review de spec: dos señales (MODIFIED, datos)» admite que hay datos y MODIFIED, pero el delta no contiene ningún MODIFIED. · Declarar en Approach el campo nuevo y qué muestra `canceladas` para las canceladas anteriores sin motivo. Alinear la decisión 3 con el delta (MODIFIED real).
+
+8. Menor · Terminología (`PRODUCT.md`) · «Cancelación» se define como la reserva que anula el propio cliente antes de 24 h. Ni el delta ni el Scope dicen que `cancelar` aplique o compruebe esa regla de 24 h, ni qué pasa con la «anulación» del responsable (0011). Ese caso se excluye pero sin contrato. · Aclarar en «No entra» que la regla de 24 h no cambia, y que `canceladas` no lista anulaciones.
+
+9. Menor · Delta, ejemplos · Los GIVEN dan por hecho «Norte lun» como identificador. El primer requisito añade «10:00-12:00» y el segundo no. Si `canceladas` debe distinguir dos reservas de Norte en lunes, el formato «Norte lun — motivo» es ambiguo. · Decidir si la franja forma parte del listado o si se asume una sola reserva por sala y día, y escribirlo.
+
+10. Menor · Enmiendas · La enmienda cita `PRODUCT.md` («no hay más usuarios») como justificación, pero «no hay más usuarios» no dice que no se pueda guardar el actor. La razón real es que el código no guarda quién ejecuta el comando. Eso es un hecho del código, no verificable desde la spec. · Reescribir la razón con la verdad comprobable: «no hay identidad en el producto y no se pide el dato». No afirmar lo que dice el código sin referencia.
+
+--- [22]
+🦆 La Task 2 pide que `canceladas` enseñe «quién canceló». Eso no se puede cumplir: `PRODUCT.md` dice que «no hay más usuarios» y `src/app.js` no guarda ningún dato de quién ejecuta `cancelar`. Cumplirlo exigiría inventar un dato (un nombre fijo, o pedir uno nuevo en el comando), y eso cambia lo que Laura aprobó. Por eso no lo resuelvo yo ni lo apunto como `Ruling:`.
+
+✋ **Necesito que Laura decida entre estas opciones (recomiendo la A):**
+
+- **A. Quitar «quién» de esta feature.** Es lo que he dejado escrito en `spec.md`, sin commitear:
+  - El THEN pasa a «Norte lun — sala ocupada».
+  - El GIVEN ya no menciona a Ana.
+  - La decisión 2 se reescribe.
+  - La línea de «Enmiendas» queda `sin aprobar`.
+- **B. Mantener «quién».** Habría que decidir de dónde sale: un `--por <nombre>` en `cancelar`, o un usuario fijo. Eso es una capacidad nueva, y habría que enmendar el spec en otra dirección.
+
+**Revisor del spec** (un revisor sonnet con los siete puntos). Lo que toca a la enmienda:
+- **Crítico:** el spec sigue `approved` y la tabla de aprobaciones no recoge la enmienda. Por eso no empiezo la Task 2 hasta tu confirmación. Si eliges A, anoto la aprobación con fecha.
+- **Crítico:** «quién» desaparece sin quedar declarado como fuera de alcance. Si eliges A, añadiré a «No entra»: «quién canceló: no hay identidad en el producto; se reabre si aparece». También reflejaré la decisión en el Intent.
+- **Menor:** la razón de la enmienda cita `PRODUCT.md`, pero ese documento no prohíbe guardar el actor. La razón real es que el producto no tiene identidad y no se pide el dato. La reescribiré así.
+
+El revisor puso otros siete hallazgos, del 3 al 9. Todos son sobre el spec original, no sobre esta enmienda:
+- Un posible `MODIFIED` no declarado, y el motivo obligatorio como cambio incompatible.
+- Escenarios de error mezclados en uno solo.
+- Faltan casos de `canceladas`: lista vacía, varias canceladas y una reserva activa que no debe salir.
+- La franja horaria no aparece en el listado.
+- La regla de 24 h de `PRODUCT.md`.
+
+No los toco sin que lo pidas, porque ampliarían el alcance de la enmienda. Dime si quieres que los trate.
+
+**Estado:** `tasks.md` sigue con la Task 2 en `in_progress`. La Task 1 ya está en su commit. Hay cambios sin commitear en `spec.md` y `tasks.md`.
+
+--- [23]
+La vigilancia de silencio del revisor ha terminado sin avisos. No es una respuesta de nadie, y no cambia nada de lo anterior.
+
+Sigo parado en el ✋: no he empezado la Task 2 y espero la decisión de Laura entre A (quitar «quién» de esta feature, mi recomendación) y B (mantenerlo con una fuente definida). Cuando llegue, aplico la opción, anoto la aprobación de la enmienda en el spec y sigo con la Task 2.
+
+--- [25]
+Laura ha elegido B. Ahora: escribo la enmienda en `spec.md` y en el plan, y la Task 3 en `tasks.md`, y lanzo el revisor. Queda: parar con el ✋ de lo que falta por decidir, ~3 min.
+
+--- [29]
+Enmienda escrita sin commitear, y el revisor está en marcha. Espero sus hallazgos para ponerlos en el ✋ junto con las dos decisiones que Laura no ha cubierto.
+
+--- [31]
+1. Crítico · Capacidades / Delta (ADDED vs MODIFIED) · No existe `.docs/sdd/capabilities/`, así que el spec no puede contradecirla, pero la cabecera declara `bookings` como «Modificadas» y el delta usa solo ADDED. «Cancelar guarda quién cancela» cambia la salida y los datos de un comportamiento que ya existe, y la enmienda de `canceladas` cambia una línea ya aprobada (antes «Norte lun — sala ocupada»). · Marcar como MODIFIED el requisito del listado, con su línea anterior citada, y dejar en ADDED solo lo que es nuevo. Actualizar el texto de «Capacidades» para mencionar `--por`.
+
+2. Crítico · Delta, «Cancelar guarda quién cancela» · El THEN «guarda "Ana" con la reserva» no se puede observar con el comando `cancelar`. Un test pasa aunque no se guarde nada, porque la respuesta es idéntica a la de antes. Solo `canceladas` lo muestra. · Quitar el AND de guardado y comprobar la persistencia desde `canceladas`, o fundir los dos requisitos en uno con un único GIVEN/WHEN/THEN.
+
+3. Crítico · Decisión 3 y línea «(sin aprobar)» del delta · El comportamiento sin `--por` está en el delta como si fuera requisito y la propia spec dice que no está aprobado. Si la spec pasa a approved así, se implementa y se testea algo sin dueño. Falta además la rama contraria: si `--por` fuera obligatorio, ¿qué responde? · Pedir la decisión a Laura antes de implementar. Hasta entonces, sacar esa línea del delta o marcarla como pendiente sin aprobar, sin comprometer un test.
+
+4. Importante · Decisión 3 frente a PRODUCT.md · PRODUCT.md dice «no hay más usuarios ni más desarrolladores», y a la vez habla de «Laura» y de «Ana» como actores. Un `--por <nombre>` de texto libre no tiene sentido para un único usuario, y el spec no justifica quién es «Ana». Eso contradice el producto, o PRODUCT.md está desfasado. · Justificar en la spec para qué sirve guardar un nombre libre (varias personas comparten la herramienta) y reconciliarlo con PRODUCT.md, o pedir a Laura que actualice PRODUCT.md.
+
+5. Importante · Decisión 3 / Delta · El formato de salida de `cancelar` con `--por` queda sin decidir: el THEN repite «cancelada Norte lun (sala ocupada)» sin «Ana». Tampoco se dice qué pasa con `--por` sin valor, con valor vacío, con caracteres raros o con un nombre muy largo. · Añadir un GIVEN/WHEN/THEN para `--por` sin valor o vacío, y declarar el límite del nombre, o declararlo fuera de alcance.
+
+6. Importante · Enmiendas · Dice «cambia una task cerrada: Task 3 la completa», pero la amendment no explica qué parte de Task 3 queda afectada. Además, tasks.md es nuevo y sin seguimiento (`??`), y plan.md está modificado. Plan y tasks pueden desfasarse de los nuevos requisitos. · Verificar que plan.md y tasks.md cubren `--por`, el campo guardado y el formato del listado. Reabrir la task cerrada con una entrada explícita.
+
+7. Importante · Scope / datos · Se añade un campo nuevo a la reserva (persistencia de «quién») y se cambia el formato de `canceladas`, pero no se menciona el almacén ni la compatibilidad con reservas ya canceladas sin `--por`. «Dónde se prueba» no incluye el test del listado sin `--por`. · Declarar el cambio de datos en la spec o en el plan, indicar cómo se leen las canceladas anteriores, y añadir el caso a «Dónde se prueba».
+
+8. Menor · Decisión 2 · La fuente es «Laura el 2026-11-12» y la cabecera dice `approved_at: 2026-10-08`. La tabla de Aprobaciones no refleja que la enmienda aprobada «en lo esencial» no tiene una aprobación propia ni fecha. · Añadir en Aprobaciones una fila o nota para la enmienda con su estado, parcial hasta decidir la decisión 3.
+
+9. Menor · Decisión 4 · «Sin review de spec: dos señales (MODIFIED, datos)» se mantiene tal cual, pero la enmienda añade datos y una decisión sin aprobar. La justificación se apoya en MODIFIED, que el delta no usa. · Revisar la justificación, o pasar a review si la decisión 3 sigue sin aprobar. Un nombre de persona como dato (Ana) es mínimo, pero conviene que el ejemplo sea claramente ficticio.
+
+--- [33]
+🦆 Laura ha aprobado guardar quién cancela con `--por <nombre>`. La enmienda está en `spec.md`, `plan.md` y `tasks.md`, sin commitear. El revisor ha encontrado dos cosas que Laura no ha cubierto, así que no empiezo ninguna task.
+
+✋ **Decide Laura (con mi recomendación):**
+
+1. **¿`--por` obligatorio u opcional?** Recomiendo opcional, porque así la Task 1 y sus tests siguen valiendo. Sin `--por`, `canceladas` respondería «Norte lun — sala ocupada». Si lo quieres obligatorio, falta decidir el texto de error, y la Task 3 rompe los tests de la Task 1.
+2. **`PRODUCT.md` dice «no hay más usuarios».** Un nombre libre sirve de poco con un solo usuario. Recomiendo que Laura confirme que varias personas usan la herramienta y que `PRODUCT.md` se actualice. Si no, `--por` no tiene a quién identificar.
+
+**Hallazgos del revisor** (un revisor sonnet con los siete puntos, limitado a la enmienda):
+- **Crítico:** el THEN «guarda "Ana" con la reserva» no se puede comprobar con `cancelar`, porque la respuesta es igual que antes. Propongo quitar ese AND y que la persistencia se vea solo en `canceladas`.
+- **Crítico:** la línea «una cancelada sin `--por`…» está en el delta como requisito sin estar aprobada. Si Laura responde a la decisión 1, la dejo fija. Hasta entonces no se escribe ningún test sobre ella.
+- **Crítico:** el listado cambia una línea ya aprobada, y `Capacidades` dice `bookings` «Modificada» mientras el delta usa solo ADDED. Propongo marcar el listado como MODIFIED citando la línea anterior, y mencionar `--por` en `Capacidades`.
+- **Importante:** `--por` sin valor, vacío o con un nombre muy largo no tiene escenario. Propongo declararlo fuera de alcance o añadir un caso de error.
+- **Importante:** falta declarar el campo nuevo de la reserva y cómo se leen las canceladas anteriores sin quién. La decisión sobre el listado sin `--por` lo cubre en parte.
+- **Menor:** la tabla de Aprobaciones no recoge esta enmienda, y la decisión 4 de saltar la review de spec se apoya en un `MODIFIED` que el delta no usa. Lo ajusto cuando se cierre.
+
+**Orden de las tasks:** la Task 3 completa la Task 1, que está cerrada. La Task 2 la necesita para leer quién canceló. La he puesto en `tasks.md` como nueva task (3) y la ejecutaré antes que la 2. Lo anotaré como `Ruling:` de orden.
+
+Con tus dos respuestas aplico los hallazgos al spec y paso a la Task 3 y después a la Task 2.
+
+--- [34]
+La vigilancia del revisor ha terminado sin avisos. Es un evento automático, no una respuesta de Laura, y no cambia nada.
+
+Sigo parado en el ✋. No he tocado código ni empezado la Task 3 ni la 2. Espero las dos respuestas de Laura:
+
+1. `--por` obligatorio u opcional (recomiendo opcional).
+2. Confirmar que hay varios usuarios y actualizar `PRODUCT.md`.
+

@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd 2>/dev/null && git ls-files | head -50 && grep -ril "cancel" . --exclude-dir=.git 2>/dev/null | head -20
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.
+
+>>> Bash: cd "<run>/repo" && cat src/app.js .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; grep -n -i cancel CHANGELOG.md ROADMAP.md test/app.test.js PRODUCT.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (5 turnos, 0.0998083 $)
+Lo de cancelar es muy pequeño, y lo que hay no coincide del todo con lo que dicen los documentos.
+
+**Lo que hay en el código** (`src/app.js:12`)
+- Hay un comando CLI `cancelar <día> <hora>`.
+- Solo devuelve la cadena `cancelada <día> <hora>`.
+- No toca el array `bookings`. No busca ninguna reserva ni borra nada. Es un stub que repite los argumentos.
+- Su único test (`test/app.test.js:13`) comprueba esa cadena de texto.
+
+**Lo que dicen los documentos**
+- El `CHANGELOG.md:14` y el patch 0007 (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`) hablan de una corrección. La cancelación "borraba reservas de otro día con la misma hora" y la causa era una "comparación solo por hora". Se arregló y se añadió un test de regresión.
+- El `CHANGELOG.md:20` lista "Cancelar una reserva propia" como una funcionalidad.
+- El patch 0007 figura como hecho (✅) en `ROADMAP.md:8`.
+
+**Lo que infiero**
+- En el `src/app.js` actual no existe ninguna comparación por hora ni por día. El fix descrito no se ve en este código.
+- El test "cancelar respeta el día" solo comprueba que el texto contiene el día. No demuestra que se respete nada.
+- Puede que el repo sea una plantilla simplificada (el commit se llama "base del molde"), con la lógica real recortada.
+- "Cancelar una reserva propia" tampoco tiene soporte: no hay noción de usuario ni de propietario en `bookings`.
+
+Así que no hay un mecanismo de cancelación que entender. Hay un comando de fachada, y la documentación describe un comportamiento que el código no implementa.
+
+Si quieres, puedo mirar `git log` para ver si la lógica real existió y se perdió. También puedo apuntar en el roadmap la implementación real de cancelar. No he cambiado nada.

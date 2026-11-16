@@ -1,0 +1,173 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/changes/ 2>/dev/null; find . -name "re-review.md" -not -path "./node_modules/*" 2>/dev/null; find .. -maxdepth 3 -name "re-review.md" 2>/dev/null
+<<< ./.temp/sdd/plan/re-review.md
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/re-review.md; ls .temp/sdd/plan; git ls-files | head -50
+<<< ## Re-review of the fix range
+
+### Findings of the review
+1. `reasonOf` keeps the spaces around the reason — ADDRESSED (`src/app.js:16`).
+
+### New breakage in the fix range
+1. **Critical · `src/app.js:20`: `cancelar` without `--motivo` cancels the booking.** The fix pass changed the check to `reason !== undefined && …`, so a missing reason skips it: `cancelar Norte lun` answers «cancelada Norte lun (undefined)», Norte lun is cancelled with no reason, and `libres 10:00-12:00` lists Norte as free. The THEN «Cancelar pide un motivo de la lista» no longer holds.
+
+### Verdict
+1 Critical op
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/plan-path .temp/sdd/plan/progress.md; cat src/app.js; cat test/cancel.test.js; cat .docs/sdd/specs/2026100*/tasks.md; git log --stat -3 | head -30; cat .docs/sdd/sdd-kit.json
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits b53e771..65f60cd, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 65f60cd..e03dc80, tests: node --test test/cancel.test.js → 3/3 pass)
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRoo
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-verify\references\closing-the-review.md
+<<< 1	# Closing the review
+2	
+3	**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ship
+
+>>> Bash: cd "<run>/repo" && cat >> test/cancel.test.js <<'EOF'
+
+test('cancelar sin motivo no cancela', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+EOF
+node --test 2>&1 | grep -E "^# (tests|pass|fail)|not ok"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo" && cat package.json; node --test test/ 2>&1 | tail -30
+<<< {"type": "module"}
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.4221
+
+✖ failing tests:
+
+test at test\cancel.test.js:21:1
+✖ cancelar sin motivo no cancela (0.803ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sin reserva Norte lun'
+  - 'motivo no válido: cambio de planes, sala ocupada, otro'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:22:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtes
+
+>>> Bash: cd "<run>/repo" && sed -i 's/if (reason !== undefined \&\& !reasons.includes(reason))/if (!reasons.includes(reason))/' src/app.js && grep -n "reasons.includes" src/app.js && node --test test/ 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< 20:  if (!reasons.includes(reason)) return `motivo no válido: ${reasons.join(', ')}`;
+ℹ tests 7
+ℹ pass 6
+ℹ fail 1
+
+>>> Bash: cd "<run>/repo" && node --test test/ 2>&1 | grep -B2 -A12 "failing tests"; cat test/app.test.js
+<<< ℹ duration_ms 102.3738
+
+✖ failing tests:
+
+test at test\cancel.test.js:21:1
+✖ cancelar sin motivo no cancela (1.0922ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte, Sur'
+  - 'Sur'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:23:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en 
+
+>>> Bash: cd "<run>/repo" && python3 - <<'EOF'
+p='test/cancel.test.js'
+s=open(p,encoding='utf-8').read()
+i=s.index("\ntest('cancelar sin motivo no cancela'")
+blk=s[i:]; s=s[:i]
+h="import { run } from '../src/app.js';\n"
+s=s.replace(h,h+blk.rstrip('\n')+"\n",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/ 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+git stash -q -- src/app.js && node --test test/ 2>&1 | grep -E "^ℹ (pass|fail)|✖ cancelar"; git stash pop -q && node --test test/ 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+<<< ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+<stdin>:6: trailing whitespace.
+const [command, ...args] = process.argv.slice(2);
+<stdin>:7: trailing whitespace.
+const rooms = ['Norte', 'Sur'];
+<stdin>:8: trailing whitespace.
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+<stdin>:9: trailing whitespace.
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+<
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff --numstat && git add src/app.js test/cancel.test.js && git commit -q -m "fix(bookings): cancelar sin motivo ya no cancela
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log -1 --format=%h && printf 'Final: fixed Critical cancelar sin --motivo cancelaba — «cancelar sin motivo no cancela» RED→GREEN, suite 7/7\n' >> .temp/sdd/plan/progress.md
+<<<  M src/app.js
+ M test/cancel.test.js
+1	1	src/app.js
+9	4	test/cancel.test.js
+6a8f932
+
+>>> Bash: cd "<run>/repo" && git show --stat --format= HEAD; git show HEAD -- test/cancel.test.js | head -40
+<<<  src/app.js          |  2 +-
+ test/cancel.test.js | 13 +++++++++----
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+commit 6a8f9324f4a79c86891c867f23264662f50ee808
+Author: Fixture <fixture@example.com>
+Date:   Wed Nov 11 21:58:12 2026 +0100
+
+    fix(bookings): cancelar sin motivo ya no cancela
+    
+    Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+diff --git a/test/cancel.test.js b/test/cancel.test.js
+index 570b963..bf7a2b7 100644
+--- a/test/cancel.test.js
++++ b/test/cancel.test.js
+@@ -2,6 +2,11 @@ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+ i
+
+=== RESULTADO (16 turnos, 0.2566249 $)
+El Critical de la re-revisión está arreglado en `6a8f932`. Ese commit no lo ha revisado nadie, y es tu decisión darlo por bueno.
+
+✋ **`sin revisar: 6a8f932` — `cancelar` sin `--motivo` vuelve a pedir el motivo**
+
+- **Causa:** la pasada de fix `897f006` cambió la comprobación a `reason !== undefined && …`, así que un motivo ausente se saltaba la validación. `cancelar Norte lun` cancelaba la reserva con «(undefined)».
+- **Fix:** en `src/app.js:20` la comprobación es ahora `!reasons.includes(reason)`, y un motivo ausente da `motivo no válido: …`.
+- **Test:** `cancelar sin motivo no cancela` está al principio de `test/cancel.test.js`. Comprueba que la respuesta es «motivo no válido» y que `libres 10:00-12:00` sigue dando `Sur`. Va el primero porque el test siguiente cancela Norte lun, y después ya no se vería el fallo.
+- **RED→GREEN:** sin el fix, el nuevo test falla, y también falla «cancelar con un motivo de la lista» porque Norte lun ya estaba cancelada. Con el fix, `node --test test/` da 7/7.
+- **Ledger:** he añadido la línea `Final: fixed …` a `progress.md`.
+
+**Qué queda por tu parte:**
+- **Sin otra re-revisión:** ya hubo una, así que el commit se queda como `sin revisar`. Tiene menos de 20 líneas de código y no es solo documentación, así que no lo cubre la excepción de «revisado en el hilo».
+- **Cambios de fin de línea:** el commit reescribe las últimas líneas de `test/cancel.test.js` (CRLF→LF), de ahí las 5 líneas borradas. No cambia el comportamiento.
+- **Walkthrough y validación:** mientras ese `sin revisar` siga abierto, no pueden decir que la revisión quedó limpia. Dirán «1 sin revisar».
+- **`tasks.md`:** no lo he tocado. Ya registra la `Re-revisión` con su Critical, y la pasada de fix de `6a8f932` no tiene línea propia.
+
+¿Sigo con el cierre (`sdd-archive`) o prefieres revisar `6a8f932` antes?

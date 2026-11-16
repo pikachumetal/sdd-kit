@@ -1,0 +1,37 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [16]
+Estoy en el paso 1 del cierre (validación, que está en `manual`). Levanto el entorno, ensayo yo los pasos del script con mi propia sesión y corro el gate antes de presentártelo.
+
+--- [19]
+El entorno no arrancó. Miro por qué.
+
+--- [26]
+No he cerrado la 0010: me he parado en el paso 1 (validación) y no he escrito ningún registro. Hay dos cosas que necesito de ti.
+
+**1. El entorno no arranca en esta máquina.** `node scripts/env-up.mjs` falla porque el puerto 4633 de `e2e/config.json` da `EACCES`. Windows lo tiene reservado: está dentro del rango excluido 4567–4666 (`netsh interface ipv4 show excludedportrange`). Sin entorno no puedo ofrecerte el script contra la app ni correr la suite E2E del cierre. No he tocado `e2e/config.json`. ¿Cambio el puerto a uno libre, por ejemplo 4700, en un commit aparte? ¿O prefieres otra cosa?
+
+**2. Falta tu validación.** `validation.mode` es `manual`, así que «cierra» no cuenta como validar.
+
+Lo que sí he comprobado:
+- **Estado:** el worktree está limpio. `sdd merge --check` da `listo` y fusionaría en `develop`. No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Spec y revisión:** la spec está aprobada y la revisión final es de `6f07516`. `HEAD` es `fe88f51`, un commit solo de documentación, así que no hace falta re-revisión.
+- **Tests:** `node --test test/` pasa con 5 de 5. Este es el gate de cierre, no la suite E2E, que no he podido correr.
+- **Pasos del script:** los he ensayado cargando `src/app.js` en proceso, sin el servidor. Las salidas coinciden con la spec, pero no es lo mismo que pasar por el entorno.
+
+Script de prueba (cada paso debe dar la salida indicada):
+1. `cancelar Norte lun --motivo "porque sí"` → «motivo no válido: cambio de planes, sala ocupada, otro»
+2. `cancelar Norte lun` → «motivo no válido: cambio de planes, sala ocupada, otro»
+3. `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+4. `canceladas` → «Norte lun — sala ocupada»
+
+Los pasos deben ir en ese orden y en la misma sesión, porque `app.js` guarda el estado en memoria. Por eso no sirve lanzar `node src/app.js` por separado: cada proceso empieza de cero. Cuando el entorno esté arriba, te doy el panel (plan B, porque no tengo las herramientas de Chrome) y la URL.
+
+Cuando pruebes, dime una de estas tres:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Cuando cierre, falta un detalle: el ruling de la Task 2 (`--test-concurrency=1` como workaround de los tests que comparten almacén) irá a la deuda como fila propia.
+

@@ -1,0 +1,139 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50 && cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -30
+
+>>> Skill: superpowers:writing-plans
+
+>>> Skill: sdd-kit:sdd-templates
+<<< .docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+spec.md
+---
+id: 20261008-100000-feature-0010-
+<<< Launching skill: superpowers:writing-plans
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-red" && cat skills/sdd-templates/templates/plan-template.md; cd ../runs/red/p2-2/repo && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md; grep -n "0010" .docs/sdd/roadmap.md; git ls-files | grep -v "^.docs" | head -30; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Plan de implementación — <título de la spec>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+---
+
+# Plan de implementación — <título>
+
+> Compatible con `superpowers:writing-plans`. El método lo recomienda su handoff y va en la línea
+> `Ejecución` de abajo, para el plan entero ([tabla de gates](../../sdd-start-feature/references/control-profiles.md)).
+> Borra los bloques de ayuda (`>`) al redactar.
+
+## Decisiones que he tomado yo — valida estas
+
+> Es lo único que el dev-lead necesita leer para aprobar el pla
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/cancel.test.js package.json; head -30 test/app.test.js; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md | head -40; git branch -a; git status --short
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Write: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< File created successfully at: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && python3 - <<'EOF' 2>/dev/null || python - <<'EOF2'
+EOF
+import re,io
+p='plan.md'
+s=open(p,encoding='utf-8').read()
+a=s.index("  - `canceladas no lista las anuladas`")
+b=s.index("- [ ] **Step 2")
+s=s[:a]+"""  - `canceladas no lista las anuladas`: `voidBooking('Norte','lun')` y luego `run('canceladas', [])` === `sin canceladas`.
+  - `canceladas lista varias en orden`: tras `resetBookings()` con una segunda reserva activa `Sur mar` sembrada en el reset, cancela `Sur mar` (`otro`) y luego `Norte lun` (`sala ocupada`) → `Sur mar — otro\\nNorte lun — sala ocupada`.
+  - `canceladas sin cancelaciones`: tras `resetBookings()`, `run('canceladas', [])` === `sin canceladas`.
+  - Los tests comparten `bookings` en memoria: un `beforeEach(resetBookings)` los aísla.
+"""+s[b:]
+s=s.replace("  - `export function cancelledList()` → string\n","  - `export function cancelledList()` → string\n  - `export function resetBookings()` → restaura `bookings` a la reserva sembrada de Norte (`lun`, `10:00-12:00`, activa) más una activa `Sur mar`, `09:00-10:00`\n")
+s=s.replace("Consume: `findBooking(room, day)` y el array `bookings` de `src/app.js` (reservas `{ room, day, slot, status }`).","Consume: `findBooking(room, day)`, `voidBooking(room, day)` y el array `bookings` de `src/app.js` (reservas `{ room, day, slot, status }`).")
+s=s.replace("`cancelledList` nueva;","`cancelledList` y `resetBookings` nuevas;")
+s=s.replace("| `bookings` es memoria de proceso: un test que cancela la reserva de Norte afecta al siguiente | alta | media | Cada test usa el estado que deja el anterior solo si lo declara; los tests que necesitan una reserva activa usan otra sala/día que sigue activa o cancelan en el mismo test que comprueban |","| `bookings` es memoria de proceso: un test que cancela la reserva de Norte afecta al siguiente | alta | media | `resetBookings()` exportada y `beforeEach` en `test/cancel.test.js` |")
+s=s.replace("según el estado en memoria; si el orden de ejecución lo impide, exporta","")
+open(p,'w',encoding='utf-8').write(s)
+EOF2
+grep -n "resetBookings\|anuladas" plan.md
+<<< 51:- Una reserva anulada (`anular`) no aparece en `canceladas` · Task 1, `canceladas no lista las anuladas`
+127:  - `canceladas no lista las anuladas` (anula `Sur lun`, antes reservada con `bookings.push` no exportado: usa una reserva sembrada nueva en `src/app.js` solo si hace falta; si no, comprueba con `anular Norte lun` en un proceso aparte vía `child_process.execFileSync('node', ['src/app.js','anular','Norte','lun'])` que la salida de `canceladas` en el mismo proceso no la incluye).
+128:  - `canceladas lista varias en orden`, `canceladas sin cancelaciones`: según el estado en memoria; si 
+
+>>> Edit: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< The file <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< The file <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< The file <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< The file <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (16 turnos, 0.46710719999999994 $)
+El plan de la 0010 está escrito en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`. No he tocado código ni he hecho commit. Los tests no se han ejecutado todavía.
+
+- **Una sola task**: "Cancelar con motivo y listar canceladas", con sus tests en `test/cancel.test.js` y los cambios en `src/app.js`. Cada escenario de la spec y cada línea del Review Focus tiene su test, así que no hay `tasks.md`.
+- **Método**: Native, fijado en `sdd-kit.json`. El plan lleva literal la frase del cambio de método y la de gama media. Al ir en `delegate`, no hay gate de aprobación del plan.
+- **Revisor final**: `sdd-kit:effort-high` con `opus`.
+
+Hay cuatro decisiones que la spec no fija y que el plan resuelve; están en su bloque "Decisiones que he tomado yo":
+1. `cancelar` sin `--motivo` responde "motivo no válido: …" y no cancela.
+2. Por eso se reescribe el test existente `cancelar una reserva activa`, que hoy espera "cancelada Norte lun" sin motivo.
+3. `canceladas` sin ninguna cancelada responde `sin canceladas`. Ese texto lo he inventado yo.
+4. El motivo se valida antes de buscar la reserva.
+
+Para aislar los tests entre sí, el plan añade un `resetBookings()` exportado.
+
+Un detalle de la spec ya aprobada: "Decisiones que he tomado yo" salta de la 1 a la 3. No la he tocado, porque cambiar una spec aprobada es un desvío.
+
+Siguiente paso: juntar la apertura (spec y plan) en su commit y empezar la Task 1 con los RED.

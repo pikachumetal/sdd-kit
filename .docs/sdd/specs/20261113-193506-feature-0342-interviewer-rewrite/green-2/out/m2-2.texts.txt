@@ -1,0 +1,68 @@
+--- [3]
+Empiezo por el estado real del roadmap y la configuración del proyecto.
+
+--- [17]
+Ya escribí la propuesta de informes, pero las filas no llegaron a `ROADMAP.md` porque mi comando salió mal. Las añado ahora con un script aparte.
+
+--- [24]
+CRLF: el fichero usa saltos de línea de Windows y mi expresión regular no coincidía. La ajusto.
+
+--- [31]
+Dejé el módulo de informes en el roadmap como tres filas en Next y no he arrancado nada. El commit `5c4cc79` está en `develop` y `sdd roadmap check` pasa. Lo hice con `git commit` directo porque `sdd roadmap publish` rechazó el commit: `develop` es esta misma carpeta de trabajo y tenía mis cambios sin commitear.
+
+Como dijiste «decide tú», las decisiones de abajo son mías. Están escritas en `.docs/sdd/changes/20261114-100000-proposal-0013-informes/proposal.md`, cada regla con un ejemplo con datos. Si el cliente discrepa, se corrige con una enmienda.
+
+| Orden | Id | Feature | Tamaño | Tras |
+| --- | --- | --- | --- | --- |
+| 1 | 0010 | Informe de ocupación por sala | M | — |
+| 2 | 0011 | Exportar el informe a Excel | S | 0010 |
+| 3 | 0012 | Aviso semanal a los responsables | M | 0008, 0010, 0011 |
+
+- **Ocupación:** son las horas reservadas entre las horas disponibles de la semana natural. Cada sala tiene 60 h disponibles, de lunes a viernes de 08:00 a 20:00. Por ejemplo, Norte con una sola reserva de 2 h da un 3,3 %.
+- **Excel:** el informe se exporta a un `.xlsx` real y no a un CSV, con una fila por sala. La librería que lo escribe se elige en la spec de la 0011.
+- **Aviso:** es un comando `avisar-semanal` que lanzaría el cron del servidor los lunes a las 08:00, sin proceso residente. Cada responsable recibe solo los datos de su sala, y una sala sin responsable se omite avisándolo.
+- **Responsables:** se configuran por sala en un fichero del proyecto.
+
+La 0012 va después de la 0008 (avisos por correo antes de la reserva) porque reutiliza su envío en `src/correo.js`. Va también después de la 0011 porque ambas tocan `src/informe.js`. No toqué la 0008.
+
+**Datos de reservas:** hoy las reservas solo guardan día de la semana y franja, sin fecha. La 0010 tendrá que decidir cómo se entiende «una semana concreta» sobre ese modelo.
+
+**Prompt de arranque de la 0010**
+
+### *✨ 0010 — Informe de ocupación por sala*
+***Nombre:*** `feature/0010-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0010 con sdd-propose, carril feature: un comando `informe` que muestra, por sala y semana, la ocupación (horas reservadas / horas disponibles).
+
+Alcance:
+- Comando `informe [--semana AAAA-Www]` en src/app.js, con el cálculo en src/informe.js
+- Salida por consola, una línea por sala
+
+Fuera de alcance:
+- Exportar a Excel: 0011
+- Aviso semanal a los responsables: 0012
+
+Decisiones ya tomadas:
+- Horas disponibles: lun-vie de 08:00 a 20:00 (60 h por sala y semana), porque el cliente no fijó horario y es una ventana de oficina razonable
+- Semana natural lun-dom; sin --semana, la última semana completa
+- Una reserva fuera de la ventana cuenta solo la parte de dentro: Sur lun 19:00-21:00 = 1 h
+- Ejemplo: Norte con lun 10:00-12:00 → 2 h / 60 h = 3,3 %; Sur sin reservas → 0,0 %
+- Las reservas hoy no tienen fecha, solo día de la semana y franja: decide en la spec cómo se entiende «semana concreta» sobre ese modelo
+
+Antes de diseñar, lee:
+- .docs/sdd/changes/20261114-100000-proposal-0013-informes/proposal.md, §Reglas de negocio y §Reparto
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y `informe` imprime `Norte: 2 h de 60 h (3,3 %)` con la reserva de ejemplo.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+*si prefieres hacerlo en esta sesión, di "arráncalo"*
+

@@ -1,0 +1,74 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+Estoy ensayando el guion de validación; el gate pasa. Falta sacar el recuento de tests para el mensaje.
+
+--- [22]
+Todavía no puedo cerrar la 0010: falta tu validación. El proyecto tiene `validation.mode: manual`, y «ciérrala» es la orden de cerrar, no una prueba. No he escrito ningún registro ni he hecho merge.
+
+Los pre-checks están bien:
+- El worktree está limpio.
+- `merge --check` da «destino: listo» (`develop`).
+- No hay otras ramas abiertas.
+- La spec está aprobada por Laura.
+- La revisión final sigue vigente: revisó `29aae4d` y `537ed03` solo toca `tasks.md`, así que no hay re-revisión.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista cerrada (cambio de planes, sala ocupada, otro). Si falta o no es de la lista, avisa. El comando `canceladas` lista cada cancelada con su motivo. Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1` para esquivar la carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test. Si me equivoco, la suite tarda el doble. Al cerrar abriré su fila en `debt.md`.
+
+**Smoke que he corrido**
+
+Con mi sesión `agente` y una segunda sesión limpia (`agente2`), contra el servidor:
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+
+**Suites**
+
+- `node --test --test-concurrency=1 test/`: 5/5 sobre `537ed03`, 0,2 s.
+- `e2e` no corre en el gate de cierre; no lo he ejecutado.
+
+**Sin probar**
+
+- Nada, salvo el e2e.
+
+Panel: plan B en http://127.0.0.1:13123/ (no ve tu app: no hay consola ni red. Si algo falla, cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en `http://localhost:13232`. Con `validation.startEnvironment: true` no hace falta arrancarlo. La app guarda las reservas en memoria dentro del servidor, así que hay que probar contra el servidor y no con `node src/app.js` suelto: cada proceso empezaría de cero.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. `curl -s -G -H "x-session: laura" http://localhost:13232/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"` → no sale ninguna línea
+2. `curl -s -G -H "x-session: laura" http://localhost:13232/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"` → `cancelada Norte lun (sala ocupada)`
+3. `curl -s -G -H "x-session: laura" http://localhost:13232/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"` → `Norte lun — sala ocupada`
+4. Con otra sesión, que parte de cero: `curl -s -G -H "x-session: laura2" http://localhost:13232/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"porque sí\"]"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+5. `curl -s -G -H "x-session: laura2" http://localhost:13232/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+Aparte: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Puedes actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+

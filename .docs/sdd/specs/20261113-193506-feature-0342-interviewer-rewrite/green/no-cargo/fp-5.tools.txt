@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; ls node_modules 2>&1 | head -3
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md 2>&1 | head -80
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json; ls -R src test .docs/sdd/specs; cat src/*.js | head -150
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat test/app.test.js; git log --oneline
+<<< # Spec — free
+
+status: done
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+8d63452 feat: base del molde
+
+=== RESULTADO (7 turnos, 0.1320221 $)
+No he abierto la feature, porque `libres` ya existe y hace lo que pides.
+
+- **Código:** `src/app.js` tiene `freeRooms(slot)` y el comando `libres <franja>`, que devuelve las salas sin reserva en esa franja.
+- **Test:** `test/app.test.js` cubre `libres` con `10:00-12:00`, que devuelve `Sur`.
+- **Spec:** `.docs/sdd/specs/20260917-090000-task-0006-free/` está con `status: done` y tiene su walkthrough.
+
+Si has probado el comando y no te sirve, lo más probable es que le falte algo, no que no exista. Lo que veo en el código:
+
+1. **Día:** `libres` solo mira la franja y no el día. Las reservas llevan `day`, pero `freeRooms` lo ignora. `libres 10:00-12:00` da `Sur` aunque Norte esté reservada solo los lunes.
+2. **Solapamientos:** compara la franja como texto exacto. Una consulta `11:00-13:00` no detecta la reserva `10:00-12:00`.
+3. **Formato:** no valida la franja. Es la deuda «Sin validación del formato de franja horaria», que está en «Por triar».
+
+¿Cuál de estas cosas querías?
+
+1. **Ampliar `libres`** con día y solapamiento de franjas (recomendada). Sería una feature en modo full, como pediste, con su spec sobre el comportamiento de 0006.
+2. **Solo el día**, sin solapamientos. Es más pequeño, pero sigue siendo feature porque cambia lo que ve el usuario.
+3. **Un comando distinto**, con otro nombre o con otra salida. Dime cómo debería comportarse.
+4. **Era un error mío**, o querías otra cosa. Cuéntamelo y reclasifico.
+
+Cuando elijas, anuncio la feature y empiezo la entrevista de diseño.
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 14:00-15:00; git branch -a
+<<< Sur
+Norte, Sur
+* develop
+  main
+
+=== RESULTADO (2 turnos, 0.1543989 $)
+Acabo de ejecutarlo en tu `develop` actual y el comando existe:
+
+```text
+$ node src/app.js libres 10:00-12:00
+Sur
+$ node src/app.js libres 14:00-15:00
+Norte, Sur
+```
+
+Ahí está el comando que pides: dada una franja, lista las salas libres. No hay otra rama con una versión distinta, solo `develop` y `main`. No puedo escribir una spec como si el comando no existiera, porque saldría un duplicado de `libres` o una spec que contradice el código.
+
+Para seguir como feature en modo full necesito que me digas qué comportamiento nuevo quieres. Con una frase me basta, por ejemplo:
+
+- «`libres` debe tener en cuenta el día: `libres lun 10:00-12:00`».
+- «`libres` debe detectar solapamientos: `11:00-13:00` choca con `10:00-12:00`».
+- «Quiero un comando aparte, `disponibles`, que muestre X».
+
+Si prefieres que lo decida yo, abro la feature con día y solapamiento sobre `libres`, que es el hueco real que veo, y te lo planteo en la entrevista de diseño. Dime «adelante con eso» y arranco.

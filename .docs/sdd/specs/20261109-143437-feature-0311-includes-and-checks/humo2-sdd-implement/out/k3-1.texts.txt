@@ -1,0 +1,56 @@
+--- [3]
+Empiezo por el estado de la feature: la carpeta de la spec, el humo que falló y el diff pendiente.
+
+--- [7]
+El humo falla porque el aviso va después de escribir. Antes de tocar nada leo la constitución y la skill del método Native, para seguir su ronda de REFACTOR y su cierre.
+
+--- [11]
+El método Native pide ledger y workspace. Compruebo si ya hay un ledger de este plan antes de hacer la ronda.
+
+--- [14]
+Hay workspace pero no ledger. Lo creo y anoto el fallo de h1 y el diagnóstico, y después hago la ronda.
+
+--- [18]
+El diff muestra todo el fichero reescrito: el original debía de ser CRLF y yo he escrito LF. Lo igualo.
+
+--- [21]
+El diff vuelve a ser mínimo. Relanzo el humo `h1` con un sujeto headless en una copia aparte, con el acta original, para no tocar la nota real.
+
+--- [24]
+`claude` resuelve a un stub (`tests/headless/no-claude/claude`), no a un CLI real. El acta sigue intacta solo porque el sujeto no llegó a correr, así que eso no prueba nada. Miro qué dijo el stub.
+
+--- [30]
+Falta una línea en blanco antes de `## Aprobaciones`. Lo arreglo en un commit aparte.
+
+--- [33]
+Ese commit reescribió todo el fichero (60 líneas añadidas y 59 quitadas). Algo ha cambiado los finales de línea. Lo investigo antes de seguir.
+
+--- [36]
+Mi `sed` dejó el fichero con finales mixtos y el commit lo normalizó a LF entero. Es un commit mío sin publicar. Lo revierto y repito el cambio respetando CRLF.
+
+--- [42]
+Hice la ronda de REFACTOR, pero **no puedo cerrar la Task 1**. No he podido relanzar el humo `h1`, y sin un `h1` en verde no hay `sdd task done`.
+
+**Causa del fallo.** El aviso iba en el paso 3, después de escribir en el paso 2, así que la nota ya estaba pisada cuando se avisaba. Mi intento anterior, que solo añadía el aviso, no cambiaba el orden.
+
+**La ronda** (`skills/guardar-nota/SKILL.md`, commit `1aa6034`):
+1. Calcula `notas/<slug>.md` y comprueba si existe, antes de escribir.
+2. Si existe, no escribe: avisa «ya existe una nota "<title>"», pregunta si sobrescribir y se detiene. Solo escribe si el usuario confirma.
+3. Escribe el fichero y dice la ruta.
+
+**No pude relanzar el humo.**
+- El `claude` que ve primero el sujeto es el stub `tests/headless/no-claude/claude`. Bloquea a propósito los `claude` anidados porque `run.mjs` quiere ver su coste.
+- Existe un `claude` real en `~/.local/bin`, pero llamarlo directo se saltaría ese control, así que no lo hice.
+- El acta de mi copia de prueba sigue intacta solo porque el sujeto nunca corrió, y eso no vale como prueba.
+
+✋ **Para ti:**
+- **Lanza `h1` por `run.mjs`.** Si pasa, cierro con `sdd task done` y sigo con la revisión final. Si falla, hago otra ronda.
+- **Enmienda sin aprobar en la spec.** El THEN solo dice «avisa». La confirmación antes de sobrescribir sale literalmente de la decisión de Laura: «lo que ya está escrito no se pisa sin preguntar». La puse en «Enmiendas» marcada `sin aprobar`, como pide el kit para este caso. Si Laura no la quiere, se quita la confirmación y queda solo el aviso. Ese comportamiento volvería a fallar `h1`, porque el aviso llegaría después de pisar la nota.
+
+**Un desliz mío en el historial.** Un `sed` dejó la spec con finales de línea mezclados y el commit `0f917f3` la normalizó entera a LF. `50b11ac` restaura los CRLF y deja la línea en blanco antes de «Aprobaciones». El diff neto contra `35f3a78` es limpio: 2 líneas en la spec y 4 añadidas y 2 quitadas en la skill. Los dos commits sobran en el historial, pero no los reescribí.
+
+Dejé tres cosas más:
+- El ledger está en `.temp/sdd/plan/progress.md`, con el fallo, la ronda y el humo pendiente como `Ruling`.
+- `green/h1.txt` sigue sin commitear.
+- No empecé la revisión final ni `sdd-archive`.
+

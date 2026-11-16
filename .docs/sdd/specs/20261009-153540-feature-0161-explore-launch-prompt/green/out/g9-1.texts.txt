@@ -1,0 +1,45 @@
+--- [2]
+Es una pregunta de enfoque, sin empezar trabajo, así que entra por `sdd-explore`.
+
+--- [5]
+Leo primero el contexto del proyecto (stack, constitución, package.json) antes de opinar.
+
+--- [9]
+Pruebo rápido lo que trae Node (sin escribir nada).
+
+--- [11]
+**Recomendación: te vale lo que trae Node. No metas c8.**
+
+**Lo que dice el proyecto**
+- `tech-stack.md`: "Node 22, sin dependencias externas" y tests con `node --test`. Es una decisión documentada.
+- `mission.md`: lo usas, desarrollas y despliegas tú solo. No hay CI de equipo ni informes que compartir.
+- `package.json` es solo `{"type": "module"}`. c8 sería la primera dependencia, y habría que crear un `devDependencies`.
+
+**Lo que he probado (descartable, no he tocado nada)**
+
+```
+node --test --experimental-test-coverage --test-coverage-include="src/**" --test-coverage-lines=80
+```
+
+Funciona y da líneas, ramas y funciones, con las líneas sin cubrir:
+
+| Fichero | Líneas | Ramas | Funciones | Sin cubrir |
+| --- | --- | --- | --- | --- |
+| `src/app.js` | 93,75 % | 83,33 % | 100 % | línea 13 |
+
+Con `--test-coverage-lines=80` (y sus equivalentes para ramas y funciones) el comando falla por debajo del umbral, así que ya tienes una puerta sin dependencias.
+
+**Dónde c8 sí aportaría** (nada de esto aplica hoy)
+- Informes lcov o HTML, para subirlos a Codecov o similar.
+- Cobertura sobre procesos hijo o scripts fuera de `node --test`.
+- Fusionar varias ejecuciones.
+- Un formato estable. En Node, `--experimental-test-coverage` lleva el prefijo `experimental`, aunque el motor es el mismo V8 que usa c8.
+
+**Dos cosas a tener en cuenta**
+1. **Versión.** Esta máquina tiene Node 26 y el stack dice 22. Los flags `--test-coverage-include` y `--test-coverage-lines` existen desde Node 22.8 aproximadamente, pero conviene confirmarlo en el servidor de despliegue si vas a depender de ellos.
+2. **Cobertura no es calidad.** Con 3 tests, el 93 % solo dice que se ejecutan casi todas las líneas, no que haya aserciones útiles. La rama sin cubrir (línea 13) es lo interesante. Encaja con la deuda técnica anotada, "sin validación de la franja horaria".
+
+**Si quieres dejarlo fijado**, hay dos posibles salidas duraderas. Dime si quieres alguna y paso al carril que toca:
+- Añadir a `tech-stack.md` una línea con el criterio ("cobertura: `node --test --experimental-test-coverage`, sin c8").
+- Añadir un script `"test:cov"` en `package.json` y, si quieres, un umbral. Es un cambio de configuración, así que entra por `sdd-propose`.
+

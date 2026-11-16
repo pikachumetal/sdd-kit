@@ -1,0 +1,69 @@
+--- [24]
+Sigo con la spec: el heredoc falló por comillas, así que la escribo con la herramienta Write.
+
+--- [27]
+Ahora el repaso de coherencia: fusión del delta sobre una copia fuera del repo.
+
+--- [38]
+Ahora: revisión de la spec en curso (un revisor, sonnet). Queda: plegar hallazgos, aprobar por delegación, escribir el plan e implementar la Task 1 hasta su commit, ~10 min.
+
+--- [39]
+1. Crítico · Delta / Intent / PRODUCT.md (términos) · "Cancelación" en PRODUCT.md es la reserva que anula el propio cliente antes de 24 h, y "Anulación" la anula el responsable por cualquier motivo. La spec convierte `cancelar` en una orden con motivo obligatorio y deja `anular` sin motivo, pero no resuelve cómo encaja el término. Además, "Términos resueltos: ninguno" y no hay ADR. · Declarar en Términos si "cancelar" mantiene el significado de PRODUCT.md (y la regla de 24 h queda fuera de forma explícita) o si hay que actualizar la definición. Registrar la decisión en «✋ Decisiones».
+
+2. Importante · Delta, «Un motivo ausente o fuera de la lista no cancela» · Un solo escenario cubre dos entradas (`cancelar Norte lun` y `cancelar Norte lun aburrimiento`), y el THEN dice "sigue activa" sin dejar una forma observable de comprobarlo. · Separar en dos escenarios, o añadir un AND observable como `canceladas` responde `sin canceladas`. Añadir también el caso de motivo en mayúsculas o con espacios (`sala ocupada`).
+
+3. Importante · Delta, «Cancelar exige un motivo» · El THEN "la reserva queda cancelada con ese motivo" no es verificable por sí solo: se comprueba mirando `reason` interno, o bien solo si pasa por `canceladas`. · Cambiar el AND a una observación por la interfaz: `canceladas` responde `Norte lun 10:00-12:00 · sala ocupada`.
+
+4. Importante · Delta, «Listar las canceladas» · El orden "en el orden en que se cancelaron" se promete, pero ningún escenario lo prueba, porque solo hay una cancelada en el GIVEN. Tampoco hay escenario con una activa y una cancelada que pruebe el filtro. · Añadir un escenario con dos canceladas en orden distinto al de creación y una reserva activa que no aparezca.
+
+5. Importante · Delta / Dónde se prueba · Falta el escenario de cancelar una reserva ya cancelada o anulada. El comportamiento de `cancelar` sobre una reserva en estado distinto de activa (si responde `sin reserva`, si sobrescribe `reason`) queda indefinido. Es un cambio de comportamiento encubierto si hoy ya existe. · Declarar el comportamiento en un escenario y en «Decisiones».
+
+6. Importante · Decisiones / Approach · La decisión 3 (motivo como tercer argumento posicional) y la 4 (orden de validación) rompen el contrato de la orden de hoy. Es un cambio incompatible: la tabla de retiros lo lista, pero el Delta lo marca todo como ADDED y no hay requisito MODIFIED para `cancelar` sin motivo. Capabilities/ no existe, así que se deja pasar, pero la orden `cancelar` ya existía como comportamiento. · Si `capabilities/` sigue vacío, decirlo expresamente en Capacidades ("el comportamiento previo de `cancelar` no está especificado, por eso todo es ADDED"), o modelar la baja de `cancelar <sala> <día>` como REMOVED.
+
+7. Importante · Scope vs Intent · El Intent dice "no se pueda cancelar sin elegirlo", pero la mayúscula, los espacios y el motivo `otro` sin texto no se tratan. El Scope excluye `anular` con motivo, pero no define qué pasa si `cancelar` recibe más de tres argumentos. · Fijar el comportamiento ante argumentos de sobra (`cancelar Norte lun otro extra`) o declararlo fuera de alcance.
+
+8. Menor · Decisiones, punto 9 · La decisión de colocar la carpeta en `changes/` frente a `specs/` es una regla del kit, no una decisión de producto. Ocupa espacio en la lista que el dev-lead debe validar. · Pasarla a una nota fuera de la lista de decisiones.
+
+9. Menor · Decisiones, punto 12 · La decisión afirma que el delta se probó en una copia con `sdd capability merge` y salió con 0, pero no queda evidencia en la spec. · Citar el comando exacto y su salida, o quitar la afirmación.
+
+10. Menor · Delta, «Las anuladas no se listan» · El GIVEN usa `anular Norte lun`, pero la spec dice que `anular` no lleva motivo, sin escenario ni comportamiento propio de `anular`. Si `anular` hoy cambia el estado a otro valor distinto de `cancelled`, el escenario pasa sin que `canceladas` filtre nada. · Fijar en el GIVEN el estado resultante de `anular`, y añadir un caso con una cancelada y una anulada a la vez, para que el filtro quede probado.
+
+--- [43]
+Plego los hallazgos en la spec.
+
+--- [55]
+Spec aprobada por delegación y plan escrito. Ahora: `tasks.md`, commit de apertura y entrada a `sdd-implement` (Native). Queda: Task 1 hasta su commit, donde paro, ~10 min.
+
+--- [68]
+Task 1: tests RED escritos; ahora los copio fuera del repo, veo cómo fallan y implemento.
+
+--- [78]
+Commit hecho. Ahora `sdd task done` en su propia llamada, para registrar la Task 1 en el ledger.
+
+--- [80]
+Paro aquí, como pediste: la Task 1 está hecha y commiteada (`5f93dd8`). La Task 2 (el comando `canceladas`) no está empezada.
+
+Lo que hice:
+- **Spec** de la feature 0010 en `.docs/sdd/changes/20261112-161102-feature-0010-motivo-cancelar/`, aprobada por delegación con tu frase, con un revisor en sonnet. Aceptó 7 de sus 10 hallazgos y rechazó 2 con motivo escrito; los otros 2 se aceptaron en parte. Se rechazó el hallazgo Crítico sobre los términos de `PRODUCT.md`, así que no hubo segunda ronda de revisión.
+- **Plan** en Native, con dos tasks, y registro de tasks.
+- **Commit de apertura** `8bdb688` y **commit de la Task 1** `5f93dd8`.
+- **Task 1:** `cancelar <sala> <día> <motivo>`, con `cambio-de-planes`, `sala-ocupada` y `otro`. Responde `cancelada Norte lun (sala ocupada)`. Sin motivo, o con uno que no está en la lista, responde `motivo no válido: elige cambio-de-planes, sala-ocupada u otro` y no cancela.
+- **Pruebas:** `node --test test/cancel.test.js` da `fail 0`. Tras el commit solo ejecuté ese fichero, no la suite completa ni el lint de la Task 1; la suite entera la corre el gate de cierre.
+- **Test que ya pasaba:** «ignora argumentos de más» pasaba antes de implementar. Lo dejé porque fija un caso del Review Focus.
+- **Ledger:** `sdd task done` escribió su línea (`8bdb688..5f93dd8`), pero la línea de pruebas dice `→ ℹ duration_ms 79.847` en vez de un resultado. Eso no significa que fallara: `fail 0` salió en la misma ejecución.
+- **Commit en `tasks.md`:** el commit de la Task 1 aún figura como `—` en `tasks.md`. Su hash entra en el commit de la Task 2.
+
+Decisiones mías que debes validar (están en la sección ✋ de la spec):
+- Los identificadores de motivo son sin espacios; en las respuestas salen con espacios.
+- El motivo es obligatorio y se valida antes de buscar la reserva.
+- La comparación es exacta: `Otro` con mayúscula no vale.
+- Los argumentos de más se ignoran.
+- `canceladas` no lista las anuladas.
+- La carpeta va en `changes/`, no en `specs/` como las anteriores.
+
+Una cosa no cubierta: el escenario «una línea por cancelada, en orden» no se puede observar, porque solo existe una reserva en memoria. Lo dejé avisado en la spec y en el plan.
+
+El workspace `.temp/sdd/plan` no está en `.gitignore` en este repo; no lo he commiteado, pero conviene ignorarlo.
+
+Para seguir con la Task 2 y el resto, dime «sigue».
+

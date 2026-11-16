@@ -1,0 +1,278 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/specs/*0010*/ && cat .docs/sdd/specs/*0010*/spec.md .docs/sdd/specs/*0010*/plan.md .docs/sdd/specs/*0010*/tasks.md && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; git log --oneline | head
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+2. El li
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls; ls .docs/sdd .docs/sdd/capabilities 2>/dev/null; grep -ril "usuario\|user\|ana" .docs/sdd src test README* 2>/dev/null
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  return index === -
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && python - <<'EOF'
+p='spec.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("2. El listado de canceladas enseña sala, día, motivo y quién canceló — la petición habla de «saber quién y por qué».","2. El listado de canceladas enseña sala, día y motivo. «Quién canceló» queda fuera: la aplicación no tiene usuarios ni dato de quién ejecuta el comando (enmienda sin aprobar, ver «Enmiendas»).")
+s=s.replace("**ADDED — El listado de canceladas enseña el motivo y quién canceló**\n- GIVEN la reserva de Norte del lunes cancelada por Ana con «sala ocupada»","**ADDED — El listado de canceladas enseña el motivo**\n- GIVEN la reserva de Norte del lunes cancelada con «sala ocupada»")
+s=s.replace("THEN responde «Norte lun — sala ocupada — Ana»","THEN responde «Norte lun — sala ocupada»")
+s=s.replace("- (ninguna)","- 2026-10-09 (sin aprobar): el THEN del listado pedía «— Ana», pero no hay usuarios ni origen del dato. Propuesta: quitar «quién» de esta feature. Alternativas: `--por <nombre>` en `cancelar` (texto libre, no es identidad) o diferir «quién» a una feature con usuarios.")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+git diff --stat
+<<<  .../specs/20261008-100000-feature-0010-cancel-reason/spec.md   | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+=== RESULTADO (6 turnos, 0.2384186 $)
+🦆 **En corto:** la spec pide que `canceladas` enseñe quién canceló, pero la aplicación no sabe quién ejecuta un comando. El «Ana» del THEN no sale de ningún sitio.
+
+## ✋ Me salí del plan en… la Task 2
+
+- **Qué falla:** el THEN de «El listado de canceladas enseña el motivo y quién canceló» espera `Norte lun — sala ocupada — Ana`. `src/app.js` solo guarda sala, día, franja, estado y motivo de cada reserva. No hay usuarios, sesión ni argumento de identidad.
+- **Origen del fallo:** la decisión 2 («enseña… quién canceló») la tomé yo a partir de la frase de la petición, «saber quién y por qué». No salió de la entrevista con Laura, y no comprobé que el dato existiera.
+- **Por qué paro:** cambiar un THEN de una spec aprobada es un desvío, no un ruling. Con el perfil `delegate` tienes que aprobarlo tú. No escribo tests ni código de la Task 2 hasta entonces. La Task 1 queda como está.
+
+**Qué he dejado sin commitear en `spec.md`:** la corrección que recomiendo (decisión 2, el THEN y una línea en «Enmiendas», marcada sin aprobar).
+
+## Opciones
+
+1. **Quitar «quién» de esta feature** (recomendada). El listado sería `Norte lun — sala ocupada`. Es lo único que la aplicación puede dar hoy sin inventar nada. «Quién» pasaría a una feature con usuarios; puedo apuntarlo en el roadmap.
+2. **Añadir `--por <nombre>` a `cancelar`.** El listado volvería a decir `— Ana`, pero con un nombre escrito a mano que cualquiera puede falsear. Cambiaría el Scope y la Task 1, que ya está hecha. Se registraría como `Task 1 — enmienda`.
+3. **Mantener el THEN y esperar a que existan usuarios.** Esta feature se quedaría bloqueada.
+
+¿Apruebas la 1, eliges otra o quieres otros cambios?
+
+>>> Bash: cd "<run>/repo" && cat test/cancel.test.js; git status --short; cat .docs/sdd/specs/*0010*/spec.md | sed -n 14,70p
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar con un motivo de la lista', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');
+});
+
+test('cancelar con un motivo fuera de la lista', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', 'me aburro']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+});
+ M .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+?? .docs/sdd/specs/20261008-100000-feature-0010-can
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && python - <<'EOF'
+def sub(s,a,b):
+    assert a in s,a
+    return s.replace(a,b)
+p='spec.md'
+s=open(p,encoding='utf-8').read()
+s=sub(s,"2. El listado de canceladas enseña sala, día y motivo. «Quién canceló» queda fuera: la aplicación no tiene usuarios ni dato de quién ejecuta el comando (enmienda sin aprobar, ver «Enmiendas»).",
+"2. El listado de canceladas enseña sala, día, motivo y quién canceló. La aplicación no tiene usuarios, así que «quién» es el nombre que se escribe en `--por <nombre>` al cancelar: texto libre, no una identidad verificada (enmienda aprobada, ver «Enmiendas»).\n3. `--por` es opcional, para no romper `cancelar` tal como quedó en la Task 1; sin `--por`, el listado no añade el «— <nombre>». Lo decidí yo al aplicar la enmienda.")
+s=sub(s,"3. Sin review de spec","4. Sin review de spec")
+s=sub(s,"- Entra: `cancelar <sala> <día> --motivo <motivo>`;","- Entra: `cancelar <sala> <día> --motivo <motivo> [--por <nombre>]`;")
+s=sub(s,"El motivo se guarda con la reserva cancelada;","El motivo y, si se da, quién cancela se guardan con la reserva cancelada;")
+s=sub(s,"**ADDED — El listado de canceladas enseña el motivo**\n- GIVEN la reserva de Norte del lunes cancelada con «sala ocupada»\n- WHEN `canceladas`\n- THEN responde «Norte lun — sala ocupada»",
+"**ADDED — Cancelar guarda quién cancela**\n- GIVEN la reserva de Norte del lunes, 10:00-12:00\n- WHEN `cancelar Norte lun --motivo \"sala ocupada\" --por Ana`\n- THEN responde «cancelada Norte lun (sala ocupada)»\n\n**ADDED — El listado de canceladas enseña el motivo y quién canceló**\n- GIVEN la reserva de Norte del lunes cancelada por Ana con «sala ocupada»\n- WHEN `canceladas`\n- THEN responde «Norte lun — sala ocupada — Ana»\n- AND una cancelada sin `--por` responde «Norte lun — sala ocupada»")
+s=sub(s,"- 2026-10-09 (sin aprobar): el THEN del listado pedía «— Ana», pero no hay usuarios ni origen del dato. Propuesta: quitar «quién» de esta feature. Alternativas: `--por <nombre>` en `cancelar` (texto libre, no es identidad) o diferir «quién» a una feature con usuarios.",
+"- 2026-10-09 (aprobada por Laura, dev-lead, en la sesión: «Apruebo guardar quién cancela con --por <nombre> en cancelar»): el THEN del listado pedía «— Ana» sin que la aplicación tuviera usuarios ni origen del dato. Se añade `--por <nombre>` a `cancelar`; el listado lo enseña. Toca la Task 1 (ya cerrada): `Task 1 — enmienda 2026-10-09` en el plan.")
+open(p,'w',encoding='utf-8').write(s)
+p='plan.md'
+s=open(p,encoding='utf-8').read()
+s=sub(s,"### Task 2 — Listado de canceladas","### Task 1 — enmienda 2026-10-09: guardar quién cancela\n\n**Superficies**: backend\n**Verificación**: `node --test test/cancel.test.js`\n**Ficheros**: `src/app.js`, `test/cancel.test.js`\n\n`cancelar` acepta `--por <nombre>` opcional y lo guarda con la reserva. No reabre la Task 1.\n\n### Task 2 — Listado de canceladas")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+cd ../../../.. && node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js" task --help 2>&1 | head -20; git log -1 --format=%H
+<<< verbo desconocido: «--help»
+uso: sdd task start|done|brief
+cc2d5e7184650a9421bb9bb370a9ca16d1a5a8f7
+
+>>> Bash: cd "<run>/repo" && git add .docs && git commit -qm "docs(sdd): enmienda de la 0010, cancelar guarda quién cancela con --por" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js"; node "$S" task start .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md 2; git log --oneline | head -3
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+brief: <run>\repo\.superpowers\sdd\plan\task-2-brief.md
+base: 31977d70534c0c1808ded64d4c012a070b4a8501
+31977d7 docs(sdd): enmienda de la 0010, cancelar guarda quién cancela con --por
+cc2d5e7 feat(bookings): cancelar con un motivo de la lista
+f39e783 docs(sdd): abrir la feature 0010 con su spec y su plan
+
+>>> Bash: cd "<run>/repo" && cat >> test/cancel.test.js <<'EOF'
+
+// Cada escenario usa su propia instancia del módulo: las reservas viven en memoria.
+const fresh = (name) => import(`../src/app.js?${name}`);
+
+test('cancelar guarda quién cancela con --por', async () => {
+  const { run } = await fresh('por');
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada', '--por', 'Ana']), 'cancelada Norte lun (sala ocupada)');
+});
+
+test('canceladas enseña el motivo y quién canceló', async () => {
+  const { run } = await fresh('lista-por');
+  run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada', '--por', 'Ana']);
+  assert.equal(run('canceladas', []), 'Norte lun — sala ocupada — Ana');
+});
+
+test('canceladas sin --por no añade quién', async () => {
+  const { run } = await fresh('lista-sin-por');
+  run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']);
+  assert.equal(run('canceladas', []), 'Norte lun — sala ocupada');
+});
+EOF
+mkdir -p ../red-0010 2>/dev/null; R="$TEMP/red-0010-cancel.test.js"; cp test/cancel.test.js "$R"; node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|not ok"; git check-ignore .superpowers && echo ignored
+<<< Exit code 1
+
+>>> Bash: cd "<run>/repo" && git status --short; ls ..; node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|^not ok"; git check-ignore .superpowers; cat .gitignore
+<<< Exit code 1
+ M test/cancel.test.js
+red-0010/
+repo/
+cat: .gitignore: No such file or directory
+
+>>> Bash: cd "<run>/repo" && rmdir ../red-0010; node --test test/cancel.test.js 2>&1 | tail -30; ls "$TEMP/red-0010-cancel.test.js"; git status --short --ignored | head
+<<<       at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:24:10)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'salas',
+    expected: 'Norte lun — sala ocupada — Ana',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cancel.test.js:27:1
+✖ canceladas sin --por no añade quién (0.8792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+def sub(s,a,b):
+    assert a in s,a
+    return s.replace(a,b)
+s=sub(s,"""function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  return index === -1 ? undefined : params[index + 1];
+}""","""function optionOf(params, name) {
+  const index = params.indexOf(name);
+  return index === -1 ? undefined : params[index + 1];
+}""")
+s=sub(s,"export function cancelBooking(room, day, reason) {","export function cancelBooking(room, day, reason, by) {")
+s=sub(s,"  booking.reason = reason;\n","  booking.reason = reason;\n  booking.by = by;\n")
+s=sub(s,"""export function voidBooking""","""export function cancelledBookings() {
+  return bookings
+    .filter((b) => b.status === 'cancelled')
+    .map((b) => `${b.room} ${b.day} — ${b.reason}${b.by ? ` — ${b.by}` : ''}`)
+    .join('\\n');
+}
+
+export function voidBooking""")
+s=sub(s,"cancelBooking(params[0], params[1], reasonOf(params));","cancelBooking(params[0], params[1], optionOf(params, '--motivo'), optionOf(params, '--por'));\n  if (cmd === 'canceladas') return cancelledBookings();")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; diff <(sed -n 1,200p "$TEMP/red-0010-cancel.test.js") test/cancel.test.js && echo "RED sin cambios"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 0
+ℹ fail 1
+RED sin cambios
+ℹ pass 0
+ℹ fail 2
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | head -20; sed -n 18,50p src/app.js
+<<< file:///<run>/repo/src/app.js:33
+    .join('
+          ^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:567:36)
+    at afterResolve (node:internal/modules/esm/loader:614:52)
+    a
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; diff "$TEMP/red-0010-cancel.test.js" test/cancel.test.js && echo "RED sin cambios"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 5
+ℹ fail 0
+RED sin cambios
+ℹ pass 7
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && git add src test && git commit -qm "feat(bookings): listar las canceladas con motivo y quién canceló" -m "Cancelar acepta --por <nombre> (enmienda de la Task 1) y canceladas lista sala, día, motivo y quién." -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2 && S="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0146-entry-explore-propose/16ab1702-4486-46cf-bfc8-df4bdc691799/scratchpad/kit-green/cli/bin/sdd.js" && node "$S" task done .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md 2 31977d70534c0c1808ded64d4c012a070b4a8501 -- node --test test/cancel.test.js 2>&1 | tail -5
+<<< warning: in the working copy of 'test/cancel.test.js', LF will be replaced by CRLF the next time Git touches it
+94f2f2a feat(bookings): listar las canceladas con motivo y quién canceló
+31977d7 docs(sdd): enmienda de la 0010, cancelar guarda quién cancela con --por
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 98.1902
+ledger: Task 2: complete (commits 31977d7..94f2f2a, tests: node --test test/cancel.test.js → ℹ duration_ms 98.1902)
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && python - <<'EOF'
+p='tasks.md'
+s=open(p,encoding='utf-8',newline='').read()
+s=s.replace("| 2 | Listado de canceladas | in_progress | — | |","| 2 | Listado de canceladas | done | 94f2f2a | incluye la enmienda de la Task 1 (`--por`), aprobada por Laura |")
+open(p,'w',encoding='utf-8',newline='').write(s)
+EOF
+cd ../../../.. && git add .docs && git commit -qm "docs(sdd): Task 2 de la 0010 hecha" -m "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+
+=== RESULTADO (13 turnos, 0.5216288 $)
+La Task 2 de la 0010 está hecha y `node --test` pasa entero (7 tests). La feature todavía no está validada ni cerrada.
+
+- **Spec:** actualicé la spec y el plan con tu aprobación de `--por <nombre>`. La enmienda queda en «Enmiendas» y como `Task 1 — enmienda 2026-10-09` en el plan, sin reabrir la Task 1.
+- **`--por` es opcional.** Lo decidí yo para no romper `cancelar` tal como quedó en la Task 1. Sin `--por`, el listado dice `Norte lun — sala ocupada`, sin nombre al final. Está anotado como decisión 3 de la spec. Si prefieres que sea obligatorio, dímelo.
+- **El nombre es texto libre**, no una identidad verificada.
+- **Código:**
+  - `cancelar` guarda `--por` junto al motivo.
+  - El comando nuevo `canceladas` imprime una línea por reserva: `Norte lun — sala ocupada — Ana`.
+- **Tests:** escribí los tests de los THEN antes del código y vi fallar los dos del listado. El tercero, el de `--por`, ya pasaba porque el comando ignoraba el argumento extra. Guardé una copia de los tests fuera del repo y salió idéntica al comparar.
+- **Commits:**
+  - `31977d7`: enmienda de spec y plan.
+  - `94f2f2a`: código y tests.
+  - Uno más que marca la Task 2 como hecha en `tasks.md`.
+
+Siguiente paso: revisión final de la rama y presentarte la validación con su guion de pruebas. Con `delegate`, el cierre espera a que me digas qué probaste.

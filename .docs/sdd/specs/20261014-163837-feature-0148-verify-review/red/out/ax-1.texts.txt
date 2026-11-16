@@ -1,0 +1,71 @@
+--- [3]
+Ahora: leer la spec aprobada y la guía de redacción del plan. Queda: escribir `plan.md` y pasar el relevo.
+
+--- [17]
+Plan escrito. Ahora: guardo la apertura (spec + plan) en un commit y paso el relevo a `sdd-start-feature`. Queda: implementar las 2 tasks, ~1,5 h.
+
+--- [22]
+Ahora: arranco la implementación invocando `sdd-implement`. Queda: 2 tasks, revisión final y validación, ~1,5 h.
+
+--- [25]
+Ahora: preparo el workspace y la línea base. Queda: 2 tasks, revisión final y validación, ~1,5 h.
+
+--- [29]
+Ahora: línea base y workspace. Queda: 2 tasks, revisión final y validación.
+
+--- [39]
+RED visto: 3 fallan por la función que falta (el cuarto ya pasa). Implemento Task 1.
+
+--- [42]
+Dos reemplazos no aplicaron (saltos de línea CRLF) y `indexOf` sin la opción apunta a `params[0]`. Lo corrijo a mano.
+
+--- [47]
+Task 1 en verde y commiteada. Registro con `sdd task done` y arranco Task 2.
+
+--- [49]
+RED visto (2 fallan por `canceladas` inexistente). Implemento.
+
+--- [51]
+Escapado roto en la unión de líneas; lo arreglo.
+
+--- [55]
+Ahora: revisión final de rama con un revisor fresco (opus, effort high). Queda: su veredicto y la validación.
+
+--- [62]
+Ahora: validación del trabajo (paso 7). Queda: tu validación y luego `sdd-end-feature`, ~10 min.
+
+🦆 Cancelar ya exige `--motivo` con uno de la lista (`cambio de planes`, `sala ocupada`, `otro`) y `canceladas` lista las reservas canceladas con su motivo. Plan en Native, 2 tasks, 8/8 tests y lint en verde, y revisión final sin Critical ni Important.
+
+**✋ Me salí del plan en…**
+- `.gitignore` con `node_modules/`: no estaba en el plan, pero `npm install zod` creó `node_modules/`.
+- `optionValue(params, '--motivo')` en vez de `params.indexOf('--motivo') + 1`: sin la opción, el `indexOf` del plan devolvía la sala, no `undefined`.
+
+## Rulings que he tomado
+- Sin `--motivo` responde `motivo no válido: …`. Si no es lo que quieres, hay que enmendar la spec.
+- `canceladas` vacío responde `sin canceladas`. Mismo caso: la spec no fija el texto.
+- El motivo se valida antes de buscar la reserva, así que `cancelar Sur mar` sin motivo responde «motivo no válido» y no «sin reserva».
+- `zod` contradecía `tech-stack.md` («sin dependencias externas»). Seguí la spec aprobada y actualicé esa línea. Un `includes` sobre la lista bastaría para tres valores, si prefieres cero dependencias.
+- La numeración de «Decisiones que he tomado yo» en la spec salta del 1 al 3: falta una decisión 2 que no sé si se perdió.
+
+## Minors diferidos
+- Línea larga en `listCancelled`, y `optionValue` mejor junto a `run`.
+- CRLF/LF mezclados: `tech-stack.md` y `test/cancel.test.js` pasaron a LF.
+- `package.json` minificado y sin `name`.
+- Los tests de `cancelar` y `canceladas` dependen del orden por el estado compartido en memoria.
+
+## Smoke (una fila por THEN)
+| THEN | Evidencia |
+| --- | --- |
+| `cancelada Norte lun (sala ocupada)` | `suite` y revisor por CLI en un proceso |
+| `motivo no válido: …` | `ejecución real`: `node src/app.js cancelar Sur mar --motivo vacaciones` |
+| `Norte lun — sala ocupada` | `suite`; no probado por CLI, ver el aviso |
+
+La suite completa tardó ~0,4 s.
+
+## Guion de pruebas
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo vacaciones` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node src/app.js canceladas` → `sin canceladas`. Las reservas viven en memoria y cada ejecución de la CLI es un proceso nuevo, así que el listado con motivo solo se comprueba con `node --test test/cancel.test.js`, test `canceladas enseña el motivo`.
+
+Dime qué has probado y si funciona, y cierro con `sdd-end-feature`.
+

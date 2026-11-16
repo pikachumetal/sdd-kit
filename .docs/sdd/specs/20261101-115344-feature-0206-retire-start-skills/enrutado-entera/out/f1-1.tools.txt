@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50; node "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40; ls node_modules 2>&1 | head -2; git branch --show-current
+
+>>> Grep: libres
+<<< ./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+develop
+<<< Found 3 files
+src\app.js
+test\app.test.js
+.docs\sdd\changelog.md
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -60; cat .docs/sdd/tech-stack.md .docs/sdd/constitution.md; cat package.json; ls
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/skills/sdd-propose/references/modo-lite.md"; cat .docs/sdd/roadmap.md; ls .docs/sdd/specs
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Bash: head -40 "D:/code/.worktrees/sdd-kit/feature-0206-retire-start-skills/.temp/kit-g/skills/sdd-propose/references/control-profiles.md"
+<<< # Perfiles de control y gates
+
+Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+
+## Perfiles
+
+- **`pair`** — para en todos los gates de la tabla.
+- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la rama de inte
+
+=== RESULTADO (8 turnos, 0.17771549999999997 $)
+Ahora: he clasificado el cambio y te pregunto el carril. Queda: tu respuesta; luego spec corta, ~10 min.
+
+🦆 Hoy `libres <franja>` lista todas las salas sin reserva en esa franja (`src/app.js`, `freeRooms`). Querrías poder limitar esa lista a una sala concreta. Pero la petición no fija cómo se escribe (`--sala Norte`, un segundo argumento…), qué responde si la sala no existe, ni qué responde si está ocupada. Esas decisiones son tuyas, así que no es un patch (en un patch la solución viene dada). Es un cambio pequeño de comportamiento.
+
+**Carril propuesto: feature en modo lite.** He comprobado una por una las condiciones:
+- El flujo ya existe y se puede leer (`libres` en `src/app.js`).
+- No cambia contratos: el filtro es opcional, y sin él `libres` responde igual que ahora.
+- No toca datos ni schema: las salas y reservas siguen en memoria.
+- Cabe en un solo módulo: `src/app.js` y su test.
+- No hay `estimation.md`, así que esa condición no aplica.
+
+Perfil vigente: `delegate`, del proyecto (`sdd-kit.json`, por defecto). Esto implica parar en la spec y en la validación, pero no en el plan. Lite no lleva `plan.md`.
+
+Tampoco propongo dividirlo: es una sola task.
+
+¿Cómo seguimos?
+
+1. **Lite (recomendada)**: spec corta con las decisiones a validar (sintaxis, sala inexistente, sala ocupada), implementación con test primero y validación.
+2. **Lite, aprobando la spec por delegación**: dices «apruebo la spec por delegación, nos vemos en la validación» y no paro en la spec.
+3. **Full**: spec completa más plan, si prefieres más ceremonia.
+4. **Otro perfil** para esta feature: «perfil `pair`» o «perfil `unattended`».
+
+Antes de implementar tendré que instalar las dependencias. Aquí no hay `node_modules` ni `package.json` con dependencias, así que probablemente no haga falta nada.

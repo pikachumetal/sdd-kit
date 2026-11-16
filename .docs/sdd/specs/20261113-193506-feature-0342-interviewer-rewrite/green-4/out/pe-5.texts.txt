@@ -1,0 +1,57 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar y empezar la entrevista de la spec, ~3 min.
+
+--- [16]
+Ahora: abro la feature 0010 y empiezo la entrevista de la spec. Queda: unas pocas preguntas, el enfoque y la spec para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Ya está creada la rama `feature/0010-exportar-reservas-csv` desde `develop`. El id 0010 es local, porque el repo no tiene remoto. Las dependencias no hacen falta: el proyecto no tiene ninguna.
+
+**Lo que he entendido (corrígeme):**
+- Quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV.
+- El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrar esas reservas.
+- Hoy cada reserva tiene sala, día (`lun`) y franja (`10:00-12:00`), y no hay forma de listarlas.
+
+❓ Cuando el responsable cuadra la sala el lunes, ¿qué compara o comprueba en la hoja, y qué necesita ver ahí para poder hacerlo?
+
+--- [18]
+Con eso la entrevista se cierra: lo demás lo decido yo y va a la spec como decisiones mías, para que las valides. Ahora: leo la plantilla de la spec y las pasadas de coherencia y revisión. Queda: escribir la spec y pararme en tu aprobación.
+
+--- [35]
+Ahora: pruebo el delta de la spec sobre una copia de `.docs/sdd` (la pasada de coherencia). Queda: presentarte la spec para tu aprobación.
+
+--- [39]
+La spec está escrita y esperando tu aprobación. Está en `.docs/sdd/changes/20261114-165909-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`. No he escrito plan ni código, y no he hecho commit.
+
+🦆 Hoy `salas` no puede listar las reservas de una sala. Con esta feature, `exportar Norte` imprime una cabecera y una línea por reserva, separadas por punto y coma: `Norte;lun;10:00-12:00`. El responsable lo guarda con `> norte.csv` y lo abre en su hoja de cálculo.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Comando y salida:** `exportar <sala>`, por pantalla y sin fichero. No he añadido `--salida`.
+2. **Columnas:** `sala;dia;franja`, que son las que dijiste. Escribo `dia` sin tilde, porque una hoja que no sepa que el fichero es UTF-8 mostraría `dÃ­a`. Eso cambia tu palabra «día».
+3. **Formato:** separador `;`, fin de línea `\n`, sin comillas ni escapes. Las salas son una lista cerrada (`Norte`, `Sur`).
+4. **Orden:** por día de la semana y, dentro del día, por franja. Un día que no esté en la lista sale el último.
+5. **«De la semana»:** la app guarda el día de la semana y no una fecha, así que no hay filtro por fechas. Todas las reservas de la sala son las de la semana.
+6. **Casos límite:**
+   - Sala sin reservas: solo la cabecera.
+   - Sala que no existe: `sala desconocida: Este`.
+   - Sin sala: `uso: exportar <sala>`.
+   - El nombre de la sala va exacto, como en `libres` (`norte` no vale).
+7. **Enfoque:** una función `exportCsv(room, list = bookings)` en `src/app.js`, junto a `freeRooms`. Descarté un módulo nuevo y escribir un fichero. Son unas 15 líneas y 2 ficheros, así que no propongo dividirla.
+8. **Capacidad nueva:** `room-bookings-export`. El repo aún no tiene `capabilities/`, y esta spec crea la primera. Probé el delta sobre una copia de `.docs/sdd`: el `merge` y el `check` pasan.
+
+**La review no se hizo.** La rúbrica pedía dos revisores independientes: hay capacidad nueva y un contrato público, el formato CSV. Esta sesión no tiene herramienta para lanzar subagentes, así que no se despacharon. Releí yo la spec con los siete puntos de la rúbrica, y eso no equivale a una review independiente. Queda anotado en «Hallazgos de la review».
+
+**Dos cosas que no son del flujo:**
+- No hay remoto, así que el id 0010 es solo local y `sdd id claim` no pudo publicarlo.
+- La feature no tiene fila en `ROADMAP.md`. No la he añadido, porque eso es de `sdd-roadmap`.
+
+La validación la haces tú: abres el CSV en tu hoja y compruebas que las tres columnas salen separadas y sin caracteres raros.
+
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajusto en la spec.
+

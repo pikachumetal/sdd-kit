@@ -1,0 +1,26 @@
+--- [9]
+Antes de proponer nada, leí `PRODUCT.md`, `ROADMAP.md`, `src/app.js` y la deuda técnica. Esto es lo que dicen los documentos y lo que veo en el código:
+
+- **Los documentos:** la herramienta la usas solo tú, para las salas del coworking. El roadmap no tiene ninguna fila sobre medias horas. La deuda técnica sí tiene un ítem por triar: «Sin validación del formato de franja horaria».
+- **El código:** una franja es un texto libre, como `'10:00-12:00'`. Dos reservas chocan solo si ese texto es idéntico (`b.slot === slot` en `freeRooms`).
+- **Lo que deduzco:** hoy ya se podría escribir `10:00-10:30`, porque no hay nada que lo impida. Pero ese caso no chocaría con `10:00-12:00` en la misma sala, así que se podría reservar dos veces el mismo hueco. Reservar medias horas bien exige antes decidir cómo se comparan las franjas, y por eso el enfoque depende mucho de para qué lo quieres.
+
+❓ **¿Qué quieres conseguir con las medias horas, y qué te falla hoy con las franjas actuales?**
+
+--- [11]
+Entendido. Aviso de un hecho del código: nada obliga hoy a que una franja dure dos horas. El problema real es que la comparación es por texto exacto. Una reserva `10:00-10:30` no chocaría con `10:00-12:00`, así que habría dobles reservas, y no hay validación de formato (el ítem de deuda).
+
+❓ **¿Cómo se representa una franja?**
+1️⃣ **Intervalos con solape.** Se mantiene `HH:MM-HH:MM`. Se valida el formato y que los extremos caigan en :00 o :30. Dos reservas chocan si sus intervalos se pisan.
+- `reservar Norte lun 10:00-10:30` con `10:00-12:00` ya reservado → `Norte ocupada`.
+- `libres 12:00-12:30` → `Norte, Sur`.
+- Coste: cambia la regla de `freeRooms` y las franjas mal escritas pasan a dar error. De paso salda la deuda de validación.
+
+2️⃣ **Rejilla fija de bloques de 30 min.** Cada reserva se guarda como una lista de bloques: `10:00-12:00` pasa a ser 4 bloques. La comparación sigue siendo igualdad, por bloque.
+- `reservar Norte lun 10:00-10:30` → ocupa el bloque `10:00`, que ya está tomado → `Norte ocupada`.
+- Coste: hay que cambiar el modelo de datos y el comando `cancelar`, que acaba de arreglarse en el 0007. Es más cambio para el mismo resultado.
+
+➡️ **Recomiendo 1️⃣**, porque en el código es un cambio local a `freeRooms` y a un validador, sin rehacer el modelo de datos que ya tienes. A cambio, tu convención actual de franjas de dos horas pasa a ser una regla explícita que hay que respetar.
+
+¿Vas por 1️⃣ o prefieres 2️⃣?
+

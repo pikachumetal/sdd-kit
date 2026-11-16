@@ -1,0 +1,77 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [27]
+🦆 Cancelar ahora pide un motivo de la lista y `canceladas` lo enseña. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` después responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla al correr solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo válido | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | `ejecución real` | «Norte lun — sala ocupada» (cancelar y listar en el mismo proceso) |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre 941574a, 0,14 s. Es el gate de cierre. La suite e2e no está en el gate y no la he corrido.
+- No hay `develop` por delante de la rama (0 commits), así que la sync del paso 6 no traerá nada nuevo.
+
+**Sin probar**
+
+- La suite e2e y el entorno. `node scripts/env-up.mjs` falla en HEAD con «Error: no arranca: falta data/seed.json». Lo dejó así el commit 85e35f3, que es anterior a la 0010. Por eso el guion usa la CLI y no el servidor.
+- Las reservas viven en la memoria del proceso. `cancelar` y `canceladas` en comandos separados no comparten estado, así que el paso 4 los corre en un mismo proceso. Es lo que dice la spec, hasta la 0014.
+
+Panel: plan B en http://127.0.0.1:2950/. Esta página no ve la app, así que no hay consola, red ni captura de un KO. Si algo falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay entorno que arrancar: es una CLI, y `env-up` está roto (ver arriba).
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con motivo válido:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Motivo fuera de la lista:
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3. Sin motivo:
+
+```
+node src/app.js cancelar Norte lun
+```
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Cancelar y listar en el mismo proceso:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+→ `cancelada Norte lun (sala ocupada)` y, en la línea siguiente, `Norte lun — sala ocupada`
+
+Los datos están en memoria: ningún paso deja estado que limpiar.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

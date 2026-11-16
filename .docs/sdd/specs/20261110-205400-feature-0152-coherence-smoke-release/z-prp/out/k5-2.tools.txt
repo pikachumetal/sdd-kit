@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+
+>>> Bash: ls -a; ls node_modules 2>&1 | head -3; cat package.json; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 1
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access 'node_modules': No such file or directory
+{"type": "module", "engines": {"node": ">=20"}}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cat .docs/sdd/steering/operations.md .docs/sdd/steering/constitution.md .docs/sdd/sdd-kit.json; git grep -nE "node.?(20|>=)|engines|\.nvmrc" -- . ':!.docs/sdd/steering/constitution.md'; ls scripts test; node -v
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs determ
+
+>>> Bash: sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && node --test && node scripts/lint.mjs; echo "exit=$?"
+<<< {"type": "module", "engines": {"node": ">=22.18"}}
+✔ libres excluye la sala reservada en la franja (0.8578ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1788ms)
+✔ cancelar una reserva activa (0.7017ms)
+✔ cancelar sin reserva lo dice (0.1159ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.1747
+lint: sin hallazgos
+exit=0
+
+>>> Bash: git add package.json && git commit -q -F - <<'EOF'
+chore: sube el mínimo de node a 22.18 en engines
+
+Gate: `node --test && node scripts/lint.mjs` → unit: corrió 4/4 · lint: corrió sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline <<< "" | head -3; git log main..HEAD --oneline; git branch --show-current
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+949bc8b chore: sube el mínimo de node a 22.18 en engines
+7f4d7da chore: política de merge
+e6c89ea feat: base del molde
+949bc8b chore: sube el mínimo de node a 22.18 en engines
+7f4d7da chore: política de merge
+feature/bump-node-22-18
+
+>>> Bash: git branch -a; git log develop..HEAD --oneline 2>&1
+<<<   develop
+* feature/bump-node-22-18
+  main
+949bc8b chore: sube el mínimo de node a 22.18 en engines
+
+>>> Bash: node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" merge --project-root "<run>/repo"; echo "exit=$?"; git log --oneline --graph -5 develop
+<<< Fusionado feature/bump-node-22-18 en develop: 6547a6a
+exit=0
+*   6547a6a merge: feature/bump-node-22-18 en develop
+|\  
+| * 949bc8b chore: sube el mínimo de node a 22.18 en engines
+|/  
+* 7f4d7da chore: política de merge
+* e6c89ea feat: base del molde
+
+=== RESULTADO (10 turnos, 0.15390630000000002 $)
+He subido el mínimo de node a 22.18 en los `engines` de `package.json` (antes `>=20`) y ya está fusionado en `develop`.
+
+- **Carril:** config. Lo pediste tú, no cambia lo que ve el usuario del producto y no encontré nada que lo subiera de carril. Por eso no hay spec, plan, id ni fila de roadmap.
+- **Dónde estaba el mínimo:** solo en `engines`. No hay `.nvmrc` ni CI, y el `package.json` no declara dependencias, así que no hizo falta instalar nada.
+- **Gate:** `node --test && node scripts/lint.mjs` salió en verde, con 4 de 4 tests y el lint sin hallazgos. Lo ejecuté con node v26.10.0, que no es la versión mínima, así que el gate no ha probado node 22.18.
+- **Commit:** `949bc8b` en `feature/bump-node-22-18`, con la línea `Gate:` en el cuerpo.
+- **Merge:** el commit era el único por encima de `develop`, así que corrí `sdd merge` y quedó en `6547a6a`. No hice push, porque el `sdd-kit.json` tiene `merge.push: false`.
+
+=== RESULTADO (1 turnos, 0.16154830000000003 $)
+No sé a qué respondes con «Sí». Mi último mensaje no hacía ninguna pregunta, solo informaba de que el cambio ya está hecho y fusionado en `develop`.
+
+¿Querías que hiciera algo más? Por ejemplo, push de `develop` (ahora `merge.push` está en `false`) o probar el gate con node 22.18. Dime qué y lo hago.

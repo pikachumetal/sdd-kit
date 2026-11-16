@@ -1,0 +1,150 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md; head -40 .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; ls src test; cat package.json; git grep -n -i "libre" -- src test README.md | head -20
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js; cat README.md; git log --oneline -5
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (8 turnos, 0.1324587 $)
+No he abierto ninguna feature: ese comando ya existe, así que no hay nada que añadir.
+
+`libres <franja>` está en `src/app.js:10` y devuelve las salas sin reserva en esa franja. Con `libres 10:00-12:00` devuelve `Sur`, y `test/app.test.js:5` lo comprueba. También hay una spec cerrada de esta función: `.docs/sdd/specs/20260917-090000-task-0006-free/` (estado `done`).
+
+Lo que no cubre, por si es lo que echas en falta:
+
+- **Reservas de otros días:** `libres` solo compara la franja y no mira el día, aunque cada reserva guarda `day`. Una reserva del lunes hace que `Norte` salga ocupada también el martes.
+- **Formato de la franja:** no se valida. Ya está en la deuda técnica, en «Por triar», como «Sin validación del formato de franja horaria».
+- **Franjas que se solapan:** compara la franja por igualdad exacta, así que `10:00-11:00` no choca con `10:00-12:00`.
+
+¿Cuál de las tres quieres? Mi recomendación es la primera, filtrar por día, que ahora mismo da resultados incorrectos. Si es un fallo reproducible con un test, iría por el carril patch. Si hay que decidir cómo se pide el día en la línea de comandos, sería feature en modo full.
+
+Dime cuál prefieres, o si te referías a otra cosa, y arranco con el carril que toque.
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/skills/sdd-propose/references" && sed -n 1,60p control-profiles.md; echo ----; sed -n 1,80p nombrado.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+>>> Bash: cd "<run>/repo" && git status -sb | head -3 && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+<<< ## develop
+0010
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0010-salas-libres-franja && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/cli/bin/sdd.js" id claim --project-root "$PWD"
+<<< Switched to a new branch 'feature/0010-salas-libres-franja'
+sin remoto: la 0010 vale (contador local)
+
+=== RESULTADO (6 turnos, 0.2081869 $)
+Ahora: tengo el carril y la rama (`feature/0010-salas-libres-franja`, id 0010 reservado). Falta la entrevista de la spec, y antes de la spec quedan tu respuesta a la pregunta de abajo y la revisión; la parada para aprobarla viene después, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json; es el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres una feature para consultar qué salas están libres en una franja horaria. Ya te dije que `libres <franja>` existe, con su test y su spec 0006. Mantienes tu petición, así que la tomo como decisión tuya y no te lo vuelvo a discutir. Esta feature no puede ser un duplicado de `libres`, así que tengo que saber qué debe hacer distinto.
+
+Un detalle: en la franja `10:00-12:00` de hoy, `libres` devuelve `Sur`. Dentro del repo, la reserva existente es `{Norte, lun, 10:00-12:00}`.
+
+❓ **¿Qué comportamiento nuevo quieres que tenga este comando respecto al `libres` actual?**
+1️⃣ **Filtrar por día:** `libres lun 10:00-12:00` → `Sur`; `libres mar 10:00-12:00` → `Norte, Sur`. Es lo que hoy falla, porque la reserva del lunes bloquea también el martes.
+2️⃣ **Detectar solapes:** `libres 11:00-13:00` → `Sur`, porque la reserva de 10:00-12:00 se pisa con esa franja. Hoy devolvería `Norte, Sur`.
+3️⃣ **Ambas cosas** (día y solape) en una sola feature. Es la más completa, pero son varios comportamientos nuevos.
+4️⃣ **Otro nombre o salida distinta** (por ejemplo, un comando nuevo que liste las salas con su estado): dime cuál.
+➡️ **Recomiendo 1️⃣**, porque es el fallo real que se ve hoy con los datos del repo: `libres` ignora `day`. A cambio, el solape de franjas se queda fuera y habría que apuntarlo como feature aparte.

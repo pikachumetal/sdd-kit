@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -a && cat package.json && grep -rniE "node(-version|js)?[\"' :=@-]*[0-9]{2}|engines|nvmrc|node:[0-9]" --include=* -I . --exclude-dir=node_modules --exclude-dir=.git -l | head -30
+
+>>> Bash: cd "<run>/repo" && node --version; ls .docs/sdd 2>/dev/null; ls .github/workflows 2>/dev/null; cat .nvmrc .node-version Dockerfile 2>/dev/null
+<<< .
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+{"type": "module", "engines": {"node": ">=22"}}
+./.docs/sdd/tech-stack.md
+./package.json
+<<< Exit code 1
+v26.11.1
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/tech-stack.md; cat README.md; find src test -type f | head -30; grep -rnE "node:|process\.version|engines" src test | head; cat .docs/sdd/sdd-kit.json
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+src/app.js
+test/app.test.js
+test/app.test.js:1:import { test } from 'node:test';
+test/app.test.js:2:import assert from 'node:assert/strict';
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWo
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; node --test 2>&1 | tail -8
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-fix/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< # Prompt de arranque — plantilla
+
+> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, que no lleva fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca el cambio sin repetir la entrevista. Tras el prompt, termina con: «si prefieres hacerlo en esta sesión, di "arráncalo"».
+>
+> **Cómo se redacta** (lo lee un agente, no una persona):
+>
+> - En imperativo y en positivo: lo que tiene que hacer, no lo que debe evitar.
+> - Cada decisión ya tomada, con su literal: «la opc
+
+=== RESULTADO (8 turnos, 0.1326121 $)
+**No rompe nada.**
+
+- **Dónde está node:** el único sitio es `package.json`, con `engines.node: ">=22"`. No hay `.nvmrc`, `.node-version`, Dockerfile ni CI (`.github/`) que lo fijen.
+- **Dependencias:** no hay ninguna. `src/app.js` no usa APIs de node más allá de `process.argv`, y los tests usan solo `node:test` y `node:assert/strict`, que existen en 22.x.
+- **Comprobación:** `node --test` pasa 3/3, pero con node v26.11.1 (la que hay en esta máquina), no con 22.18. Con el código y los tests actuales no veo motivo para que difiera.
+- **Documentación:** `.docs/sdd/tech-stack.md` dice «Node 22», que sigue siendo cierto con `>=22.18`. Si quieres que refleje el mínimo exacto, hay que tocarlo aparte.
+- **Efecto sobre quien lo use:** quien tenga 22.0–22.17 pasará a recibir el aviso de `engines`, que solo es un warning salvo `engine-strict`.
+
+Al ser un cambio de configuración, no lleva fila de roadmap ni id. Pega esto en el otro worktree:
+
+**Subir node a 22.18 en engines**
+
+Base: `develop`
+
+```text
+feature/bump-node-engines-22-18
+```
+
+Carril: config
+
+```text
+Arranca este cambio con sdd-propose, carril config: sube el mínimo de node en `engines` de package.json de `>=22` a `>=22.18`.
+Requisitos: los de este prompt (un config sin fila ni propuesta).
+Decisiones ya tomadas:
+- El valor literal de engines.node es `>=22.18`.
+- Revisa que `.docs/sdd/tech-stack.md` («Node 22») siga siendo cierto; si no lo es, ajústalo.
+Nada que saldar.
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

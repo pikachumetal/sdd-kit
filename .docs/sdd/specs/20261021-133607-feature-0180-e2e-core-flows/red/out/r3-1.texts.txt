@@ -1,0 +1,19 @@
+--- [3]
+The received value "234.5" loses the first character, which points at typeInCell.
+
+--- [9]
+He arreglado el flaky y lo he commiteado (`6e89701`), pero no lo he ejecutado. No hay navegadores ni servidor, así que el arreglo no está verificado. Tampoco he escrito un test rojo previo, como pide la skill, porque no se podía ver fallar aquí.
+
+**Causa:** `CellEditor` se carga con `lazy` (`src/sheet/Grid.tsx:5`). `typeInCell` pulsaba `Enter` y tecleaba enseguida, así que a veces el `<input>` aún no existía y se perdía el primer carácter. Por eso el log muestra `234.5` en vez de `1234.5`.
+
+**Cambio:** en `e2e/helpers.ts`, `typeInCell` espera a que `getByLabel('Editor de celda')` tenga el foco antes de teclear. Eso arregla también los otros specs que usan el helper.
+
+**Cómo lo comprobaría**, en una máquina con navegadores y servidor:
+1. Ejecutar `npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=30`. Con 1 fallo de cada 5, 30 pasadas sin ningún fallo dan bastante confianza.
+2. Ejecutar la suite completa, porque `typeInCell` lo usan los demás specs.
+3. Para ver el fallo antes del fix, quitar la línea nueva y repetir con `--repeat-each=30`. Debería fallar con `234.5`.
+
+**Pendiente (producto):** cuando el editor tarda en cargar, la aplicación también pierde teclas para un usuario real que escriba rápido. Lo he dejado sin tocar porque pedías dejar la suite en verde. Habría que precargar el chunk del editor o retener las teclas hasta que monte.
+
+Además, el aviso de sesión dice que el proyecto pide el kit 3.0.0 y está cargado el 2.3.4. Conviene actualizarlo con `claude plugin update sdd-kit@sdd-kit --scope project`.
+

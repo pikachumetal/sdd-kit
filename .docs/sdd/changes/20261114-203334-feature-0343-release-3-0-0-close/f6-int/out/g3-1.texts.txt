@@ -1,0 +1,41 @@
+--- [11]
+Sigo en ello: ya leí el contexto del proyecto y clasifiqué el cambio como feature. Ahora reservo el id y la rama, volviendo al directorio del repo, que se me desvió con un `cd`.
+
+--- [16]
+Ahora: he reservado el id 0010 y creado la rama `feature/0010-lista-espera`. Queda: una o dos preguntas de diseño, luego la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no comprueba si la sala está ocupada. Quieres que, si intentas reservar una sala en una franja donde ya hay reserva, la herramienta te apunte en una lista de espera para esa sala y franja. Sobre qué ocurre después, de momento no he asumido nada. Corrígeme si lo he entendido mal.
+
+Estimo 2 o 3 tareas internas, todas en `src/app.js`, así que no propongo dividirla.
+
+❓ **¿Qué ocurre cuando la sala se libera?**
+Hoy `cancelar` solo devuelve un texto y no modifica nada, y los datos viven en memoria. Mi propuesta es el comportamiento de abajo, con `reservar Norte lun 10:00-12:00` estando Norte ocupada.
+1️⃣ **Solo apuntarte y consultar.** Sale `Norte ocupada; en espera (1.º)`. Existe un comando `espera` para ver tu posición. Al cancelar la reserva no pasa nada automático. Es lo más simple, pero tú tienes que volver a mirar.
+2️⃣ **Promoción automática.** Mismo mensaje al apuntarte. Cuando se cancela la reserva, el primero de la lista pasa a ser la reserva y el comando lo dice: `cancelada lun 10:00; Norte pasa a quien esperaba`. Es más útil, pero cambia el comportamiento de `cancelar`, que ya tiene un patch (0007).
+3️⃣ **Aviso al liberarse.** Al cancelar se dice quién era el primero de la lista, pero la reserva no se crea sola. Queda en un punto medio, aunque obliga a una confirmación manual.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta no guarda nada entre ejecuciones y el aviso por correo (0008) todavía no existe. Sin eso, 2️⃣ y 3️⃣ no tendrían a quién avisar de forma útil. A cambio, tendrás que consultar la lista a mano.
+
+¿Cuál eliges?
+
+--- [18]
+Anoto feature full con perfil delegate. Tu motivo me hace corregir mi recomendación anterior. Con la 1️⃣ seguirías teniendo que volver a mirar, solo que el comando sería `espera` en vez de `libres`. Eso es justo lo que quieres evitar.
+
+Hay además un hecho del código que cambia el planteamiento. `src/app.js` guarda las reservas en un array en memoria y cada ejecución arranca de cero. Una lista de espera que sobreviva entre ejecuciones necesita guardar su estado en un fichero, cosa que hoy no existe. Y `cancelar` hoy solo devuelve un texto, no libera nada.
+
+❓ **¿Qué debe pasar cuando se libera la sala, para que no tengas que mirar?**
+Caso: `reservar Norte lun 10:00-12:00` con Norte ocupada, y luego `cancelar lun 10:00` sobre la reserva que la ocupaba.
+1️⃣ **Promoción automática.** Al reservar sale `Norte ocupada; en espera (1.º)`. Al cancelar sale `cancelada lun 10:00; Norte pasa a quien esperaba` y la reserva queda hecha. No tienes que mirar nada.
+2️⃣ **Aviso al liberarse.** Al cancelar sale `cancelada lun 10:00; Norte libre, el 1.º en espera puede reservar`. La reserva no se crea sola y tienes que ejecutarla tú.
+3️⃣ **Solo lista consultable.** Un comando `espera` muestra tu posición y al cancelar no pasa nada. Es lo más simple, pero sigue exigiendo mirar a mano.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que elimina el volver a mirar. A cambio, hay que guardar reservas y espera en un fichero, y `cancelar` pasa a modificar datos de verdad. Eso amplía el alcance a unas 3 tareas.
+
+¿Cuál eliges?
+

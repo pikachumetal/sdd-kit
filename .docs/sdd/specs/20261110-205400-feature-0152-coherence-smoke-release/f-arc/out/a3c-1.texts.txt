@@ -1,0 +1,99 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [10]
+`HEAD` (0ef7c31) se movió desde lo revisado (f72341d) con dos commits solo de documentación. Sin línea `Re-revisión:`, toca la re-revisión única. Leo cómo se encarga.
+
+--- [15]
+Preparo el paquete de la re-revisión, el worktree desacoplado y las restricciones de código del plan.
+
+--- [24]
+Mientras vuelve la re-revisión, he lanzado el cierre en segundo plano: no escribo nada hasta que termine. Leo el resto de referencias que necesitaré (validación en campo, suite, registros).
+
+--- [37]
+Mientras espero la re-revisión, ejecuto el gate de cierre (sin escribir registros) y compruebo si la base va por delante.
+
+--- [40]
+El vigía del silencio terminó con error. Leo su salida.
+
+--- [43]
+### Finding Verdicts — «none open (previous review clean)»
+
+There were no open findings, so there is nothing to re-check here.
+
+### New Breakage in the Fix Diff
+
+None.
+
+1. **The «Modificadas» capability and the ADDED delta agree.** The `bookings` capability already existed before this feature. It was added in commit 5ed4847 («docs(sdd): capacidad bookings»), which comes before the spec was opened in 2721e1c. So the old line «Nuevas: `bookings`» was wrong: merging it as a new capability would have run into a file that already exists. The new line «Modificadas: `bookings`» (`spec.md:20`) matches the repository. The two requirements in the delta are marked ADDED (`spec.md:49` and `spec.md:56`), and that is the right label. «Cancelar pide un motivo de la lista» and «El listado de canceladas enseña el motivo» do not match any heading in `.docs/sdd/capabilities/bookings.md`, which has only «Reservar una sala». MODIFIED would need an existing requirement with the same name to replace, and there isn't one. When a capability is modified, ADDED entries are simply appended to it, so the merge is clean and nothing is mislabelled.
+2. **tasks.md matches the git history.** Task 1 points to commit 7cc9c68 («feat(bookings): cancelar con un motivo de la lista») and Task 2 to f72341d («feat(bookings): listado de canceladas con su motivo»). Both commits touch only `src/app.js` and `test/cancel.test.js`, which are the files the plan lists. The final-review line names f72341d as the commit it reviewed, which matches the brief. The ruling also matches the code. The `canceladas` test (`test/cancel.test.js:13-15`) prepares no data of its own. It only passes because the first test (`test/cancel.test.js:5-7`) has already cancelled Norte lun in the shared in-memory state (`src/app.js:4`). The ruling states this dependency, says it is a workaround, and names the cost (the test fails if run alone or in another order).
+3. The range changes no code, no tests (including RED tests) and no interface text, so the Spanish-interface constraint is not affected.
+
+### Out-of-Scope Observations
+
+- In `spec.md:24-25`, the «Decisiones» list jumps from 1 to 3, and decision 3 cites the signal «MODIFIED» while the delta contains only ADDED. This text was already there in 2721e1c and is not part of this range. It is not a problem for the capability merge, but the wording could mislead a reader.
+- The spec's scenario «sin `--motivo` responde lo mismo» (`spec.md:54`) has no test in `test/cancel.test.js`. The code does handle it: `reasonOf` returns `undefined`, and `cancelBooking` rejects it at `src/app.js:20`. This predates the range, and the previous final review accepted it.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [45]
+Salió con código 1 y sin ninguna de las tres primeras líneas definidas (`TERMINADO`, `SIN TRANSCRIPT`, `SILENCIO`). Lo relanzo para ver su error.
+
+--- [48]
+Re-revisión limpia. Quito el worktree de revisión y hago el smoke con ejecución real, un THEN por fila.
+
+--- [51]
+Los 4 THEN verificados con ejecución real. Leo las referencias de aprendizajes y de fusión antes de escribir los registros.
+
+--- [56]
+Escribo el walkthrough (no existía borrador) y la línea de re-revisión en `tasks.md`.
+
+--- [59]
+Ahora la retro de cierre.
+
+--- [66]
+Roadmap y deuda descubierta.
+
+--- [70]
+Los cambios no se aplicaron (el heredoc se tragó el script). Lo hago con Edit.
+
+--- [80]
+Squash del cierre en un commit desde el de la última task, con los dos commits de docs.
+
+--- [82]
+Sync con la base, en su propia llamada.
+
+--- [85]
+La base trajo código (`src/rooms.js`): repito la suite sobre el merge de sincronización.
+
+--- [88]
+Verde (5/5 sobre `6a005f8`). El bloque `merge` está completo y el perfil es `delegate`: fusiono con el script, sin push.
+
+--- [91]
+🦆 Cancelar una reserva ahora pide un motivo de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y falla si el test corre solo o en otro orden. Está en la deuda, en «Por triar».
+
+**Validación en campo, hecha por mí (no la ha dado el dev-lead):**
+- **Revisión final:** la revisión de Spec y Código sobre `f72341d` estaba limpia. Después `HEAD` había avanzado con dos commits solo de docs, así que lancé la re-revisión única y salió limpia. Quedó registrada como `Re-revisión: juntada en el cierre`.
+- **Smoke:** 4/4 THEN con ejecución real. Para `canceladas` usé una sola sesión de `run`, porque el estado vive en memoria y un proceso nuevo no ve la cancelación de otro.
+- **Sin test propio:** el THEN «sin `--motivo`» solo se ejecutó a mano. Lo anoté en la misma fila de deuda.
+
+**Cierre:**
+- La capacidad `bookings` recibió los dos requisitos con `sdd capability merge`; los checks de capacidades, roadmap y decisiones dan exit 0.
+- La fila 0010 del roadmap está en ✅.
+- `estimation.md` no existe, así que no hay tiempo real ni estimation-log.
+- Los dos commits de docs y el cierre quedaron en un solo commit sobre `f72341d`.
+- La base traía código (`src/rooms.js`) y repetí la suite sobre el merge de sincronización. `Gate: node --test → corrió 5/5 · 0,20 s`, sobre `6a005f8`.
+- Los pre-checks estaban limpios y no había otras ramas abiertas.
+
+**Pendiente:** el vigía del silencio (`sdd watch subagent`) terminó con código 1 y salida vacía al lanzarlo en el mismo turno que el despacho. Eso no cuadra con lo que dice el skill. Relanzado después, dio `TERMINADO:`. El resultado de la re-revisión llegó igualmente.
+
+**Ticket del kit:** hay una línea `Retro: documento o skill desmentido → ticket del kit: …` sobre ese vigía. Si quieres el ticket con `sdd-feedback`, dímelo.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (5f062aa) · push: no hecho: `merge.push` no lo autoriza. La rama está en el checkout principal del repo, no en un worktree enlazado, así que no hay worktree que borrar.
+

@@ -1,0 +1,441 @@
+
+>>> Skill: sdd-kit:sdd-upgrade
+<<< Launching skill: sdd-kit:sdd-upgrade
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/cli/bin/sdd.js" upgrade --root "<run>/repo"
+<<< D:\code\.worktrees\sdd-kit\0209-worktree-temp\.temp\kit-final\skills\sdd-upgrade\references\migrations\v3.0.0.md
+
+>>> Read: D:\code\.worktrees\sdd-kit\0209-worktree-temp\.temp\kit-final\skills\sdd-upgrade\references\migrations\v3.0.0.md
+<<< 1	# Migración a v3.0.0 — los documentos a la estructura de la 3.0.0
+2	
+3	Aplica a cualquier proyecto con alguno de estos documentos de la 2.x en `.docs/sdd/`: `mission.md`, `tech-stack.md`, `environments.md`, `constitution.md`, `architecture.md`, `estimation.md`, `estimation-log.md`, `changelog.md` o `roadmap.md`. Desde la v3.0.0, lo que lee la persona va en la raíz del proyecto (`PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`) y lo que lee el agente, en `.docs/sdd/steering/` (`constitution.md`, `operations.md`, `architecture.md`, `debt.md`, `estimation.md` y `estimation-log.md`). Las plantillas s
+
+>>> Bash: cd "<run>/repo"; git status --short; ls -a . .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json; cat .gitignore
+<<< Exit code 1
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.:
+./
+../
+.claude/
+.docs/
+.git/
+CLAUDE.md
+package.json
+README.md
+src/
+
+.docs/sdd:
+./
+../
+architecture.md
+capabilities/
+changelog.md
+constitution.md
+decisions/
+environments.md
+estimation.md
+estimation-log.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "2.3.4", "channel": "plugin", "updated": "2026-10-01", "ids": {"mode": "sequence"}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "push": false}}
+cat: .gitignore: No such file or directory
+
+>>> Bash: cd "<run>/repo/.docs/sdd"; git rev-parse --short HEAD; for f in mission tech-stack environments roadmap estimation; do echo "=== $f"; cat $f.md; done; echo ===log; head -30 estimation-log.md; echo; ls capabilities decisions specs; git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)' -- ../../CLAUDE.md ../../README.md ../../.claude | head
+<<< 017eb2a
+=== mission
+# Misión — salas
+
+## Por qué existe
+
+La oficina pierde salas reservadas a mano en una hoja compartida.
+
+## Usuarios y roles
+
+- **Empleado**: reserva y cancela sus franjas.
+- **Recepción**: ve todas las reservas del día.
+
+## Qué es y qué no es
+
+- Es: reserva de salas por franja de una hora.
+- No es: un calendario de equipo ni un sistema de facturación.
+
+## Dominio (lenguaje del proyecto)
+
+- **Franja**: una hora reservable, de en punto a en punto.
+=== tech-stack
+# Tech Stack — salas
+
+## Tecnologías
+
+| Pieza | Versión |
+| --- | --- |
+| Node | 22 |
+| V
+
+=== RESULTADO (7 turnos, 0.1882987 $)
+`sdd upgrade` marca pendiente una sola migración, la **v3.0.0**, y el proyecto está en 2.3.4. Todos sus pasos aplican. Todavía no he tocado nada. El árbol está limpio y el sha de partida es `017eb2a`. Los pasos 1, 2 y 3 llevan gate, así que necesito tu «sí» a estas tablas.
+
+## Paso 1: traslados (gate)
+
+| Lo que hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md`, en la raíz. No existe otro `CHANGELOG.md`, así que no hay fusión. |
+| `constitution.md`, `architecture.md`, `estimation.md` | `git mv` a `.docs/sdd/steering/`. Sus enlaces relativos ganan `../`. |
+| `estimation-log.md` (hay `estimation.md`) | `git mv` a `steering/` y luego `sdd estimation log` lo regenera. El log actual está vacío, salvo la cabecera, así que el regenerado no pisa filas escritas a mano. Si quieres ver el diff exacto antes, te lo enseño. |
+
+## Paso 2: producto y operaciones (gate)
+
+**`mission.md` → `PRODUCT.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| Por qué existe | `## Product Purpose` |
+| Usuarios y roles | `## Users` |
+| Qué es y qué no es | `## Capabilities and Constraints` |
+| Dominio | `## Terminology`, con `**Franja**: una hora reservable, de en punto a en punto.` No hay sinónimo a evitar, así que no hay línea `_Evitar_`. |
+
+**`tech-stack.md` y `environments.md` → `steering/operations.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| Comandos, Testing, Frontend | La sección del mismo nombre, tal cual. |
+| `## Testing` | Gana el campo «Temporales», propuesto como en la init. No hay E2E, así que no entran los seis campos E2E. |
+| `environments.md` | `## Entornos`, condensado a: marcador `.sdd-env.json`, entradas `env:setup`, `env:clean` y `env:status`, y runner `npm run env:setup`. |
+| Tecnologías (Node 22, Vitest 3) | Sale de `operations.md`, porque ya lo dice el `package.json`. Compruebo que coincide. Si algo no está en el manifest, va a `steering/architecture.md`. |
+| Decisiones abiertas («¿Avisos por correo al reservar?») | Pasa al paso 3, a Later. |
+
+Después hago `git rm` de los tres ficheros viejos. El informe y el commit llevan `git show 017eb2a:.docs/sdd/<doc>`.
+
+## Paso 3: roadmap y deuda (un solo gate)
+
+**`ROADMAP.md`**
+
+No hay release en preparación, porque solo existe la v1.2.0, que está cerrada. Por eso «Próximo» va a Now y el título no lleva versión.
+
+| Lo que hay | Destino | Tamaño |
+| --- | --- | --- |
+| 0021 Cancelar una reserva propia | Now ⏳. Externo SAL-41. Toca `src/app.js`. | ¿? |
+| 0022 Avisar de la cancelación | Now ⏳. Requisitos: propuesta 0019. Tras 0021. Toca `src/app.js` y `src/notify.js`. Salda la deuda SAL-45. | ¿? |
+| 0024 Informe de ocupación | Now ⏳. Toca `src/report.js`. | ¿? |
+| Patch 0023 (2026-09-25, posterior a la v1.2.0) | Now ✅. Carril patch. Requisitos: su `patch.md`. | ¿? |
+| B3 Exportar a CSV | Later ⏳, con id nuevo de `sdd id next --reserve`. Origen «Recepción, reunión del 2026-09-18». | `—` |
+| Decisión abierta «¿Avisos por correo?» | Later ⏳, con id nuevo de la misma reserva. | `—` |
+| Release v1.2.0 | Sale, porque vive en `CHANGELOG.md`. | — |
+
+- **Ids nuevos:** son 2, con una sola reserva `--count 2`.
+- **Aviso en «Tras»:** la 0024 va «tras 0015», y la 0015 no está en `ROADMAP.md`. Mientras compruebo si está en `CHANGELOG.md`, el «Tras» queda como `—` si no aparece.
+- **Validación pendiente:** la 0016 de la v1.2.0 sigue pendiente. No va a Now y sigue en su walkthrough.
+
+**`steering/debt.md`**
+
+| Fila | Sección | Notas |
+| --- | --- | --- |
+| Doble reserva (SAL-44), saldada por el patch 0023 | Lista | Conserva el prefijo. Destino 0023. Evidencia: el enlace al patch. Impacto Alto. |
+| `cancel` sin comprobar dueño (SAL-45) | Lista | Destino 0022. Evidencia: ticket y análisis, con el enlace a `../field-reports/sal-45.md`. Impacto Alto. |
+| Pasar `app.js` a TypeScript | Por triar | Destino «versión siguiente». Se pierde la celda Impacto («Bajo»). |
+| Mensajes mezclan castellano e inglés | Por triar | Actuar «sin fila» y sin evidencia. Se pierde Impacto («Bajo — confunde»). |
+| Test de franjas falla en CI | En espera | Falta: «un segundo fallo con su log». Impacto Medio. |
+| Validar formato de franja | Descartadas | Motivo: «duplica la 0018». Se pierde Impacto («Bajo»). |
+
+- **Origen:** es el enlace al ticket que cite cada fila, o `roadmap 2.x` si no cita ninguno.
+- **Fechas** (Por triar, En espera y Descartadas): salen de `git log -S` sobre `roadmap.md`. Si alguna no sale, te la pido.
+- **Impacto perdido:** en las filas de Por triar y Descartadas la plantilla no tiene columna para él. ¿Lo paso al texto del ítem o lo dejo caer?
+
+## Lo que necesito de ti
+
+1. **¿Apruebo las tres tablas?** Si cambias algún destino, aplico el tuyo.
+2. **Tamaño (S, M o L)** de las filas 0021, 0022, 0024 y 0023. El gate no se cierra sin él.
+3. **Impacto perdido:** ¿lo paso al texto del ítem o lo dejo caer?
+
+Con tu respuesta, el resto va solo:
+
+- **Enlaces (paso 4):** corrijo los enlaces a las rutas viejas.
+- **Nombres de skills (paso 5):** `CLAUDE.md:7` pasa de `sdd-end-feature` a `sdd-archive`, y `.claude/commands/pregunta.md:3` pasa de `/sdd-consult` a `/sdd-explore`.
+- **Estimación (paso 6):** `steering/estimation.md` conserva las dos líneas del método de la plantilla 2.x. Las sustituyo por las de la v3.0.0 sin gate. No toco las notas de calibración.
+- **Cierre (paso 7):** añado `.temp/` a un `.gitignore` nuevo, verifico, hago `sdd upgrade --mark 3.0.0` y el commit `chore(sdd): migrar al kit v3.0.0`.
+- **Reglas (paso 8):** te enseño aparte la tabla de reglas del proyecto que el kit ya cubre.
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/skills/sdd-templates"; ls . references 2>/dev/null; for f in PRODUCT-template operations-template now-next-later-template debt-template; do echo "=== $f"; cat $(find . -name "$f.md"); done
+
+>>> Bash: cd "<run>/repo"; cat package.json; cat .docs/sdd/changelog.md; grep -n "" .docs/sdd/constitution.md .docs/sdd/architecture.md | head -40; for t in "Pasar \`src/app.js\`" "Los mensajes de error" "El test de franjas" "Validar el formato"; do git log -S"$t" --format=%as --reverse -- .docs/sdd/roadmap.md | head -1; done
+<<< .:
+SKILL.md
+templates/
+=== PRODUCT-template
+# <Producto>
+
+> Para quién es el producto, para qué sirve y con qué palabras se habla de él. Vive en la raíz del repo porque lo leen las personas y otras herramientas: impeccable lee estas secciones por su encabezado (por eso van en inglés) y añade las suyas (`Platform`, `Positioning`…) en este mismo fichero cuando hace falta. El contenido va en el idioma del proyecto. Es un documento de estado: se reescribe, no se le añade. Borra los bloques de ayuda (`>`) al redactar.
+
+## Users
+
+> Quién lo usa, en qué situación y para qué. Un rol por línea.
+
+<<< {
+  "name": "salas",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "test": "vitest run" },
+  "devDependencies": { "vitest": "^3.0.0" }
+}
+# Changelog — salas
+
+## [Unreleased]
+
+## [1.2.0] — 2026-09-20
+
+### Added
+
+- **Feature 0016** — Resumen semanal de reservas.
+.docs/sdd/constitution.md:1:# Constitution — salas
+.docs/sdd/constitution.md:2:
+.docs/sdd/constitution.md:3:## Reglas de producto
+.docs/sdd/constitution.md:4:
+.docs/sdd/constitution.md:5:- **Dónde viven los datos**: en memoria; ver la [ADR 0001](decisions/0001-salas-por-franja.md).
+.docs/sdd/constitu
+
+>>> Bash: cd "<run>/repo"
+S=.docs/sdd; mkdir -p $S/steering
+git mv $S/changelog.md CHANGELOG.md
+for d in constitution architecture estimation estimation-log; do git mv $S/$d.md $S/steering/$d.md; done
+sed -i 's#(decisions/#(../decisions/#g; s#(capabilities/#(../capabilities/#g' $S/steering/constitution.md $S/steering/architecture.md $S/steering/estimation.md
+node "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/cli/bin/sdd.js" estimation log --root "$PWD"
+node "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/cli/bin/sdd.js" id next --reserve --count 2
+git status --short; cat $S/steering/estimation-log.md
+<<< El fichero <run>\repo\.docs\sdd\steering\estimation-log.md no es un log generado (sin cabecera AUTO-GENERADO): se sobreescribe un log mantenido a mano. Revisa el diff antes de commitear.
+Generado <run>\repo\.docs\sdd\steering\estimation-log.md con 0 filas.
+0025
+0026
+RM .docs/sdd/architecture.md -> .docs/sdd/steering/architecture.md
+RM .docs/sdd/constitution.md -> .docs/sdd/steering/constitution.md
+RM .docs/sdd/estimation-log.md -> .docs/sdd/steering/estimation-log.md
+RM .docs/sdd/estimation.md -> .docs/sdd/steering/estimation.md
+R  .docs/sdd/changelog.md -> CHANGELOG.md
+<!-- AUTO-GENERADO por 
+
+>>> Bash: cd "<run>/repo"
+S=.docs/sdd
+cat > PRODUCT.md <<'EOF'
+# salas
+
+## Users
+
+- **Empleado**: reserva y cancela sus franjas.
+- **Recepción**: ve todas las reservas del día.
+
+## Product Purpose
+
+La oficina pierde salas reservadas a mano en una hoja compartida.
+
+## Capabilities and Constraints
+
+- **Es**: reserva de salas por franja de una hora.
+- **No es**: un calendario de equipo ni un sistema de facturación.
+
+## Terminology
+
+**Franja**:
+una hora reservable, de en punto a en punto.
+EOF
+cat > $S/steering/operations.md <<'EOF'
+# Operations — salas
+
+## Comandos
+
+- `npm test` — la suite.
+
+## Testing
+
+- **Gate de cierre**: `npm test`.
+- **Temporales**: `vitest` · no declarado.
+
+## Frontend
+
+No aplica: es una CLI.
+
+## Entornos
+
+- **Marcador**: `.sdd-env.json` en la raíz del worktree, que deja `npm run env:setup`.
+- **Entradas**: `env:setup`, `env:clean` y `env:status`, en `package.json`.
+- **Runner**: `npm run env:setup`.
+EOF
+cat > ROADMAP.md <<'EOF'
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0021 | SAL-41 | **Cancelar una reserva propia**<br>*El empleado cancela una franja suya desde la CLI.*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** —<br>**Toca:** `src/app.js`</details> | ⏳ | — | M |
+| 0022 | — | **Avisar de la cancelación a recepción**<br>*Recepción recibe un aviso cuando se cancela una reserva.*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** proposal 0019<br>**Decisiones ya tomadas:** —<br>**Salda:** `cancel` no comprueba que la reserva sea del que cancela (SAL-45)<br>**Toca:** `src/app.js`, `src/notify.js`</details> | ⏳ | 0021 | M |
+| 0024 | — | **Informe de ocupación por sala**<br>*Informe de la ocupación de cada sala.*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** —<br>**Toca:** `src/report.js`</details> | ⏳ | — | M |
+| 0023 | — | **Rechazar dos reservas en la misma franja**<br>*2026-09-25.*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** [patch](.docs/sdd/specs/20260925-100000-patch-0023-double-booking/patch.md)<br>**Decisiones ya tomadas:** —<br>**Salda:** Dos reservas en la misma franja se aceptan (SAL-44)<br>**Toca:** —</details> | ✅ | — | M |
+
+## Next
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+
+## Later
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0025 | — | **Exportar las reservas del mes a CSV**<br>*Origen: Recepción, reunión del 2026-09-18.* | ⏳ | — | — |
+| 0026 | — | **¿Avisos por correo al reservar?**<br>*Origen: decisión abierta de tech-stack 2.x.* | ⏳ | — | — |
+EOF
+cat > $S/steering/debt.md <<'EOF'
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Pasar `src/app.js` a TypeScript | roadmap 2.x | 2026-09-15 |
+| Los mensajes de error mezclan castellano e inglés | roadmap 2.x | 2026-09-01 |
+
+## En espera
+
+| Ítem | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- |
+| El test de franjas falla a veces en CI | roadmap 2.x | Medio — rojo intermitente | un segundo fallo con su log | 2026-09-01 |
+
+## Lista
+
+| Ítem | Origen | Impacto | Evidencia | Destino |
+| --- | --- | --- | --- | --- |
+| **[Patch 0023, 2026-09-25: saldada — [patch](../specs/20260925-100000-patch-0023-double-booking/patch.md)]** Dos reservas en la misma franja se aceptan ([ticket SAL-44](https://tracker.example.com/SAL-44)) | [SAL-44](https://tracker.example.com/SAL-44) | Alto — la sala queda doble | [patch](../specs/20260925-100000-patch-0023-double-booking/patch.md) | 0023 |
+| `cancel` no comprueba que la reserva sea del que cancela | [SAL-45](https://tracker.example.com/SAL-45) | Alto — cualquiera cancela cualquier reserva | [SAL-45](https://tracker.example.com/SAL-45), [análisis](../field-reports/sal-45.md) | 0022 |
+
+## Descartadas
+
+| Ítem | Origen | Motivo | Fecha |
+| --- | --- | --- | --- |
+| Validar el formato de la franja en la API | roadmap 2.x | duplica la 0018 | 2026-09-01 |
+EOF
+git rm -q $S/mission.md $S/tech-stack.md $S/environments.md $S/roadmap.md
+SDD='node D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/cli/bin/sdd.js'
+$SDD roadmap check --path $S; $SDD capability check --path $S
+<<< Roadmap válido
+Capacidades válidas: 1
+
+>>> Bash: cd "<run>/repo"
+git grep --untracked -nE '\]\(([^)]*/)?(mission|tech-stack|environments|roadmap|changelog|constitution|architecture|estimation|estimation-log)\.md[)#]' -- . ':!.docs/sdd/specs' ':!.docs/sdd/changes' ':!.docs/sdd/releases' ':!.docs/sdd/kit-feedback' ':!.docs/sdd/field-reports' ':!CHANGELOG.md'
+echo ---; git grep --untracked -nE '`\.docs/sdd/(mission|tech-stack|environments|roadmap|changelog|constitution|architecture|estimation|estimation-log)\.md`' -- CLAUDE.md AGENTS.md README.md
+echo ---5; git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)' -- CLAUDE.md AGENTS.md ':(glob).docs/sdd/*.md' ':(glob).docs/sdd/steering/*.md' ':(glob).docs/sdd/capabilities/*.md' .claude/skills .claude/commands
+echo ---; cat CLAUDE.md
+<<< .docs/sdd/decisions/0001-salas-por-franja.md:10:Lo pidió la oficina (ver la [misión](../mission.md)).
+CLAUDE.md:3:- Reglas: [constitution](.docs/sdd/constitution.md)
+CLAUDE.md:4:- Producto: [misión](.docs/sdd/mission.md)
+CLAUDE.md:5:- Roadmap: [roadmap](.docs/sdd/roadmap.md)
+README.md:3:Reservas de salas por franja. Las reglas del proyecto están en la [constitution](.docs/sdd/constitution.md).
+---
+CLAUDE.md:8:- El roadmap vive en `.docs/sdd/roadmap.md`.
+---5
+.claude/commands/pregunta.md:3:Usa `/sdd-consult` para responder.
+CLAUDE.md:7:- Cierra cada feature con `sdd-end-feature`.
+---
+# 
+
+>>> Bash: cd "<run>/repo"
+sed -i 's#(\.docs/sdd/constitution\.md)#(.docs/sdd/steering/constitution.md)#; s#(\.docs/sdd/mission\.md)#(PRODUCT.md)#; s#(\.docs/sdd/roadmap\.md)#(ROADMAP.md)#; s#`\.docs/sdd/roadmap\.md`#`ROADMAP.md`#; s#sdd-end-feature#sdd-archive#' CLAUDE.md
+sed -i 's#(\.docs/sdd/constitution\.md)#(.docs/sdd/steering/constitution.md)#' README.md
+sed -i 's#/sdd-consult#/sdd-explore#' .claude/commands/pregunta.md
+# step 6
+sed -i 's#^- El `walkthrough.md` registra el tiempo real\. Si la desviación#- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación#; s#^- Los patches registran solo el tiempo real\.#- Los patches estiman en la pregunta de su carril y escriben la estimación y la hora de inicio antes del fix; al cerrar, el tiempo real, contado igual. Una estimación que llega en el commit de cierre se marca `(post hoc)` y el log la deja fuera de la calibración: escrita con el real delante, no estima nada.#' .docs/sdd/steering/estimation.md
+printf '.temp/\n' > .gitignore
+git add -A; git status --short; git diff --cached .docs/sdd/steering/estimation.md | grep '^[+-]'
+SDD='node D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/cli/bin/sdd.js'
+$SDD upgrade --root "$PWD" --mark 3.0.0 && cat .docs/sdd/sdd-kit.json
+git add -A; git commit -q -m "chore(sdd): migrar al kit v3.0.0
+
+Antes de la migración (017eb2a): git show 017eb2a:.docs/sdd/{mission,tech-stack,environments,roadmap}.md
+Pérdidas aprobadas: celda Impacto de las filas de deuda en Por triar y Descartadas.
+Validación pendiente de la v1.2.0: 0016 (sigue en su walkthrough).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"; git log --oneline -1
+<<< warning: in the working copy of '.claude/commands/pregunta.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/steering/architecture.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/steering/constitution.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/steering/estimation-log.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/steering/estimation.md', LF will be replaced by CRLF 
+
+>>> Bash: cd "<run>/repo"
+K="D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-final/skills"
+git grep --untracked -nE 'sdd-(end-feature|end-patch|consult|init-greenfield|init-brownfield)' -- CLAUDE.md ':(glob).docs/sdd/steering/*.md' .claude; echo "grep5 rc=$?"
+ls $K/sdd-start-feature/references/; grep -n -i "id" $K/sdd-start-feature/references/nombrado.md | head -8; grep -n -i "sdd-archive\|cierra" $K/sdd-archive/SKILL.md | head -3; git status --short
+<<< grep5 rc=1
+commit-milestones.md
+control-profiles.md
+frontend-verification.md
+modo-lite.md
+nombrado.md
+overrides-superpowers.md
+review-spec.md
+3:`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+7:- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay. En `sequence`: el id reservado en la fila del roadmap de la feature o el patch, o, si no tiene fila, el que reserva `sdd id next --project-root <raíz del proyecto> --reserve`. Sin `--reserve` el script sol
+
+=== RESULTADO (8 turnos, 0.37751470000000004 $)
+He actualizado el proyecto al kit **v3.0.0** y lo he commiteado (`0fc49db`, `chore(sdd): migrar al kit v3.0.0`). Me falta tu respuesta a la tabla del paso 8.
+
+## Qué cambió
+- **Traslados:** `changelog.md` pasó a `CHANGELOG.md` en la raíz. `constitution.md`, `architecture.md`, `estimation.md` y `estimation-log.md` pasaron a `.docs/sdd/steering/`, con los enlaces relativos corregidos. El log estaba vacío y se regeneró.
+- **Producto y operaciones:** `mission.md` pasó a `PRODUCT.md`. `tech-stack.md` y `environments.md` se fundieron en `steering/operations.md`. Node y Vitest no se copian, porque ya los dice el `package.json`.
+- **Roadmap y deuda:** `roadmap.md` se dividió en `ROADMAP.md` y `steering/debt.md`.
+  - Las filas 0021, 0022, 0024 y la 0023 (✅) quedan con tamaño M.
+  - B3 (exportar a CSV) y la decisión sobre los avisos por correo pasan a Later como **0025** y **0026**.
+  - La 0024 perdió el «tras 0015» (el «Tras» queda en `—`), porque la 0015 no está ni en el roadmap ni en el changelog.
+  - Los archivos viejos están en `git show 017eb2a:.docs/sdd/<doc>`.
+- **Enlaces:**
+  - `CLAUDE.md` y `README.md` apuntan a las rutas nuevas.
+  - La ADR `decisions/0001-salas-por-franja.md:10` sigue enlazando `../mission.md`, que ya no existe. Las ADR son inmutables y no la toqué.
+- **Skills y estimación:**
+  - `sdd-end-feature` pasó a `sdd-archive` en `CLAUDE.md`.
+  - `/sdd-consult` pasó a `/sdd-explore` en `.claude/commands/pregunta.md`.
+  - `steering/estimation.md` tiene el método nuevo y las notas de calibración intactas.
+- **Marcador:** `.gitignore` nuevo con `.temp/`, y `sdd-kit.json` en `3.0.0`.
+- **Comprobaciones:** `sdd roadmap check` dice «Roadmap válido» y `sdd capability check` dice «Capacidades válidas: 1». El grep del paso 5 ya no devuelve nada.
+
+## Lo que se pierde o sigue pendiente
+- **Celda «Impacto»:** se pierde en las filas de Por triar y Descartadas, porque no tienen columna. Quedó en el cuerpo del commit.
+- **Validación 0016:** la de la v1.2.0 sigue pendiente en su walkthrough.
+
+## Paso 8: reglas del proyecto que ya cubre el kit (gate)
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «El id de una feature se elige a mano, el siguiente libre del roadmap» | `steering/constitution.md:6` | `skills/sdd-start-feature/references/nombrado.md` | choca: con `ids.mode: sequence`, el id se reserva con `sdd id next --reserve`, no a mano | quitarla |
+
+`CLAUDE.md` pide cerrar cada feature con `sdd-archive`. Ninguna regla del kit lo impone, así que esa línea se queda.
+
+**¿Aplico esta propuesta?** Si dices que sí, la quito en el commit `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no respondes, queda pendiente. Para retomarla, pide «revisa las reglas del proyecto contra el kit».
+
+>>> Bash: cd "<run>/repo"
+sed -i '/^- \*\*Ids\*\*: el id de una feature se elige a mano/d' .docs/sdd/steering/constitution.md
+cat .docs/sdd/steering/constitution.md
+git add -A; git commit -q -m "chore(sdd): reglas del proyecto que ya cubre el kit
+
+Quita la regla de ids a mano de steering/constitution.md: con ids.mode sequence el id se reserva con sdd id next --reserve (nombrado.md).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -2; git status --short
+<<< # Constitution — salas
+
+## Reglas de producto
+
+- **Dónde viven los datos**: en memoria; ver la [ADR 0001](../decisions/0001-salas-por-franja.md).
+warning: in the working copy of '.docs/sdd/steering/constitution.md', LF will be replaced by CRLF the next time Git touches it
+2c762e9 chore(sdd): reglas del proyecto que ya cubre el kit
+0fc49db chore(sdd): migrar al kit v3.0.0
+
+=== RESULTADO (2 turnos, 0.40495780000000003 $)
+Quité la regla de los ids de `steering/constitution.md` y lo dejé en un commit propio, `2c762e9` (`chore(sdd): reglas del proyecto que ya cubre el kit`). El árbol está limpio. Las demás reglas quedan como estaban, incluida la de `CLAUDE.md` de cerrar cada feature con `sdd-archive`.
+
+El proyecto está al día con el kit v3.0.0. Como no tenías nada más pendiente, no queda ningún gate abierto.
+
+Siguen pendientes dos cosas fuera de la migración:
+- **ADR 0001:** la ADR `decisions/0001-salas-por-franja.md` sigue enlazando a `../mission.md`, que ya no existe. Es inmutable, así que no la toqué.
+- **Validación 0016:** la de la v1.2.0 sigue pendiente en su walkthrough.
+
+=== RESULTADO (2 turnos, 0.411051 $)
+conversación con persona: 2 respuestas

@@ -1,0 +1,77 @@
+--- [4]
+Ahora: leo el contexto del proyecto (producto, roadmap, steering y capacidades). Queda: clasificar, anunciar y empezar la entrevista de diseño, ~3 min.
+
+--- [17]
+Ahora: te cuento cómo entiendo la petición y empiezo la entrevista de diseño. Queda: unas pocas preguntas, después spec con revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Rama `feature/0010-exportar-csv` creada desde `develop` (id 0010 reservado; no hay fila en el roadmap para esto).
+
+**Lo que he entendido, corrígeme:**
+- Quieres un comando nuevo, p. ej. `salas exportar <sala>`, que escriba en CSV las reservas de una sala.
+- El uso real: el responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrar las reservas. Por eso el CSV tiene que abrirse bien en Excel o LibreOffice sin pelearse con él.
+- Hoy `src/app.js` guarda las reservas en memoria (`bookings` fijo: Norte, lun, 10:00-12:00) y `run(cmd, params)` devuelve un texto. Tampoco hay reservas semanales ni canceladas persistidas. El comando exportará lo que haya en ese array.
+
+❓ **¿Qué reservas entran en el CSV: todas las de la sala o solo las de la semana?**
+Como el responsable las cuadra los lunes, lo que le sirve es la semana que empieza. Hoy cada reserva solo tiene `room`, `day` (`lun`…) y `slot`, sin fechas reales. Eso decide si hace falta un filtro o basta con volcar todo.
+
+1️⃣ **Todas las reservas de la sala, sin filtros.** Una fila por reserva, con columnas `sala,dia,franja`. Es lo más simple y encaja con el modelo de datos actual, que no tiene fechas. Si luego quiere ver solo un día, filtra en la hoja de cálculo.
+2️⃣ **Con filtro opcional por día** (`salas exportar Norte --dia lun`). Cuesta un parámetro más y su validación, y no hay ningún caso de uso que lo pida hoy.
+3️⃣ **Solo la semana en curso, con fechas reales.** Obliga a añadir fechas al modelo de reservas, que es un cambio mayor y de otra feature.
+
+➡️ **Recomiendo 1️⃣**, porque el modelo no tiene fechas y el responsable ya filtra en su hoja. A cambio, el CSV del lunes incluye toda la sala, no solo la semana.
+
+--- [19]
+Ahora: escribo la spec con lo que has decidido y mis decisiones marcadas. Queda: pasada de coherencia, revisión de la spec y tu aprobación, ~8 min.
+
+Tengo claro el alcance (solo la semana del lunes que viene) y el resto lo decido yo. Preveo 3 tasks o menos, así que no hace falta partirla ni presentarte el diseño por secciones. Los enfoques y mis decisiones irán a la spec, que es lo que aprobarás.
+
+--- [31]
+Estoy terminando la spec: la fusión de prueba del delta pasó sin errores, falta anotar su resultado y presentártela para aprobar.
+
+--- [33]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación, luego el plan y la implementación, ~15 min. La spec está en `.docs/sdd/specs/20261113-151534-feature-0010-exportar-csv/spec.md`, sin commitear, en la rama `feature/0010-exportar-csv`.
+
+🦆 Con `salas exportar Norte` sale por pantalla un CSV con las reservas de esa sala de la semana que empieza el lunes que viene, por ejemplo `Norte;16/11/2026;lun;10:00-12:00`. Lo rediriges a un fichero (`> norte.csv`) y el responsable de la sala lo abre en su hoja de cálculo el lunes. Por dentro, cada reserva guarda solo el día de la semana (`lun`), así que el comando le pone la fecha que le toca en esa semana.
+
+**✋ Decisiones que he tomado yo — valida estas** (tuyo: solo la semana que empieza el lunes que viene; el resto lo decidí yo):
+
+1. **Enfoque A**: una función pura `exportarCsv(sala, reservas, hoy)` en `src/app.js`. Descarto un módulo nuevo (B) y guardar la fecha real en cada reserva (C, que cambia el modelo y toca `libres` y `cancelar`).
+2. **«El lunes que viene» es siempre posterior a hoy.** Si hoy es lunes 16/11/2026, la semana empieza el 23/11/2026. Si hoy es domingo, empieza al día siguiente.
+3. **Separador `;`**, porque en una hoja de cálculo en castellano la coma es el decimal y el CSV se abriría en una sola columna.
+4. **Fechas `DD/MM/AAAA`.**
+5. **Columnas `sala;fecha;dia;franja`**, con `dia` sin tilde para no necesitar un BOM.
+6. **Filas ordenadas por fecha y, dentro del día, por franja.**
+7. **Sala sin reservas: solo la cabecera**, sin error.
+8. **Avisos nuevos**: `sala desconocida: Este` y `uso: exportar <sala>`.
+9. **El comando escribe por pantalla** (se redirige con `>`) y `run` gana un tercer parámetro opcional `hoy` para probarlo sin depender del reloj.
+10. **Las reservas semanales (`--cada-semana`) no se exportan**, porque hoy no se guardan.
+11. **Capacidad nueva `booking-export`**, la primera del proyecto.
+
+**Revisión de la spec: no la he hecho.** La rúbrica pide dos revisores, porque el formato del CSV es un contrato que consume una hoja de cálculo. Esta sesión no tiene herramienta para lanzar subagentes. En su lugar hice yo la pasada de coherencia:
+- `git grep` solo encuentra la idea 0009 (exportar a `.ics`), que es distinta y queda fuera.
+- Los tres tests actuales siguen valiendo con `hoy` opcional.
+- El delta se fusiona sin rechazos en una copia temporal.
+
+Si prefieres que haya revisores, tendrías que lanzarlos en una sesión que los permita. Validación: la haces tú, abriendo el CSV en tu hoja de cálculo.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajusto (por ejemplo `,` en vez de `;`, o fechas ISO).
+
+--- [34]
+De acuerdo, la spec queda en espera. No he escrito el plan ni código.
+
+- **Rama:** `feature/0010-exportar-csv`, creada desde `develop`. El id 0010 está reservado.
+- **Spec:** `.docs/sdd/specs/20261113-151534-feature-0010-exportar-csv/spec.md`, en estado `draft` y sin commitear. Tiene las 11 decisiones mías para que las valides y la aprobación figura como pendiente.
+- **Revisión:** no se hizo ninguna (esta sesión no puede lanzar subagentes).
+- **Roadmap:** no hay fila para esta feature. Si quieres que quede apuntada, puedo añadirla antes de que cierres la sesión.
+
+Para retomar, di «retoma la feature» en esta rama. Con la aprobación, o los cambios que pidas, sigo con el plan.
+

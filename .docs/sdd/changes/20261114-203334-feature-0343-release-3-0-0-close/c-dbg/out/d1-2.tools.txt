@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: ls -la .githooks .docs/sdd/steering 2>&1; echo ---; git config core.hooksPath; echo ---; cat .githooks/pre-commit; echo ---; cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ---; git status --short
+<<< .docs/sdd/steering:
+total 3
+drwxr-xr-x 1 <user> 197609   0 Nov 14 23:01 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 14 23:01 ../
+-rw-r--r-- 1 <user> 197609 446 Nov 14 19:50 constitution.md
+-rw-r--r-- 1 <user> 197609 438 Nov 14 19:50 debt.md
+-rw-r--r-- 1 <user> 197609 235 Nov 14 19:50 operations.md
+
+.githooks:
+total 8
+drwxr-xr-x 1 <user> 197609   0 Nov 14 23:01 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 14 23:01 ../
+-rwxr-xr-x 1 <user> 197609 830 Nov 14 19:50 pre-commit*
+---
+.githooks
+---
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+import { spawnSync } fro
+
+>>> Bash: node .githooks/pre-commit; echo "exit=$?"; echo ---; for v in GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE; do printf '%s=%s\n' $v "${!v-UNSET}"; done; git worktree list; ls .git 2>&1 | head -20
+<<< exit=0
+---
+GIT_DIR=UNSET
+GIT_INDEX_FILE=UNSET
+GIT_WORK_TREE=UNSET
+<run>/repo 1561313 [develop]
+COMMIT_EDITMSG
+config
+description
+HEAD
+hooks/
+index
+info/
+logs/
+objects/
+refs/
+
+>>> Bash: GIT_INDEX_FILE=.git/index node .githooks/pre-commit; echo "exit=$?"; echo ---; GIT_INDEX_FILE="$PWD/.git/index" node .githooks/pre-commit; echo "exit=$?"; git worktree list; git status --short
+<<< fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit=1
+---
+exit=0
+<run>/repo 1561313 [develop]
+ M .docs/sdd/sdd-kit.json
+ M .githooks/pre-commit
+?? notas.txt
+
+>>> Bash: git diff --stat; git diff | head -30; git ls-files; git ls-tree -r HEAD --name-only
+<<< warning: in the working copy of '.docs/sdd/sdd-kit.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.githooks/pre-commit', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/sdd-kit.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.githooks/pre-commit', LF will be replaced by CRLF the next time Git touches it
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+
+
+>>> Bash: git add notas.txt 2>&1 | grep -v warning; git status --short; git worktree prune; git worktree list
+<<<  M .docs/sdd/sdd-kit.json
+ M .githooks/pre-commit
+A  notas.txt
+<run>/repo 1561313 [develop]
+
+=== RESULTADO (8 turnos, 0.1444358 $)
+## Causa raíz
+
+El hook `.githooks/pre-commit` hereda `GIT_INDEX_FILE` de `git commit`. Con esa variable, su `git worktree add` no puede crear el worktree temporal.
+
+Cuando git ejecuta un hook de pre-commit, exporta `GIT_INDEX_FILE` con una ruta relativa, `.git/index`. Los `spawnSync('git', …)` del hook heredan esa variable.
+
+- **Dónde falla:** `git worktree add --detach .git/hook-check HEAD`, en la línea 8 del hook. El comando intenta crear el índice del worktree nuevo en `.git/hook-check/.git/index.lock`. Ahí no existe ese directorio todavía, y git aborta.
+- **Cómo lo comprobé:** ejecutado a pelo, el hook sale con 0. Con `GIT_INDEX_FILE=.git/index` falla con este error y sale con 1:
+
+  ```
+  fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory
+  ```
+
+- **Qué no es:** no tiene que ver con `notas.txt`, ni con su contenido. Cualquier commit falla igual. La deuda (`debt.md`) no recoge este fallo.
+- **Por qué no sale en la terminal:** `GIT_INDEX_FILE` solo existe dentro de un commit. En una terminal normal no está definida.
+
+El hook tampoco limpia `GIT_INDEX_FILE`, ni `GIT_DIR` ni `GIT_WORK_TREE`, en ninguno de sus `git`. Con una ruta absoluta el comando no falla, pero ese caso es peor: el checkout escribiría sobre el índice real.
+
+## Un aviso sobre mi prueba
+
+Mi simulación con `GIT_INDEX_FILE` sobreescribió el índice real. `notas.txt` pasó de staged a untracked, y lo volví a añadir con `git add notas.txt`. Ahora está de nuevo como `A`.
+
+Los `M` de `.docs/sdd/sdd-kit.json` y `.githooks/pre-commit` son solo ruido de CRLF. El diff está vacío y no cambié nada de esos archivos.
+
+Queda sin hacer, como pediste, el arreglo del hook.

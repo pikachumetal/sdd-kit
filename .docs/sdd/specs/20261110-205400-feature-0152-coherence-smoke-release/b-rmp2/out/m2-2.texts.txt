@@ -1,0 +1,70 @@
+--- [2]
+Son tres funcionalidades a la vez (ocupación por sala, exportación a Excel y aviso semanal). Según las reglas del proyecto, eso entra por `sdd-roadmap`, así que empiezo por ahí.
+
+--- [5]
+Voy a leer el estado real del proyecto (paso 1).
+
+--- [20]
+Dejé el módulo de informes planificado, pero no escribí código: el trabajo está en una propuesta y tres filas del roadmap, ya commiteadas en `develop`.
+
+Lo hice así porque son tres funcionalidades a la vez, y las reglas del proyecto mandan planificarlas antes de implementarlas. Como dijiste «decide tú los detalles», fijé yo las decisiones y las dejé anotadas en las «Enmiendas» de la propuesta.
+
+La propuesta es la 0008 (`.docs/sdd/specs/20261111-100000-proposal-0008-informes/proposal.md`). Las filas nuevas están en «Próximo»:
+
+| Id | Feature | Va después de |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala (comando `ocupacion`) | — |
+| 0010 | Exportar el informe a Excel (`--xlsx`) | 0009 |
+| 0011 | Aviso semanal a los responsables | 0009 y la fila 1 (avisos por correo) |
+
+Decisiones que tomé:
+- **Cálculo:** ocupación = horas reservadas ÷ horas disponibles, por sala y por semana natural. Las reservas semanales cuentan en cada semana.
+- **Excel:** un `.xlsx` con una hoja «Ocupación», escrito a mano, porque el stack no admite dependencias externas.
+- **Aviso:** se envía cada lunes con el informe de la semana anterior. Los responsables salen de un fichero de configuración. La programación la hace el planificador del sistema llamando a un comando.
+
+Hay cosas que conviene confirmar con el cliente o contigo:
+- **Horario supuesto:** usé lunes a viernes, 08:00-20:00, porque no consta en ningún sitio. Si es otro, cambia todos los porcentajes.
+- **Contradicción con la misión:** `mission.md` dice que la herramienta la usas solo tú, y ahora hay un cliente y «responsables». No lo he tocado, pero habría que actualizarlo.
+- **Aviso depende del correo:** la 0011 espera a la fila 1, porque la herramienta aún no envía correos.
+- **Avisos del validador:** `sdd roadmap check` da 2 avisos en líneas que no toqué: la cabecera de «Deuda técnica» y el formato de v0.3.0. Son del formato antiguo y los arregla la migración v2.3.0.
+- **Commit:** `sdd roadmap publish` se negó porque había cambios sin commitear en `develop`. Hice el commit a mano (03d27fb) solo con esos dos ficheros. Los ids 0008-0011 quedan reservados en esa rama.
+
+La fila que va primero es la 0009. Su prompt de arranque:
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+***Prompt***
+
+```
+Arranca la 0009 con sdd-propose, carril feature: un comando `ocupacion` que muestra, por sala, las horas reservadas, las horas disponibles y el porcentaje de ocupación de una semana.
+
+Alcance:
+- src/app.js: comando `ocupacion [--semana AAAA-MM-DD]` y su cálculo; test/app.test.js
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal a los responsables: 0011
+
+Decisiones ya tomadas:
+- Ocupación = horas reservadas ÷ horas disponibles, con un decimal, porque es la métrica que pide el cliente.
+- Horas disponibles: lunes a viernes 08:00-20:00 (60 h/semana), porque no hay horario en el código; es un supuesto a confirmar con el cliente.
+- Una fila por sala, también las de 0 reservas ("Sur · 0 h · 0,0 %").
+- La reserva semanal (`--cada-semana`) cuenta en cada semana del periodo.
+- Sin parámetro, el periodo es la semana natural en curso; con `--semana`, la semana que contiene esa fecha.
+- Sin dependencias externas (Node 22).
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261111-100000-proposal-0008-informes/proposal.md, §Reglas de negocio
+
+Nada que saldar.
+
+Está hecho cuando `node src/app.js ocupacion --semana 2026-11-09` muestra una línea por sala y, con la reserva de Norte lun 10:00-12:00, Norte sale con 2 h sobre 60 h (3,3 %), y `node --test` pasa.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
+

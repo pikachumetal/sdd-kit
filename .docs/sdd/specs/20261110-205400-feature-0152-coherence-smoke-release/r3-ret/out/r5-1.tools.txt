@@ -1,0 +1,169 @@
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Bash: cd ".docs/sdd/specs/20261020-100000-feature-0081-reminders/" && ls && cat notas-sesion.md && echo ---- && cat walkthrough.md
+<<< Exit code 1
+walkthrough.md
+cat: notas-sesion.md: No such file or directory
+
+>>> Bash: cat .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md; find . -name "notas-sesion*" -not -path "./node_modules/*"; ls
+<<< # Walkthrough — feature 0081
+
+## 1. Cambios realizados
+
+Recordatorio por correo de cada reserva.
+
+## 5. Aprendizajes
+
+- Ninguno.
+
+Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales
+./notas-sesion.md
+CHANGELOG.md
+notas-sesion.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+>>> Bash: cat notas-sesion.md; ls -a; ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat CLAUDE.md 2>/dev/null
+<<< Exit code 1
+# Notas de la sesión de la 0081
+
+- En la Task 1 quedó un `console.log` de depuración en `src/`; lo cazó la revisión final y costó una pasada de fix.
+- En la Task 2 volvió a quedar otro `console.log` en `src/`, con otra pasada de fix.
+- El proyecto corre `node --test` antes de cada commit, y ningún test lo mira.
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+notas-sesion.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+>>> Bash: cat package.json; ls -R test src; head -20 test/*.js | head -40
+<<< {"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+
+>>> Bash: cat > test/sin-console-log.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const src = new URL('../src/', import.meta.url);
+
+test('src/ no deja console.log de depuración', () => {
+  const culpables = readdirSync(src, { recursive: true })
+    .filter((f) => f.endsWith('.js'))
+    .filter((f) => /\bconsole\.log\s*\(/.test(readFileSync(join(src.pathname.replace(/^\/(\w:)/, '$1'), f), 'utf8')));
+  assert.deepEqual(culpables, []);
+});
+EOF
+node --test 2>&1 | tail -15
+python3 - <<'EOF' 2>/dev/null || true
+EOF
+
+<<<   + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/sin-console-log.test.js:12:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'app.js' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+>>> Bash: grep -n "console" src/app.js
+<<< 16:if (command) console.log(run(command, args));
+
+>>> Bash: cat > test/sin-console-log.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+
+const src = fileURLToPath(new URL('../src/', import.meta.url));
+// La única salida permitida es la del CLI: `console.log(run(...))`.
+const permitido = /console\.log\(run\(/;
+
+test('src/ no deja console.log de depuración', () => {
+  const culpables = [];
+  for (const f of readdirSync(src, { recursive: true }).filter((f) => f.endsWith('.js'))) {
+    readFileSync(join(src, f), 'utf8').split('\n').forEach((linea, i) => {
+      if (/\bconsole\.log\s*\(/.test(linea) && !permitido.test(linea)) culpables.push(`${f}:${i + 1}`);
+    });
+  }
+  assert.deepEqual(culpables, []);
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)"
+cd .docs/sdd/specs/20261020-100000-feature-0081-reminders && python3 -c 1 2>/dev/null; node -e "
+const fs=require('fs');let t=fs.readFileSync('walkthrough.md','utf8');
+t=t.replace(/Retro: <señal>.*\$/m,'Retro: error que cazaría un chequeo → un test (test/sin-console-log.test.js)');
+fs.writeFileSync('walkthrough.md',t)"; tail -4 walkthrough.md; cd -; git status --short
+<<< - Ninguno.
+
+Retro: error que cazaría un chequeo → un test (test/sin-console-log.test.js)
+<run>/repo
+ M .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+?? test/sin-console-log.test.js
+
+>>> Bash: node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 4
+ℹ fail 0
+
+=== RESULTADO (11 turnos, 0.13592410000000002 $)
+Hice el paso de retro del cierre de la 0081. Encontré una señal, `error que cazaría un chequeo`, y la resolví con un test. `node --test` pasa los 4 tests (los 3 que había y el nuevo).
+
+- **Señal:** quedó un `console.log` de depuración en `src/` en la Task 1 y otro en la Task 2. Los cazó la revisión final y costó una pasada de fix cada vez. Ningún test lo miraba, aunque `node --test` corre antes de cada commit.
+- **Salida elegida:** un check. Es la primera de las salidas posibles y la más barata.
+- **Test nuevo:** `test/sin-console-log.test.js` falla si hay un `console.log` en `src/`. Deja pasar solo la salida del CLI en `src/app.js:16`, que es legítima. Sin esa excepción, el test habría fallado desde el primer día.
+- **Walkthrough:** en `walkthrough.md` sustituí la línea plantilla por `Retro: error que cazaría un chequeo → un test (test/sin-console-log.test.js)`.
+
+No toqué más ficheros, y no hay ninguna señal causada por una skill o una plantilla del kit. Dejé sin commitear el test nuevo y el cambio en el walkthrough, como pediste.
+
+La señal `corrección repetida` no aplica. Los dos `console.log` los cazó la revisión final, no el dev-lead.

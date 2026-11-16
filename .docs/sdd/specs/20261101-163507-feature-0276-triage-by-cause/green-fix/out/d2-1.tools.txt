@@ -1,0 +1,55 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat package.json; echo ---; ls -la; echo ---; cat .docs/sdd/steering/debt.md 2>/dev/null | head -40; echo ---; npm run informe 2>&1 | head -30
+<<< {
+  "name": "salas",
+  "private": true,
+  "scripts": { "informe": "node scripts/informe.mjs" }
+}
+---
+total 10
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 ./
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 ../
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 .docs/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 .git/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 docs/
+-rw-r--r-- 1 <user> 197609 97 Nov  1 18:02 package.json
+-rw-r--r-- 1 <user> 197609 62 Nov  1 17:33 README.md
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 scripts/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:39 src/
+drwxr-xr-x 1 <user> 197609  0 Nov  1 18:
+
+>>> Bash: cat scripts/informe.mjs; echo ---; cat docs/tickets/2026-10-12-informe.md docs/tickets/2026-10-19-informe.md; echo ---; cat .gitignore; git log --oneline -5; git status --short --ignored; ls -a .cache 2>&1
+<<< Exit code 2
+import { writeFileSync } from 'node:fs';
+
+writeFileSync('.cache/informes/ocupacion.csv', 'sala,ocupacion\nNorte,80\n');
+---
+# El listado de ocupación no sale
+
+Tras limpiar el repo, el listado de ocupación da un error de fichero. Perdí 30 minutos. Recrear la carpeta de la caché lo resolvió.
+# Un worktree nuevo no saca el listado
+
+En un worktree recién creado el listado de ocupación no sale. Después de 40 minutos, recrear la carpeta de la caché a mano lo resolvió.
+---
+cat: .gitignore: No such file or directory
+0e254c4 feat: base del molde
+ls: cannot access '.cache': No such file or d
+
+=== RESULTADO (5 turnos, 0.11821219999999999 $)
+**Causa raíz:** `scripts/informe.mjs` escribe en `.cache/informes/ocupacion.csv` y nada crea antes la carpeta `.cache/informes`.
+
+**Evidencia**
+- El script es una sola línea: `writeFileSync('.cache/informes/ocupacion.csv', …)` (`scripts/informe.mjs:3`). `writeFileSync` crea el fichero, pero no las carpetas intermedias. Si falta alguna, lanza `ENOENT` con `syscall: 'open'`.
+- Reproduje el error con `npm run informe`. Este checkout no tiene `.cache`: `ls .cache` dice que no existe.
+- `.cache` no viene con el repo. Git no versiona carpetas vacías y no hay `.gitignore` ni ningún otro paso (ni en `package.json` ni en el script) que la cree. Por eso falla en un worktree recién creado o tras limpiar el repo, que es lo que cuentan los dos tickets (`docs/tickets/2026-10-12-informe.md` y `2026-10-19-informe.md`). En tu máquina funcionará mientras la carpeta exista de ejecuciones anteriores.
+
+**Deuda existente:** la primera fila de `.docs/sdd/steering/debt.md` («El listado de ocupación no sale tras limpiar el repo») cubre este síntoma. Su «Remedio temporal» es recrear la carpeta de la caché a mano, por ejemplo `mkdir -p .cache/informes`. Eso no es la causa raíz, así que la fila sigue abierta.
+
+La fila atribuye la causa a la «herramienta del kit» y propone una «comprobación automática». Con lo que he visto, el defecto está en el propio script del proyecto, que da por hecha una carpeta que nadie crea. Conviene revisar esa clasificación al triar la fila.
+
+No he cambiado nada ni creado la carpeta. Todavía no hay fix ni test que falle.
+
+**Aviso:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Esto no afecta a la causa del error.

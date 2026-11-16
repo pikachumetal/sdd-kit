@@ -1,0 +1,72 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [37]
+Voy por el paso de la re-revisión. Está en marcha en segundo plano y, hasta que vuelva, no escribo ningún registro.
+
+Hasta ahora:
+- **Pre-checks:** árbol limpio, `develop` listo para recibir, sin otras ramas abiertas.
+- **Suite:** `node --test` pasa 5/5 sobre `1865f6f`.
+- **Smoke con ejecución real:** los tres primeros THEN (motivo válido, inválido, sin motivo) responden lo que dice la spec.
+- **Problema en el cuarto THEN:** `canceladas` en un proceso aparte sale vacío, porque el almacén vive en memoria. El THEN solo se cumple dentro de un mismo proceso, que es como lo prueba el test. Lo registraré como `no probado` por CLI y como deuda enlazada a la 0014.
+- **Otras cosas que arreglaré en el cierre:**
+  - `tasks.md` da `6ef4016` para la task 1, pero fue `9207422`.
+  - El ruling del workaround `--test-concurrency=1` necesita su fila de deuda.
+
+Cuando llegue el informe de la re-revisión sigo con los registros, el changelog, el roadmap y la fusión a `develop`.
+
+--- [42]
+## Finding Verdicts
+
+None. The previous review was clean and had no open findings.
+
+## New Breakage in the Fix Diff
+
+The 6ef4016..1865f6f range touches only two files, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (new) and `.docs/sdd/tech-stack.md`. **Código:** neither commit touches code or tests (`src/`, `test/`), so no code was reviewed.
+
+1. **Important — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`.** The Commit column for Task 1 («Cancelar con motivo») says `6ef4016`. `git log` says otherwise: Task 1 is `9207422` («feat(bookings): cancelar con un motivo de la lista»), and `6ef4016` is Task 2 («listado de canceladas con su motivo»). Both rows point to the same commit, so the record does not match the history. Fix: Task 1 → `9207422`.
+
+2. **Important — `.docs/sdd/tech-stack.md:3`.** The commit lowers Node from 22 to 20, which the feature does not justify and which conflicts with the rest of the repo:
+   - Neither the spec nor the plan of 0010 mentions the Node version, and nothing in `src/app.js` or the tests needs a version change. It is a project-level change that does not belong to this feature.
+   - `develop` already has `46956e0` («docs(sdd): tech-stack de la 0016»), which sets that same line to **Node 24**. The integration target is `develop` (`sdd-kit.json` → `merge.into: "develop"`), so the merge will conflict on that line. If it is resolved toward this branch, it would roll back a decision made by 0016.
+   - The git-flow line (`main`, `develop`, `feature/<id>`) is unchanged and matches `constitution.md:5`. No issue there.
+   - Fix: drop this change from the 0010 branch. If the project really needs Node 20, that goes in its own change, settled against 0016.
+
+3. **Minor — `.docs/sdd/tech-stack.md:1-4`.** The commit converts the whole file from CRLF to LF (`git ls-files --eol`: `i/lf`). The rest of `.docs/sdd/*.md` is stored as CRLF, there is no `.gitattributes`, and the diff shows the whole file rewritten when only one line changed. It adds noise and makes the conflict in point 2 worse.
+
+## Out-of-Scope Observations
+
+- **The `tasks.md:17` ruling and the gate.** The ruling sets the closing gate to `node --test --test-concurrency=1`, while `plan.md:50` and `constitution.md:4` define it as `node --test`. It is properly recorded as a ruling with its cost, so it does not contradict the spec. But it admits a race between tests on the shared in-memory store (`src/app.js:4`) and calls itself a workaround «hasta aislar el almacén por test». That debt is not in the «Deuda técnica» section of `roadmap.md`, and it should be added there when the feature is closed.
+- The «Revisión final» line in `tasks.md:13` matches the context given (Spec and Código clean, on 6ef4016).
+- No new user-facing text appears in the range, so the castellano restriction does not apply.
+
+## Verdict
+
+**Fix round:** Findings remain open. There are two new Important problems: the wrong commit for Task 1 in `tasks.md`, and the Node 22→20 downgrade in `tech-stack.md`, which contradicts Node 24 on `develop`.
+
+--- [46]
+La re-revisión encontró dos problemas Important. Paro antes de escribir ningún registro, porque uno de ellos necesita una decisión tuya.
+
+1. **`tasks.md`, task 1.** Pone el commit `6ef4016`, pero la task 1 es `9207422` y `6ef4016` es la task 2. Es un error mío de registro y lo corrijo en el cierre sin preguntar.
+2. **`tech-stack.md`, Node 22 → 20.** El commit `1865f6f` («tech-stack de la 0010») baja Node de 22 a 20. Lo he comprobado y el revisor tiene razón:
+   - La spec y el plan de la 0010 no mencionan la versión de Node, y el código no la necesita.
+   - `develop` ya tiene `46956e0` («tech-stack de la 0016»), que pone **Node 24** en esa misma línea. Al fusionar chocan dos valores para el mismo dato.
+   - El commit también convierte el fichero entero de CRLF a LF, así que el diff reescribe las 4 líneas.
+
+Un choque de dos versiones distintas lo resuelve una persona, no yo.
+
+**Mi recomendación:** restaurar `tech-stack.md` a como estaba en la base (Node 22, CRLF) en el commit de cierre. Así la fusión coge el 24 de `develop` sin conflicto, y si de verdad se quiere Node 20 va en un cambio aparte, resuelto contra la 0016.
+
+¿Hago eso, o la 0010 sí debe llevar Node 20 y lo resolvemos contra el 24 de `develop`?
+
+Con tu respuesta sigo con el cierre:
+- walkthrough con la validación en campo;
+- corregir `tasks.md`;
+- capacidad `bookings` y changelog;
+- roadmap, con una fila de deuda para el workaround `--test-concurrency=1` y otra para el almacén en memoria;
+- la fusión a `develop`.
+
+Dos avisos más:
+- **Kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`.docs/sdd/sdd-kit.json`). Si quieres, lo actualizo con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicias antes de cerrar.
+- **Re-revisión:** si cambio `tech-stack.md` y `tasks.md` después de ella, esos commits irán como `sin revisar` en ✋ del walkthrough. Una re-revisión no abre otra.
+

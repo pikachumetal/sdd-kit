@@ -1,0 +1,61 @@
+--- [10]
+I reviewed the whole package in one pass (61 lines) against the spec, the plan, ADR 0003, `src/app.js` and `test/*.js`. **Verdict: not ready to merge.** The commit changes how the void notice is formatted but still sends it, so the requirement it was meant to remove still runs.
+
+### Strengths
+- `voidBooking` still replies «anulada <sala> <día>» (`src/app.js:19`), which keeps the ✋ decision 1 of the spec. `test/void.test.js:5-7` pins that reply.
+- The `formatMail` helper and the «(enviado por correo)» suffix are gone, so the outbox entry no longer looks like an email.
+- The scope is respected: `voidAll` (`anular-todas`) is untouched, as the spec's «No entra» asks.
+- The code constraints are met: the interface text is in Spanish and no comment repeats the code or cites a document.
+- ADR 0003 is met: `src/` imports neither `node:fs` nor any database package.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The REMOVED requirement «Avisar por correo» still runs.** `src/app.js:18`
+- **What's wrong:** `voidBooking` still pushes `{ to: 'responsable', body: 'anulada Norte lun' }` into `outbox`. `run('salida')` then prints «responsable: anulada Norte lun».
+- **The removed requirement:** `bookings.md` before 1bc4855 described exactly this: «`salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo». Taking off the email wording doesn't remove the notice. The office still gets an entry for the manager and still sends it by email.
+- **Why it matters:** the feature was meant to stop sending a notice nobody reads, and that notice still goes out.
+- **How to fix:** delete the `outbox.push(...)` line at `src/app.js:18`.
+- **Gap:** `contradicts`.
+- **Source:** the REMOVED delta «Avisar por correo», plus the dev-lead decision below.
+
+#### Important (Should Fix)
+
+**2. The dev-lead decision is not covered at all.** `src/app.js:18`
+- The decision reads «El aviso por correo al anular desaparece: el responsable avisa en persona». No rule in the diff makes the notice disappear; it only changes how it looks.
+- This is more than a half-covered decision: nothing covers it.
+- **Gap:** `contradicts`.
+- **Source:** «Decisiones tomadas con el dev-lead».
+
+**3. The test doesn't check that the notice is gone.** `test/void.test.js:5-7`
+- **What's wrong:** the test is named «anular responde sin aviso», but it only asserts the reply text. It never looks at `outbox` or `salida`.
+- **Why it matters:** the test passed before this commit too (the reply was already «anulada Norte lun»). So it was never RED, and it passes today while the notice is still produced. The «Dónde se prueba» line «Anular sin aviso: por el comando `anular`, como `test/void.test.js`» has no real check behind it.
+- **How to fix:** after `run('anular', ['Norte', 'lun'])`, add `assert.equal(run('salida', []), '')`, or assert that `outbox` is empty. It should fail on b199eac and pass once Critical 1 is fixed.
+- **Gap:** `partial`.
+- **Source:** the THEN of «Anular sin aviso» in «Dónde se prueba».
+
+#### Minor (Nice to Have)
+- Once the push is removed, nothing writes to `outbox` any more. Then `outbox` (`src/app.js:4`), `pending` (`:28-30`) and the `salida` command (`:36`) are leftovers with no producer. Whether to remove them is for the quality/architecture axis and the dev-lead (see «Declined to judge»).
+
+### Declined to judge
+- **Whether `salida` and `outbox` should be removed:** the spec only removes the notice when voiding; it says nothing about the command. Left to the executor.
+- **The tests for commands that don't exist:** `test/app.test.js` and `test/cancel.test.js` test `reservar` and `cancelar`, which `run` doesn't handle (it returns 'salas'). This predates the branch and the diff doesn't touch it.
+- **The merge of the delta into `bookings.md`:** the requirement was already removed by 1bc4855, the base commit («fusionar el delta de la 0024»). That belongs to the archive step, not this diff.
+
+### Ledger
+- The spec has no ledger, so there are no deferred minors to rule on.
+
+### Not verified
+- **The test run:** no verificado. The brief says not to run the suite and the package brings no task report, so I don't know whether `node --test test/void.test.js` passes on b199eac or failed before it. From reading the code, it already passed before the commit.
+
+### Recommendations
+- Before calling a test RED, run it on the parent commit (1bc4855). Here it would have shown the test passing before the change, which would have caught both issues.
+- Run the full suite on the main thread. Based on the declined item above, `app.test.js` and `cancel.test.js` look like they will fail independently of this branch.
+
+### Assessment
+
+**Ready to merge?** No.
+
+**Reasoning:** the notice the spec removes is still created and listed by `salida` (`src/app.js:18`), and the only new test can't tell the difference.
+

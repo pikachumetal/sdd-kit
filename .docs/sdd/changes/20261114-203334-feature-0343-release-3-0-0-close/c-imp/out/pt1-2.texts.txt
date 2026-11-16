@@ -1,0 +1,140 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs, no código). Queda: clasificar el fallo y reproducirlo, ~2 min.
+
+--- [15]
+Ahora: reservo el id y creo la rama del patch. Queda: pasar a implementación (test rojo → fix → verificación), ~5 min.
+
+--- [23]
+Ahora: confirmo la causa raíz con `sdd-debugging`. Queda: test rojo, fix, revisión, commit y cierre, ~5 min.
+
+--- [32]
+Causa confirmada (sin fila de deuda que lo cubra). Primero el test rojo, en fichero propio porque el estado de `bookings` es global al módulo.
+
+--- [36]
+El test de `cancelar` pasa en falso: `anular` ya se había llevado la reserva del lunes antes. Los separo en dos ficheros para que no se enmascaren.
+
+--- [39]
+Los cuatro fallan por la causa esperada. Escribo `patch.md` (causa antes del fix) y aplico el arreglo mínimo.
+
+--- [44]
+Verde 8/8. Añado la línea del gate a `patch.md` y lanzo el revisor único del patch.
+
+--- [49]
+Revisor lanzado; espero su resultado antes de comitear.
+
+--- [53]
+**Sin hallazgos.**
+
+1. **Causa raíz de patch.md §2: correcta.** Antes del fix, `findBooking(room, day)` en `src/app.js:9-11` recibía `day` pero no lo usaba. Devolvía la primera reserva activa de la sala, que es la del lunes. `cancelBooking` (`src/app.js:13-18`) la marcaba como cancelada con el mensaje del día pedido. `voidBooking` (`src/app.js:20-25`) llama a la misma función, así que `anular` fallaba igual.
+
+2. **Fix mínimo y suficiente.** El diff es una sola línea, `src/app.js:10`, que añade `b.day === day`. `findBooking` solo la usan `cancelBooking` y `voidBooking`, así que el cambio cubre `cancelar` y `anular`. `freeRooms` no se toca y no tiene el problema. No hay cambios fuera de alcance.
+
+3. **Tests.** Cubren el fallo y fallarían con el código anterior. Copié el repo a un directorio temporal, restauré `src/app.js` desde HEAD y ejecuté `node --test` allí. Fallan exactamente los 4 tests nuevos y pasan los 4 previos, lo que coincide con lo que dice patch.md §4.
+   - **Orden dentro de cada fichero:** el primer test (el día `mar` sin reserva) va antes que el del día `lun`, y el estado global del módulo no se contamina entre ficheros. Ese estado depende del orden dentro de cada fichero, y los comentarios de los tests ya lo avisan.
+   - **Ficheros separados:** `cancel-day.test.js` y `void-day.test.js` están separados, así que `anular` no enmascara a `cancelar` (cada fichero corre en su propio proceso).
+
+**`node --test` en el repo real:** 8/8 en verde.
+
+**Estado del repo:** no modifiqué nada. Solo creé una copia temporal en el directorio temporal del sistema.
+
+--- [58]
+Ahora: pre-chequeos del cierre. Queda: pedirte la validación, que es el siguiente parón.
+
+--- [68]
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la del lunes y respondía «cancelada Norte mar». Ahora responde «sin reserva Norte mar» y la del lunes sigue activa. `anular` tenía el mismo fallo y también está arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada. Dos cosas que debes saber:
+  - Un primer borrador de `patch.md` ponía `Validación: agente`. Lo he corregido a `dev-lead`; ese cambio está sin commitear y irá en el commit de cierre.
+  - Puse los tests en dos ficheros nuevos, `test/cancel-day.test.js` y `test/void-day.test.js`, porque las reservas son estado global del módulo y un fichero solo enmascaraba el fallo.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día | ejecución real | `sin reserva Norte mar` |
+| Tras eso, `cancelar Norte lun` sigue funcionando | ejecución real | `cancelada Norte lun` |
+| `anular Norte mar`, luego `anular Norte lun` | ejecución real | `sin reserva Norte mar` / `anulada Norte lun` |
+| Los cuatro tests nuevos fallaban antes del fix | suite | rojo con el código anterior, verde después |
+
+**Suites**
+
+- `node --test`: 8/8 sobre `c8de2b0` (el commit del fix).
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente de decisión tuya, aparte de la validación:** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no define `merge.into` ni `merge.noFf`. Con el bloque incompleto no fusiono sin preguntarte. Dime destino (`develop`, según tu git-flow) y si quieres `--no-ff`.
+
+Panel: plan B en http://127.0.0.1:12326/
+Es una página que no ve la app, así que no tiene consola, red ni captura. Si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0015-cancel-day` · worktree `<run>\repo`
+
+No hay comando de arranque declarado, porque es una CLI y no hay entorno. Las reservas viven en memoria y se pierden al acabar cada proceso, así que los pasos 2 y 3 usan un solo proceso.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Tu caso del reporte → `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Cancelar el martes y después el lunes, en el mismo proceso → `sin reserva Norte mar` y, en la línea siguiente, `cancelada Norte lun`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar'])); console.log(run('cancelar',['Norte','lun']))"
+```
+
+3. Lo mismo con `anular` → `sin reserva Norte mar` y, en la línea siguiente, `anulada Norte lun`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('anular',['Norte','mar'])); console.log(run('anular',['Norte','lun']))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [70]
+El servidor del panel (plan B, `http://127.0.0.1:12326/`) se ha parado por el límite de tiempo de segundo plano. No tiene nada marcado, así que ese enlace ya no funciona. No lo reinicio hasta que me contestes, para no dejarlo colgado sin que nadie lo use.
+
+El guion de arriba no depende del panel. Los tres comandos funcionan tal cual en el worktree y puedes contestarme en el chat.
+
+El patch 0015 sigue sin cerrar. Falta:
+
+1. **Tu validación.** Dime «validado» o qué paso falla. Si prefieres el panel, te lo relanzo.
+2. **El destino del merge.** `.docs/sdd/sdd-kit.json` no define `merge.into` ni `merge.noFf`. Dime si fusiono en `develop` y si con `--no-ff`.
+
+Mientras tanto:
+
+- El fix está en el commit `c8de2b0` de `feature/0015-cancel-day`, y `node --test` da 8/8.
+- Tengo sin commitear la corrección de `patch.md` a `Validación: dev-lead`, que irá en el commit de cierre.
+- No he escrito ningún «Validado» ni he tocado el roadmap.
+
+**No terminado.** Faltan tu validación y el destino del merge. No borres todavía el worktree `<run>\repo`.
+
+--- [73]
+Entendido: es un patch y paro en el commit del fix. Ese commit ya existe, así que no hay nada más que hacer hasta ahí.
+
+- **Commit del fix:** `c8de2b0` en `feature/0015-cancel-day`. Incluye el cambio de `src/app.js` (una línea: `findBooking` compara también `day`), los dos tests nuevos y `patch.md`. `node --test` da 8/8.
+- **Cambio sin commitear:** solo la corrección de `patch.md` a `Validación: dev-lead`. Irá en el commit de cierre.
+
+No he cerrado ni fusionado. Tu «Sí, como patch. Sigue hasta el commit del fix» confirma el carril y marca dónde parar. No lo cuento como «validado» ni como destino de merge, y no he escrito ninguna línea `Validado` en `patch.md`.
+
+Para terminar el cierre me faltan dos cosas:
+
+1. **Validación:** «validado», o qué paso del guion falla.
+2. **Merge:** a qué rama fusiono (`develop`) y si con `--no-ff`. `sdd-kit.json` no define `merge.into` ni `merge.noFf`.
+
+Con eso hago el commit de cierre (hash del fix en `patch.md`, validación, fila 0015 en el roadmap) y la fusión.
+

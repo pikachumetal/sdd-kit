@@ -1,0 +1,75 @@
+--- [11]
+# Spec review: feature 0021, «Anular con motivo y sin correo» (`e3f8cff`)
+
+**Not ready to merge.** The review focus line works in the code but has no test, the email the spec removes is still sent, `anular-todas` doesn't ask for a reason, and the commit adds a file write and a `libres` change that nobody asked for.
+
+I read the whole package (96 lines), the spec, the plan, the existing tests, ADR 0003 and the capability files for `bookings` and `availability`.
+
+### Strengths
+- `voidBooking` checks for the reason before anything else (`src/app.js:30`), so a void without a reason never changes a booking. The reply text is exactly the one in decision ✋1 («falta el motivo»).
+- `reasonOf` (`src/app.js:20-23`) also handles `--motivo` with nothing after it: it returns `undefined`, and the command answers «falta el motivo».
+- The reason is stored on the booking (`booking.reason = reason`), as the spec's Approach asks.
+- The first THEN («anulada Norte lun (avería)») has a real test through `run` in `test/void.test.js:8-10`.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **The email on void is still sent.** `src/app.js:35`
+   - **What's wrong:** `voidBooking` still calls `notifyByMail(\`anulada ${room} ${day}\`)`, and `notifyByMail` and `outbox` are still in the code (`:16`).
+   - **Why it matters:** the spec has «REMOVED — Las anulaciones se avisan por correo», and the dev-lead decided «El correo de anulación desaparece».
+   - **Fix:** remove the call (and `notifyByMail`/`outbox` if nothing else uses them). Add a test that `outbox` stays empty after `anular … --motivo …`.
+   - **Gap:** `contradicts`. **Source:** the REMOVED requirement and that dev-lead decision.
+
+2. **Saving to disk was not asked for, and it crashes the CLI on a fresh clone.** `src/app.js:1,25-27,36`
+   - **What's wrong:** `saveVoided()` writes `data/anuladas.json`. `data/` is in `.gitignore`, so a fresh clone doesn't have it. There, `node src/app.js anular Norte lun --motivo avería` throws ENOENT after the booking is already marked voided, and the user never sees «anulada …».
+   - **Why the test misses it:** `test/void.test.js:6` runs `mkdirSync('data')` before the test, so the test passes.
+   - **Why it matters:** the spec's Scope says «No entra: guardar las anulaciones (ADR 0003…)». ADR 0003 (accepted) has the Confirmación «`src/` no importa `node:fs`», and this commit breaks it. Its `rutas: docs/**` doesn't match `src/`, which is probably why the brief listed no covering ADRs. That glob looks wrong and should be fixed.
+   - **Fix:** remove `saveVoided`, the `node:fs` import and the `mkdirSync` in the test.
+   - **Gap:** `unrequested`. **Source:** the spec's Scope and ADR 0003.
+
+#### Important (Should Fix)
+
+3. **The review focus line has no test.** `test/void.test.js`
+   - **What's wrong:** the plan names the test `pide motivo al anular` for «`anular Norte lun` sin `--motivo` → «falta el motivo»». That test doesn't exist; the file only has `anular con motivo`.
+   - **Why it matters:** the code gives the right answer (`src/app.js:30`), but nothing pins it, and the spec's «Dónde se prueba» says «con motivo y sin él».
+   - **Fix:** add `test('pide motivo al anular', () => assert.equal(run('anular', ['Norte','lun']), 'falta el motivo'))`. Run it before the "with reason" test, or give it its own state, because the module-level `bookings` array is shared between tests.
+   - **Gap:** `partial`. **Source:** the THEN's AND line and the plan's review focus.
+
+4. **`anular-todas` doesn't ask for a reason.** `src/app.js:40-45,52`
+   - **What's wrong:** `voidAll()` takes no reason and `run` passes it none. `anular-todas` still voids every booking without one.
+   - **Why it matters:** this is «decisión del dev-lead cubierta a medias: Anular pide motivo en las dos vías — la regla deja fuera `anular-todas`», which is the exact path the dev-lead said must not slip through. The spec's Scope also lists `anular-todas --motivo <texto>`.
+   - **Fix:** use `reasonOf(params)` in `anular-todas` too, return «falta el motivo» without it, store the reason on each voided booking, and add a test.
+   - **Gap:** `missing`. **Source:** that dev-lead decision.
+
+5. **`libres` output changed without being asked.** `src/app.js:47-50`
+   - **What's wrong:** the reply goes from «Sur» to «1 libres: Sur».
+   - **Why it matters:** this changes the `availability` capability, which has no subsection in the spec's delta, and contradicts its requirement «THEN responde «Sur»». It also breaks the existing test `test/app.test.js:5-7` (`libres excluye la sala reservada en la franja`), which expects `'Sur'`. «1 libres» is also bad Spanish.
+   - **Fix:** revert this to `freeRooms(params[0]).join(', ')`.
+   - **Gap:** `unrequested`.
+
+#### Minor (Nice to Have)
+6. The test is named `anular con motivo`, but the plan's review focus names `pide motivo al anular`. Line up the names so each THEN can be traced to its test.
+7. `plan.md` still says `status: draft` while the spec is `approved`. That's a process issue, not a code one.
+
+### Declined to judge
+- `anular --motivo avería Norte lun` (the flag before the room) gives «sin reserva --motivo avería»: the spec only defines the order `<sala> <día> --motivo`.
+- A reason with spaces has to be quoted in the shell: that's how the CLI works, not this feature.
+- `test/app.test.js` already has a failing test before this commit (`reservar --cada-semana`, since `run` returns 'salas'), not caused by this diff: it's outside this feature.
+- `.docs/sdd/capabilities/bookings.md` still describes the email: updating capability docs belongs to the archive step, not this diff.
+- The ADR 0003 glob (`rutas: docs/**`) that doesn't reach `src/` is a project docs problem, not this feature's. I mention it in finding 2.
+
+### Not verified
+- Not verified: the task report with the test results isn't in the package, and the brief says not to run the suite. So I haven't confirmed that `node --test test/void.test.js` passes, or that `test/app.test.js` now fails on the `libres` test. That second one comes from reading the code.
+- No ledger: there are no `Ruling:`, `minor (deferred)` or `parked` calls to weigh.
+
+### Recommendations
+- After the fixes, run the whole suite (`node --test`) from a clean clone without `data/`. That checks that the CLI doesn't touch the disk and that the `libres` test passes again.
+- Add a test with `anular` followed by `outbox.length === 0` to pin the REMOVED requirement.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The «falta el motivo» line works but has no test. The removed email is still sent, `anular-todas` lets voids through without a reason against the dev-lead's decision, and the commit adds disk writes that break a fresh-clone CLI and a `libres` change that breaks an existing test.
+

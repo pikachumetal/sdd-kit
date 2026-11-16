@@ -1,0 +1,101 @@
+--- [3]
+Ahora: leer el contexto SDD del proyecto y el `gate.json`. Queda: clasificar el cambio, escribir la spec y presentártela para aprobar.
+
+--- [16]
+Estoy preparando la spec. Ya leí el contexto y las referencias del kit. Ahora compruebo quién más nombra `slow` o `paths.test.js` en el repo, y luego escribo la spec.
+
+--- [25]
+Ahora: espero la revisión de la spec, que está en marcha con un solo revisor. Queda: incorporar sus hallazgos y presentártela para aprobar, ~3 min y ~0,3 $.
+
+--- [32]
+1. Crítico · Dónde se prueba (tercer punto) y decisión 1 · La afirmación «cualquier fichero nuevo cambia un input» no cubre el caso de `git add` sobre un fichero ya existente. `**/*` hashea el árbol de trabajo, pero `paths.test.js` lee el índice (`git ls-files`). Un fichero largo sin añadir deja `fast` en verde y lo cachea. Al hacer `git add`, los `inputs` no cambian, la caché se salta la tarea y el commit entra con la ruta larga. Es justo el fracaso que la Intent dice evitar. · Reconocer que el índice no es un input, y o bien pedir que `fast` no use caché para este test, o bien añadir `.git/index` a los `inputs` (si el ejecutor lo permite), o bien bajar la garantía de «nunca se salta». Verificarlo con el escenario «correr, luego añadir, luego correr».
+
+2. Crítico · 🦆, Intent y Scope · La spec promete que «un commit con una ruta de 141 caracteres se frena en el pre-commit». Pero el Scope dice que no hay hook en el repo y que no se instala ninguno, así que nada frena un commit. El éxito real es solo que la tarea `fast` falla. · Reescribir 🦆 e Intent como «`fast` falla», y dejar explícito que el efecto en el commit depende de un hook externo que este cambio no instala. O meter el hook en el Scope.
+
+3. Importante · Dónde se prueba (tercer punto) · «Sin medir… por construcción» no es un escenario verificable, y es la propiedad central de la decisión 1. La semántica de `**/*` (dotfiles, `.git`, ignorados, borrados, `node_modules`) no está en el repo ni en `tech-stack.md`. Si `**/*` incluye `.git`, `fast` se invalida en cada commit y la caché no sirve de nada. Si lo excluye, el punto 1 sigue en pie. · Añadir una comprobación ejecutable: correr `fast` dos veces seguidas, confirmar que la segunda se salta, tocar un fichero fuera de `src/` y confirmar que corre. Si no hay ejecutor, declararlo como riesgo abierto en lugar de «por construcción».
+
+4. Importante · Dónde se prueba (segundo punto) · Crear un fichero con ruta de 141 caracteres falla en Windows si la ruta absoluta del repo, ya larga (`D:\code\.worktrees\...`), supera MAX_PATH (260). La comprobación puede ser inviable en este entorno. · Indicar cómo crearlo (por ejemplo `git update-index --add --cacheinfo` con un blob, sin tocar el disco) o hacerlo en un clon con ruta corta.
+
+5. Menor · Dónde se prueba (primer punto) · «3 tests en verde» no se puede comprobar con lo que consta. `paths.test.js` aporta 1 test y el recuento de `app.test.js` no figura en la spec. · Decir cuántos tests tiene `app.test.js` o cambiarlo por «exit 0 y ambos ficheros ejecutados».
+
+6. Menor · Lo que se retira o cambia de forma · La referencia `gate.json:10-16` no cuadra. En el fichero actual `slow` ocupa las líneas 10-15, y la 16 es el cierre de `tasks`. · Corregir a `gate.json:10-15`, o quitar los números de línea porque envejecen.
+
+7. Menor · Scope («No entra») · Cita el gate de cierre como `node --test && node scripts/lint.mjs`, pero la constitución (punto 2) dice solo `node --test` entero. El `lint.mjs` no tiene fuente visible en las lecturas que consta que hizo la spec. · Citar de dónde sale, o ajustar a la constitución. Si hay una divergencia real, anotarla.
+
+8. Menor · Decisiones tomadas con el dev-lead frente a la decisión 1 · El dev-lead decidió «pasa de `slow` a `fast`» por «1 s». La spec añade por su cuenta ampliar los `inputs` y borrar `slow`, y mide 0,3 s. Las dos adiciones están en la lista de decisiones, pero no se indica cuáles son decisión del dev-lead y cuáles propuestas del agente. · Marcar en la decisión 1 y en la 2 que van más allá de lo dicho por el dev-lead, y pedir su confirmación expresa.
+
+9. Menor · Decisión 4 · «La spec no está aprobada por delegación; el atajo lo permite la plantilla» es confuso, y afirma el atajo sin citar la regla. La validación `agente` deja la aprobación en manos de quien implementa. · Reformular de forma clara o citar la regla de la plantilla.
+
+--- [34]
+Esto es un aviso automático del revisor, no una respuesta tuya, así que la spec sigue sin aprobar. Incorporo los hallazgos: hay dos Críticos aceptados, así que después hace falta una segunda ronda con otro revisor.
+
+--- [40]
+Ahora: espero la segunda ronda de revisión, con un solo revisor. Queda: incorporar sus hallazgos y presentarte la spec para aprobar, ~2 min y ~0,2 $.
+
+--- [50]
+1. Importante · Dónde se prueba (segunda viñeta) · `git update-index --add --cacheinfo 100644,<blob>,<ruta>` deja `<blob>` sin definir. Sin un objeto existente el comando falla y la comprobación no se puede ejecutar tal cual. · Dar el paso completo: `git hash-object -w --stdin </dev/null` para obtener el blob y usarlo en `--cacheinfo`. Fijar también la ruta de 141 caracteres, por ejemplo `docs/` más relleno.
+
+2. Importante · Dónde se prueba (c) y decisión 4 · La condición «ejecutor con el que medirlo» no tiene salida definida si no existe. El Intent y la validación `agente` dependen de (c), y sin ejecutor la spec queda sin verificación posible. Se dice «se enmienda la spec» pero no a qué. · Declarar el resultado por defecto sin ejecutor: validación `dev-lead` para ese punto, o la spec se aprueba con el riesgo de la decisión 4 aceptado por escrito. Hoy el dev-lead aprobaría sin saber si la garantía central se cumple.
+
+3. Importante · Decisión 4 vs Aprobaciones · Hay un riesgo Crítico abierto (`sin medir`) y la spec se presenta para aprobar igualmente. Quien aprueba lo hace sin saber si el diseño de la decisión 1 es válido. · Añadir una frase explícita: aprobar la spec equivale a aceptar que la decisión 1 puede cambiar tras medir (c). O bien medir (c) antes de aprobar, ya que es barato.
+
+4. Menor · Dónde se prueba (primera viñeta) · «3 tests (2 de app.test.js)»: la spec cita el 2 de la review, pero no hay evidencia de que se haya contado en `app.test.js`. Solo `paths.test.js` aparece como un test, y eso sí lo he verificado. · Decir «el número que dé hoy `node --test test/app.test.js` + 1» o contarlo y dejarlo medido.
+
+5. Menor · Decisión 1 · «`app.test.js` es del mismo orden» y «~0,3 s» son cifras medidas citadas de memoria, sin comando reproducible. · Indicar el comando de medida (`time node --test ...`) o marcarlas como aproximadas.
+
+6. Menor · Encabezado de decisiones («Review de spec propuesta (hecha): un revisor») · Describe un solo revisor, pero esta es la segunda ronda y la primera ya está plegada en «Hallazgos de la review». La cabecera queda desfasada. · Poner «dos rondas» o referenciar «Hallazgos de la review».
+
+7. Menor · Scope y Dónde se prueba (c) · «Sin test nuevo en el repo» es coherente. Pero la medida (c) modifica el índice de git de la rama de trabajo, y esto no está en el Scope ni en una decisión. Si el deshacer falla, queda una entrada fantasma en el índice. · Añadir en el plan o aquí la comprobación final `git ls-files | awk 'length>140'` vacío, y `git status` limpio, tras deshacer.
+
+8. Menor · Scope, «No entra» · Se afirma que `.git/hooks` no tiene hook, pero `.git/hooks` no está en el repo y no es verificable desde el diff. Tampoco se contrasta con `tech-stack.md`, que dice que «el pre-commit corre fast». Hay una discrepancia entre la documentación y la realidad que se menciona pero no se propone corregir. · Añadir en decisiones (o fuera de alcance, explícito) que `tech-stack.md` afirma algo que no se cumple hoy, y ofrecer abrir fila de roadmap para instalar el hook.
+
+9. Menor · Decisión 4 (enmienda «dejar esa tarea sin caché») · Dejar `fast` sin caché contradice `tech-stack.md:6` («con caché: una tarea se salta si no cambia ningún input»), pero solo se dice que es «una enmienda posible». Tocaría un documento que el Scope declara intocable. · Anotar que esa vía obligaría también a revisar `tech-stack.md` y el Scope.
+
+10. Menor · Dónde se prueba (segunda viñeta) · `git ls-files` entrecomilla rutas con caracteres no ASCII (`core.quotePath`) y puede sumar caracteres. Para la ruta de prueba no importa, pero `paths.test.js` mediría longitudes distintas a las reales en el repo. No es un fallo del gate. · Usar una ruta solo ASCII en la comprobación.
+
+--- [53]
+Ahora: la spec está escrita y revisada. Queda: tu aprobación. Después escribo el plan y sigo en `sdd-implement`.
+
+# Spec 0015 — el test de rutas pasa a `fast`
+
+La spec está en `.docs/sdd/specs/20261106-093842-feature-0015-paths-in-fast/spec.md`. Es una spec de carril feature, perfil `delegate` (viene de `sdd-kit.json`). Todavía no hay plan ni commit. No he tocado `gate.json`.
+
+🦆 Hoy la tarea rápida del gate (la que corre el pre-commit) solo prueba la aplicación. La comprobación de que ninguna ruta del repo pasa de 140 caracteres está en una tarea lenta que no corre al hacer commit. Tras el cambio, esa comprobación corre en la tarea rápida. Si hay un fichero con una ruta de 141 caracteres ya añadido al repo, la tarea rápida falla y el pre-commit frenaría el commit. Ese hook no está en el repo y este cambio no lo instala. La tarea lenta se borra porque se queda sin nada que correr. No cambia nada de lo que ve o hace quien reserva salas.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Enfoque.** `fast` corre `node --test test/app.test.js test/paths.test.js` y sus `inputs` pasan a `**/*`.
+   - Dijiste solo «mover el test». Ampliar los `inputs` es mío: `paths.test.js` lee `git ls-files`, y con los `inputs` actuales la caché se saltaría la comprobación al añadir una ruta larga fuera de `src/`.
+   - Coste: `fast` corre con cualquier cambio de fichero. Medí ~0,3 s en reloj (118 ms de test), no 1 s.
+   - Descartadas: dejar los `inputs` estrechos y añadir solo `test/paths.test.js`, y crear una tarea nueva (el pre-commit solo corre `fast`).
+2. **Borrar `slow`** de `gate.json`, que se queda sin comando. Esto también va más allá de lo que dijiste. Si prefieres conservarla, dímelo.
+3. **`cancel.test.js` no entra.** Hoy no está en ninguna tarea; solo lo corre `node --test` entero en el gate de cierre. Ya era un hueco antes de este cambio.
+4. **Riesgo abierto, marcado `sin medir`.** Los `inputs` `**/*` miran el árbol de trabajo y `paths.test.js` lee el índice de git. Si `fast` corre con un fichero largo sin añadir (verde, queda en caché) y luego se hace `git add` sin cambiar su contenido, la caché podría saltarse la tarea. El ejecutor de tareas no está en el repo, así que no puedo medirlo antes. El plan lo mide primero. Si se confirma, hay que enmendar la spec: por ejemplo añadir `.git/index` a los `inputs`, o dejar esa tarea sin caché, lo que obligaría a tocar `tech-stack.md:6`. **Aprobar la spec equivale a aceptar que la decisión 1 puede cambiar tras esa medida.**
+5. **Validación `agente`.** Es configuración y el efecto se mide por comando. Si prefieres validarlo tú, dímelo.
+6. **Discrepancia que no corrijo.** `tech-stack.md:6` dice que el pre-commit corre `fast`, pero `.git/hooks` no tiene ningún hook. Es local y puede existir en otros clones. Si quieres versionarlo o instalarlo, sería otra fila de roadmap.
+7. **Carril e id.** Por defecto un cambio de `gate.json` es de carril config y no lleva spec; lo traté como feature porque pediste la spec. Id `0015` tomado de la rama. `sdd id claim` dijo «sin remoto: la 0015 vale (contador local)». No hay fila en el roadmap y no la creé.
+8. **Sin delta de capacidades.** El proyecto no tiene `capabilities/` y el cambio no toca comportamiento observable.
+
+## Revisión
+
+La revisión fue de un revisor (sonnet) por ronda, en dos rondas. El tamaño era ~6 líneas en 1 fichero y no había ninguna de las señales de la rúbrica.
+
+- **Primera ronda:** dos Críticos, ambos aceptados.
+  - El índice de git no es un input de la caché (decisión 4).
+  - La spec prometía que el commit se frenaría sin instalar el hook (🦆 e Intent corregidos).
+  - Los otros siete hallazgos también están aceptados y corregidos.
+- **Segunda ronda:** diez hallazgos, sin Críticos, y la he incorporado. Cambió esto:
+  - El comando de comprobación está completo: crea el blob con `git hash-object`, usa una ruta solo ASCII y comprueba que `git status` queda limpio.
+  - Si no hay ejecutor con el que medir la caché, esa parte pasa a validación `dev-lead`.
+  - La discrepancia del hook quedó anotada (decisión 6).
+- **Comprobado:** el comando de `fast` tal cual queda da 3 tests en verde (2 de `app.test.js` y 1 de `paths.test.js`).
+- **Sin comprobar:** el comando de añadir al índice y el comportamiento de la caché. La segunda ronda no pasó de nuevo por los retoques que hice después.
+
+## ¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 1 task)**. No te la recomiendo: con una sola task, rehacer la caché al cambiar de modelo cuesta más de lo que ahorra.
+
+Hasta que respondas, la spec queda en espera.
+

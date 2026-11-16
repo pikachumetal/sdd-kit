@@ -1,0 +1,78 @@
+--- [3]
+Ahora: termino el paso 4 (pasada de coherencia y puerta de aprobación). Queda: presentarte la spec para aprobar, ~2 min.
+
+--- [20]
+Ahora la fusión sobre una copia, y en paralelo la segunda ronda de review, porque hubo un Crítico aceptado.
+
+--- [23]
+La fusión sobre la copia sale limpia: crea `bookings.md` con los 2 requisitos y las 5 reglas. La segunda ronda de review sigue en marcha y espero su resultado antes de presentarte la spec.
+
+--- [30]
+1. Importante · Delta «Anular una reserva» y Reglas · El orden de comprobación está sin decidir. `anular Sur mar --como cliente` puede responder `solo el responsable…` o `sin reserva Sur mar`. La segunda respuesta le dice al cliente qué reservas existen, y la spec dice que el cliente no ve lo de otros. · Fijar en una decisión (✋) que el permiso se comprueba antes que la existencia, y añadir un AND con ese caso.
+
+2. Importante · Delta, `--como` · Falta el valor inválido o ausente, por ejemplo `--como admin` o `--como` sin valor. Con el `params[0], params[1]` actual, `--como` en otra posición o con otro valor da resultados indefinidos. · Declarar el comportamiento (rol `cliente`, o error) en una decisión y en un escenario. Fijar también si `--como` puede ir antes de la sala.
+
+3. Importante · Delta «Ver las reservas anuladas» · No hay escenario para `anuladas` sin `--como`. La decisión 5 solo cubre `anular`, y la regla por defecto (`cliente`) debería valer aquí también. Tampoco se dice qué pasa con las reservas `cancelled`, que no deberían salir, ni con varias anuladas, ni en qué orden. · Añadir un AND para `anuladas` a secas (sale `anulada`, sin quién) y otro que excluya las canceladas. Fijar el orden, o decir que no se garantiza.
+
+4. Importante · Intent, Scope y Reglas — Límites/Avisos · El permiso se puede saltar. `--como` lo escribe quien llama, así que cualquier cliente pone `--como responsable` y anula o ve quién anuló. El Intent habla de «fracaso: que el cliente pueda deducir quién anuló» y no lo reconoce. · Declararlo como límite conocido, porque «sin autenticación» está en No entra. Reformular el Intent como control de interfaz, no de seguridad, o decirlo en Avisos.
+
+5. Importante · Decisión 3 y Regla «Idioma de los nombres» · Contradicción interna y con PRODUCT.md. El slug `bookings` está en inglés y PRODUCT dice «Evitar: booking». La regla dice «castellano en comandos y salidas», pero los datos usan `status` y `voidedBy`, también en inglés. · Usar el slug `reservas`, o declarar en la regla qué nombres internos van en inglés y por qué. Quitar la justificación «slug en inglés».
+
+6. Menor · Delta, GIVEN «de Ana» · La reserva de `src/app.js` no tiene propietario (`room`, `day`, `slot`, `status`). «De Ana» sugiere un dato que no existe, y la feature habla de anular «las de otros». · Quitar «de Ana», o decir que la reserva no guarda a nombre de quién está (nada compara dueños).
+
+7. Menor · Delta, `voidedBy` · «Guardando `responsable`» en el THEN de `anular` no se observa por `run`, solo por `anuladas`. Ese escenario pasa sin el comportamiento si solo se prueba `anular`. · Referenciar en ese THEN el escenario de `anuladas`, o quitar el «guardando».
+
+8. Menor · Approach frente a «Dónde se prueba» y el tamaño · El Approach dice «sin ficheros nuevos», pero `test/anular.test.js` es un fichero nuevo (la cabecera de la review habla de «3 ficheros»). Tampoco hay constancia de `test/cancel.test.js` ni de `ROADMAP.md:8`, que la spec cita como existentes. · Aclarar «sin ficheros de código nuevos». Cuadrar los 3 ficheros (`src/app.js`, el test, `capabilities/…` al archivar). Verificar las referencias.
+
+9. Menor · Cabecera y bloque de review · La spec nombra a Laura como aprobadora y como quien prueba con los dos roles, pero PRODUCT.md dice «No hay más usuarios ni más desarrolladores». La validación `dev-lead` entra en conflicto con eso. · Alinear el perfil y el validador con PRODUCT (una sola persona) o actualizar PRODUCT antes. Confirmar que «Laura» es un nombre inventado.
+
+10. Menor · «Lo que se retira o cambia de forma» · Solo lista el cambio de `anular` sin `--como`. El comando `anuladas`, que hoy cae en el `return 'salas'` de `run`, y el estado `voided` con `voidedBy` son contratos y datos nuevos que no figuran. · Añadir las filas, o decir que son altas y no cambios de forma.
+
+--- [34]
+Los hallazgos son válidos, y dos van más allá de la spec: `PRODUCT.md` dice «Evitar: booking» y que solo hay una persona. Los incorporo; esta es la segunda ronda, así que no hay tercera.
+
+--- [38]
+Ahora: puerta de aprobación de la spec. Queda: tu aprobación; después el plan y `sdd-implement`, sin más paradas en `delegate`.
+
+## 🦆 Spec 0011 — Anular reservas de otros
+
+Hoy `anular Norte lun` anula la reserva sea quien sea. Con esta feature:
+
+- `anular Norte lun --como responsable` anula y responde `anulada Norte lun`.
+- `anular Norte lun --como cliente` responde `solo el responsable de sala puede anular` y la reserva sigue activa.
+- Hay un comando nuevo, `anuladas`. El responsable ve `Norte lun — anulada por responsable`. El cliente ve `Norte lun — anulada`, sin quién fue.
+
+Por dentro, el rol sale de `--como` y la reserva anulada guarda quién la anuló. Tocaría `src/app.js` y un test nuevo, `test/anular.test.js`.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. El rol sale de `--como <cliente|responsable>`, porque la app no tiene usuarios.
+2. El cliente ve las anuladas sin quién las anuló.
+3. Capacidad nueva `reservas`. Como no hay ninguna capacidad escrita, el delta es `ADDED` y no `MODIFIED`. El slug va en castellano porque `PRODUCT.md` evita «booking».
+4. `anuladas` es un comando nuevo. Sin resultados responde `sin anuladas`.
+5. Sin `--como`, el rol es `cliente`. Por tanto `anular Norte lun` a secas **ya no anula**.
+6. «Responsable de sala» es un rol único. El roadmap dice «de cada sala», pero la app no tiene salas con dueño. Un responsable por sala sería otra feature.
+7. Enfoque: `--como` leído en `run`, frente a un fichero de roles o una variable de entorno. Lo he descartado por no inventar infraestructura.
+8. El permiso se comprueba antes que la existencia. Así `anular Sur mar --como cliente` no revela qué reservas hay.
+9. `--como` va al final y solo admite `cliente` o `responsable`. Cualquier otro valor responde `rol no válido: usa cliente o responsable`.
+10. `anuladas` sin `--como` es `cliente`. Solo lista anuladas, no canceladas, en el orden en que se anularon.
+11. **Límite conocido:** `--como` lo escribe quien llama, así que esto es un control de interfaz, no de seguridad. Cualquiera puede escribir `--como responsable`.
+12. `PRODUCT.md` dice que hay una sola persona. El dev-lead que aprueba es esa persona. La spec mantiene el nombre «Laura» del frontmatter, que no es dato mío. Corrígelo si no es correcto.
+
+**Review.** Hubo dos revisores en la primera ronda, uno de dominio con opus y otro técnico con sonnet. Hubo un Crítico, que acepté. Por eso hubo una segunda ronda con un revisor sonnet, que dio 10 hallazgos, ninguno Crítico, y los acepté todos. Un Menor de la primera ronda lo rechacé: pedía un fichero de roles. Está todo en `### Hallazgos de la review`.
+
+**Pasada de coherencia.** Encontré esto:
+- `bookings` no tenía fichero en `capabilities/`, y por eso el `MODIFIED` se rechazaba.
+- Faltaban los casos sin `--como` y de `anuladas`.
+- Faltaban el 🦆, el Approach, la tabla «Lo que se retira» y la línea `Política de modelos`.
+
+La fusión del delta sobre una copia sale limpia: añade `reservas.md` con 2 requisitos y 5 reglas. El `capabilities/` real no cambia.
+
+La spec completa está en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`.
+
+¿Apruebas?
+
+1. **Apruebo (Recomendada).** Escribo el plan y paso a `sdd-implement`.
+2. **Apruebo; escribe el plan y para antes de la Task 1** para que bajes la sesión a gama media. No veo cuántas tasks saldrán todavía, así que esta opción solo te sirve si el plan sale con más de una.
+3. **Cambios.** Dime cuáles.
+

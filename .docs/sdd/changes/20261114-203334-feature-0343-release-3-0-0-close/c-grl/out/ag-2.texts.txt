@@ -1,0 +1,34 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y anunciar el carril, ~2 min.
+
+--- [30]
+Ahora: pruebo el delta sobre una copia de `.docs/sdd`. Queda: la review de la spec y parar en la aprobación, ~5 min.
+
+--- [45]
+Ahora reescribo los scenarios del delta y las reglas de la capacidad.
+
+--- [78]
+Ahora: la spec está escrita y revisada, y espera tu aprobación. Queda: plan, implementación y validación, ~25 min.
+
+La spec de la feature 0010 está en `.docs/sdd/changes/20261114-225847-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. No hay nada commiteado todavía: el commit va con la aprobación.
+
+🦆 Si pides una sala ocupada, `salas reservar Norte lun 10:00-12:00` responde `Norte ocupada lun 10:00-12:00: apuntada en la lista de espera`. `salas espera` lista lo apuntado y `salas espera --quitar Norte lun 10:00-12:00` lo borra. La lista vive en memoria, igual que las reservas de hoy, así que **en la terminal real `salas espera` saldrá vacía si la lanzas aparte**. La lógica queda hecha y probada por tests, pero el valor en uso real llega con una feature de persistencia.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Sin persistencia.** Es la decisión más importante. Mi recomendación es hacer la persistencia como feature siguiente, guardando reservas y esperas. Si prefieres meterla en esta, dímelo.
+2. **Sin aviso ni promoción automática** al liberarse la sala. `cancelar` hoy solo devuelve texto y no borra reservas, así que no hay evento que escuchar.
+3. **Clave de la espera: sala + día + franja.** `libres` solo compara la franja y no lo arreglo. Una reserva nueva `Sur mar 10:00-12:00` hace que `libres 10:00-12:00` excluya a Sur también el lunes.
+4. **`reservar <sala> <día> <franja>`:**
+   - Si la sala está libre, reserva y responde `reservada …`. Hoy ese comando devuelve `salas`, así que cambia su comportamiento.
+   - Si está ocupada, apunta en la lista.
+   - Argumentos incompletos, sobrantes o una sala desconocida siguen devolviendo `salas`.
+   - `src/app.js` exporta `reiniciar()` para aislar los tests.
+5. **Textos literales y órdenes nuevas:** los textos de respuesta y las órdenes `espera` y `espera --quitar` son nombres míos. Están todos en la spec.
+6. **Capacidad nueva `room-waitlist`**, con enfoque A: lista en memoria dentro de `src/app.js`, frente a un JSON o un módulo aparte.
+
+La review fue de un revisor Sonnet en dos rondas. La primera encontró un Crítico, que era justo el de la persistencia: la 🦆 prometía algo que la CLI real no cumplía. Lo reescribí con el aviso. La segunda no encontró Críticos. Tras los cambios, el delta fusiona y valida sobre una copia (10 requisitos, 5 reglas).
+
+El perfil es delegate. Puedes responder con una de estas opciones:
+1. **Apruebo (Recomendada)**: commiteo la spec, escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajustar, por ejemplo meter la persistencia en el Scope.
+

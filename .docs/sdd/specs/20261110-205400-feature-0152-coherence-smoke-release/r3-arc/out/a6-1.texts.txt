@@ -1,0 +1,108 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [22]
+La re-revisión está lanzada y todavía no ha terminado. No he escrito ningún registro del cierre.
+
+**Estado del cierre de la 0010**
+- **Pre-checks:** el árbol está limpio, `merge --check` da «listo» (destino `develop`) y no hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Spec:** está `approved` y firmada por Laura.
+- **Por qué hay re-revisión:** la revisión final fue sobre `43e3d5d`. Después hay dos commits solo de documentación: `f84a4b1` (17 líneas) y `2e8d368` (59 líneas, con dos ADR y la sección «Términos y ADR» del spec). El segundo pasa del límite de 20 líneas que deja sin revisar el kit. No toca `src/` ni `test/`.
+- **Qué revisa:** un solo agente (`effort-high` con opus), solo el rango `43e3d5d..2e8d368`, en un worktree desvinculado.
+
+**Pendiente cuando vuelva**
+- **Resultado de la re-revisión:** si sale limpia, anoto `Re-revisión:` en `tasks.md` y sigo con la validación.
+- **Validación:** `validation.mode: field`, así que la hago yo con mi smoke y la suite, sin pedírtela.
+- **Registros:** `walkthrough.md` no existe todavía y lo escribo yo. También capacidad `bookings`, ADR, roadmap, historia, sync de la base y merge a `develop`.
+- **Limpieza:** retiraré el worktree temporal de la revisión.
+
+Dos avisos:
+- La sección «Términos y ADR» se añadió al spec después de la aprobación. No cambia comportamiento ni alcance, pero lo dejaré anotado en el walkthrough.
+- El spec numera sus decisiones como 1 y 3, sin 2.
+
+--- [30]
+I revisé solo `43e3d5d..2e8d368`, leyendo la rama en local. Hay un hallazgo Critical en `tasks.md`, otro Important en su Ruling y uno Minor en el ADR 0002.
+
+## Critical
+
+Ninguno.
+
+## Important
+
+**1. `tasks.md` atribuye el commit equivocado a la Task 1.**
+En `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` aparece:
+```
+| 1 | Cancelar con motivo | done | 43e3d5d | |
+```
+Según la historia git, la Task 1 se hizo en `bf75bc7` («feat(bookings): cancelar con un motivo de la lista»), que mete `--motivo` y la lista cerrada en `src/app.js` y `test/cancel.test.js`. El commit `43e3d5d` («listado de canceladas con su motivo») es solo de la Task 2. Esa fila tiene que decir `bf75bc7`.
+
+**2. El Ruling de la Task 2 no cuadra con el plan, con la constitución ni con cómo funciona `node:test`.**
+```
+- Task 2: Ruling: `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria — workaround hasta aislar el almacén por test — coste si es erróneo: la suite tarda el doble
+```
+- **Contradice el gate escrito.** El plan (§3 «Validación final») y la constitución (punto 2) fijan el gate en `node --test` sin opciones. `package.json` (`{"type": "module"}`) no tiene ningún script que lleve `--test-concurrency=1`. El Ruling describe un gate que no aparece en ningún sitio, y la línea «Revisión final … limpia» no aclara con cuál de los dos se validó.
+- **La carrera que justifica el Ruling no existe.** `node --test` arranca cada fichero en su propio proceso, así que `test/app.test.js` y `test/cancel.test.js` no comparten el array `bookings`. Dentro de un mismo fichero, los `test()` de primer nivel se ejecutan uno tras otro. Que el tercer test de `cancel.test.js` dependa de que el primero haya cancelado Norte es acoplamiento por orden, no una carrera, y `--test-concurrency=1` no lo cambia. Lo he razonado leyendo el código, sin ejecutar la suite, como pide el encargo.
+- **Falta la deuda.** El propio Ruling se declara workaround «hasta aislar el almacén por test», pero no hay ninguna entrada en `.docs/sdd/steering/debt.md`, que solo tiene la fila de la franja horaria.
+
+## Minor
+
+**3. El ADR 0002 no sigue el formato del ADR 0001.**
+`.docs/sdd/decisions/0001-bookings-in-memory.md` termina con `### Confirmación`, mientras que `.docs/sdd/decisions/0002-node-test.md` acaba en `### Consecuencias` y no tiene esa sección. Son los dos únicos ADR del proyecto, así que el formato queda inconsistente desde el principio. El frontmatter (`status`, `date`, `rutas`) es correcto en los dos.
+
+## Comprobaciones sin hallazgo
+
+- **Spec (punto 1).** La sección «Términos y ADR» solo añade «Términos resueltos: ninguno» y una ADR candidata. Esa candidata, «el motivo se guarda en la propia reserva; se descarta una tabla de motivos aparte», repite el Approach ya aprobado («El motivo se guarda con la reserva cancelada»). El código lo cumple: `booking.reason = reason` en `cancelBooking`. No cambia el Scope, el Delta ni las aprobaciones.
+- **ADR frente al código (punto 2).** El ADR 0001 (reservas en memoria, `src/**`) coincide con el array `bookings` de `src/app.js` y con `architecture.md` («sin dependencias externas»). El ADR 0002 (`node:test`, `test/**`) coincide con los dos ficheros de test y con un `package.json` sin dependencias. El texto de los documentos está en castellano.
+- **Línea «Revisión final» (punto 3).** Que se hiciera «sobre 43e3d5d» es correcto, porque es el último commit que toca código. «Arquitectura no (plan)» encaja con el «Review Focus: ninguna» del plan.
+
+## Veredicto
+
+**Con hallazgos.**
+
+--- [32]
+El resultado llegó: con hallazgos. Los compruebo yo contra el repo antes de darles peso y retiro el worktree de revisión.
+
+--- [45]
+Ya tengo lo necesario para la validación. Como `field` la hago yo, ejecuto el smoke con una fila por THEN, con el input que falla incluido.
+
+--- [50]
+Sin remotos, sin otras ramas abiertas y la suite sigue en 5/5 (guardada en un fichero). Ahora los registros: primero la capacidad con la CLI del kit, y miro dónde queda.
+
+--- [52]
+Capacidad `bookings` creada. Ahora el ADR 0003, las correcciones de `tasks.md`, la deuda y el roadmap.
+
+--- [61]
+Una señal real en esta sesión: el Ruling de `tasks.md` decía algo que la medición desmiente. Ya lo corregí en ese mismo documento, así que lo registro en §5 y paso los validadores.
+
+--- [67]
+Antes de squashear, el kit exige que ningún registro cite un sha del rango que se junta (`2e8d368`). Los reescribo y anoto en las decisiones sin dev-lead el retoque del ADR 0002.
+
+--- [69]
+Cierre commiteado (`709e18c`). Siguen la base integrada (paso 6) y el merge (paso 7); los validadores van antes del sync.
+
+--- [72]
+Base al día, así que no hay nada nuevo que repetir en la suite. Leo la receta de merge para el comando exacto y el chequeo de CI de la base.
+
+--- [78]
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro) y `canceladas` lo enseña. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- **Ruling de la Task 2** (`--test-concurrency=1`): lo medí y no hay carrera. `node --test` con y sin la opción da 5/5, y cada fichero de test corre en su proceso. Dejé el gate del plan (`node --test`), anoté la corrección en `tasks.md` y abrí una fila de deuda por el acoplamiento por orden de `test/cancel.test.js`.
+- **ADR 0003:** lo escribí yo a partir de la ADR candidata del spec.
+- **ADR 0002:** le añadí «Confirmación» (`node --test`), porque sin ella `sdd decision check` frenaba el cierre.
+- **Re-revisión:** tras la revisión final quedaban dos commits de documentación, y uno pasaba de 20 líneas. Lancé una re-revisión y salió con hallazgos. Corregí el commit de la Task 1 en `tasks.md` (`bf75bc7`, no `43e3d5d`), y el ADR 0002 y el Ruling quedaron como se dice arriba.
+- **Spec:** la sección «Términos y ADR» se añadió después de la aprobación. No cambia comportamiento ni alcance.
+
+**Validación en campo (hecha por mí)**
+- **Suite:** `node --test` pasó 5/5 sobre el commit de cierre.
+- **Smoke:** los 4 THEN se ejecutaron de verdad. Tres se ejecutaron por la CLI. El de `canceladas` solo se puede ver dentro de un mismo proceso, porque la CLI no guarda reservas entre invocaciones (ADR 0001). Así, `node src/app.js canceladas` suelto responde vacío.
+- **Revisión:** la final, sobre `43e3d5d`, salió limpia.
+
+**Pendiente y avisos**
+- **Gate:** `Gate: node --test → suite: corrió 5/5` sobre `709e18c`. La base ya estaba al día, así que no hubo suite aparte tras el sync.
+- **Roadmap 0014:** «Motivo guardado» pide algo que la 0010 ya hace (`booking.reason`). No toqué su fila: decide el dev-lead si se cierra.
+- **Spec:** numera sus decisiones como 1 y 3, sin 2.
+- **Kit:** no hay ninguna línea `Retro: … → ticket del kit`. Si quieres el feedback de mejora de esta sesión, dime y lo hago con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`870e159`) · push: no hecho: sin remoto.
+

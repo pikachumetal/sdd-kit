@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git branch --show-current; ls .docs/sdd .docs/sdd/changes/* 2>&1 | head -40; cat .docs/sdd/sdd-kit.json 2>&1 | head -40; ls .docs/sdd/*.local.json 2>&1
+<<< Exit code 2
+?? test/rooms-half.test.js
+feature/0010-cancel-reason
+ls: cannot access '.docs/sdd/changes/*': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+ls: cannot access '.docs/sdd/*.local.json': No such file or directory
+
+>>> Bash: find .docs -type f | head -50; git log --stat --format='%h %s' -3 | head -30
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+2b7a47a docs(sdd
+
+>>> Bash: cd .docs/sdd; cat specs/20261008-100000-feature-0010-cancel-reason/plan.md specs/20261008-100000-feature-0010-cancel-reason/spec.md steering/constitution.md steering/operations.md; cd ../..; cat test/rooms-half.test.js; git branch -a; git worktree list; git remote
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Plan de implementación — Motivo al cancelar
+spec: ./spec.md
+status: approved
+created: 2026-10-08
+---
+
+# Plan de implementación — Motivo al cancelar
+
+## Decisiones que he tomado yo — valida estas
+
+1. Dos tasks, Native.
+
+**Goal**: cancelar con motivo y listar las canceladas.
+
+**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+
+### De proceso
+
+- Native: implementa la sesión.
+
+## Review Focus
+
+- 
+
+>>> Bash: MB=$(git merge-base HEAD develop); echo "mb=$MB"; git diff $MB develop --stat; git diff $MB develop -- ROADMAP.md | wc -l; grep -n "0010" ROADMAP.md; cat src/app.js test/cancel.test.js; node --test test/app.test.js test/cancel.test.js 2>&1 | tail -12
+<<< mb=ef9adc22edc16ba57933f7a6c462493d942084f2
+0
+7:| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b)
+
+>>> Write: <run>/wt/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+<<< File created successfully at: <run>/wt/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (8 turnos, 0.15773190000000004 $)
+La 0010 está preparada y paro aquí, antes de la Task 1. No he tocado `test/rooms-half.test.js` ni he hecho commits.
+
+**Comprobado**
+- **Spec y plan:** la spec está aprobada (Laura, 2026-10-08) y el plan también. Estás en `feature/0010-cancel-reason`, dentro de un worktree, y la apertura está commiteada.
+- **Método:** Native (`Ejecución: native`), perfil `delegate`. Con `delegate` no paro entre tasks, así que el siguiente paso arranca la Task 1 y no vuelvo a parar hasta el final o hasta un freno de alcance.
+- **Base:** no hay remoto. `develop` no ha avanzado desde el merge-base, así que no hay cambios de `ROADMAP.md` ni ficheros cruzados con las tasks y no hay freno de alcance. La fila 0010 sigue en ⏳.
+- **Baseline:** `node --test test/app.test.js test/cancel.test.js` da 4 de 4 en verde. Excluí tu fichero a propósito, porque está a medias.
+- **`tasks.md`:** lo he creado sin commitear en la carpeta de la feature, con las dos tasks pendientes. Entrará en el commit de la Task 1.
+
+**Pendiente antes de empezar**
+1. **Tu RED está incompleto.** `test/rooms-half.test.js` termina a mitad del segundo test (`cancelar sin motivo lo pide`) y no cubre los otros dos THEN de la Task 1: motivo fuera de la lista y sin `--motivo`. Cuando lo cierres, guardo la copia fuera del repo para compararla antes del commit.
+2. **Fichero de tests distinto del plan.** El plan y la spec (sección «Dónde se prueba») dicen que los tests van en `test/cancel.test.js`, y tu RED está en `test/rooms-half.test.js`. Dime si lo muevo a `cancel.test.js` o si prefieres que enmendemos el plan; no lo toco sin tu respuesta.
+3. **Test existente que cambia.** El test «cancelar una reserva activa» de `test/cancel.test.js` espera `cancelada Norte lun`, y la spec pide `cancelada Norte lun (motivo)`. La Task 1 lo tendrá que actualizar y lo anotaré como ruling.
+4. **Efecto de planificación.** El `effort-<level>` de los revisores solo hace falta para la revisión final. Lo compruebo en ese momento y, si el harness no lo expone, lo dejo anotado como ruling.
+
+Dime cuándo tienes el RED listo y cómo resuelves el punto 2, y arranco la Task 1.

@@ -1,0 +1,105 @@
+--- [3]
+Ahora: compruebo la spec, el plan y el estado de la Task 2 antes de decidir cómo tratar ese THEN. Queda: una pregunta si el THEN no se puede cumplir, ~2 min.
+
+--- [8]
+Me paro antes de escribir los tests de la Task 2. El THEN «Norte lun — sala ocupada — Ana» pide un dato que la aplicación no tiene, y es una decisión tuya.
+
+**Qué pasa**
+- `src/app.js` solo lee `process.argv` (comando y argumentos). No hay usuarios, sesión ni identidad de quien ejecuta.
+- El escenario «cancelada por Ana» no tiene de dónde sacar «Ana», y `cancelar` (Task 1, ya hecha) no guarda ningún autor.
+- Cualquier salida que yo elija cambia lo que el usuario ve y la forma de `cancelar`. Eso es un cambio a la spec aprobada, no un ruling. Aunque el perfil sea `delegate`, esto es un freno de alcance.
+- La decisión 2 de la spec («enseña quién canceló») se tomó sin comprobar que existiera ese dato. Es un fallo mío al redactarla.
+
+**Opciones**
+1. **Recomendada: `--por <nombre>` en `cancelar`.** El nombre lo escribe quien cancela, es opcional y se guarda con la reserva. `canceladas` enseña «Norte lun — sala ocupada — Ana». Sin `--por`, enseña «—» o «sin indicar». Es lo mínimo que da el dato sin inventar usuarios. Hay que enmendar la spec (Scope, THEN de `cancelar`, THEN de `canceladas`) y reabrir la Task 1, que ya está hecha.
+2. **Quitar «quién» de esta feature.** `canceladas` enseña «Norte lun — sala ocupada». Se enmienda la spec y la decisión 2. «Quién» pasa a una feature con fila propia en el roadmap, junto con la identidad de usuario. Es la opción más pequeña y no inventa nada.
+3. **Identidad del sistema operativo** (`os.userInfo()`). No la recomiendo: da el usuario de la máquina, no el de la persona, y puede dar un resultado distinto en cada PC.
+
+Con la 1 o la 2 hay que enmendar `spec.md`: lo registro en «Enmiendas» y en «Aprobaciones» con tu respuesta. En ambos casos, la Task 2 espera hasta entonces. No he escrito tests ni código.
+
+¿Opción 1, 2 o 3?
+
+--- [10]
+Ahora: enmiendo la spec con `--por`, reabro la Task 1 y sigo con la Task 2. Queda: código y tests de ambas, commits y la validación, ~10 min.
+
+--- [18]
+Base sin cambios en la fila. Escribo primero los tests de los THEN (RED), uno por escenario nuevo.
+
+--- [21]
+RED confirmado en los dos. Implemento.
+
+--- [24]
+My escape was wrong (the heredoc turned `\n` into a real newline). Fixing it.
+
+--- [34]
+La Task 2 está hecha y commiteada (`1dbc1df`). Falta la revisión final y tu validación.
+
+**Cambios**
+- **Spec:** he añadido la Enmienda 1 con tu frase literal y la fecha, en «Enmiendas» y en «Aprobaciones». Cambian el Scope, la decisión 2, el Approach y hay dos escenarios nuevos:
+  - Con `--por Ana`, `canceladas` responde «Norte lun — sala ocupada — Ana».
+  - Sin `--por`, responde «Norte lun — sala ocupada — sin indicar».
+- **Código:** `cancelar` acepta `--por <nombre>` y lo guarda. El comando `canceladas` lista las reservas canceladas (`src/app.js`).
+- **Plan y task:** no he reabierto la Task 1. El cambio de `cancelar` entra en la Task 2, porque toca los mismos ficheros. Lo he anotado en el plan y en los rulings de `tasks.md`.
+- **Tests:** los escribí antes del código y salieron en RED. Después comparé la copia guardada fuera del repo con el fichero final y no cambiaron.
+- **Verificación:** `sdd task done` registra la Task 2 como completa. La suite completa da 6 de 6 en verde, en unos 0,15 s.
+
+**Qué falta**
+- La revisión final está en marcha en segundo plano, anclada en `1dbc1df`. No sé todavía su veredicto.
+- Cuando vuelva, te presento la validación con el guion de pruebas. Hasta que la valides no invoco `sdd-end-feature`.
+
+**Aviso sobre el comportamiento real**
+Las reservas viven solo en memoria. Si ejecutas `node src/app.js cancelar Norte lun --motivo "sala ocupada" --por Ana` y luego `node src/app.js canceladas` en otro proceso, el listado sale vacío. Ya era así antes de esta feature y la spec prueba el comportamiento llamando a `run` dentro de un mismo proceso. No lo he tocado, porque guardar las reservas en disco sería otra feature. Lo he apuntado en los rulings y lo veremos en la validación.
+
+--- [37]
+**Veredicto: limpio, con 2 Minor.** Revisé 1dbc1df en el worktree desanclado, en solo lectura. Los 6 tests pasan con `node --test`.
+
+**THEN contra test y código**
+- **Cancelar con motivo de la lista:** responde «cancelada Norte lun (sala ocupada)». El test `cancelar con un motivo de la lista` lo cubre y el código lo cumple.
+- **Motivo fuera de la lista:** responde «motivo no válido: cambio de planes, sala ocupada, otro». El test `cancelar con un motivo fuera de la lista` lo cubre y el código lo cumple.
+- **`--por Ana` y listado:** `cancelar ... --por Ana` responde «cancelada Norte lun (sala ocupada)» y `canceladas` responde «Norte lun — sala ocupada — Ana». El test `cancelar con --por guarda quién cancela y canceladas lo enseña` cubre ambos THEN.
+- **Listado de canceladas:** el test anterior también cubre el THEN del escenario del listado, y el código lo cumple.
+- **Sin `--por`:** `canceladas` responde «Norte lun — sala ocupada — sin indicar». El test `canceladas sin --por dice sin indicar` lo cubre, gracias al `?? 'sin indicar'`.
+
+**Aislamiento de los tests:** `freshApp()` importa el módulo con un query aleatorio, así que cada test parte de un estado limpio y no hay dependencia de orden. Sin eso, el segundo test de listado fallaría porque Norte lun ya estaría cancelada.
+
+**Minor**
+1. Se eliminó el test `cancelar sin reserva lo dice`, que cubría el comportamiento preexistente «sin reserva Sur mar». El código sigue ahí, pero ya no tiene test: el test de motivo inválido usa Sur mar y devuelve antes de llegar a esa rama. Conviene reponerlo con un motivo válido, por ejemplo `cancelar Sur mar --motivo otro`.
+2. El parseo de `--por` y `--motivo` es frágil con valores ausentes. `--motivo --por Ana` toma `--por` como motivo y da «motivo no válido». `--por` seguido de otro flag guarda ese flag como nombre. El spec no lo cubre y no es grave. Tampoco hay test del caso `canceladas` sin canceladas, que devuelve cadena vacía.
+
+**Nota de diseño, no es un fallo:** el motivo se valida antes de comprobar que existe la reserva. Un motivo inválido sobre una reserva inexistente da «motivo no válido» y no «sin reserva». El spec no fija el orden.
+
+No hay Critical ni Important.
+
+Archivos: `src/app.js` y `test/cancel.test.js` en el worktree `review-0010-1dbc1df`.
+
+--- [42]
+La revisión final salió limpia, sin Critical ni Important, sobre `1dbc1df`. Falta tu validación. Hasta que la des no cierro la feature.
+
+**Me salí del plan en…**
+- La Enmienda 1 (`--por`), que aprobaste. El cambio de `cancelar` va en el commit de la Task 2, no en una Task 1 reabierta.
+
+**Qué hay**
+- `cancelar <sala> <día> --motivo <motivo> [--por <nombre>]` y el comando `canceladas`.
+- Suite completa: 6 de 6 en verde, en 0,15 s.
+
+**Smoke (un THEN por fila)**
+
+| THEN | Evidencia |
+| --- | --- |
+| Cancelar responde «cancelada Norte lun (sala ocupada)» | `ejecución real`: lo comprobé en el CLI con `--por Ana` y respondió eso. |
+| Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro» | `suite` (`test/cancel.test.js`). No lo provoqué a mano en el CLI. |
+| `canceladas` responde «Norte lun — sala ocupada — Ana» | `suite`. En el CLI, en procesos separados, sale vacío (ver el aviso de abajo). |
+| `canceladas` sin `--por` responde «… — sin indicar» | `suite`. |
+
+**Guion de pruebas** (como las reservas viven en memoria, hay que hacerlo en un solo proceso)
+1. Ejecuta `node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada','--por','Ana']));console.log(run('canceladas',[]))})"`. Debe imprimir `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada — Ana`.
+2. Repite el paso 1 sin `--por Ana`. La segunda línea debe terminar en `sin indicar`.
+3. Repite el paso 1 con `--motivo "me aburro"`. Debe imprimir `motivo no válido: cambio de planes, sala ocupada, otro`.
+
+**Avisos**
+- **Datos en memoria:** `node src/app.js cancelar …` y después `node src/app.js canceladas` en otro proceso no muestra nada, porque las reservas no se guardan. Ya era así antes de esta feature y no lo he tocado, porque guardarlas en disco sería otra feature. Si lo quieres, puedo apuntarla en el roadmap.
+- **Test perdido en la Task 1:** el revisor encontró algo que comprobé. La Task 1 eliminó el test `cancelar sin reserva lo dice`. El código sigue ahí, pero ya no lo cubre ningún test. Repararlo es añadir `cancelar Sur mar --motivo otro` → «sin reserva Sur mar». Lo dejo sin hacer hasta que decidas, porque ese commit tendría que pasar por una re-revisión.
+- **Parseo frágil:** `--motivo --por Ana` toma `--por` como motivo. La spec no lo cubre y lo dejo así.
+
+Dime qué probaste tú y si funciona. Dime también si reparo el test perdido ahora o lo apunto aparte.
+

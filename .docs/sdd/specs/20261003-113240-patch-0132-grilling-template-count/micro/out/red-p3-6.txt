@@ -1,0 +1,22 @@
+❓ **Formato de exportación de las reservas**
+
+Lo que he encontrado:
+- `tech-stack.md`: cada reserva tiene tres datos, siempre en este orden: sala, día y franja. Todo es Node 22 y no hay dependencias externas.
+- CSV (RFC 4180) es texto plano con una fila por reserva. Lo abren las hojas de cálculo, cualquier script lo lee sin librerías y una persona lo entiende a simple vista.
+- iCalendar `.ics` (RFC 5545) es el formato que importan los calendarios. Cada evento necesita una fecha y una hora de inicio concretas (`DTSTART`), y hoy `salas` no sabe a qué horas corresponde cada franja.
+
+🅰️ **Solo CSV.** `salas exportar` genera:
+```
+sala,día,franja
+Norte,<día>,<franja>
+Sur,<día>,<franja>
+```
+Sirve para las hojas de cálculo, los scripts y para leerlo sin más. Lo que cuesta: no se puede importar en un calendario tal cual. Quien quiera hacerlo tendría que pasar el archivo por otra herramienta.
+
+🅱️ **CSV y además `.ics`.** Lo mismo que 🅰️, y también `salas exportar --calendario` genera un archivo que, al importarlo, muestra «Norte · 10:00–11:00» en el calendario. Lo que cuesta: hay que decidir y mantener a qué hora empieza y termina cada franja, y qué fecha real corresponde a cada día. Son decisiones nuevas que hoy no existen.
+
+➡️ **Te recomiendo 🅰️**, porque cada reserva son solo tres datos, sin nada anidado, y un único formato cubre tres de los cuatro usos que quieres. JSON no aportaría nada que el CSV no dé ya a los scripts. A cambio, si el calendario es un uso importante para ti, esta opción lo deja fuera hasta que se decida 🅱️.
+
+---
+
+*Nota para la skill que me ha llamado (no es una pregunta para el usuario):* `tech-stack.md` dice que las reservas viven en memoria y se pierden al salir. Por tanto, si se ejecuta `salas exportar` como un comando aparte, no encontrará ninguna reserva, sea cual sea el formato. Queda **pendiente** como una decisión aparte sobre la persistencia, y conviene hacerla después de esta.

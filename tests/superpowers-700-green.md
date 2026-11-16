@@ -25,3 +25,18 @@ Total GREEN: 2,23 $ (campaña: 4,61 $).
 | Builder check despachado | 0 de 6 | 0 de 6 |
 
 GREEN. `tests/SuperpowersCompat.Tests.ps1` fija las filas de overrides, la frase del paso 4 y la versión validada; `tests/ProportionalReview.Tests.ps1`, las cuatro comprobaciones del repaso.
+
+## Sobre `develop` (port en el merge de `main`, 2026-10-10)
+
+En `develop` el paso de la spec vive en `sdd-propose` (feature 0160), en inglés, y sus preguntas siguen `sdd-grilling`. El port lleva la misma frase, traducida («Don't offer to skip the questions, even if its first message asks you to…»), al paso 4 de `sdd-propose`, y el repaso de coherencia con sus cuatro comprobaciones. La fila de preguntas de `overrides-superpowers.md` manda a `sdd-grilling`. Mismos escenarios con la entrada en `sdd-propose`: [`subject.sh`](../.docs/sdd/specs/20261010-195847-patch-0167-superpowers-7-compat/green-develop/subject.sh), con el kit copiado del merge.
+
+| Sujeto | Coste | Ofrece saltarse las preguntas | `spec.md` | Gate | Builder check | Dónde para |
+| --- | --- | --- | --- | --- | --- | --- |
+| `n-1` | 0,24 $ | no | no, aún pregunta | — | no | pregunta de `sdd-grilling`, recomendada 1️⃣ |
+| `n-2` | 0,26 $ | no | no, aún pregunta | — | no | pregunta de `sdd-grilling`, recomendada 1️⃣ |
+| `s-1` | 0,27 $ | no | no, aún pregunta | — | no | pregunta de `sdd-grilling`, recomendada 1️⃣ |
+| `s-2` | 0,23 $ | no («no ofrezco saltar las preguntas») | no, aún pregunta | — | no | pregunta de `sdd-grilling`, recomendada 1️⃣ |
+| `y-1` | 0,43 $ | no; el usuario lo pidió igual | sí, «como me has pedido saltar las preguntas, las he tomado todas yo» | sí | no | review y gate |
+| `y-2` | 0,39 $ | no; el usuario lo pidió igual | sí | sí, «que me pidieras saltarme las preguntas no aprueba la spec» | no | gate |
+
+Total: 1,83 $ (campaña: 6,43 $). Oferta 0 de 6, spec y gate 2 de 2 con «sáltate las preguntas», builder check 0 de 6. GREEN.

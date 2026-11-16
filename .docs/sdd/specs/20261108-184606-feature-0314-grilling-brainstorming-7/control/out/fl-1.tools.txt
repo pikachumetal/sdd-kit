@@ -1,0 +1,129 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/specs 2>&1 | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< .:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/specs:
+.
+..
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat constitution.md mission.md tech-stack.md roadmap.md; cd ../..; cat package.json; find src test -type f; git branch -a; ls node_modules 2>&1 | head -2
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat README.md | head -30
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0314-grilling-brainstorming-7\.temp\k0314g\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g/skills/sdd-propose/references" && grep -n -i "default\|por defecto\|sin .*control" control-profiles.md | head -20; grep -n "merge.push\|Aviso" control-profiles.md | head
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+218:| Key | Type | Default |
+236:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.1683526 $)
+Ahora: te presento lo que he entendido y te pregunto lo primero del diseño. Queda: la entrevista del flujo, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido.** Hoy `src/app.js` guarda las reservas como `{ room, day, slot }`, sin estado. Quieres que cada reserva tenga uno de estos tres estados: `pendiente`, `confirmada` o `cancelada`. Las transiciones son:
+
+```text
+            confirmar
+ pendiente ───────────▶ confirmada
+    │  ▲                    │
+    │  │ reabrir            │ cancelar
+    │  │                    │
+    │  └──── cancelada ◀────┘
+    │ cancelar     ▲
+    └──────────────┘
+```
+
+Lo he dibujado en texto porque la sesión no tiene skill de diagramas ni Artifact.
+
+Hay 4 transiciones válidas:
+- `pendiente → confirmada`
+- `pendiente → cancelada`
+- `confirmada → cancelada`
+- `cancelada → pendiente`
+
+Todas las demás se rechazan. Por ejemplo, `confirmada → pendiente` y `cancelada → confirmada` no se permiten.
+
+Preveo 2 o 3 tasks sobre la misma superficie, así que no propongo dividirla. Nada de esto está escrito todavía como spec.
+
+Para saber si el flujo está bien, primero necesito entender qué lo motiva.
+
+❓ **¿Qué problema te encuentras hoy que te hace querer estos estados?**
+
+Cuéntamelo con un caso concreto. Por ejemplo, qué te pasó la última vez con una reserva que no supiste cómo tratar.
+
+La respuesta decide si el flujo es el correcto. Un ejemplo es la vuelta de `cancelada` a `pendiente`: si esa sala se ha reservado mientras tanto para el mismo día y franja, reabrir choca con la otra reserva. Esa duda la planteo en la siguiente pregunta.

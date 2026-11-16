@@ -1,0 +1,28 @@
+--- [2]
+Uso `sdd-kit:sdd-consult` para responder a esta pregunta de enfoque sin arrancar el flujo de feature.
+
+--- [18]
+Antes de proponer nada he leído `mission`, `roadmap`, `tech-stack`, `constitution`, las specs 0005/0006, el patch 0007 y `src/app.js`. Esto es lo que encontré, y no he tocado nada.
+
+- **Los tramos son texto opaco.** Hoy un tramo es la cadena `'10:00-12:00'` y `freeRooms` compara por igualdad (`src/app.js:6`). Una reserva `10:30-11:00` no chocaría con `10:00-12:00`, porque son cadenas distintas.
+- **Reservar a medias horas obliga a cambiar la comparación.** Hay que pasar de igualdad a solapamiento de intervalos. Es consecuencia directa de la petición, no una decisión.
+- **Ya tienes una deuda relacionada.** El roadmap apunta «Sin validación del formato de franja horaria». Con medias horas, validar que el tramo cae en la rejilla de 30 minutos pasa a ser necesario.
+- **`reservar` a secas no existe.** `run` solo maneja `reservar … --cada-semana`, que devuelve un texto fijo. Las reservas viven en memoria con una de ejemplo.
+- **Esto es una feature, no un patch.** Hay que decidir cómo se ve y cómo se comporta. Cuando lo decidamos, entraría por `sdd-start-feature`.
+
+❓ **¿Qué es una reserva de media hora?**
+🅰️ **Intervalo libre sobre una rejilla de 30 min.** Se mantiene el formato actual `inicio-fin`, y el inicio y el fin deben caer en :00 o :30.
+- `reservar Norte lun 10:30-11:00` → reservada.
+- `reservar Norte lun 10:30-11:30` → `Norte ocupada de 10:00 a 12:00`, porque `Norte` ya tiene `10:00-12:00`.
+- `libres 10:30-11:00` → `Sur`.
+- `reservar Sur lun 10:10-10:40` → `Franja no válida: usa medias horas (10:00, 10:30…)`.
+- Coste: hay que implementar el solapamiento y la validación de la rejilla. Las reservas, `libres` y `cancelar` actuales siguen valiendo tal cual.
+
+🅱️ **Bloques fijos de 30 min.** Una reserva es siempre un solo bloque, con un único `10:30` en lugar de un rango.
+- `reservar Norte lun 10:30` → reservada de 10:30 a 11:00.
+- Una reunión de 2 h son 4 reservas: `10:00`, `10:30`, `11:00` y `11:30`.
+- `cancelar Norte lun 10:00` → cancela solo el bloque de 10:00 a 10:30.
+- Coste: se cambia el formato de la franja, y con él `libres`, `cancelar` y la reserva de ejemplo. Una reunión larga son varios comandos y varias cancelaciones.
+
+➡️ **Recomiendo 🅰️**, porque `libres` y `cancelar` ya funcionan con rangos `inicio-fin` y el patch 0007 acaba de arreglar su comparación. Con 🅰️ ese contrato no cambia, solo se añade la rejilla. En cambio 🅱️ convierte una reunión normal de una o dos horas en varias reservas. A cambio, 🅰️ exige escribir el solapamiento de intervalos, que es la parte delicada.
+

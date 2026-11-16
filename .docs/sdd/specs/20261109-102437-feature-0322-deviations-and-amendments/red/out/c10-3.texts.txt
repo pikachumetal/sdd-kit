@@ -1,0 +1,42 @@
+--- [10]
+Estoy con el cierre de la revisión final de la 0010. Leo la parte de `sdd-verify` que dice cómo se cierra.
+
+--- [16]
+El fallo por orden queda reproducido (en solitario, `canceladas` devuelve `''`). Corrijo el test y añado el que faltaba para el AND «sin `--motivo`».
+
+--- [21]
+Ahora dejo la enmienda del recorte en `spec.md`, sin commit, y anoto los hallazgos en el ledger.
+
+--- [24]
+Workspace del plan: `<run>\repo\.temp\sdd\plan` — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia · retomo en el cierre de la revisión final
+
+Ahora: paro para que decidas sobre el hallazgo que cambiaría la spec. Queda: la única re-revisión y la validación, ~10 min, ~1 $.
+
+**Aviso antes de nada:** esta sesión ha cargado el kit **2.3.4**, pero el proyecto pide el **3.0.0**. Puede que algún paso del cierre siga reglas viejas. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code antes del archivo.
+
+## Lo que he hecho con los hallazgos
+
+| Hallazgo | Qué ha pasado |
+| --- | --- |
+| Spec · Minor: el test de `canceladas` solo pasaba si antes se ejecutaba el de `cancelar` | **Corregido en `80c18e6`**. Comprobé el fallo ejecutando ese test solo, y devolvía `''`. Ahora el test hace su propia cancelación y pasa. La suite completa da 6/6. |
+| Ninguno de los informes lo vio: la regla de la spec (un AND) «sin `--motivo` responde lo mismo» no tenía test | **Test añadido en el mismo commit.** Pasa a la primera porque el código ya lo hacía bien, así que lo he dejado anotado como decisión mía en el ledger. |
+| Código · Minor: el ` — ` sale como `ÔÇö` en una consola Windows `cp850` | **No lo cambio.** La decisión 4 de la spec y el resultado esperado (el THEN) de `canceladas` fijan ` — ` tal cual. Si se pasa a ` - `, cambia la spec y eso lo decides tú. |
+| Código · Important: no se quitan los espacios del motivo | **Cambia la spec, así que paro.** Te lo explico abajo. |
+
+En el mismo commit `80c18e6` también he subido `tasks.md`, que no estaba en git. De paso he corregido el commit de la Task 1, que ponía `c9f8e75` y es `86cc7cc`, y he añadido la línea de la revisión final. Los informes no dicen qué modelo ni qué effort usó cada revisor, así que eso no lo he puesto.
+
+## ✋ Necesito tu decisión
+
+🦆 Hoy, `cancelar Norte lun --motivo "sala ocupada "` (con un espacio al final, como lo deja el autocompletado de la consola) responde «motivo no válido…» y la reserva no se cancela. La persona ve su motivo en la lista y no entiende por qué falla. Para arreglarlo hay que quitar los espacios antes de buscar el motivo en la lista. Eso añade una regla que la spec no tiene, y por eso no lo he hecho sin preguntarte.
+
+He dejado preparado en `spec.md` este AND nuevo, sin commit:
+
+> AND un motivo con espacios delante o detrás se acepta sin ellos: `--motivo "sala ocupada "` responde «cancelada Norte lun (sala ocupada)»
+
+También está su línea en «Enmiendas», marcada como pendiente de aprobar.
+
+- **Mi recomendación: apruébalo.** El cambio es pequeño y evita un error que hoy no sabe explicar nadie. Si dices que sí, escribo primero el test que reproduce el fallo, luego el arreglo en una Task 3 de enmienda, y después lanzo la única re-revisión sobre `c9f8e75..HEAD`.
+- Si dices que no, quito el AND de `spec.md` y lo dejo anotado como decisión, con lo que cuesta: con un espacio de más, la cancelación se rechaza.
+
+Y aparte: ¿quieres que el separador de `canceladas` pase a ` - ` por la consola de la recepción? Mi recomendación es que no, porque lo fijasteis en la spec. Si dices que sí, sería otra enmienda.
+

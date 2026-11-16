@@ -1,0 +1,307 @@
+--- [3]
+Ahora: leo la spec, el plan y `tasks.md` de la 0010 para ver la Task 2 y el THEN de «quién canceló». Queda: decidir si es una desviación y parar, ~2 min.
+
+--- [18]
+Ahora: espero al revisor de la enmienda. Queda: sus hallazgos y la parada con 🦆 y ✋, ~3 min.
+
+Lo del revisor sigue en curso y no sé qué dirá todavía. Cuando llegue, lo pongo en el ✋.
+
+--- [20]
+1. Crítico · Delta de comportamiento / Aprobaciones / front-matter · La enmienda cambia el comportamiento aprobado (quita «quién canceló» del THEN) y el spec sigue con `status: approved` y la aprobación de Laura del 2026-10-08. Esa aprobación cubría el texto anterior. La enmienda se declara «propuesta, sin aprobar», así que el spec dice dos cosas a la vez. · Poner `status` en pendiente de re-aprobación, o añadir una fila de aprobación de la enmienda, y que el dev-lead (Laura) la apruebe antes de implementar. Si no, el gate no puede dar la enmienda por válida.
+
+2. Importante · Enmiendas · El texto dice «Se corrige también … la capacidad `bookings` (cabecera «lo enseña» queda en motivo)». Pero la línea de Capacidades sigue diciendo «el listado de canceladas lo enseña», sin cambiar. «Lo enseña» sigue siendo ambiguo, porque no dice qué enseña. Tampoco queda claro que la enmienda sustituya a la decisión 2 original: la decisión 2 solo aparece reescrita. · Reescribir la línea de Capacidades («cancelar pide un motivo y el listado de canceladas enseña sala, día y motivo»), o quitar de la enmienda la frase que promete esa corrección. Añadir a la enmienda que la decisión 2 queda sustituida.
+
+3. Importante · Decisiones que he tomado yo (2) / Intent · La decisión 2 se presenta como decidida por el agente, pero la petición original pedía «saber quién y por qué». Quitar «quién» contradice lo pedido y es una decisión de alcance. La decisión 2 dice que la identidad llega «con la 0011», y no hay ninguna fila de ROADMAP ni spec que lo respalde en este spec. · Marcar la decisión 2 como «valida esta» de forma explícita (que el dev-lead confirme que «quién» queda fuera). Citar la fuente de «llega con la 0011» o quitar esa afirmación. Scope «No entra» no menciona «quién canceló». Añadirlo: «No entra: registrar quién canceló».
+
+4. Importante · Intent / Scope · El Intent dice «nadie sabe por qué se liberó una sala» y pide solo el motivo. La petición hablaba de «saber quién y por qué». La fila del ROADMAP dice «el listado de canceladas lo enseña», que sigue siendo ambiguo. El alcance oculto está en «quién»: ni Intent ni Scope lo excluyen. · Dejar constancia en Intent o Scope de que «quién» queda fuera y por qué, y alinear la fila del ROADMAP con «lo enseña = el motivo».
+
+5. Importante · Delta de comportamiento (ADDED listado) · El único escenario del listado tiene un solo registro cancelado. Pasaría con una implementación que muestre el motivo pero ignore el estado (por ejemplo, que liste todas las reservas) o que no ordene. No hay escenario para «sin canceladas» ni para que una reserva activa no aparezca. El Approach dice que `canceladas` filtra por estado cancelada, y el delta no lo cubre. · Añadir un escenario: con una reserva activa y una cancelada, `canceladas` solo lista la cancelada. Añadir otro para el listado vacío, con su mensaje.
+
+6. Importante · Delta de comportamiento (ADDED cancelar) · El escenario mezcla tres comportamientos (motivo válido, motivo inválido, motivo ausente) bajo un solo GIVEN/WHEN, y el WHEN solo corresponde al caso válido. Los dos AND de error no tienen su WHEN. Además falta el caso de cancelar una reserva inexistente o ya cancelada con motivo. · Separar en escenarios propios, cada uno con su WHEN (`cancelar Norte lun --motivo "vacaciones"`, `cancelar Norte lun`). Decidir y declarar qué pasa con una reserva inexistente o ya cancelada.
+
+7. Importante · Delta / Terminología (PRODUCT.md) · PRODUCT.md define «Cancelación» como la reserva que anula el propio cliente antes de 24 h. El delta no dice nada de la regla de 24 h, ni qué pasa si se cancela fuera de plazo. Además, el motivo «sala ocupada» suena a causa del responsable de sala, que es «Anulación» (0011), no cancelación del cliente. · Aclarar en el spec si la regla de 24 h ya existe y no cambia, y revisar la lista de motivos frente a la distinción Cancelación/Anulación. Dejar la decisión explícita en «Decisiones que he tomado yo».
+
+8. Importante · Approach / Dónde se prueba (contratos y datos) · El spec toca datos y contratos sin decirlo. Guarda un campo nuevo en la reserva cancelada, que cambia el formato de almacenamiento. Las reservas ya canceladas, sin motivo, no se mencionan. Cambia la salida de `cancelar`, de modo que los tests actuales de `cancelar` se rompen si esperaban «cancelada Norte lun». Se añade además el comando `canceladas`. · Declarar que las canceladas anteriores no tienen motivo y qué muestra el listado para ellas. Declarar que cambia la salida de `cancelar` y que se actualiza el test existente. Decir si `--motivo` pasa a ser obligatorio (rompe el uso actual) y listar los contratos tocados.
+
+9. Menor · Decisiones (3) · «Sin review de spec: dos señales (MODIFIED, datos)» da una justificación en el cuerpo. Esa decisión depende de reglas del kit y pasa a ser incoherente tras la enmienda: el spec ha cambiado después de aprobarse, y quitar «quién» elimina un dato personal, así que la señal «datos» deja de estar igual. · Reevaluar la decisión 3 tras la enmienda y dejar escrito el resultado.
+
+10. Menor · Ejemplos (punto 7) · No queda ningún nombre real ni dato de persona: «Ana» se quitó y los demás ejemplos (Norte, lun, «Laura» como aprobadora) son inventados o roles. Sin problema salvo que «Laura» sea una persona real, que es lo esperable en una aprobación. No hay `capabilities/`: no aplica el punto 1. No hay roles ni estados nuevos (punto 5) · Sin cambios. Dejar constancia de que no aplican `capabilities/` ni roles.
+
+--- [22]
+🦆 La Task 2 pide que el listado enseñe «quién canceló», y la aplicación no tiene de dónde sacarlo. `PRODUCT.md` dice que la usa una sola persona, y `src/app.js` no guarda ninguna identidad. Para cumplir el THEN tendría que inventar un «Ana», con un nombre fijo, un flag `--por` o una variable de entorno. Eso cambia lo que la aplicación responde, y no es algo que yo deba decidir en un `Ruling:`. Por eso paro antes de escribir código.
+
+✋ Necesito tu decisión sobre la enmienda a la spec.
+
+**Qué propongo** (en `spec.md`, sin commitear):
+- El THEN pasa de «Norte lun — sala ocupada — Ana» a «Norte lun — sala ocupada».
+- La decisión 2 queda en sala, día y motivo, y dice que no hay identidad y que, si llega, será con la 0011. La spec ya nombraba la 0011, pero no he comprobado que esa afirmación sea cierta.
+- La línea de «Enmiendas» queda marcada «propuesta, sin aprobar».
+
+**Alternativas:**
+- **A. Quitar «quién»** (mi recomendación). Es lo más pequeño y es honesto con el producto actual.
+- **B. Añadir `--por <nombre>`** a `cancelar`. El «quién» sería un texto libre, sin identidad real, y habría que cambiar la spec y la Task 1, que ya está hecha.
+- **C. Aparcar «quién»** hasta que exista identidad (0011) y dejarlo en la fila del roadmap.
+
+**Qué dice el revisor** (Sonnet, siete puntos). Los leo como sigue:
+- **Crítico:** la spec dice `status: approved` con la aprobación de Laura de 2026-10-08, pero esa aprobación era del texto anterior. Sin su re-aprobación de la enmienda no se puede implementar.
+- **Importante, de la enmienda:**
+  - La línea de Capacidades sigue diciendo «lo enseña» sin decir qué. Mi texto de «Enmiendas» promete arreglarla y no lo hice.
+  - «Quién canceló» no figura en «No entra».
+  - La decisión 2 contradice la petición original («saber quién y por qué»), así que Laura debe validarla de forma explícita.
+- **Importante, ya estaba en la spec aprobada y no lo cambió la enmienda:** faltan escenarios para «una activa y una cancelada» y para el listado vacío. El escenario de `cancelar` mezcla tres casos bajo un solo WHEN. Faltan reserva inexistente, canceladas antiguas sin motivo y el cambio en la salida de `cancelar`.
+- **No verificado:** dice que `PRODUCT.md` define «Cancelación» con una regla de 24 h y que «sala ocupada» encaja mal con «Anulación». Yo solo he leído la línea 7 de `PRODUCT.md`, así que no lo doy por cierto.
+
+**Estado:**
+- La Task 2 sigue `in_progress` en `tasks.md`.
+- No he escrito tests ni código ni he commiteado nada.
+- El único cambio en disco es la edición de `spec.md`, sin commitear.
+
+**Qué necesito:**
+1. A, B o C.
+2. Si hay que tratar también los hallazgos de la spec ya aprobada, o se quedan para otra feature.
+
+Con tu respuesta y la aprobación de Laura, completo la enmienda, la commiteo y sigo con la Task 2.
+
+--- [23]
+Esa notificación solo avisa de que ha terminado la vigilancia de silencio del revisor. No es una respuesta tuya y no aprueba nada.
+
+Sigo parado en el ✋ anterior, sin tocar código ni commitear:
+- **Tu decisión:** A (quitar «quién»), B (`--por <nombre>`) o C (aparcarlo hasta la 0011).
+- **Aprobación de Laura:** hace falta que apruebe la enmienda a la spec ya aprobada.
+- **Hallazgos antiguos:** dime si trato los de la spec ya aprobada o se quedan para otra feature.
+
+Cuando me respondas, completo la enmienda, la commiteo y sigo con la Task 2.
+
+--- [25]
+Aprobada, así que cierro la enmienda con la opción A, tal como la propuse. Ahora: invoco el método Native del plan y dejo la spec lista. Queda: commit de la enmienda y Task 2 con su RED, ~5 min.
+
+--- [33]
+RED confirmado: falla porque `canceladas` no existe y cae en la respuesta por defecto «salas». Implemento lo mínimo.
+
+--- [36]
+Mi script de Python metió un salto de línea real dentro del `join`. Lo corrijo.
+
+--- [38]
+El regex no casó. Uso Edit directamente.
+
+--- [45]
+GREEN con 3 de 3 tests y la copia RED idéntica al test. Commiteo por rutas y cierro con `sdd task done`.
+
+--- [49]
+Task 2 cerrada, y es la última del plan. Ahora: invoco `sdd-verify` para la revisión final de la rama. Queda: ejes de revisión en segundo plano y su cierre, ~10 min.
+
+--- [60]
+Sigo con la revisión final: el paquete está listo y lanzo ahora los dos ejes, Spec y Code, en segundo plano. El eje de Arquitectura no sale, porque el diff no trae ninguna de sus señales.
+
+--- [63]
+I'll start with the review package, the spec, the plan and the ledger.
+
+--- [72]
+Los dos ejes de la revisión final (Spec con Opus y Code con Sonnet) están en marcha en segundo plano, cada uno con su vigilancia de silencio. Estado actual:
+
+- **Task 2:** cerrada. `canceladas` lista sala, día y motivo, sin «quién canceló». Los 3 tests de `test/cancel.test.js` pasan. Commit `0448fad`.
+- **Enmienda:** aprobada por ti y commiteada (`4a057a0`).
+- **Eje de Arquitectura:** no sale. El diff no trae módulo nuevo, dependencia ni contrato, y lo anoté en el ledger.
+
+Mientras revisan, no hay nada más que pueda hacer sin pisarles el trabajo. Cuando devuelvan sus informes, los leo y hago el cierre de la revisión: reclasifico los hallazgos y, si hace falta, una sola pasada de arreglos. Hasta entonces no sé qué dirán.
+
+--- [77]
+The diff is short (2 files). Next I'll check other callers of `cancelar`/`cancelBooking`, the rest of the tests, and `PRODUCT.md` at the reviewed commit.
+
+--- [81]
+Persistence is deferred to roadmap 0014. A quick look at `test/app.test.js`, `README.md` and `debt.md` to check how the change affects existing tests and docs.
+
+--- [83]
+### Strengths
+- The diff is small and does one thing. Validating the reason in `cancelBooking`, parsing in `reasonOf` and formatting in `cancelledList` are separate functions.
+- The reasons list lives in one constant (`reasons`). The "not valid" message is built from it, so the list and the message can't drift apart.
+- The interface text is in Spanish, as the code constraint requires. The message wording is consistent with the existing messages.
+- The reviewed change adds no comments, so there are none that repeat the code.
+- `voidBooking` sets `status = 'voided'`, so voided bookings never appear in `canceladas`. The `canceladas` filter on `'cancelled'` is therefore correct.
+- The plan is native, so there are no RED tests (checked in `plan.md`). No RED test was modified.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- `test/cancel.test.js:9-11` · The base test `cancelar sin reserva lo dice` was replaced by the invalid-reason test. The `sin reserva ${room} ${day}` branch of `cancelBooking` now has no test (`src/app.js:21`), and `test/app.test.js` doesn't cover it either. The new invalid-reason test uses `Sur mar`, a room and day with no booking, so it doesn't pin the order of the two checks. Fix: restore the "no booking" test, passing a valid reason: `run('cancelar', ['Sur','mar','--motivo','otro'])` → `'sin reserva Sur mar'`. Optionally make the invalid-reason test use `Norte lun`, so it checks that the reason is validated first.
+
+#### Minor (Nice to Have)
+- `test/cancel.test.js:13-15` · The `canceladas` test depends on module-level mutable state left by the first test (`Norte lun` cancelled). It passes only if the tests run in file order, and a test run in isolation would fail. The title says "cancelada antes", so the dependency is acknowledged. It is fragile for a `node --test` run with `--test-name-pattern`. Possible fix: cancel inside the test itself. Note that the state is not reset between tests, which would need a reset or an injectable `bookings`.
+- `src/app.js:51-56` · `canceladas` with no cancelled bookings returns `''`, so `console.log` prints an empty line. That is an edge case with no message and no test. Possible fix: return a message such as `'sin canceladas'`. Check first with the Spec axis, because the spec may not require it.
+- `src/app.js:36-39` · `reasonOf` only reads the token after `--motivo`. `cancelar --motivo otro Norte lun` would take `params[0]` and `params[1]` as room and day, which are `--motivo` and `otro`, and would answer `sin reserva --motivo otro`. `--motivo` without a value gives `undefined` and the "not valid" message, which is acceptable. This is low priority in a toy CLI, and a positional-arguments contract is implied.
+- `src/app.js:42` · A book-style heuristic, possible Primitive Obsession (Refactoring): `params`, `reason` and `status` are loose strings and `'cancelled'`/`'active'`/`'voided'` are repeated literals. This predates the change and isn't worth fixing now.
+
+### Declined to judge
+- Whether `canceladas` should show who cancelled (amendment 4a057a0) and whether the spec asks for `--motivo` as a flag: Spec axis.
+- Whether the parsing and formatting that live in `app.js` should be in separate modules: Architecture axis.
+- Whether `process.argv` execution at import time is a problem: it predates the branch.
+- Whether `reasons` should be persisted or configurable: outside the plan.
+
+### Recommendations
+- Run `node --test` as the closing gate; the plan declares it. I did not run it.
+- Add the "no booking" test and consider the empty-list message for `canceladas`.
+
+### Assessment
+**Ready to merge?** With fixes
+**Reasoning:** The implementation is correct and clean. The one thing to fix is the lost "no booking" regression test, which leaves that branch untested. The other points are minor.
+
+--- [85]
+Ha vuelto el eje Code. Espero al de Spec antes del cierre. Mientras, compruebo su hallazgo Important: que se perdió el test de «sin reserva».
+
+--- [88]
+Confirmado: el test `cancelar sin reserva lo dice` existía en la base y la Task 1 (`1e0c09a`) lo sustituyó por el de motivo no válido. Hoy nadie prueba la rama `sin reserva` de `src/app.js:21`. El fallo viene de antes de esta sesión, pero está dentro de la rama.
+
+El eje de Spec sigue en curso. Cuando vuelva, hago el cierre de la revisión con los dos informes y una sola pasada de arreglos. Entrarán el test restaurado de `sin reserva`, con motivo válido, y lo que salga del eje Spec.
+
+Del eje Code, en principio solo dejaría en el ledger como menores diferidos:
+- La dependencia del orden entre tests.
+- La salida vacía de `canceladas` cuando no hay ninguna.
+- El orden de los argumentos de `--motivo`.
+
+Los doy por provisionales hasta ver el informe de Spec, que puede subir alguno.
+
+--- [89]
+Esa notificación solo cierra la vigilancia de silencio del eje Code, que ya había devuelto su informe. No cambia nada.
+
+Sigo esperando al eje Spec (Opus). Cuando vuelva, hago el cierre de la revisión con los dos informes.
+
+--- [91]
+### Strengths
+
+- Las dos ADDED del delta están implementadas y responden exactamente con los textos del spec. `cancelar Norte lun --motivo "sala ocupada"` devuelve «cancelada Norte lun (sala ocupada)» (`src/app.js:19-26`). Un motivo fuera de la lista devuelve «motivo no válido: cambio de planes, sala ocupada, otro» (`src/app.js:20`), y `canceladas` devuelve «Norte lun — sala ocupada» (`src/app.js:28-33`, `:46`).
+- La decisión 1 (lista cerrada de motivos) tiene una regla que la cubre entera: `reasons` en `src/app.js:3` tiene exactamente los tres motivos, y la validación en `:20` rechaza cualquier otro, también `undefined`.
+- La enmienda del 2026-11-12 se respeta. El listado no enseña quién canceló y no se guarda ningún dato de identidad. Las anulaciones (`status: 'voided'`) quedan fuera del filtro de `canceladas`, como dice el «No entra» del spec (0011).
+- El texto de la interfaz está en castellano (restricción de código del plan).
+- El THEN principal y el del motivo inválido tienen cada uno su test en `test/cancel.test.js`, que es el sitio que nombra «Dónde se prueba».
+
+### Issues
+
+#### Critical (Must Fix)
+
+Ninguno.
+
+#### Important (Should Fix)
+
+1. **No hay test para el THEN «sin `--motivo` responde lo mismo».**
+   - `test/cancel.test.js` (no existe el test). El código sí lo cumple: `reasonOf` devuelve `undefined` en `src/app.js:16`, y `reasons.includes(undefined)` es falso en `:20`.
+   - Por qué importa: es la regresión más probable. Si mañana alguien pone un motivo por defecto, nada lo detecta. «Dónde se prueba» dice que el motivo se prueba por el comando `cancelar` en `test/cancel.test.js`, y este THEN no tiene verificación.
+   - Cómo arreglarlo: añadir `assert.equal(run('cancelar', ['Norte', 'mar']), 'motivo no válido: cambio de planes, sala ocupada, otro')`.
+   - Gap: `partial`. Origen: THEN de «Cancelar pide un motivo de la lista», AND «sin `--motivo` responde lo mismo».
+
+2. **Se perdió el test de «sin reserva».**
+   - `test/cancel.test.js:9-11`. El test base `cancelar sin reserva lo dice` (`1e6ec44:test/cancel.test.js`) se sustituyó por el del motivo inválido en vez de adaptarlo. Desde entonces ningún test cubre la rama de `src/app.js:22` (`sin reserva ${room} ${day}`).
+   - Por qué importa: el comportamiento existe y una persona que cancela una reserva que no existe espera ese mensaje. Ahora una regresión en esa rama, o en el orden de las validaciones, pasaría sin que nada falle.
+   - Cómo arreglarlo: mantener el caso con un motivo válido, `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`, junto al nuevo test del motivo inválido.
+   - Gap: `partial`. Origen: no sale de un THEN, sino del comportamiento existente de `cancelar` que una persona razonable espera que se mantenga.
+
+#### Minor (Nice to Have)
+
+3. **El test de `canceladas` depende del orden de los tests.**
+   - `test/cancel.test.js:13-15`. El GIVEN («la reserva de Norte del lunes cancelada con "sala ocupada"») no lo prepara el propio test: viene del estado de módulo que deja el test de `:5-7`. El nombre lo admite («…cancelada antes»).
+   - Por qué importa: si se ejecuta solo (`--test-name-pattern`) o se reordena, `run('canceladas', [])` devuelve `''` y falla. La verificación del THEN existe, pero es frágil.
+   - Cómo arreglarlo: que el test haga primero `run('cancelar', ['Norte','lun','--motivo','sala ocupada'])`, o comprobar las dos cosas en un mismo test.
+   - Gap: `partial`. Origen: THEN de «El listado de canceladas enseña el motivo».
+
+4. **`canceladas` sin ninguna cancelación imprime una línea vacía.**
+   - `src/app.js:29-32`. Con la lista vacía, `join('\n')` da `''` y `console.log` saca una línea en blanco. Una persona razonable espera algo como «sin canceladas», en la línea de «sin reserva …» que ya usa la app.
+   - El spec no dice nada de este caso, y el efecto es solo confusión, sin pérdida de datos. Además, mientras no exista la 0014, la memoria se pierde entre ejecuciones, así que ese es justo lo que verá siempre quien use la CLI.
+   - Gap: `missing`. Origen: lo que espera una persona razonable; no hay THEN.
+
+### Not verified
+
+- **Que la suite pase:** no verificado. La única evidencia del ledger es «`node --test test/cancel.test.js` → ℹ duration_ms 101.2065», sin el número de tests que pasan y fallan.
+- **Evidencia de tests de la Task 1 (`1e0c09a`):** no verificado. El ledger solo tiene una línea para la Task 2 (`4a057a0..0448fad`); la Task 1 no tiene línea ni salida de tests.
+- **Gate de cierre del plan (`node --test`, que incluye `test/app.test.js`):** no verificado. Por el encargo no he ejecutado la suite.
+
+### Recommendations
+
+- Que el hilo principal ejecute `node --test` completo y confirme el número de tests que pasan y fallan. Se ha cambiado el comportamiento de `cancelar` y se han tocado tests existentes.
+- Arreglar los Important 1 y 2 antes del merge; los dos son tests de una línea.
+- Ledger: no tiene líneas `Ruling:`, `minor (deferred)` ni `parked`, así que no hay minors aplazados que pesar. Conviene añadir la línea que falta de la Task 1, con su evidencia de tests.
+
+### Declined to judge
+
+- **Persistencia entre ejecuciones:** `cancelar` seguido de `canceladas` en dos procesos distintos no enseña nada, porque las reservas viven en memoria. Lo dejo fuera porque la app base no persiste nada, el Approach del spec no lo pide y la 0014 del roadmap («Motivo guardado») se encarga de ello.
+- **Motivo sin comillas en la shell** (`--motivo sala ocupada` llega como `sala`): lo dejo fuera porque el mensaje de error enseña los motivos válidos y la persona puede corregirlo; el spec usa comillas.
+- **Mayúsculas en el motivo** («Sala ocupada» se rechaza): lo dejo fuera porque la lista es cerrada por decisión del dev-lead, y el mensaje guía.
+- **`--motivo` en el lugar de la sala o el día** (`cancelar Norte --motivo otro` responde «sin reserva Norte --motivo»): lo dejo fuera porque el spec fija el orden `cancelar <sala> <día> --motivo <motivo>`. Es un mal uso, la respuesta es rara pero no hace daño.
+- **El orden de las validaciones** (un motivo inválido sobre una reserva inexistente responde «motivo no válido»): lo dejo fuera porque el spec no lo fija y los dos mensajes son correctos.
+- **El cambio de firma de `cancelBooking`** (export con un tercer parámetro): lo dejo fuera de este eje. No tiene otros llamadores en el repo (`git grep` en `0448fad`) y es cosa del eje de calidad o arquitectura.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** Las dos ADDED, la decisión de la lista cerrada y la enmienda están implementadas y responden con los textos exactos del spec. Pero el THEN «sin `--motivo`» no tiene test, y el cambio borró la cobertura de «sin reserva»; los dos se arreglan con un test de una línea cada uno.
+
+--- [93]
+Han vuelto los dos ejes. Ahora: leo el procedimiento del cierre de la revisión y lo aplico. Queda: una sola pasada de arreglos con test primero, ~5 min.
+
+--- [101]
+Las dos mutaciones hacen fallar su test y, restaurado el código, la suite completa pasa 7 de 7. Commiteo la pasada de fix.
+
+--- [104]
+La vigilancia del eje Spec ha terminado; no cambia nada. Sigo con la re-revisión única del fix, así que leo el resto de su plantilla.
+
+--- [113]
+Mientras corre la re-revisión, dejo en el ledger los arreglos, los rulings de «Declined to judge» y los Minor diferidos.
+
+--- [120]
+Ahora espero el informe de la re-revisión. Cuando llegue, completo `tasks.md` con la revisión final, la pasada de fix y los rulings.
+
+--- [122]
+### Finding Verdicts
+
+1. **[Spec axis, Important, partial] No test for the THEN «sin `--motivo` responde lo mismo»**: ADDRESSED. The fix adds `test/cancel.test.js:17-19` (`cancelar sin --motivo responde que el motivo no es válido`). It calls `run('cancelar', ['Norte', 'mar'])` and checks for the exact spec text «motivo no válido: cambio de planes, sala ocupada, otro» (spec.md:55). With no flag, `reasonOf` returns `undefined` (`src/app.js:14-17`), so the call ends in the rejection at `src/app.js:20`. The claimed mutation would make it fail: if a default reason were filled in, the call would return `sin reserva Norte mar` instead, because Norte mar has no booking.
+
+2. **[Spec + Code axes, Important, partial] Base test `cancelar sin reserva lo dice` was lost in Task 1**: ADDRESSED. The fix adds `test/cancel.test.js:21-23` (`cancelar una reserva que no existe lo dice`). It calls `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` and expects `sin reserva Sur mar`. That covers the branch at `src/app.js:22`. The base test (`ec2be2b:test/cancel.test.js:9-10`) asserted the same thing without a reason. The restored version adds a valid reason, as the finding suggested, so the reason check at line 20 doesn't stop the call before it reaches that branch. The test name changed from the original, but the old test had already been deleted, so this doesn't count as a change to a RED test.
+
+### New Breakage in the Fix Diff
+
+None. The diff only adds 8 lines to `test/cancel.test.js` and leaves the production code alone. Neither new test changes the shared module state: the first stops at the reason check and the second finds no booking. So the tests that come before them in the file aren't affected. The interface text in the assertions is in Spanish.
+
+### Out-of-Scope Observations
+
+- `test/cancel.test.js:13-15` (`canceladas enseña…`) passes only because the test at lines 5-7 runs first and cancels Norte lun in the module-level `bookings` array. That state is shared across tests. This was already there before the fix and isn't blocking.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [124]
+La re-revisión sale limpia: los dos hallazgos quedan resueltos y el fix no introduce nada nuevo. Ahora completo `tasks.md` y limpio el worktree de revisión.
+
+--- [128]
+La Task 2 y la revisión final de la 0010 están hechas, pero no he invocado `sdd-archive`, así que no hay validación ni merge todavía. `node --test` pasa 7 de 7 y la re-revisión del fix sale limpia.
+
+**Qué hice**
+- **Enmienda:** quité «quién canceló» de la spec, con tu aprobación. Quedó en la decisión 2, en el «No entra» y en el THEN, que ahora responde «Norte lun — sala ocupada». Commit `4a057a0`.
+- **Task 2:** `canceladas` lista sala, día y motivo de las reservas canceladas. Escribí el test primero y lo vi fallar antes de implementar. Commit `0448fad`.
+- **Revisión final:** pasaron los ejes Spec (Opus) y Code (Sonnet). El eje Arquitectura no salió, porque el diff no trae módulo, dependencia ni contrato nuevos.
+- **Pasada de fix:** los dos ejes pidieron arreglos (dos Important en total). Faltaba el test de «sin `--motivo`» y se había perdido el de «sin reserva», que la Task 1 sustituyó. Añadí los dos tests en `08a900f`. Cada uno falla si rompo a propósito la rama que cubre.
+
+**Pendiente de tu lado**
+- **`tasks.md` sin commitear:** tiene la revisión final, la pasada de fix y los rulings. Son más de 20 líneas de documentación, así que no las commiteé sin revisar. El cierre de `sdd-archive` las recoge.
+- **Worktree de revisión:** `review-0010-08a900f` no se pudo borrar (Windows, permiso denegado). Git ya no lo registra y queda solo la carpeta, junto al repo.
+- **Workspace del plan:** lo borré una vez copiados los rulings a `tasks.md`.
+
+**Minor diferidos** (sin `review.minors: fix` no entran en la pasada):
+- El test de `canceladas` depende del orden de los tests.
+- `canceladas` sin ninguna cancelada imprime una línea vacía. Añadir un texto cambia la salida observable y la spec calla.
+- `cancelar --motivo otro Norte lun` responde «sin reserva --motivo otro».
+- Los literales de estado se repiten (`active`, `cancelled`, `voided`).
+
+**Rulings que tomé**
+- **Declined to judge:** los registré como `Final: Ruling:` en el ledger, y están en `tasks.md`. Son persistencia entre ejecuciones (la trata la 0014), motivo sin comillas, mayúsculas, argumentos fuera de orden, orden de las validaciones, el cambio de firma de `cancelBooking` y el parseo dentro de `app.js`.
+- **Evidencia de la Task 1:** cerró en una sesión anterior sin línea `complete` en este ledger. Lo dejé como ruling.
+
+¿Sigo con `sdd-archive` (validación y cierre)? El merge a `main` lo decides tú.
+
+--- [129]
+Esa notificación solo avisa de que terminó la vigilancia de silencio de la re-revisión, que ya había devuelto su informe limpio. No cambia nada del estado.
+
+Sigo parado donde lo dejé: la 0010 está implementada y revisada, y `tasks.md` queda sin commitear a la espera del cierre. Para seguir con `sdd-archive` (validación y cierre) necesito que me lo pidas. El merge a `main` es decisión tuya.
+

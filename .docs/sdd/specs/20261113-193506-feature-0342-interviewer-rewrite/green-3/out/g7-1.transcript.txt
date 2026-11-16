@@ -1,0 +1,168 @@
+
+# turno 1
+## usuario
+Revisa la configuración del kit y ponla al día.
+> Skill: sdd-kit:sdd-config
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo"; ls -a . .docs/sdd; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/sdd-kit.local.json; echo ---; cat .gitignore
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r4\skills\sdd-propose\references\control-profiles.md
+> Skill: sdd-kit:sdd-grilling
+## agente
+Revisé `.docs/sdd/sdd-kit.json`. `sdd-kit.local.json` no existe y no hay `.gitignore`.
+
+| Clave | Valor | Procede de |
+| --- | --- | --- |
+| `ids.mode` | `sequence` | `sdd-kit.json` |
+| `control.profile` | falta (rige `delegate`) | default |
+| `merge` (`into`, `noFf`, `removeWorktree`) | falta (el cierre pregunta) | default |
+| `merge.push` | falta (el cierre no hace push) | default |
+| `control.maxParallelAgents` | falta (rige `3`) | default |
+| `control.silence.betweenStepsMinutes` | falta (rige `8`) | default |
+| `control.silence.longCommandMinutes` | falta (rige `20`) | default |
+| `execution` | falta (rige `auto`) | default |
+| `validation.mode` | falta (rige `manual`) | default |
+| `validation.startEnvironment` | falta (rige `false`) | default |
+| `review.minors` | falta (rige `defer`) | default |
+| `pricing` | falta (el cierre dará «sin precio») | default |
+
+`sdd-kit.json` también trae `version: 3.0.0`, `channel: plugin` y `release.hasRecipient: false`, que no son preguntas de la configuración. No hay avisos de claves ignoradas porque no hay fichero local.
+
+Voy clave por clave, empezando por el perfil de control (`pair`, `delegate` o `unattended`), porque condiciona cuánto paro después. Antes necesito saber a quién aplica.
+
+1. **Para todo el equipo (`sdd-kit.json`)**: lo recomiendo, porque el proyecto aún no tiene la clave y así queda como valor común.
+2. **Solo para ti (`sdd-kit.local.json`)**: es tu preferencia y no cambia lo que ve el resto. Crearía el fichero y añadiría su línea a `.gitignore`.
+
+¿Para quién configuro el perfil de control?
+
+# turno 2
+## persona
+No sé para quién configurar el perfil. El que quiero es el que venga por defecto.
+## agente
+Anotado: el perfil de control no se escribe en ningún fichero y rige `delegate`, el default. Si más adelante quieres fijarlo, dímelo.
+
+Sigo con el cierre de las features. Veo `main` como rama estable y `develop` como rama de integración.
+
+1. **Sí (recomendado)**: al cerrar una feature hago merge en `develop` con `--no-ff` y no borro el worktree. Escribo `merge: {into: "develop", noFf: true, removeWorktree: false}`. Con `--no-ff` la feature queda en un solo commit que se revierte de golpe. Borrar un worktree con cambios sin commitear no se puede deshacer, así que eso lo decide una persona.
+2. **No o no sé**: no escribo nada y el cierre sigue preguntando cada vez.
+
+¿Dejo fijada esa política de merge en `sdd-kit.json`?
+
+# turno 3
+## persona
+Sí, déjala fijada en `sdd-kit.json` con `merge: {into: "develop", noFf: true, removeWorktree: false}`. El worktree lo borro yo.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && python -I -c " import json p='.docs/sdd/sdd-kit.json' d=json.load(open(p,encoding='utf-8')) d['merge']={'into':'develop','noFf':True,'removeWorktree':False} open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False)+'\n') " && cat .docs/sdd/sdd-kit.json
+## agente
+Ya está en `sdd-kit.json`: `merge: {into: "develop", noFf: true, removeWorktree: false}`. No lo he commiteado.
+
+Sigo con el push. Tienes `main` estable y `develop` de integración, así que recomiendo que el push de `develop` sea automático tras el merge. Sin él, nadie más ve el merge. El push de `main`, de los tags y cualquier otro seguirían siendo cosa de una persona.
+
+1. **Sí (recomendado)**: escribo `merge.push: true` y, tras el merge, hago push de `develop` a su remoto sin preguntar.
+2. **No**: escribo `merge.push: false` y el cierre no hace push.
+3. **No sé**: no escribo nada y el cierre no hace push.
+
+¿Hago push de `develop` automáticamente tras el merge?
+
+# turno 4
+## persona
+Sí, opción 1: `merge.push: true` y push de `develop` tras el merge, sin preguntar. Y lo de quién valida: manual.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && python -I -c " import json p='.docs/sdd/sdd-kit.json' d=json.load(open(p,encoding='utf-8')) d['merge']['push']=True d['validation']={'mode':'manual'} open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False)+'\n') " && cat .docs/sdd/sdd-kit.json
+## agente
+Escrito en `sdd-kit.json`: `merge.push: true` y `validation.mode: manual`. Sigue sin commitear.
+
+Ahora los frenos. Por defecto el kit lanza hasta 3 agentes en paralelo. Avisa tras 8 minutos de silencio entre pasos, o tras 20 en un comando largo. Recomiendo dejarlos así, porque son los valores del kit.
+
+1. **Sí, déjalos (recomendado)**: no escribo nada y siguen rigiendo esos valores.
+2. **Números propios**: me dices el máximo de agentes y los minutos, y los escribo en `control`.
+
+¿Te valen los frenos por defecto?
+
+# turno 5
+## persona
+Sí, déjalos por defecto: el perfil de control que venga por defecto, sin escribir nada en `control`.
+## agente
+Anotado: no escribo nada en `control`. Siguen el perfil `delegate` y los frenos por defecto (3 agentes, 8 y 20 minutos).
+
+Ahora, cómo se ejecutan los planes. Recomiendo `auto`, porque cada plan recomienda su propio método. Native sale más barato, y los subagentes compensan en planes largos o con revisión por tarea.
+
+1. **`auto` (recomendado)**: no escribo nada y cada plan recomienda su método.
+2. **`native`**: se ejecuta en esta sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3. **`subagent`**: siempre con subagentes.
+
+¿Qué método fijo para ejecutar los planes?
+
+# turno 6
+## persona
+Lo que recomiendes: que decidas tú el método de ejecución según cada plan.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && python -I -c " import json p='.docs/sdd/sdd-kit.json' d=json.load(open(p,encoding='utf-8')) d['execution']='auto' open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False)+'\n') " && cat .docs/sdd/sdd-kit.json
+## agente
+Escrito `execution: "auto"` en `sdd-kit.json`. Como me dejas decidir, lo dejo fijado en el fichero del proyecto, y cada plan recomienda su método.
+
+Ahora los hallazgos Minor de la revisión final. Recomiendo `defer`, porque un Minor no cambia lo que recibe quien usa el producto y cada arreglo alarga la pasada de fix.
+
+1. **`defer` (recomendado)**: los Minor van al ledger como diferidos. Escribo `review.minors: "defer"`.
+2. **`fix`**: los Minor entran en la pasada de fix de cada feature.
+
+¿Qué hago con los Minor de la revisión final?
+
+# turno 7
+## persona
+No sé.
+> ToolSearch: select:WebFetch
+> WebFetch: https://platform.claude.com/docs/en/about-claude/pricing
+> Grep: ^\| Claude (Opus|Sonnet|Haiku|Fable|Mythos)
+## agente
+He leído la página de precios (`https://platform.claude.com/docs/en/about-claude/pricing`). Con la tabla el cierre de cada feature podrá dar el coste de la sesión. Recomiendo escribirla. Estos son los modelos Opus, Sonnet y Haiku actuales, en USD por millón de tokens:
+
+| Modelo (id de API) | `input` | `cacheWrite5m` | `cacheWrite1h` | `cacheRead` | `output` |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+- **Haiku 5.5:** esos son los precios para prompts de hasta 100.000 tokens. Por encima suben a 0.50, 0.625, 1, 0.05 y 2.50.
+- **Opus 5.5 y Sonnet 5.5:** su precio de `cacheRead` lleva una nota al pie en la página que no he podido resolver desde el resumen que recibí.
+
+1. **Sí, con esta tabla (recomendado)**: escribo `pricing` en `sdd-kit.json` con `source` (la página) y `updated: 2026-11-14`.
+2. **No o no sé**: no escribo nada y el cierre dará «sin precio».
+
+¿Escribo la tabla de precios?
+
+# turno 8
+## persona
+No sé.
+## agente
+Anotado: no escribo `pricing` y el cierre dará «sin precio».
+
+Queda una pregunta, y es personal, así que iría a `sdd-kit.local.json` y no al proyecto. Es si, cuando te toque validar una feature, arranco el entorno antes de darte el guion de pruebas. Recomiendo que no, que es el default: la validación ya te dice cómo arrancarlo.
+
+1. **No (recomendado)**: escribo `validation.startEnvironment: false` en `sdd-kit.local.json`. Crearía ese fichero y añadiría su línea a `.gitignore`.
+2. **Sí**: escribo `validation.startEnvironment: true` y encontrarás el entorno ya corriendo.
+3. **No sé**: no escribo nada y rige `false`, sin crear fichero.
+
+¿Arranco el entorno antes de darte el guion de validación?
+
+# turno 9
+## persona
+No, opción 1: escribe `validation.startEnvironment: false` en `sdd-kit.local.json`. Crea el fichero y añade su línea a `.gitignore`.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && printf '{"validation": {"startEnvironment": false}}\n' > .docs/sdd/sdd-kit.local.json && printf '.docs/sdd/sdd-kit.local.json\n' > .gitignore && cat .docs/sdd/sdd-kit.local.json .gitignore && git status --short
+## agente
+La configuración del kit ya está al día. No he commiteado nada: queda `sdd-kit.json` modificado y `.gitignore` nuevo, listos para que los revises.
+
+**Escrito en `.docs/sdd/sdd-kit.json` (proyecto):**
+- `merge`: `{into: "develop", noFf: true, removeWorktree: false, push: true}`
+- `validation.mode`: `manual`
+- `execution`: `auto`
+
+**Escrito en `.docs/sdd/sdd-kit.local.json` (solo tuyo, fuera de git):**
+- `validation.startEnvironment`: `false`
+
+También he creado `.gitignore` con la línea de ese fichero local. No existía, así que no hubo duplicados.
+
+**Sin escribir, con su default:**
+- **Perfil de control:** rige `delegate`.
+- **Frenos:** 3 agentes en paralelo, aviso a los 8 minutos de silencio entre pasos y a los 20 en un comando largo.
+- **`review.minors`:** rige `defer`.
+- **`pricing`:** el cierre dará «sin precio». Dijiste «no sé».
+
+`version`, `channel`, `ids.mode` y `release.hasRecipient` siguen como estaban.
+
+Esto era la revisión de las claves de configuración. No he comprobado si el proyecto necesita migraciones al kit cargado. Si quieres eso, pídeme «actualízame al kit» y entro por `sdd-upgrade`.

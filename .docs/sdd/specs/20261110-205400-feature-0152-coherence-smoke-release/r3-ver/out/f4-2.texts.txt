@@ -1,0 +1,41 @@
+--- [4]
+### Strengths
+- `occupancyReport` is 26 lines, under the 30-line limit.
+- The UI text is in Spanish ("Ocupación", "reservas", "canceladas", "sin reservas activas"), and singular and plural are handled.
+- It counts only `active` bookings per room and reports cancelled ones separately.
+- The new `ocupacion` command is wired into `run` without disturbing the existing commands.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- **`src/app.js:35`**: the comment `// incrementa count` only repeats the line below it (`count++`). Delete it.
+- **No test for the new behavior.** `occupancyReport` and the `ocupacion` command are exported and reachable from `run`, but `test/` has no case for them. I only listed `test/`; I did not open `app.test.js` or `cancel.test.js` to check for coverage. Nothing in the package shows a test added in this commit either. Add tests for these cases:
+  - no active bookings
+  - one booking (singular label)
+  - several bookings
+  - cancelled bookings present
+
+  This is Clean Code's "test for every public method" row, as a judgement.
+
+#### Minor (Nice to Have)
+- **`src/app.js:29,46`**: `const now = 'hoy'` is a constant that never changes, so `(hoy)` is just a fixed string in the output. It looks like a placeholder for a date. Either remove it or use a real date.
+- **`src/app.js:30-41`**: the nested loop with two `continue`s can be a single `bookings.filter((b) => b.room === room && b.status === 'active').length`. That is the same form `freeRooms` and `findBooking` already use. Possible Long Method / duplicated-pattern smell, as a judgement.
+- **`src/app.js:42`**: the filter for `cancelled` bookings is repeated from `cancelledList` (line 36). That is two occurrences, so it is not yet a DRY problem.
+
+### Recommendations
+Reuse a small helper such as `countBy(room, status)` to shorten the report function and remove the loop. Add the tests above.
+
+### Declined to judge
+- Whether the report format and the `ocupacion` command match what the spec asked for: that belongs to the Spec axis.
+- Whether the report belongs in `app.js` or in its own module: that belongs to the Architecture axis.
+- No E2E checks apply, because the project declares none.
+- No comment cites a document, so none were checked against the document-citation list.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the limits. The comment that repeats the code and the missing tests should be fixed first, and the `now = 'hoy'` placeholder should be cleaned up.
+

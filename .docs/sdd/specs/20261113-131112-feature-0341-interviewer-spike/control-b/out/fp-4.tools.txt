@@ -1,0 +1,100 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80 && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; ls node_modules 2>&1 | head -2; node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reu
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json; ls -R src test; cat src/*.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat README.md
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; git log --oneline -5; git branch -a
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-l
+
+=== RESULTADO (6 turnos, 0.12419329999999999 $)
+Ese comando ya existe, así que no he creado ninguna rama ni carpeta.
+
+- **Lo que hay:** `libres <franja>` está en `src/app.js` y devuelve las salas sin reserva en esa franja. Por ejemplo, `libres 10:00-12:00` da `Sur`. Tiene un test en `test/app.test.js`. La spec `0006-free` está en `status: done`, con walkthrough y validada.
+- **Lo que le falta:** `freeRooms` filtra por `slot` e ignora `day`. Una reserva del lunes 10:00-12:00 hace que la sala aparezca ocupada también el martes. Además, `libres` no valida el formato de la franja, y eso está en la deuda como «Sin validación del formato de franja horaria».
+
+¿Qué quieres que haga? Mi recomendación es la 1.
+
+1. **Feature `libres` por día y con franja validada (recomendada).** Sería `libres <día> <franja>` y rechazaría franjas mal formadas. Cuando lo confirmes, abro la spec en carril feature y modo full. Antes te haría la primera pregunta de diseño: si `libres <franja>` sin día se mantiene o pasa a error.
+2. **Solo la validación de formato.** Sería un patch pequeño que salda el ítem de deuda.
+3. **Otra cosa que no veo en el código.** Por ejemplo, listar las ocupadas o ver una semana entera. Dime cuál y la abro como feature.
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/skills/sdd-propose/references" && grep -n -i "default\|por defecto" control-profiles.md | head -15
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+222:| Key | Type | Default |
+240:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+
+=== RESULTADO (4 turnos, 0.16599599999999998 $)
+Ahora: abro la entrevista de la feature con lo que entiendo y una única pregunta. Queda: acabar la entrevista, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que entiendo, corrígeme:** mantienes el carril feature en modo full y quieres poder ver qué salas están libres en una franja. Ese comando ya existe como `libres <franja>` (`src/app.js`, con test, spec `0006-free` cerrada). Tampoco hay ninguna fila del roadmap para esto, así que no vuelvo a escribirlo ni creo una spec que lo duplique. Te lo explico para que la feature cubra lo que de verdad te falta. Hasta que me lo digas no creo rama ni carpeta.
+
+❓ **¿Qué te falta hoy cuando usas `libres` para ver qué salas están libres en una franja?**

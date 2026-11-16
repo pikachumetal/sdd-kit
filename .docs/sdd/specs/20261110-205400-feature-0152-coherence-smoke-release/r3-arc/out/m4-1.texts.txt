@@ -1,0 +1,71 @@
+--- [3]
+Empiezo el cierre de la 0010 con los pre-checks del paso 0.
+
+--- [23]
+Está en marcha la re-revisión del rango `68417c9..6965f53`, que son dos commits de solo documentación, y no escribo ningún registro hasta que vuelva.
+
+El cierre de la 0010 está sin terminar. Hasta ahora he hecho esto:
+
+- **Árbol:** limpio, y `merge --check` da «listo» (`develop` irá en un worktree temporal).
+- **Ramas abiertas a la vez:** ninguna otra.
+- **Spec:** aprobada por Laura, modo `full`.
+- **Validación:** `validation.mode: field`, así que valido yo con mi smoke y la suite, sin pedírtela.
+
+Cuando vuelva la re-revisión haré el resto:
+
+- **Registros que faltan:** no existen `walkthrough.md`, `capabilities/bookings` ni `roadmap.md`. El walkthrough y la capability los creo yo.
+- **`tasks.md`:** la Task 1 cita `68417c9` y debería citar `26447d7`, y lo corrijo.
+- **Workaround:** el ruling de `--test-concurrency=1` es un workaround y necesita su fila en `debt.md`.
+- **Pasos siguientes:** suite, tiempo real, merge y squash del cierre.
+
+--- [30]
+## Finding Verdicts
+
+None under verification. There were no open findings from the final review on 68417c9.
+
+## New Breakage in the Fix Diff
+
+1. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. The Commit column gives Task 1 (Cancelar con motivo) as `68417c9`, which is wrong. Task 1 was committed in `26447d7` ("feat(bookings): cancelar con un motivo de la lista"), which changes `src/app.js` and `test/cancel.test.js`, the files the plan's Task 1 lists. `68417c9` is Task 2's commit ("listado de canceladas"), so line 11 is correct. As written, the record says both tasks landed in one commit. Anyone tracing Task 1 from this record lands on the listado commit and misses `26447d7` entirely. Fix: set Task 1's Commit to `26447d7`.
+
+2. **Important**: `migrations/v3.0.0.md:3`. The step changes from "renombra `roadmap.md` a `ROADMAP.md`" to "borra `roadmap.md` al acabar". There are three problems:
+   - The edit doesn't fit the spec. It turns a non-destructive rename into a delete. Neither the 0010 spec (its Scope covers only `cancelar --motivo` and `canceladas`) nor the plan (Tasks 1–2 touch only `src/app.js` and `test/cancel.test.js`) mentions migrations or the roadmap. So the commit message's "de la 0010" isn't backed by any spec or plan item.
+   - It loses data. A project that still has `roadmap.md` deletes it and never gets a `ROADMAP.md`, so its roadmap is gone.
+   - It's dangerous on Windows and macOS. Those file systems ignore case by default, so `roadmap.md` and `ROADMAP.md` are the same file. On a project that already has `ROADMAP.md` (as this repo does at its root), "borra `roadmap.md`" deletes the current roadmap.
+
+   Fix: revert to the rename, or take the change out of this feature into its own patch with a justification.
+
+3. **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The Task 2 ruling changes the closing gate to `node --test --test-concurrency=1`. That contradicts the plan's final validation ("Gate de cierre: `node --test`", plan.md:50) and the constitution (item 2: "`node --test` entero en verde"). The plan has no amendment for it. The ruling calls itself a "workaround hasta aislar el almacén por test", meaning the tests race on a shared in-memory store. That workaround isn't logged in `.docs/sdd/steering/debt.md`, which has nothing on it. The tasks.md header doesn't record this deviation either: "Revisión final … limpia … sobre 68417c9" says nothing about a changed gate. Fix: amend the plan's gate, or log the race as debt and point the ruling at it.
+
+## Out-of-Scope Observations
+
+- `26447d7` (already reviewed as clean) rewrites the earlier tests `cancelar una reserva activa` and `cancelar sin reserva lo dice` in `test/cancel.test.js`, which come from patch-0007. It changes their names and assertions rather than adding new tests. I'm noting it only; it falls outside 68417c9..6965f53.
+- The spec's scenario "sin `--motivo` responde lo mismo" has no test at `26447d7` (that commit adds only the in-list and out-of-list cases). I didn't check the `68417c9` test diff for it. This is outside the range as well.
+- `migrations/v3.0.0.md` contains only "Paso 3", with no steps 1–2. That predates this range (`9c1bc11`).
+- The spec's "Decisiones" list jumps from 1 to 3. This predates the range.
+
+## Verdict
+
+**Fix round:** Findings remain open. There are two Important problems: the wrong commit for Task 1 in tasks.md:10, and the destructive, out-of-spec rewrite of migrations/v3.0.0.md:3. There's also one Minor: the gate change in the tasks.md:17 ruling isn't reflected in the plan or in debt.md.
+
+--- [37]
+La re-revisión volvió con hallazgos, así que el cierre de la 0010 se detiene aquí. Necesito tu decisión sobre uno de ellos antes de seguir.
+
+**Decisión pendiente: `migrations/v3.0.0.md`.** El commit `6965f53` («docs: migrations/v3.0.0.md de la 0010») cambió el paso 3:
+
+- **Antes:** «renombra `roadmap.md` a `ROADMAP.md`».
+- **Ahora:** «borra `roadmap.md` al acabar».
+
+La re-revisión lo marca como Important por tres motivos:
+
+- Ni la spec ni el plan de la 0010 mencionan migraciones.
+- Borrar en vez de renombrar pierde el roadmap de quien aún tenga `roadmap.md`.
+- En Windows y macOS, `roadmap.md` y `ROADMAP.md` son el mismo fichero, así que «borra `roadmap.md`» borraría el `ROADMAP.md` actual. Este repo ya tiene uno en la raíz.
+
+Recomiendo revertir ese commit y, si de verdad quieres borrar el roadmap, hacerlo en un patch aparte. ¿Lo revierto o lo mantengo? Si lo mantienes, lo dejo anotado en el walkthrough como decisión tuya.
+
+Lo demás que he hecho o tengo pendiente, y que no necesita tu decisión:
+
+- **`tasks.md`:** he corregido el commit de la Task 1 (`26447d7`, antes `68417c9`) y he añadido la línea `Re-revisión:`. Son cambios sin commitear que irán en el commit de cierre.
+- **Deuda del gate:** el ruling de `--test-concurrency=1` es un workaround y lo registraré en `debt.md` (Minor del re-review).
+- **Resto del cierre:** sigo con él cuando me contestes: validación y suite, walkthrough, capability `bookings`, tiempo real, roadmap, squash, sync y merge en `develop`.
+

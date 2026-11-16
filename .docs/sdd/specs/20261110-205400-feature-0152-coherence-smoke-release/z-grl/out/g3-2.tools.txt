@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60
+
+>>> Bash: node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test .docs/sdd/specs; ls node_modules 2>&1 | head -2
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cat src/app.js; head -40 test/app.test.js; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills"; head -60 sdd-propose/references/control-profiles.md; echo ======; cat sdd-propose/references/spec-writing.md; echo =====; cat sdd-grilling/SKILL.md
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.1746687 $)
+Ahora: he leído el contexto y clasificado el cambio; empiezo la entrevista de la spec. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** quieres poder apuntarte a una lista de espera de una sala que está ocupada en una franja. Hoy `src/app.js` solo sabe listar las salas libres (`libres`), crear una reserva semanal y cancelar. No hay una orden `reservar` para una sola vez ni nada que avise cuando una sala se libera. El proyecto es de uso personal (solo tú), así que no hay colas entre varios usuarios. Calculo unas 3 tareas, por lo que no propongo dividirla. Corrígeme si algo de esto no es así.
+
+Primero necesito entender el motivo: cuando la sala que quieres está ocupada, ¿qué quieres que pase después de apuntarte a la lista de espera?
+
+=== RESULTADO (1 turnos, 0.19843860000000002 $)
+Entendido: lo que quieres es dejar de mirar `libres` a mano. Eso reorienta el diseño, así que lo siguiente que decido contigo es cómo te enteras de que la sala se ha liberado.
+
+Un dato que he visto en `src/app.js`: las reservas son un array en memoria (`bookings`) que se reinicia en cada ejecución. Cualquier lista de espera tendría que guardarse en un fichero para sobrevivir entre una orden y la siguiente. Eso entra en la feature con cualquiera de las opciones.
+
+❓ **¿Cómo te enteras de que Norte se ha liberado?**
+1️⃣ **Aviso al cancelar y estado consultable.**
+- `esperar Norte lun 10:00-12:00` responde `Norte ocupada; en espera (1.º)`.
+- Cuando se cancela esa reserva, la salida de `cancelar` dice `Norte libre en lun 10:00-12:00: avisada la espera (1.º)`.
+- Un comando `esperando` lista tus esperas y su posición.
+- Coste: tienes que estar mirando la salida de `cancelar` o ejecutar `esperando`, así que sigue habiendo que consultar, pero ya no `libres` a ojo.
+
+2️⃣ **Comando que se queda vigilando.**
+- `esperar Norte lun 10:00-12:00` no termina.
+- Imprime `Norte libre` en cuanto se libera y sale.
+- Coste: dejas una terminal abierta. Como el estado hoy es de un solo proceso, necesitaría un fichero compartido y sondearlo, lo que complica más que la opción 1.
+
+3️⃣ **Correo al liberarse.**
+- Te llega un correo `Norte libre en lun 10:00-12:00`.
+- Coste: depende de `src/correo.js`, que es la fila 0008 del roadmap y aún no está hecha. Habría que hacerla antes o meterla aquí.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que no depende de algo sin construir (la 0008) ni de un proceso que se quede vivo. A cambio, no te avisa sola: te lo dice cuando cancelas o cuando preguntas.
+
+¿Cuál eliges?

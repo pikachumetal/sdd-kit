@@ -1,0 +1,48 @@
+--- [2]
+Esto es una investigación que deja medidas, así que entra por `sdd-propose`. Lo invoco primero.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto para clasificar el cambio. Queda: anunciar el carril (spike) y empezar la entrevista de diseño, ~5 min.
+
+--- [15]
+Vuelvo al repo del proyecto (el `cd` anterior me dejó en la carpeta del kit) y reservo el id.
+
+--- [24]
+Ahora: entrevistar la spike, con una pregunta. Queda: escribir la spec, que pasa por su puerta de aprobación, y medir después; ~10 min.
+
+Carril: spike · Perfil: `delegate`, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta spike».
+
+He abierto la rama `feature/0012-libres-1000-reservas` con el id 0012. No toco código de producción: la spike solo deja la tabla de medidas y su conclusión.
+
+**Lo que entiendo:** quieres saber si `libres <franja>` sigue respondiendo bien cuando hay 1.000 reservas. Hoy `freeRooms` recorre todas las reservas una vez por sala. Con 2 salas y 1.000 reservas son unas 2.000 comparaciones por llamada, y las reservas viven en memoria (`src/app.js`). Mediré la función `run('libres', …)` dentro del proceso, con varias cargas, y dejaré las medidas en una tabla. Corrígeme si entiendes otra cosa.
+
+❓ **¿Qué umbral hace que `libres` «aguante» con 1.000 reservas?**
+Sin un umbral numérico, la tabla no se puede leer como «sí» o «no». Una llamada en memoria tarda microsegundos. Lo que tú notas al teclear es el arranque de Node, de unos 40 ms, y eso no depende de `libres`.
+1️⃣ **Hasta 10 ms por llamada a `libres`, en el peor caso medido (mediana y p95).** Así el coste de `libres` queda claramente por debajo del arranque de Node.
+2️⃣ **Hasta 100 ms por llamada.** Es el límite de lo que se percibe como instantáneo, sumando todo. Es mucho más laxo y casi seguro que pasa.
+3️⃣ **Otro umbral que me digas tú.**
+➡️ **Recomiendo 1️⃣**, porque `libres` no debería notarse frente a los ~40 ms de arranque, y con 10 ms el resultado puede salir «no» si algo va mal. A cambio, si lo mides en tu servidor y no aquí, el número puede variar.
+
+--- [32]
+Ahora: la spec está escrita y espera tu aprobación. Queda: tu «apruebo», después el plan y parar antes de la Task 1, ~3 min.
+
+Todavía no escribo el plan. Tu «Apruebo» contestó a la pregunta del umbral, y la spec no la habías visto. Una respuesta a otra pregunta no aprueba la spec, y el plan solo se escribe con la spec aprobada. Está en `.docs/sdd/specs/20261101-190011-feature-0012-libres-1000-reservas/spec.md`.
+
+🦆 Hoy `libres 10:00-12:00` contesta al instante porque solo hay una reserva, y no sabemos qué pasa con 1.000. Mediré cuánto tarda `libres` con 1.000 reservas en la peor situación que se me ocurre: ninguna coincide con la franja pedida, así que hay que mirarlas todas. «Aguanta» significa que la llamada tarda 10 ms o menos, tanto en la mediana como en el p95. No cambio nada del programa: solo mido y dejo una tabla con las medidas y la conclusión.
+
+**✋ Decisiones que he tomado yo — valídalas:**
+1. **Peor carga:** 1.000 reservas activas entre `Norte` y `Sur`, todas en franjas distintas de la consultada. Va sin confirmar por ti.
+2. **Cargas extra en la tabla:** 1 reserva (la de hoy), 100 y 1.000 coincidentes con la franja, y 1.000 mezcladas con canceladas y anuladas. Solo la peor carga se compara con el umbral.
+3. **Cómo se mide:** `bookings` no se exporta de `src/app.js`, y una spike no toca producción. El arnés carga una copia temporal de `src/app.js` con las 1.000 reservas y mide la función real. Si no puede sustituir la reserva inicial, falla en vez de medir otra cosa. Queda fuera de `src/` y del gate.
+4. **Método:** llamadas dentro del proceso, tras calentar, con 1.000 repeticiones por carga. Informo mediana, p95 y máximo en ms, sin contar el arranque de Node.
+5. **Entorno:** se mide en esta máquina y la tabla lo dice, no en tu servidor.
+6. **Validación `agente`:** nadie observaría nada que la tabla no recoja. Si prefieres validarla tú, dímelo.
+7. **Una sola task prevista:** escribir el arnés, medir y redactar la tabla y la conclusión. Por eso no propongo partir ni bajar de modelo.
+
+El umbral de 10 ms (mediana y p95) está registrado como decisión tuya. No hice review de la spec, porque es del modo full. El repaso de coherencia lo hice yo. Como no hay delta de capacidades, no había `capability merge` que probar.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paro antes de la Task 1, como pediste.
+2. **Cambios**: dime qué ajusto.
+

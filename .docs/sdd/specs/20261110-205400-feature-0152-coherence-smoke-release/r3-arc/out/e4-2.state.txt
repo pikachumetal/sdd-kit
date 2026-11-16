@@ -1,0 +1,93 @@
+## petición
+Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala.
+## entorno al acabar el sujeto
+abajo
+## git status
+## git log
+*   2d70e73 merge: feature/0010-cancel-reason en develop
+|\  
+| * 270ef25 docs(sdd): cerrar la feature 0010, motivo al cancelar
+| * 9c8e33d feat(bookings): listado de canceladas con su motivo
+| * 8c9267f feat(bookings): cancelar con un motivo de la lista
+| * 346be66 docs(sdd): abrir la feature 0010 con su spec y su plan
+|/  
+* 4bb3f4b test: el servidor de la suite cae la primera vez
+* ad60faf test: suite e2e
+* 405f986 feat: base del molde
+## etiquetas
+## timing.json en la historia
+## kit-feedback en develop
+## ROADMAP.md en develop
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ✅ | — | M |
+| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0012 | — | **Informe de canceladas**<br>*`informe` lista las reservas canceladas por sala, con su motivo y el total*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0013 | — | **Precio en su módulo**<br>*el cálculo del precio sale de `app.js` sin cambiar lo que responde `precio`*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0014 | — | **Motivo guardado**<br>*el motivo de una cancelación se guarda en el almacén de reservas*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*—*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ✅ | — | S |
+
+## Next
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+
+## Later
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0004 | — | **Exportar reservas a calendario (.ics)**<br>*idea propia* | ⏳ | — | — |
+## debt.md en develop
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+| El ruling de la 0010 (`--test-concurrency=1` por una «carrera sobre el almacén») no tiene causa diagnosticada: la suite pasa sin él y `node --test` ya aísla por fichero; el test de `canceladas` depende del orden del test anterior (`test/cancel.test.js`) | feature 0010 | 2026-11-11 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| E2E: el servidor de la suite cae en la primera petición a `/run` y el siguiente intento da `ERR_CONNECTION_REFUSED` | prueba o molde | feature 0010 | un gate de cierre en rojo sin que falle ningún test | `e2e/cancel.e2e.mjs`: 7 fallos `page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:62814/` (`gate-e2e` del 2026-11-11); el fichero solo, en la rama y en `develop`, en verde (5/5 y 3/3) | tras `env-up`, repetir el gate: la marca `env-crash` ya existe y no vuelve a caer (ver `operations.md`, «Entorno de la suite»); `server.mjs` sale en el primer `/run` aunque `/health` responda ok | comprobación automática | sin fila |
+## bookings en develop
+# Capacidad — bookings
+
+## Propósito
+
+cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Requisitos
+
+### Cancelar pide un motivo de la lista
+
+- GIVEN la reserva de Norte del lunes, 10:00-12:00
+- WHEN `cancelar Norte lun --motivo "sala ocupada"`
+- THEN responde «cancelada Norte lun (sala ocupada)»
+- AND un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro»
+- AND sin `--motivo` responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»
+
+### El listado de canceladas enseña el motivo
+
+- GIVEN la reserva de Norte del lunes cancelada con «sala ocupada»
+- WHEN `canceladas`
+- THEN responde «Norte lun — sala ocupada»
+## architecture en develop
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).

@@ -1,0 +1,99 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+develop
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasReci
+
+>>> Bash: cd "<run>/repo" && cd .docs/sdd && cat constitution.md mission.md tech-stack.md roadmap.md; ls ../..; cd ../..; cat package.json; find src test -type f; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js README.md; head -40 test/app.test.js; git branch -a; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red/cli/bin/sdd.js" id next --path .docs/sdd 2>&1 | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.1655841 $)
+Ahora: clasifiqué el cambio y me paro en una pregunta antes de abrir nada. Queda: tu respuesta, y luego brainstorming, spec, aprobación y plan, ~15 min.
+
+**Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json`)**
+
+No hay `sdd-kit.local.json`, así que no hay claves locales que ignorar.
+
+## Qué he visto
+
+- `src/app.js` es un único fichero con las reservas en un array en memoria (`bookings`). No hay persistencia, ni usuarios, ni sesión.
+- Las reservas actuales son una sola semilla en el código: `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`.
+- `capabilities/` está vacío, así que la spec tendrá que crear las capacidades desde cero.
+- La Misión dice «no hay más usuarios». El cliente cambia eso, y lo anoto como decisión de producto para la spec.
+
+## Mi recomendación: partirlo en 3 features
+
+Preveo más de 3 tareas internas y una lleva migración. Por el criterio del kit, partir es una pregunta, no una decisión mía:
+
+| Feature | Qué entra | Por qué va así |
+| --- | --- | --- |
+| **A. Usuarios y login** | Alta de usuarios, login/sesión, identidad en cada comando. | Es la base de las otras dos. |
+| **B. Roles** | Rol «responsable de sala» frente a usuario normal, y qué puede hacer cada uno. | Necesita A y es regla de negocio con decisiones propias. |
+| **C. Autoría de reservas y migración** | Cada reserva guarda quién la hizo; las existentes pasan al usuario genérico. | Necesita A. Lleva la migración, que se valida por separado. |
+
+El orden es A → B y C (B y C son independientes entre sí). Cada una tendría su fila en el roadmap y su spec.
+
+## Opciones
+
+1. **Partir en A, B, C (recomendada).** Las apunto en el roadmap y arranco con A.
+2. **Mantenerlo entero.** Una sola feature, una spec y un plan grandes. No te lo volveré a proponer.
+
+Puedes añadir una de estas frases:
+
+- «apruebo la spec por delegación, nos vemos en la validación», si te vas a ausentar.
+- «perfil `<otro>` para esta feature».
+
+## Dos cosas para la spec
+
+- **«Migrar las reservas de ahora»:** hoy solo existe esa reserva semilla y vive en el código, no en un almacén. Propongo que la migración sea asignar el usuario genérico (`sistema`, rol normal, sin login) a las reservas ya presentes, y que lo confirmes en la spec.
+- **Detalles que dejas a mi criterio:** como autenticación sin dependencias externas en Node 22 (contraseña con `scrypt` de `node:crypto`) y almacenamiento de usuarios, los decido yo en la spec y los listo en «Decisiones que he tomado yo — valida estas».
+
+¿Parto en A, B, C o lo mantengo entero?

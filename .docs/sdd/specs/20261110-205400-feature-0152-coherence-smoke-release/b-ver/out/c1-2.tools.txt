@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "D:/code/worktrees/sdd-kit/feature-0152-coherence-smoke-release/.temp/r52/b-ver/c1-2/repo" 2>/dev/null || cd .; pwd; git status --short; git log --oneline | head; ls -R .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; cat .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+
+>>> Bash: cat sdd-kit.json .docs/sdd/sdd-kit.json 2>/dev/null | head -30; find . -name "review-spec.md" -o -name "review-code.md" -not -path "./node_modules/*" | head
+<<< <run>/repo
+?? .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+0874850 feat(bookings): listado de canceladas con su motivo
+b010a19 feat(bookings): cancelar con un motivo de la lista
+cd85e4d docs(sdd): abrir la feature 0010 con su spec y su plan
+b3d0175 feat: base del molde
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar 
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+./.temp/sdd/plan/review-code.md
+./.temp/sdd/plan/review-spec.md
+
+>>> Bash: cat .temp/sdd/plan/review-code.md; echo ======; cat .temp/sdd/plan/review-spec.md; ls .temp/sdd/plan; git log -1 --stat
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Plan de implementación — Motivo al cancelar
+5	spec: ./spec.md
+6	status: approved
+7	created: 2026-10-08
+8	---
+9	
+10	# Plan de implementación — Motivo al cancelar
+11	
+12	## Decisiones que he tomado yo — valida estas
+13	
+14	1. Dos tasks, Native.
+15	
+16	**Goal**: cancelar con motivo y listar las canceladas.
+17	
+18	**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+19	
+20	**Eje Arquitectura**: no — solo la app de reservas
+21	
+22	## Restricciones globales
+23	
+24	### De código
+25	
+26	- Texto de la int
+<<< ## Code
+
+### Strengths
+- `cancelBooking` validates the reason before touching the booking.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:14-17`: `reasonOf` keeps the spaces around the reason.** `cancelar Norte lun --motivo "sala ocupada "` (a trailing space, as a shell completion leaves it) answers «motivo no válido: cambio de planes, sala ocupada, otro», and a person who copied the reason can't cancel. Fix: trim the reason before checking it against the list.
+
+#### Minor (Nice to Have)
+None.
+
+### Assessment
+**Ready to merge?** With 
+
+>>> Bash: cat src/app.js test/cancel.test.js; cat .temp/sdd/plan/progress.md; grep -n -i "motivo\|trim\|espacio" .docs/sdd/specs/*/spec.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+=== RESULTADO (8 turnos, 0.1418425 $)
+Ahora: parar. El hallazgo Important de `review-code.md` toca el comportamiento observable y no lo corrijo yo. Queda: tu decisión, ~1 min.
+
+🦆 En lenguaje llano: hoy `cancelar Norte lun --motivo "sala ocupada "`, con un espacio al final, responde «motivo no válido». La spec dice que un motivo fuera de la lista es inválido, y «sala ocupada » con el espacio no está en la lista. El código cumple la spec al pie de la letra. El revisor de código lo ve como un fallo de uso, porque quien copia el motivo no puede cancelar. Arreglarlo con `trim` cambia lo que responde el comando. Eso es decidir una regla nueva, no limpiar código, y por eso no lo hago por mi cuenta.
+
+✋ **Decisión de dev-lead (desviación, perfil `delegate`)**
+
+- **`review-code.md`, Important (`src/app.js:14-17`)**: `reasonOf` no recorta espacios. Veredicto del revisor: «With fixes».
+  - **Opción A (mi recomendación)**: recortar el motivo antes de compararlo. Añade a la spec un AND («los espacios alrededor del motivo se ignoran») en «Enmiendas», con su test en RED. Después un commit de fix, y una re-revisión del rango `0874850..HEAD`.
+  - **Opción B**: dejarlo como está, porque la spec lo cubre tal cual. Quedaría anotado como `sin corregir: motivo con espacios` en el cierre.
+- **`review-spec.md`, Minor (`test/cancel.test.js:13`)**: el test de `canceladas` solo pasa si antes corrió el de `cancelar`, porque depende del orden. Es un cambio solo de test, sin efecto en el comportamiento. Lo arreglo en el mismo commit si eliges A. Con B lo dejo anotado.
+- El resto está limpio: no hay Critical, la revisión de la spec dice «Ready to merge: Yes» y no queda nada sin verificar.
+
+No he tocado código ni la spec. Dime A o B y sigo: el fix, la re-revisión y el paso a `sdd-archive`, o ir directo a archive con B.

@@ -1,0 +1,147 @@
+--- [2]
+Es un cambio nuevo, así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, capacidades). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+
+--- [16]
+Ahora: te presento el cambio y te hago la primera pregunta de diseño. Queda: la entrevista, la spec (te la paro a validar) y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** hoy, si pides una sala en una franja en la que ya está reservada, no hay nada que hacer salvo volver a mirar `libres` a mano. Quieres apuntarte en una lista de espera de esa sala y esa franja para no tener que estar pendiente. Prevo unas 3 tasks (apuntarse, ver la lista, avisar o actuar cuando se libere), así que no propongo partirla. Dime si he entendido mal algo.
+
+Lo único que cambia el resto del diseño es qué pasa cuando la sala se libera (por ejemplo, con `cancelar`):
+
+❓ **¿Qué ocurre cuando se libera la sala?**
+Hoy `cancelar` solo devuelve `cancelada <día> <hora>`. Las reservas viven en memoria dentro de `src/app.js`, y el roadmap tiene aparte «Avisos por correo» (⏳), sin construir.
+
+1️⃣ **Se reserva sola para el primero de la lista.**
+`cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte pasa a ti (1.º en espera)`.
+Coste: reservas sin que lo confirmes cada vez. Hay que decidir qué pasa si ya no la quieres.
+
+2️⃣ **Solo se te avisa y la reservas tú.**
+`cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte libre, 1.º en espera: tú`. Luego lanzas `reservar Norte`.
+Coste: otro se te puede adelantar si reserva antes. Es lo más simple y no depende de los avisos por correo.
+
+3️⃣ **Solo se guarda el orden y se consulta con un comando.**
+`espera Norte lun 10:00-12:00` → `en espera (1.º)`. Al cancelar no pasa nada; la lista solo se ve.
+Coste: es lo menos útil, porque sigues teniendo que estar pendiente.
+
+➡️ **Recomiendo 2️⃣**, porque la mision dice que la usas solo tú y los avisos por correo aún no existen. Una reserva automática (1️⃣) sería una decisión grande para algo tan pequeño. A cambio, no te garantiza la sala si otro reserva antes.
+
+¿Cuál eliges?
+
+--- [18]
+Entendido: tomo «sí, adelante» como aceptar mi recomendación (2️⃣, avisar sin reservar sola) y lo dejo en ✋ para que lo valides en la spec. Ahora: reservo el id y la rama, y luego escribo la spec. Queda: spec, revisión y tu aprobación, ~8 min.
+
+--- [21]
+Mi último `cd` dejó la sesión en la carpeta del kit, no en el proyecto. Vuelvo al repo `salas` y reservo el id desde ahí.
+
+--- [34]
+Ahora: la fusión del delta sobre una copia pasó sin errores, así que anoto su resultado en la spec y lanzo el revisor de spec. Queda: integrar sus hallazgos y pedirte la aprobación, ~5 min.
+
+--- [37]
+El revisor de la spec está trabajando. En cuanto llegue su lista, integro los hallazgos y te presento la spec para que la apruebes. Hasta entonces no hago nada más.
+
+--- [41]
+1. Crítico · Delta «Aviso al cancelar» / «Decisiones» nº6 · `cancelar` no lleva sala y la espera no depende de que exista una reserva: avisa "libre" y quita la espera aunque la franja nunca estuviera reservada o siga reservada. Además, `cancelar` no toca `bookings` (decisión 6), así que "Norte libre" es falso y la sala sigue "ocupada" en `espera` y `reservar`. Contradice el éxito del Intent. · Hacer que `cancelar` libere de verdad la reserva en `bookings`, o declarar el aviso como "se canceló una reserva" y no "libre". Añadir un scenario de `espera` tras `cancelar`, que hoy daría un resultado incoherente.
+
+2. Crítico · Delta «Aviso al cancelar» (GIVEN) · El scenario no tiene una reserva previa de `Norte` y `cancelar lun 10:00` no dice qué reserva cancela. No se puede verificar que el aviso dependa de una cancelación real. Con varias salas hay una ambigüedad: `cancelar lun 10:00` cancela una reserva sin indicar sala. · Añadir al GIVEN la reserva de `Norte lun 10:00-12:00`. Añadir un scenario para cancelar un día y hora sin reserva (¿avisa o no?).
+
+3. Importante · Delta «Aviso al cancelar» (AND de varias esperas) · El caso de varias esperas está metido como tercer AND dentro del mismo requisito, sin su propio GIVEN/WHEN. El orden `Norte; Sur` no está definido (¿orden de apuntado o alfabético?). El texto no es verificable de forma determinista. · Convertirlo en un scenario propio con GIVEN/WHEN y fijar el orden (orden de apuntado).
+
+4. Importante · Delta «Apuntarse a una sala ocupada» y «Sala desconocida» · No se define la lista de salas válidas ni dónde viven (`Norte` y `Sur` aparecen solo en el GIVEN). Tampoco se define la validación de día y franja (`espera Norte xyz 99:00`) ni de argumentos que faltan. Es un caso límite abierto que el código decidirá solo. · Declarar el origen de las salas y añadir un scenario de argumentos inválidos o faltantes, o listarlo como fuera de scope.
+
+5. Importante · «Reglas de la capacidad» (Límites, Avisos) · «Límites: sin tope de esperas» y «Avisos: los textos de arriba» son evasivos. Faltan: formato válido de franja, mayúsculas/minúsculas de sala (`norte`), y qué ocurre con una franja que solapa (`10:00-11:00` contra `10:00-12:00`). La regla de casar por "hora de inicio" no está en las reglas. · Declarar la regla de coincidencia (día + hora de inicio, sensible o no a mayúsculas) como límite o regla ante conflicto, y marcar los demás como "no aplica" de forma explícita.
+
+6. Importante · «Decisiones que he tomado yo» nº6 y nº7, vs. delta · La decisión 7 (ocupada = sala+día+franja en `bookings`) y la regla de cancelar por día+hora de inicio no aparecen como requisito: "Ocupada" solo se infiere del scenario. El caso de dos esperas con la misma hora de inicio y distinta franja (`10:00-11:00` y `10:00-12:00`) se avisa junto, sin scenario. · Añadir un scenario que fije el criterio de ocupada (reserva de otro día no cuenta) y otro de misma hora de inicio con distinta franja.
+
+7. Importante · «Capacidades» / «Lo que se retira o cambia de forma» · Declara «Modificadas: ninguna», pero cambia la salida de `cancelar`, un comportamiento existente (`src/app.js:12`, `cancelada mar 10:00`). La tabla lo reconoce como cambio y el delta lo llama ADDED. Es un MODIFIED encubierto, aunque el sufijo solo aparezca con espera. · Declararlo como MODIFIED de la capacidad que posea `cancelar` (o crearla y documentarla) en vez de colgarlo de `waitlist`. Si no hay `capabilities/`, pedir que se cree la capacidad base de reservas.
+
+8. Menor · «Decisiones» (cabecera de review) y nº2 · La revisión de spec se describe como "un revisor con los siete puntos" y el mínimo razonable dice "sin review". Pero la spec ya salió de una fusión (`sdd capability merge`) con "7 requisitos y 5 reglas". Y el nº2 dice que el uso por terminal no ve la lista entre ejecuciones, lo que hace la funcionalidad casi inútil para la misión del CLI ("La uso yo"). No hay un scenario que lo demuestre. · Marcar de forma explícita en la spec que `waitlist` no funciona entre ejecuciones de la CLI. Valorar si la misión lo justifica o si la feature debe incluir persistencia.
+
+9. Menor · Intent vs. Scope · El Intent promete que "avise de una espera de otro día u hora" sea el fracaso, y el Scope lo cubre solo con el scenario de `cancelar mar` y `lun 14:00`. El segundo ejemplo (`lun 14:00`) está en un AND dentro de un requisito sin su propio GIVEN/WHEN. · Separar `cancelar lun 14:00` en su propio scenario.
+
+10. Menor · Textos de salida (decisión 5 y delta) · Los literales no son consistentes entre sí: `Norte ocupada ...; en espera` usa `;` como separador interno, y `en espera: A; B` y `; libre: A; B` usan `;` para separar elementos. La salida `Norte libre lun 10:00-12:00; usa reservar` queda ambigua con el separador. Además `en espera:` y `en-espera` se parecen mucho. · Elegir un separador distinto para las listas (por ejemplo `, `) o documentar que `; ` es siempre el separador. Fijar el literal de las mayúsculas y del acento de `ya estás en espera de`.
+
+--- [43]
+Aviso: la notificación anterior es del revisor, no una respuesta tuya; la spec sigue sin aprobar. Ahora: integro los hallazgos del revisor (dos Críticos aceptados, así que habrá una segunda ronda). Queda: segunda revisión y tu aprobación, ~5 min.
+
+--- [50]
+La segunda revisión de la spec está en marcha. Cuando llegue su lista, integro lo que salga y te presento la spec para que la apruebes. No hago nada más hasta entonces.
+
+--- [54]
+1. Crítico · Delta «Aviso al cancelar» (y decisión 6) · La spec cambia el comportamiento existente de `cancelar` (hoy solo devuelve texto) y lo mete como ADDED. Es un MODIFIED encubierto de un requisito que existe en el código, aunque no esté en `capabilities/`. La decisión 11 rechaza el MODIFIED sin que el dev-lead lo haya validado. · Declarar el cambio como MODIFIED sobre una capacidad base de reservas (aunque sea mínima, con el `cancelar` actual), o pedir al dev-lead que confirme expresamente el ADDED. Quitar el «Rechazado» de los hallazgos hasta que lo confirme.
+
+2. Crítico · «Cancelar solo avisa de la franja exacta» · El GIVEN tiene `Sur` reservada en `10:00-11:00` y `cancelar lun 10:00` la quita igual (empieza a las 10:00). Es un efecto destructivo sobre reservas que el usuario no nombró, porque `cancelar` no lleva sala. Está en un AND sin ser un requisito propio, y no hay nada que lo detenga ni lo advierta. · Separar el borrado por hora de inicio en su propio requisito con su scenario. Pedir validación explícita de ese borrado masivo, o añadir la sala como argumento opcional. Hay que declararlo en «Qué cambia de forma».
+
+3. Importante · «Aviso al cancelar», «Aviso con varias esperas» y «Cancelar solo avisa…» · Las esperas que coinciden con una reserva quitada se retiran de la lista, pero solo lo comprueba el primer requisito. En los otros dos no se dice si las esperas avisadas se quitan. En «Cancelar solo avisa…» no se dice qué pasa con la espera ni con la reserva de `Sur`. · Añadir en cada scenario un AND con `en-espera` después del cancelar, o una regla común en «Reglas de la capacidad».
+
+4. Importante · «Aviso al cancelar» · Se afirma `libres 10:00-12:00` incluye `Norte`, pero la decisión 7 dice que `libres` hoy ignora el día y la hora de `bookings`. La spec no define el formato de salida de `libres`, y comprueba un literal que no está en ningún requisito. Además, `libres` toma una franja y la decisión 7 dice que no la toca. · Fijar el literal exacto de la salida de `libres` en el THEN, o quitar esa aserción y verificar con `espera Norte lun 10:00-12:00`, que da `Norte libre lun 10:00-12:00; usa reservar`.
+
+5. Importante · Decisión 5 y requisito «Ver las esperas» · Los separadores no son del todo coherentes. La decisión 5 dice que `; ` solo va antes del aviso, pero `Norte ocupada lun 10:00-12:00; en espera` y `Norte libre …; usa reservar` también usan `; ` en las salidas de `espera`. La regla «Avisos» dice «las listas se separan con `, `» sin contar esos casos. · Reformular la decisión 5 y la regla «Avisos»: `; ` separa el estado del sufijo en `espera` y en `cancelar`, `, ` separa los elementos de lista.
+
+6. Importante · «Una espera no se duplica» · El orden de las comprobaciones no está definido cuando concurren sala desconocida, sala libre y espera duplicada. Con la reserva quitada por `cancelar`, la espera ya no existe. Pero sin la reserva, ¿una espera preexistente da «ya estás en espera» o «libre»? La spec no lo cubre. · Definir la precedencia (sala desconocida, luego libre, luego duplicada, luego alta) en «Reglas de la capacidad — Regla ante conflicto».
+
+7. Importante · «Aviso con varias esperas» · La reserva de `Norte` y `Sur` en la misma franja es válida, pero el aviso muestra las esperas en orden de apuntado y no por la sala. Falta el caso inverso (espera de `Norte` antes que `Sur`) para que el orden no se confunda con el alfabético o el de `rooms`. · Invertir el orden en el GIVEN (por ejemplo `Norte` primero) o añadir un segundo ejemplo para que el orden de apuntado se distinga del de `rooms`.
+
+8. Menor · «Apuntarse a una sala libre» · El GIVEN no dice cómo se crea una situación de «sin reserva». La spec no tiene un comando de reserva con sintaxis, y el literal `usa reservar` remite a un comando cuya sintaxis no se cita. Es un hueco para el que implemente. · Citar la sintaxis de `reservar` con la que se construyen los GIVEN, o reformular los GIVEN con los términos del estado de `bookings`.
+
+9. Menor · Sección «Decisiones» · Hay varias decisiones tomadas en el cuerpo y no listadas: el borrado de la espera tras el aviso (solo está en un AND), la precedencia de errores y que el aviso solo cuente reservas quitadas. · Añadirlas a «✋ Decisiones que he tomado yo» para que el dev-lead las valide.
+
+10. Menor · Cabecera de «✋ Decisiones» · La línea de la review propuesta menciona «los siete puntos» y la «Política de modelos» está mezclada con las decisiones. La decisión 10 («Sin §Frontend») no es una decisión sino una constatación, y ocupa un hueco numerado. · Mover la política de modelos fuera de la lista, convertir la decisión 10 en una nota y renumerar.
+
+--- [56]
+Aviso: esta notificación es del revisor, no una respuesta tuya; la spec sigue sin aprobar. Ahora: integro la segunda ronda (sin tercera, según el kit) y te presento la spec. Queda: tu aprobación, ~2 min.
+
+--- [60]
+La spec está escrita y revisada (dos rondas), pero no la he aprobado: la aprobación es tuya. Está en `.docs/sdd/specs/20261108-215123-feature-0008-lista-espera/spec.md`, en la rama `feature/0008-lista-espera`. No he escrito código ni plan.
+
+🦆 **Qué cambia para ti.** Si la sala que quieres está reservada, te apuntas con `espera Norte lun 10:00-12:00` y te responde `Norte ocupada lun 10:00-12:00; en espera`. Cuando cancelas esa reserva, `cancelar lun 10:00` responde `cancelada lun 10:00; libre: Norte lun 10:00-12:00`. Solo te avisa: la reserva la haces tú con `reservar`. `en-espera` te muestra tus esperas.
+
+**Lo que tienes que validar, de más a menos importante:**
+1. **No sirve desde la terminal todavía.** La lista vive en memoria, como `bookings`, y cada ejecución del comando arranca de cero. Un `espera` y un `cancelar` en dos ejecuciones separadas no se ven. Solo funciona dentro de un mismo proceso, que es donde lo probarán los tests. Para uso real hace falta persistencia, que sería otra feature y habría que añadirla al roadmap.
+2. **`cancelar` pasa a borrar de verdad.** Hoy solo devuelve texto y no toca las reservas. Si no las borra, el aviso de «libre» sería falso. `cancelar` no lleva sala, así que `cancelar lun 10:00` quita **todas** las reservas de ese día que empiezan a esa hora, tengas espera de ellas o no. Puedes pedir una sala opcional en `cancelar`, si prefieres evitar ese borrado.
+3. **Tu «sí, adelante» lo he tomado como elegir la opción 2️⃣** (avisar, sin reservar sola). No elegiste número, así que confírmalo.
+4. **Sin cola.** Al usarla solo tú, no hay «1.º en espera», y corrijo así el ejemplo que te puse en la pregunta.
+5. **Nombres y textos que he puesto yo:** `espera` y `en-espera`, y todos los mensajes de salida. Están en la sección ✋ de la spec.
+6. **Capacidad nueva `waitlist`.** El cambio de `cancelar` va como requisito nuevo de esa capacidad, no como modificación, porque `capabilities/` está vacío.
+
+La review rechazó dos cosas, con motivo en la spec: tratar el cambio de `cancelar` como modificación de una capacidad existente y reordenar un ejemplo que ya cubría el caso.
+
+Opciones:
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajustar, por ejemplo la sala opcional en `cancelar`.
+
+--- [62]
+Va, te lo cuento en llano y con un ejemplo.
+
+**Qué tienes hoy.** Hay dos salas, Norte y Sur, y una reserva: Norte el lunes de 10:00 a 12:00. Si quieres Norte a esa hora, `libres` te dice que no está. A partir de ahí tienes que volver a mirar tú.
+
+**Qué añado.** Dos comandos nuevos:
+- `espera Norte lun 10:00-12:00` te apunta. Responde `Norte ocupada lun 10:00-12:00; en espera`.
+- `en-espera` te enseña a qué estás apuntado.
+
+Y `cancelar` cambia un poco. Si cancelas esa reserva del lunes a las 10:00 y estabas apuntado, la respuesta añade el aviso: `cancelada lun 10:00; libre: Norte lun 10:00-12:00`. La reserva no se hace sola. Te avisa y reservas tú con `reservar`.
+
+**Lo que tenías que validar, uno por uno.**
+
+1. **No funciona entre comandos de la terminal.** Esto es lo más importante. El programa guarda las reservas dentro de sí mismo, no en un fichero. Cada vez que lanzas un comando, arranca de cero y se olvida de todo. Si haces `espera` y luego, en otra ejecución, `cancelar`, el segundo no sabe que te apuntaste. Solo se ven los dos dentro de una misma ejecución, que es como lo prueban los tests. Para que te sirviera de verdad en tu servidor haría falta guardar todo en un fichero. Eso es otra feature distinta y no la incluyo. Lo pongo claro porque, tal como está, la lista de espera sería útil sobre el papel y poco en el uso diario.
+
+2. **`cancelar` pasa a borrar de verdad.** Hoy solo escribe "cancelada…" y no borra nada. Si no borra, el aviso "Norte libre" sería mentira, porque Norte seguiría ocupada. Pero `cancelar` no recibe la sala, solo el día y la hora. Así que `cancelar lun 10:00` borra todas las reservas del lunes que empiecen a las 10:00, también la de Sur si la hubiera y no tuvieras espera de ella. Si prefieres evitarlo, `cancelar` podría recibir la sala como dato opcional.
+
+3. **Tu "sí, adelante".** Yo te pregunté qué debía pasar al liberarse la sala, con tres opciones numeradas. Tú contestaste sí, pero sin número. Lo tomé como la 2ª (solo avisar, no reservar sola). Si querías otra, dímelo.
+
+4. **Sin turnos.** En mi ejemplo decía "1.º en espera", pero la usas solo tú, así que no hay cola. La lista son simplemente las franjas que esperas.
+
+5. **Nombres y mensajes inventados por mí.** Los comandos `espera` y `en-espera` y los textos de respuesta. Los has visto en los ejemplos de arriba. Si prefieres otros nombres, se cambian ahora sin coste.
+
+**Mi recomendación.** Mira sobre todo el punto 1. Si lo que quieres es usarla desde la terminal de verdad, la persistencia debería entrar ya, o ir justo después. Si te vale por ahora como base, apruebo tal cual y la persistencia pasa al roadmap.
+
+Dime qué punto quieres que te aclare más, o qué quieres cambiar. De momento no apruebo nada.
+

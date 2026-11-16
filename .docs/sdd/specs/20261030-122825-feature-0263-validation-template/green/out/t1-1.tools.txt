@@ -1,0 +1,242 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- worktrees"; git worktree list; echo "--- check"; node "D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo "exit $?"
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo; ls .docs/sdd .docs/sdd/specs 2>&1 | head -50
+<<< --- worktrees
+<run>/repo a76ff8b [feature/0010-cancel-reason]
+--- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+exit 0
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manual"}}
+
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && ls; echo ---; head -30 spec.md; echo ---; cat tasks.md; echo ---; grep -n -i "valid" *.md | head -20; cd ../..; ls -a . ..; git -C ../.. log --oneline -8
+<<< plan.md
+spec.md
+tasks.md
+---
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin re
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/skills"; cat sdd-templates/templates/validation-template.md; echo ======; cat sdd-archive/references/dev-validation.md
+
+>>> Bash: cd "<run>/repo"; sed -n 1,80p .docs/sdd/specs/*feature-0010*/plan.md; echo =====; sed -n 30,200p .docs/sdd/specs/*feature-0010*/spec.md; ls; cat package.json
+<<< # Mensaje de validación — plantilla
+
+> Lo presentan `sdd-start-feature` (paso 7) y `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+>
+> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` el mensaje acaba en «Sin probar»: no hay guion. Con `agente`, además, no esperas respuesta y registras `Validación por el agente: <fecha> · <evidencia>`.
+>
+> **El guion va el úl
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Plan de implementación — Motivo al cancelar
+spec: ./spec.md
+status: approved
+created: 2026-10-08
+---
+
+# Plan de implementación — Motivo al cancelar
+
+## Decisiones que he tomado yo — valida estas
+
+1. Dos tasks, Native.
+
+**Goal**: cancelar con motivo y listar las canceladas.
+
+**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+
+### De proceso
+
+- Native: implementa la sesión.
+
+## Review Focus
+
+- ninguna: comprobado
+
+## 2. Task
+
+>>> Bash: cd "<run>/repo"; cat src/app.js; ls src test scripts e2e; cat README.md | head -30; git check-ignore .temp && echo ignored
+<<< Exit code 1
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--moti
+
+>>> Bash: cd "<run>/repo"; out="${TMPDIR:-/tmp}/gate-0010.txt"; node --test --test-concurrency=1 test/ > "$out" 2>&1; echo "gate exit $?"; tail -12 "$out"; echo "== script"; for a in 'cancelar Norte lun --motivo "sala ocupada"' 'cancelar Norte lun --motivo vacaciones' 'cancelar Norte lun'; do echo "\$ $a"; eval node src/app.js $a; done; echo '$ cancelar + canceladas en un proceso'; node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"; git status --porcelain
+<<< gate exit 0
+✔ reservar --cada-semana crea la reserva semanal (0.1391ms)
+✔ cancelar con un motivo de la lista (0.853ms)
+✔ cancelar con un motivo fuera de la lista (0.128ms)
+✔ canceladas enseña sala, día y motivo (1.0704ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 203.4627
+== script
+$ cancelar Norte lun --motivo "sala ocupada"
+cancelada Norte lun (sala ocupada)
+$ cancelar Norte lun --motivo vacaciones
+motivo no válido: cambio de planes, sala ocupada, otro
+$ cancelar Norte lun
+motivo no válido: cambio de planes, sala ocupada, otro
+$ cancelar + cancel
+
+>>> Bash: cd "<run>/repo"; d="${TMPDIR:-/tmp}/val-0010"; mkdir -p "$d"; cat > "$d/steps.json" <<'EOF'
+[{"id":"1","title":"cancelar Norte lun --motivo \"sala ocupada\" → cancelada Norte lun (sala ocupada)"},
+ {"id":"2","title":"cancelar Norte lun --motivo vacaciones → motivo no válido: cambio de planes, sala ocupada, otro"},
+ {"id":"3","title":"cancelar Norte lun (sin motivo) → motivo no válido: cambio de planes, sala ocupada, otro"},
+ {"id":"4","title":"cancelar y canceladas en un proceso → Norte lun — sala ocupada"}]
+EOF
+nohup node "D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/cli/bin/sdd.js" validation serve --steps "$d/steps.json" --out "$d/out.json" > "$d/serve.log" 2>&1 &
+echo "pid $!"; sleep 3; cat "$d/serve.log"; echo "dir $d"; git status --porcelain
+<<< pid 3817
+panel: http://127.0.0.1:10799/
+dir /d/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/val-0010
+
+=== RESULTADO (11 turnos, 0.2381483 $)
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro), y `canceladas` lista cada cancelación con su motivo. Por ejemplo, si cancelas la reserva de Norte del lunes con «sala ocupada», sale `Norte lun — sala ocupada`.
+
+No he cerrado nada y no he escrito ningún registro. En `manual` con perfil `delegate`, el cierre se para hasta que valides tú o difieras la validación.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1`. Es un workaround para la carrera de los tests sobre el almacén en memoria compartido, hasta que se aísle por test. Si es erróneo, la suite tarda el doble. Irá a una fila de deuda al cerrar.
+
+**Smoke que he corrido** (mismos comandos que el guion)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | el mismo mensaje |
+| Listado de canceladas | ejecución real, en un solo proceso | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test --test-concurrency=1 test/`: 5/5 sobre a76ff8b. Salida completa guardada en el scratchpad.
+- No hay E2E declarado (no existe `operations.md`), así que no he corrido `test:e2e`.
+
+**Sin probar**
+
+- Nada de la spec. El estado de la app vive en memoria por proceso, así que `cancelar` seguido de `canceladas` en dos comandos separados no muestra la cancelación. Por eso el paso 4 del guion va en un solo proceso.
+
+**Pre-checks**
+
+- El árbol está limpio y `sdd merge --check` dice que `develop` está listo. No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está aprobada por Laura.
+- La revisión final fue sobre 34ca93e. `HEAD` solo añade el `tasks.md` de documentación, así que no hace falta re-revisión.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (aviso del hook). Las skills que estoy siguiendo vienen del checkout del kit 3.x que usa el CLI. Si prefieres actualizar el plugin y reiniciar antes de cerrar, dímelo.
+
+Panel: plan B en http://127.0.0.1:10799/
+
+Ese panel no ve la app, así que si algo falla cuéntamelo en el comentario. Si `.temp/` no está en el `.gitignore` del proyecto, puedo añadirlo. He dejado la salida del panel fuera del repo.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay entorno que arrancar. Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Cancelar con un motivo fuera de la lista:
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3. Cancelar sin motivo:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Cancelar y listar en el mismo proceso:
+
+```
+node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"
+```
+
+→ dos líneas: `cancelada Norte lun (sala ocupada)` y `Norte lun — sala ocupada`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.

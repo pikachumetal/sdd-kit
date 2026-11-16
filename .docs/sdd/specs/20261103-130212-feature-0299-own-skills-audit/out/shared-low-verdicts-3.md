@@ -1,0 +1,212 @@
+- S569 · descartado · frase común
+- S570 · descartado · frase común
+- S571 · descartado · productor/consumidor · propose define parche de petición cerrada; patch-flow solo aplica su variante
+- S572 · descartado · frase común
+- S573 · descartado · frase común
+- S574 · descartado · frase común
+- S575 · descartado · frase común
+- S576 · descartado · frase común
+- S577 · descartado · frase común
+- S578 · descartado · frase común
+- S579 · descartado · frase común
+- S580 · descartado · frase común
+- S581 · descartado · frase común
+- S582 · descartado · frase común
+- S583 · descartado · frase común
+- S584 · descartado · frase común
+- S585 · descartado · frase común
+- S586 · descartado · frase común
+- S587 · descartado · frase común
+- S588 · descartado · frase común
+- S589 · descartado · frase común
+- S590 · descartado · frase común
+- S591 · descartado · frase común
+- S592 · descartado · frase común
+- S593 · descartado · frase común
+- S594 · descartado · frase común
+- S595 · descartado · art-ii
+- S596 · descartado · frase común
+- S597 · descartado · frase común
+- S598 · descartado · frase común
+- S599 · descartado · frase común
+- S600 · descartado · frase común
+- S601 · confirmado · nuevo: enmienda en pair/delegate: para con 🦆 y ✋; excepción de «Decisiones tomadas con el dev-lead» · iguales · One case goes on: an AND or a THEN that only applies, literally, a line of «Decisiones tomadas con el dev-lead» of the spec. ‖ No sigue con la enmienda sin aprobar, salvo un AND o un THEN de una ronda de REFACTOR o de fix que solo aplica, literal, una línea de «Decisiones tomadas con el dev-lead» de la spec
+- S602 · confirmado · nuevo: el trabajo de una enmienda sobre task cerrada va a una task nueva al final · iguales · `Task 3 — enmienda <fecha>: <qué>` after Task 2), without reopening it, and `tasks.md` marks the closed task as `afectada por enmienda <fecha> → Task 3` ‖ su trabajo va a una task nueva al final del plan, con el número siguiente y su propio commit —`Task 3 — enmienda <fecha>: <qué>` en un plan de dos tasks
+- S603 · descartado · frase común
+- S604 · descartado · frase común
+- S605 · descartado · frase común
+- S606 · confirmado · K10 · iguales · **Check the base first**, with or without a remote: `git diff $(git merge-base HEAD <integration>) <integration> -- .docs/sdd/roadmap.md` ‖ Disparador: antes de despachar cada task del plan, `git diff $(git merge-base HEAD <integración>) <integración> -- .docs/sdd/roadmap.md`, buscando la fila de la feature en curso.
+- S607 · descartado · frase común
+- S608 · descartado · frase común
+- S609 · descartado · frase común
+- S610 · descartado · frase común
+- S611 · descartado · frase común
+- S612 · descartado · frase común
+- S613 · descartado · frase común
+- S614 · confirmado · nuevo: en unattended, pregunta de entrevista sin respuesta en docs aparca la feature · iguales · En `unattended`, una pregunta de la entrevista sin respuesta en los documentos del proyecto aparca la feature, y al acabar la release hay un solo informe. ‖ Si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, la feature queda `⏸️ aparcada: <pregunta>` en el roadmap
+- S615 · descartado · productor/consumidor · modo-lite solo invoca frontend-verification
+- S616 · confirmado · K11 · iguales · O el aviso, o «no probado» con su motivo. ‖ la presentación enseña su salida, o el aviso «composición no medida», o «no probado» con su motivo.
+- S617 · descartado · frase común
+- S618 · descartado · frontmatter
+- S619 · descartado · frase común
+- S620 · confirmado · P17 · iguales · in Native the session implements every task and runs well on Sonnet with effort medium ‖ **Native**: the session implements every task, then the final review of `sdd-verify` checks the whole branch in axes.
+- S621 · descartado · frontmatter
+- S622 · confirmado · P17 · iguales · What it gives up is a fresh context per task and a second pair of eyes per task. ‖ **SDD** (`subagent`): a fresh implementer per task and a fresh reviewer after each, then the whole-branch review.
+- S623 · descartado · frontmatter
+- S624 · descartado · frase común
+- S625 · descartado · frase común
+- S626 · descartado · frase común
+- S627 · confirmado · nuevo: opciones de la review de spec recomendada llevan el modelo del revisor de dominio · iguales · pregunta antes de presentar, con el modelo del revisor de dominio; con la spec delegada, decide y registra (dominio en Sonnet) ‖ **Sus opciones llevan el modelo del revisor de dominio** —también el del revisor único de siete puntos, que incluye esa lente— con su recomendación
+- S628 · descartado · frase común
+- S629 · descartado · frase común
+- S630 · descartado · frase común
+- S631 · descartado · frase común
+- S632 · descartado · preámbulo
+- S633 · descartado · productor/consumidor · spec-writing define la sección; implement la usa
+- S634 · confirmado · nuevo: feature full con 4+ tasks: presentar el diseño por secciones antes de la spec · iguales · With 4 or more tasks foreseen in a full feature, before writing `spec.md` present the design by sections, as the reference says. ‖ In a full feature with **4 or more tasks foreseen**, close the interview by presenting the design in sections before you write `spec.md`
+- S635 · descartado · frase común
+- S636 · descartado · frase común
+- S637 · descartado · frontmatter
+- S638 · descartado · frase común
+- S639 · descartado · frase común
+- S640 · descartado · frase común
+- S641 · descartado · frase común
+- S642 · confirmado · nuevo: el retro.md de la release va en el commit del corte · iguales · its `retro.md` goes in the cut's commit, before merge and tag. ‖ **Name the proposals** to `sdd-end-release`, for its closing summary. The file goes in the cut's commit.
+- S643 · descartado · frontmatter
+- S644 · descartado · frase común
+- S645 · descartado · frontmatter
+- S646 · descartado · frase común
+- S647 · descartado · frase común
+- S648 · descartado · frase común
+- S649 · descartado · frase común
+- S650 · descartado · frase común
+- S651 · descartado · frase común
+- S652 · descartado · frase común
+- S653 · descartado · frase común
+- S654 · descartado · frase común
+- S655 · descartado · frase común
+- S656 · descartado · frase común
+- S657 · descartado · frase común
+- S658 · descartado · frase común
+- S659 · descartado · frase común
+- S660 · descartado · frase común
+- S661 · descartado · frase común
+- S662 · descartado · frase común
+- S663 · descartado · frase común
+- S664 · descartado · frase común
+- S665 · confirmado · nuevo: fila de «En espera» que caduca pasa a «Descartadas» con Motivo `caducada` · difieren: end-release la mueve sin preguntar; roadmap la propone · a row of «En espera» that warns `caduca` moves to «Descartadas» with «Motivo» `caducada` and the cut's date ‖ A row of «En espera» that `sdd roadmap check` warns expires is proposed in «Descartadas», with «Motivo» `caducada`.
+- S666 · descartado · frase común
+- S667 · descartado · frase común
+- S668 · descartado · frase común
+- S669 · descartado · art-ii
+- S670 · descartado · frontmatter
+- S671 · descartado · preámbulo
+- S672 · descartado · preámbulo
+- S673 · descartado · frase común
+- S674 · descartado · preámbulo
+- S675 · descartado · frase común
+- S676 · descartado · frase común
+- S677 · descartado · frase común
+- S678 · descartado · frase común
+- S679 · descartado · frase común
+- S680 · descartado · frase común
+- S681 · descartado · frontmatter
+- S682 · confirmado · nuevo: el catálogo de verbos del CLI en sdd-templates repite qué hace cada verbo · iguales · launch the command through its watch: `watch command -- <the command…>`, which saves its output and ends with the command ‖ `sdd watch command` | Runs a command in the background, saves its output and ends with it (`TERMINADO: <comando> salió con <rc>`)
+- S683 · confirmado · nuevo: el catálogo de verbos del CLI en sdd-templates repite qué hace cada verbo · difieren: implement añade que guarda la salida completa y anota la línea en el ledger · `task done <plan> <n> <base> -- <command…>` with the command of the task's «Verificación». It runs the command, keeps the full output in the workspace ‖ `sdd task done` | Runs a task's «Verificación» and, if it passes, notes it in the ledger: `task done <plan> <n> <base> -- <command…>`.
+- S684 · descartado · frase común
+- S685 · confirmado · nuevo: la capacidad no guarda historial ni procedencia; lo dan git y el bloque «Capacidades» de la spec · iguales · sin línea de historial: la capacidad no guarda historial, lo dan git y el bloque «Capacidades» de la spec ‖ Sin procedencia (quién o qué feature la creó): eso lo dicen git y el bloque «Capacidades» de cada spec.
+- S686 · confirmado · nuevo: el changelog es el registro técnico backward-looking; el roadmap es forward-looking · iguales · The changelog is the project's **technical** record (Keep a Changelog 1.1.0), *backward-looking*. The roadmap is *forward-looking* ‖ Changelog técnico del proyecto, backward-looking: `roadmap.md` es el forward-looking.
+- S687 · descartado · plantilla
+- S688 · descartado · plantilla
+- S689 · descartado · frontmatter
+- S690 · descartado · plantilla
+- S691 · descartado · frase común
+- S692 · descartado · plantilla
+- S693 · descartado · plantilla
+- S694 · descartado · plantilla
+- S695 · descartado · plantilla
+- S696 · descartado · productor/consumidor · operations-template nombra los campos que frontend-verification lee
+- S697 · descartado · plantilla
+- S698 · descartado · frase común
+- S699 · confirmado · P14 · iguales · `Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué de la herramienta>)` ‖ `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>)
+- S700 · confirmado · nuevo: estimación que llega en el commit de cierre se marca (post hoc) y no calibra · iguales · Una estimación que llega en el commit de cierre se marca `(post hoc)` y el log la deja fuera de la calibración ‖ si llega en el commit de cierre, `<Xh> (post hoc)`: no calibra
+- S701 · descartado · frase común
+- S702 · descartado · frase común
+- S703 · descartado · frase común
+- S704 · descartado · frase común
+- S705 · descartado · frase común
+- S706 · descartado · frase común
+- S707 · descartado · productor/consumidor · plan-template nombra el método que frontend-verification define
+- S708 · descartado · frase común
+- S709 · descartado · plantilla
+- S710 · descartado · frase común
+- S711 · descartado · plantilla
+- S712 · descartado · plantilla
+- S713 · descartado · plantilla
+- S714 · descartado · frase común
+- S715 · descartado · plantilla
+- S716 · descartado · plantilla
+- S717 · descartado · frase común
+- S718 · descartado · frase común
+- S719 · descartado · plantilla
+- S720 · descartado · frase común
+- S721 · descartado · frase común
+- S722 · descartado · frase común
+- S723 · descartado · plantilla
+- S724 · descartado · plantilla
+- S725 · descartado · plantilla
+- S726 · descartado · frase común
+- S727 · descartado · frase común
+- S728 · confirmado · nuevo: el título del requisito es la clave de fusión del delta; MODIFIED copia el bloque entero · difieren: capability-template dice no cambiar el título al fusionar salvo renombrado en la spec; spec-template dice que renombrar es REMOVED del viejo + ADDED del nuevo · El título es la clave que `MODIFIED — <título>` cita al fusionar un delta futuro; no lo cambies al fusionar salvo que la spec lo renombre explícitamente. ‖ Copia el bloque entero del requisito vigente con los cambios: al fusionar lo sustituye... El título es la clave de fusión: un renombrado es `REMOVED` del título viejo + `ADDED` del nuevo
+- S729 · confirmado · nuevo: el título del requisito es la clave de fusión del delta; MODIFIED copia el bloque entero · iguales · el título del requisito es la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. ‖ Copia el bloque entero del requisito vigente con los cambios: al fusionar lo sustituye... El título es la clave de fusión
+- S730 · descartado · plantilla
+- S731 · descartado · plantilla
+- S732 · descartado · frase común
+- S733 · descartado · frase común
+- S734 · descartado · plantilla
+- S735 · confirmado · K23 · iguales · Sin esa frase literal el perfil no cambia — es la misma regla del atajo autoconcedido. ‖ Fila de cambio de perfil a media feature: Estado `perfil → <perfil>: «<frase literal>»`, con la fecha en que el dev-lead lo dijo.
+- S736 · descartado · frase común
+- S737 · descartado · plantilla
+- S738 · confirmado · P10 · iguales · *(tal cual de `sdd session tokens`: desde el arranque de la sesión que lo abrió, investigación previa incluida, sin las esperas al dev-lead. ‖ se pegan tal cual de `sdd session tokens --path <worktree> --branch <rama de la feature> --artifact <carpeta>`
+- S739 · confirmado · P10 · iguales · Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" session tokens --path <worktree> --branch <rama> --artifact <carpeta del artefacto>` and paste its lines unchanged ‖ se pegan tal cual de `sdd session tokens --path <worktree> --branch <rama de la feature> --artifact <carpeta>`, que lee los transcripts de Claude Code.
+- S740 · confirmado · P14 · iguales · `Gate: `<comando>` → <tarea>: corrió <N>/<M> · <tarea>: saltada (<porqué de la herramienta>)` ‖ `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>)
+- S741 · confirmado · nuevo: duración de la suite E2E frente al Presupuesto E2E; si lo pasa, deuda · iguales · Compare the E2E suite's duration with «Presupuesto E2E» and write both in the 4.1: `E2E: <duración> de <Presupuesto E2E>`. Over the budget, open a debt row ‖ - E2E: <duración> de <Presupuesto E2E> *(solo con E2E; si lo pasa, apúntalo en 4.3 como deuda del proyecto)*
+- S742 · confirmado · P19 · iguales · Distinguir lo verificado por el agente de lo reportado por el usuario. ‖ Distinguir siempre lo **verificado por el agente** (con evidencia) de lo **reportado por el usuario**.
+- S743 · descartado · plantilla
+- S744 · descartado · preámbulo
+- S745 · descartado · frontmatter
+- S746 · descartado · frase común
+- S747 · descartado · frase común
+- S748 · confirmado · P14 · iguales · If the base brought a file of «Sin filtro», the gate runs whole, without the filter, and every task of the line carries `(sin filtro: cambia el build)` ‖ the gate runs without `--affected` and every task carries `(sin filtro: cambia el build)`.
+- S749 · confirmado · K26 · iguales · A branch that only touches `.docs/` or `*.md` runs nothing. ‖ A fix that only touches `.docs/` or `*.md` reruns only the tests that failed, alone: no gate and no suite
+- S750 · descartado · art-ii
+- S751 · descartado · frase común
+- S752 · descartado · frase común
+- S753 · confirmado · K32 · iguales · if the approved spec's ✋ carries the `Política de modelos:` line and it names these dispatches, its approval is the confirmation any user instruction asks before parallelizing ‖ a `Política de modelos:` line in the approved spec's ✋ that names the axes is the confirmation a user instruction asks before parallelizing: dispatch them without asking again
+- S754 · descartado · frase común
+- S755 · descartado · productor/consumidor · verify entrega la salida del índice al revisor; propose manda leerlo
+- S756 · descartado · frase común
+- S757 · descartado · frase común
+- S758 · descartado · frase común
+- S759 · descartado · frase común
+- S760 · confirmado · K2 · iguales · with `Re-revisión:` already there, don't dispatch another ‖ A `Re-revisión:` line already in `tasks.md` means it went out: never dispatch another.
+- S761 · descartado · frase común
+- S762 · descartado · art-ii
+- S763 · descartado · frase común
+- S764 · confirmado · K36 · iguales · `tasks.md` writes it `Arquitectura opus+high, <verdict> (subido: <reason>)`. Never lower a `sí`. ‖ A raised axis reads `Arquitectura opus+high, <verdict> (subido: <reason>)`
+- S765 · descartado · plantilla
+- S766 · confirmado · P18 · iguales · Dispatch it with `subagent_type: sdd-kit:effort-high` + `model: sonnet` and `description: "Final review — Code axis"` ‖ Código con `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, también en Native, donde los despacha el hilo.
+- S767 · descartado · frase común
+- S768 · descartado · frase común
+- S769 · descartado · fuente
+- S770 · descartado · frase común
+- S771 · descartado · frase común
+- S772 · descartado · frase común
+- S773 · descartado · fuente
+- S774 · descartado · fuente
+- S775 · descartado · frase común
+- S776 · descartado · frontmatter
+- S777 · descartado · preámbulo
+- S778 · descartado · frontmatter
+Total: 210 entradas · 31 confirmadas (16 en grupos existentes, 15 nuevas) · 179 descartadas
+Releídas: 97 · cambian: S665, S686

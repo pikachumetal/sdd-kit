@@ -20,7 +20,7 @@ created: <YYYY-MM-DD>
 
 ## Estado de las tasks
 
-Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
+Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`). Una task cerrada que cambia por una enmienda no se reabre: lleva en «Notas» `afectada por enmienda <fecha> → Task N`, y la Task N nueva hace el trabajo; si la enmienda solo cambia la task en curso, sigue en ella con la nota.
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
@@ -36,8 +36,15 @@ Status: `pending` → `in_progress` → `done` (o `blocked` / `skipped`).
 
 > Si durante la ejecución aparece un bug o scope no previsto en la spec: decidir con el
 > usuario (arreglar ahora vs ticket aparte; misma rama vs rama nueva). Antes de proponer el
-> fix: `superpowers:systematic-debugging` (causa raíz). Registrarlo aquí y en el walkthrough.
+> fix: `sdd-debugging` (causa raíz). Registrarlo aquí y en el walkthrough.
 > No inflar el scope original en silencio.
 
 | Descubierto | Causa raíz | Decisión | Commit |
 | --- | --- | --- | --- |
+
+## Rulings
+
+> Lo pega `sdd-implement-native` o `sdd-implement-subagent` al cerrar, antes de borrar el workspace del plan: la salida de
+> `sdd ledger rulings <plan>`, los rulings y los minor diferidos, tal cual. `_Ninguno_` si no hubo.
+
+_Ninguno_

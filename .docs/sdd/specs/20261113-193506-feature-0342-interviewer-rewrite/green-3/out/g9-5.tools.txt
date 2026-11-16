@@ -1,0 +1,82 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: node -v; cat package.json 2>/dev/null; ls -a; ls .docs/sdd 2>/dev/null; find . -path ./node_modules -prune -o -name "*.test.*" -print | head
+<<< v26.10.0
+{"type": "module"}
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+./test/app.test.js
+
+>>> Bash: cat PRODUCT.md README.md | head -60; ls src test .docs/sdd/steering; head -20 test/app.test.js; cat .docs/sdd/sdd-kit.json
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+src:
+app.js
+
+test:
+app.test.js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(ru
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md | head -80; npm test 2>&1 | tail -5; node --test --experimental-test-coverage 2>&1 | tail -15
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature
+
+=== RESULTADO (8 turnos, 0.12015569999999999 $)
+Estoy en modo «pensar» (sin tocar nada). Ya he mirado el repo y probado la cobertura nativa de Node. Esto es lo que he encontrado:
+
+- `operations.md` fija **Node 22 y sin dependencias externas**, y el proyecto no tiene `node_modules`.
+- Tu máquina tiene Node 26. Ahí `node --test --experimental-test-coverage` funciona sin instalar nada y da esto para `src/app.js`: líneas 93,75 %, ramas 83,33 %, funciones 100 %. Muestra la línea sin cubrir (la 13).
+- No he comprobado cómo se comporta esa opción en Node 22, que es la versión que declara el proyecto. Si importa, lo miro antes de decidir.
+- La constitución exige `node --test` en verde antes de cada commit. Hoy no hay ningún umbral de cobertura.
+
+❓ **¿Qué quieres que haga la cobertura?**
+1️⃣ **Nativo de Node, solo informativo.** Añades la opción al comando de tests y ves el informe cuando quieras. No añade dependencias y encaja con `operations.md`. En cambio, no hay informe HTML ni `lcov`, y la opción sigue llamándose «experimental» en la versión del proyecto.
+2️⃣ **Nativo con umbral que bloquea el commit.** Es lo mismo que 1️⃣, pero con un mínimo (por ejemplo, 90 % de líneas) y falla si no se llega. El coste es que cada commit pequeño puede toparse con el umbral. Además, los flags de umbral (`--test-coverage-lines` y similares) son más recientes que Node 22, y eso habría que verificarlo.
+3️⃣ **c8.** Da informes HTML y `lcov`, y funciona igual en todas las versiones de Node. Rompe la regla de «sin dependencias externas», así que habría que cambiar `operations.md` y añadir `package.json` con `devDependencies`.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto lo usas solo tú, tiene un único fichero de código y la regla de «sin dependencias» está escrita. Con tres tests y un informe de una tabla, c8 no aporta nada que justifique romper esa regla. A cambio, si más adelante quieres un informe visual o un umbral en CI, tendrás que volver a decidirlo.
+
+¿Cuál eliges?

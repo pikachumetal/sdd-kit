@@ -1,0 +1,16 @@
+--- [16]
+Estoy repasando el código y los documentos del proyecto para anclar la pregunta en lo que hay, no en suposiciones.
+
+--- [19]
+Antes de elegir dónde guardarlas, esto es lo que hay:
+
+- **Documentado** (`src/app.js:3`): las reservas son un array en memoria, `const bookings = [...]`. Cada comando de la CLI es un proceso nuevo, así que hoy se pierden en cada ejecución, no solo al reiniciar el servidor.
+- **Documentado** (`PRODUCT.md`): la usas solo tú, en tu propio servidor.
+- **Documentado** (`operations.md`): Node 22, sin dependencias externas, un único fichero de entrada.
+- **Sin verificar**: `node:sqlite` funciona en mi Node local (v26.10.0), pero el proyecto declara Node 22 y no lo he comprobado en esa versión.
+
+❓ **¿Dónde y en qué formato se guardan las reservas?**
+1️⃣ **Un fichero JSON con `node:fs`.** Lees el fichero al arrancar y lo reescribes tras cada `reservar` o `cancelar`. No añade dependencias y puedes abrirlo y editarlo a mano. A cambio, no tiene transacciones: si el proceso muere a media escritura, puedes corromper el fichero. Se mitiga escribiendo a un temporal y renombrando.
+2️⃣ **SQLite con `node:sqlite`.** Es integrado, así que tampoco añade dependencias, y las escrituras son atómicas. A cambio, pasas a un fichero binario y dependes de que esa API exista en Node 22, que no he verificado.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, hay un puñado de reservas y `operations.md` pide cero dependencias; un JSON legible basta. A cambio, tienes que cuidar la escritura atómica y, si un día hay concurrencia o muchas reservas, habrá que migrar.
+

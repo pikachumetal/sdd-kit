@@ -1,0 +1,149 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status -s && git log --oneline | head -5 && ls .docs/sdd/specs/ 2>&1 && cat .docs/sdd/sdd-kit.json
+<<< 7cbcd3f docs(sdd): tasks de la 0020
+a464743 feat(libres): filtro por sala
+3e8bf52 docs(sdd): abrir la feature 0020
+0886e58 feat: base del molde salas
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20260920-090000-feature-0020-room-filter/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20260920-090000-feature-0020-room-filter" && ls && cat tasks.md && cat plan.md 2>/dev/null | head -120
+<<< plan.md
+spec.md
+tasks.md
+# Tasks
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 | ✅ | a464743 |
+| 2 | ⏳ | |
+| 3 | ⏳ | |
+# Plan — filtro por sala
+
+**Spec**: spec.md
+**Ejecución**: native, fijado en sdd-kit.json.
+
+## Task 1: --sala en libres
+
+Modificar: src/app.js, test/app.test.js. Verificación: node --test.
+
+## Task 2: libres sin franja
+
+Modificar: src/app.js, test/app.test.js. Test: `libres` sin franja responde `indica una franja`. Verificación: node --test.
+
+## Task 3: README
+
+Modificar: README.md. Una línea que explique `--sala`. Verificación: node --test.
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/cli/bin/sdd.js"; P=.docs/sdd/specs/20260920-090000-feature-0020-room-filter/plan.md; W=$(node "$S" workspace $P); echo "$W"; ls "$W"; cat "$W/progress.md" 2>&1; cat .docs/sdd/specs/20260920-090000-feature-0020-room-filter/spec.md; git worktree list; cat src/app.js; cat test/app.test.js
+<<< <run>\repo\.temp\sdd\plan
+plan-path
+cat: '<run>\repo\.temp\sdd\plan/progress.md': No such file or directory
+---
+mode: full
+profile: delegate
+---
+
+# Spec — filtro por sala en libres
+
+## Intent
+
+`libres` da las salas libres de una franja; hay que poder preguntar por una sala y exigir la franja.
+
+## Requisitos
+
+- GIVEN Norte reservada en 10:00-12:00 WHEN `libres 10:00-12:00 --sala Norte` THEN responde `ocupada`
+- GIVEN cualquier estado WHEN `libres` sin franja THEN responde `indica una franja`
+- GIVEN el README WHEN se lee THEN explica `--sala`
+
+## Aprobaciones
+
+- Spec aprobada por el dev-lead, 2
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/cli/bin/sdd.js"; P=.docs/sdd/specs/20260920-090000-feature-0020-room-filter/plan.md; W=.temp/sdd/plan; printf '# SDD ledger — plan: %s\nTask 1: complete (commit a464743, recuperado de tasks.md y git log)\nTask 2: Ruling: retomo sin ledger previo; Task 1 hecha según tasks.md/git log — coste si erróneo: ninguno\n' "$P" > $W/progress.md; node "$S" task start $P 2; git rev-parse HEAD; git branch -a; git diff --name-only $(git merge-base HEAD main) main
+<<< brief: <run>\repo\.temp\sdd\plan\task-2-brief.md
+base: 7cbcd3fa04ca635a9e8be67554e2a2ec98df974d
+7cbcd3fa04ca635a9e8be67554e2a2ec98df974d
+  develop
+* feature/0020-room-filter
+  main
+
+>>> Bash: cd "<run>/repo" && git diff --name-only $(git merge-base HEAD develop) develop; cat .temp/sdd/plan/task-2-brief.md
+<<< ## Task 2: libres sin franja
+
+Modificar: src/app.js, test/app.test.js. Test: `libres` sin franja responde `indica una franja`. Verificación: node --test.
+
+>>> Bash: cd "<run>/repo" && cat >> test/app.test.js <<'EOF'
+
+test('libres sin franja pide una franja', () => {
+  assert.equal(run('libres', []), 'indica una franja');
+});
+EOF
+cp test/app.test.js .temp/sdd/plan/app.test.red.js; node --test 2>&1 | tail -25
+<<< ✖ failing tests:
+
+test at test\app.test.js:21:1
+✖ libres sin franja pide una franja (1.2581ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte, Sur'
+  - 'indica una franja'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/app.test.js:22:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal
+
+>>> Bash: cd "<run>/repo" && sed -i "s|^  if (cmd === 'libres' && params\[1\] === '--sala')|  if (cmd === 'libres' \&\& !params[0]) return 'indica una franja';\n&|" src/app.js && sed -n 9,14p src/app.js && node --test 2>&1 | grep -E "^ℹ (pass|fail)" && diff test/app.test.js .temp/sdd/plan/app.test.red.js && echo RED-copy-igual
+<<< export function run(cmd, params) {
+  if (cmd === 'libres' && !params[0]) return 'indica una franja';
+  if (cmd === 'libres' && params[1] === '--sala') return freeRooms(params[0]).includes(params[2]) ? 'libre' : 'ocupada';
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+ℹ pass 5
+ℹ fail 0
+RED-copy-igual
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/cli/bin/sdd.js"; sed -i 's/^| 2 | ⏳ | |/| 2 | ✅ | TBD |/' .docs/sdd/specs/20260920-090000-feature-0020-room-filter/tasks.md; git add src test .docs && git commit -qm "feat(libres): exigir franja
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2 && H=$(git rev-parse --short HEAD) && sed -i "s/TBD/$H/" .docs/sdd/specs/20260920-090000-feature-0020-room-filter/tasks.md && git status -s
+<<< warning: in the working copy of '.docs/sdd/specs/20260920-090000-feature-0020-room-filter/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+1fce736 feat(libres): exigir franja
+7cbcd3f docs(sdd): tasks de la 0020
+ M .docs/sdd/specs/20260920-090000-feature-0020-room-filter/tasks.md
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/cli/bin/sdd.js"; node "$S" task done .docs/sdd/specs/20260920-090000-feature-0020-room-filter/plan.md 2 7cbcd3fa04ca635a9e8be67554e2a2ec98df974d -- node --test 2>&1 | tail -8
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 136.4195
+ledger: Task 2: complete (commits 7cbcd3f..1fce736, tests: node --test → ℹ duration_ms 136.4195)
+
+=== RESULTADO (14 turnos, 0.29428020000000005 $)
+La Task 2 está hecha y commiteada (`1fce736`): `libres` sin franja responde `indica una franja`.
+
+- **RED:** el test nuevo falló como debía. Devolvía `Norte, Sur` en vez de `indica una franja`.
+- **GREEN:** `node --test` pasa con 5 tests y 0 fallos. Los asserts no cambiaron respecto a la copia del test que guardé en RED.
+- **Base:** `develop` no ha cambiado desde que se abrió la rama, así que no hay solapes.
+
+**Rulings I made:**
+- Task 2: no había ledger de la sesión anterior, así que lo creé a partir de `tasks.md` y `git log`, dando la Task 1 por hecha (`a464743`). Si Task 1 no estuviera realmente completa, habría que rehacerla.
+
+**Pendiente:** `tasks.md` marca la Task 2 como ✅, pero el cambio con el hash `1fce736` queda sin commitear en el árbol. Lo meteré en el commit de la Task 3. No he empezado la Task 3 (README), la revisión final ni el cierre.
+
+¿Sigo con la Task 3?

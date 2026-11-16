@@ -1,0 +1,72 @@
+--- [23]
+Reproduzco el fallo: `cancelar Norte mar` responde «cancelada Norte mar» y deja sin reserva el lunes. Creo la rama y reservo el id.
+
+--- [31]
+RED confirmado (`actual: 'cancelada Norte mar'`). Hago el fix con Edit.
+
+--- [35]
+Todo en verde: 5/5 y lint limpio. Completo §4 y despacho el revisor del patch.
+
+--- [38]
+Revisor despachado; espero su resultado antes de hacer el commit del fix.
+
+--- [44]
+Hallazgos de la revisión del patch 0012. El fix es correcto y mínimo. Los problemas están en el test y en el documento del patch.
+
+Comprobé el RED a mano. Para ello hice un `git stash` temporal de `src/app.js` y lo restauré con `stash pop`. El diff final es idéntico al inicial: una línea cambiada. Sin el fix, el test falla con `actual: 'cancelada Norte mar'` y `expected: 'sin reserva Norte mar'`. Con el fix, `node --test` da 5/5 y `node scripts/lint.mjs` da «sin hallazgos».
+
+1. **Causa raíz (§2): correcta.** `findBooking` recibía `day` pero solo comparaba `room` y `status`. `cancelBooking` y `voidBooking` la usan y tenían el mismo defecto. La referencia `src/app.js:11` sigue siendo exacta.
+
+2. **Fix: mínimo y suficiente.** Añade `b.day === day` en un único punto compartido y corrige `cancelar` y `anular`. `findBooking` solo la llaman esas dos funciones (grep). `freeRooms` no la usa y `reservar` no se toca.
+
+3. **Test de regresión: `anular` no queda cubierto de forma independiente (media).**
+   - Sin el fix, el primer assert (`cancelar mar`) ya falla y cancela la reserva del lunes. Un `anular mar` posterior daría «sin reserva» de todos modos.
+   - El assert de `anular` no demuestra por sí solo que `voidBooking` estaba roto, y el patch lo presenta como caso 2 independiente.
+   - Tampoco se prueba el camino positivo de `anular`, es decir, que anule la reserva del lunes.
+   - Propuesta: un test separado que ejecute `anular mar` primero y luego `anular lun` → `anulada Norte lun`.
+
+4. **Test: acoplado al orden e independiente de otros ficheros (baja).**
+   - `node --test` ejecuta cada fichero en su propio proceso, así que `bookings` no se comparte con `cancel.test.js` ni con `app.test.js`.
+   - Dentro del fichero, el único test es autosuficiente: depende solo de la semilla `Norte/lun`.
+   - Si se añaden más tests en el mismo fichero, el último assert mutará el estado del módulo y volverá frágil el orden. Conviene tenerlo presente al añadir el test de la propuesta anterior.
+
+5. **Documento del patch: ruta de test incorrecta (baja).** §3 lista `test/cancel.test.js` como fichero modificado, pero el test nuevo es `test/cancel-day.test.js` y `cancel.test.js` no cambió.
+
+6. **Documento del patch: afirmación del caso 2 sin comprobar (baja).** El caso 2 de §4 dice que `anular` devuelve «sin reserva» y que la del lunes «sigue activa». Solo se verifica de forma indirecta, y lo cubre la propuesta del hallazgo 3.
+
+7. **Efecto colateral: `day` ausente (informativa, sin acción obligada).**
+   - `cancelar Norte` sin día antes cancelaba la reserva de Norte. Ahora devuelve `sin reserva Norte undefined`, porque no hay validación de argumentos.
+   - Es coherente con la intención del patch, pero cambia el comportamiento. Conviene decidir si se acepta o se anota como deuda.
+   - La entrada `.docs/sdd/changes/` y el test siguen sin trackear, y `commit: pendiente` es esperable en este estado.
+
+--- [46]
+Atiendo los hallazgos 3, 5 y 6: separo `anular` en su propio fichero y corrijo el documento.
+
+--- [48]
+Sin el fix fallan los 2 tests nuevos, y con él pasan 6/6 con lint limpio. Hago el commit del fix.
+
+--- [55]
+Arreglado y commiteado en `feature/0012-cancel-day` (`717a528`). El cierre está parado en tu validación y todavía no se ha fusionado nada.
+
+**Causa:** `findBooking` (`src/app.js:11`) recibía el día pero solo comparaba sala y estado. Cualquier día cancelaba la primera reserva activa de la sala. `anular` usa la misma función y tenía el mismo fallo. Corregí esa línea para que compare también el día.
+
+**Tests y gate:** hay dos tests nuevos de regresión, `test/cancel-day.test.js` y `test/void-day.test.js`. Fallan sin el fix y pasan con él. `node --test` da 6/6 y `node scripts/lint.mjs` sale sin hallazgos. Un revisor independiente confirmó la causa y el fix. Dos de sus hallazgos (el test de `anular` y una ruta errónea en `patch.md`) los arreglé.
+
+**Lo que ejecuté a mano, un proceso por comando porque las reservas viven en memoria:**
+
+| Comando | Salida |
+| --- | --- |
+| `node src/app.js cancelar Norte mar` | `sin reserva Norte mar` |
+| `node src/app.js anular Norte mar` | `sin reserva Norte mar` |
+| `node src/app.js cancelar Norte lun` | `cancelada Norte lun` |
+| `node src/app.js anular Norte lun` | `anulada Norte lun` |
+
+**Lo que necesito de ti:**
+- **Validación.** El proyecto no declara `validation.mode`, así que cuenta como `manual` y valida una persona. Prueba lo de arriba, o lo tuyo si prefieres. Dime qué probaste y si funciona («validado» también vale), o difiere con una frase y un disparador. Sin eso no cierro ni fusiono.
+- **Decisión sobre el efecto colateral.** `cancelar Norte` sin día antes cancelaba la reserva de Norte. Ahora responde `sin reserva Norte undefined`, porque la herramienta no valida argumentos. Lo he dejado fuera del patch. Si quieres, lo apunto en la deuda para tratarlo aparte.
+- **Merge sin configurar.** `.docs/sdd/sdd-kit.json` no tiene el bloque `merge` (`merge.into` y `merge.noFf`). Cuando valides, te presento el comando de fusión y espero tu visto bueno.
+
+**Abierto a la vez:** no hay otras ramas ni worktrees.
+
+**No terminado.** Falta tu validación, el cierre (`patch.md` con el hash del fix y el tiempo real, y la fila del roadmap) y la fusión. No borres el worktree `<run>/repo`.
+

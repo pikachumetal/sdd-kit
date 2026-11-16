@@ -1,0 +1,75 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [19]
+Estoy resolviendo si hace falta una re-revisión por el último commit (solo docs). Después levanto el entorno E2E y lanzo las pasadas.
+
+--- [31]
+Entorno levantado por mí (pid 39672). Ahora el gate de cierre tal como está declarado.
+
+--- [42]
+**Hallazgos**
+
+1. **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El Ruling contradice el gate declarado y no es un workaround honesto.
+   - **No coincide con ningún gate.** `.docs/sdd/steering/operations.md:13-15` declara `node --test test/`, en paralelo y sin `--test-concurrency`, para lo afectado y el merge; el cierre añade `&& node e2e/run.mjs`. `package.json` (`"test": "node --test test/"`) tampoco lleva la opción. Ningún fichero del árbol aplica `--test-concurrency=1`: la única aparición está en este Ruling. Por eso el gate de merge que corre de verdad no es el que el Ruling dice haber usado. Además el comando del Ruling no lleva `test/` y le falta la parte e2e del gate de cierre.
+   - **Va contra una regla escrita.** `operations.md:25` exige que cada test tenga su propio estado y dice que un test que necesita un estado concreto depende de otro. El Ruling reconoce justo eso, tests que comparten un almacén en memoria, y lo tapa en el gate. No deja rastro en `.docs/sdd/steering/debt.md`, que está vacío en «Lista» y «En espera». «Hasta aislar el almacén por test» no tiene destino ni fecha.
+   - **El coste está mal declarado.** «La suite tarda el doble» no es el coste si el Ruling es erróneo. El coste real es que el gate de merge (`node --test test/`, sin la opción) siga expuesto al fallo y que haya tests que pasan solo por el orden en que corren.
+   - **El diagnóstico no cuadra con el mecanismo (lo he deducido leyendo el código, sin ejecutar nada).** `src/app.js:4` define `bookings` como array de módulo. `test/cancel.test.js:13` («canceladas enseña sala, día y motivo») solo pasa si antes ha corrido el test de `:5`, que cancela Norte lun. `node --test` aísla cada fichero en su propio proceso por defecto y ejecuta en serie los tests de un mismo fichero. Así que `--test-concurrency=1` no cambia nada de esto: el problema real es que un test depende de otro por el orden, no una carrera.
+
+2. **Minor**, `tasks.md:10`. El commit de la Task 1 está mal. Debería ser `6770fb1` («feat(bookings): cancelar con un motivo de la lista»: `src/app.js`, `test/cancel.test.js`), no `42fa1c4`. El commit `42fa1c4` es el de la Task 2 («listado de canceladas»), así que la fila 2 sí es correcta. La premisa del encargo («dos tasks, commit 42fa1c4») repite el mismo error.
+
+**Comprobaciones**
+
+1. **Alcance del commit: correcto.** `0b0cdaf` solo añade `tasks.md` (17 líneas). No toca código ni tests. El worktree está en `0b0cdaf` y limpio.
+2. **Coherencia con el plan:** parcial.
+   - Las dos tasks y sus títulos coinciden con `plan.md:36-46`.
+   - La línea `Revisión final:` (`tasks.md:13`) cuadra con el contexto: Spec opus+high limpia, Código sonnet+high limpia, Arquitectura no, sobre `42fa1c4`.
+   - El commit de la Task 1 está mal (hallazgo 2).
+3. **Ruling de la Task 2:** contradice `operations.md` (hallazgo 1).
+
+**Nuevo roto en el diff:** solo documentación. No hay código roto; los dos hallazgos de arriba son los fallos del commit.
+
+**Fuera de alcance (ya existía en `42fa1c4` o antes)**
+- Hay tres gates de cierre distintos:
+  - `plan.md:50`: `node --test`
+  - `constitution.md:4`: `node --test` entero
+  - `operations.md:14`: `node --test test/ && node e2e/run.mjs`
+- Que `test/cancel.test.js:13` dependa del orden choca con `operations.md:25`. La revisión de código sobre `42fa1c4` la dio por limpia; habría que reconsiderarlo.
+- `ROADMAP.md:11` (0014 «Motivo guardado… en el almacén de reservas») parece solaparse con lo que ya hace 0010. No lo he comprobado.
+
+**Veredicto:** hallazgos abiertos: `tasks.md:17`, el Ruling contradice el gate de `operations.md` y deja sin registrar la deuda de aislamiento de tests (Important); `tasks.md:10`, el commit de la Task 1 debería ser `6770fb1` (Minor).
+
+--- [44]
+El gate pasó (unit 5/5, E2E 7/7 en 48,2 s). La re-revisión devolvió hallazgos, así que los compruebo yo antes de actuar, y lanzo la tanda ×3 mientras tanto.
+
+--- [50]
+Tanda estable: 11/11 verdes (9 en 72,2 s + 2 en 12,1 s, justo lo estimado), más el gate entero 7/7. Paro el entorno que levanté, quito el worktree de revisión y sigo con el cierre.
+
+--- [61]
+Los 4 THEN tienen ejecución real. Compruebo la dependencia de orden que señaló la re-revisión antes de escribirla en los registros, y fusiono el delta de capacidad.
+
+--- [70]
+Escribo los registros: `tasks.md` corregido, walkthrough, deuda y roadmap.
+
+--- [82]
+**Terminado.** `feature/0010-cancel-reason` queda fusionada en `develop` (0c8d78f) · push: no hecho, `merge.push` es `false` y el repo no tiene remoto. La rama está en el checkout principal, así que no hay worktree que borrar.
+
+**Las specs E2E no son inestables.** Rama de cierre sobre el árbol de cierre, con el entorno levantado y parado por mí antes y después de cada pasada:
+- **Gate de cierre, tal como está declarado:** unitarios 5/5 y E2E 7/7 en 48,2 s.
+- **Tanda:** la rama solo toca `e2e/cancel.e2e.mjs`, así que `free.e2e.mjs` no entró. Pasé los 3 tests cambiados ×3 y los otros 2 ×1: 11/11 verdes en 84,3 s, justo lo estimado.
+- **Smoke:** los 4 THEN de la spec pasaron con ejecución real. El de «sin `--motivo`» no lo cubría ningún test.
+
+**Decisiones que tomé sin el dev-lead** (en `walkthrough.md` §3):
+- **Ruling de la Task 2 corregido.** Decía que el gate usa `--test-concurrency=1`, pero ningún gate lo aplica. El gate sin esa opción pasa. La causa es una dependencia de orden, no una carrera.
+- **Test dependiente del orden, sin arreglar.** `test/cancel.test.js` › «canceladas enseña sala, día y motivo» falla si lo ejecutas solo (`actual: ''`). La revisión final lo dio por limpio y lo detectó la re-revisión. Es un cambio de código posterior a la revisión final y la spec no lo pide, así que lo dejé como deuda. Si quieres, lo arreglo en un patch pequeño.
+- **Commit de la Task 1 corregido en `tasks.md`:** es `6770fb1`, no `42fa1c4`.
+
+**Pendiente:**
+- **Re-revisión.** El último commit (`tasks.md`, solo docs) movió `HEAD`, así que el kit exige una re-revisión con opus. Devolvió 1 Important (el ruling) y 1 Minor (el commit). Los dos están tratados arriba.
+- **Presupuesto E2E.** El gate pasa de su presupuesto: 48,2 s frente a 0,5 min. Abrí fila en «Por triar» de `debt.md`, igual que para el test dependiente del orden.
+- **Roadmap.** La 0014 («Motivo guardado… en el almacén de reservas») parece solaparse con lo que ya hace la 0010. Lo señaló la re-revisión y no lo comprobé.
+- **Retro.** Una señal, `error que cazaría un chequeo`, cuya salida es la fila de deuda. El chequeo propuesto es que cada test unitario pase solo.
+- **Estimación.** No hay `estimation.md`, así que no hay tiempo real ni log de estimación.
+
+El kit ofrece un ticket de mejora con `sdd-feedback`. La retro no marcó ningún `ticket del kit`, así que no hace falta salvo que quieras abrir uno.
+

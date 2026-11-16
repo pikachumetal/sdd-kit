@@ -1,0 +1,28 @@
+--- [2]
+Phase 1: primero leo la deuda del proyecto y reproduzco el fallo.
+
+--- [5]
+## Causa raíz
+
+`scripts/informe.mjs:3` hace `writeFileSync('.cache/informes/ocupacion.csv', …)` sin crear antes el directorio. `writeFileSync` no crea carpetas intermedias, así que si `.cache/informes/` no existe, falla con ENOENT.
+
+## Evidencia
+
+- Reproduje el fallo. El error es `ENOENT … open '…\repo\.cache\informes\ocupacion.csv'`, con `syscall: 'open'`. Es el `open` del fichero, no un problema de ruta del script.
+- `.cache` no existe en el repo (`ls .cache` da "No such file or directory").
+- El script tiene una sola línea de lógica y ningún `mkdirSync`. Nada más crea esa carpeta.
+- No hay `.gitignore`, y `.cache` no se versiona. Por eso un clon, un worktree nuevo o un `git clean` dejan el repo sin la carpeta.
+- Los dos tickets de `docs/tickets/` lo confirman. Ocurre "tras limpiar el repo" y "en un worktree recién creado", y en ambos casos lo resolvió recrear la carpeta a mano.
+
+## Deuda existente
+
+La fila "El listado de ocupación no sale tras limpiar el repo" de `.docs/sdd/steering/debt.md` cubre este síntoma. Su remedio temporal es recrear la carpeta de la caché. Eso no es la causa raíz, así que la fila sigue abierta.
+
+Esa fila atribuye la causa a "herramienta del kit". Los datos que tengo la contradicen: el fallo está en el script del propio proyecto (`scripts/informe.mjs`), no en el kit. Conviene corregir esa clasificación cuando se triaje.
+
+## Qué no he hecho
+
+No he tocado nada, como pediste. Cuando quieras arreglarlo, el cambio entra por `sdd-propose`. Sería crear el directorio antes de escribir, por ejemplo con `mkdirSync('.cache/informes', { recursive: true })`, y añadir un test que falle antes del cambio.
+
+Aviso: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja.
+

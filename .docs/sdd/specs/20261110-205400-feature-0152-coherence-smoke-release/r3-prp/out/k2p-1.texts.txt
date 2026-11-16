@@ -1,0 +1,260 @@
+--- [3]
+Ahora: leo la referencia del plan y la spec aprobada. Queda: escribir `plan.md` y dejar el commit de apertura.
+
+--- [19]
+Estoy escribiendo el plan del spike 0031 (`plan.md`) y su registro `tasks.md` junto a la spec. Después hago el commit de apertura y paso a `sdd-implement`.
+
+--- [23]
+Nada se escribió. Uso la herramienta Write.
+
+--- [29]
+Plan y tasks escritos. Ahora junto la apertura (spec, plan y tasks) en un solo commit, tras comprobar las guardas.
+
+--- [31]
+Opening hecho. Paso a `sdd-implement`: en `delegate` el plan no es una parada.
+
+--- [34]
+Ahora: invoco el método Native del plan. Queda: las 2 tasks y la revisión final, ~30 min.
+
+--- [37]
+Ahora: preparo el espacio de trabajo y cargo `sdd-tdd`. Queda: las 2 tasks y la revisión final.
+
+--- [41]
+Uso `sdd-worktrees`. Compruebo el aislamiento, el entorno y la línea base.
+
+--- [51]
+Ledger listo y fuera de git. Ahora: Task 1, `task start`.
+
+--- [54]
+Sin cambios en `develop` respecto a la base. Spike: la evidencia sustituye a los tests RED. Escribo el script.
+
+--- [59]
+Medido: máximo 0,006 ms, con las 1.000 activas sembradas. Apunto en el ledger un matiz para `research.md`. Después, commit de la task y `task done`.
+
+--- [65]
+Task 1 cerrada. Ahora: Task 2, `research.md`.
+
+--- [70]
+Las dos tasks están cerradas y la rama está limpia. Ahora: la revisión final de la rama con `sdd-verify`.
+
+--- [73]
+Spike: solo sale el eje Spec. Leo el encargo y el brief del revisor.
+
+--- [76]
+Preparo el worktree de revisión, el paquete y los índices para el brief del eje Spec.
+
+--- [79]
+Paquete de 12 líneas: producción no cambia. Despacho el eje Spec en segundo plano y su vigilancia de silencio.
+
+--- [98]
+El eje Spec sigue revisando en segundo plano, con su vigilancia de silencio. Cuando vuelva, clasifico los hallazgos y sigo con el cierre. Hasta entonces no hay nada más que hacer en la rama.
+
+Estado hasta ahora:
+- **Plan y apertura**: `plan.md` y `tasks.md` están escritos y la apertura es un solo commit (`14adc3e`), con el spec ya aprobado.
+- **Task 1**: `medir-libres.mjs` siembra las 1.000 reservas activas en `10:00-12:00` y mide. Máximo de 10 repeticiones: 0,006 ms, frente al umbral de 50 ms.
+- **Task 2**: `research.md` marca O1 como `cumple` y recomienda no abrir caché. También dice que la medida no recorre la lista entera, porque `some()` corta en la primera reserva de cada sala.
+- **Producción**: `src/` y `test/` no cambian.
+- **Gate de cierre**: en la línea base dio 4 de 4 en verde y lint limpio. Lo vuelvo a pasar después de la revisión.
+
+--- [106]
+### Strengths
+
+- La evidencia coincide con `research.md` línea a línea. Las 10 repeticiones (tiempo y `heapUsed`), el máximo `0.006 ms` y `node: v26.10.0` de `medidas-libres.txt` están todos en `research.md` §2 y §3. «Unas 8.000 veces» también es correcto (50 / 0,006 ≈ 8.333).
+- La fila O1 cumple las reglas: está marcada `cumple`, la cifra medida queda por debajo del umbral, compara el máximo y no la media (decisión 5 del plan) y tiene fichero de evidencia.
+- §3 tiene 10 repeticiones seguidas después de 5 de calentamiento y dice algo sobre el recurso.
+- §4 reconoce lo que no se midió. Marca `no medido` el recorrido completo de `some()` y no lo da por bueno.
+- El script cumple las restricciones: no usa dependencias, no tiene comentarios y sus mensajes de salida están en castellano. El paquete de revisión no muestra cambios fuera de la carpeta de la spec, así que `src/` y `test/` quedan intactos.
+- **Review Focus, verificado yo mismo.** Copié el script a un directorio scratch con un `src/app.js` cuya línea es `let bookings = ...`, para que la siembra no pueda sustituirla. El script sale con `exit=1`, deja stdout vacío y escribe en stderr `siembra fallida: 0 activas, 0 en 10:00-12:00, se esperaban 1000`. Por tanto no mide y no deja una salida que parezca una medida. El camino feliz lo confirma la línea literal `medidas-libres.txt:1`. El ruling del ledger sobre stdout y stderr se sostiene.
+
+### Issues
+
+#### Critical (Must Fix)
+
+Ninguno.
+
+#### Important (Should Fix)
+
+1. **La medida usa el reparto más favorable de la peor carga, y `research.md` culpa de ello a la carga que confirmó el dev-lead.**
+   - **Dónde:** `medir-libres.mjs:14` (`room: i % 2 === 0 ? 'Norte' : 'Sur'`) y `research.md:46`.
+   - **Qué pasa:** `freeRooms` (`src/app.js:6`) hace un `some()` por sala. Como el índice 0 es `Norte` y el 1 es `Sur`, cada `some()` corta en el primer o segundo elemento. Lo que se mide son unas 3 comparaciones, no 1.000. `research.md:46` dice «Con la carga confirmada, en la que todas están en la misma franja, corta casi de inmediato», y eso es falso. La spec solo fija «1.000 activas en la misma franja», y la decisión 4 del plan deja abierto el reparto. Dentro de esa misma carga existe un reparto que recorre la lista entera: todas en `Norte`. Así `Sur` recorre las 1.000 reservas sin encontrar ninguna. El corte inmediato lo provoca la decisión 4, no la carga confirmada.
+   - **Por qué importa:** un spike existe para medir la peor carga, y el texto atribuye al dev-lead una limitación que eligió el plan. El margen de «unas 8.000 veces» de §4 sale de ese camino trivial.
+   - **Medida mía, no comprometida:** en scratch, con todas en `Norte` y el mismo script, el máximo fue `0.018 ms` (Node v26.10.0). O1 seguiría cumpliéndose y la recomendación no cambiaría, pero esa cifra no está en la rama.
+   - **Cómo arreglarlo:**
+     - En el script, sembrar todas en `Norte` o poner las de `Sur` al final. Sigue siendo la carga de la spec.
+     - Regenerar `medidas-libres.txt`.
+     - Actualizar §2, §3 y el margen de §4.
+     - Reescribir el párrafo «Qué no dice la medida» para que el corte se atribuya al reparto, o quitarlo si ya se recorre la lista.
+   - **Gap:** `partial`, porque O1 se mide pero no con el peor caso de la carga.
+   - **Origen:** la «Peor carga» de la spec y la decisión 4 del plan. Pido revisar el ruling del ledger de la Task 1 (`progress.md:14`): el ejecutor vio el corte de `some()` y lo dejó en una nota, cuando podía medir el recorrido completo sin coste y sin salirse de la carga confirmada.
+
+2. **La evidencia de O1 se tomó en Node v26.10.0, pero el runtime del proyecto es Node 22.**
+   - **Dónde:** `medidas-libres.txt:2` y `research.md:20`.
+   - **Qué pasa:** `architecture.md:5` y las restricciones de código fijan Node 22, y la medida se hizo en Node 26. `research.md` anota la versión pero no dice que no es la del proyecto. Una medida de microsegundos depende del motor V8.
+   - **Por qué importa:** la decisión («¿caché antes de abrirlo a la oficina?») es para el runtime en el que se va a desplegar. El brief clasifica romper la restricción «Node 22» como Important. En la práctica, el margen hace muy improbable que cambie el veredicto.
+   - **Cómo arreglarlo:** repetir la medida con Node 22, o declarar la desviación en §2 y §3 y explicar por qué no afecta.
+   - **Gap:** `contradicts`.
+   - **Origen:** restricción de código «Node 22» (`architecture.md`).
+
+#### Minor (Nice to Have)
+
+1. **Afirmación sobre el `heapUsed`.** `research.md:39` dice «El `heapUsed` sube de 5,5 a 6,1 MB», pero la repetición 6 baja a 5.543.344, lo que apunta a una recolección entre medias. Además, el `heapUsed` se lee mientras se construye la línea de `console.log`, así que incluye lo que reserva esa misma impresión. Conviene describir que la subida no es monótona (la caída de la 6) y que el recurso no aísla `libres`. Gap: `partial`. Origen: la regla de §3 Aguante, que pide decir si el recurso crece.
+2. **La condición de §5 contradice el código.** `research.md:50` habla de medir «si la oficina acumula histórico». Pero `cancelBooking` y `voidBooking` (`src/app.js:16,23`) solo cambian `status` y nunca borran, así que la lista siempre crece. La condición «si» no se sostiene, y la fila «si el dev-lead lo pide» debería ser un aviso explícito al dev-lead: su «esa es la peor, sí» no es la peor carga para este código. Las peores son las reservas de otras franjas, o canceladas, que van delante de la que coincide. Gap: `partial`. Origen: «Decisión que desbloquea» («antes de abrirlo a toda la oficina»). Es un problema del plan y la spec más que de la implementación.
+3. **`tasks.md` sin actualizar.** En `tasks.md:22` la Task 2 está en `done` con Commit `—`, y los checkboxes de «Verificación por task» (`tasks.md:26-27`) siguen sin marcar, aunque el ledger da ambas tasks por `complete`. Es contabilidad del registro vivo. Gap: `partial`. Origen: el proceso del plan.
+4. **Medidas en el límite de resolución.** Una sola llamada por repetición ronda 2–6 µs, que está cerca de la resolución útil de `performance.now()` impresa con 3 decimales. Para la decisión no importa, por el margen. Si se rehace la medida (Important 1), se puede cronometrar un lote de N llamadas por repetición y dividir. Gap: `partial`. Origen: la decisión 5 del plan.
+
+### Declined to judge
+
+- `plan.md` sigue con `status: draft` en el frontmatter con el spike ya implementado. Es metadato del ciclo, que cierra `sdd-archive`.
+- La spec dice «cargadas con `seed`» y `seed` no existe en el repo. El ledger lo resuelve con un ruling (seed = la función del script) y lo acepto: producción no cambia y el texto del script lo refleja.
+- El script cuenta `"status":"active"` y `"slot":"..."` sobre el texto sustituido, por separado, en lugar de contar en el array sembrado como dice el paso 1 de la Task 1. Con la siembra actual es equivalente y la verificación del Review Focus pasa, así que no lo trato como desviación.
+- Si `bookings` se escribiera en varias líneas, el regex sustituiría solo la primera y el `import` fallaría por sintaxis. El proceso acabaría con un error no capturado y no con el `exit(1)` controlado. Queda fuera de la spec: el `src/app.js` actual tiene una sola línea y el resultado es igualmente no medir.
+- La calidad del código del script (nombres, estructura) es del eje Código, que en un spike no corre.
+
+### Not verified
+
+- **Que `src/` y `test/` no se tocaron, comprobado solo en el paquete.** Lo tomo del paquete de revisión («Files changed» vacío fuera de la carpeta de la spec). Por instrucción no rehice el diff con git.
+- **Gate de la Task 2** (`node --test` → `fail 0` y `lint: sin hallazgos`). Por instrucción no ejecuté la suite ni el lint. Solo tengo la línea del ledger.
+- **Reproducibilidad en Node 22.** No hay Node 22 en este entorno (el local es v26.10.0).
+- **Mi medida de 0.018 ms con todas en `Norte`.** Sale de una copia en scratch (`D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\rev0031`), fuera de la rama. Es una orientación, no evidencia del spike.
+
+### Recommendations
+
+- Arreglar el Important 1 dentro de la carga confirmada (todas en una sala, o la otra sala al final) y regenerar `medidas-libres.txt`. Es el cambio más barato y hace que el spike mida de verdad lo que pregunta la spec.
+- Repetir la medida con Node 22 (Important 2) o declarar la desviación.
+- Comprobación pesada que falta y que recomiendo al hilo principal: una medida con N reservas de otras franjas y canceladas delante de la que coincide (por ejemplo 10.000 o 100.000). Es el caso real de «abrir a toda la oficina», porque el código nunca borra reservas. Puede quedar como fila del roadmap, pero propuesta al dev-lead de forma explícita y no condicionada.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** La evidencia es honesta y coincide con `research.md`, y el Review Focus funciona (lo verifiqué ejecutándolo). Pero la medida usa el reparto que hace trivial `some()`, `research.md` atribuye ese corte a la carga que confirmó el dev-lead, y se midió en Node 26 en lugar de Node 22. Con el reparto peor, O1 casi seguro se cumple (0,018 ms en mi scratch), así que la recomendación probablemente no cambia, pero la cifra y su justificación deben salir de la peor carga y del runtime del proyecto.
+
+Ficheros relevantes:
+- `<run>\review-0031-07da5c8\.docs\sdd\specs\20261015-110000-feature-0031-free-rooms-load\medir-libres.mjs`
+- `<run>\review-0031-07da5c8\.docs\sdd\specs\20261015-110000-feature-0031-free-rooms-load\research.md`
+- `<run>\review-0031-07da5c8\.docs\sdd\specs\20261015-110000-feature-0031-free-rooms-load\medidas-libres.txt`
+- `<run>\review-0031-07da5c8\.docs\sdd\specs\20261015-110000-feature-0031-free-rooms-load\tasks.md`
+- `<run>\review-0031-07da5c8\src\app.js`
+- `<run>\repo\.temp\sdd\plan\progress.md`
+
+--- [108]
+Re-gradúo por efecto. El Important 1 es real: con el reparto alterno el `some()` corta enseguida, y `research.md` culpaba de ello a la carga confirmada. Lo corrijo dentro de la misma carga, con las 1.000 en `Norte`, de modo que `Sur` recorre la lista entera. El Important 2 no se puede repetir, porque aquí no hay Node 22, así que lo declaro. Los Minor van al ledger, porque `review.minors` no está en `fix`. Una sola pasada.
+
+--- [111]
+Medida con el peor reparto: máximo 0,019 ms. En esta máquina no hay Node 22 y no instalo toolchains por mi cuenta, así que lo declaro. Actualizo `research.md` y la decisión 4 del plan.
+
+--- [115]
+El vigilante terminó con normalidad. Commiteo la pasada de fix y quito el worktree de revisión.
+
+--- [118]
+Actualizo `tasks.md` con la revisión final, la pasada de fix y los rulings. Queda sin commitear, para el commit de cierre.
+
+--- [122]
+La revisión final está cerrada. Paso a `sdd-archive`. Dejo el workspace del plan hasta que salga la única re-revisión de la pasada de fix.
+
+--- [125]
+Ahora: compruebo el estado previo al cierre y leo las referencias de `sdd-archive`. Queda: re-revisión, validación por el agente, records, merge. Eso son unos 15 min.
+
+--- [131]
+Preparo el paquete del rango `07da5c8..HEAD`, el informe de la pasada de fix y despacho la re-revisión.
+
+--- [137]
+La re-revisión está en marcha en segundo plano. Mientras tanto, leo las referencias del cierre: suite, records y merge.
+
+--- [145]
+La rama solo toca `.docs/`, así que el gate no es obligatorio aquí. Lo corro igualmente al final. Mientras sale la re-revisión, saco el tiempo real y las tokens.
+
+--- [152]
+La re-revisión sigue en marcha. Espero a su informe para cerrar los records con las tokens definitivas.
+
+--- [167]
+**Important 1: la medida usaba el reparto más favorable (Norte/Sur alterno), así que `some()` cortaba enseguida.** ADDRESSED.
+- `medir-libres.mjs:14` ahora siembra `room: 'Norte'` en las 1.000 reservas. Con eso, `freeRooms` (`src/app.js:6`) recorre la lista entera al comprobar `Sur`. Es la peor carga posible dentro de la que fija la spec: con todas activas en la misma franja, ningún reparto pasa de unas 1.001 iteraciones.
+- `medidas-libres.txt` está regenerado: la línea 2 es `reparto: 1000 en Norte, ninguna en Sur` y el máximo es 0.019 ms.
+- En `research.md`:
+  - La fila O1 de §2 (`:20`) dice 0,019 ms.
+  - §3 declara el reparto (`:24`). Sus 10 repeticiones (`:30-39`) coinciden línea a línea con `medidas-libres.txt:4-13`, en tiempos y en `heapUsed`. El texto dice si el tiempo y el recurso crecen (`:41`).
+  - En §4, el margen pasa a «unas 2.600 veces» (`:46`); 50 / 0,019 ≈ 2.632, así que es correcto. El párrafo «Qué no dice la medida» está reescrito y ya no atribuye el corte de `some()` a la carga confirmada (`:48`).
+  - §5 deja la medida pendiente como fila de roadmap y no deja código de producción (`:52`).
+- `plan.md:17` (decisión 4) está actualizado.
+
+**Important 2: O1 se midió en Node v26.10.0 y el proyecto fija Node 22.** ADDRESSED, por la vía de declarar la desviación.
+- `research.md:20` (fila O1 de §2) dice «con Node v26.10.0, no Node 22 (ver §3)».
+- `research.md:26` (§3) explica que no había Node 22 en la máquina y por qué no afecta: el margen sobre el umbral es de unas 2.600 veces.
+- El ruling está en el ledger, en `tasks.md:40` (fichero sin commitear en `repo`, como se esperaba).
+- La plantilla de research no exige otro estado para una desviación de runtime, así que `cumple` sigue siendo válido.
+
+### New Breakage in the Fix Diff
+- **Minor: el plan quedó incoherente consigo mismo.** El fix solo actualizó la decisión 4. `plan.md:125` (Task 1, Step 1) sigue diciendo «`Norte` los índices pares, `Sur` los impares». Además, `plan.md:121` («Produce … en este orden») no recoge la nueva línea `reparto:`, que ahora va entre `sembradas:` y `node:`. La «Verificación» de `plan.md:116` sigue pasando, porque solo comprueba que estén `sembradas:` y `repeticiones medidas: 10`.
+- **Minor: `research.md:41` contradice la tabla.** Dice que `heapUsed` «baja en las repeticiones 5, 9 y 10», pero según `medidas-libres.txt` baja en la 2 (5.781.464 → 5.531.416), la 5 y la 9. En la 10 sube (5.599.472 → 5.601.728). La conclusión de que no hay tendencia al alza no cambia.
+- **Minor: `research.md:48` afirma algo que el código no respalda.** El texto dice «así que la lista crece con el uso». Es verdad que las canceladas no se borran, pero `src/app.js` no tiene ningún camino que añada reservas: `reservar` devuelve un literal (`:29`) y `bookings` vive en memoria por proceso. No afecta a O1 ni a la recomendación.
+- **Minor: la línea `reparto:` es un literal sin comprobar.** `medir-libres.mjs:40` la imprime a partir de un texto fijo; `seed()` (`:24-29`) solo comprueba las activas y las de la franja, no la sala. Hoy es cierta porque `:14` es constante.
+
+### Out-of-Scope Observations
+- `research.md:26` usa «Runtime», un anglicismo, en un documento que debe ir en castellano. Es cosmético y se puede cambiar por «Entorno de ejecución».
+
+### Verdict
+**Fix round:** Los dos hallazgos están resueltos y el fix no introduce nada Critical ni Important; solo deja los cuatro Minor de arriba. `src/` y `test/` no se tocan: el diff solo cambia 4 ficheros, todos en la carpeta de la spec.
+
+--- [169]
+La re-revisión sale limpia: los dos hallazgos quedan resueltos y no hay Critical ni Important nuevos. Los 4 Minor son errores de texto en mis propios documentos, de menos de 20 líneas, así que los corrijo en el hilo y lo anoto. Quito el worktree y actualizo el registro.
+
+--- [173]
+Documentos corregidos. Ahora: records del cierre. Leo la referencia de aprendizajes, el walkthrough de ejemplo y la deuda.
+
+--- [176]
+El vigilante terminó con normalidad. Saco las medidas definitivas de tiempo y tokens, con la re-revisión ya incluida.
+
+--- [179]
+Los tiempos están medidos. Ahora corro el gate de cierre sobre el árbol que se va a fusionar y guardo la salida, para la verificación del walkthrough.
+
+--- [182]
+Gate verde sobre `HEAD`: 4 de 4 y lint limpio. Una re-ejecución independiente del script dio un máximo de 0,020 ms, coherente con los 0,019 ms registrados. Escribo el walkthrough.
+
+--- [185]
+Ahora: la retro del cierre, que deja su línea `Retro:` en el §5 del walkthrough.
+
+--- [191]
+Los records de capacidades y ADR no aplican a un spike (la spec no declara ninguna). Compruebo los validadores y añado la fila 0031 al roadmap, que no la tenía.
+
+--- [197]
+No hay shas del rango citados, ni merges, ni commits publicados. Junto el cierre en un solo commit desde el último de las tasks.
+
+--- [200]
+Historial en 2 + N commits. Ahora: integro la base con `sdd merge --sync`.
+
+--- [205]
+🦆 En llano: el spike midió que `libres` con 1.000 reservas activas en la misma franja responde en 0,019 ms. El umbral era 50 ms, y la recomendación es no abrir una caché por esta carga.
+
+**No terminado.** Falta el merge: `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y sin ellos ni `--sync` ni el merge corren. La rama `feature/0031-free-rooms-load` está cerrada y limpia, con 4 commits sobre la base (`0d49b8e` es el de cierre). No borres todavía este directorio de trabajo.
+
+Para desbloquearlo, dime a qué rama fusiono (¿`develop`?) y si va con `--no-ff`. Con eso completo `merge` en `sdd-kit.json` y lo fusiono.
+
+## Qué se hizo
+
+- **Plan**: 2 tasks, ejecutadas en Native. Un script de medida y `research.md`.
+- **Medida**: máximo de 10 repeticiones seguidas (tras 5 de calentamiento) con las 1.000 reservas en `Norte`. Así `Sur` recorre la lista entera.
+- **Producción**: `src/` y `test/` no cambian.
+- **Gate de cierre** (`node --test && node scripts/lint.mjs`): 4 de 4 en verde y lint limpio, sobre el árbol que se fusiona.
+- **Revisión final**: el eje Spec encontró 2 hallazgos importantes. La re-revisión posterior salió limpia. En un spike solo sale ese eje.
+- **Roadmap**: la fila 0031 no existía y la añadí en Now con ✅.
+- **Validación**: por el agente, porque la spec dice «son medidas».
+
+## ✋ Me salí del plan en…
+
+- **Siembra**: `seed` no existía. Es una función del script que sustituye la línea de `bookings` en una copia del módulo, sin tocar producción.
+- **Reparto de la carga**: mi primer reparto (500 en `Norte`, 500 en `Sur`) hacía que `some()` cortara enseguida. El revisor lo cazó y lo corregí con las 1.000 en `Norte`. La cifra actual es la de ese peor caso.
+- **Node 26 en vez de 22**: la medida se hizo en Node v26.10.0 y el proyecto fija Node 22. No había Node 22 en la máquina ni instalé nada por mi cuenta, así que está declarado en `research.md`. Por el margen (unas 2.600 veces), el veredicto solo cambiaría si Node 22 fuera tan lento.
+- **Textos corregidos en el hilo**: corregí 5 líneas de documentación por menores de la re-revisión, y lo anoté como revisado en el hilo.
+- **Menores diferidos**: 3 quedan sin corregir. `heapUsed` se lee mientras se imprime, una sola llamada por repetición ronda la resolución del reloj y la línea `reparto:` del script es un literal.
+
+## Lo que no se midió
+
+Listas mayores, reservas de otras franjas o canceladas delante de la que coincide. Como `cancelar` y `anular` no borran reservas, la lista solo crece. Queda como fila de roadmap por abrir si lo pides.
+
+## Otros puntos
+
+- **Retro**: sin señales.
+- **Tiempo real**: 0,16 h frente a 1,5 h estimadas. La causa de la desviación está sin medir.
+- **Ticket del kit**: no hay señales que lo pidan. Si quieres el feedback de mejora, dímelo y lanzo `sdd-feedback`.
+

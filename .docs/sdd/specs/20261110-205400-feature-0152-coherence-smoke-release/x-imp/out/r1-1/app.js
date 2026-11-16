@@ -1,0 +1,70 @@
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const weekDays = ['lun', 'mar', 'mié', 'jue', 'vie'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled', reason: 'sala ocupada' },
+];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  return index === -1 ? undefined : params[index + 1];
+}
+
+export function cancelBooking(room, day, reason) {
+  if (!reasons.includes(reason)) return `motivo no válido: ${reasons.join(', ')}`;
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'cancelled';
+  booking.reason = reason;
+  return `cancelada ${room} ${day} (${reason})`;
+}
+
+export function voidBooking(room, day) {
+  const booking = bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.status = 'voided';
+  return `anulada ${room} ${day}`;
+}
+
+function cancelledByRoom() {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled');
+  const byWeekDay = (a, b) => weekDays.indexOf(a.day) - weekDays.indexOf(b.day);
+  return [...new Set(cancelled.map((b) => b.room))].sort().map((room) => ({
+    room,
+    bookings: cancelled.filter((b) => b.room === room).sort(byWeekDay),
+  }));
+}
+
+function cancelledReport() {
+  const groups = cancelledByRoom();
+  if (groups.length === 0) return 'sin canceladas';
+  const lines = groups.flatMap(({ room, bookings: list }) => [
+    `${room}: ${list.length} canceladas`,
+    ...list.map((b) => `  ${b.day} ${b.slot} — ${b.reason}`),
+  ]);
+  const total = groups.reduce((sum, g) => sum + g.bookings.length, 0);
+  return [...lines, `Total: ${total} canceladas`].join('\n');
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return cancelBooking(params[0], params[1], reasonOf(params));
+  if (cmd === 'anular') return voidBooking(params[0], params[1]);
+  if (cmd === 'informe') return cancelledReport();
+  return 'salas';
+}
+
+if (command) console.log(run(command, args));

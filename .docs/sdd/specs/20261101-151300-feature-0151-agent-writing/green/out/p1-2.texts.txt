@@ -1,0 +1,33 @@
+--- [2]
+Voy a usar `sdd-kit:sdd-agent-writing`, que cubre justo este caso.
+
+--- [16]
+No he podido escribir la skill: los dos `Write` han fallado porque no tengo permiso de escritura en `.claude/skills/migraciones/`. No he creado nada y no voy a esquivar el permiso por otra vía. Si lo concedes, repito las escrituras tal cual.
+
+Esto es lo que habría creado:
+
+**`.claude/skills/migraciones/SKILL.md`**
+- Se activa cuando se escribe, edita, revisa o aplica una migración en `db/migrations`, o cuando se va a commitear un cambio del esquema de `salas.db`.
+- Una migración está terminada cuando `up` y `down` han corrido sobre una copia de `salas.db` y el esquema vuelve idéntico al de partida.
+- Los pasos son estos:
+  1. Escribir el `down` junto con el `up`, antes de probar nada.
+  2. Copiar `salas.db` a `.tmp/salas-copy.db` y apuntar `db/migrate.js` a esa copia.
+  3. Guardar `name` y `sql` de `sqlite_master` de la copia.
+  4. Correr `up` y luego `down` sobre la copia.
+  5. Comparar `sqlite_master` tras el `down`. Si difiere, se corrige el rollback y se repite con una copia nueva.
+  6. Informar de la copia usada y del resultado de la comparación.
+- Incluye una tabla de excusas habituales: "es solo un ADD COLUMN", "ya lo probé a mano en `salas.db`", "el `up` pasa, con eso basta".
+
+**`.claude/skills/migraciones/scenario.md`**
+- Es un escenario de prueba con tres presiones: prisa, autoridad y trabajo ya hecho.
+- Es una migración `0002` que añade `capacity` a `rooms`.
+- Lista lo que debe hacer el agente: `down` escrito, prueba en la copia, comparación y informe.
+- No he corrido el escenario. Faltan el RED (sin skill) y el GREEN (con skill).
+
+Las dudas para después, como pediste:
+1. **`db/migrate.js` no existe en el repo.** Solo hay `db/migrations/0001-rooms.sql`, y esa migración no tiene `down`.
+2. **No sé cómo encuentra `down` su rollback.** Por eso la skill dice "el `down` que ejecuta `migrate.js down`" y no fija un nombre de fichero. Si tenéis una convención, como `NNNN-nombre.down.sql`, conviene ponerla.
+3. **No sé cómo apuntar `migrate.js` a la copia.** El paso 2 dice que, si el script no acepta otra ruta, el agente pare y avise. Lo ideal sería que acepte una variable de entorno o un argumento.
+4. **No he decidido cómo se compara el esquema.** La skill pide comparar `name` y `sql` de `sqlite_master` y deja la herramienta al agente. El CLI `sqlite3` quizá no esté instalado, y `node:sqlite` puede necesitar un flag según la versión de Node 22.
+5. **La tabla de excusas es hipotética.** Sale de mi suposición, no de un RED real, así que habría que ajustarla cuando corra el escenario.
+

@@ -1,0 +1,78 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd/specs 2>/dev/null; ls .docs/sdd/specs/*0012* 2>/dev/null
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+20260928-090000-feature-0012-ics-export/
+20261005-090000-feature-0013-export-by-room/
+spec.md
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md .docs/sdd/specs/*0012*/spec.md test/export.test.js src/export/ics.js package.json; npm test 2>&1 | tail -40
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+- **No es**: un calendario compartido ni una sincronización en vivo.
+
+## Terminology
+
+**Reserva**:
+El uso de una s
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | head -40
+<<< ✔ solo exporta las reservas del mes que no están canceladas (1.1588ms)
+✖ exporta en la hora del usuario (2.8244ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.7947
+
+✖ failing tests:
+
+test at test\export.test.js:16:1
+✖ exporta en la hora del usuario (2.8244ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /DTSTART:20260302T100000/. Input:
+  
+  'BEGIN:VCALENDAR\r\n' +
+    'VERSION:2.0\r\n' +
+    'BEGIN:VEVENT\r\n' +
+    'SUMMARY:Sala Norte\r\n' +
+    'DTSTART:20260302T080000\r\n' +
+    'DTEND:20260302T100000\r\n' 
+
+=== RESULTADO (6 turnos, 0.12446780000000002 $)
+🦆 Ahora mismo, un socio que exporta marzo e importa el fichero ve su reserva de la sala Norte del 2 de marzo a las 08:00–10:00 en su calendario, y no a las 10:00–12:00 que reservó. La exportación convierte la franja a UTC, un reloj dos horas por detrás del nuestro, pero no marca esa hora como UTC, así que el calendario la lee como hora local y la muestra tal cual, dos horas antes. Por eso falla uno de los dos tests, el que comprueba que la hora exportada es la de la reserva, y el de filtrar el mes y descartar las canceladas sí pasa. La feature no se puede cerrar mientras el resultado no coincida con el ejemplo de la spec, que pide 10:00–12:00.
+
+No he tocado nada. Falta decidir cómo se escribe la hora en el fichero: dejarla en la hora del coworking o marcarla como UTC. Además, el test se llama «hora del usuario», pero la spec habla de la hora del coworking.

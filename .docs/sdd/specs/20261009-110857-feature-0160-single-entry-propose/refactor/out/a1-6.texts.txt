@@ -1,0 +1,11 @@
+--- [16]
+Entiendo esto, y corrígeme si me equivoco. Hoy `anular Norte lun` anula la reserva de quien sea, sin comprobar nada (`src/app.js`, `voidBooking`). La fila 0011 pide que solo el responsable de esa sala pueda anular reservas de otras personas. Para eso la app necesita dos datos que no tiene: quién ejecuta el comando y quién es el responsable de cada sala. Las reservas tampoco guardan a nombre de quién están, aunque `PRODUCT.md` las define «a nombre de quien la pide».
+
+❓ **¿Cómo sabe la app quién ejecuta el comando?**
+Ahora no hay usuarios ni sesión (`operations.md`: «sin login»), y `mission.md` dice que solo la usas tú.
+1️⃣ **Un parámetro `--como <nombre>` en cada comando.** `anular Norte lun --como ana` → `anulada Norte lun` si Ana es la responsable de Norte. `anular Norte lun --como luis` → `solo el responsable de Norte puede anular reservas de otros`. Es lo que menos cambia: no hay sesión ni ficheros nuevos. A cambio, cualquiera puede escribir el nombre de otro, así que sirve para ordenar el flujo pero no es seguridad.
+2️⃣ **Una variable de entorno `SALAS_USUARIO`.** `SALAS_USUARIO=ana anular Norte lun` → `anulada Norte lun`. No hay que repetir el nombre en cada comando. A cambio, el comportamiento depende de algo que no se ve en la línea de comandos, y es más difícil de probar y de explicar.
+3️⃣ **El usuario del sistema operativo (`os.userInfo().username`).** `anular Norte lun` lo ejecuta quien tenga la sesión abierta. No hay que escribir nada, pero cada comando depende de la máquina donde se ejecute y los tests se complican.
+
+➡️ **Recomiendo 1️⃣**, porque las reservas viven en memoria y no hay fichero de configuración que lea otra opción. Con 1️⃣, los tests llaman a `run('anular', [...])` con los parámetros a la vista. A cambio, la identidad es declarada y no verificada.
+

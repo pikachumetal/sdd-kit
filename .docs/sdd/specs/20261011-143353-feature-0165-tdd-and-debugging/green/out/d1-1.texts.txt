@@ -1,0 +1,49 @@
+--- [2]
+Uso `sdd-kit:sdd-propose` para clasificar este cambio, que es un fallo.
+
+--- [14]
+Reproducido: `cancelar Norte mar` responde "cancelada Norte mar" y deja la del lunes cancelada ("sin reserva Norte lun" después). Sigo: reservo id, rama y `patch.md`, luego test en rojo y fix.
+
+--- [20]
+RED por la razón correcta. Escribo `patch.md` (causa y estimación antes del fix) y aplico el fix.
+
+--- [22]
+Esa mezcla de heredocs se rompió; hago la edición con la herramienta.
+
+--- [29]
+El fix está hecho y commiteado (`0d7ef03`, en `feature/0012-cancel-day`), pero no puedo cerrar el patch hasta que lo valides tú. El proyecto no tiene `validation.mode: field`, así que hasta tu respuesta no toco `patch.md`, changelog, roadmap ni merge.
+
+## Qué ha pasado
+
+- **Causa raíz**: `findBooking(room, day)` en `src/app.js` recibía `day` pero no lo comparaba. Devolvía la primera reserva activa de la sala, así que `cancelar Norte mar` cancelaba la del lunes y contestaba con el día pedido.
+- **Fix**: una condición, `b.day === day`. Corrige también `anular`, que usaba la misma función.
+- **Alcance**: lo único que cambia de comportamiento es que dejan de tocar reservas de otro día. No cambia ningún texto ni ninguna otra regla.
+
+## Lo que he verificado yo
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `test/cancel-day.test.js` falla antes del fix con `cancelada Norte mar` | ✅ RED |
+| 2 | Tras el fix: `node --test` → 5/5, `node scripts/lint.mjs` → sin hallazgos | ✅ |
+
+## Guion de pruebas
+
+Cada comando se ejecuta en un proceso nuevo y las reservas viven en memoria, así que lo más cómodo es probarlo desde una sola sesión de Node:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar'])); console.log(run('anular',['Norte','mar'])); console.log(run('cancelar',['Norte','lun'])); console.log(run('cancelar',['Norte','lun']))"
+```
+
+1. `cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `anular Norte mar` → debe decir `sin reserva Norte mar`.
+3. `cancelar Norte lun` → debe decir `cancelada Norte lun`, porque la del lunes sigue activa.
+4. `cancelar Norte lun` otra vez → debe decir `sin reserva Norte lun`.
+
+## ¿Qué has probado?
+
+- **Validado**: lo he probado y funciona.
+- **Diferir**: lo pruebo en el próximo uso de `cancelar`, a cargo del dev-lead.
+- **No funciona**.
+
+Cuando respondas, cierro con `patch.md` finalizado, entrada `Fixed` en el changelog, fila en el roadmap, estimation-log y merge a `develop`.
+

@@ -1,0 +1,92 @@
+--- [3]
+Empiezo por los pre-checks y por leer las referencias de validación y suite.
+
+--- [21]
+Ya ensayé el guion contra el servidor y lo paré. Falta pasar los tests unitarios, que son rápidos, y te presento el guion.
+
+--- [25]
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` lista lo cancelado con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla cuando corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar … --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real (servidor, sesión propia) | cancelada Norte lun (sala ocupada) |
+| Un motivo fuera de la lista da «motivo no válido…» | ejecución real | motivo no válido: cambio de planes, sala ocupada, otro |
+| Sin `--motivo` da lo mismo | ejecución real | motivo no válido: cambio de planes, sala ocupada, otro |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real | Norte lun — sala ocupada |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre c3096b5, 0,2 s.
+- `node e2e/run.mjs` (el gate de cierre, E2E ~50 s) y la tanda ×3: no han corrido todavía. Corren tras tu respuesta (ver abajo).
+
+**Sin probar**
+
+- Nada del guion. La suite E2E completa queda para después de tu respuesta.
+
+**Sobre la tanda en segundo plano:** no la lanzo mientras pruebas. La suite E2E levanta el servidor del puerto 7815 y lo para al acabar. `env-up` incluso cierra el que esté escuchando. Si corriera a la vez, te tiraría el entorno a medio paso o escribiría en tu sesión. Para no hacerte esperar ahora, la lanzo en cuanto me contestes, sin que tengas que pedirlo.
+
+Esta es la tanda que lanzaré:
+```
+# Tanda: 3 tests nuevos de cancel.e2e.mjs ×3 + los otros 2 de ese fichero ×1 = 11 ejecuciones · ~9 min (6 s por paso, 1 worker)
+```
+`free.e2e.mjs` no lo toca la rama y no entra. La rama cambia solo `cancel.e2e.mjs`, contra `develop`.
+
+Panel: plan B en http://127.0.0.1:10548/
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2. Usa tu propia sesión (`x-session: validador`). La app guarda las reservas en memoria, por eso van por el servidor y no por la CLI suelta:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con motivo → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G -H "x-session: validador" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]" http://localhost:7815/run
+```
+
+2. Ver las canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -G -H "x-session: validador" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]" http://localhost:7815/run
+```
+
+3. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: validador" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"me aburro\"]" http://localhost:7815/run
+```
+
+4. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: validador" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]" http://localhost:7815/run
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

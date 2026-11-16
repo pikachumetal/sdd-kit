@@ -1,0 +1,156 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-feature-0160-single-entry-propose\5ddb54f8-9a77-4279-b3e7-30d014b485e9\scratchpad\kit-green\skills\sdd-start-feature\references\review-spec.md
+
+>>> Glob: .docs/sdd/specs/20261008-110000-feature-0011-void-others/*
+<<< 1	# Review de la spec — rúbrica de complejidad y revisor adversarial
+2	
+3	Se aplica en modo full, tras redactar `spec.md` y antes de presentarla en el gate. En modo lite no se aplica.
+4	
+5	## 1. Cuenta las señales (observables en la spec)
+6	
+7	| Señal | Se cumple si… |
+8	| --- | --- |
+9	| Capacidad nueva | «✋ Decisiones que he tomado yo» declara una capacidad nueva en `capabilities/` |
+10	| Contrato público | el delta toca una API, un formato de fichero o una interfaz que consume otro módulo o sistema |
+11	| `MODIFIED` / `REMOVED` | el delta cambia o quita un requisito existente |
+12	| Tres o 
+<<< .docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< 1	---
+2	id: 20261008-110000-feature-0011-void-others
+3	feature: 0011
+4	title: Anular reservas de otros
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Anular reservas de otros
+17	
+18	## Capacidades
+19	
+20	- Nuevas: `room-managers` — quién es responsable de cada sala.
+21	- Modificadas: `bookings` — anular una reserva de otra persona exige ser responsable de la sala.
+22	
+23	## Decisiones que he tomado yo — valida estas
+24	
+25	1. Capacidad 
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/roadmap.md; git ls-files | grep -v '^.docs' | head -30; grep -rniE "anular|managers" --include=* -l . 2>/dev/null | grep -v '^./.git/' | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un moti
+
+>>> Bash: cd "<run>/repo" && wc -l src/app.js && grep -niE "anular|cancel|data/|\.json|--" src/app.js | head -40; grep -niE "anular|cancel" README.md PRODUCT.md test/*.js | head -20
+<<< 35 src/app.js
+13:export function cancelBooking(room, day) {
+16:  booking.status = 'cancelled';
+17:  return `cancelada ${room} ${day}`;
+29:  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+30:  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);
+31:  if (cmd === 'anular') return voidBooking(params[0], params[1]);
+PRODUCT.md:9:- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+test/cancel.test.js:5:test('cancelar una reserva activa', () => {
+test/cancel.test.js:6:  assert.equal(run('cancelar', ['No
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Terminology
+6	
+7	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+8	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+9	- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+10	- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+11	
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261008-110000-feature-0011-void-others\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (14 turnos, 0.2781268 $)
+Estoy en la pasada de coherencia y en el nivel de review de la 0011. Aún no te presento la spec: en `delegate` la review se pregunta antes.
+
+**Pasada de coherencia.** He cambiado tres cosas en `spec.md`:
+- **Scope:** no nombraba `src/app.js` ni los tests, que es donde se implementa `anular`.
+- **Reservas sin dueño:** el código no guarda a nombre de quién está cada reserva, así que el escenario de «la reserva de Pedro» no se podía cumplir. Añado el campo `por`.
+- **Casos sin cubrir:** sin `--como`, sala sin responsable, y el dueño que intenta anular su propia reserva.
+
+Los cinco valores nuevos están en «Decisiones que he tomado yo», números 3 a 7. El 7 avisa de que `bookings` aún no existe en `capabilities/`, así que el MODIFIED va sobre el comportamiento que hoy solo vive en el código.
+
+**Señales: 4 de 8.** Capacidad nueva (`room-managers`), `MODIFIED` (`bookings`), datos (`data/managers.json`) y permiso (solo el responsable anula). No cuento contrato público: `--como` y el JSON los consume solo este CLI. Tampoco cuento área no explorada, porque ya he leído `src/app.js`, la constitution y `PRODUCT.md`.
+
+Con 4 señales tocarían dos revisores. El cambio son unas 35 líneas de código, un JSON y tests, menos de ~50, así que bajo un escalón.
+
+```text
+Review de spec propuesta: un revisor con los siete puntos — señales: capacidad nueva, MODIFIED, datos, permiso · tamaño: ~45 líneas en 4 ficheros
+- Dominio: qué NO puede hacer quien no es responsable de la sala, incluido el dueño de la reserva (decisión 6), y si «Sur no tiene responsable» (decisión 5) deja a Sur sin nadie que anule (señal: permiso)
+- Técnica: si el campo `por` (decisión 3) y `data/managers.json` necesitan migración o valor por defecto para la reserva ya existente, y qué pasa si falta el fichero (señal: datos)
+- Mínimo razonable: ninguna — deja sin mirar el hueco de permisos del dueño y de la sala sin responsable, el tipo de hueco que no se ve hasta que alguien anula lo que no debía
+```
+
+**¿Qué review lanzo?**
+- **Un revisor con Opus (recomendada):** la spec es de reglas de permiso por rol, y Opus es el que mejor caza el complemento de lo que no se debe poder hacer. Cuesta ~100k tokens.
+- **Un revisor con Sonnet:** más barato, con más riesgo de dejar pasar un hueco de permisos.
+- **Sin review:** ya he hecho la pasada de coherencia, pero nadie más relee la spec.
+
+Cuando elijas, lanzo la review (si hay) y te presento la spec con su 🦆 y las decisiones para aprobar.

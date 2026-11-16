@@ -1,0 +1,64 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [20]
+La tanda salió verde: 11 de 11 ejecuciones. Paro el servidor que levanté y leo el formato del mensaje de validación.
+
+--- [36]
+Lanzo la re-revisión del commit de solo documentación en segundo plano y corro el gate de cierre completo mientras tanto.
+
+--- [46]
+**Veredicto: con hallazgos.** Revisé `d61f3f4`, que solo añade `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, contra `spec.md`, `plan.md`, el historial y el código. Hay tres hallazgos Important y ninguno Critical ni Minor.
+
+**Important**
+
+1. **La fila de la Task 1 cita el commit equivocado (`tasks.md:10`).** Las dos filas citan `df31afb`, pero la Task 1 ("Cancelar con motivo") se hizo en `32c089b` (`feat(bookings): cancelar con un motivo de la lista`, que cambia `src/app.js` y `test/cancel.test.js`). `df31afb` es solo la Task 2 (listado de canceladas, que también toca `e2e/cancel.e2e.mjs`). Hay que poner `32c089b` en la fila 1.
+
+2. **El Ruling (`tasks.md:17`) no cuadra ni con el plan ni con el código.**
+   - Cambia el gate de cierre a `node --test --test-concurrency=1`, pero `plan.md` §3 sigue diciendo `node --test` y `package.json` sigue con `"test": "node --test test/"`. Nada más en el repositorio recoge el cambio, así que el plan y el registro dicen cosas distintas.
+   - La razón que da no se sostiene. `node --test` ejecuta cada fichero en su propio proceso, así que `app.test.js` y `cancel.test.js` no comparten el array `bookings` de `src/app.js`. Dentro de un mismo fichero, los tests de primer nivel ya van uno tras otro, y `--test-concurrency` solo cambia cuántos ficheros corren en paralelo. No hay ninguna carrera que esquivar.
+   - El acoplamiento real es de orden: en `test/cancel.test.js:13-15`, `canceladas` solo da `Norte lun — sala ocupada` si antes ha corrido el primer test. El flag no lo arregla.
+   - Además, el Ruling cuelga de la Task 2 aunque trata del gate final, que es de toda la feature.
+
+3. **"Spec … limpia" (`tasks.md:13`) pasa por alto un escenario sin test.** La spec (línea 54) pide que cancelar sin `--motivo` responda «motivo no válido: cambio de planes, sala ocupada, otro», y "Dónde se prueba" lo sitúa en `test/cancel.test.js`. Ni `test/cancel.test.js` ni `e2e/cancel.e2e.mjs` prueban ese caso. El código lo cumple (`reasons.includes(undefined)` da `false` en `src/app.js:20`), pero no hay test que lo demuestre, así que el eje de spec no debería marcarse como limpio.
+
+Lo demás es coherente: las dos tasks del plan coinciden con las dos filas, el "sobre df31afb" de la revisión final apunta al último commit de código, y los textos de interfaz que se ven en el rango están en castellano.
+
+--- [50]
+El servidor se cayó a mitad del gate (`ERR_CONNECTION_REFUSED`), así que sospecho del entorno y no del código. Lo levanto otra vez, compruebo que responde y repito la pasada completa.
+
+--- [56]
+No he cerrado la 0010 y no he escrito ningún registro. La re-revisión de `d61f3f4` ha devuelto tres hallazgos Important, así que la revisión no está limpia.
+
+**Specs E2E ×3**
+- La rama solo toca `e2e/cancel.e2e.mjs`. Los tres tests nuevos o cambiados corrieron ×3 y los otros dos del fichero ×1: 11 ejecuciones, 11 verdes.
+- No son inestables. El detalle está en `scratchpad/e2e-tanda-0010.txt`.
+- Esta tanda va fuera de las 4.1 del walkthrough: allí solo cuenta lo que ayude a cerrar.
+
+**Gate de cierre sobre `d61f3f4`**
+- La primera pasada falló. El servidor se cayó tras el test 3 y los otros cuatro dieron `ERR_CONNECTION_REFUSED`.
+- Levanté el entorno otra vez, comprobé que respondía y repetí la pasada: `node --test test/ && node e2e/run.mjs` dio 7/7.
+- Esa pasada dura 48 s frente a un presupuesto de 0,5 min. Hay que abrir una fila de deuda por exceder el presupuesto.
+- Hay que investigar por qué se cayó el servidor la primera vez; no sé la causa.
+- Paré lo que levanté y quité el worktree de revisión. El árbol está limpio.
+
+**Por qué paro: `HEAD` se movió desde la revisión final**
+- La revisión final fue sobre `df31afb`. `d61f3f4` solo añade `tasks.md` (17 líneas), así que el kit exige una re-revisión de ese rango. Estos son sus tres hallazgos:
+  1. **Commit equivocado en `tasks.md`.** La fila de la Task 1 cita `df31afb`, pero esa task es `32c089b`. `df31afb` es solo la Task 2.
+  2. **El Ruling no se sostiene.** `--test-concurrency=1` no está ni en el plan ni en `package.json`. La razón de la «carrera» tampoco vale: `node --test` ejecuta cada fichero en su propio proceso. El acoplamiento real es de orden: en `test/cancel.test.js`, `canceladas` solo pasa si antes corrió el primer test.
+  3. **«Spec limpia» pasa por alto un escenario sin test.** La spec pide que cancelar sin `--motivo` responda «motivo no válido…», y ningún test lo cubre. El código sí lo cumple.
+
+**Qué necesito de ti (pregunta sola, antes de la validación)**
+Recomiendo hacer una pasada de fix y re-revisar el rango.
+- Corregir el commit de la fila 1.
+- Quitar el Ruling falso, o reescribirlo como «el test de `canceladas` depende del orden».
+- Añadir el test de cancelar sin `--motivo`.
+
+No toca `src/`. Dime si lo hago así o si prefieres dejar el Ruling y el hueco como deuda.
+
+Tu validación sigue pendiente, y no te pasé el guion. El modo es `manual`, así que tiene que ser el último mensaje, con el entorno ya probado. Y la validación es tuya.
+
+Dos avisos más:
+- El `src/app.js` de la CLI no guarda estado entre procesos, así que el guion irá por el servidor (`curl` con `x-session`).
+- Con `delegate` no hay otra rama abierta, y `develop` no va por delante.
+

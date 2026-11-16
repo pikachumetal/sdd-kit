@@ -1,0 +1,192 @@
+--- [3]
+Las dos tasks están cerradas y los ejes de la revisión final ya volvieron. Según la skill, lo primero es invocar `sdd-verify` y seguir su «Closing the review».
+
+--- [27]
+RED por compilación: falta el export. Ahora el código.
+
+--- [30]
+El script de edición no aplicó nada, así que edito con la herramienta Edit.
+
+--- [37]
+Compruebo el RED→GREEN del trim: sin el `trim()` el test falla, con él pasa.
+
+--- [40]
+Tests 8/8 en verde y el RED→GREEN del trim queda comprobado. Pero el diff sale de 101 líneas para un cambio pequeño: parece que he cambiado los finales de línea. Lo compruebo antes de commitear.
+
+--- [42]
+Confirmado: los originales eran CRLF y mis ediciones los dejaron en LF. Los devuelvo a CRLF para que el diff sea solo lo real.
+
+--- [45]
+Diff limpio: 27 líneas añadidas, 4 quitadas, y 8/8 en verde. Anoto el ledger y `tasks.md` y commiteo la pasada de fix.
+
+--- [48]
+Commit `b86b003`. Toca la re-revisión única de `3e49b98..b86b003`, con `sdd-kit:effort-high` y opus. Leo el encargo y el prompt de re-revisión.
+
+--- [52]
+Preparo el encargo: el bloque «De código» del plan, el worktree detached en `b86b003` y el diff del rango.
+
+--- [56]
+Despacho la re-revisión única en segundo plano, con su vigilancia de silencio en el mismo turno.
+
+--- [61]
+La re-revisión está en marcha en segundo plano. Hasta que vuelva no puedo dar el veredicto ni cerrar. Esto es lo que ya está hecho y lo que queda.
+
+**Hecho**
+- Leí los dos informes de la revisión final sobre `3e49b98`.
+  - Spec: listo, con un Minor (listado sin tope).
+  - Código: con arreglos, un Important (`reasonOf` no recortaba los espacios del motivo).
+- Hice la pasada de fix única, commit `b86b003`, 8/8 tests en verde.
+  - **Recorte del motivo:** `reasonOf` ahora hace `trim()`. Quitando el `trim()` el test nuevo falla, con él pasa.
+  - **Tope del listado:** `canceladas` enseña las 20 últimas y añade «… y N más». Apliqué el 20 y no el «por ejemplo 10» del revisor, porque la decisión 4 de la spec, validada con el dev-lead, ya lo fijaba y el código no lo cumplía. No cambia la spec. Quedó como `Ruling` en el ledger.
+- Exporté `cancelledList(all = bookings)` solo para poder probar el tope sin un comando que cree reservas. También quedó como `Ruling`.
+- Corregí un tropiezo mío: mis ediciones habían pasado los ficheros de CRLF a LF y ensuciaban el diff. Los devolví a CRLF, y el commit trae solo las 27 líneas añadidas y 4 quitadas reales.
+
+**En curso**
+- Re-revisión única de `3e49b98..b86b003`, con `sdd-kit:effort-high` y opus, en un worktree separado, con su vigilancia de silencio.
+
+**Queda**
+- Cuando vuelva, escribo en `tasks.md` la línea `Re-revisión:` y corrijo `Pasada de fix: b86b003` (ahora dice «pendiente de commit»).
+- Quito el worktree de revisión.
+- Si salen hallazgos, un Critical o un Important introducido por el fix lo arreglo yo, sin abrir otra re-revisión.
+- Después paso a `sdd-archive`.
+
+--- [65]
+### Finding Verdicts
+
+- **`reasonOf` kept the spaces around the reason, so a valid reason was rejected** — ADDRESSED. `src/app.js:16` now reads `return index === -1 ? undefined : params[index + 1]?.trim();`. A reason like `'sala ocupada '` is trimmed and passes `reasons.includes` at `src/app.js:20`.
+  - **When the value after `--motivo` is missing:** `params[index + 1]` is `undefined`, `?.trim()` gives `undefined`, and `reasons.includes(undefined)` is false. The answer is still «motivo no válido: …». An all-spaces value (`'   '`) becomes `''` and gets the same answer.
+  - **No `--motivo` at all:** the answer is still «motivo no válido: …».
+  - **Test:** `test/cancel.test.js:88-90` pins the fix. Before it the answer was «motivo no válido…»; now validation passes and it answers «sin reserva Sur mar», because the only seed booking (Norte lun) is already cancelled by the first test.
+- **`canceladas` had no limit** — ADDRESSED. Using 20 instead of the reviewer's «por ejemplo 10» is correct. Decision 4 of the spec (`spec.md:26`) says: «`canceladas` enseña como mucho las 20 últimas cancelaciones, y con más añade la línea «… y N más»», agreed with the dev-lead. The code had not followed it. This is a ruling, not a spec change (ledger `progress.md:7`).
+  - **The code:** `src/app.js:37-44` keeps the last 20 in their original order with `slice(-listLimit)`. Only when there are more than 20 does it add `… y ${cancelled.length - listLimit} más`, which counts the ones left out.
+  - **Tests:** `test/cancel.test.js:92-99` uses 23 cancellations and gets 21 lines: first line d4, line 20 is d23, then «… y 3 más». `test/cancel.test.js:101-104` uses exactly 20 and gets no extra line.
+  - **Earlier RED tests:** `test/cancel.test.js:5-15` are unchanged in name, assertion and data. Only the import line changed (`run, cancelledList`).
+  - **Export:** `cancelledList(all = bookings)` (`src/app.js:39`) matches the ruling in `progress.md:8`. The command still calls it with no argument (`src/app.js:50`).
+
+### New Breakage in the Fix Diff
+
+- **Minor · `src/app.js:40-41`** — The list picks «las 20 últimas» in the order the bookings were created, not the order they were cancelled. `cancelBooking` changes the booking where it already sits in `bookings` (`src/app.js:23-24`) and keeps no time or order of cancellation. So if an old booking is cancelled after a newer one, it can be left out of the 20. This can't happen today: there is one seed booking, and no command creates bookings (`reservar` only returns a text). It becomes real once bookings can be created. Possible fix: record a cancellation counter or timestamp in `cancelBooking` and sort by it.
+- **Minor (test weakness, not a regression) · `test/cancel.test.js:88-90`** — The trim test only checks the reason indirectly, through «sin reserva Sur mar». It does not check that the stored reason or the confirmation text is trimmed, for example «cancelada … (sala ocupada)». It does tell the before and after apart, and there is no active booking left in the seed data to cancel through `run`.
+
+### Out-of-Scope Observations
+
+- No test pins the two «motivo no válido» cases from `spec.md:55`: no `--motivo` flag at all, and `--motivo` with nothing after it. Both behave correctly when I read the code (`src/app.js:14-17`, `src/app.js:20`).
+- `test/cancel.test.js:84-86` and the new trim test both depend on test order, because the tests share the module's `bookings` state. This existed before the fix.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [67]
+La re-revisión salió limpia: los dos hallazgos quedan resueltos y no hay Critical ni Important nuevos. Cierro el registro: ledger, `tasks.md` y el worktree de revisión.
+
+--- [69]
+La revisión final de la 0010 está cerrada. Los 8 tests pasan, pero no corrí la puerta completa de build y suite, que toca en `sdd-archive`. Las dos tasks estaban hechas y la re-revisión salió limpia.
+
+**La pasada de fix** (`b86b003`) arregló dos hallazgos, cada uno con su test en RED y luego en verde:
+- **Motivo con espacios (Important, informe de Código):** `reasonOf` ahora recorta el motivo. Antes `--motivo "sala ocupada "` respondía «motivo no válido».
+- **Listado sin tope (Minor, informe de Spec):** `canceladas` enseña las 20 últimas y añade «… y N más». Apliqué 20 y no el «por ejemplo 10» del revisor, porque la decisión 4 de la spec ya lo fijaba y el código no lo cumplía.
+
+**Re-revisión** de `3e49b98..b86b003`: sin Critical ni Important nuevos. Dejó dos Minor que anoté como `Ruling` en el ledger, sin arreglar:
+- **Orden de las 20 últimas:** hoy sigue el orden de creación, no el de cancelación. Hoy no puede fallar, porque hay una sola reserva y ningún comando crea más.
+- **Test del recorte:** comprueba «sin reserva», no el texto de confirmación ya recortado.
+
+**Otros dos rulings:**
+- **Export de `cancelledList`:** la exporté solo para poder probar el tope.
+- **Eje Arquitectura:** no salió, porque el diff no trae ninguna de las cuatro señales.
+
+**Estado del repo:** tiene el commit de docs `8f1bb24` con `tasks.md` al día y el worktree de revisión ya quitado. Ese commit solo toca documentación y lo revisé yo en el hilo.
+
+Siguiente paso: `sdd-archive` para validar, hacer el walkthrough y el merge. Lo invoco ahora salvo que prefieras parar aquí.
+
+--- [71]
+La vigilancia de silencio terminó sin avisos, porque la re-revisión ya había vuelto. Sigo con el cierre.
+
+--- [74]
+Empiezo por los pre-checks del cierre, que van antes de escribir ningún registro.
+
+--- [94]
+Validación pendiente de ti. Esta feature está en modo `manual` (`sdd-kit.json` no trae `validation.mode`, y el kit trata un valor ausente como `manual`), así que no cierro ni fusiono hasta que me digas qué has probado.
+
+Dos avisos antes del guion:
+- **Merge:** `sdd-kit.json` no trae `merge.into` ni `merge.noFf`. Cuando llegue al paso del merge te presento el bloque y espero tu respuesta, no fusiono por mi cuenta.
+- **Otras ramas:** no hay ninguna abierta en paralelo, solo esta worktree.
+
+🦆 Al cancelar una reserva ahora hay que decir por qué, con uno de tres motivos: cambio de planes, sala ocupada u otro. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y un motivo que no esté en la lista se rechaza. Además, el comando `canceladas` enseña cada cancelación con su motivo, las 20 últimas, y añade «… y N más» si hay más.
+
+**✋ Me salí del plan en…**
+
+- Tope de `canceladas`: puse 20 con «… y N más», no el 10 que sugería la revisión, porque la decisión 4 de tu spec ya lo fijaba y el código no lo cumplía. La spec no cambia.
+- Exporté `cancelledList` solo para poder probar el tope en un test.
+- Dos Minor de la re-revisión quedaron sin arreglar, anotados como rulings:
+  - Las «20 últimas» siguen el orden de creación, no el de cancelación. Hoy no puede fallar, porque hay una sola reserva y ningún comando crea más.
+  - El test del recorte del motivo no comprueba el texto de confirmación recortado.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Un motivo fuera de la lista responde «motivo no válido…» | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` responde lo mismo | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Motivo con espacio al final (arreglo de la revisión) | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| `canceladas` responde «Norte lun — sala ocupada» | suite (no probado por CLI) | un proceso nuevo imprime vacío: la app no guarda reservas entre ejecuciones |
+
+**Suites**
+
+- `node --test`: 8/8 sobre `8f1bb24`, menos de 1 s. Salida guardada entera; sin remoto y con la base sin avanzar (0 commits por delante).
+
+**Sin probar**
+
+- La THEN de `canceladas` por CLI: no hay forma de dejar una reserva cancelada que sobreviva entre ejecuciones. Solo la cubre la suite (`test/cancel.test.js`). Te lo digo por si quieres que se trate como deuda.
+
+Panel: plan B en http://127.0.0.1:58573/ (no ve la app, así que no tendré consola ni captura de un fallo: cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno: no hay comando de arranque declarado (es una CLI, cada comando arranca y termina).
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Motivo con un espacio al final → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada "
+```
+
+5. Listado → `Norte lun — sala ocupada`. Aquí saldrá vacío por lo que expliqué arriba: dime si lo das por bueno con la suite o si lo quieres como deuda.
+
+```
+node src/app.js canceladas
+```
+
+Cada ejecución arranca de cero, así que no hay datos que dejar limpios.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

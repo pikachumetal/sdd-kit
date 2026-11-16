@@ -1,0 +1,74 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js README.md; cat .docs/sdd/steering/*.md; cat .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/patch.md | head -150
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+=== RESULTADO (7 turnos, 0.1180742 $)
+Lo que he mirado (`PRODUCT.md`, `ROADMAP.md`, `steering/`, `src/app.js`) y lo que sale de ahí:
+
+**Lo que dicen los documentos**
+- `PRODUCT.md`: herramienta de línea de comandos para ti solo, sin más usuarios.
+- `ROADMAP.md`: no hay ninguna fila sobre franjas ni medias horas. Lo más cercano es la 0008 (avisos por correo) y la 0009 (.ics).
+- `debt.md`: hay un ítem por triar, «Sin validación del formato de franja horaria».
+
+**Lo que deduzco del código (`src/app.js`)**
+- Una franja es un texto libre, por ejemplo `'10:00-12:00'`. No hay horas ni minutos como tales.
+- `freeRooms` compara franjas por igualdad exacta de texto. Hoy ya podrías escribir `10:30-11:00`, y el programa lo aceptaría.
+- Lo que no funciona es el solape. Con `10:00-12:00` reservada, `11:00-11:30` aparecería como libre en Norte, porque el texto no coincide. Si se admiten medias horas, esto se vuelve un problema real. Es probable que "dejar reservar medias horas" signifique en el fondo "saber cuándo dos franjas se pisan", y eso toca también la deuda del formato.
+- Esto es una inferencia mía. Ningún documento lo dice.
+
+Antes de elegir enfoque necesito saber el porqué, y eso solo lo sabes tú:
+
+¿Qué reserva de media hora quisiste hacer la última vez que no pudiste o no te cuadró?
+
+=== RESULTADO (1 turnos, 0.1428892 $)
+Con eso, el porqué queda claro: las reuniones de 30 minutos hoy ocupan una franja de 2 horas. Hay dos cosas que decido yo, por método, y una que te pregunto a ti.
+
+**Decidido por mí**
+- **Representación:** mantengo el formato `HH:MM-HH:MM` que ya usan `bookings`, los specs de weekly y free, y el patch 0007. Lo que cambia es que se compara por minutos, no por texto: dos franjas chocan si se solapan. Con eso, `10:00-12:00` bloquea `11:00-11:30` y deja libre `12:00-12:30`. Descarto una rejilla de celdas de 30 minutos, porque obligaría a migrar los datos y a reescribir lo que ya funciona, y se vería igual desde fuera.
+- **El día:** `freeRooms` hoy ignora `day`, así que una reserva del lunes bloquea ese mismo horario cualquier otro día. Eso lo hallé en el código, no está en ningún documento. Lo corregiré dentro de este cambio, porque el solape no tiene sentido sin el día.
+
+❓ **¿Qué pasa con una franja que no cae en medias horas?**
+Dato que hallé: `debt.md` ya tiene «Sin validación del formato de franja horaria», y este cambio es el momento natural de saldarla.
+1️⃣ **Rechazar.** `reservar Norte lun 10:15-10:45` → `Franja no válida: usa múltiplos de 30 min`. Salda la deuda del formato.
+2️⃣ **Aceptar cualquier minuto.** `reservar Norte lun 10:15-10:45` se guarda tal cual, y el solape se calcula por minutos.
+➡️ **Recomiendo 1️⃣**, porque pediste medias horas, no minutos libres, y es la única opción que cierra la deuda del formato. A cambio, si algún día quieres una reunión de 45 minutos, habrá que relajar la regla.
+
+¿1️⃣ o 2️⃣?

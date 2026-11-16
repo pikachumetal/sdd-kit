@@ -1,0 +1,88 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Limpio, sin otras ramas abiertas y el destino listo. Leo las referencias que piden el paso 1 y el E2E.
+
+--- [9]
+El modo es `field` y hay E2E declarado. El alcance de la tanda se mide contra `develop` (`merge.into`), no contra `main`. Lo calculo.
+
+--- [12]
+Solo `e2e/cancel.e2e.mjs` cambia respecto a `develop`; `free.e2e.mjs` no se toca, así que no entra en la tanda. Antes de arrancar, miro el script del entorno y el estado del puerto.
+
+--- [14]
+Puerto libre. Levanto el entorno yo mismo, en su propia llamada.
+
+--- [17]
+El entorno no arrancó. Antes de nada miro por qué, sin tocar código.
+
+--- [20]
+El servidor arranca sin errores, así que puede ser solo lentitud al levantar. Compruebo que no quedó ningún proceso mío y repito el arranque, como pide la guía (primero el entorno).
+
+--- [22]
+Ahora arriba (pid 73984, lo levanté yo). Verifico con el check declarado, en llamada aparte.
+
+--- [24]
+Entorno verificado. Corro primero el gate de cierre literal (suite unitaria + E2E completo), guardando la salida entera.
+
+--- [30]
+La tanda sale limpia: 11/11 en 84,3 s, sin ningún rojo en los 3 tests nuevos. Con el gate, cada uno corrió 4 veces. Paro el entorno que levanté, por su puerto, y sigo con el cierre.
+
+--- [64]
+Los 4 THEN dan el resultado del spec con ejecución real. Veo el roadmap y la deuda para sus filas, y corrijo `tasks.md`.
+
+--- [69]
+Ahora el delta de capacidad, con la CLI y nunca a mano, y el chequeo del ADR.
+
+--- [72]
+La capacidad `bookings` queda creada por la CLI y los dos checks salen con exit 0. Escribo ahora el walkthrough con lo verificado por mí, las desviaciones y los dos rulings.
+
+--- [74]
+Ahora la retro del cierre, como manda el paso 3.
+
+--- [79]
+Ahora la deuda y el roadmap: las tres filas en «Por triar» y el estado de la fila 0010.
+
+--- [82]
+La orden salió mal formada por el heredoc. Compruebo qué llegó a escribirse antes de repetirla.
+
+--- [84]
+Los dos ficheros ya se escribieron (el `node -e` sí corrió). Verifico el contenido y paso `roadmap check`.
+
+--- [87]
+Antes de juntar el cierre en un commit, reescribo las citas a `83c203d` en el walkthrough, porque ese sha desaparece con la unión. Compruebo después que todo sha citado sigue siendo alcanzable.
+
+--- [90]
+Todos los shas citados (`f765622`, `5786784`) quedan por debajo del punto de unión. Junto el cierre en un solo commit desde el de la última task.
+
+--- [92]
+Commit de cierre `5d0f331`. Paso 6: integro la base, en llamada propia.
+
+--- [98]
+🦆 Cancelar una reserva ahora pide un motivo de una lista cerrada. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…** Hay tres decisiones mías, sin el dev-lead:
+- **Ruling del gate:** el ruling de la Task 2 decía que el gate llevaba `--test-concurrency=1`. No lo lleva en ningún sitio y el gate pasó verde sin él. Lo dejé anotado como no aplicado, con la causa real: un test depende del orden.
+- **Eje de Arquitectura:** el plan no traía esa línea, así que lo decidí yo como «no» (solo se añade un campo `reason` en memoria). Si te parece mal, queda sin revisión de arquitectura un campo que luego reutilizará la 0014.
+- **Segunda re-revisión:** no pedí una tras corregir `tasks.md`, porque lo que cambié es el registro y no el código.
+
+**Las tres pasadas E2E**
+- **Alcance:** contra `develop`, solo `e2e/cancel.e2e.mjs` cambia. `free.e2e.mjs` no entró.
+- **Tanda:** los 3 tests nuevos ×3 y los otros 2 de ese fichero ×1, 11 ejecuciones en 84 s, todas en verde. Con la pasada del gate, cada test nuevo corrió 4 veces, así que no hay inestabilidad.
+- **Entorno:** en el primer arranque no respondió en 5 s. Lo repetí sin cambiar nada y levantó; lo paré al acabar.
+
+**La revisión final no estaba limpia del todo.** La re-revisión de `tasks.md` devolvió 3 Important y 1 Minor, todos sobre el registro y ninguno sobre el código. Los contrasté con el repo y eran ciertos:
+- **Fila de la Task 1:** citaba el commit de la Task 2. Ya apunta a `f765622`.
+- **Eje y ruling:** el eje de Arquitectura y el ruling del gate son los dos puntos de arriba.
+- **Minor:** el workaround sin fila de deuda se resolvió con la fila de la dependencia de orden.
+
+**Pendiente**
+- **Gate:** `` Gate: `node --test test/` · `node --test test/ && node e2e/run.mjs` → unit: corrió 5/5 · e2e: corrió 7/7 · 48,7 s · configuración: la del gate `` sobre `83c203d`, que el cierre junta en `5d0f331`. La base estaba al día, así que no hubo sync merge ni segunda suite.
+- **Deuda (3 filas en «Por triar»):** el test de `canceladas` depende del orden; ningún test cubre «sin `--motivo`», que solo comprobé ejecutándolo; la suite E2E tarda 48,2 s frente a un presupuesto de 0,5 min.
+- **Roadmap:** la fila 0014 «Motivo guardado» ya la hace esta feature con `booking.reason`. No la toqué; decides tú si se cierra.
+- **Capacidad:** `capabilities/bookings.md` no existía y la creó `sdd capability merge`.
+
+**Ticket del kit:** la retro no dejó ninguna línea de ticket del kit. Si quieres el feedback de mejora de esta sesión, dímelo y lanzo `sdd-feedback`.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (79cc495) · push: no hecho: `merge.push` es `false` en `sdd-kit.json`
+

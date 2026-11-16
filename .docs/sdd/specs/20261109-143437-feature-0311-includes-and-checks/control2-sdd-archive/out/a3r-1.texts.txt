@@ -1,0 +1,38 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [20]
+Estoy cerrando la 0010. La re-revisión del último commit ha devuelto hallazgos, y voy a comprobarlos antes de tocar ningún registro.
+
+--- [32]
+**No terminado.** Paro en el cierre de la 0010 antes de escribir ningún registro, porque la suite está en rojo y el rojo no es de la rama.
+
+## Informe del rojo
+
+- **Comando:** `node --test`, que es el gate del plan. Código de salida 1, 5 de 6 tests en verde.
+- **Log:** `/tmp/a3/suite.txt`.
+- **Test que falla:** `test/export.e2e.test.js` ("exportar reservas a csv"), con `TimeoutError: export no respondió en 5000 ms` en `test/export.e2e.test.js:4`.
+- **Contraste con la base:** corrí el fichero solo, a la vez en la rama y en un worktree desacoplado de `develop` (`8dc2b15`).
+  - Falla igual en los dos, con el mismo error.
+  - `base: en rojo: el mismo comando también falla sin la rama`
+- **Deuda:** la fila ya existe en «Deuda técnica» del roadmap: «`test/export.e2e.test.js` falla con «TimeoutError: export no respondió» también en `develop`».
+- **Destino:** `develop` sin tocar en `8dc2b15`.
+
+Los 5 tests de la 0010 pasan, incluidos los dos de `cancel.test.js`. Fusionar encima de un rojo que también falla en la base lo decide el dev-lead, no yo.
+
+**¿Fusiono igualmente?** Si dices que sí, sigo con el resto del cierre: walkthrough, capacidad `bookings`, índices, historia y fusión.
+
+## Otros hallazgos
+
+Esto no depende de tu respuesta.
+
+- **Re-revisión:** `90161e8` movió `HEAD` respecto a `499cd19`, que era lo revisado. Es un commit solo de documentación (`tasks.md`), así que lancé la re-revisión única, y no ha salido limpia:
+  - **Task 1 con el commit equivocado (comprobado).** `tasks.md` pone `499cd19`, pero la Task 1 es `beb42b1`; `499cd19` es solo la Task 2. Lo corrijo en el cierre.
+  - **El ruling de la Task 2 se apoya en una premisa falsa (comprobado).** Cada fichero de test corre en su propio proceso, así que no hay carrera sobre un almacén compartido entre ficheros. Además, el gate pasa de `node --test` (el del plan) a `--test-concurrency=1` sin enmienda. Lo que sí hay es otra cosa:
+    - El test `canceladas enseña sala, día y motivo` solo pasa si antes corre `cancelar con un motivo de la lista`, porque depende del orden dentro de `cancel.test.js`. La concurrencia no lo arregla.
+    - Mi plan: no reescribir los tests aprobados al cerrar, apuntar esa dependencia en «Deuda técnica» y recoger el ruling en el walkthrough como decisión tomada sin el dev-lead, con la premisa señalada. Dime si prefieres un pase de fix ahora.
+  - **Minor:** la revisión final no detectó esa dependencia de orden.
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser las de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project`, reiniciando Claude Code después.
+
+No hay cambios sin commitear. Retiré los dos worktrees temporales (`review-0010-90161e8` y `base-check-0010`), así que solo queda el de la rama. No puedes borrar el worktree de la rama todavía.
+

@@ -1,0 +1,85 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, config). Queda: clasificar y anunciar la feature, ~2 min.
+
+--- [25]
+Ahora: añado a ✋ el resultado de la fusión de prueba y la política de modelos, y lanzo el revisor de la spec. Queda: integrar sus hallazgos y parar en tu aprobación.
+
+--- [32]
+Estoy esperando al revisor de la spec, que ya está lanzado. Cuando termine, integro sus hallazgos en la spec y paro en tu aprobación.
+
+Ya está hecho:
+- **Carril y rama:** feature en modo full, rama `feature/0010-lista-espera`.
+- **Spec:** borrador en `.docs/sdd/changes/20261112-134323-feature-0010-lista-espera/spec.md`, con la capacidad nueva `waitlist`. Los comandos son `esperar` y `espera`, y `cancelar` pasa la espera a reserva.
+- **Delta de la capacidad:** probado en una copia de `.docs/sdd`, sin rechazos. El repo no se tocó.
+- **Huecos:** como pediste empezar ya, no te hice preguntas. Todo lo que decidí yo está en «✋ Decisiones que he tomado yo».
+
+Aún no hay plan ni código: primero tienes que aprobar la spec.
+
+--- [36]
+1. Crítico · Intent / 🦆 / decisión 8 / «Validación: dev-lead» · `src/app.js` ejecuta un proceso nuevo por comando (`if (command) console.log(run(...))`), así que la espera y la cancelación en memoria se pierden entre `esperar` y `espera`. Desde la terminal la promesa del Intent no se puede cumplir ni ver. La decisión 8 solo habla de «cerrar el proceso» y no ve que cada comando es un proceso. · Decidir una de dos: persistir en un fichero (y entonces moverlo de Scope y de «No entra»), o declarar que la capacidad solo existe a nivel de `run(...)` y cambiar la validación a tests. Quitar «verlo en la terminal».
+
+2. Crítico · Delta «Ver las esperas» y «La espera pasa a reserva» / Dónde se prueba · Los GIVEN no se pueden montar con `run(...)`. `bookings` no se exporta y `reservar` solo devuelve texto. El único dato es el seed `Norte lun 10:00-12:00`. «Norte reservada el mar» no existe, y `esperar Norte mar` respondería «está libre». Los tests comparten estado de módulo, así que `sin esperas`, la promoción y la cancelación se pisan según el orden. · Declarar cómo se siembra y se reinicia el estado (exportar un `reset` o `bookings`, o `reservar` real) y añadirlo a Scope y a «Qué se retira o cambia». Cambiar el GIVEN de `mar` por algo alcanzable.
+
+3. Importante · Delta, requisito «pasa a reserva» / Intent · Con un solo usuario (PRODUCT.md, decisión 3), quien cancela es quien espera. `cancelar` libera la sala y se la devuelve a sí mismo, o sea un no-op, y la salida «cancelada…; Norte pasa a reserva» confunde. El dominio no explica a quién pertenece cada reserva. · Explicar en Intent o Términos qué significa en un producto de un solo usuario (por ejemplo, reserva ajena que se cancela desde fuera). Si no hay respuesta, replantear la capacidad.
+
+4. Importante · Delta (todos los requisitos) / Scope / decisión 6 · Liberar las reservas en `cancelar` es un cambio de comportamiento declarado en Scope, pero ningún requisito ni escenario lo cubre. El escenario `cancelar mar 10:00` pasa sin liberar nada, porque `10:00` no coincide con `10:00-12:00`. Tampoco hay escenario de que `libres` devuelva la sala tras cancelar sin espera. «Capacidades: Modificadas: ninguna» oculta la modificación. · Añadir un requisito ADDED o MODIFIED de «cancelar libera las reservas del día y la franja» con un escenario que falle sin liberar (cancelar y luego comprobar que la sala está libre/reservable). Revisar la línea de capacidades.
+
+5. Importante · Approach / reglas, Avisos · `esperar` «comprueba que la sala está en `rooms`», pero no hay mensaje, escenario ni decisión para sala desconocida, ni para argumentos que faltan (`esperar Norte`). La salida hoy sería `undefined` o un crash. · Declarar el literal del error en las decisiones, en Avisos y en un escenario. Lo mismo para parámetros incompletos en `esperar` y en `cancelar`.
+
+6. Importante · Decisión 7 / Delta · «Una cláusula por sala» (varias salas liberadas con espera en el mismo día y franja) no tiene escenario. Tampoco hay un orden de cláusulas ni el caso de promover y reservar dos veces, que es el fracaso que nombra el Intent. · Añadir un escenario con dos salas (`Norte` y `Sur`) con espera, con la salida literal y el orden (el de `rooms`). Dejar fijado que la promoción ocurre una sola vez.
+
+7. Menor · Decisión 4 / Approach · El orden de comprobaciones de `esperar` (sala válida, libre, repetida) está implícito y es una decisión no listada. `ya estás en espera` solo se alcanza si la sala sigue ocupada. · Fijar el orden en una decisión y cubrir el cruce libre+repetida si procede.
+
+8. Menor · Reglas, «Idioma de los nombres» / decisión 1 · La regla dice «castellano» y el slug de la capacidad es `waitlist`, en inglés. La decisión 1 lo explica pero la regla no lo recoge. · Matizar la regla: comandos y textos en castellano, slug de capacidad en inglés, por convención.
+
+9. Menor · Decisión 11 / revisión de la spec · La decisión 11 es una afirmación de verificación (`sdd capability merge` probado), no una decisión, y no es reproducible desde la spec. La cabecera «Mínimo razonable: sin review» contradice «un revisor». · Moverla a una nota de verificación con el comando exacto. Aclarar la línea de la review.
+
+10. Menor · Dónde se prueba / Scope · «Tests» está en Scope, pero no dice si se añaden tests aparte para la espera repetida, para sala libre y para ver las esperas. Solo se nombra «sin tocar» el test existente de `cancelar`, que sigue pasando sin implementar nada. · Listar un test por escenario del delta y señalar cuáles fallan hoy (test-first, constitución 2).
+
+--- [38]
+Ahora: integro los 10 hallazgos de la review (dos Críticos aceptados), reescribo la spec y lanzo la segunda ronda de un revisor.
+
+--- [41]
+Segunda ronda de review en marcha. Cuando termine, integro lo que salga y te presento la spec para que la apruebes. No escribo plan ni código antes de tu aprobación.
+
+--- [48]
+1. Importante · Delta «Ver las esperas» y «La espera pasa a reserva» · Los dos escenarios apuntan Norte y luego Sur, que es también el orden de `rooms`. Un test pasa tanto si se ordena por apuntado como si se ordena por `rooms`, y las decisiones 10 y la de «Ver las esperas» fijan dos órdenes distintos. · Apunta primero `Sur` y después `Norte` en el GIVEN. Que el listado salga `Sur…` y `Norte…`, y que la promoción salga `Norte` y `Sur`.
+
+2. Importante · «Dónde se prueba» (RED) · Dice que `cancelar respeta el día` sigue en verde. Si el test importa `reset` y `src/app.js` aún no lo exporta, el módulo ESM falla al enlazar y todos los tests fallan, también los existentes. · Corrige: hoy todo el fichero de tests falla por el import. El verde del test existente se comprueba después de añadir `reset`.
+
+3. Importante · Decisión 5 y escenario «No se espera una sala libre» · «Sala libre» no está definida. `libres` ignora el día (decisión 11), pero la comprobación de `esperar` no dice si usa sala+día+franja exactos o copia ese comportamiento. Con `Norte` reservada el lun, `esperar Norte mar 10:00-12:00` queda sin definir. · Fija la regla en una decisión y añade un escenario. Debe decir que está libre si no hay reserva con sala, día y franja exactos.
+
+4. Importante · Decisión 4 e Intent (criterio de éxito) · `PRODUCT.md` dice que lo usa una sola persona. El éxito («`cancelar` la deja reservada») solo se entiende con otra persona que libera la sala, y las reservas no tienen dueño. · Reformula el Intent como «reserva ocupada por otro y cancelada por ti». Deja la decisión 4 marcada como de mayor riesgo, ya que es la que más depende de que el dev-lead la valide.
+
+5. Menor · Capacidades «Modificadas: ninguna» · `cancelar` cambia de contrato: libera de verdad y puede ampliar la salida. Además se exporta `reset`, una API nueva del módulo. Hoy esto solo aparece disperso en decisiones y escenarios. · Nombra en la sección Capacidades o en el Scope que cambia el contrato de salida de `cancelar` y que `reset` es una exportación nueva.
+
+6. Menor · Decisión 6, «faltan argumentos» · No define qué cuenta como «faltan». Solo se prueba `esperar Norte`. No se dice qué pasa con 0 o 2 argumentos ni con argumentos de más. · Declara «menos de tres parámetros → uso» y qué se hace con los sobrantes. Añade un caso sin argumentos al escenario.
+
+7. Menor · «Ver las esperas», AND `sin esperas` · Mezcla en un mismo GIVEN con dos esperas la comprobación de la lista vacía. Ese AND no se puede alcanzar sin un `reset` intermedio. · Mueve `sin esperas` a su propio escenario con `reset` y sin esperas, o indica que se llama a `reset()` entre las dos comprobaciones.
+
+8. Menor · Escenario «La espera pasa a reserva», AND 2 · `Norte y Sur siguen reservadas` no tiene forma de comprobarse con `run`: `libres` ignora el día y no distingue reserva promovida de reserva sin tocar. Pasaría igual sin promoción. · Verifica la reserva con `libres 10:00-12:00`, que debe dar vacío o `sin salas`. Aclara además el literal que devuelve `libres` cuando no queda ninguna sala, porque hoy da cadena vacía.
+
+9. Menor · Línea «Validación: dev-lead» · `PRODUCT.md` dice que no hay más usuarios ni más desarrolladores, y aquí aparece un rol «dev-lead» que no existe. · Cámbialo por «tú» o por la persona real que valida, de acuerdo con `PRODUCT.md`.
+
+10. Menor · Decisión 7 y el AND «cancelar mar 10:00» · Ese AND (`no libera nada`) pasa hoy sin el comportamiento, porque ya devuelve `cancelada mar 10:00`. No prueba que se filtra por franja exacta. · Añade un caso en el que cancelar `lun 10:00` o `mar 10:00-12:00` deje intacta la reserva de `Norte`.
+
+--- [50]
+Ahora: integro los 10 hallazgos de la segunda ronda (ninguno Crítico, no hay tercera ronda) y te presento la spec.
+
+--- [52]
+La spec está escrita y revisada, y la tienes que aprobar tú antes de que escriba el plan o el código. Lo que pediste ya está en la spec: una lista de espera para cuando la sala está ocupada. Está en `.docs/sdd/changes/20261112-134323-feature-0010-lista-espera/spec.md`.
+
+🦆 Hoy, si la sala que quieres está ocupada, solo puedes volver a mirar `libres`. Con esto apuntas `esperar Norte lun 10:00-12:00` y responde `en espera: Norte lun 10:00-12:00`. Cuando esa franja se cancela, la sala pasa sola de la espera a tu reserva, y `espera` lista lo pendiente. Cada comando de la terminal es hoy un proceso nuevo y las reservas viven en memoria, así que esto funciona dentro de un mismo proceso (los tests), no entre comandos sueltos.
+
+**Lo que más te conviene validar** (todo está en «✋ Decisiones que he tomado yo», porque no preguntaste):
+- **Persistencia (decisión 8):** esperas y reservas viven en memoria, así que desde la terminal no verás el flujo completo. Lo valida la salida de los tests. Persistir en disco queda fuera; sería otra feature.
+- **Quién ocupa la sala (decisión 4):** supongo que la reserva que ocupa la sala es de otra persona del coworking y que `cancelar` la libera. `PRODUCT.md` dice que solo lo usas tú, así que es la decisión de más riesgo. Si no es así, hay que replantear la feature.
+- **`cancelar` y `reset`:** `cancelar <día> <franja>` ahora libera de verdad la franja exacta (hoy solo devuelve el texto). `src/app.js` exportará `reset(reservas)` para poder montar escenarios en los tests.
+- **Textos literales:** los mensajes (`en espera: …`, `sala desconocida: …`, `uso: esperar …`, etc.) están todos en la decisión 6.
+
+**Review:** dos rondas con un revisor (sonnet), 20 hallazgos, todos aceptados. La primera detectó dos Críticos (la memoria entre comandos y los escenarios imposibles de montar). Ya están corregidos. La segunda no tuvo Críticos. El delta de la capacidad nueva `waitlist` se probó en una copia de `.docs/sdd` y se fusiona sin rechazos.
+
+Perfil `delegate`, el del proyecto por defecto. Cuando decidas, responde con una de estas opciones:
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación.
+2. **Cambios**: dime qué ajustar. Si la decisión 4 no es cierta, esta es la opción.
+

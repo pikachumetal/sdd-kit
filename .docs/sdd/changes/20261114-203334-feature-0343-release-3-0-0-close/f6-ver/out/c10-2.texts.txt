@@ -1,0 +1,162 @@
+--- [3]
+Ahora: cerrar la revisión final con `sdd-verify` a partir de los informes de los ejes. Queda: leer los informes, decidir los arreglos o la re-revisión y llegar a la parada, ~5 min.
+
+--- [6]
+Leo los informes, el ledger y el estado del plan.
+
+--- [20]
+La suite pasa 6/6 y el test arreglado también pasa solo. Ahora apunto las decisiones en el ledger y actualizo `tasks.md`.
+
+--- [28]
+Ahora: lanzar la única re-revisión, sobre `efc0f48..c96fa20`. Queda: esperar su veredicto y pasar a la validación de `sdd-archive`, ~10 min, ~1 $ (un subagente opus).
+
+--- [32]
+Escribo el informe de la pasada de fix para el re-revisor y lo lanzo, cada uno con su vigilancia de silencio.
+
+--- [38]
+Mientras revisa, apunto en `tasks.md` la línea de la pasada de fix. Queda sin commit; la cierra `sdd-archive`.
+
+--- [44]
+He cerrado la revisión final con una pasada de arreglos y he lanzado la única re-revisión permitida, sobre `efc0f48..c96fa20` (opus). Todavía no ha vuelto.
+
+**Qué he hecho con cada hallazgo**
+- **Spec · Minor, el test de `canceladas` dependía del orden:** arreglado en `c96fa20`. Lanzado solo, fallaba: recibía `''` en vez de «Norte lun — sala ocupada». Ahora carga su propia copia de la app, cancela primero y luego lista, y pasa solo. Ningún eje lo marcó, pero el AND «sin `--motivo`» no tenía test; lo he añadido y pasó a la primera. Suite completa (`node --test`): 6/6.
+- **Código · Important, `reasonOf` no recorta espacios:** no lo he arreglado. Si recorto, `--motivo "sala ocupada "` pasaría a aceptarse, y hoy la spec lo trata como «motivo fuera de la lista». Ninguna decisión aprobada cubre ese caso. La persona ve los motivos válidos en la respuesta y reintenta al momento. Queda anotado en el ledger como `Ruling`.
+- **Código · Minor, cambiar ` — ` por ` - `:** no lo he aplicado. La decisión 4 y el THEN «Norte lun — sala ocupada» fijan ese separador, así que cambiarlo cambiaría la spec aprobada. También queda como `Ruling`.
+
+Los dos hallazgos de código sin arreglar solo cambian si Laura enmienda la spec: aceptar motivos con espacios, o usar un separador que se lea bien en la consola cp850 de recepción. Decidme si queréis abrir esa enmienda.
+
+**Otras correcciones**
+- `tasks.md` no entró en el commit de la Task 1 y le atribuía el commit `efc0f48`. Lo he corregido a `e2601fb` y ha entrado en el commit de la pasada.
+- He añadido las líneas `Revisión final:` y `Pasada de fix:`. La segunda está sin commit; la cierra `sdd-archive`.
+- El eje de arquitectura no salió: el diff no trae módulos, dependencias, contratos ni datos nuevos.
+
+Cuando vuelva la re-revisión, apuntaré su línea en `tasks.md`, quitaré su worktree y pasaré a la validación de `sdd-archive`.
+
+--- [48]
+## Finding Verdicts
+
+**Spec · Minor · `test/cancel.test.js:13`: the `canceladas` test only passed after the `cancelar` test had run.** ADDRESSED.
+- The test is now at `test/cancel.test.js:17-22`. It imports its own copy of the module with `await import('../src/app.js?canceladas')` at line 19. Node keys ESM modules by their full URL, so the query string gives a fresh copy.
+- That matters because all state sits at module level in `src/app.js` (the `bookings` array at line 4), and `app.js` imports nothing else that could hold shared state. The new copy therefore starts with Norte lun still active.
+- The test sets up its own GIVEN at line 20 (cancels Norte lun with «sala ocupada») and then checks the spec's THEN at line 21 (`'Norte lun — sala ocupada'`). It no longer depends on test order, and it no longer leans on the shared copy that the `cancelar` test at line 6 changes.
+- The report says the test was RED before the fix (actual `''` when run alone). That fits the old line 13: on its own it read the untouched seed, which has no cancelled booking.
+
+**Code · Important · `src/app.js:14-17`: `reasonOf` keeps the spaces around the reason.** NOT ADDRESSED as a fix. The ruling stands.
+- The code is unchanged: `src/app.js:16` returns `params[index + 1]` as typed, and `src/app.js:20` checks it with an exact `reasons.includes(reason)`.
+- The spec closes the list (decision 1) and says «un motivo fuera de la lista responde "motivo no válido: …"». It says nothing about normalising the input. Taken literally, `"sala ocupada "` is not one of the three values, so today's answer matches the spec.
+- Trimming would turn that input into «cancelada Norte lun (sala ocupada)». That is new behaviour for a case the AND already decides, and no decision by the dev-lead (Laura) covers it.
+- So this is not a defect against the approved spec. It is a usability request that would need a spec amendment signed by the dev-lead. Calling it Important was too high. At most it is a suggestion to take to the dev-lead.
+
+**Code · Minor · `src/app.js:36`: the ` — ` in `canceladas` breaks on a cp850 Windows console.** NOT ADDRESSED as a fix. The ruling stands.
+- Spec decision 4 names this exact separator: «`canceladas` separa la sala y el día del motivo con ` — `». The THEN of «El listado de canceladas enseña el motivo» requires the literal «Norte lun — sala ocupada».
+- Switching to ` - ` would break the spec's THEN and the test at `test/cancel.test.js:21`. That would be a deviation from the spec, not a fix.
+- How the dash shows up in cp850 depends on the console's code page. It is not a defect in the code.
+
+## New Breakage in the Fix Diff
+
+None.
+- `test/cancel.test.js:13-15` («cancelar sin --motivo») is new and pins the spec's AND «sin `--motivo` responde lo mismo». `reasonOf` returns `undefined`, so `includes` is false and the code gives the expected message (`src/app.js:16,20`). Until now that AND had no test.
+- It uses Sur mar, which has no booking, the same as the existing test at line 10. It still checks the spec's message, because `src/app.js:20` validates the reason before it looks up the booking at line 21.
+- `tasks.md` is new. Its commits (Task 1 at e2601fb, Task 2 at efc0f48) match `git log`.
+
+## Out-of-Scope Observations
+
+- The two invalid-reason tests (`test/cancel.test.js:10`, `:14`) use Sur mar rather than the spec's GIVEN (Norte lun). They pin the message, but not that the Norte lun booking stays active after a rejected reason. The spec doesn't require that, so this is noted only, not a finding.
+
+## Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+- The Spec Minor (test order) is fixed.
+- The two Code findings are not fixed. Their rulings stand, because each proposed fix would contradict an AND, a THEN or decision 4 of the approved spec.
+- If the team wants reasons trimmed, that needs a spec amendment signed by the dev-lead. It does not belong in this round.
+- Checks I ran: I read the spec, plan, fix report, fix diff, `src/app.js` and `test/cancel.test.js` at c96fa20, plus `git status` (clean). I did not run any tests.
+
+--- [62]
+Sin `operations.md`, el gate de cierre es el del plan, `node --test`. Lo lanzo y ensayo los pasos del guion tal como los escribirá la persona.
+
+--- [71]
+Ahora: pedirte la validación de la 0010. Queda: tu respuesta; después, walkthrough, roadmap, squash y la fusión, que en este proyecto tendré que presentarte (~10 min).
+
+He cerrado la revisión y he preparado la validación. Antes, dos avisos de los pre-checks:
+- `sdd merge --check` dice que faltan `merge.into` y `merge.noFf` en `sdd-kit.json`. Cuando llegue la fusión te la presentaré y esperaré tu respuesta; no la haré sola.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo que no está en la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista lo cancelado, por ejemplo «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- **Los espacios alrededor del motivo no se recortan.** El revisor de código lo marcó Important. No lo he arreglado: la spec trata `"sala ocupada "` como un motivo fuera de la lista. La re-revisión está de acuerdo. Si quieres aceptarlo, hace falta una enmienda de la spec.
+- **El separador ` — ` se queda.** El revisor de código propuso ` - ` porque ` — ` sale roto en una consola cp850. No lo he cambiado: la decisión 4 y el THEN fijan ` — `. Cambiarlo también sería una enmienda.
+- **He añadido el test de «sin `--motivo`».** Ese AND no tenía test; ahora lo tiene.
+- **He corregido `tasks.md`.** Apuntaba el commit de la Task 1 a `efc0f48`; ahora dice `e2601fb`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| cancelar con «sala ocupada» | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | ejecución real, en un solo proceso | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `399a597`, en 1,2 s.
+
+**Sin probar**
+
+- **`canceladas` sale vacío si lo lanzas como un comando aparte.** La app guarda las reservas en memoria y cada `node src/app.js …` arranca otra vez con los datos iniciales. Así que `canceladas`, lanzado después de `cancelar`, imprime una línea vacía. La spec lo prueba dentro de un solo proceso (`test/cancel.test.js`), por eso el paso 4 lo hace así. Si el listado tiene que funcionar entre comandos, hay que guardar las reservas en disco, y eso es otra feature.
+
+Panel: plan B en http://127.0.0.1:51077/ (no ve la app: si un paso falla, cuéntalo en el comentario)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay comando de arranque declarado: es una CLI sin `operations.md`.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancela con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancela con un motivo que no está en la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Cancela sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancela y lista en el mismo proceso → «Norte lun — sala ocupada»
+
+```
+node -e "import('./src/app.js').then((a) => { a.run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']); console.log(a.run('canceladas', [])); })"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [73]
+El panel de validación se ha parado al agotar su tiempo en segundo plano. Lo vuelvo a lanzar con más margen.
+
+--- [77]
+El servidor del panel se paró porque llegó al límite de 10 minutos que tiene un proceso en segundo plano. Lo he vuelto a lanzar con un margen de 2 horas y responde en una dirección nueva: **http://127.0.0.1:49793/**. La dirección anterior, `51077`, ya no funciona.
+
+El guion y los cuatro pasos siguen igual que en el mensaje anterior. Tampoco ha cambiado nada en la rama, que sigue en `399a597`.
+
+Dime "validado" o qué paso falla.
+

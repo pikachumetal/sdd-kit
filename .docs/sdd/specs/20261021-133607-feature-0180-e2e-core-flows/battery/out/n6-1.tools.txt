@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json 2>&1; find .docs -type f 2>/dev/null; git log --oneline | head
+<<< .
+..
+.docs
+.git
+.github
+CLAUDE.md
+e2e
+package.json
+playwright.config.ts
+PRODUCT.md
+README.md
+src
+{"init": {"approved": ["PRODUCT.md", ".docs/sdd/steering/constitution.md"], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}
+.docs/sdd/sdd-kit.json
+.docs/sdd/steering/constitution.md
+c5b88fc feat: base del molde
+
+>>> Bash: cd "<run>/repo" && cat package.json playwright.config.ts CLAUDE.md; find e2e src .github -type f; cat .docs/sdd/steering/constitution.md; cat PRODUCT.md | head -40; cat ../../../../kit3/skills/sdd-init/references/generation.md | head -80
+<<< {
+  "name": "reservas",
+  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test" },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0" }
+}
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  retries: process.env.CI ? 2 : 0,
+  timeout: 60_000,
+});
+# Reservas
+
+- Usa `npm run dev` en el puerto 3000.
+- Las fechas van en UTC.
+e2e/booking.spec.ts
+e2e/cancel.spec.ts
+src/app.ts
+.github/workflows/ci.yml
+# Constitution — Reservas
+
+## Reglas de producto
+
+- **Dónde viven los datos**: en memoria.
+#
+
+>>> Bash: cd "<run>/repo" && cat .github/workflows/ci.yml e2e/*.ts src/app.ts; ls ../../../../kit3/skills/sdd-templates ../../../../kit3/skills/sdd-templates/*| head -60
+<<< name: ci
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm test
+import { expect, test } from '@playwright/test';
+
+test('reserva Norte a las 10:00', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Reservar' }).click();
+  await expect(page.getByText('reservada Norte 10:00')).toBeVisible();
+});
+import { expect, test } from '@playwright/test';
+
+test('cancela una reserva', async ({ page }) => {
+  await page.goto('/mis-reservas');
+  await page.getByRole('button', { name: 'Cance
+
+>>> Bash: cd ../../../../kit3/skills/sdd-templates/templates && cat operations-template.md
+<<< # Operations — <proyecto>
+
+> Cómo se ejecuta y se verifica el proyecto. Sin versiones (están en los manifests: `package.json`, `*.csproj`…) ni decisiones pendientes (van al roadmap); el README enlaza este documento, no lo duplica. Los valores de comportamiento (tiempos, límites, cuotas) viven en `capabilities/`. Es un documento de estado: se reescribe, no se le añade. Borra los bloques de ayuda (`>`) al redactar.
+
+## Comandos
+
+- **Build**: `<comando>`
+- **Arrancar**: `<comando>`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.16862180000000004 $)
+Retomo la init desde donde se cortó.
+
+**Estado** (leído de `.docs/sdd/sdd-kit.json`, clave `init`):
+- Aprobados: `PRODUCT.md` y `.docs/sdd/steering/constitution.md`.
+- Config ya respondida, no la vuelvo a preguntar: numeración por secuencia, perfil `delegate` (3 agentes en paralelo), ejecución `auto`, validación `manual`.
+- Siguiente documento: `operations.md`.
+
+**Modo: con código.** Si es un template recién instanciado, dímelo y sigo sin código.
+
+Antes de redactar `operations.md` he mirado el repo. Lo que encontré:
+- Vite, Vitest y Playwright en `package.json`. Los scripts son `dev`, `test` (`vitest run`) y `e2e` (`playwright test`).
+- Dos E2E en `e2e/`: `booking.spec.ts` («reserva Norte a las 10:00») y `cancel.spec.ts` («cancela una reserva»).
+- Playwright con `retries: 2` en CI y `0` en local, y `timeout: 60_000`. No hay motivo escrito para ese timeout, así que lo documentaré como «60 s por test, sin motivo escrito».
+- El CI solo ejecuta `npm test`. No ejecuta los E2E.
+- No he encontrado ningún test de Vitest. Sin archivos de test, `vitest run` suele salir con error, así que el CI podría estar fallando. Lo anoto como discrepancia y no lo doy por verificado.
+- El `CLAUDE.md` previo dice que `npm run dev` usa el puerto 3000. No lo veo en el código, porque Vite usa 5173 por defecto y no hay configuración de Vite. Va a la lista de discrepancias.
+
+❓ **¿Cuáles de los dos E2E son flujos core?**
+Un E2E nuevo tendrá que nombrar uno de estos flujos, y lo demás se prueba en una capa más baja.
+1️⃣ **Ambos son core**: «reservar una sala» (`e2e/booking.spec.ts`) y «cancelar una reserva» (`e2e/cancel.spec.ts`).
+2️⃣ **Solo reservar** es core, y cancelar se prueba en una capa más baja.
+3️⃣ **Otra combinación**: dime cuáles y con qué nombre.
+
+➡️ **Recomiendo 1️⃣**, porque son los dos únicos flujos que tiene hoy el producto (reservar y deshacer la reserva). A cambio, la suite E2E crece con cada flujo core nuevo.

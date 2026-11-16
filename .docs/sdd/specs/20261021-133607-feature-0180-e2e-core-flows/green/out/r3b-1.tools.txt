@@ -1,0 +1,135 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cat e2e-flaky.log | head -150; git ls-files | head -80; cat "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0180-e2e-core-flows/4e6b3416-44e5-41b5-8c65-85439c8b6f13/scratchpad/kit2/skills/sdd-tdd/references/writing-e2e.md"
+<<< $ npx playwright test --repeat-each=3
+Running 15 tests using 3 workers
+
+  ✘  3 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (6.1s)
+  ✘  9 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (5.9s)
+  ✘ 11 [chromium] › 0012-sum-row.spec.ts:4:5 › la fila de total suma la columna (36.0s)
+
+  1) [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda
+
+    Error: Timed out 5000ms waiting for expect(locator).toHaveText(expected)
+
+    Locator: getByTestId('cell-B2')
+    Expected string: "1.234,50 €"
+    Received string: ""
+    Call
+
+>>> Bash: cat e2e/helpers.ts e2e/0012-sum-row.spec.ts e2e/0021-cell-format.spec.ts playwright.config.ts; cat src/sheet/ContextMenu.tsx; grep -n -i -A25 "testing" .docs/sdd/operations.md
+<<< import { APIRequestContext, Page } from '@playwright/test';
+
+export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+}
+
+export async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+}
+
+export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+  const res = await request.get(`http://localhost:3001/api/sheets/${sheet}/cells/${
+
+>>> Bash: cat src/sheet/CellEditor.tsx src/sheet/Grid.tsx; grep -rn -i "moneda\|currency\|core" src server .docs README.md PRODUCT.md | head -20; cat .docs/sdd/roadmap.md | head -30; git log --stat -3 | head -30
+<<< import { useState } from 'react';
+
+export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <input
+      aria-label="Editor de celda"
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+    />
+  );
+}
+import { lazy, Suspense, useState } from 'react';
+import { copyRange, lastCopied } from './clipboard';
+import { ContextMenu } from './ContextMenu';
+
+const CellEditor = lazy(() => im
+
+>>> Bash: python3 - <<'E'
+import re
+p='e2e/helpers.ts'
+s=open(p).read()
+s=s.replace("import { APIRequestContext, Page } from","import { APIRequestContext, expect, Page } from")
+s=s.replace("""  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+""","""  await page.keyboard.press('Enter');
+  // The editor is lazy-loaded: keys typed before it is focused are lost.
+  const editor = page.getByRole('textbox', { name: 'Editor de celda' });
+  await expect(editor).toBeFocused();
+  await editor.fill(text);
+  await editor.press('Enter');
+  await expect(editor).toBeHidden();
+""")
+open(p,'w').write(s)
+for p in ['e2e/0012-sum-row.spec.ts','e2e/0021-cell-format.spec.ts']:
+    s=open(p).read()
+    s=re.sub(r"  await expect\.poll\(.*\n","",s)
+    s=s.replace("{ page, request }","{ page }").replace("import { cellValue, login,","import { login,")
+    open(p,'w').write(s)
+E
+git diff --stat; cat e2e/0012-sum-row.spec.ts
+<<< Auto-install is enabled, attempting to install Python 3.15.1
+{"type":"progress","id":"python","message":"Installing Python with specification 3.15.1"}
+{"type":"progress","id":"python","message":"Installing Python 3.15.1"}
+{"type":"error","code":"plugin::wasm::failed_function_call","message":"Failed to request https://registry.moonrepo.app/releases/python/3.15.1 (404)"}
+import { expect, test } from '@playwright/test';
+import { cellValue, login, typeInCell } from './helpers';
+
+test('la fila de total suma la columna', async ({ page, request }) => {
+  await login(page, '/hojas/demo');
+  await type
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully.
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully.
+
+>>> Write: <run>\repo\e2e\0012-sum-row.spec.ts
+<<< The file <run>\repo\e2e\0012-sum-row.spec.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Write: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< The file <run>\repo\e2e\0021-cell-format.spec.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add e2e && git commit -q -m "test: espera al editor de celda visible en typeInCell y quita sondeos al API
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git status --short && git log --oneline -1
+<<< warning: in the working copy of 'e2e/0012-sum-row.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'e2e/0021-cell-format.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'e2e/helpers.ts', LF will be replaced by CRLF the next time Git touches it
+8594e46 test: espera al editor de celda visible en typeInCell y quita sondeos al API
+
+=== RESULTADO (12 turnos, 0.2037686 $)
+Arreglé la causa más probable de los rojos a ratos y lo dejé en el commit `8594e46`. No ejecuté nada, así que no está comprobado que la suite quede en verde. Hay un problema aparte que casi seguro la mantiene roja (el último punto).
+
+**Causa.** `typeInCell` en `e2e/helpers.ts` pulsaba Enter y tecleaba enseguida. `CellEditor` se carga en diferido (`lazy`), así que si el editor aún no tenía el foco, las teclas se perdían. Eso explica los dos fallos del log:
+- `0021-cell-format.spec.ts` recibió `""` en B2.
+- `0012-sum-row.spec.ts` agotó el timeout.
+
+**Cambios.**
+- **`typeInCell`:** ahora espera a que el editor («Editor de celda») tenga el foco, escribe con `fill`, confirma con Enter y espera a que el editor desaparezca.
+- **Sondeos al API:** quité los `expect.poll(cellValue…)` que había entre acciones en los dos tests. Maquillaban la carrera y contradicen la regla 3 de `writing-e2e.md`.
+- **Timeouts y reintentos:** no los toqué.
+
+**Cómo lo comprobaría.**
+1. Levantar el servidor y la app, e instalar los navegadores con `npx playwright install chromium`.
+2. Ejecutar `npx playwright test e2e/0012-sum-row.spec.ts e2e/0021-cell-format.spec.ts --repeat-each=10`.
+3. Ejecutar luego el gate completo: `npm test && npm run e2e`.
+
+**Pendiente: `0021-cell-format`.**
+- **Menú sin la opción:** `ContextMenu.tsx` solo ofrece «Pegar»; «Formato moneda» no existe. El test puede seguir fallando aunque el helper quede arreglado, porque la función no parece estar implementada. Tampoco encontré en `src` ni en `server` ninguna lógica de formato de moneda.
+- **No es un flujo core:** además, un formato no es un flujo core (regla 1), así que ese test debería bajar a un test de componente. `operations.md` ni siquiera tiene sección «Flujos core».
+- **Qué haría yo:** si hoy no hay función, `test.fixme()` con su issue. No lo hice porque es decisión tuya.

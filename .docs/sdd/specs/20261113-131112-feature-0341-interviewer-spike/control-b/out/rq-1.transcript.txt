@@ -1,0 +1,24 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -50; grep -rIl -i "reserva" --exclude-dir=.git . | head -20
+> Bash: cat src/app.js package.json PRODUCT.md; head -40 ROADMAP.md; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md | head -80
+## agente
+Esto es lo que he encontrado en el código y en los documentos. Es lo que dicen, sin inferencias mías.
+
+- **`src/app.js`:** las reservas son un array en memoria (`bookings`) con una reserva fija escrita a mano. Se pierde al terminar el proceso. Como es una CLI, eso pasa en cada comando, no solo al reiniciar el servidor.
+- **`reservar`:** ahora mismo no añade nada al array. Solo devuelve `reserva semanal creada` si lleva `--cada-semana`. Así que hoy no hay reservas reales que guardar.
+- **`PRODUCT.md`:** lo usas tú solo, en tu propio servidor. No hay concurrencia ni más usuarios.
+- **`package.json`:** no tiene dependencias, y la constitución exige `node --test` en verde.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON** (`reservas.json`), leído y escrito con `node:fs`. `reservar Norte lun 10:00-12:00` lo escribe, y al siguiente comando `libres 10:00-12:00` sigue viendo `Norte` ocupada. No añade dependencias y puedes abrirlo y editarlo a mano. El coste es que no hay transacciones: si dos comandos escriben a la vez, o el proceso se corta a mitad de escritura, el fichero puede quedar corrupto. Con un solo usuario es un riesgo bajo.
+2️⃣ **SQLite** (`node:sqlite`, integrado en Node 22+ y sin paquetes externos). Es robusto ante cortes y permite consultar por día o sala con SQL. El coste es que dependes de la versión de Node del servidor y de un binario `.db` que no se lee a mano. Para un array de reservas es más herramienta de la necesaria.
+3️⃣ **Otro** (por ejemplo, guardar en el calendario `.ics` de la fila 0009 del roadmap).
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, no hay accesos simultáneos y el dato cabe en unas pocas líneas legibles. A cambio, aceptas el riesgo de corrupción por corte a mitad de escritura. Se puede mitigar escribiendo a un temporal y renombrando.
+
+¿Qué opción eliges?

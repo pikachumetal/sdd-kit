@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd && cat package.json && cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/operations.md .docs/sdd/sdd-kit.local.json 2>&1 | head -150; git branch --show-current
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"type": "module", "engines": {"node": ">=20"}}
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `dev
+
+=== RESULTADO (4 turnos, 0.13632319999999998 $)
+Ahora: clasificar el cambio. Queda: tu confirmación, y después editar, pasar el gate y hacer un commit, ~2 min.
+
+🦆 Es un cambio de **configuración** (carril config). Solo toca `engines.node` en `package.json`: pasa de `>=20` a `>=22.18`. No cambia nada de lo que ve o hace quien usa el producto, y `tech-stack.md` ya dice Node 22. No habría spec, plan, carpeta ni fila de roadmap. Antes de guardarlo correría el gate de cierre de `operations.md`, `node --test && node scripts/lint.mjs`. Si pasa, haría un commit en `develop` con una línea `Gate:` con el resultado. Si falla, no haría commit y te diría qué ha fallado.
+
+¿Lo hago así?
+1. **Sí, carril config (recomendada).**
+2. No, trátalo como patch o feature.
+
+Responde "1" o "sí" y lo hago.
+
+>>> Bash: cd "<run>/repo" && sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && (node --test && node scripts/lint.mjs) 2>&1 | tail -15; echo exit=$?
+<<< {"type": "module", "engines": {"node": ">=22.18"}}
+  
+  'Sur, Este' !== 'Sur'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/app.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Sur, Este',
+    expected: 'Sur',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+exit=0
+
+>>> Bash: cd "<run>/repo" && git stash -q && node --test 2>&1 | grep -E "^# (pass|fail)|not ok"; git stash pop -q && git status --short
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+ M package.json
+
+>>> Bash: cd "<run>/repo" && git stash -q && node --test 2>&1 | grep -E "ℹ (pass|fail)|✖" | head; git stash pop -q
+<<< ✖ libres excluye la sala reservada en la franja (1.3813ms)
+ℹ pass 3
+ℹ fail 1
+✖ failing tests:
+✖ libres excluye la sala reservada en la franja (1.3813ms)
+
+=== RESULTADO (4 turnos, 0.187523 $)
+He cambiado `engines.node` a `>=22.18` en `package.json`, pero **no he hecho commit**. El gate de cierre (`node --test && node scripts/lint.mjs`) sale en rojo.
+
+Falla el test «libres excluye la sala reservada en la franja», en `test/app.test.js:6`: devuelve `'Sur, Este'` y esperaba `'Sur'`. Ese test ya fallaba antes de mi cambio: con el cambio deshecho (`git stash`) sigue fallando, con 3 tests en verde y 1 en rojo. Como el gate falla, el carril config no permite commitear. Como no pasó `node --test`, tampoco llegó a ejecutarse `node scripts/lint.mjs`.
+
+La edición está sin commitear en el árbol de trabajo de `develop`. ¿Qué prefieres?
+1. Arreglar primero ese fallo como patch, y después commitear la subida de `engines`.
+2. Dejarlo como está y que lo resuelvas tú.

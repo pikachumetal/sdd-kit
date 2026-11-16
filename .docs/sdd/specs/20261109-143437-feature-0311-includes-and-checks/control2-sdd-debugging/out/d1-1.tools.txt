@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: ls -a .githooks .docs/sdd/steering 2>&1; echo ---; git config core.hooksPath; echo ---; for f in .githooks/*; do echo "== $f"; cat "$f"; done; echo ---; cat .docs/sdd/steering/debt.md 2>&1 | head -40; echo ---; git diff --cached --stat; git show :notas.txt | cat -A | head -20
+<<< ls: cannot access '.docs/sdd/steering': No such file or directory
+.githooks:
+./
+../
+pre-commit*
+---
+.githooks
+---
+== .githooks/pre-commit
+#!/usr/bin/env node
+// Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+const { spawnSync } = require('node:child_process');
+const { rmSync } = require('node:fs');
+const { join } = require('node:path');
+
+const git = (args, options = {}) => spawnSync('git', args, { stdio: 'inherit', ...options }).status === 0;
+const tmp = join(spawnSync('git', ['rev-parse', '--git-dir'], { encoding: 'utf8' }).stdout.trim(), 'hook-check');
+rmSync(tmp, { r
+
+>>> Bash: echo "== directo"; node .githooks/pre-commit; echo "exit=$?"; git worktree list
+echo "== simulando entorno de commit (GIT_INDEX_FILE relativo, como pone git)"; GIT_INDEX_FILE=.git/index node .githooks/pre-commit; echo "exit=$?"; git worktree prune; git worktree list
+<<< == directo
+file:///<run>/repo/.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+                      ^
+
+ReferenceError: require is not defined in ES module scope, you can use import instead
+    at file:///<run>/repo/.githooks/pre-commit:3:23
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5)
+
+Node.js v26.10.0
+exit=1
+<run>/repo 317ffe9 [develop]
+== simulando entorno de commit (GIT_INDEX_FILE relativo, como 
+
+>>> Bash: ls -a; echo ---; cat package.json 2>&1; echo ---; git log --oneline -- package.json .githooks; printenv NODE_OPTIONS >/dev/null && echo "NODE_OPTIONS set" || echo "NODE_OPTIONS unset"
+<<< ./
+../
+.docs/
+.git/
+.githooks/
+notas.txt
+package.json
+README.md
+src/
+test/
+---
+{"type": "module"}
+---
+317ffe9 feat: base del molde
+NODE_OPTIONS unset
+
+=== RESULTADO (6 turnos, 0.1181958 $)
+**Causa raíz:** `package.json` declara `{"type": "module"}`, y el hook `.githooks/pre-commit` está escrito en CommonJS (usa `require`).
+
+**Cómo lo provoca:**
+- Un fichero sin extensión, como `pre-commit`, toma el sistema de módulos del `package.json` más cercano. Aquí es ESM.
+- Node lo carga como módulo ES, y en la línea 3 `require('node:child_process')` lanza `ReferenceError: require is not defined in ES module scope`.
+- El hook sale con código 1 antes de ejecutar ninguna de sus comprobaciones, y git aborta el commit.
+
+**Evidencia:**
+- `node .githooks/pre-commit` falla igual con y sin `GIT_INDEX_FILE` en el entorno, con ese mismo error. Por eso no depende de `notas.txt`: cualquier commit fallaría.
+- `notas.txt` solo tiene una línea normal (`Revisar el aforo de la sala 3.`), sin nada raro.
+- `package.json` y `.githooks` entran juntos en el único commit, `317ffe9`.
+- No hay fichero de deuda técnica (`.docs/sdd/steering/debt.md`), así que ninguna fila cubre este fallo.
+
+**Qué no he comprobado:** la lógica del hook, es decir, el worktree temporal y el `git status` dentro de él. Nunca llega a ejecutarse, y podría tener sus propios fallos cuando se arregle esto.
+
+No he tocado nada. El `git worktree list` queda limpio y no he creado ningún commit. Cuando quieras, propongo el arreglo.

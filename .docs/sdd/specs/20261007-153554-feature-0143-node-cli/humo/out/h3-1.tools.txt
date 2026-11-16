@@ -1,0 +1,93 @@
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Grep: cancel|cancelar|cancelada
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/specs 2>&1 | head -30
+<<< src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+<<< {"version": "2.3.2", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}}
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Bash: ls .docs/sdd/specs/*patch-0007*; cat .docs/sdd/specs/*patch-0007*/patch.md | head -40; cat .docs/sdd/roadmap.md
+<<< patch.md
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- |
+
+>>> Bash: node -e "import('./src/app.js').then(m=>console.log(m.run('cancelar',['dom','03:00'])))"; git rev-parse --abbrev-ref HEAD; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0143-node-cli/a16a875e-c276-471d-9b9b-3203b660ee0a/scratchpad/humo/kit/cli/bin/sdd.js" id next --reserve
+<<< cancelada dom 03:00
+develop
+0008
+
+=== RESULTADO (8 turnos, 0.1443684 $)
+Reservé el id **0008** para el patch. Me paro aquí, como pediste: no he creado rama, carpeta ni `patch.md`.
+
+- **Fallo reproducido:** `run('cancelar', ['dom','03:00'])` devuelve `cancelada dom 03:00`, aunque esa reserva no existe.
+- **Causa raíz:** `src/app.js:12` no consulta `bookings`. Siempre devuelve `cancelada <día> <hora>`, y la lista de reservas ni se mira ni se modifica. Es determinista y no hay que interpretar requisitos, así que entra como patch de fallo.
+- **Id:** el proyecto usa `ids.mode: sequence`. El 0007 ya estaba usado por el patch `cancel` anterior, y este es el siguiente.
+- **Rama:** sigues en `develop`. El kit dice que el patch sale de una rama `feature/0008-<slug>`, pero esa rama no la he creado.
+
+Falta una decisión tuya antes de seguir. Hay que fijar qué devuelve `cancelar` cuando la reserva no existe, y ahora no lo dice ni tu petición ni el roadmap. Si lo elijo yo, el texto del mensaje de error lo estaría decidiendo yo. ¿Qué texto quieres? Por ejemplo, `no existe la reserva mar 10:00`.
+
+Además, `cancelar` no borra nada de `bookings` ni comprueba la sala. Eso no entra en este patch, salvo que me digas lo contrario.

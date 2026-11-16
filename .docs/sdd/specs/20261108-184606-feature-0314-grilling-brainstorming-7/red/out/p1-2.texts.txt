@@ -1,0 +1,24 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, capabilities). Queda: clasificar, anunciar la feature y empezar el diseño de la spec, ~5 min.
+
+--- [15]
+Rama `feature/0008-exportar-csv` creada desde `develop`. El id 0008 vale: no hay remoto contra el que comprobarlo. Ahora invoco la entrevista de diseño.
+
+--- [18]
+**Lo que he entendido** (corrígeme si me equivoco): un comando nuevo, por ejemplo `exportar Norte`, que saca en formato CSV las reservas de una sala. Hoy `src/app.js` tiene las reservas en memoria (`{ room, day, slot }`) y cada comando devuelve un texto que se imprime. Así que la salida actual de `Norte` sería:
+
+```
+dia,franja
+lun,10:00-12:00
+```
+
+Nada de esto toca las reservas semanales ni la cancelación.
+
+❓ **¿Adónde va el CSV?**
+Es lo que más condiciona el resto, porque decide qué hace el comando y cómo se prueba.
+1️⃣ **A la salida estándar (stdout)**: `exportar Norte` imprime el CSV, y lo guardas con `node src/app.js exportar Norte > norte.csv`. Es coherente con los demás comandos, que devuelven texto. A cambio, no escribe ningún fichero por sí solo.
+2️⃣ **A un fichero que indicas**: `exportar Norte --salida norte.csv` crea `norte.csv` y responde `exportadas 1 reservas a norte.csv`. Es más cómodo, pero añade escritura en disco, pide decidir qué pasa si el fichero ya existe y complica los tests.
+3️⃣ **Las dos formas**: stdout por defecto y `--salida` opcional. Cubre todo, pero es más superficie para una herramienta que usas tú solo.
+
+➡️ **Recomiendo 1️⃣**, porque todos los comandos de `run` devuelven un texto que `app.js` imprime. Así el CSV sale por el mismo camino y se prueba con un `assert.equal`, sin tocar el disco. A cambio, la redirección `>` te toca a ti en la terminal.
+

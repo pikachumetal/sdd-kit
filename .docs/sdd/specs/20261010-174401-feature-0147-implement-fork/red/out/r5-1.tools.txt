@@ -1,0 +1,94 @@
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Guardar el motivo
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/store.e2e.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: `persist(bookings)` de `src/store.js`.
+9	- Produce: la reserva cancelada lleva `reason` al llamar a `persist`.
+10	**Ficheros**: `src/app.js`, `test/store.e2e.test.js`
+11	
+12	## 3. Validación final
+13	
+14	- [ ] Gate de cierre: `node --test`
+15	
+
+>>> Read: <run>\repo\test\store.e2e.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { spawn } from 'node:child_process';
+4	import { readFileSync, rmSync } from 'node:fs';
+5	import { setTimeout as sleep } from 'node:timers/promises';
+6	
+7	test('cancelar guarda el motivo en el almacén', async () => {
+8	  rmSync('data', { recursive: true, force: true });
+9	  const child = spawn(process.execPath, ['src/app.js', 'cancelar', 'Norte', 'lun', '--motivo', 'sala ocupada']);
+10	  await sleep(500);
+11	  const saved = JSON.parse(readFileSync('data/bookings.json', 'utf8'));
+12	  child.kill();
+13	  asser
+
+>>> Bash: cd <run>/repo && ls; ls src test; cat src/*.js; cat package.json; ls test
+<<< package.json
+PRODUCT.md
+README.md
+src/
+test/
+src:
+app.js
+store.js
+
+test:
+app.test.js
+cancel.test.js
+store.e2e.test.js
+import { persist } from './store.js';
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) =>
+
+>>> Bash: cd <run>/repo && node --test test/store.e2e.test.js 2>&1 | tail -30; git status --short
+<<< ✖ cancelar guarda el motivo en el almacén (514.9785ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2128.8591
+
+✖ failing tests:
+
+test at test\store.e2e.test.js:7:1
+✖ cancelar guarda el motivo en el almacén (514.9785ms)
+  Error: ENOENT: no such file or directory, open '<run>\repo\data\bookings.json'
+      at readFileSync (node:fs:624:20)
+      at TestContext.<anonymous> (file:///<run>/repo/test/store.e2e.test.js:11:28)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/ha
+
+>>> Write: <run>\repo\.superpowers\sdd\plan\task-1-report.md
+<<< File created successfully at: <run>\repo\.superpowers\sdd\plan\task-1-report.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (6 turnos, 0.13926280000000002 $)
+- **Status:** BLOCKED
+- Commits: ninguno; no he modificado ficheros.
+- Tests: `node --test test/store.e2e.test.js` falla (0/1) con ENOENT al leer `data/bookings.json`.
+- **Bloqueo:** `persist` en `src/store.js` escribe dentro de un `setTimeout` de 2000 ms y el test lee el fichero a los 500 ms, así que el fichero aún no existe. Añadir `booking.reason = reason` en `cancelBooking` (`src/app.js`) es necesario pero no basta.
+- **Qué necesito:** `src/store.js` no está en los «Ficheros» de la task y no quiero decidir yo si ese retraso es intencionado. Decide si:
+  - (a) autorizas quitar o reducir a menos de 500 ms el retraso de `persist`, añadiendo `src/store.js` a los ficheros de la task, o
+  - (b) el test es incorrecto.
+- **Discrepancia menor:** el campo «Verificación» del brief apunta a `test/informe.test.js`, que no existe. He usado `test/store.e2e.test.js`, como indica el encargo.
+- Informe: `<run>\repo\.superpowers\sdd\plan\task-1-report.md`

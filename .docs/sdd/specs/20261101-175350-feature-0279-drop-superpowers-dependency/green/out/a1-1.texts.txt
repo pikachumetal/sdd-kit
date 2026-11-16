@@ -1,0 +1,41 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto para clasificar el cambio. Queda: clasificar y presentarte la nota de comprensión, ~2 min.
+
+--- [13]
+Ahora: te presento lo que entendí y te hago la primera pregunta de diseño. Queda: entrevista corta, spec para tu aprobación y plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He creado la rama `feature/0011` (la fila 0011 del roadmap, «Anular reservas de otros», es tu enunciado). Prevé unas 3 tasks, así que no propongo partirla.
+
+**Lo que entendí (corrígeme):**
+- Hoy `anular <sala> <día>` en `src/app.js` anula cualquier reserva activa de esa sala y día. No mira quién la pide ni quién la hizo.
+- Quieres que solo el responsable de cada sala pueda anular reservas de otras personas. Esa anulación es la de `PRODUCT.md`: el responsable la hace por cualquier motivo, y es distinta de la cancelación, que hace el propio cliente.
+- Hay un hueco de base: las reservas no guardan a nombre de quién están, y la app no sabe quién la está usando ni quién es responsable de cada sala. Esos tres datos no existen todavía.
+
+❓ **¿Cómo sabe la app quién eres y quién es responsable de cada sala?**
+Hoy una reserva es `{ sala, día, franja, estado }`, sin persona.
+
+1️⃣ **Quien actúa se indica en cada comando y los responsables se declaran en el código.**
+Las reservas guardan el nombre de quien las hizo y cada sala tiene un responsable fijo, por ejemplo Norte → `marta` y Sur → `luis`.
+- `anular Norte lun --como marta` → `anulada Norte lun`
+- `anular Norte lun --como pablo` → `solo el responsable de Norte puede anular reservas de otros`
+- `anular Norte lun` (sin `--como`) → `indica quién eres con --como`
+- Coste: hay que escribir `--como` cada vez. No es autenticación: cualquiera puede escribir el nombre de otro.
+
+2️⃣ **Quien actúa sale de una variable de entorno (`SALAS_USUARIO`).**
+Los responsables se declaran igual que en 1️⃣.
+- `SALAS_USUARIO=marta` → `anular Norte lun` → `anulada Norte lun`
+- Coste: no hay que repetir el nombre en cada comando, pero queda oculto en el entorno y es más fácil equivocarse.
+
+3️⃣ **Los responsables se guardan en un fichero de configuración.**
+Es la opción 1️⃣ con los responsables en un fichero editable en lugar de en el código.
+- Coste: añade lectura de ficheros a una app que hoy no tiene ninguno y vive en memoria.
+
+➡️ **Recomiendo 1️⃣**, porque la app es un solo fichero sin dependencias y sin estado fuera de la memoria, y `--como` es lo mínimo que hace que «de otros» tenga sentido sin añadir ficheros ni entorno. A cambio, no impide que alguien se haga pasar por otro, y eso no se arregla sin login.
+

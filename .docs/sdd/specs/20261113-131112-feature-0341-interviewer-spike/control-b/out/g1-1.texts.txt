@@ -1,0 +1,32 @@
+--- [9]
+Antes de proponer nada, esto es lo que he encontrado (leído, no supuesto):
+
+- **Hoy una franja es texto libre.** En `src/app.js` es un string como `'10:00-12:00'`, y `freeRooms` solo compara por igualdad exacta. Una reserva `10:30-11:00` no chocaría con `10:00-12:00`, porque no hay noción de solapamiento.
+- **No hay validación del formato de franja.** Está apuntado en `debt.md`, en «Por triar».
+- **`freeRooms` ignora el día.** Solo mira sala y franja. El patch 0007 arregló lo mismo en `cancelar`, pero `libres` no recibe el día.
+- **El roadmap no tiene nada sobre medias horas.** Hay 0008 (avisos por correo) en curso y 0009 (.ics) en Later. `PRODUCT.md` dice que lo usas solo tú.
+
+Infiero que la parte difícil no es permitir `10:00-10:30`, porque el string ya lo admite. Lo difícil es que el programa entienda las franjas como intervalos, para detectar solapes y validar el formato. Eso toca la deuda ya apuntada.
+
+Antes de entrar en cómo, necesito saber el porqué: ¿qué quieres conseguir con poder reservar medias horas, y qué te pasa hoy que lo hace necesario?
+
+--- [11]
+❓ **¿Qué horas se admiten al reservar?**
+Hay algo que ocurre con cualquiera de las dos opciones. Para que una reserva de media hora no bloquee dos horas, el programa tiene que comparar intervalos y no textos. Si `Norte` está reservada `10:00-12:00`, entonces `10:30-11:00` tiene que dar «ocupada», cosa que hoy no pasa. Lo que queda por decidir es cuánta libertad das en las horas.
+
+1️⃣ **Rejilla de medias horas.** Los extremos solo pueden ser `:00` o `:30`.
+- `reservar Norte lun 10:00-10:30` → `reservada`.
+- `reservar Norte lun 10:15-10:45` → `rechazada: las reservas van en medias horas`.
+- `libres lun 11:00-11:30` con `Norte 10:00-12:00` → `Sur`.
+- Las reservas de 2 horas que ya existen siguen siendo válidas.
+- No se pueden reservar reuniones de 45 minutos ni de 15.
+
+2️⃣ **Intervalos libres.** Vale cualquier `HH:MM-HH:MM` con inicio anterior al fin.
+- `reservar Norte lun 10:15-10:45` → `reservada`.
+- Admite reuniones de cualquier duración.
+- Hay más combinaciones que probar y más huecos sueltos de 10 o 15 minutos.
+
+➡️ **Recomiendo 1️⃣**, porque tu necesidad es la de reuniones de media hora, y la rejilla la cubre con una regla que se explica en una línea. En el código, valida el formato de la franja, que es la deuda de `debt.md` que tienes pendiente. A cambio, si algún día quieres reuniones de 45 minutos, habrá que ampliarla.
+
+¿Con cuál te quedas?
+

@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Glob: .docs/sdd/**/*
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< .docs\sdd\tech-stack.md
+.docs\sdd\constitution.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\mission.md
+.docs\sdd\changelog.md
+.docs\sdd\roadmap.md
+.docs\sdd\sdd-kit.json
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\roadmap.md
+<<< 1	# Roadmap — salas
+2	
+3	## Próximo
+4	
+5	| # | Ítem | Estado |
+6	| --- | --- | --- |
+7	| 1 | Avisos por correo antes de la reserva | ⏳ |
+8	
+9	## Backlog
+10	
+11	| # | Ítem | Origen |
+12	| --- | --- | --- |
+13	| B1 | Exportar reservas a calendario (.ics) | idea propia |
+14	
+15	## Deuda técnica
+16	
+17	| Deuda | Impacto | Plan |
+18	| --- | --- | --- |
+19	| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+20	
+21	## Patches
+22	
+23	| Fecha | Id | Descripción |
+24	| --- | --- | --- |
+25	| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+26
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<<< 1	# Spec — free
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\.docs\sdd\tech-stack.md
+<<< 1	# Tech Stack — salas
+2	
+3	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+4	- Tests: `node --test` (carpeta `test/`).
+5	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+6	
+
+>>> Bash: cat src/app.js; ls test; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md .docs/sdd/changelog.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (11 turnos, 0.1430524 $)
+Antes de proponer nada he leído lo que hay. No he tocado nada.
+
+**Lo que dice el código y los docs**
+- Una franja es hoy un texto libre, como `10:00-12:00` (`src/app.js:3`). `freeRooms` y la cancelación comparan ese texto con `===`.
+- No se valida el formato. La deuda técnica del roadmap lo recoge como «Patch cuando moleste».
+- En la misión eres la única persona usuaria y no hay dependencias externas.
+
+**Lo que infiero yo**
+- Como `10:30-11:00` ya es un texto válido, hoy se podría «reservar media hora» sin cambiar nada.
+- Lo que no funcionaría es el solapamiento. Con la comparación por igualdad, `10:30-11:00` y `10:00-12:00` no chocan, y la sala saldría libre estando ocupada.
+
+El resto de decisiones (validación, granularidad, `--cada-semana`, cancelar, `.ics`) depende de cómo resuelvas esto.
+
+❓ **¿Cómo detecta el sistema que dos franjas chocan?**
+🅰️ **Intervalos con solapamiento.** Se interpreta la franja como inicio-fin y hay choque si se pisan.
+- `reservar Norte lun 10:30-11:00` → `Norte ocupada (lun 10:00-12:00); no reservada`
+- `libres lun 11:00-11:30` → `Sur` (Norte sigue ocupada por 10:00-12:00)
+- Coste: hay que parsear y validar las horas. Eso absorbe la deuda de validación, y la cancelación y `libres` pasan a usar la misma regla.
+
+🅱️ **Franjas fijas de 30 min.** Las reservas se dividen en bloques de 30 min, y una de 2 h ocupa 4 bloques.
+- `reservar Norte lun 10:30-11:00` → `Norte ocupada; no reservada`
+- Coste: es un cambio mayor en el modelo, y la cancelación tendría que decidir si borra un bloque o la reserva entera.
+
+🅲 **Igualdad exacta, como ahora.** Solo cambia que se admiten horas como `:30`.
+- `reservar Norte lun 10:30-11:00` → `reservada`, aunque Norte esté ocupada de 10:00 a 12:00
+- Coste: permite dobles reservas silenciosas. Es lo más barato, pero no creo que lo quieras.
+
+➡️ **Recomiendo 🅰️**, porque la media hora solo tiene sentido si choca con las reservas largas ya existentes (como la de Norte, lun 10:00-12:00), y 🅰️ lo consigue sin rediseñar el modelo. A cambio, asumes escribir el parseo y la validación de horas, que hoy no existen.

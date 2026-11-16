@@ -1,0 +1,78 @@
+--- [11]
+Ya tengo la causa, y la verifiqué en el código y con el test que ya falla. Antes de tocar nada, el kit pide que confirmes el carril.
+
+🦆 **En llano:** `toHours` convierte `"09:30"` en `9.30` y no en `9.5`, porque solo cambia los dos puntos por un punto. Por eso `09:30-12:00` da 12 − 9,30 = 2,7 h, que supera el máximo de 2,5 h. No es un fallo de `MAX_HOURS` ni de la regla del máximo. Es un fallo de conversión de la hora.
+
+El mismo fallo afecta a `precio`, que usa `slotHours`. `precio Sur 09:30-12:00` devuelve `40.499999999999986 €` y debería devolver `37.5 €`. El arreglo en `toHours` corrige las dos cosas.
+
+Es un fallo determinista y la causa lo fija todo, así que encaja como **patch**. El test `test/reservar.test.js:5` («reservar justo el máximo se acepta») ya reproduce el fallo y hoy está en rojo. No hay `estimation.md`, así que no doy estimación en horas.
+
+**¿Cómo lo abro?**
+
+1. **Patch (recomendada):** rama y carpeta `patch-`, arreglo de `toHours` (`h + min/60`), añado un test para `precio` con media hora, y la verificación y el cierre del kit.
+2. **Feature completa:** spec y plan. Es excesivo para un arreglo de una línea.
+
+Responde «1» y sigo.
+
+--- [21]
+Causa raíz confirmada: `09:30` se lee como 9,3 y no como 9,5. Ahora reservo el id, creo la rama y abro el `patch.md`.
+
+--- [26]
+Los dos tests están en rojo por el motivo esperado. Aplico el arreglo.
+
+--- [31]
+El arreglo está hecho y los 7 tests pasan. Falta la revisión de un revisor independiente, que el carril patch exige antes del commit. Está en marcha y espero su resultado.
+
+--- [35]
+Resultado de `node --test test/`: 7 de 7 tests en verde.
+
+**Hallazgos**
+
+1. **Baja, regresión en entradas mal formadas.** Una hora sin minutos, como `9-11` o `10:00-12`, antes daba `Number("9")` = 9, o sea 2 h. Ahora `minutes` es `undefined`, el resultado es `NaN` y `slotHours` devuelve `NaN`. Como `NaN > MAX_HOURS` es falso, `reservar` responde «reservada» y `precio` da `NaN €`. Antes esa franja se aceptaba con el valor correcto. Una hora con seconds como `09:30:15` ahora ignora los segundos, y antes daba `NaN`. Es un caso poco probable. Cae bajo la deuda ya abierta de validación del formato. Si se quiere mínimo y sin regresión, basta `minutes = 0` por defecto en la desestructuración. Si no, conviene anotarlo en el patch.
+
+2. **Baja, el patch.md está desactualizado.**
+   - §3 lista solo `src/app.js` y `test/precio.test.js` como ficheros. `test/reservar.test.js` no aparece en el diff: ya existía en el commit base y no se ha tocado.
+   - §4 dice «pendiente» aunque `status: done`.
+   - `commit: pendiente`.
+
+3. **Info, los tests de `reservar.test.js` no demuestran el fallo.** El test de `09:30-12:00` y el de `09:00-12:30` ya están en el commit base. El primero, con el código antiguo, falla por el 9.3. En esa parte el patch es correcto. El rechazo de `09:00-12:30` pasa con ambos códigos y no aporta cobertura nueva. La cobertura del fallo en `precio` sí es nueva, con `37.5 €`. No hay test para minutos no triviales como `12:30` ni para el caso mal formado.
+
+**Verificado correcto**
+- **Causa raíz (§2):** es cierta. `"09:30"` pasa a 9.3 y `12 - 9.3` da 2.7, mayor que 2.5. Con minutos `:00` el resultado coincidía, por eso solo fallaba con minutos distintos de cero.
+- **Fix:** correcto y mínimo. Medido con el código nuevo:
+
+| Franja | Horas |
+| --- | --- |
+| `09:00-11:30` | 2.5 |
+| `12:30-14:00` | 1.5 |
+| `09:30-12:00` | 2.5 (3.8 de precio no aplica; `precio Sur` da 37.5 €) |
+
+- **Aritmética:** `9.5` y `2.5` son exactos en coma flotante, así que el `40.4999…` desaparece.
+
+--- [38]
+Queda el cierre del kit (`sdd-archive`). Lo invoco.
+
+--- [43]
+El arreglo está hecho y commiteado en `feature/0010-hora-media` (`fced7b6`), pero **todavía no lo he fusionado** y el patch queda sin cerrar. La validación es tuya y el kit no cierra sin ella.
+
+**Qué ha cambiado**
+- **Causa:** `toHours` leía `09:30` como `9,3` en vez de `9,5`. Por eso `09:30-12:00` salía como 2,7 h y se rechazaba.
+- **Efecto en el precio:** el mismo fallo hacía que `precio` diera `40.499999999999986 €` en esa franja.
+- **Arreglo:** `toHours` pasa a `horas + minutos/60` en `src/app.js`. Si faltan los minutos (`10-12`), valen 0, para no romper lo que ya funcionaba.
+- **Tests:** `node --test test/` da 8 de 8. Antes del arreglo había 2 en rojo: el de `reservar`, que ya existía, y el nuevo de `precio`. También añadí uno para `10-12`.
+- **Revisor:** el revisor independiente no encontró fallos en la causa ni en el arreglo. Señaló que `10-12` pasaba a `NaN`, y lo corregí con su test.
+
+**Para validarlo** (ejecuté cada paso yo antes; no modifican datos):
+1. `node src/app.js reservar Sur 09:30-12:00` → debe responder `reservada Sur 09:30-12:00`.
+2. `node src/app.js precio Sur 09:30-12:00` → debe responder `37.5 €`.
+3. `node src/app.js reservar Sur 09:00-12:30` → debe responder `excede el máximo de horas` (3,5 h, sigue rechazándose).
+
+No he arrancado el panel de validación del kit; con tres comandos no lo necesitas.
+
+**Qué falta**
+- **Tu validación:** dime qué probaste y si funciona, y cierro con el registro del patch, la fila del roadmap y el merge.
+- **El merge:** `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Por eso `sdd merge --check` falló, y te presentaré el merge y esperaré tu «sí» en vez de lanzarlo.
+- **Para el cliente:** la corrección ya está en la rama. No llegará a `develop` hasta que cierre el merge.
+
+**No terminado.** Falta tu validación y el merge. No borres todavía el worktree `<run>/repo`.
+

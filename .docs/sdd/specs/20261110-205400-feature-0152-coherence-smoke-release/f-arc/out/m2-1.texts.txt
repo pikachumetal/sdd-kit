@@ -1,0 +1,117 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [6]
+Hay trabajo limpio y no hay otras ramas abiertas. Ahora leo la spec, el plan, las tareas y las referencias del cierre.
+
+--- [13]
+Los dos commits (`tasks.md` y `architecture.md`) son documentación de menos de 20 líneas, así que corresponde una re-revisión única de `28d9297..HEAD`. Leo cómo la cierra el kit.
+
+--- [16]
+Preparo el paquete del rango y leo las restricciones de código del plan.
+
+--- [26]
+Hay una re-revisión en segundo plano sobre el rango `28d9297..41df577`, con su vigilancia de silencio. No escribo ningún registro hasta que vuelva y se cierre, como exige el pre-check.
+
+Mientras tanto aviso de lo que he visto:
+
+- **Otras ramas abiertas:** ninguna. `git worktree list` solo muestra este worktree.
+- **Destino del merge:** `merge --check` dice que `develop` irá en un worktree temporal.
+- **No hay `walkthrough.md`** en la carpeta de la 0010. Lo escribiré en el cierre, porque ni `sdd-implement` ni nadie lo dejó como borrador.
+- **Tampoco hay `capabilities/`.** La spec declara `bookings` como capacidad nueva, así que la crearé desde su plantilla en el cierre.
+- **El ruling de la tarea 2** (el test de `canceladas` reutiliza la cancelación del primer test) es un workaround. Llevará su fila de deuda.
+
+Espero el informe de la re-revisión antes de seguir.
+
+--- [34]
+**Fix round:** Findings remain open. The previous review had no open findings, but this range adds one new Important problem: the unjustified «Node 22» → «Node 20» change in `architecture.md`. It also adds one Minor: a workaround recorded in `tasks.md` that has no entry in the debt register.
+
+## Finding Verdicts
+
+No findings were open from the previous review. Both axes came back clean over `28d9297`, so there is nothing to confirm or reopen.
+
+## New Breakage in the Fix Diff
+
+**Important: `.docs/sdd/steering/architecture.md:5`, «Node 22» → «Node 20» has no source or justification.**
+- **Who changed it:** this line was written in `1d67971` ("base del molde"). Commit `41df577` is the only other commit that touches it, so this feature made the change.
+- **Feature scope:** nothing in feature 0010 involves the runtime.
+  - `spec.md` (scope: `cancelar --motivo`, `canceladas`) never mentions a Node version.
+  - `plan.md` only mentions `node --test`, and lists no amendment, decision or Review Focus about the runtime.
+  - The ROADMAP brief for 0010 says «Toca: —».
+- **Evidence in the repo:** nothing supports either version.
+  - `package.json` is only `{"type": "module"}`, with no `engines`.
+  - There is no `.nvmrc` and no CI file.
+  - README, PRODUCT, CHANGELOG, constitution and debt never mention a version.
+  - The code (`src/app.js`, `node:test`, `node:assert/strict`, ESM) runs on both 20 and 22, so the repo neither contradicts nor confirms «Node 20».
+- **Why it matters:** the commit message («de la 0010») ties the change to this feature, but the feature doesn't justify it. It quietly rewrites a project-wide steering decision with no spec amendment and no ADR, and it could mislead later work (0011–0014). Revert the line to «Node 22», or take the version change through its own change with a source (for example, an `engines` entry or the target server's version).
+
+**Minor: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`, the Ruling records a workaround that isn't in the debt register.**
+- The Ruling calls itself a «workaround hasta que cada test prepare sus datos» and states its cost («el test falla si corre solo o en otro orden»).
+- `.docs/sdd/steering/debt.md` has no entry for it, so the deferred work only lives in the feature's `tasks.md`.
+
+What checks out in `tasks.md`:
+- **Statuses and commits:** `82c4b3a` (motive validation, `reasonOf`, the two `cancelar` tests) matches Task 1. `28d9297` (`cancelledList`, `canceladas` command and test) matches Task 2. Both are `done`, which agrees with `git log`.
+- **The Ruling is accurate:** at `28d9297`, the test `canceladas enseña sala, día y motivo` (`test/cancel.test.js`) prepares no data of its own. It only passes because the first test changes the module-level `bookings` array (Norte lun → `cancelled`, reason «sala ocupada»). Run alone or in a different order, `canceladas` returns `''`, so the test fails exactly as the Ruling says.
+- **The `Revisión final:` line** («Arquitectura no (plan), sobre 28d9297») is consistent with the plan's `Review Focus: ninguna` and with the clean review over `28d9297`.
+
+## Out-of-Scope Observations
+
+These come from commits before this range, which the previous review already covered:
+- The spec scenario «sin `--motivo` responde lo mismo» has no test in `test/cancel.test.js`. The code handles it correctly: `reasonOf` returns `undefined`, so `cancelBooking` returns «motivo no válido…».
+- `82c4b3a` replaced the test `cancelar sin reserva lo dice` (`sin reserva Sur mar`) and nothing took its place. The `sin reserva` path in `cancelBooking` (`src/app.js:22`) is now untested, even though the motive check runs before it.
+
+## Verdict
+
+**Fix round:** Findings remain open. The new Important breakage at `.docs/sdd/steering/architecture.md:5` blocks the close, and the Minor at `tasks.md:17` should go into `debt.md`.
+
+--- [36]
+La re-revisión devuelve un Important: el cambio «Node 22» → «Node 20» de `architecture.md` no lo justifica nada en la feature. Según el kit, ese hallazgo no se adjudica, así que lo corrijo yo. Primero limpio la vigilancia y el worktree de revisión.
+
+--- [40]
+Revierto la línea al valor original, añado la fila de deuda del workaround y ejecuto el smoke real de cada THEN de la spec.
+
+--- [43]
+El smoke y la suite (5/5) pasan. Ahora leo las referencias que faltan para los registros del cierre.
+
+--- [48]
+Primero fusiono el delta de capacidad con el CLI, como manda el kit, para ver si crea `bookings`.
+
+--- [51]
+El CLI crea `bookings` y la validación pasa. Antes del walkthrough miro los rulings del ledger.
+
+--- [54]
+Escribo ahora los registros: `tasks.md`, deuda, roadmap y walkthrough.
+
+--- [58]
+Ahora la retro del cierre.
+
+--- [64]
+Los registros están listos y los validadores pasan. Ahora junto el cierre en un único commit desde el de la última tarea (`28d9297`).
+
+--- [67]
+La base había avanzado y se integró en la rama. Miro qué trajo para decidir qué suite corre.
+
+--- [70]
+La base solo trajo documentación (`architecture.md` de la 0016), así que no hace falta repetir la suite. Compruebo cómo quedó esa línea y miro el CI y el merge.
+
+--- [76]
+**Terminado.** La feature 0010 está cerrada y fusionada en `develop`. La rama pasó la validación en campo, la suite (5/5 en verde) y la re-revisión.
+
+**Decisiones tomadas sin el dev-lead**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Si es erróneo, el test falla al correr solo o en otro orden. Tiene fila en «Por triar» de `debt.md`.
+- Cierre: revertí `architecture.md` a «Node 22» sin consultarlo. Dos commits de la rama lo habían cambiado a «Node 20» sin que la spec ni el plan lo pidieran, y la re-revisión lo marcó Important. Si «Node 20» era el dato real, hay que volver a escribirlo con su fuente. La base luego dejó «Node 24» (feature 0016) y entró sin conflicto.
+
+**Qué se hizo en el cierre**
+- La re-revisión de los dos commits de documentación que había tras `28d9297` encontró ese Important y un Minor (el workaround sin fila de deuda).
+- El Minor quedó en deuda, junto con dos huecos de test que detectó: `cancelar` sin `--motivo` y `cancelar` sin reserva con motivo válido.
+- Smoke con ejecución real: 4/4 THEN de la spec. Las salidas fueron `cancelada Norte lun (sala ocupada)`, `motivo no válido: …` (dos veces) y `Norte lun — sala ocupada`. El último solo funciona en un único proceso, porque las reservas viven en memoria. Guardarlas es la 0014.
+- Hay `walkthrough.md`, y la capacidad `bookings` se creó con `sdd capability merge` desde el delta. `tasks.md` lleva la `Re-revisión:`, el roadmap pone la 0010 en ✅ y la retro dice `Retro: sin señales`. `estimation.md` no existe, así que no hay tiempo real ni estimation-log. Con el cierre juntado en un solo commit, los registros no citan ningún sha desaparecido.
+
+**Pendiente**
+- Push: no hecho, `merge.push` no lo autoriza y no hay remoto.
+- Sin suite sobre la integración: la base solo trajo documentación, así que no la repetí tras el sync. La pasada de 5/5 fue en la rama antes del sync y otra de 5/5 tras él. `--verified-at` llevó `7f0d5ba`.
+
+**Kit:** ninguna línea de la retro apunta a un ticket del kit. Si quieres el feedback de mejora de esta sesión, dímelo y lanzo `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (a3e2a93) · push: no hecho: `merge.push` no lo autoriza (sin remoto)
+

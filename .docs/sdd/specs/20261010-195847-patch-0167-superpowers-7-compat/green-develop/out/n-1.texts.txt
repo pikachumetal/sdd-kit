@@ -1,0 +1,40 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap). Queda: clasificar con la fila 0011, anunciar y abrir el brainstorming, ~3 min.
+
+--- [11]
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+
+- La fila 0011 del roadmap pide «Avisos por correo antes de la reserva». La rama `feature/0011` ya está abierta y la fila está pendiente.
+- Hoy el sistema es una lista de reservas en el navegador (Angular) y una API (.NET 9 con EF Core sobre SQL Server) que las guarda.
+- En `tech-stack.md` no aparece ningún envío de correo, ni servicio ni configuración de SMTP. Es lo primero que tendré que mirar en el código.
+- Todo lo demás (a quién se avisa, cuánto antes, qué dice el correo, qué pasa si el envío falla) está sin decidir. No lo voy a suponer: lo iremos fijando de una decisión en una.
+
+Para empezar, cuéntame con tus palabras: ¿qué situación concreta ha pasado, o quieres evitar, que hace que estos avisos hagan falta?
+
+--- [13]
+Ahora: miro el código del backend para anclar las decisiones (modelo de reserva, estados, cancelación, tareas en segundo plano). Queda: la siguiente decisión contigo, ~2 min.
+
+--- [18]
+Lo que dices está claro: aviso 24 h antes, solo reservas confirmadas, con fecha, hora y sala, y sin aviso si se cancela antes. El cómo enviarlo lo decido yo y lo dejaré anotado como decisión mía.
+
+Antes de seguir he mirado el código, y hay un hecho que cambia el alcance:
+
+- `Booking` solo tiene `Id`, `Room`, `Start`, `End` y `Owner`. No hay estado «confirmada» ni «cancelada», ni dirección de correo.
+- La API solo tiene `GET /bookings`. No hay crear, ni cancelar, ni borrar.
+- La fila 0012 («filtrar por estado») figura ✅ en el roadmap, pero ni en esta rama ni en `develop` hay rastro de un estado.
+
+❓ **¿Qué significa «confirmada» y «cancelada» para el aviso?**
+Hoy una reserva es una fila en `Bookings` y no hay forma de cancelarla desde la API. Escena con la reserva `Norte, mañana 10:00`:
+
+1️⃣ **Existir = confirmada, cancelar = borrar la fila.** Esta feature solo envía: a las 10:00 de hoy mira las reservas que empiezan en 24 h y avisa a cada una. Si alguien borra la fila antes, no hay aviso, porque no hay fila. Coste: «cancelada» no deja rastro, y cuando 0012 u otra feature añada estados, el envío tendrá que revisarse.
+
+2️⃣ **Añadir un estado a `Booking` (Confirmada/Cancelada) en esta feature**, y avisar solo las confirmadas. Escena: `Norte, mañana 10:00` pasa a `Cancelada` → no sale aviso; sigue visible en la lista. Coste: abre un cambio de modelo con migración y, probablemente, el endpoint para cancelar, que hoy no existe. Es bastante más grande que «enviar un correo».
+
+➡️ **Recomiendo 1️⃣**, porque el código no tiene estado ni forma de cancelar, y la fila 0012 es la que lo introduce. Meterlo aquí duplicaría su trabajo. A cambio, «cancelar» queda reducido a «la reserva ya no existe».
+

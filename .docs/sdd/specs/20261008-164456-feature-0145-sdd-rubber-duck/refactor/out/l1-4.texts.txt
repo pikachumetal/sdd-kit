@@ -1,0 +1,38 @@
+--- [4]
+Voy a leer el código real antes de escribir.
+
+--- [16]
+# Cómo viaja una exportación, de punta a punta
+
+Sigo un ejemplo: pides la exportación de **marzo de 2026**. Las reservas guardadas son estas:
+- Sala Norte el 2 de marzo, de 10:00 a 12:00.
+- Sala Sur el 5 de marzo, de 16:00 a 17:00.
+- Sala Norte el 12 de marzo, de 09:00 a 10:00, **cancelada**.
+- Sala Norte el 19 de marzo, de 12:00 a 13:30.
+- Sala Sur el 1 de abril, de 10:00 a 11:00.
+
+1. **Tú lanzas la orden en la terminal** con el mes («exportar, mes 2026-03»). La herramienta lee el mes y se lo pasa al proceso de exportación.
+2. **Se cargan todas las reservas.** La herramienta lee el listado completo, las cinco, de todos los meses y en cualquier estado.
+3. **Se quedan solo las de marzo que siguen en pie.** La cancelada del 12 y la de abril se descartan. Quedan tres: 2, 5 y 19 de marzo.
+4. **Se ordenan por día y hora**, de la más antigua a la más reciente. Aquí ya venían en ese orden.
+5. **Cada reserva se convierte en un evento de calendario.** Cada evento lleva el título «Sala Norte» (o «Sala Sur»), la hora de inicio y la de fin. Las horas se convierten de la hora del coworking a UTC, el reloj de referencia que usan los calendarios. La herramienta da por hecho que el coworking va dos horas por delante de UTC. Así, la del 2 de marzo, de 10:00 a 12:00, queda como 08:00 a 10:00 UTC. Los tres eventos se juntan en un solo fichero de calendario.
+6. **Se guarda el fichero**, que se llama como el mes. La carpeta de exportaciones se crea si no existe. Si ya había una exportación de marzo, se sobrescribe.
+7. **La herramienta te escribe en pantalla dónde ha quedado el fichero.**
+
+Fuera del código, ahí acaba la herramienta. Tú abres Google Calendar u Outlook e importas ese fichero a mano. No hay sincronización: si luego cancelas una reserva, tienes que volver a exportar.
+
+**Dos cosas que conviene saber** (las veo en el código, no las he probado importando en un calendario):
+- La diferencia con UTC está fijada en dos horas todo el año. Hasta finales de marzo el reloj de España va una hora por detrás de eso. Las reservas de principios de marzo podrían salir con una hora de desfase al importarlas. Esto es una suposición mía sobre la zona horaria del coworking.
+- A las horas convertidas les falta la marca que indica «esto está en UTC». Según el calendario, podría leerlas como hora local en vez de UTC.
+
+## Dónde mirar
+
+1. Orden en terminal: `src/cli.js`
+2. Carga de reservas: `src/bookings/repository.js` (datos en `data/bookings.json`)
+3. Filtro por mes y cancelación, y orden: `src/export/filter.js`
+4. Conversión a eventos y horas: `src/export/ics.js`
+5. Encadenado de todos los pasos: `src/export/index.js`
+6. Escritura del fichero (queda en la carpeta de exportaciones): `src/export/writer.js`
+
+¿Quieres que profundice en algún paso?
+

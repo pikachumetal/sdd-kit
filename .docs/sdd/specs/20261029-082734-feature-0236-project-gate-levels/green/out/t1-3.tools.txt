@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -80; echo ----; git show --stat 5053e1a d9360d9 | head -40; ls; cat .docs/sdd/operations.md | sed -n '/Testing/,$p' | head -60
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (0.751ms)
+✔ reservar --cada-semana crea la reserva semanal (0.127ms)
+✔ cancelar con un motivo de la lista (0.7527ms)
+✔ cancelar con un motivo fuera de la lista (0.1152ms)
+✔ canceladas enseña sala, día y motivo (0.8061ms)
+✖ el README nombra cancelar con motivo (1.3074ms)
+✖ el README nombra canceladas (0.1928ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 126.7435
+
+✖ fai
+
+>>> Bash: cat package.json gate.json; cat test/docs.test.js; ls scripts test .docs 2>&1; git log --oneline -3; git status --short
+<<< {"type": "module"}
+{"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js test/docs.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js","test/docs.test.js","README.md"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const readme = readFileSync('README.md', 'utf8');
+
+test('el README nombra cancelar con motivo', () => assert.match(readme, /cancelar <sala> <día> --motiv
+
+>>> Bash: node --test test/docs.test.js 2>&1 | tail -15; echo exit=$?; ls .docs/sdd; grep -rn "Sin filtro" .docs/sdd | head
+<<< ✔ el README nombra cancelar con motivo (0.6849ms)
+✔ el README nombra canceladas (0.1098ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 98.3415
+exit=0
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+=== RESULTADO (6 turnos, 0.1500482 $)
+Corrí solo los dos tests que fallaron, porque el arreglo 5053e1a solo toca `README.md`. La regla del kit para un arreglo solo de docs no pide gate ni suites. Los dos pasan, 2/2:
+
+```
+node --test test/docs.test.js
+✔ el README nombra cancelar con motivo
+✔ el README nombra canceladas
+ℹ tests 2 · pass 2 · fail 0
+```
+
+La línea para el walkthrough:
+
+```
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` · `node --test test/docs.test.js` → tras el rojo en d9360d9, arreglo 5053e1a solo de docs: bookings:test: corrió 2/2 (solo los tests que fallaron: el README nombra cancelar con motivo, el README nombra canceladas; los otros 5 pasaron en d9360d9) · rooms:test: saltada en la pasada roja (--affected: ni `src/rooms.js` ni `test/rooms.test.js` cambian)
+```
+
+- **Dónde estaba el rojo:** en `bookings:test`, que dio 5 de 7. Fallaron los dos tests de `test/docs.test.js`, porque el README no mencionaba `cancelar <sala> <día> --motivo` ni «canceladas».
+- **`rooms:test` no la he vuelto a evaluar:** el «saltada» sale del log rojo y de sus inputs en `gate.json`, no de una consulta a la herramienta (`scripts/gate.mjs`) en esta pasada. Si prefieres que el motivo salga de la herramienta, lo compruebo antes de cerrar.
+- **Sin sección Testing:** `operations.md` no existe en este repo y `tech-stack.md` no tiene lista de «Sin filtro». Apliqué la lista por defecto del kit, en la que `README.md` no entra.

@@ -1,0 +1,69 @@
+--- [2]
+Ahora: implementar el plan de la 0010 invocando `sdd-implement`. Queda: las tasks del plan y la revisión final, antes de la validación.
+
+--- [5]
+Ahora: preparar el workspace de la 0010 y leer plan y spec. Queda: las tasks, la revisión final y la validación, ~20 min.
+
+--- [11]
+Ahora: setup (ledger, escaneo previo, base). Queda: 2 tasks en Native, revisión final y validación.
+
+--- [20]
+Dos tests en RED. Implemento.
+
+--- [22]
+Python no está; edito con Edit.
+
+--- [29]
+Task 1 completa (RED copia idéntica, 4/4). Task 2: base y RED.
+
+--- [33]
+My sed broke the `'\n'` literal (a real newline landed inside the string); fixing it.
+
+--- [37]
+Sin herramienta de subagentes: la revisión final es autorrevisión sobre el paquete. Ejecuto la suite entera y el smoke real.
+
+--- [40]
+El diff de `src/app.js` reescribe el fichero entero: sospecho de los finales de línea.
+
+--- [43]
+Los originales son CRLF y mis ediciones los dejaron en LF (y mixto en el test). Los restauro a CRLF para que el diff sea mínimo.
+
+--- [53]
+🦆 Cancelar ya acepta `--motivo` y `canceladas` lista las reservas canceladas con su motivo.
+
+Ahora: validación de la 0010. Queda: tu prueba (~2 min) y, con tu «validado», el cierre con `sdd-end-feature` (~5 min).
+
+## ✋ Me salí del plan en…
+
+- **Rulings.** Se resuelven solos y no cambian la spec:
+  - `cancelar` sin `--motivo` conserva la respuesta de antes («cancelada Norte lun»). La spec no dice qué responder y cambiarlo altera una salida que nadie pidió. Si querías que un cancelar sin motivo se rechace, son un test y 3 líneas.
+  - Dos commits `style` restauran los finales de línea CRLF del repo, que mis ediciones habían pasado a LF. No cambian el comportamiento.
+- **Sin revisor independiente.** Este entorno no tiene herramienta de subagentes, así que la revisión final fue una autorrevisión mía sobre `12ed491..HEAD`. Es más débil que una revisión con contexto fresco: decide tú si basta. No encontré nada Critical ni Important.
+- **Nada reabierto.** Las dos tasks se cerraron con sus tests en RED→GREEN y copia idéntica al commit.
+- **Minors diferidos.**
+  - `--motivo` antes de la sala se toma como sala.
+  - `canceladas` sin canceladas responde vacío.
+  - La reserva cancelada sin motivo se lista como «Norte lun».
+  - Cada invocación de la CLI es un proceso nuevo, así que `canceladas` solo ve lo cancelado en ese mismo proceso (el almacén es la 0014).
+
+## Smoke (suite completa: `node --test`, 7/7, ~0,1 s)
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | `ejecución real` (`node src/app.js …`) + suite |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | `ejecución real`, provocado con `--motivo "porque sí"` + suite |
+| `canceladas` → «Norte lun — sala ocupada» | `ejecución real` en un solo proceso (cancelar y luego listar) + suite |
+
+## Guion de pruebas
+
+No hay nada que arrancar ni puerto. En la raíz del repo:
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`.
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `node -e "import('./src/app.js').then(m=>{m.run('cancelar',['Norte','lun','--motivo','sala ocupada']);console.log(m.run('canceladas',[]))})"` → `Norte lun — sala ocupada`. Va así porque la CLI no conserva estado entre ejecuciones.
+4. `node --test` → 7 pasan, 0 fallan.
+
+**¿Qué has probado tú y funciona?** Con tu respuesta invoco `sdd-end-feature`. Si prefieres que un cancelar sin motivo se rechace, dímelo ahora y lo meto antes del cierre.
+
+Los borradores de cierre (walkthrough, delta de `capabilities/` y changelog) no los he adelantado; los escribirá `sdd-end-feature`.
+

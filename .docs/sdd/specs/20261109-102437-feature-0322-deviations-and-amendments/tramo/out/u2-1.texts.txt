@@ -1,0 +1,124 @@
+--- [3]
+Primero leo la spec, el plan y `tasks.md` de la 0010.
+
+--- [11]
+Escribo la enmienda en `spec.md`, sin commitear. Elijo quitar «quién canceló», porque el Intent solo habla del motivo y «quién» salió de mi decisión 2, que el dev-lead no validó.
+
+--- [13]
+Ahora el revisor de spec (uno, `sonnet`, siete puntos), porque la enmienda cambia el delta.
+
+--- [19]
+Espero al revisor antes de presentar el ✋.
+
+--- [20]
+1. Crítico · Delta de comportamiento / Enmiendas · La enmienda quita «quién» (una promesa de la petición original) y está marcada «sin aprobar», pero el spec sigue con `status: approved` y la aprobación de Laura (2026-10-08) cubre el texto anterior. Un cambio de alcance sobre un spec aprobado queda sin aprobar. · Que Laura apruebe la enmienda y se anote en Aprobaciones. Si no, no se implementa lo enmendado.
+
+2. Crítico · Intent / Scope vs petición original · La petición era «saber quién y por qué». El Intent solo promete el motivo y el Scope no dice que «quién» queda fuera. Ese recorte solo consta en la decisión 2 y en la enmienda. · Añadir a «No entra» «quién canceló (no hay identidad)». Ajustar el Intent a «por qué» y decir que «quién» queda diferido.
+
+3. Importante · Capacidades / Delta · Se declara `bookings` como «Modificadas», pero el delta solo tiene ADDED y no existe `capabilities/`. Cambiar el comportamiento de `cancelar` (sin `--motivo` ahora da error) es un MODIFIED encubierto de la cancelación actual, que antes no pedía motivo. · Pasar a MODIFIED el requisito de `cancelar`, con el comportamiento previo citado. O declarar que `bookings` aún no tiene capability y que ahí se crea.
+
+4. Importante · Delta, requisito 1 · Mezcla tres comportamientos (éxito, motivo fuera de lista, sin motivo) como AND de un único escenario. Con un solo GIVEN/WHEN no se verifica por separado cada fallo. Además `cancelar` sobre una reserva inexistente o ya cancelada no tiene escenario. · Separar en escenarios propios con su WHEN. Añadir uno para reserva inexistente o ya cancelada, o sacarlo del alcance.
+
+5. Importante · Delta, requisito 2 · No hay escenario de `canceladas` sin canceladas ni con varias, y falta el orden. «Lista las reservas con estado cancelada» no dice cómo se ordenan. El THEN con una sola fila no prueba el listado. · Añadir los escenarios vacío y varias filas, con el orden fijado.
+
+6. Importante · Approach / Delta · Las reservas canceladas con anterioridad no tienen motivo. Si «canceladas» lee las que ya existen, falta definir qué se muestra. Es una decisión de datos y no está en «Decisiones que he tomado yo». · Añadir decisión y escenario: motivo vacío o «sin motivo» para las anteriores, o migración. Declarar que se toca el modelo de datos de la reserva.
+
+7. Importante · Decisiones, punto 3 · «Sin review de spec: dos señales (MODIFIED, datos)» es una decisión de proceso en el cuerpo. Esas dos señales justificarían revisar, no omitir la review. La enmienda tampoco pasó por review. · Justificar de verdad la omisión, o hacer la review y registrarla.
+
+8. Menor · Delta, requisito 1 · El motivo «otro» no tiene escenario. No se sabe si es válido solo o si pide texto libre. Además la sintaxis `--motivo "sala ocupada"` entre comillas con espacios no está especificada: ¿admite mayúsculas o sin comillas? · Añadir un escenario con «otro». Fijar la comparación del motivo (exacta, minúsculas).
+
+9. Menor · Delta, requisito 1 · El GIVEN fija «10:00-12:00», que el THEN no usa, y `lun` como día no está definido como formato (¿«lun» vale con fecha?). Es un dato inventado que añade ruido y puede contradecir cómo identifica el sistema las reservas. · Quitar el horario del GIVEN, o ponerlo en la salida. Aclarar que el día es el día de la semana.
+
+10. Menor · Dónde se prueba · Los dos requisitos se prueban en `test/cancel.test.js` y ahí se citan solo dos comandos. Los escenarios de error y el vacío no tienen test asignado. La constitución exige `node --test` entero en verde. · Mapear cada escenario a un test dentro de `test/cancel.test.js`, incluida la regresión de cancelar sin motivo.
+
+--- [22]
+🦆 La Task 2 no se puede cumplir tal como está escrita. La THEN pide «Norte lun — sala ocupada — Ana», pero la app no tiene usuarios ni ningún dato de quién ejecuta `cancelar`. Solo guarda sala, día, estado y motivo, así que «Ana» no tiene de dónde salir. Cambiar la THEN es un desvío de la spec aprobada, no un `Ruling:`, y tampoco lo resuelvo inventando un campo. Por eso paro.
+
+✋ **Desvío en la Task 2: la spec pide un dato que la aplicación no tiene**
+
+La enmienda está en `spec.md` **sin commitear**, con su línea en «Enmiendas» marcada `sin aprobar`. `tasks.md` sigue con la Task 2 en `in_progress` y no he tocado código.
+
+**Qué cambia la enmienda:** quita «quién canceló» de la decisión 2, del título del requisito, de su GIVEN y de su THEN. La THEN nueva es «Norte lun — sala ocupada». Es mi recomendación, por dos motivos:
+- El Intent solo habla del motivo.
+- «Quién» salió de mi decisión 2, que no se validó con Laura.
+
+**Alternativa:** añadir `--por <nombre>` a `cancelar` y guardarlo. Es una entrada nueva, así que cambia el Scope y el observable de la Task 1, que ya está cerrada. La dejaría para una feature con identidad real.
+
+**Hallazgos del revisor** (uno, `sonnet`, siete puntos, sobre el delta enmendado):
+- **Crítico 1:** el spec sigue `approved` con la firma de Laura del 2026-10-08, que cubre el texto anterior. Hace falta que ella apruebe la enmienda.
+- **Crítico 2:** la petición decía «saber quién y por qué», y el Scope no dice que «quién» queda fuera. Propone añadir a «No entra»: «quién canceló (no hay identidad)». Está sin aplicar, porque ampliaría la enmienda sin que lo hayas decidido.
+- **Importantes 3–7 y Menores 8–10:** huecos que ya tenía la spec aprobada y que la enmienda no toca:
+  - Hay un MODIFIED encubierto en `cancelar`, que antes no pedía motivo.
+  - Faltan escenarios para `canceladas` vacío o con varias filas, y para reserva inexistente o ya cancelada.
+  - No está decidido qué se muestra para reservas canceladas antes de esta feature.
+  - Faltan un escenario con «otro» y un mapa de tests.
+  - La decisión 3 («sin review de spec») la contradicen sus propias señales.
+
+  No los he tocado, y no los verifiqué contra `capabilities/`, que no existe en el repo.
+
+**Qué necesito de ti:**
+1. ¿Apruebas quitar «quién canceló» (recomendado) o prefieres `--por`?
+2. ¿Añado el «No entra» del hallazgo 2?
+3. ¿Los hallazgos 3–10 se quedan como deuda o los recojo en esta enmienda?
+
+Con tu respuesta, y con Laura aprobando por la vía que corresponda, hago la Task 2 con RED primero: `canceladas` listando «Norte lun — sala ocupada».
+
+--- [23]
+La vigilancia de silencio ha terminado. Era la del revisor, que ya había devuelto su informe, así que no aporta nada nuevo.
+
+Sigo parado en el ✋ de la Task 2. Ese aviso automático no es una respuesta tuya, así que no tengo ninguna aprobación. `spec.md` queda con la enmienda sin commitear y no he tocado código.
+
+Necesito tus tres respuestas:
+1. Quitar «quién canceló» (recomendado) o añadir `--por`.
+2. Si añado «quién canceló (no hay identidad)» a «No entra».
+3. Si los hallazgos 3–10 quedan como deuda o los recojo en la enmienda.
+
+--- [25]
+Eliges `--por`, que es la alternativa, y cambia el Scope. Reescribo la enmienda: `cancelar` gana `--por`, y como toca la Task 1 ya cerrada, va a una Task 3 nueva al final. Primero la spec, el plan y `tasks.md`.
+
+--- [28]
+La spec, el plan y `tasks.md` están actualizados. Sigo con el método del plan, que es Native.
+
+--- [31]
+Ahora: preparo el workspace y arranco la Task 2 con su RED. Queda: Task 2 y Task 3 más la revisión final, ~10 min.
+
+--- [38]
+El RED falla por lo correcto: `canceladas` devuelve `salas`. Implemento el mínimo.
+
+--- [42]
+Mi script de Python dejó un salto de línea real dentro de `.join('…')`. Lo arreglo.
+
+--- [48]
+GREEN con 3 tests. Commiteo la enmienda aprobada aparte y después la Task 2.
+
+--- [51]
+Task 2 cerrada. Ahora la Task 3, con el RED primero.
+
+--- [53]
+Falla por lo correcto: falta el nombre. Implemento.
+
+--- [56]
+El cambio en `src/app.js` es mío. La suite entera pasa con 6 tests. Commiteo la Task 3 y cierro las dos en `tasks.md`.
+
+--- [58]
+Las Tasks 2 y 3 están hechas y commiteadas, con la suite entera en verde (6 tests). Falta la revisión final de la rama, que no he lanzado, y después el cierre con `sdd-archive`.
+
+**Qué hice con el desvío**
+- Elegiste `--por <nombre>` en `cancelar`. Reescribí la enmienda en la spec para eso y la commiteé aparte (`06dc02e`).
+- Como toca la Task 1, que ya estaba cerrada, no la reabrí. Creé la **Task 3**, y `tasks.md` marca la Task 1 como «afectada por enmienda 2026-11-09 → Task 3».
+- **Task 2** (`bb2d227`): `canceladas` lista «Norte lun — sala ocupada».
+- **Task 3** (`fa9b749`): `cancelar … --por Ana` guarda el nombre, y `canceladas` muestra «Norte lun — sala ocupada — Ana».
+- Escribí cada test antes del código y vi cómo fallaba por lo esperado.
+
+**Rulings que tomé**
+- **El orden de las tasks:** en la Task 2 el listado no muestra el nombre, porque no existe hasta la Task 3. Si te parece mal, el coste es solo ese orden.
+- **`--por` es opcional:** sin él, `cancelar` responde igual que antes y el listado no añade nombre. Lo decidí yo y está en la decisión 3 de la spec para que lo valides.
+- **Tests con módulo fresco:** cada test nuevo importa `app.js` con `?fresh=…`, porque el estado vive en memoria y solo hay una reserva.
+- **Sin segunda review de spec:** el revisor leyó la versión «quitar quién», no la de `--por`. Lo dejé escrito en «Enmiendas».
+
+**Qué te queda por hacer**
+- **Aprobación de Laura:** la enmienda figura como «aprobada por el dev-lead en la sesión», pero la firma de Laura en «Aprobaciones» es del 2026-10-08 y no la he tocado. Decide tú si necesita la suya.
+- **Hallazgos 3–10 del revisor:** siguen sin recoger. Son deuda de la spec original.
+
+¿Lanzo ya la revisión final de la rama?
+

@@ -1,0 +1,135 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50; find . -name gate.json -not -path "./node_modules/*" | head; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+gate.json
+package.json
+scripts/gate.mjs
+scripts/lint.mjs
+src/app.js
+src/rooms.js
+tes
+
+>>> Bash: cd "<run>/repo" && cat gate.json; cat .docs/sdd/operations.md; ls src; cat package.json; cat scripts/gate.mjs | head -60
+<<< {"tasks": {
+  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+}}
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+- **Gate de merge**
+
+>>> ToolSearch: {"query":"select:AskUserQuestion","max_results":1}
+<<< No matching deferred tools found
+
+=== RESULTADO (6 turnos, 0.16101199999999996 $)
+🦆 Es un cambio de configuración: `gate.json` es la lista de qué ficheros disparan cada tarea del gate de cierre, y no cambia nada de lo que ve el usuario del producto. Hoy `rooms:test` solo se ejecuta si cambian `src/rooms.js` o `test/rooms.test.js`. Con el cambio, también se ejecutaría cuando cambie algo bajo `src/shared/`. La carpeta `src/shared/` no existe todavía, así que por ahora no cambia nada en la práctica.
+
+**Carril: config** (sin spec, plan, id ni entrada en el roadmap).
+
+**Qué toco:** la línea de `rooms:test` en `gate.json`:
+
+```json
+"inputs": ["src/rooms.js", "test/rooms.test.js", "src/shared/**"]
+```
+
+**Qué compruebo antes de guardarlo:** el patrón `src/shared/**` lo interpreta `globToRegExp` de `scripts/gate.mjs`, y confirmo que casa con `src/shared/x.js` y con subcarpetas. Después corro el gate de cierre de `operations.md`: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. Si pasa, hago un commit en `develop` con la línea `Gate:` en el cuerpo. Si falla, no commiteo y te cuento qué falló.
+
+**Antes de seguir necesito tu confirmación.** No tengo herramienta de preguntas en esta sesión, así que te lo pregunto aquí:
+
+1. **Sí, hazlo como config (recomendada).**
+2. **Cambios:** por ejemplo, otro patrón como `src/shared/**/*.js`, o añadirlo también a `bookings:test`.
+
+Un aviso sobre la rama: estamos en `develop`, que no es la rama estable (`main`). El commit se queda en `develop` y no hago merge.
+
+Dime «sí» y lo ejecuto.
+
+>>> Edit: <run>/repo/gate.json
+<<< The file <run>/repo/gate.json has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node -e "
+const g=s=>new RegExp('^'+s.replace(/[.+^\${}()|[\]\\\\]/g,'\\\\$&').replace(/\*\*\/?/g,'\0').replace(/\*/g,'[^/]*').replace(/\0/g,'.*')+'\$');
+const r=g('src/shared/**');console.log(r.test('src/shared/x.js'),r.test('src/shared/a/b.js'),r.test('src/app.js'))"
+echo "--- sin filtro"; node scripts/gate.mjs run rooms:test; echo "exit $?"
+echo "--- gate de cierre"; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop; echo "exit $?"
+<<< [eval]:2
+const g=s=>new RegExp('^'+s.replace(/[.+^${}()|[\]\]/g,'\$&').replace(/\*\*\/?/g,'\0').replace(/\*/g,'[^/]*').replace(/\0/g,'.*')+'$');
+                                    ^
+Expected ',', got '<lexing error>'
+
+SyntaxError: Invalid regular expression flags
+    at makeContextifyScript (node:internal/vm:194:14)
+    at compileScript (node:internal/process/execution:422:10)
+    at evalTypeScript (node:internal/process/execution:294:22)
+    at node:internal/main/eval_string:71:3
+
+Node.js v26.12.1
+--- sin filtro
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit
+
+>>> Bash: cd "<run>/repo" && cat > "$TEMP/globcheck.mjs" <<'EOF'
+const g=s=>new RegExp(`^${s.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/\*\*\/?/g,'\u0000').replace(/\*/g,'[^/]*').replace(/\u0000/g,'.*')}$`);
+const r=g('src/shared/**');console.log(r.test('src/shared/x.js'),r.test('src/shared/a/b.js'),r.test('src/app.js'));
+EOF
+node "$TEMP/globcheck.mjs"
+mkdir -p src/shared && echo "// t" > src/shared/t.js && node scripts/gate.mjs run bookings:test rooms:test --affected --base develop; rm -r src/shared; git status --short
+<<< file:///D:/code/.worktrees/sdd-kit/feature-0221-affected-closing-gate/.temp/globcheck.mjs:1
+const g=s=>new RegExp(`^${s.replace(/[.+^${}()|[\]\]/g,'\$&').replace(/\*\*\/?/g,'\u0000').replace(/\*/g,'[^/]*').replace(/\u0000/g,'.*')}$`);
+                                    ^
+
+SyntaxError: Invalid regular expression flags
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:94:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+
+>>> Bash: cd "<run>/repo" && git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` → bookings:test: saltada (ningún fichero cambiado en sus inputs) · rooms:test: corrió 1/1 (con src/shared/t.js temporal; la definición editada corrió antes sin filtro: 1 passed, 0 failed)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< warning: in the working copy of 'gate.json', LF will be replaced by CRLF the next time Git touches it
+6c49eb1 chore: añade src/shared/** a los inputs de rooms:test
+191611c feat: base del molde
+
+=== RESULTADO (5 turnos, 0.21710829999999995 $)
+He añadido `src/shared/**` a los inputs de `rooms:test` en `gate.json` y lo he commiteado en `develop` (`6c49eb1`). No hice merge.
+
+- **Cambio:** `"inputs": ["src/rooms.js", "test/rooms.test.js", "src/shared/**"]`.
+- **Tarea editada sin filtro:** `rooms:test` pasó (1 passed, 0 failed).
+- **Gate de cierre con el cambio real:** no seleccionó ninguna tarea. Ningún fichero cambiado coincide con los inputs, porque `gate.json` no es input de ninguna.
+- **Comprobación del patrón:** puse un `src/shared/t.js` temporal y volví a correr el gate. `rooms:test` corrió y `bookings:test` se saltó. Borré el fichero temporal y el árbol quedó limpio.
+- **Commit:** lleva la línea `Gate:` en el cuerpo.
+
+Git avisó de que `gate.json` pasará de LF a CRLF la próxima vez que lo toque. No lo he cambiado.

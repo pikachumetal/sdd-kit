@@ -1,0 +1,346 @@
+--- [3]
+Ahora: reviso el ledger, `tasks.md` y el log de la 0010 para ver qué falta tras la última task. Queda: confirmar el estado y pasar a la revisión final, ~2 min.
+
+--- [12]
+Las dos tasks están `complete` y la suite pasa (5/5). Faltan la revisión final de la rama y el cierre, así que invoco `sdd-verify`.
+
+--- [15]
+Ahora: leo la receta del paquete de revisión y el cierre. Queda: despachar los ejes Spec y Code, ~10 min.
+
+--- [26]
+Ahora: despacho los ejes Spec y Code en paralelo (cap 2), cada uno con su vigilancia de silencio. Queda: esperar los informes y cerrar la revisión, ~8 min.
+
+--- [29]
+Reading the review package first.
+
+--- [39]
+Los dos ejes de la revisión final (Spec con opus, Code con sonnet) están despachados en segundo plano sobre `33cfb16`, cada uno con su vigilancia de silencio. Todavía no tengo ningún informe, y hasta que lleguen no doy la revisión por limpia.
+
+Mientras tanto, esto es lo que he comprobado yo:
+- La suite pasa: `node --test` da 5/5 en verde.
+- El ledger tiene las dos tasks `complete`, y he anotado que el eje de Arquitectura no sale.
+- Falta `tasks.md`, el registro vivo de la feature. Lo escribiré al cerrar.
+- Me ha llamado la atención que el THEN «sin `--motivo`» está cubierto por el código pero no por ningún test. Lo dejo a los revisores, sin adelantar si es hallazgo.
+
+Cuando vuelvan los informes aplico el cierre de la revisión (una sola pasada de arreglos) y preparo los borradores de cierre.
+
+--- [43]
+Esa notificación es solo del comando que lanzó las vigilancias de silencio: terminó su arranque (`started`) y no dice nada de los revisores. Los ejes Spec y Code siguen en marcha y no tengo ningún informe todavía.
+
+Espero a que lleguen sus avisos de finalización antes de aplicar el cierre de la revisión.
+
+--- [45]
+The diff is small and fully read. Next I'll check the worktree at 33cfb16 for imports, other tests, and the files outside the diff.
+
+--- [51]
+### Strengths
+- The change is small and readable. `reasons` is a single list, so the validation and the error message can't drift apart.
+- `reasonOf` is isolated from `cancelBooking`, which keeps argument parsing out of the domain function.
+- `--motivo` as the last argument gives `undefined`, and a missing `--motivo` gives the same. Both end up in the "motivo no válido" message, so neither crashes.
+- UI strings are in Castellano, as the constraint requires.
+- New tests have descriptive names and check observable output through `run`, not mocks.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. `package.json:1` adds `"dependencies": {"zod": "^3.23.8"}` in `33cfb16`, but nothing in `src/` or `test/` imports zod. The plan's Task 2 (listado de canceladas) doesn't mention a dependency either. This is an unused runtime dependency that widens the supply chain and the install for no benefit. Fix: remove it from `package.json`. If validation was meant to use it, `reasons.includes` already does that job.
+2. `test/cancel.test.js`: the commit `da54e99` replaced the test `cancelar sin reserva lo dice` and the original success test. The `sin reserva <room> <day>` branch of `cancelBooking` now has no test.
+   - The invalid-reason test uses `Sur mar`, but it returns before reaching that branch. The reason is checked first.
+   - Fix: add a test such as `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` that expects `sin reserva Sur mar`.
+   - I can't tell from the diff alone whether the replacement was intended. This is not a RED-test violation unless the plan marks those tests as RED.
+3. `test/cancel.test.js:101` (`canceladas enseña sala, día y motivo`) only passes because the first test in the file already cancelled Norte/lun in the module-level `bookings`. It is order-coupled and shares hidden state.
+   - If the test runs alone (`--test-name-pattern`) or the first test is reordered, it returns `''` and fails.
+   - Fix: make it set up its own state, or add a comment saying it depends on the previous test. A reset helper would be better if the repo allows exporting one.
+
+#### Minor (Nice to Have)
+1. `src/app.js:43-46` (`reasonOf`): possible fragility, judged under A Philosophy of Software Design (defining errors out of existence). `--motivo` is parsed only by index, but the positionals (`params[0]`, `params[1]`) are read independently. `cancelar --motivo otro Norte lun` makes `room='--motivo'`, and the result is "sin reserva --motivo otro". The `--motivo` flag followed by another flag (`--motivo --x`) is also treated as the reason `--x`. The behaviour is safe (an invalid reason is rejected), but the message doesn't say what went wrong. Possible fix: filter the flag and its value out before reading the positionals.
+2. `src/app.js:49`: possible information gap, judged under Clean Code (error messages). `motivo no válido: cambio de planes, sala ocupada, otro` is also what the user sees when they forget `--motivo`. A hint such as `usa --motivo <motivo>` would help. The message is fixed by the test, so only change it if the spec allows.
+3. `src/app.js:65-67` (`cancelledList`): with no cancelled bookings it returns `''`, and `console.log` prints an empty line. Possible edge case. Judged under Pragmatic Programmer (don't leave a silent output). The cause is the pre-existing implicit `'salas'` default style, but a line such as `sin canceladas` would be more usable. There is no test for the empty case.
+4. `src/app.js`: `cancelledList` sits between exported functions and before `run`, while `reasonOf` sits before them. Placing the private helpers together would make the file easier to scan. This is cosmetic.
+5. `voidBooking` still has no test (pre-existing). The branch didn't touch it, so I'm only noting it.
+
+### Declined to judge
+- Whether the list of reasons (`cambio de planes`, `sala ocupada`, `otro`) and the exact wording of the messages match the spec. This is the Spec axis.
+- Whether keeping bookings in module-level memory is acceptable (ADR 0003 and `architecture.md`). This is the Architecture axis.
+- Whether the old tests removed in `da54e99` were RED tests or were meant to be replaced. I don't have the plan's RED marking in the diff, and the Spec axis owns it.
+
+### Recommendations
+- Remove `zod` from `package.json` before merging.
+- Restore coverage of the `sin reserva` branch.
+- Make the `canceladas` test independent of test order.
+- Heavy verification: the main thread should run `node --test`, which is the plan's closing gate. I did not run it.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is simple and correct for the tested paths. The unused `zod` dependency is out of scope and should go, and the `sin reserva` branch lost its test. The `canceladas` test depends on the order of the previous test.
+
+--- [54]
+El eje Code ha vuelto. Antes de darle crédito compruebo sus hallazgos contra el repo, empezando por el `zod` de `package.json`.
+
+--- [59]
+`architecture.md` dice «sin dependencias externas», así que `zod` la contradice de frente. Despacho el eje de Arquitectura con ese contexto mientras el de Spec sigue en marcha.
+
+--- [67]
+Va el eje de Arquitectura. Estado de la revisión final sobre `33cfb16`:
+
+| Eje | Estado |
+| --- | --- |
+| Code | Vuelto: «With fixes». Verifiqué sus tres Important contra el repo (abajo). |
+| Spec | Sigue en marcha. |
+| Arquitectura | Despachado ahora, porque el diff añade `zod` a `package.json`. |
+
+Del eje Code, con lo que he comprobado yo:
+- **`zod`:** está en `package.json` y no se importa en `src/` ni en `test/`. Tampoco lo declara la spec ni el plan, y `architecture.md` dice «sin dependencias externas». Es un hallazgo real.
+- **`cancelar sin reserva lo dice`:** el commit `da54e99` borró ese test y la rama `sin reserva` ya no tiene cobertura. Está confirmado en el diff.
+- **`canceladas`:** su test depende de que el primer test ya haya cancelado Norte/lun en el estado compartido del módulo. Lo deduzco del código, aún no lo he ejecutado aislado.
+
+Me corregí en el ledger: mi línea decía «sin manifiestos nuevos» sin haber leído el diff de `package.json`, y la he sustituido por un `Ruling` que sube el eje de Arquitectura.
+
+No toco nada todavía: el cierre de la revisión pide re-graduar los hallazgos dentro de cada eje y hacer una sola pasada de arreglos cuando estén los tres informes.
+
+--- [69]
+Es solo el aviso de que arrancó la vigilancia de silencio del eje de Arquitectura. No es un informe.
+
+Siguen en marcha los ejes Spec y Arquitectura. Espero a sus avisos de finalización antes de aplicar el cierre de la revisión.
+
+--- [72]
+### Strengths
+- Both ADDED requirements are implemented and match the spec's wording exactly. In `src/app.js:19-25`, `cancelar` with a reason from the list answers «cancelada Norte lun (sala ocupada)». A reason outside the list answers «motivo no válido: cambio de planes, sala ocupada, otro», and that text is built from the same `reasons` array (`src/app.js:3`), so the message and the list can't drift apart.
+- The «sin `--motivo`» case works at runtime: `reasonOf` returns `undefined` (`src/app.js:14-17`) and `reasons.includes(undefined)` is false, so it gives the same message. `--motivo` as the last argument with nothing after it also falls into that path.
+- The reason is stored on the booking (`src/app.js:24`), as the Approach says. `canceladas` (`src/app.js:35-37, 43`) lists only bookings with status `cancelled`, so voided bookings stay out, which fits the scope note «No entra: anulaciones (0011)».
+- Dev-lead decision 1 (closed list: cambio de planes, sala ocupada, otro) is covered whole by `src/app.js:3` plus the check at `:20`. Decision 3 (no spec review) is about process and needs no rule in the code.
+- ADR 0003, Confirmación: met. `src/` imports neither `node:fs` nor any database package; `src/app.js` has no imports at all. Bookings stay in the in-memory array.
+- All interface text is in Castilian Spanish.
+
+### Issues
+
+#### Critical (Must Fix)
+(none)
+
+#### Important (Should Fix)
+
+1. **`test/cancel.test.js` (no line): no test for the AND «sin `--motivo` responde lo mismo».**
+   - **What's wrong:** «Dónde se prueba» says the reason is tested through the `cancelar` command in `test/cancel.test.js`. That file has tests for a valid reason (`:5-7`) and an invalid reason (`:9-11`), but none for a call without `--motivo`. The behavior is correct today, but only by accident: it relies on `reasonOf` returning `undefined`.
+   - **Why it matters:** if someone later gives `reasonOf` a default value (for example `'otro'`), cancelling without a reason would succeed silently and no test would catch it. That is exactly what the spec forbids.
+   - **Fix:** add `assert.equal(run('cancelar', ['Norte', 'lun']), 'motivo no válido: cambio de planes, sala ocupada, otro')`. Put it before the valid cancellation, or on a booking that is still active.
+   - **Gap:** `partial`. **Source:** the THEN/AND «sin `--motivo`» of «Cancelar pide un motivo de la lista».
+
+2. **`package.json:1`: `zod ^3.23.8` was added as a dependency, which nobody asked for and nothing uses.**
+   - **What's wrong:** neither the spec nor the plan mentions it, and `src/` never imports it.
+   - **Why it matters:** it contradicts `.docs/sdd/steering/architecture.md:5` («Node 22, sin dependencias externas») and the ADR 0003 consequence «Sin ficheros ni dependencias». The Confirmación is still met, because `zod` is not a database package and nothing imports it. The ledger also misreports this: it says «sin manifiestos nuevos», but the diff does modify the manifest.
+   - **Fix:** revert `package.json` to `{"type": "module"}`.
+   - **Gap:** `unrequested`. **Source:** the plan's scope (lists only `src/app.js` and `test/cancel.test.js`), the steering doc, and the ADR 0003 Consecuencias.
+
+#### Minor (Nice to Have)
+
+1. **`test/cancel.test.js:9-11`: the invalid-reason test uses `Sur mar`, a booking that doesn't exist, not the spec's GIVEN (Norte lun).**
+   - It only passes because the reason is checked before the booking is looked up. If that order flips, the test would get «sin reserva Sur mar» and fail for the wrong reason.
+   - **Fix:** use an existing booking, as in the GIVEN.
+   - **Gap:** `partial`. **Source:** the AND for the invalid reason.
+
+2. **`test/cancel.test.js:13-15`: the `canceladas` test depends on the first test having already cancelled Norte lun (module state shared between tests).**
+   - The spec's GIVEN is met only implicitly. Running that test alone (`--test-name-pattern`) fails.
+   - **Fix:** do the `cancelar ... --motivo "sala ocupada"` inside the test itself, before the assertion.
+   - **Gap:** `partial`. **Source:** the THEN of «El listado de canceladas enseña el motivo».
+
+3. **`test/cancel.test.js`: the base's test `cancelar sin reserva lo dice` was deleted with no replacement.**
+   - The behavior «sin reserva Sur mar» (`src/app.js:22`) still exists, but no test covers it any more. With the new signature, a call with a valid reason on a booking that doesn't exist is never tested.
+   - **Fix:** keep it as `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+   - **Gap:** `partial`. **Source:** behavior that existed before this branch (a regression test).
+
+4. **`src/app.js:35-37`: `canceladas` with no cancelled bookings prints an empty line.**
+   - The spec doesn't cover this case. Someone using the tool would expect a message such as «no hay reservas canceladas», not a blank output.
+   - **Gap:** `partial`. **Source:** expected behavior where the spec is silent.
+
+### Declined to judge
+- `cancelar` with `--motivo` placed before the room/day (`cancelar --motivo otro Norte lun`): the spec fixes the form `cancelar <sala> <día> --motivo <motivo>`.
+- An unquoted multi-word reason (`--motivo sala ocupada` is rejected as `sala`): quoting is the shell's job, and the spec shows the reason in quotes.
+- `anular` saving a reason: outside the scope (0011).
+- Bookings disappearing when the process ends: this is the decision in ADR 0003, not a defect.
+- The code quality of `reasonOf`/`cancelledList` and whether to use `zod` as a validator: this belongs to the quality and architecture axes. From the spec axis I only flag the dependency as `unrequested`.
+
+### Not verified
+- That the 3 tests pass: not verified, because the brief says not to run the suite (the ledger reports 3/3).
+- That `zod` resolves or installs without side effects: not verified, because I installed nothing.
+
+### Recommendations
+- Run `node --test` after adding the «sin `--motivo`» test and the «sin reserva» test, and run `test/cancel.test.js` with each test in isolation to confirm they no longer depend on order.
+- Fix the ledger line «sin manifiestos nuevos» once the dependency is removed.
+
+### Assessment
+**Ready to merge?** With fixes. The behavior meets the spec and ADR 0003, but one AND from the spec has no test, and there is a dependency that contradicts the project's steering.
+
+Files reviewed:
+- `<run>/review-0010-33cfb16/src/app.js`
+- `<run>/review-0010-33cfb16/test/cancel.test.js`
+- `<run>/review-0010-33cfb16/package.json`
+- `<run>/review-0010-33cfb16/.docs/sdd/steering/architecture.md`
+
+--- [75]
+El eje Spec ha vuelto: «With fixes», y coincide con Code en lo esencial (`zod` sin pedir y tests que faltan). Mientras llega Arquitectura leo el procedimiento de cierre de la revisión.
+
+--- [80]
+Con Spec y Code en mano y el procedimiento leído, solo falta el eje de Arquitectura. Cuando llegue sigo así:
+- Re-gradúo los hallazgos dentro de cada eje y dejo en el ledger las líneas de «Declined to judge».
+- Hago una sola pasada de arreglos para los Important: quitar `zod`, añadir el test de «sin `--motivo`», restaurar el de `sin reserva` y hacer que el de `canceladas` no dependa del orden.
+- Los Minor van al ledger como diferidos, porque `sdd-kit.json` no tiene `review.minors: fix`.
+
+Espero el aviso del eje de Arquitectura.
+
+--- [82]
+I recommend not merging until one Important issue is fixed: commit `33cfb16` adds an npm package, `zod`, that no code uses and that the documented architecture rules out. Apart from that, the change fits the architecture well.
+
+### Strengths
+- **Single file kept:** all logic stays in `src/app.js`, the project's only entry file, as `architecture.md:5` requires. No new module or layer was added for a two-command change.
+- **Storage stays in memory, as ADR 0003 decided:** the reason is stored on the booking object (`src/app.js:25`) and `canceladas` filters the same `bookings` array. Nothing is written to disk and `src/` imports no `node:fs` or database package, so the ADR's own check still passes.
+- **Rules testable without infrastructure:** `cancelBooking` and `run` are pure apart from the shared array, and the tests call `run` directly without starting a process.
+- **Terminal handling kept at the edges:** `process.argv` is read on line 1 and `console.log` is called on the last line. The `--motivo` parsing sits in its own helper, `reasonOf`, outside the business rule.
+- **Closed list of reasons:** the reasons live in one constant, `reasons` (`src/app.js:3`), and are checked against it before anything changes. The reason the user types is echoed back only after it has matched the list.
+- **Interface text is in Spanish:** «motivo no válido: …», «cancelada … (…)» and «Norte lun — sala ocupada». The code constraint is met.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`package.json:1`: a declared dependency on `zod` (`"dependencies": {"zod": "^3.23.8"}`) that nothing uses.**
+   - **What's wrong:**
+     - No file under `src/` or `test/` imports `zod`. The only imports at `33cfb16` are `node:test`, `node:assert/strict` and `../src/app.js`, and the reason check is a plain `reasons.includes(reason)`.
+     - It contradicts `.docs/sdd/steering/architecture.md:5` («Node 22, sin dependencias externas») and a stated consequence of the accepted ADR `0003-bookings-in-memory.md:26` («Sin ficheros ni dependencias»).
+     - Nothing declares it. The plan says «Eje Arquitectura: no — solo la app de reservas», and neither the spec nor any ADR mentions it.
+     - It arrived in `33cfb16`, whose message («listado de canceladas con su motivo») says nothing about it.
+     - There is no lockfile, so the `^` version range is not pinned.
+   - **Why it matters:**
+     - Merged, it makes the steering document false.
+     - Every future `npm install` pulls in a third-party package that brings no value: needless supply-chain exposure.
+     - Later reviewers who trust `architecture.md` will be misled.
+   - **Fix:** put `package.json` back to `{"type": "module"}`. If the team really wants `zod`, that takes a new ADR that changes `architecture.md:5`, an amendment to the plan saying the Architecture axis is in play, and code that actually uses it. None of that exists today, so removing it is the right fix.
+
+#### Minor (Nice to Have)
+None.
+
+**Clean Architecture checks (judgement calls; the repo's single-file standard takes precedence):**
+- **Business rules testable without infrastructure:** yes.
+- **Dependencies point inward:** not applicable to one file. The `zod` entry adds an outward dependency that the code never actually uses.
+- **Framework kept at the edges:** yes (argv and stdout only).
+- **No cycles:** yes.
+- **Composition root:** not applicable; the single entry file is the root, which is consistent with `architecture.md`.
+
+### Declined to judge
+- **Behaviour without `--motivo`** (`reasonOf` returns `undefined`, which yields «motivo no válido…»): whether it matches the spec belongs to the Spec axis.
+- **Order of checks in `cancelBooking`** (the reason is validated before the booking is looked up, so a bad reason on a non-existent booking reports the reason, not «sin reserva»): behaviour against the spec, so Spec or Code axis.
+- **Removed and renamed tests in `test/cancel.test.js`** (`cancelar una reserva activa`, `cancelar sin reserva lo dice`): whether RED tests were changed, and whether the «sin reserva» case lost coverage, belongs to the Spec and Code axes.
+- **How `reasonOf` and `cancelledList` are built and named** (for example, `--motivo` as the last argument): Code axis.
+- **The empty output of `canceladas` when nothing is cancelled:** not in the spec; Spec axis.
+
+### Recommendations
+- After removing `zod`, the main thread could check that `git show HEAD:package.json` is exactly `{"type": "module"}`, and run a repo-wide search for `zod` to confirm nothing depends on it.
+- **Shared test state:** `canceladas enseña sala, día y motivo` only passes because the first test in the file has already cancelled Norte lun on the shared module-level `bookings` array. ADR 0003 accepts this («los tests no limpian nada»), but it ties the tests to their order. The main thread's full suite run will confirm they pass in the default order. If tests are ever run in isolation or in parallel, a reset hook would be worth considering. This is not blocking.
+- Each new dependency should arrive in its own commit with an explicit message, or with an ADR, rather than inside a feature commit.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The design fits the single-file, in-memory architecture and ADR 0003. The one problem is the unused `zod` dependency added in `package.json`, which nothing declares and which contradicts `architecture.md` and the ADR; it has to be removed before merging.
+
+All paths are relative to the review worktree, `<run>/review-0010-33cfb16`.
+
+--- [84]
+Los tres informes están dentro. Primero retiro el worktree de revisión y miro lo que dice el ADR 0003 sobre el estado compartido de los tests, porque decide cómo gradúo el hallazgo de `canceladas`.
+
+--- [93]
+El commit del fix es código, así que entra en la única re-revisión que pide el cierre. La despacho con opus+high sobre `33cfb16..d08f441`, con su worktree desacoplado y su vigilancia de silencio.
+
+--- [100]
+La pasada de arreglos está hecha y la única re-revisión (opus+high, rango `33cfb16..d08f441`) corre en segundo plano.
+
+**Revisión final sobre `33cfb16`:** los tres ejes (Spec, Code y Arquitectura) dieron «con arreglos».
+- **Arreglados en `d08f441`:**
+  - Retirado `zod` de `package.json`. Nadie lo pedía ni lo usaba, y contradecía `architecture.md` («sin dependencias externas»).
+  - Test nuevo para el AND «sin `--motivo`». Lo comprobé en RED con una mutación (con `'otro'` por defecto en `reasonOf` falla) y en GREEN sin ella.
+  - Restaurado el test de la rama `sin reserva`.
+- **Suite:** `node --test` da 7/7 en verde.
+- **Rulings en el ledger:** el test de `canceladas` acoplado al orden se queda, porque el ADR 0003 acepta que «los tests no limpian nada». También quedan como ruling los hallazgos que los revisores dejaron fuera de juicio.
+- **Minors diferidos:** cinco, en el ledger. `sdd-kit.json` no tiene `review.minors: fix`.
+- **`tasks.md`:** no existía y lo he creado en el commit del fix.
+
+**Mi error:** puse «sin manifiestos nuevos» en el ledger sin leer el diff de `package.json`. Lo corregí con un `Ruling` que sube el eje de Arquitectura, y ese eje confirmó el problema.
+
+**Pendiente:** cuando vuelva la re-revisión, retiro su worktree (`review-0010-d08f441`), anoto su línea `Re-revisión:` en `tasks.md` y paso a `sdd-archive`. La re-revisión no abre otra.
+
+--- [101]
+Es solo el aviso de que arrancó la vigilancia de silencio de la re-revisión; no trae ningún veredicto. La re-revisión sigue en marcha y espero su aviso de finalización antes de anotar su línea en `tasks.md`.
+
+--- [105]
+### Finding Verdicts
+
+1. **[Spec/Código/Arquitectura, Important] `zod ^3.23.8` in `package.json`, unused and against «sin dependencias externas»**: ADDRESSED. Diff lines 12–13 change `{"type": "module", "dependencies": {"zod": "^3.23.8"}}` to `{"type": "module"}`. `package.json:1` at the head is now `{"type": "module"}`. The worktree has no `node_modules` and no lockfile. `src/app.js` imports nothing, so it matches `.docs/sdd/steering/architecture.md:5`.
+
+2. **[Spec, Important, partial] No test for the AND «sin `--motivo` responde lo mismo»**: ADDRESSED. `test/cancel.test.js:13-15` runs `run('cancelar', ['Norte', 'lun'])` and expects `'motivo no válido: cambio de planes, sala ocupada, otro'`, which is the text of `spec.md:54`. The path holds: `reasonOf` returns `undefined` (`src/app.js:16`), and `!reasons.includes(undefined)` returns the error first (`src/app.js:20`). I checked the RED claim against the code. If `reasonOf` defaulted to `'otro'`, this test would get `'sin reserva Norte lun'` in file order, because test 1 already cancelled Norte lun. Run alone it would get `'cancelada Norte lun (otro)'`. Neither matches, so the test fails either way and the claim is correct.
+
+3. **[Código, Important] The `sin reserva <sala> <día>` branch of `cancelBooking` has no test**: ADDRESSED. `test/cancel.test.js:17-19` runs `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` and expects `'sin reserva Sur mar'`. `'otro'` is a valid reason, so it gets past `src/app.js:20`. Sur mar has no booking (`src/app.js:4`), so it reaches `src/app.js:22`. The name changed from «cancelar sin reserva lo dice», but the behaviour is covered.
+
+**Ruling (the `canceladas` test depends on test order, justified by ADR 0003)**: it hides no defect. Each test file runs in its own process and `node:test` runs a file's tests in order, so `test/cancel.test.js:21-23` reliably sees the state left by test 1. That state is the spec's GIVEN (`spec.md:57`). The citation is a stretch, though. ADR 0003 (`.docs/sdd/decisions/0003-bookings-in-memory.md:26`) says tests have nothing to clean up because nothing is persisted. It does not say tests may depend on each other within a file.
+
+**Executor's counts**: I counted 5 tests in `test/cancel.test.js` and 2 in `test/app.test.js`, which fits «5/5, 7/7». Tracing each assertion through `src/app.js` gives the expected output for all 7. I did not run the suite.
+
+**Checks on the axes that went out**:
+- **Spec**: all three THEN/AND lines of the first ADDED (`spec.md:52-54`) and the THEN of the second (`spec.md:59`) now have a test.
+- **Código**: the new tests assert exact output strings, are independent of implementation details, and have names in Spanish.
+- **Arquitectura**: there is a single entry file (`src/app.js`) and no external dependencies.
+
+### New Breakage in the Fix Diff
+
+- **Minor**, `test/cancel.test.js:13-15`: the test runs when Norte lun is already cancelled (test 1 did it), not with the active booking the spec's GIVEN describes (`spec.md:50`). It passes only because `cancelBooking` checks the reason before looking up the booking (`src/app.js:20-22`). If those two checks were swapped, the code would still meet the spec, but this test would get `'sin reserva Norte lun'` and fail even though nothing is wrong. Moving this test before test 1, or using a booking that is still active, would remove that coupling.
+
+No Critical or Important breakage.
+
+### Out-of-Scope Observations
+
+- The diff file is incomplete. Its stat (line 3) reports `tasks.md | 7 +++++++`, but the body only covers `package.json` and `test/cancel.test.js`. I read `tasks.md` at the head instead. All 7 of its lines are new, so the file was created in this commit.
+- `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:7` says «Pasada de fix: ver commit siguiente», but the fix is in the same commit, d08f441.
+- `tasks.md:6` records that an Arquitectura axis ran («subido: package.json añade zod»), while `plan.md:20` says «Eje Arquitectura: no». The escalation is noted but the plan was not updated.
+- `test/cancel.test.js:9-11` (unchanged) checks an invalid reason on Sur mar, which has no booking. It has the same order and coupling weakness as the Minor finding above.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [107]
+La re-revisión vuelve limpia: los tres hallazgos ADDRESSED y sin Critical ni Important nuevos. Cierro el ciclo:
+- retiro su worktree;
+- anoto la línea `Re-revisión:` en `tasks.md`;
+- corrijo la referencia «ver commit siguiente» a `d08f441`, que la re-revisión señaló.
+
+--- [109]
+La revisión final de la 0010 está cerrada. Falta `sdd-archive`, que no he ejecutado: lo lanzo cuando me lo pidas.
+
+**Estado en `488650b`**
+- **Suite:** `node --test` da 7/7 en verde y el árbol está limpio.
+- **Revisión final:** los tres ejes (Spec, Code y Arquitectura) dieron «con arreglos» sobre `33cfb16`. El de Arquitectura salió por una señal que yo había pasado por alto: `package.json` añadía `zod`.
+- **Pasada de fix (`d08f441`):**
+  - Retirado `zod`.
+  - Test nuevo del AND «sin `--motivo`», verificado en RED con una mutación.
+  - Test de `sin reserva` restaurado.
+- **Re-revisión:** opus+high sobre `33cfb16..d08f441` resolvió los 3 hallazgos y no encontró Critical ni Important nuevos.
+- **`tasks.md`:** lo creé, porque no existía, con las dos tasks, la revisión final, la pasada de fix y la re-revisión. El último commit, `488650b`, solo toca ese fichero (docs, 3 líneas), y lo revisé yo en el hilo.
+
+**Rulings que debes conocer**
+- **Test de `canceladas` acoplado al orden:** lo dejo. La re-revisión dice que apoyarlo en el ADR 0003 es forzado, porque el ADR habla de no persistir y no de tests dependientes. Lo sostengo porque el estado compartido es el GIVEN de la spec. Coste si me equivoco: falla al aislarlo con `--test-name-pattern`.
+- **Fuera de juicio:** los casos que los revisores dejaron aparte van razonados en el ledger.
+
+**Minors diferidos** (sin `review.minors: fix` en `sdd-kit.json`):
+- El test de motivo inválido usa `Sur mar`, una reserva inexistente, en lugar de la reserva del GIVEN.
+- El test de «sin `--motivo`» corre con Norte lun ya cancelada y solo pasa por el orden de las comprobaciones.
+- `canceladas` sin canceladas imprime una línea vacía.
+- `cancelar` sin `--motivo` no da pista de uso (el texto lo fija la spec).
+- `reasonOf` lee `--motivo` por índice.
+- El orden de los helpers en `src/app.js` y `voidBooking` sin test, que ya venía así.
+
+**Para el cierre:** `plan.md` sigue diciendo `Eje Arquitectura: no`, aunque el eje salió. `tasks.md` y el ledger lo registran, pero el plan no se actualizó.
+

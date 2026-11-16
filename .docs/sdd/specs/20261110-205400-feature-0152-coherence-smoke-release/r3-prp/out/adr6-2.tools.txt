@@ -1,0 +1,713 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>&1 | head -60; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+
+>>> Read: <run>/repo/PRODUCT.md
+
+>>> Read: <run>/repo/ROADMAP.md
+<<< ls: cannot access '.docs/sdd/changes': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+decisions/
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+8	| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature<br>**R
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md; ls -R src test scripts .docs/sdd/specs .docs/sdd/decisions; cat package.json; git branch -a
+<<< # Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en cas
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/decisions/0004*.md .docs/sdd/decisions/0006*.md; cat src/app.js; head -30 test/app.test.js; cat .docs/sdd/specs/20260917*/spec.md
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references/spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+<<< ---
+status: accepted
+date: 2026-09-10
+rutas:
+  - src/**
+---
+
+# El estado vive en un solo proceso
+
+## Contexto y problema
+
+salas la arranca una persona, reserva y la cierra. Hubo que decidir dónde vive su estado.
+
+## Opciones consideradas
+
+- En memoria del proceso
+- Un fichero JSON o SQLite
+
+## Decisión
+
+En memoria: cada arranque empieza vacío. Guardar obliga a decidir dónde vive el fichero, dos terminales a la vez y cómo se migra el formato, y nadie lo ha pedido.
+
+### Consecuencias
+
+- Cerrar la terminal pierde las reservas.
+
+### Confirmación
+
+`src/` no importa `node
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references/control-profiles.md
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills" && cat sdd-propose/references/nombrado.md sdd-propose/references/coherence-pass.md sdd-propose/references/review-spec.md; ls sdd-templates sdd-templates/templates; cat sdd-templates/templates/spec-template.md; cat sdd-rubber-duck/SKILL.md
+<<< <persisted-output>
+Output too large (32.4KB). Full output saved to: <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0152-coherence-smoke-release--temp-r52-r3-prp-adr6-2-repo\444c1b7e-13fd-41a4-8285-3961a141537f\tool-results\bim8yudc0.txt
+
+Preview (first 2KB):
+## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without ren
+
+>>> Read: <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0152-coherence-smoke-release--temp-r52-r3-prp-adr6-2-repo\444c1b7e-13fd-41a4-8285-3961a141537f\tool-results\bim8yudc0.txt
+<<< 1	## Naming of spec folders
+2	
+3	`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+4	
+5	- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6	- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+7	- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no 
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; cat scripts/lint.mjs; echo ---; cat README.md; echo ---; git grep -niE "node:fs|en memoria|memoria|se pierde|vac[ií]o|persist|0004" -- . ':!.docs/sdd/specs'; echo ---; git remote -v; node "$SDD" id next --project-root . --reserve; git status --short; git branch --show-current
+<<< import { readFileSync } from 'node:fs';
+
+const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const tabs = source.split('\n').filter((line) => line.includes('\t')).length;
+if (tabs > 0) {
+  console.error(`lint: ${tabs} líneas con tabuladores en src/app.js`);
+  process.exit(1);
+}
+console.log('lint: sin hallazgos');
+---
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+---
+.docs/sdd/decisions/0004-single-process-state.md:16:- En memoria del proceso
+.docs/sdd/decisions/0004-single-process-state.md:21:En memoria: cada arranque empieza vacío. Guardar
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; git switch -c feature/0012-reservas-persistentes && node "$SDD" id claim --project-root . ; echo "exit $?"; git branch --show-current; date -u +%Y%m%d-%H%M%S; git config user.name; cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-templates/templates/capability-template.md" | head -40
+<<< Switched to a new branch 'feature/0012-reservas-persistentes'
+sin remoto: la 0012 vale (contador local)
+exit 0
+feature/0012-reservas-persistentes
+20261111-195902
+Fixture
+# Capacidad — <nombre>
+
+> **Reglas anti-proliferación**:
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+> 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
+>    la crea `sdd-archive` por su cu
+
+>>> Bash: cd "<run>/repo" && git grep -n "0012" ; mkdir -p .docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes && echo ok
+<<< ok
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$SDD" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md"; echo "exit $?"; ls "$T/sdd/capabilities" 2>&1; git status --short; git grep -niE "reservas.json|SALAS_FICHERO|\.salas" -- . ':!.docs/sdd/changes'
+<<< bookings.md: añadido «Las reservas se conservan al cerrar y volver a abrir la terminal»
+bookings.md: añadido «Sin fichero de reservas, el arranque parte de la reserva de partida»
+bookings.md: añadido «Solo un cambio de reserva escribe el fichero»
+bookings.md: añadido «Un fichero de reservas ilegible no se pisa»
+bookings.md: regla «Dónde viven los datos» añadida
+bookings.md: regla «Idioma de los nombres» añadida
+bookings.md: regla «Límites» añadida
+bookings.md: regla «Avisos» añadida
+bookings.md: regla «Regla ante conflicto» añadida
+exit 0
+bookings.md
+?? .docs/sdd/changes/
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Skill: sdd-kit:sdd-parallel-agents
+<<< Launching skill: sdd-kit:sdd-parallel-agents
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión de spec: dominio
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a2e3f25260a3ee653 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< 1	---
+2	id: 20261111-195902-feature-0012-reservas-persistentes
+3	feature: 0012
+4	title: Las reservas sobreviven a cerrar y volver a abrir la terminal
+5	mode: full
+6	status: draft
+7	created: 2026-11-11
+8	author: Fixture
+9	approvers:
+10	  - name: TBD
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Las reservas sobreviven a cerrar y volver a abrir la terminal
+15	
+16	🦆 Hoy, si cancelas la reserva de Norte del lunes y abres otra terminal, la reserva vuelve a estar ahí: cada arranque empieza de cero. Con este cambio, la cancelación se queda guardada: en la terminal nueva, `libres 10:00-12:00` dice 
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/steering/PRODUCT.md
+<<< File does not exist. Note: your current working directory is <run>\repo.
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión de spec: técnica
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a5899bbf9ac47fcc0 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Glob: .docs/sdd/decisions/*
+<<< .docs\sdd\decisions\0001-node-test-runner.md
+.docs\sdd\decisions\0002-spanish-messages.md
+.docs\sdd\decisions\0003-git-flow.md
+.docs\sdd\decisions\0004-single-process-state.md
+.docs\sdd\decisions\0005-fixed-room-list.md
+.docs\sdd\decisions\0006-plain-output.md
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< 1	---
+2	id: 20261111-195902-feature-0012-reservas-persistentes
+3	feature: 0012
+4	title: Las reservas sobreviven a cerrar y volver a abrir la terminal
+5	mode: full
+6	status: draft
+7	created: 2026-11-11
+8	author: Fixture
+9	approvers:
+10	  - name: TBD
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Las reservas sobreviven a cerrar y volver a abrir la terminal
+15	
+16	🦆 Hoy, si cancelas la reserva de Norte del lunes y abres otra terminal, la reserva vuelve a estar ahí: cada arranque empieza de cero. Con este cambio, la cancelación se queda guardada: en la terminal nueva, `libres 10:00-12:00` dice 
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" watch subagent --description "Revisión de spec: dominio" & 
+cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" watch subagent --description "Revisión de spec: técnica" &
+wait
+
+>>> Read: <run>/repo/.docs/sdd/steering/architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+<<< Command running in background with ID: byxrvt4rx. Output is being written to: D:\code\git\sdd-kit\.temp\claude\1ff99e02b342e6e4\444c1b7e-13fd-41a4-8285-3961a141537f\tasks\byxrvt4rx.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Bash: cd <run>/repo/.docs/sdd; ls steering; cat decisions/0002-spanish-messages.md decisions/0004-single-process-state.md; cat PRODUCT.md 2>/dev/null | head -40
+<<< architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+---
+status: accepted
+date: 2026-09-02
+rutas:
+  - src/**
+---
+
+# Los mensajes de la terminal van en castellano
+
+## Contexto y problema
+
+Los usuarios son de la oficina de Madrid.
+
+## Opciones consideradas
+
+- Castellano
+- Inglés
+
+## Decisión
+
+Castellano, sin tildes en los nombres de comando.
+
+### Consecuencias
+
+- Los mensajes no se traducen.
+
+### Confirmación
+
+Ningún mensaje de `src/` en inglés.
+---
+status: accepted
+date: 2026-09-10
+rutas:
+  - src/**
+---
+
+# El estado vive en un solo proceso
+
+#
+
+=== RESULTADO (23 turnos, 0.7659615999999998 $)
+Ahora: espero a los dos revisores de la spec (dominio y técnica, en paralelo). Queda: integrar sus hallazgos y presentarte la spec en el gate de aprobación.
+
+=== RESULTADO (1 turnos, 0.7659615999999998 $)
+El revisor técnico ya ha vuelto con 10 hallazgos, dos de ellos Críticos. Espero al de dominio para integrar los dos juntos antes del gate. La spec sigue sin aprobar.
+
+>>> Bash: cd "<run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes" && python - <<'EOF'
+import re,io
+p='spec.md'
+s=open(p,encoding='utf-8').read()
+def rep(a,b,count=1):
+    global s
+    assert a in s, a[:60]
+    s=s.replace(a,b,count)
+
+# 🦆
+rep("Esto deja sin efecto la decisión de que el estado viva solo en memoria. Dos terminales a la vez no están protegidas: gana la última que escribe.",
+"Esto deja sin efecto la decisión de que el estado viva solo en memoria. Como `reservar` todavía no crea reservas, lo que se conserva son los cambios de las que ya existen. Dos terminales a la vez no están protegidas: gana la última que escribe.")
+
+# decisions 3,4,6,8,9,10,11,13
+rep("3. **Dónde vive el fichero**: `reservas.json` dentro de `.salas/` en la carpeta personal de quien arranca el programa. Nadie dijo dónde; la carpeta personal es el único sitio que existe en cualquier PC y no ensucia el repo.",
+"3. **Dónde vive el fichero**: `reservas.json` dentro de `.salas/` en la carpeta personal de quien arranca el programa, la que da `os.homedir()` (igual en Windows y en POSIX). Nadie dijo dónde; la carpeta personal es el único sitio que existe en cualquier PC y no ensucia el repo.")
+rep("sirve en el servidor si el fichero debe ir a otro sitio.",
+"sirve en el servidor si el fichero debe ir a otro sitio. Vacía cuenta como no definida; una ruta relativa se resuelve desde el directorio donde se arranca. Se documenta en `operations.md`.")
+rep("6. **Escritura atómica**: se escribe en un fichero temporal junto al definitivo y se renombra. Un corte a medias deja el fichero anterior intacto.",
+"6. **Escritura atómica**: se escribe en `reservas.json.tmp`, en la misma carpeta que el definitivo (para no cruzar volúmenes), y se renombra encima. Un corte a medias deja el fichero anterior intacto; si la escritura falla, el temporal no se queda (decisión 16).")
+rep("8. **Fichero ilegible: se avisa y no se toca.** El texto literal es `fichero de reservas ilegible: <ruta>`, el proceso termina con código 1 y el fichero queda como estaba. Se descartó arrancar vacío o con la reserva de partida: pisaría datos que quizá se pueden arreglar a mano.",
+"8. **Fichero ilegible: se avisa y no se toca.** «Ilegible» es: no es JSON, está vacío, o su forma no es la de la decisión 9 (un `status` que no sea `active`, `cancelled` o `voided`, o falta algún campo). El texto literal es `fichero de reservas ilegible: <ruta>`, sale por la salida de errores, el proceso termina con código 1 y ningún comando —`cancelar` incluido— cambia el fichero. Se descartó arrancar vacío o con la reserva de partida: pisaría datos que quizá se pueden arreglar a mano.")
+rep('9. **Forma del fichero**: `{"reservas": [{"room": "Norte", "day": "lun", "slot": "10:00-12:00", "status": "active"}]}`. Las claves y los estados (`active`, `cancelled`, `voided`) son los del código de hoy, para no inventar un segundo vocabulario.',
+'9. **Forma del fichero**: `{"bookings": [{"room": "Norte", "day": "lun", "slot": "10:00-12:00", "status": "active"}]}`. Las claves y los estados (`active`, `cancelled`, `voided`) son los del código de hoy, para no inventar un segundo vocabulario; la clave de arriba va en inglés por lo mismo. Indentación y salto de línea final sin fijar.')
+rep("10. **Dos terminales a la vez no se protegen.** Gana la última que escribe. Leer y escribir en cada comando acorta la ventana, pero no la cierra; proteger exigiría bloqueos que nadie ha pedido.",
+"10. **Dos terminales a la vez no se protegen.** Gana la última que escribe, y la otra puede perder su último cambio: es pérdida aceptada, no un efecto raro. Leer y escribir en cada comando acorta la ventana, pero no la cierra; proteger exigiría bloqueos que nadie ha pedido.")
+rep("sin ella, «las reservas sobreviven» solo se puede comprobar con la de partida. Dime si prefieres meterla aquí.",
+"sin ella, «las reservas sobreviven» solo se puede comprobar con la de partida. Las transiciones son las de hoy: solo una reserva activa se cancela o se anula, y borrar el fichero devuelve la reserva de partida como activa. Dime si prefieres meter `reservar` aquí.")
+rep("13. **Las cinco reglas de la capacidad** se declaran en el delta con estos valores (la constitución no tiene «Reglas de producto»): datos en el fichero de la decisión 3; claves en inglés como el código, textos al usuario en castellano (0002); sin límites; un único aviso (decisión 8); ante conflicto, gana la última escritura (decisión 10).",
+"13. **Las cinco reglas de la capacidad** se declaran en el delta con estos valores (la constitución no tiene «Reglas de producto»): datos en el fichero de la decisión 3; claves y estados en inglés como el código (decisión mía de esta capacidad) y textos al usuario en castellano (ADR 0002); sin límites; dos avisos (decisiones 8 y 16); ante conflicto, gana la última escritura (decisión 10).")
+# new decisions 16-17 before 14? append after 15 text
+rep("Sin medir: nada.\n",
+"Sin medir: nada.\n16. **Si no se puede guardar** (carpeta que no se puede crear, sin permisos, el renombrado falla): el texto literal es `no se pudo guardar el fichero de reservas: <ruta>`, por la salida de errores, código 1, el fichero anterior intacto y sin `reservas.json.tmp`. Lo pidió la review; nadie lo dijo antes.\n17. **El código de guardar y leer va en `src/app.js`**, sin módulo nuevo ni paquetes: la arquitectura dice «un solo fichero de entrada». `architecture.md` anota la ruta del fichero y la variable de entorno.\n")
+
+# Hallazgos
+rep("_Pendiente: se rellena cuando vuelvan los revisores._",
+"""Técnica:
+- **Aceptado** (Crítico) — los escenarios no fijan `SALAS_FICHERO`, así que un test podría tocar la carpeta personal real → cada GIVEN fija `SALAS_FICHERO` a una ruta temporal; la ruta por defecto se comprueba solo como cálculo, sin tocar disco (Dónde se prueba).
+- **Aceptado** (Crítico) — la atomicidad no la prueba ningún escenario y falta Windows → decisión 6 con nombre y sitio del temporal; escenario «Si no se puede guardar…»; decisión 16.
+- **Aceptado** — escenario 1 mezcla tres cosas → la carpeta ausente tiene su requisito.
+- **Aceptado** — `anular` sin escenario; cambio que no cambia nada → requisitos «Anular…» y «Un cambio que no cambia nada no escribe».
+- **Aceptado** — «ilegible» sin definir, canal del aviso → decisión 8 y requisito de forma errónea.
+- **Aceptado** — carpeta personal, `SALAS_FICHERO` vacío o relativo → decisiones 3 y 4.
+- **Aceptado en parte** — corte entre lectura y escritura → decisión 10 lo dice como pérdida aceptada; sin escenario, porque lo que no se protege no tiene comportamiento que probar.
+- **Aceptado** — transiciones y borrado del fichero → decisión 11.
+- **Aceptado** — THEN con puntos medios → THEN con los campos.
+- **Aceptado** — `operations.md`, `architecture.md`, dónde vive el código → Scope y decisión 17.
+
+Dominio:
+- **Aceptado** — AND de la carpeta contradice el GIVEN → requisito propio.
+- **Aceptado** — `anular` sin escenario → requisito «Anular…».
+- **Aceptado** — título e Intent prometen más de lo que hay → Intent dice qué se conserva y de qué depende lo demás; el título se queda con las palabras del dev-lead.
+- **Aceptado** — clave `reservas` frente a «claves en inglés» → la clave pasa a `bookings` (decisión 9).
+- **Aceptado** — «ilegible» solo con JSON mal formado → requisito de forma errónea.
+- **Aceptado** — THEN con puntos medios (mismo hallazgo) → arreglado.
+- **Aceptado** — ADR 0002 mal citada → decisión 13.
+- **Aceptado** — crear la carpeta falta en el Scope → Scope.
+- **Aceptado** — fallo al guardar sin aviso → decisión 16.
+- **Rechazado** — «no existe `PRODUCT.md`» → existe en la raíz del repo; el revisor lo buscó en `steering/`.
+
+Segunda ronda: _pendiente (hay dos Críticos aceptados)._""")
+
+# Intent
+rep("El éxito es medible:", "Como `reservar` todavía no crea reservas, lo que se conserva son la de partida y los cambios de estado de las que existan; que sirva para reservas nuevas depende de otra feature.\n\nEl éxito es medible:")
+rep("Fracasaría, aunque funcionase, si un fichero dañado se sustituyera sin avisar por reservas inventadas,","Fracasaría, aunque funcionase, si un fichero dañado se sustituyera sin avisar por reservas inventadas, si un guardado fallido dejara el fichero a medias,")
+
+# Scope
+rep("aviso de fichero ilegible con código de salida 1; arranque sin fichero con la reserva de partida.",
+"crear la carpeta del fichero si falta; aviso de fichero ilegible y aviso de no poder guardar, ambos con código de salida 1; arranque sin fichero con la reserva de partida.")
+rep("- Entra: actualizar `operations.md` (línea «Motor de producción») y,",
+"- Entra: actualizar `operations.md` (línea «Motor de producción» y la variable `SALAS_FICHERO`), `architecture.md` (ruta del fichero) y,")
+
+# retirada table: add architecture row? not retired. skip.
+
+# Dónde se prueba
+rep("- Primer arranque sin fichero y comandos de consulta que no escriben: por `run`, comprobando que el fichero no existe.",
+"- Primer arranque sin fichero y comandos de consulta que no escriben: por `run`, comprobando que el fichero no existe.\n- Ruta por defecto: se comprueba solo el cálculo (carpeta personal + `.salas/reservas.json`), sin leer ni escribir esa ruta; ningún test corre sin `SALAS_FICHERO`.\n- Fallo al guardar: `SALAS_FICHERO` bajo una ruta cuya carpeta no se puede crear (un fichero normal hace de carpeta), arrancando el proceso para ver código y salida de errores.")
+rep("- Fichero ilegible y código de salida 1: arrancando","- Fichero ilegible (JSON roto, vacío, forma errónea) y código de salida 1: arrancando")
+
+# delta
+rep("- AND en otro arranque nuevo, `cancelar Norte lun` responde `sin reserva Norte lun`\n- AND si la carpeta del fichero no existía, se crea\n",
+"- AND en otro arranque nuevo, `cancelar Norte lun` responde `sin reserva Norte lun`\n- AND todos los GIVEN de esta capacidad fijan `SALAS_FICHERO` a una ruta temporal\n")
+rep("- GIVEN existe `reservas.json` con la reserva `Norte · lun · 10:00-12:00` activa","- GIVEN `SALAS_FICHERO` apunta a un `reservas.json` temporal con la reserva `room: Norte, day: lun, slot: 10:00-12:00, status: active`")
+rep("- GIVEN no existe ningún fichero de reservas\n- WHEN se ejecuta `libres 10:00-12:00`","- GIVEN `SALAS_FICHERO` apunta a una ruta temporal sin fichero\n- WHEN se ejecuta `libres 10:00-12:00`")
+rep("""#### ADDED — Solo un cambio de reserva escribe el fichero
+
+- GIVEN no existe ningún fichero de reservas
+- WHEN se ejecuta `cancelar Norte lun`
+- THEN la salida es `cancelada Norte lun`
+- AND el fichero existe y contiene `Norte · lun · 10:00-12:00` con estado `cancelled`
+""","""#### ADDED — Solo un cambio de reserva escribe el fichero
+
+- GIVEN `SALAS_FICHERO` apunta a una ruta temporal sin fichero
+- WHEN se ejecuta `cancelar Norte lun`
+- THEN la salida es `cancelada Norte lun`
+- AND el fichero existe y su `bookings` tiene una reserva con `room: Norte, day: lun, slot: 10:00-12:00, status: cancelled`
+
+#### ADDED — Un cambio que no cambia nada no escribe el fichero
+
+- GIVEN `SALAS_FICHERO` apunta a una ruta temporal sin fichero
+- WHEN se ejecuta `cancelar Sur lun`
+- THEN la salida es `sin reserva Sur lun`
+- AND el fichero sigue sin existir
+
+#### ADDED — Una anulación se conserva entre arranques
+
+- GIVEN `SALAS_FICHERO` apunta a una ruta temporal sin fichero
+- WHEN se ejecuta `anular Norte lun` y, en un arranque nuevo, `libres 10:00-12:00`
+- THEN la primera salida es `anulada Norte lun` y la segunda es `Norte, Sur`
+- AND el fichero tiene la reserva de Norte con `status: voided`
+
+#### ADDED — La carpeta del fichero se crea si falta
+
+- GIVEN `SALAS_FICHERO` apunta a `<temporal>/nueva/reservas.json` y la carpeta `nueva` no existe
+- WHEN se ejecuta `cancelar Norte lun`
+- THEN la salida es `cancelada Norte lun`
+- AND existen la carpeta `nueva` y el fichero
+""")
+rep("""- GIVEN el fichero de reservas contiene `{no es json`
+- WHEN se ejecuta `libres 10:00-12:00`
+- THEN la salida es `fichero de reservas ilegible: <ruta del fichero>`
+- AND el proceso termina con código 1
+- AND el contenido del fichero sigue siendo `{no es json`
+""","""- GIVEN `SALAS_FICHERO` apunta a un fichero temporal que contiene `{no es json`
+- WHEN se ejecuta `libres 10:00-12:00`
+- THEN por la salida de errores sale `fichero de reservas ilegible: <la ruta tal como se dio en SALAS_FICHERO>`
+- AND el proceso termina con código 1
+- AND el contenido del fichero sigue siendo `{no es json`
+- AND `cancelar Norte lun` da la misma salida y el mismo código, y tampoco cambia el fichero
+
+#### ADDED — Un fichero con forma errónea cuenta como ilegible
+
+- GIVEN `SALAS_FICHERO` apunta a un fichero temporal que contiene `{}` (o está vacío, o una reserva trae `status: perdida`)
+- WHEN se ejecuta `libres 10:00-12:00`
+- THEN por la salida de errores sale `fichero de reservas ilegible: <ruta>` y el proceso termina con código 1
+- AND el fichero queda como estaba
+
+#### ADDED — Si no se puede guardar, el fichero anterior queda intacto
+
+- GIVEN `SALAS_FICHERO` apunta a `<fichero normal>/reservas.json`, cuya carpeta no se puede crear
+- WHEN se ejecuta `cancelar Norte lun`
+- THEN por la salida de errores sale `no se pudo guardar el fichero de reservas: <ruta>` y el proceso termina con código 1
+- AND no existe ningún `reservas.json.tmp`
+""")
+rep("- **Idioma de los nombres**: las claves del fichero y los estados (`active`, `cancelled`, `voided`) en inglés, como el código; los textos al usuario en castellano",
+"- **Idioma de los nombres**: las claves del fichero (`bookings`, `room`, `day`, `slot`, `status`) y los estados (`active`, `cancelled`, `voided`) en inglés, como el código; los textos al usuario en castellano")
+rep("- **Avisos**: `fichero de reservas ilegible: <ruta>`","- **Avisos**: `fichero de reservas ilegible: <ruta>` y `no se pudo guardar el fichero de reservas: <ruta>`, ambos por la salida de errores")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+grep -n "Idioma\|\"reservas\"" spec.md | head
+<<< Exit code 2
+/usr/bin/bash: -c: line 24: unexpected EOF while looking for matching `''
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$SDD" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md"; echo "exit $?"; git status --short
+<<< bookings.md: añadido «Las reservas se conservan al cerrar y volver a abrir la terminal»
+bookings.md: añadido «Una anulación se conserva entre arranques»
+bookings.md: añadido «Sin fichero de reservas, el arranque parte de la reserva de partida»
+bookings.md: añadido «Solo un cambio de reserva escribe el fichero»
+bookings.md: añadido «Un cambio que no cambia nada no escribe el fichero»
+bookings.md: añadido «La carpeta del fichero se crea si falta»
+bookings.md: añadido «Un fichero de reservas ilegible no se pisa»
+bookings.md: añadido «Un fichero con forma errónea cuenta como ilegible»
+bookings.md:
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión de spec: segunda ronda
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: af4062a6804020420 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< 1	---
+2	id: 20261111-195902-feature-0012-reservas-persistentes
+3	feature: 0012
+4	title: Las reservas sobreviven a cerrar y volver a abrir la terminal
+5	mode: full
+6	status: draft
+7	created: 2026-11-11
+8	author: Fixture
+9	approvers:
+10	  - name: TBD
+11	    approved_at: null
+12	---
+13	
+14	# Spec — Las reservas sobreviven a cerrar y volver a abrir la terminal
+15	
+16	🦆 Hoy, si cancelas la reserva de Norte del lunes y abres otra terminal, la reserva vuelve a estar ahí: cada arranque empieza de cero. Con este cambio, la cancelación se queda guardada: en la terminal nueva, `libres 10:00-12:00` dice 
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/.docs/sdd/steering/architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Glob: .docs/sdd/decisions/*
+<<< .docs\sdd\decisions\0001-node-test-runner.md
+.docs\sdd\decisions\0002-spanish-messages.md
+.docs\sdd\decisions\0003-git-flow.md
+.docs\sdd\decisions\0004-single-process-state.md
+.docs\sdd\decisions\0005-fixed-room-list.md
+.docs\sdd\decisions\0006-plain-output.md
+
+>>> Bash: cd <run>/repo/.docs/sdd/decisions && cat 0004*.md 0002*.md 0006*.md 0005*.md; ls ../steering; cat ../steering/operations.md
+<<< ---
+status: accepted
+date: 2026-09-10
+rutas:
+  - src/**
+---
+
+# El estado vive en un solo proceso
+
+## Contexto y problema
+
+salas la arranca una persona, reserva y la cierra. Hubo que decidir dónde vive su estado.
+
+## Opciones consideradas
+
+- En memoria del proceso
+- Un fichero JSON o SQLite
+
+## Decisión
+
+En memoria: cada arranque empieza vacío. Guardar obliga a decidir dónde vive el fichero, dos terminales a la vez y cómo se migra el formato, y nadie lo ha pedido.
+
+### Consecuencias
+
+- Cerrar la terminal pierde las reservas.
+
+### Confirmación
+
+`src/` no importa `node
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && sed -i 's/, ambos por la salida de errores$//' .docs/sdd/changes/*/spec.md && grep -n "Avisos" .docs/sdd/changes/*/spec.md | tail -2; SDD="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js"; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$SDD" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md" | tail -4; echo "exit ${PIPESTATUS[0]}"
+<<< 241:- **Avisos** (ambos por la salida de errores, con código 1): `fichero de reservas ilegible: <ruta>` y `no se pudo guardar el fichero de reservas: <ruta>`
+bookings.md: regla «Dónde viven los datos» añadida
+bookings.md: regla «Idioma de los nombres» añadida
+bookings.md: regla «Límites» añadida
+bookings.md: regla «Regla ante conflicto» añadida
+exit 0
+[This command modified 1 file you've previously read: .docs\sdd\changes\20261111-195902-feature-0012-reservas-persistentes\spec.md. Call Read before editing.]
+
+=== RESULTADO (5 turnos, 1.3545772000000003 $)
+La segunda ronda está en marcha: un revisor lee la spec corregida. El delta se fusiona sin rechazos sobre la copia, con 9 requisitos y 5 reglas. Espero su resultado antes de presentarte la spec.
+
+=== RESULTADO (9 turnos, 1.3545772000000003 $)
+Ahora: la spec está en el gate de aprobación. Queda: tu «apruebo»; después, el plan y la implementación (perfil `delegate`, sin parada en el plan).
+
+**Carril:** feature, modo full · **Perfil:** delegate, del proyecto (`sdd-kit.json`) · rama `feature/0012-reservas-persistentes`. Prevé 3 tasks sobre una sola superficie y sin migración, así que no propongo partirla.
+
+La spec está en `.docs/sdd/changes/20261111-195902-feature-0012-reservas-persistentes/spec.md`, sin commit todavía.
+
+## 🦆 Qué cambia
+
+Hoy, si cancelas la reserva de Norte del lunes y abres otra terminal, la reserva vuelve a estar ahí. Con este cambio la cancelación se queda guardada: en la terminal nueva, `libres 10:00-12:00` dice `Norte, Sur`. Las reservas se guardan en un fichero de tu carpeta personal, que el programa lee al arrancar y reescribe cada vez que una reserva cambia. Como `reservar` todavía no crea reservas, lo que se conserva son los cambios de las que ya existen.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+La spec lleva 19, que son las que debes leer.
+
+1. **Se deja sin efecto la ADR 0004** («el estado vive en un solo proceso»). Es lo que pide el cambio. La ADR nueva la escribe el cierre y marca la 0004 como sustituida.
+2. **Enfoque: fichero JSON escrito entero y de forma atómica.** Descarté SQLite (`node:sqlite` es experimental en Node 22 y no existe en Node 20) y un registro de cambios (pide compactar).
+3. **Ruta:** `.salas/reservas.json` en la carpeta personal. La variable `SALAS_FICHERO` la cambia y es lo que usan los tests, para no tocar tu carpeta real.
+4. **Sin fichero, el arranque parte de la reserva actual** (Norte, lun, 10:00-12:00). El fichero aparece con el primer cambio. Los comandos de consulta, o un cambio que no cambia nada, no escriben.
+5. **Fichero ilegible:** `fichero de reservas ilegible: <ruta>` por la salida de errores, código 1 y el fichero sin tocar. «Ilegible» incluye JSON roto, vacío, o con un campo o estado inválido.
+6. **Fallo al guardar:** `no se pudo guardar el fichero de reservas: <ruta>`, código 1 y sin fichero temporal. Salió de la review.
+7. **Dos terminales a la vez no se protegen.** Gana la última que escribe y la otra puede perder su último cambio, o recibir el aviso de guardado.
+8. **No se crea ningún comando nuevo.** `reservar` hoy no crea nada, así que «las reservas sobreviven» solo se puede comprobar con la reserva actual y sus cambios (`cancelar`, `anular`).
+9. **Otras decisiones menores:**
+   - El código va en `src/app.js`, sin módulos ni paquetes.
+   - La clave del fichero es `bookings`, en inglés como el código; esto es una excepción a la terminología de `PRODUCT.md`, declarada en la spec.
+   - `run` lanza un `Error` y la entrada del proceso pone el código 1.
+   - La capacidad nueva se llama `bookings`.
+
+La política de modelos también va en la spec.
+
+**Review:** dos revisores sonnet, uno de dominio y otro técnico, más una segunda ronda con un revisor porque aceptó dos Críticos. Salieron 30 hallazgos: 28 aceptados y 2 rechazados con motivo. Uno es que `PRODUCT.md` sí existe, en la raíz. El otro es que la 0004 vigente rompería el gate, y no es así porque `scripts/lint.mjs` no lee las ADR. El detalle está en «Hallazgos de la review». El delta se fusiona sin rechazos sobre una copia: 11 requisitos y 5 reglas.
+
+## Lo que más necesito que mires
+
+- **Decisión 8:** sin `reservar` real, la feature solo demuestra persistencia con la reserva actual. Si quieres que `reservar <sala> <día> <franja>` cree reservas de verdad, dímelo y la meto en esta spec. Si no, sería otra feature en el roadmap.
+- **Validación:** la haces tú, abriendo la herramienta dos veces.
+
+## ¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación sin parar.
+2. **Cambios**: dime qué ajustar. La spec sigue en espera.
+
+Hasta que respondas, no escribo el plan ni toco código.

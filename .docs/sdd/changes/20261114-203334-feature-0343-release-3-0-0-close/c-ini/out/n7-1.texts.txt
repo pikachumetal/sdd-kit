@@ -1,0 +1,61 @@
+--- [3]
+Primero leo el estado de la init.
+
+--- [10]
+Retomo la init de **reservas**. Modo: con código (`package.json` y `src/app.ts`). Si es un template recién instanciado, dímelo y sigo sin código.
+
+**Estado**
+- Aprobados: `PRODUCT.md` y `.docs/sdd/steering/constitution.md`.
+- Config ya respondida, así que no la repregunto: ids por secuencia, perfil `delegate`, ejecución `auto`, validación manual.
+- Sigue `operations.md`, que necesita la entrevista de testing.
+
+**Inventario de testing**
+
+| Suite | Comando | Qué muestra el código |
+| --- | --- | --- |
+| Vitest | `npm test` | Tests en `src/**/*.test.ts`. Solo llaman a funciones, así que es nivel `unitario`. |
+| Playwright | `npm run e2e` | Su `testDir` es `./e2e`, una carpeta que no existe. Es una suite `E2E` sin tests todavía. |
+| Lint | `npm run lint` | ESLint, sin config visible en la raíz. |
+| CI | `.github/workflows/ci.yml` | Corre `npm ci` y `npm test` en cada push. No lanza ni el lint ni el E2E. |
+
+- **Sin filtro:** `package.json`, `package-lock.json`, `playwright.config.ts`, `vitest.config.ts` y `tests/helpers/`.
+- **Temporales:** Playwright no declara `outputDir`, así que escribe en `test-results/`. Propondré moverlo a `.temp/playwright`.
+- **CI de la base:** hay GitHub Actions, pero no hay remoto. Lo escribiré como está, sin ejecutarlo.
+- **Duraciones y presupuesto E2E:** `pendiente`.
+
+**Discrepancias para ti**
+- `CLAUDE.md` dice «`npm run dev` en el puerto 3000». Vite usa el 5173 por defecto y no hay config de puerto, así que no lo puedo verificar.
+- «Las fechas van en UTC» tampoco aparece en `src/app.ts` como regla visible.
+
+❓ **Puerto del servidor de desarrollo**
+`CLAUDE.md` afirma el 3000. `vite` arranca en el 5173 si nada lo cambia, y no hay `server.port` en ningún config.
+1️⃣ **Dejar el puerto como `no declarado`** hasta que lo confirmes. No inventamos nada y `operations.md` no queda con un dato falso.
+2️⃣ **Fijar 3000 en `operations.md`** como dice `CLAUDE.md`. Queda escrito algo que el código desmiente.
+➡️ **Recomiendo 1️⃣**, porque el código no respalda el 3000 y un puerto falso en `operations.md` rompería cualquier acceso del agente a la app. A cambio, esto queda abierto hasta que me digas el puerto real.
+
+¿Cuál eliges, o me dices el puerto real?
+
+--- [16]
+Anotado: el puerto queda `no declarado`.
+
+Quedan los gates. Esta es la decisión que más condiciona el resto de `operations.md`.
+
+❓ **Gates de cierre y de merge**
+Lo que encuentro en los scripts y en el CI:
+- Solo existe una suite con tests, la unitaria (`npm test`, Vitest). Dura segundos, pero la duración queda `pendiente`.
+- Playwright no tiene tests todavía, así que no hay ninguna suite de integración ni E2E que filtrar por lo afectado.
+- El CI solo ejecuta `npm test`.
+- Un `npm run lint` existe, pero el CI no lo usa.
+
+1️⃣ **El gate de merge es `npm test`.**
+   - **Lo afectado:** `npx vitest run --changed`.
+   - **Gate de cierre:** `npm test`, porque la suite es unitaria y se corre entera.
+   - **Lint:** `npm run lint`, fuera de los gates.
+   - Coincide con lo que ya valida el CI y no inventa suites que no existen.
+2️⃣ **El gate de merge es `npm test && npm run lint`.**
+   - Lo mismo para lo demás.
+   - Deja el lint dentro del gate, algo que el kit desaconseja y que el CI no hace hoy.
+➡️ **Recomiendo 1️⃣**, porque el gate de merge debe reproducir lo que el CI comprueba, y hoy es solo `npm test`. A cambio, un error de lint no bloquea el merge hasta que lo incorporemos al CI.
+
+¿Confirmas 1️⃣ o prefieres otra combinación?
+

@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+public/
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; find src public test -type f | head -50; ls .docs/sdd/specs
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js src/server.mjs public/index.html public/reservas.json public/styles.css; head -40 test/app.test.js; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/*.md | head -60
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references/spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The interview covers first what they want it for, open, i
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references"; head -40 control-profiles.md; git -C "<run>/repo" status -sb | head -3
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (11 turnos, 0.17299399999999998 $)
+Ahora: te cuento lo que he entendido y empiezo la entrevista de la spec. Queda: unas 4–5 preguntas, la spec para tu aprobación, y luego plan e implementación (~15 min hasta la aprobación de la spec).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** una página nueva en la web (`public/`, junto al listado de reservas) con una tabla de una fila por sala y su % de ocupación de la semana. Hoy hay dos salas (Norte y Sur) y las reservas están en `public/reservas.json`, con día, franja de inicio y estado (`confirmada`, `pendiente`, `cancelada`). Cómo se ve lo tienes abierto, y eso lo vamos a decidir juntos. Corrígeme si algo no es así.
+
+Antes de hablar de aspecto hay una decisión de la que dependen casi todas las demás: **sobre qué se calcula el porcentaje**. Ahora mismo no hay horario de apertura escrito en ningún sitio, y sin él «ocupación» no tiene denominador. Con los datos de hoy, Norte tiene una reserva confirmada de 10:00 y otra cancelada, y Sur tiene una pendiente.
+
+❓ **Base del porcentaje de ocupación**
+1️⃣ **Horas reservadas ÷ horas abiertas de la semana**, con un horario fijo para todas las salas, por ejemplo lun–vie 9:00–19:00 (50 h). Norte, con una reserva de 2 h confirmada, saldría al 4 %. Es el porcentaje que se entiende a primera vista, pero hay que escribir ese horario en algún sitio.
+2️⃣ **Franjas reservadas ÷ franjas posibles de la semana**, con franjas de 1 h empezando a las horas en punto. Sale casi igual que la 1️⃣, pero hay que decidir qué hacer con las reservas que no cuadran en hora entera, como `10:00-12:00`.
+3️⃣ **Días con alguna reserva ÷ días de la semana**. Norte saldría al 20 %. No necesita horario, pero una sala con una reserva de 1 h y otra con 8 h marcan igual, y eso no es ocupación real.
+
+➡️ **Recomiendo 1️⃣**, porque es lo que se entiende por «% de ocupación» y las franjas de `app.js` ya son de 2 h con hora de inicio y fin. A cambio, tendré que fijar un horario de apertura que hoy no existe y que tú puedas cambiar. ¿Cuál eliges?

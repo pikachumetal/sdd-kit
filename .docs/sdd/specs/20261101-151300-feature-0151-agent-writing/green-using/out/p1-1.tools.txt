@@ -1,0 +1,90 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd 2>&1 | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; node "D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+
+>>> Grep: cancel
+<<< .:
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< test\app.test.js:13:test('cancelar respeta el día', () => {
+test\app.test.js:14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+src\app.js:12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+.docs\sdd\changelog.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](specs/20260918-090000-patch-0007-cancel/)
+.docs\sdd\changelog.md:20:- Cancelar una reserva propia.
+.docs\sdd\roadmap.md:25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+.docs\sdd\roadmap.md:31:Cancelar una reserv
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; ls src; cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0151-retro-agent-writing/.temp/k0151/skills/sdd-propose/references" && sed -n 1,60p modo-lite.md; cat "<run>/repo/.docs/sdd/roadmap.md" | head -30
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO lo activa.
+
+=== RESULTADO (7 turnos, 0.17623129999999998 $)
+🦆 Hoy `cancelar` no mira las reservas. En `src/app.js:12` devuelve `cancelada <día> <hora>` con lo que le pases, así que da igual que la reserva exista o no. Tampoco borra nada.
+
+No lo trato como patch: la causa es clara, pero la solución no está fijada. Falta decidir el texto del error y qué cuenta como «existe», porque las reservas guardan la franja como `10:00-12:00` y `cancelar` recibe `10:00`. Si yo elijo ese texto y esa regla, es diseñar la solución.
+
+Puede ir en modo lite, porque cumple las condiciones que he comprobado:
+- El flujo ya existe y se puede leer: `run('cancelar', …)` en `src/app.js`.
+- No cambia contratos públicos: solo cambia el texto de salida de un comando.
+- No hay schema de datos.
+- Cabe en un solo módulo, `src/app.js`.
+- No hay `.docs/sdd/estimation.md`, así que no hay estimación que comprobar.
+
+El perfil no está declarado en `sdd-kit.json` y no hay `sdd-kit.local.json`. Si quieres otro, dímelo.
+
+¿Cómo lo llevo?
+
+1. **Lite (recomendada).** Escribo una spec corta, con el texto del error y la regla de «existe» como decisiones que tú validas. Después hago el test en rojo y la corrección.
+2. **Feature completa.** Spec, plan y tareas. Es más ceremonia de la que pide un cambio de un solo módulo.
+3. **Patch.** Solo si me dices tú el texto exacto del error y que «existe» es día y hora contra las reservas. Entonces la solución queda fijada y es un test en rojo.
+
+Con cualquiera de las dos primeras puedes añadir «apruebo la spec por delegación, nos vemos en la validación» si te vas a ausentar.

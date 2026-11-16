@@ -1,0 +1,236 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat PRODUCT.md ROADMAP.md 2>/dev/null; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:**
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json README.md; ls -R src test; cat src/*.js | head -150
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references" && cat nombrado.md; sed -n 1,80p control-profiles.md; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id --help 2>&1 | head -20
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: cd "<run>/repo" && git remote -v; git branch --show-current; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+<<< develop
+0010
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0010-exportar-csv-sala && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id claim --project-root "$PWD"; git status --short
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\spec-writing.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0010-exportar-csv-sala'
+sin remoto: la 0010 vale (contador local)
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.1913477 $)
+Ahora: te presento el carril y lo que he entendido, y te hago la primera pregunta de diseño. Queda: unas pocas preguntas, los enfoques y la spec para que la apruebes, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He creado la rama `feature/0010-exportar-csv-sala` desde `develop`. El id 0010 es local porque el repo no tiene remoto.
+
+**Lo que he entendido, corrígeme si me equivoco:**
+- Quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV.
+- El fin es que el responsable de la sala las cuadre los lunes en su hoja de cálculo. El CSV tiene que abrirse bien ahí, sin arreglos a mano.
+- Hoy cada reserva solo tiene `room`, `day` (`lun`…) y `slot` (`10:00-12:00`). No guarda fecha concreta, y los datos viven en memoria en `src/app.js`.
+
+❓ **¿Qué reservas entran en el CSV?**
+Como una reserva solo guarda el día de la semana, no puedo filtrar por fechas reales. Solo puedo filtrar por sala y, si quieres, por día.
+
+1️⃣ **Todas las reservas de la sala**: `salas exportar Norte` → una fila por reserva:
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+No añade nada nuevo a los datos. Si el lunes quieres ver solo lo de la semana, filtras en la hoja.
+
+2️⃣ **Todas, con filtro opcional por día**: `salas exportar Norte --dia lun` saca solo las del lunes. Sin `--dia` es igual que la 1️⃣. Es más para usar, pero es un parámetro más que mantener y probar.
+
+➡️ **Recomiendo 1️⃣**, porque hoy el dato no distingue una semana de otra, así que un filtro por día solo duplicaría lo que ya haces con el filtro de la hoja. A cambio, el CSV trae más filas de las que miras cada lunes.
+
+¿Cuál eliges?
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\coherence-pass.md
+<<< 1	## Coherence pass
+2	
+3	Its message opens with the phase notice. In both modes, before dispatching the review and before the gate: go through `spec.md` in four checks (placeholders, contradictions, scope, ambiguity), checking each literal that appears in more than one place —an expression, a file, a threshold— against the decisions and scenarios that use it. If you change a literal, search and change all its occurrences in the spec.
+4	
+5	**Each `MODIFIED`.** Search outside the spec, in the code or in the texts that apply it (in a skills kit, in `skills/`), where what changes is implemented —t
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\review-spec.md
+<<< 1	# Spec review — the complexity rubric and the adversarial reviewer
+2	
+3	Applies in full and lite mode, after writing `spec.md` and before presenting it at the gate; the message that dispatches it opens with the phase notice. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either.
+4	
+5	## 1. Count the signals (observable in the spec)
+6	
+7	| Signal | Holds if… |
+8	| --- | --- |
+9	| New capability | «✋ Decisiones que he tomado yo» declares a new capability in `capabilities/` |
+10	| Public contrac
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-templates\templates\spec-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>         # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+4	parent: <id>          # solo si esta feature nace de partir otra; la relación no va en el id (nunca sufijos 0006a)
+5	proposal: <id>        # solo si esta feature sale del reparto de una propuesta (changes/<ts>-proposal-<id>-<slug>/)
+6	title: <título corto descriptivo>
+7	mode: full            # full | lite | spike — lo lee sdd-archive; sin campo = full
+8	profile: <pair|delegate|unattended>   # opcional; omitido = her
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -80; cat CHANGELOG.md | head -20
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+# Spec — free
+
+status: done
+# Changelog
+
+Formato [Keep a Changelog](http
+
+>>> Bash: cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/templates/capability-template.md"; cd "<run>/repo"; git grep -n "0010" ; git config user.name; date -u +%Y%m%d-%H%M%S
+<<< # Capacidad — <nombre>
+
+> **Reglas anti-proliferación**:
+> 1. Una capacidad es un sustantivo del dominio, nunca un ticket ni una feature. Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+> 2. La crea la spec que la declara en "Decisiones que he tomado yo — valida estas"; nunca
+>    la crea `sdd-archive` por su cuenta.
+> 3. `sdd-archive` fusiona el delta de la spec o el del `patch.md`: `ADDED` añade un requisito nuevo, `MODIFIED` sustituye entero el
+>    requisito que tiene ese 
+
+>>> Bash: cd "<run>/repo" && mkdir -p .docs/sdd/changes/20261114-224331-feature-0010-exportar-csv-sala
+<<< (Bash completed with no output)
+
+>>> Write: <run>\repo\.docs\sdd\changes\20261114-224331-feature-0010-exportar-csv-sala\spec.md
+<<< File created successfully at: <run>\repo\.docs\sdd\changes\20261114-224331-feature-0010-exportar-csv-sala\spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && mkdir -p "$T/sdd/capabilities" && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261114-224331-feature-0010-exportar-csv-sala/spec.md"; echo rc=$?; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability check --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261114-224331-feature-0010-exportar-csv-sala/spec.md"; echo rc=$?; git status --short
+<<< bookings-export.md: añadido «Exportar a CSV las reservas de una sala»
+bookings-export.md: añadido «Una sala sin reservas exporta solo la cabecera»
+bookings-export.md: añadido «Exportar una sala que no existe falla sin escribir en la salida»
+bookings-export.md: añadido «Exportar sin indicar sala muestra el uso»
+bookings-export.md: regla «Dónde viven los datos» añadida
+bookings-export.md: regla «Idioma de los nombres» añadida
+bookings-export.md: regla «Límites» añadida
+bookings-export.md: regla «Avisos» añadida
+bookings-export.md: regla «Regla ante conflicto» añadida
+rc=0
+Capacidades válidas: 1
+
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261114-224331-feature-0010-exportar-csv-sala\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261114-224331-feature-0010-exportar-csv-sala\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (12 turnos, 0.44689130000000005 $)
+Ahora: te presento la spec en la puerta de aprobación. Queda: tu aprobación; después, el plan y la implementación.
+
+## ⛔ Spec lista para aprobar: `feature/0010-exportar-csv-sala`
+
+Está en `.docs/sdd/changes/20261114-224331-feature-0010-exportar-csv-sala/spec.md`.
+
+🦆 Hasta ahora no hay forma de sacar las reservas de una sala fuera de la terminal. Con esto, `salas exportar Norte > norte.csv` te deja un fichero que abres en la hoja de cálculo. Tiene una fila por reserva (`Norte;lun;10:00-12:00`) bajo la cabecera `sala;dia;franja`, con todas las reservas de esa sala. Si la sala no existe, no escribe nada en el fichero y avisa por el canal de errores.
+
+### ✋ Decisiones que he tomado yo, valida estas
+- **Enfoque:** una función en `src/app.js` con salida por `stdout`. He descartado un módulo `src/csv.js` y una opción `--salida fichero`.
+- **Comando:** `exportar`, como los otros verbos en castellano.
+- **Separador `;`:** una hoja con configuración regional española separa columnas por `;`, y con `,` lo abriría todo en una columna. Si tu hoja está en inglés, tendrás que indicar el separador al importar.
+- **Cabecera:** `sala;dia;franja`, sin tilde para evitar problemas de codificación.
+- **Formato:** sin comillas ni escape, con fin de línea `\n`, en el orden de la lista de reservas y con el nombre de sala exacto (`Norte`, no `norte`).
+- **Sala desconocida:** `sala desconocida: Oeste` por `stderr`, código 1 y nada por `stdout`, para que `> norte.csv` no guarde el error dentro del fichero. Sin sala sale `uso: salas exportar <sala>`.
+- **Sala sin reservas:** exporta solo la cabecera, no es un error.
+- **Capacidad nueva `bookings-export`,** con sus cinco reglas inventadas por mí porque la constitución no tiene «Reglas de producto».
+- **Validación `dev-lead`:** tendrás que abrir el CSV en tu hoja real.
+- **Prueba del delta sobre una copia:** el merge de los 4 requisitos y 5 reglas sale con código 0, y el check da «Capacidades válidas: 1». El repo no se ha tocado.
+
+### Review de la spec: no se ha hecho
+La spec toca un contrato público (el formato del CSV) y declara una capacidad nueva, así que la rúbrica pedía dos revisores. Esta sesión no tiene herramienta para lanzar subagentes, y por eso ninguno se ha ejecutado. La spec no ha pasado por revisión externa, solo por mi pasada de coherencia. Si la quieres antes de implementar, dímelo al aprobar.
+
+Pasos previstos: 2 tasks. La primera es el CSV con su test. La segunda son los errores y el manejo en el punto de entrada. No propongo dividir.
+
+**¿Apruebas la spec?**
+1. **Apruebo (Recomendada):** escribo el plan e implemento.
+2. **Cambios:** dime qué ajustar.
+
+=== RESULTADO (1 turnos, 0.46278110000000006 $)
+De acuerdo, lo dejamos aquí. La spec queda en espera, sin aprobar y con `status: draft`.
+
+- **Rama:** `feature/0010-exportar-csv-sala`, creada desde `develop`. El id 0010 está reservado en local.
+- **Spec:** `.docs/sdd/changes/20261114-224331-feature-0010-exportar-csv-sala/spec.md`, sin commitear. No he escrito plan ni código.
+- **Para retomar:** vuelve a esta rama y di «retoma la feature». Podrás aprobar la spec, pedir cambios o pedir la review de la spec antes de implementar. Esa review no se hizo porque esta sesión no podía lanzar subagentes.
+
+Hay un punto que puedes mirar mientras lo piensas: el separador `;` (decisión 3) depende de la configuración regional de tu hoja de cálculo.
+
+=== RESULTADO (2 turnos, 0.4684713200000001 $)
+conversación con persona: 2 respuestas

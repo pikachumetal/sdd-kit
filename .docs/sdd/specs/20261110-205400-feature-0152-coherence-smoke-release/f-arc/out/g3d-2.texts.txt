@@ -1,0 +1,79 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [15]
+Voy por el paso 1 (validación, modo `manual`): tu «ciérrala» no cuenta como validación. Estoy ensayando el guion y el smoke antes de pedírtela, y todavía no he escrito ningún registro.
+
+--- [20]
+He ensayado el guion y el smoke. Tengo que parar aquí: el modo es `manual` y el cierre espera tu validación. No he escrito ningún registro y el árbol sigue limpio en `7efa096`.
+
+Antes del guion, dos cosas que debes saber:
+
+- **El entorno no arranca.** Tienes `validation.startEnvironment: true`, así que debería estar levantado. `node scripts/env-up.mjs` falla con `Error: no arranca: falta data/seed.json`. El commit `b141787` («env-up sin la semilla de datos») lo dejó así. No lo he tocado ni lo he sorteado. La app se prueba por CLI, así que el guion no lo necesita. Pero el E2E (`node e2e/run.mjs`) no puede correr mientras tanto, y eso incluye los flujos core.
+- **No he lanzado re-revisión.** `HEAD` (`7efa096`) está un commit por delante de lo revisado (`94b0334`). Ese commit solo toca `tasks.md`, que es el registro de la propia revisión, y el paquete de revisión excluye esa carpeta, así que no habría nada que revisar. Si quieres la re-revisión igualmente, dímelo.
+
+No hay otras ramas `feature/*` ni `patch/*` abiertas, y `merge --check` está listo (`develop`).
+
+🦆 Al cancelar una reserva hay que decir por qué, con un motivo de la lista. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo inventado, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro». El nuevo comando `canceladas` lista lo cancelado: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Si ese test corre solo o en otro orden, falla.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | la misma frase de motivo no válido |
+| `canceladas` enseña el motivo | ejecución real, en un solo proceso | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `7efa096`. Si el cierre exige repetirla tras el sync con `develop`, la repito.
+- `node e2e/run.mjs`: no corrida, porque el entorno no arranca.
+
+**Sin probar**
+
+- Los flujos E2E (cancelar con su motivo, ver salas libres), por lo del entorno.
+- `canceladas` como comando suelto en la CLI: la app no guarda reservas entre procesos, así que en un proceso nuevo sale vacío. El estado vive en memoria, como declara `operations.md`, y por eso el paso 4 corre todo en un solo proceso.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Entorno: no hay (ver arriba). Es solo CLI. Un terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo válido:
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Cancelar con un motivo fuera de la lista:
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3. Cancelar sin motivo:
+```
+node src/app.js cancelar Norte lun
+```
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Cancelar y listar las canceladas, en el mismo proceso:
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+→ primero `cancelada Norte lun (sala ocupada)` y luego `Norte lun — sala ocupada`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

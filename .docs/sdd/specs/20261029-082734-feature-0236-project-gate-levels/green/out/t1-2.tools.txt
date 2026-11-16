@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -60; echo ----; cat .docs/sdd/operations.md | sed -n '/Testing/,/^## [^T]/p' | head -60; git log --oneline -6; git status --short
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (0.7874ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1589ms)
+✔ cancelar con un motivo de la lista (0.9181ms)
+✔ cancelar con un motivo fuera de la lista (0.5137ms)
+✔ canceladas enseña sala, día y motivo (15.0067ms)
+✖ el README nombra cancelar con motivo (1.1905ms)
+✖ el README nombra canceladas (0.2199ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.3888
+
+✖ 
+
+>>> Bash: ls -a . .docs/sdd 2>&1 | head -40; cat scripts/gate.mjs | head -60; grep -rn -i -A25 "testing" .docs/sdd/tech-stack.md 2>/dev/null | head -60; git show --stat e93c365 | tail -5; cat .docs/sdd/sdd-kit.json
+<<< .:
+./
+../
+.docs/
+.git/
+.gitignore
+.temp/
+gate.json
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+#!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8
+
+>>> Bash: cat .docs/sdd/tech-stack.md gate.json package.json; ls -R test src .docs/sdd/specs | head -40; git diff --stat develop...HEAD 2>&1 | tail -8; git branch -a
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+{"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js test/docs.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js","test/docs.test.js","README.md"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+{"type": "module"}
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-
+
+>>> Bash: grep -rn -i "gate" .docs/sdd/specs/*/plan.md .docs/sdd/specs/*/patch.md .docs/sdd/specs/*/walkthrough.md | head; cat test/docs.test.js; git diff --name-only 90a3ef0 HEAD
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md:52:- [ ] Gate de cierre: `node --test`
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const readme = readFileSync('README.md', 'utf8');
+
+test('el README nombra cancelar con motivo', () => assert.match(readme, /cancelar <sala> <día> --motivo/));
+test('el README nombra canceladas', () => assert.match(readme, /canceladas/));
+README.md
+
+>>> Bash: node --test --test-name-pattern="el README nombra" test/docs.test.js 2>&1 | grep -E "^(✔|✖|ℹ (tests|pass|fail))"; echo "exit=$?"; echo ======; node scripts/gate.mjs run bookings:test rooms:test --affected --base 90a3ef0; echo "exit=$?"; git status --short
+<<< ✔ el README nombra cancelar con motivo (0.6926ms)
+✔ el README nombra canceladas (0.3649ms)
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+exit=0
+======
+▪ rooms:test skipped
+▪ bookings:test (7 passed, 0 failed)
+Tasks: 1 completed, 1 skipped
+exit=0
+
+=== RESULTADO (8 turnos, 0.1738756 $)
+El gate quedó en verde tras el rojo. Los dos tests que fallaron pasan (2/2) y `bookings:test` corre entero, 7/7. `rooms:test` se salta porque el arreglo solo toca `README.md`.
+
+```
+Gate: `node --test --test-name-pattern="el README nombra" test/docs.test.js` · `node scripts/gate.mjs run bookings:test rooms:test --affected --base 90a3ef0` → tras el rojo en 90a3ef0, arreglo e93c365 solo de docs: bookings:test: corrió 7/7 · rooms:test: saltada (el cambio desde 90a3ef0 es solo `README.md`, y ninguno de sus inputs —`src/rooms.js`, `test/rooms.test.js`— cambia)
+```
+
+- **Sin filtro:** la rama no toca ningún fichero de esa lista. `package.json` y `gate.json` quedan fuera del cambio, así que el gate no necesita correr sin `--affected`.
+- **Suites:** el proyecto no tiene `operations.md` ni «Suites» declaradas en `tech-stack.md`. Por eso no hay suites unitarias que repetir enteras. Como el arreglo es solo de docs, la regla pide repetir únicamente los tests que fallaron, y eso es lo que hice.
+- **Plan:** el plan (`plan.md:52`) dice `node --test`, pero el gate rojo corrió `scripts/gate.mjs`. Seguí el segundo, que es el que dio rojo. Si el walkthrough debe citar el comando del plan, hay que ajustar una de las dos cosas.
+- **Rama:** el árbol está limpio y no he commiteado nada.

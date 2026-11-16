@@ -1,0 +1,34 @@
+--- [3]
+Ahora: localizo la spec y el plan de la 0032. Queda: setup, tasks, revisión final.
+
+--- [10]
+Uso la skill sdd-worktrees para preparar el espacio aislado.
+
+--- [14]
+Estoy en el repo principal, en la rama de la feature y no en `main`. Trabajo aquí sin crear otro worktree y paso la línea base en un worktree desacoplado.
+
+--- [21]
+Escribo el script de medida en el workspace (fuera de git) y dejo la salida en bruto en la carpeta de la spec.
+
+--- [33]
+La Task 1 del spike 0032 está hecha y commiteada (`ee94807`), pero no se ha pasado la revisión final de `sdd-verify`. Esta sesión no tiene herramienta de subagentes, así que no he despachado ningún revisor. Tampoco he borrado el workspace `.temp/sdd/plan`, no he invocado `sdd-archive` y no he tocado `tasks.md`.
+
+**El resultado es que `libres` no cumple O1**: con 1.001 reservas activas en la misma franja, cargadas con `seed`, tarda de 0,065 a 0,095 ms por llamada. El umbral era 0,05 ms.
+- **Medida:** 12 repeticiones de 2.000 llamadas, en Node v26.10.0. El p99 va de 0,19 a 0,32 ms.
+- **Memoria:** no crece (4,43 a 4,47 MB tras `gc`), así que no hay fuga.
+- **Causa probable:** `freeRooms` ordena en cada llamada una copia de todas las reservas (`bookings.slice().sort(...)`) y tira el resultado. Una copia de la lógica sin esa línea, medida fuera de `src/`, tarda entre 0,00007 y 0,0003 ms. Es una pista, no una medida de `libres` real.
+- **Recomendación:** no abrir una caché todavía. Primero hay que quitar ese `sort` y repetir la medida. Eso queda como fila nueva del roadmap (`sdd-roadmap`), porque el spike no cambia código.
+
+**Límite de la medida:** reparto las 1.000 reservas entre `Norte` y `Sur`, y el filtro corta en cuanto encuentra una activa de cada sala. No he medido el recorrido completo del filtro. El `sort` pesa igual con cualquier reparto, pero el filtro sale optimista.
+
+**Verificación:** el gate `node --test` sigue en verde (4/4) y no hay cambios en `src/` ni `test/`. La «Verificación» de la Task 1 solo comprueba que la salida en bruto existe.
+
+Ficheros nuevos en `.docs/sdd/specs/20261015-120000-feature-0032-free-rooms-fast/`:
+- `evidencia-libres-1000.txt`
+- `evidencia-libres-sin-sort.txt`
+- `research.md`, con `status: draft`
+
+**Rulings I made:** ninguno. **Deferred minors:** ninguno.
+
+Aviso: la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code. Dos desvíos del flujo de la skill: no creé un worktree aparte porque ya estaba en la rama de la feature (la línea base la pasé en uno desacoplado, 4/4), y no escribí `tasks.md` porque el plan tiene una sola task.
+

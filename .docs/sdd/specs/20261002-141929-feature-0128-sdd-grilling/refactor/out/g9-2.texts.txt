@@ -1,0 +1,33 @@
+--- [2]
+Using `sdd-kit:sdd-consult` para responder esta duda con el contexto del proyecto cargado.
+
+--- [7]
+**Recomendación: con lo que trae Node te vale. No metas c8.**
+
+**Por qué**
+- El `tech-stack.md` dice «Node 22, sin dependencias externas». c8 sería la primera dependencia del proyecto, y el `package.json` hoy es solo `{"type": "module"}`.
+- Ya funciona. Lo he ejecutado con `node --test --experimental-test-coverage` y da cobertura por fichero:
+
+  | Fichero | Líneas | Ramas | Funciones | Sin cubrir |
+  | --- | --- | --- | --- | --- |
+  | `src/app.js` | 93,75 % | 83,33 % | 100 % | línea 13 |
+
+- El código es mínimo (16 líneas de `src` y 15 de tests), así que no hace falta nada más sofisticado.
+
+**Dónde se queda corto Node** (esto lo sé por conocimiento general, no está en los docs ni lo he probado aquí)
+- **Informes:** solo saca texto por consola y lcov. c8 genera HTML, cobertura JSON y `text-summary` sin configurar nada.
+- **Umbrales:** c8 tiene `--check-coverage` y `--lines 80`. Node trae `--test-coverage-lines`, `--test-coverage-branches` y `--test-coverage-functions` desde la 22.8. Hoy es una función experimental, aunque en Node 26 puede haberse estabilizado, y no lo he comprobado.
+- **Exclusiones:** Node usa `--test-coverage-include` y `--test-coverage-exclude`, con globs. c8 usa `.c8rc` y es más cómodo para configuraciones complejas.
+
+**Dos cosas que conviene decidir antes de medir**
+1. **Versión de Node:** el `tech-stack` dice 22, pero aquí corre la 26.10. Las banderas de umbral no existen en todas las 22.x. Si fijas la versión mínima, fijas qué puedes usar.
+2. **Si la cobertura es informativa o bloquea.** Medirla no obliga a nada. Para que bloquee habría que añadir un umbral en un script de `package.json`.
+
+Cuando c8 sí compensaría: si necesitas informe HTML para el cliente o en CI, o si pasas a un runner distinto de `node --test`. Ahora mismo no se da ninguno de los dos casos.
+
+**Si quieres dejarlo registrado**
+- Una línea en `tech-stack.md`, algo como «Cobertura: `node --test --experimental-test-coverage`, sin c8».
+- Un script `"coverage"` en `package.json`.
+
+No he tocado nada. Si quieres que lo hagamos, dímelo y lo planteamos como cambio con `sdd-start-feature`.
+

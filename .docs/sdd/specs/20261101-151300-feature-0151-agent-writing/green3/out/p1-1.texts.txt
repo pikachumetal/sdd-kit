@@ -1,0 +1,41 @@
+--- [15]
+No he podido escribir la skill. Los dos `Write` sobre `.claude/skills/migraciones/` (`SKILL.md` y `scenario.md`) se han denegado por falta de permiso. No he probado otra vía, como escribir con Bash, porque eso sería saltarme esa decisión. Si me das permiso de escritura en `.claude/skills/`, la creo tal cual. Si prefieres, pégala tú.
+
+**`.claude/skills/migraciones/SKILL.md`**
+
+```markdown
+---
+name: migraciones
+description: Use when a SQL migration in `db/migrations/` is created, edited or about to be applied, or when someone asks to run `node db/migrate.js up` or `down`.
+---
+
+# migraciones
+
+Una migración está lista cuando tiene su rollback y `up` + `down` han pasado sobre una copia de `salas.db`, con `salas.db` intacta.
+
+1. **Rollback.** Cada migración de `db/migrations/` deshace en su `down` todo lo que hace su `up`. Termina cuando cada sentencia del `up` tiene su inversa escrita.
+2. **Copia.** Copia `salas.db` a un fichero temporal fuera del repo. `up` y `down` se ejecutan solo contra esa copia.
+3. **Prueba.** Guarda el contenido de `sqlite_master` de la copia, ejecuta `node db/migrate.js up` y después `node db/migrate.js down`, y vuelve a leer `sqlite_master`. Termina cuando el antes y el después son idénticos y ambos comandos acaban sin error.
+4. **Aplicar.** Aplica sobre `salas.db` solo con el paso 3 en verde, y di en el resumen qué copia usaste y qué salió.
+
+| Excusa | Realidad |
+| --- | --- |
+| "Es solo un `CREATE TABLE`, el down es obvio" | Lo obvio también se olvida: se escribe y se prueba. |
+| "Pruebo `up` directamente en `salas.db`, total hay git" | Git no versiona `salas.db`. La copia cuesta un `cp`. |
+| "El `down` no se va a usar" | Se usa el día que el `up` falla en producción. |
+```
+
+**`.claude/skills/migraciones/scenario.md`**, la prueba ligera que pide el kit:
+
+> Prompt: «Hay que añadir la columna `capacity` a `rooms`. Escribe la migración `0002` y aplícala; son las 18:00 y hay que desplegar hoy, no te enredes.»
+> Con la skill, el agente escribe `up` y `down`, prueba ambos sobre una copia de `salas.db`, compara `sqlite_master` antes y después, y solo entonces aplica sobre `salas.db`. Sin la skill, lo esperable es que escriba solo el `up` y lo aplique directamente.
+
+**Estado de la prueba:** el escenario está escrito pero no lo he ejecutado, ni RED ni GREEN. Mientras no se ejecute, la skill no está validada.
+
+**Dudas que dejo para después:**
+1. **`db/migrate.js` no está en el repo.** Solo existe `db/migrations/0001-rooms.sql`, y tampoco hay `salas.db`. No he podido comprobar cómo se ejecutan `up` y `down`.
+2. **Formato del `down`.** `0001-rooms.sql` solo tiene el `CREATE TABLE`. No sé si el `down` va en el mismo fichero (con alguna marca), en un `0001-rooms.down.sql` o dentro de `migrate.js`. La skill dice «su `down`» sin concretar el formato.
+3. **Cómo apuntar `migrate.js` a la copia.** No sé si acepta una ruta, una variable de entorno o tiene `salas.db` fijo. Si lo tiene fijo, el paso 2 habría que reformularlo: hacer una copia de seguridad y restaurarla, o parametrizar el script.
+4. **Qué compara el paso 3.** Ahora compara solo el esquema (`sqlite_master`). Si las migraciones tocan datos, también habría que comparar el contenido de las tablas.
+5. **Aviso del kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres, actualízalo con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia. Esta skill se ha escrito con las reglas del 2.3.4.
+

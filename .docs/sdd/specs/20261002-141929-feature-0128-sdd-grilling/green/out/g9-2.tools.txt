@@ -1,0 +1,50 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cat package.json 2>/dev/null; node -v; ls .docs/sdd 2>/dev/null; grep -n -i -E "test|cobertura|coverage|node" .docs/sdd/tech-stack.md .docs/sdd/constitution.md 2>/dev/null | head -30
+<<< {"type": "module"}
+v26.10.0
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+.docs/sdd/tech-stack.md:3:- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+.docs/sdd/tech-stack.md:4:- Tests: `node --test` (carpeta `test/`).
+.docs/sdd/constitution.md:4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: node --help | grep -i -E "coverage"; ls test src 2>/dev/null
+<<<   --experimental-test-coverage
+                              enable code coverage in the test runner
+  --test-coverage-branches=...
+                              the branch coverage minimum threshold
+  --test-coverage-exclude=... exclude files from coverage report that
+  --test-coverage-functions=...
+                              the function coverage minimum threshold
+  --test-coverage-include=... include files in coverage report that
+  --test-coverage-include-all include source files that were never
+                              loaded in the coverage report
+  --test-coverage-lines=...   the
+
+=== RESULTADO (7 turnos, 0.12541159999999998 $)
+❓ **¿Qué herramienta mide la cobertura?**
+
+Lo que he comprobado en el repo y en este entorno:
+- `tech-stack.md` dice «Node 22, sin dependencias externas». `package.json` solo tiene `{"type": "module"}`, sin dependencias. La constitución exige `node --test` en verde antes de cada commit.
+- El Node instalado aquí es v26.10.0. Su `--help` sigue marcando `--experimental-test-coverage` como experimental. Trae umbrales mínimos (`--test-coverage-lines`, `-branches`, `-functions`) y filtros (`--test-coverage-include`, `-exclude`, `--test-coverage-include-all`).
+- Lo que sé de Node 22 no lo he verificado: recuerdo que ya tiene la cobertura nativa, también experimental. No he consultado su documentación.
+- Ambos usan la cobertura de V8, así que los números salen de la misma fuente.
+
+🅰️ **Node nativo** (`node --test --experimental-test-coverage`). No añade dependencias, así que respeta el «sin dependencias externas» del tech-stack. Los umbrales ya vienen incluidos. Lo que cuesta: la bandera sigue siendo experimental y el formato de salida puede cambiar entre versiones. Solo da informe en texto en la terminal, sin HTML ni lcov.
+
+🅱️ **c8**. Da informes HTML y lcov, y es más estable y configurable. Lo que cuesta: añade una dependencia de desarrollo y un `package.json` con `node_modules`. Eso rompe el principio de «sin dependencias externas», que tendría que cambiar el tech-stack.
+
+➡️ **Recomiendo 🅰️**, porque hoy el proyecto es un solo `src/app.js` con un solo fichero de tests, y nada pide HTML ni lcov. A cambio, si más adelante quieres subir el informe a un servicio (Codecov, Sonar) o ver un HTML, habrá que migrar a c8.
+
+**Decisión: ¿para qué vas a usar la cobertura?** ¿Solo como número y umbral local antes de cada commit, o también como informe que otra herramienta o persona tenga que leer (HTML, lcov, CI)?

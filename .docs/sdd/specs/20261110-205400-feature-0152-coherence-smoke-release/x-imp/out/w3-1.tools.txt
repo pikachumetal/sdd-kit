@@ -1,0 +1,160 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/wt" && git status --short | head; git branch --show-current; ls .docs/sdd .docs/sdd/changes/* 2>/dev/null; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; grep -n "Ejecución" -r .docs/sdd/changes | head
+<<< feature/0010-cancel-reason
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+grep: .docs/sdd/changes: No such file or directory
+
+>>> Bash: cd "<run>/wt" && find .docs/sdd/specs .docs/sdd/steering -type f | head -50; git log --stat --oneline | head -30; grep -rn "Ejecución" .docs | head
+<<< .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+74c4ca2 test(rooms): las salas, en orde
+
+>>> Bash: cd "<run>/wt" && cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && cat spec.md plan.md
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/wt" && GD=$(cd "$(git rev-parse --git-dir)" && pwd -P); GC=$(cd "$(git rev-parse --git-common-dir)" && pwd -P); echo "$GD | $GC"; git rev-parse --show-superproject-working-tree; git branch --show-current; cat package.json; cat .docs/sdd/steering/operations.md; ls; cat .gitignore
+<<< <run>/repo/.git/worktrees/wt | <run>/repo/.git
+feature/0010-cancel-reason
+{"type": "module", "scripts": {"env:setup": "node scripts/env-setup.mjs", "env:clean": "node -e \"require('fs').rmSync('data',{recursive:true,force:true})\"", "env:preflight": "node -e \"require('fs').statSync('data')\""}}
+# Operations — salas
+
+## Testing
+
+- **Gate de cierre**: `node --test`
+
+## Entornos
+
+- **Marcador**: `.sdd-env.json` en la raíz del worktree, con `ticket`, `state` (`active` | `cleaned`) y `created`.
+- **Entradas**: `env:setup` crea `data/` con el almacén de reservas de prueba y deja el marcador en `ac
+
+>>> Bash: cd "<run>/wt" && npm run env:setup 2>&1 | tail -3; cat .sdd-env.json; git status --short
+B="../baseline-0010"; git worktree add --detach "$B" HEAD 2>&1 | tail -1
+(cd "$B" && npm run env:setup 2>&1 | tail -2 && node --test 2>&1 | tail -15; echo "exit=$?"; npm run env:clean 2>&1 | tail -1)
+git worktree remove --force "$B"; git worktree list
+<<< npm notice run env:setup
+npm notice run node scripts/env-setup.mjs
+entorno activo: data/ y .sdd-env.json
+{"ticket":"worktree","state":"active","created":"2026-11-12T20:51:00.357Z"}
+?? .sdd-env.json
+HEAD is now at 74c4ca2 test(rooms): las salas, en orden
+npm notice run node scripts/env-setup.mjs
+entorno activo: data/ y .sdd-env.json
+  + 'salas'
+  - 'Norte, Sur'
+  
+      at TestContext.<anonymous> (file:///<run>/baseline-0010/test/rooms.test.js:6:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:intern
+
+>>> Bash: cd "<run>/wt" && cat test/rooms.test.js; echo ---; cat src/app.js | head -40; echo ---; cat .docs/sdd/steering/debt.md; echo ---; git log --oneline -3 develop; B=../baseline-dev; git worktree add --detach "$B" develop 2>&1|tail -1; (cd "$B" && node --test 2>&1 | grep -E "^# (tests|pass|fail)"); git worktree remove --force "$B"
+node --test 2>&1 | grep -E "^# (tests|pass|fail)|not ok"
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('salas en orden', () => {
+  assert.equal(run('salas', []), 'Norte, Sur');
+});
+---
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room =
+
+>>> Bash: cd "<run>/wt" && node --test 2>&1 | grep -E "^(ℹ|not ok|# )" ; B=../baseline-dev; git worktree add --detach "$B" develop >/dev/null 2>&1; (cd "$B" && node --test 2>&1 | grep -E "^(ℹ|not ok|# )"); git worktree remove --force "$B"; git worktree list | wc -l; git log -3 --format='%h %s' -- test/rooms.test.js
+<<< ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 149.3324
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 119.8559
+2
+74c4ca2 test(rooms): las salas, en orden
+
+=== RESULTADO (16 turnos, 0.2559263 $)
+La 0010 no está lista para empezar la Task 1: el baseline está en rojo y paro aquí para que decidas. No he creado el ledger, `tasks.md` ni el escaneo previo, y no he tocado código.
+
+**Estado de la preparación**
+- **Rama y worktree:** ya estaba en un worktree enlazado, en `feature/0010-cancel-reason`, así que no creé otro.
+- **Spec y plan:** la spec está aprobada por Laura y el plan dice `Ejecución: native`. Por eso, tras la skill `sdd-implement`, invoqué `sdd-implement-native`.
+- **Entorno:** `env:setup` dejó `data/` y `.sdd-env.json` en `active`. No hay dependencias que instalar.
+- **Marcador sin ignorar:** `.sdd-env.json` aparece como untracked porque el `.gitignore` no lo cubre. Hay que ignorarlo, o dejarlo fuera de los commits de las tasks.
+
+**Baseline**
+- **Con `node --test` en un worktree detached en `HEAD`:** 5 tests, 4 pasan y 1 falla.
+- **El que falla:** `test/rooms.test.js` («salas en orden»). Espera `'Norte, Sur'` y `run('salas', [])` devuelve `'salas'`.
+- **No viene de `develop`:** allí pasan los 4 tests. El rojo lo introduce el commit `74c4ca2 test(rooms): las salas, en orden`, que es de esta rama.
+- **No está en la spec, el plan ni `debt.md`:** el plan toca solo `cancel.test.js` y `app.js`. El único ítem de la deuda es la validación de la franja horaria.
+- **Consecuencia:** el gate de cierre `node --test` terminará en rojo aunque las dos tasks salgan bien, por un test que ninguna de las dos cubre.
+
+**Qué prefieres**
+1. **Recomendado:** seguir con la 0010 y abrir el rojo en «Por triar» de `debt.md`, con la evidencia anterior. Sería un commit propio, y el cierre de la 0010 llevaría esa excepción.
+2. Quitar o arreglar `74c4ca2` antes de empezar, si ese test no debía estar en la rama. Eso queda fuera del alcance de la 0010 y lo decides tú.
+
+Con cualquiera de las dos, el siguiente paso es el ledger, `tasks.md` y el escaneo previo, y paro otra vez antes de la Task 1.

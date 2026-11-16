@@ -8,19 +8,22 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### El estimation-log se genera desde los artefactos de cierre
 
-- GIVEN un proyecto con `.docs/sdd/estimation.md` y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo
-- WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
-- THEN `<docs>/estimation-log.md` se regenera entero con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
+- GIVEN un proyecto con `estimation.md` en `.docs/sdd/steering/` (3.0.0) o en `.docs/sdd/` (2.x) y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo en `.docs/sdd/changes/` o en `.docs/sdd/specs/`
+- WHEN se ejecuta `sdd estimation log --root <proyecto>`
+- THEN `estimation-log.md` se regenera entero, en la carpeta de `estimation.md`, con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
+- AND un proyecto con `specs/20260920-100000-feature-0079-b/walkthrough.md` y `changes/20261010-090000-feature-0160-c/walkthrough.md` tiene las dos filas, `0079` y `0160`
+- AND con `estimation.md` en las dos rutas, el log va a `steering/` y escribe por stderr que también existe `.docs/sdd/estimation.md`
+- AND `sdd merge`, cuando regenera el log tras un conflicto, lo escribe en esa misma carpeta
 - AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
 - AND `Sesión ($)` es la cifra de `Coste de la sesión`; «sin precio» y «no medido» aparecen tal cual, y sin la línea la celda es `—`
 - AND el fichero lleva cabecera "AUTO-GENERADO — no editar a mano"
+- AND sin `changes/` ni `specs/` bajo `.docs/sdd/` ni `docs/sdd/`, sale con error y dice qué carpetas buscó
 
 ### El script vive en el kit y las skills de cierre lo invocan
 
 - GIVEN un proyecto con `.docs/sdd/estimation.md` y el kit instalado
-- WHEN `sdd-end-feature` o `sdd-end-patch` llegan al paso estimation-log
-- THEN ejecutan el script desde el Base directory de `sdd-templates`, sin buscar ni crear copia en el proyecto
-- AND solo si `pwsh` no está disponible añaden la fila a mano
+- WHEN `sdd-archive` llega al paso estimation-log
+- THEN ejecuta `sdd estimation log` desde el kit, sin buscar ni crear copia en el proyecto
 
 ### El parseo tolera el formato real de las plantillas
 
@@ -68,12 +71,13 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 ### El log agrupa por release
 
-- GIVEN un `<docs>/changelog.md` con versiones `## [X.Y.Z] - AAAA-MM-DD` (o con `—`)
+- GIVEN un `CHANGELOG.md` en la raíz del proyecto (3.0.0) o un `<docs>/changelog.md` (2.x) con versiones `## [X.Y.Z] - AAAA-MM-DD` (o con `—`)
 - WHEN se genera el log
 - THEN aparece una tabla Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($), de la release más antigua a la más reciente
+- AND con los dos changelogs, manda `CHANGELOG.md` y escribe por stderr que también existe `<docs>/changelog.md`
 - AND `Sesión ($)` suma las cifras de los artefactos de la release que la tienen; sin ninguna, `—`
 - AND cada artefacto va a la primera versión cuyo tag `vX.Y.Z` contiene el commit que lo añadió, y a la primera con fecha igual o posterior a la de su fila (la de cierre) si la versión no tiene tag; dos versiones del mismo día van de la anterior a la siguiente; los que no caen en ninguna van a «sin publicar», y los que no tienen fecha, a «sin fecha»
-- AND sin `changelog.md`, o sin versiones con fecha, la tabla no aparece
+- AND sin changelog, o sin versiones con fecha, la tabla no aparece
 
 ### El walkthrough registra el modelo y el effort del hilo en cada fase
 
@@ -85,7 +89,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 ### La sesión se mide desde los transcripts
 
 - GIVEN un worktree `D:\w\t1` y, en `<proyectos>/D--w-t1/`, una sesión con dos respuestas de `claude-sonnet-5`: la `msg_A` en tres líneas con salida 8, 8 y 4.000 (entrada 2, escritura en caché 1h 100.000, lectura 1.000.000 en las tres), y la `msg_B` en una línea (entrada 3, lectura 1.500.000, salida 1.000), más una línea `<synthetic>`
-- WHEN se ejecuta `Measure-SessionTokens.ps1 -Path D:\w\t1`
+- WHEN se ejecuta `sdd session tokens --path D:\w\t1`
 - THEN el hilo suma, para `claude-sonnet-5`: entrada 5, escritura 1h 100.000, lectura 2.500.000 y salida 5.000, en total 2.605.005 tokens
 - AND la línea `<synthetic>` no aparece en ningún modelo
 
@@ -105,17 +109,18 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - AND sin la clave `pricing`, o con un modelo que tiene tokens y no está en la tabla, la línea es `Coste de la sesión: sin precio (<motivo>)` y nombra los modelos que faltan
 - AND una respuesta con `usage.speed: "fast"` cuenta con el modelo `claude-sonnet-5:fast`, que necesita su propia fila
 
-### Con `-Branch` solo cuenta la rama de la feature
+### Con `--branch` solo cuenta la rama de la feature
 
 - GIVEN la sesión del primer requisito, con todas sus líneas en la rama `feature/0068`, y una segunda sesión con la respuesta `msg_C` de `claude-sonnet-5` (lectura 900.000) en la rama `develop`
-- WHEN se ejecuta el script con `-Branch feature/0068`
+- WHEN se ejecuta el script con `--branch feature/0068`
 - THEN el hilo suma 2.605.005 tokens: `msg_C` queda fuera
-- AND sin `-Branch`, el hilo suma 3.505.005
+- AND sin `--branch`, el hilo suma 3.505.005
+- AND con `feature/0068` fusionada en `merge.into` (su último commit de merge, a las 10:00Z), las respuestas de la rama posteriores a las 10:00Z no cuentan, en ninguna de las cuatro líneas
 
-### Sin `-ProjectsRoot`, junta todas las configuraciones de Claude Code
+### Sin `--projects-root`, junta todas las configuraciones de Claude Code
 
 - GIVEN un home con `~/.claude/projects/<carpeta del worktree>/` y `~/.claude-gco/projects/<carpeta del worktree>/`, cada una con una sesión, y `CLAUDE_CONFIG_DIR` que apunta a `~/.claude-gco` o a otra carpeta
-- WHEN se ejecuta `Measure-SessionTokens.ps1` sin `-ProjectsRoot`
+- WHEN se ejecuta `sdd session tokens` sin `--projects-root`
 - THEN el hilo suma las sesiones de `CLAUDE_CONFIG_DIR`, `~/.claude` y todas las `~/.claude-*` que tengan carpeta del worktree
 - AND una carpeta que nombran a la vez `CLAUDE_CONFIG_DIR` y el home cuenta una sola vez
 
@@ -123,26 +128,167 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 
 - GIVEN un worktree sin carpeta en `<proyectos>/`
 - WHEN se ejecuta el script
-- THEN las tres líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
-- AND con la carpeta pero sin ninguna respuesta de la rama pedida, las tres dicen `no medido (sin respuestas de <rama> en los transcripts)`
+- THEN la rama se mide por ventana («Una rama sin transcripts propios se mide por ventana de tiempo»); si la ventana tampoco tiene respuestas, las cuatro líneas dicen `no medido (sin transcripts de Claude Code para <ruta>)` y el script sale con código 0
+- AND con la carpeta pero sin ninguna respuesta de la rama pedida, la rama se mide igual por ventana; si la ventana tampoco tiene respuestas, las cuatro dicen `no medido (sin respuestas de <rama> en los transcripts)`
 - AND con respuestas del hilo y ningún subagente, la línea de subagentes dice `no aplica` y la del coste lleva solo el hilo: `Coste de la sesión: 0,95 $ (hilo 0,95 $)`
 
 ### El cierre rellena los tokens y el coste de la sesión
 
-- GIVEN una feature en Claude Code que llega al paso de tiempo real de `sdd-end-feature`, en un proyecto con `.docs/sdd/estimation.md`
-- WHEN se rellena la sección 2 del walkthrough
-- THEN `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` son las líneas que imprimió `Measure-SessionTokens.ps1 -Path <worktree> -Branch <rama de la feature>`, ejecutado desde el Base directory de `sdd-templates`
-- AND en otro harness, las tres dicen «no medido», con el motivo
+- GIVEN una feature o un patch en Claude Code que llega al paso de tiempo real de `sdd-archive`, en un proyecto con `.docs/sdd/estimation.md`
+- WHEN se rellena la sección 2 del walkthrough o la §5 de `patch.md`
+- THEN `Esfuerzo real` (en los dos) y `Tokens del hilo`, `Tokens de subagentes` y `Coste de la sesión` (en el walkthrough) son las líneas que imprimió `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta del artefacto>`, ejecutado desde el kit
+- AND `timing.json` queda en la carpeta del artefacto, y entra en el commit de cierre
+- AND en otro harness, las cuatro dicen «no medido», con el motivo, y el esfuerzo real se aproxima con las marcas de los commits y se dice
 
 ### El log lee las features y las tasks heredadas
 
 - GIVEN `specs/20260920-100000-task-0063-a/walkthrough.md` con `task: 0063` y `specs/20261001-091500-feature-0079-b/walkthrough.md` con `feature: 0079`, los dos con su bloque de tiempo
-- WHEN se ejecuta `Build-EstimationLog.ps1 -Root <proyecto>`
+- WHEN se ejecuta `sdd estimation log --root <proyecto>`
 - THEN `estimation-log.md` tiene dos filas, con ids `0063` y `0079`
 - AND la cabecera de la tabla es `| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |`
 
 ### El log lee igual los walkthroughs de antes y de después de la evidencia por THEN
 
 - GIVEN un walkthrough cerrado con la tabla 4.2 vieja (`| # | Caso | Resultado |`) y otro con la forma nueva (fila por THEN con evidencia y duración de la suite en 4.1)
-- WHEN se ejecuta `Build-EstimationLog.ps1`
+- WHEN se ejecuta `sdd estimation log`
 - THEN los dos dan su fila con el mismo tipo, estimación, esfuerzo real, tokens y coste que declara su bloque «2. Tiempo y coste», sin aviso
+
+### La estimación de un patch se escribe antes del fix
+
+- GIVEN un proyecto con `.docs/sdd/estimation.md` y un patch clasificado por `sdd-propose`
+- WHEN el agente abre el patch
+- THEN la estimación en horas suma la duración del gate de cierre, de su última medida en el proyecto o de su «Gate de cierre», y la nombra: «0,5 h + 0,55 h del gate de cierre (33 min, patch 0212)»
+- AND si pregunta el carril, la pregunta lleva la estimación
+- AND, pregunte o no, `patch.md` §5 la escribe antes del fix, y la hora de inicio en UTC en la línea siguiente: `- Estimación: 0,5h` y `- Inicio: 2026-10-09T11:20Z`, con `- Esfuerzo real:` debajo al cerrar
+- AND `sdd estimation log` lee `- Estimación: 0,5h` como hoy, y `- Inicio:` no cuenta como estimación ni como real
+- AND un `patch.md` cerrado antes con `- Real:` se sigue leyendo igual
+
+### La sesión mide el esfuerzo real sin las esperas al dev-lead
+
+- GIVEN un worktree con un transcript que empieza a las 12:26 en `develop`, pasa a `feature/0181` a las 12:40 y termina a las 13:35, con un turno del agente que se cierra a las 12:40 y el usuario contesta a las 12:58, y una pregunta del agente a las 13:28 que el usuario contesta a las 13:30
+- WHEN se ejecuta `sdd session tokens --path <worktree> --branch feature/0181`
+- THEN la cuarta línea es `- Esfuerzo real: 0,82 h — reloj de la sesión 1,15 h desde 2026-10-14T12:26Z, sin 20 min de espera al dev-lead (2 esperas)`
+- AND una espera va del cierre de turno del agente (una respuesta con `stop_reason` `end_turn` o `stop_sequence`) al siguiente mensaje tecleado, o de una llamada a `AskUserQuestion` a su resultado; un mensaje tecleado con el turno abierto no abre ni cierra una espera
+- AND el resumen de una compactación (`isCompactSummary`), una entrada `isMeta` o una etiqueta del harness no es un mensaje tecleado: no abre ni cierra una espera
+- AND con dos transcripts de la rama, el reloj suma los dos, el inicio es el del más antiguo y la línea dice `reloj de 2 sesiones`
+- AND un transcript sin ninguna respuesta de la rama pedida no cuenta
+- AND `--json` lleva `real: { measured: true, hours: 0.82, clockHours: 1.15, start: "2026-10-14T12:26Z", waitMinutes: 20, waits: 2, idleMinutes: 0, idleGaps: 0 }`
+- AND `sdd estimation log` lee esa línea como real 0,82 en un walkthrough y en §5 de un `patch.md`
+
+### Una estimación de patch escrita al cerrar queda `post hoc` y no calibra
+
+- GIVEN un proyecto con `estimation.md` y un `patch.md` cuya estimación llegó en el commit de cierre: `- Estimación: 0,5h (post hoc)`, con la forma de §5 de `patch-template.md`, y un real de 0,75 h
+- WHEN se ejecuta `sdd estimation log`
+- THEN da su fila con estimado 0.5, real 0.75 y `post hoc` en la columna Ratio
+- AND esa fila no entra en el factor global, la dispersión, la tendencia, la tabla por tipo ni la mediana de su release
+- AND sus horas reales sí suman en «Horas reales» de su release
+
+### El patch registra el coste de sus sujetos
+
+- GIVEN un `patch.md` con `- Coste de sujetos: 1,20 $ en 2 sujetos sonnet` en §5
+- WHEN se ejecuta `sdd estimation log`
+- THEN su fila lleva `1.2` en «Sujetos ($)»
+
+### Una rama sin transcripts propios se mide por ventana de tiempo
+
+- GIVEN la rama `feature/0211-y`, sin respuestas suyas en los transcripts de su worktree, creada (reflog) a las 10:05Z desde una sesión abierta en el worktree de `feature/0210-x`, que se fusionó en `develop` a las 10:00Z y sigue respondiendo con `gitBranch` `feature/0210-x` hasta las 10:40Z
+- WHEN se ejecuta `sdd session tokens --path <worktree de la 0211> --branch feature/0211-y` con «ahora» a las 10:45Z
+- THEN cuenta las respuestas de esa sesión entre las 10:05Z y las 10:45Z, con sus subagentes y sus esperas, y el reloj empieza a las 10:05Z
+- AND imprime las cuatro líneas de siempre y una quinta: `- Medición: por ventana — transcripts de <ruta del worktree de la 0210> desde 2026-10-19T10:05Z (la rama no tiene transcripts propios)`; `--json` lleva `window: { folder, from, to }`
+- AND con otro worktree en `feature/0212-z`, sin fusionar, que responde en la misma ventana, sus respuestas no cuentan
+- AND si otra rama local sin transcripts propios se creó a las 10:30Z, la ventana de la 0211 acaba a las 10:30Z
+- AND sin reflog de la rama, las cuatro dicen `no medido (sin reflog de feature/0211-y: no se sabe cuándo se creó)`
+
+### La espera a una tarea en segundo plano es trabajo
+
+- GIVEN un transcript de la rama donde el agente cierra el turno a las 10:00, la siguiente entrada es una notificación de tarea (`<task-notification>`) a las 10:18, el usuario escribe a las 10:19 y el agente trabaja hasta cerrar a las 10:30
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN la línea dice `sin 0 min de espera al dev-lead (0 esperas)` y el esfuerzo real es el reloj entero
+- AND si la notificación llega 133 min después del cierre del turno, el hueco también es trabajo
+
+### La compactación no cierra la espera de un turno
+
+- GIVEN un transcript de la rama donde el agente cierra el turno a las 07:33 esperando una tarea en segundo plano, Claude Code compacta la conversación a las 08:28 (una entrada `isCompactSummary`), la notificación de la tarea llega a las 09:46 y el agente trabaja hasta cerrar a las 10:00
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN la línea dice `sin 0 min de espera al dev-lead (0 esperas)` y `reloj de la sesión 2,45 h`, con esfuerzo real 2,45 h
+
+### La sesión descuenta los huecos sin actividad
+
+- GIVEN un transcript de la rama donde el agente trabaja de las 21:00 a las 21:03 del 2026-10-21, el usuario lo interrumpe a las 21:03 (`[Request interrupted by user]`), la siguiente entrada es el «No response requested.» del agente a las 06:48 del 2026-10-22 con `stop_reason` `stop_sequence`, el usuario escribe «sigue» a las 06:50 y el agente trabaja hasta cerrar a las 07:00
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN la cuarta línea es `- Esfuerzo real: 0,22 h — reloj de la sesión 10,00 h desde 2026-10-21T21:00Z, sin 2 min de espera al dev-lead (1 espera), sin 9,75 h sin actividad (1 hueco)`
+- AND `--json` lleva `idleMinutes: 585, idleGaps: 1`
+- AND un hueco cuenta como sin actividad si pasa de 60 min entre dos entradas seguidas, con el turno del agente abierto y sin herramienta en curso: una llamada cuyo resultado llega después en el transcript
+- AND un subagente en primer plano que tarda 90 min es una herramienta en curso: su hueco es trabajo
+- AND un hueco que acaba en una notificación de tarea es trabajo también con el turno abierto: GIVEN el usuario interrumpe al agente a las 10:01 y la notificación llega a las 11:30, THEN no hay hueco sin actividad
+- AND un hueco dentro de una espera cuenta solo como espera
+- AND sin huecos, la línea acaba en `(<n> esperas)`, como hoy
+
+### El cierre guarda el desglose por fase de la sesión
+
+- GIVEN el transcript de una feature con `sdd-propose` a las 13:48, el commit de apertura a las 14:54, `sdd-implement` a las 14:54, `sdd task start` de la task 1 a las 14:57, `sdd-verify` a las 15:35 y `sdd-retro` a las 15:59
+- WHEN se ejecuta `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`
+- THEN `<carpeta>/timing.json` lleva `version: 1` y las fases `apertura`, `implementacion`, `revision` y `cierre`, en ese orden, cada una con `agentSeconds`, `execSeconds`, `waitSeconds`, `idleSeconds` y `ceremony` (`true` salvo en `implementacion`)
+- AND `implementacion` lleva `tasks` con la task 1, `source: "events"`
+- AND `|agente + ejecución + espera + hueco − reloj|`, sumado en todas las fases, es de 60 s o menos, o del 1 % del reloj si es mayor, y `withinMargin` es `true`
+- AND agente + ejecución de todas las fases da el `Esfuerzo real` de la cuarta línea, con la misma salida en las cuatro líneas que sin `--artifact`
+- AND fuera del margen, el fichero lleva `withinMargin: false`, la CLI avisa por stderr con las dos cifras y sale con 0
+- AND sin `--artifact` no escribe ningún fichero
+- AND regenerarlo sin cambios en los transcripts ni en la rama deja el fichero idéntico
+- AND las claves del fichero van en inglés y los nombres de fase, sin tilde: es un contrato que leen otros verbos
+
+### Una fase sin eventos no da cifra
+
+- GIVEN el transcript de una feature sin ninguna invocación de `sdd-archive` ni de `sdd-retro`, con la rama sin fusionar
+- WHEN se ejecuta `sdd session tokens --artifact <carpeta>`
+- THEN la fase `cierre` lleva `measured: false`, sus tiempos son `null` y `reason` es `sin eventos: su tiempo queda en revision`
+- AND la suma sigue dentro del margen: ese tiempo está en `revision`
+- AND un transcript sin `sdd task start` y con los commits de la rama distintos de las tasks del plan da `implementacion` sin `tasks`
+- AND con tantos commits entre apertura y cierre como tasks tiene el plan, y sin `sdd task start`, `tasks` sale con `source: "commits"`
+- AND sin transcripts, `timing.json` es `{ "version": 1, "measured": false, "reason": "sin transcripts de Claude Code para <ruta>" }`
+
+### El gate se atribuye por el comando del «Gate de cierre»
+
+- GIVEN un `steering/operations.md` con `- **Gate de cierre**: \`moon run kit:test-headless cli:typecheck cli:test --affected --base develop\``, y en la fase `cierre` una llamada `moon run kit:test-headless cli:typecheck cli:test --affected --base develop 2>&1 | tail -5` de 240 s y otra `npx vitest run test/session/` de 30 s
+- WHEN se escribe `timing.json`
+- THEN `cierre` lleva `gateSeconds: 240`, y `execSeconds` incluye los 270 s
+- AND `gateCommand` es el literal del gate
+- AND una llamada `moon run cli:test` no suma en `gateSeconds`
+- AND sin «Gate de cierre» declarado, `gateCommand` y `gateSeconds` son `null`
+
+### Cada fase lleva su estimado
+
+- GIVEN un `plan.md` con `- Esfuerzo spec + plan: 0,5h`, `- Estimación de implementación: 1h`, `- Estimación de revisión: 0,25h` y `- Estimación de cierre: 0,25h`
+- WHEN se escribe `timing.json` en su carpeta
+- THEN `estimateHours` es 0.5, 1, 0.25 y 0.25 en las fases, por ese orden
+- AND un `plan.md` sin las dos últimas líneas da `estimateHours: null` en `revision` y `cierre`
+- AND una carpeta lite, sin `plan.md`, con `- Esfuerzo spec: 0,5h` y `- Estimación de implementación: 1h` en `spec.md`, da 0.5 y 1, y `null` en `revision` y `cierre`
+- AND una carpeta sin `plan.md` ni esas líneas da `estimateHours: null` en todas
+
+### El log suma los tiempos por fase y el % de ceremonia
+
+- GIVEN dos carpetas con `timing.json` medido: la A con `apertura` 600 s de agente y 300 de ejecución, estimado 0,5 h, e `implementacion` 900 de agente y 2.700 de ejecución, estimado 1 h; la B igual en `implementacion` y con `apertura` `measured: false`
+- WHEN se ejecuta `sdd estimation log`
+- THEN el log lleva `## Tiempos por fase` con la cabecera `| Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |`
+- AND la fila `apertura` tiene n 1, agente 0.17, ejecución 0.08, espera 0, gate 0, 11 % del trabajo, estimado 0.5, real 0.25 y ratio 0.5, con `sí` en Ceremonia
+- AND la fila `implementación` tiene n 2, 89 % del trabajo, `no` en Ceremonia, estimado 2, real 2 y ratio 1
+- AND bajo la tabla, `Ceremonia: 20 % del trabajo (1 tareas, 1 fuera por una fase sin eventos).`: solo cuenta la A, 900 s de 4.500 s de trabajo
+- AND la tabla principal del log y su ratio son los mismos que sin `timing.json`
+- AND una carpeta con `withinMargin: false` no entra, y el log avisa por stderr con su nombre
+- AND sin ningún `timing.json` medido, la sección dice `Sin datos: ninguna tarea tiene timing.json.`
+
+### La causa de una desviación cita las esperas medidas
+
+- GIVEN una feature con dos esperas en el transcript, de 45 min a las 14:59Z y de 12 min a las 15:40Z
+- WHEN se ejecuta `sdd session tokens --branch <rama>`
+- THEN imprime `- Esperas y huecos: 14:59Z 45 min; 15:40Z 12 min`, la última línea, también tras `Medición`
+- AND sin esperas ni huecos, con «no medido» o en `--json`, esa línea no sale
+- AND con una desviación de más del ±30 %, `sdd-archive` escribe en «Causa de la desviación» esas horas y minutos, o «sin medir»
+
+## Reglas de la capacidad
+
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el desglose por fase, en `timing.json` de cada carpeta de artefactos, y el estimado de cada fase, en su `plan.md`; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`.
+- **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee; las claves de `timing.json` en inglés y sus nombres de fase sin tilde, como contrato que leen otros verbos.
+- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min. Las fases suman el reloj con un margen de 60 s o del 1 % del reloj, lo que sea mayor.
+- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe, un documento presente en sus dos rutas, y un `timing.json` fuera del margen (al escribirlo y, con la tarea fuera de la tabla, al generar el log). La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
+- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.

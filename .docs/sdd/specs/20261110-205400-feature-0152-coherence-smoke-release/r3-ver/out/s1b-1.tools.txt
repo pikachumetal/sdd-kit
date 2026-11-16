@@ -1,0 +1,89 @@
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261013-110000-feature-0023-cancelled-list\spec.md
+<<< 1	---
+2	id: 20261013-110000-feature-0023-cancelled-list
+3	feature: 0023
+4	title: Listado de canceladas
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-13
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Listado de canceladas
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `reports` — `canceladas` sustituye a `informe`.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. Cada línea del listado es «<sala> <día> — <motivo>».
+25	2. `informe` responde «usa canceladas».
+26	
+27	### Deci
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\reports.md
+<<< 1	# Capacidad — reports
+2	
+3	## Propósito
+4	
+5	los informes de la app de salas
+6	
+7	## Requisitos
+8	
+9	### El informe de canceladas agrupa por sala y da el total
+10	
+11	- GIVEN Norte lun cancelada con «sala ocupada» y Sur mar con «otro»
+12	- WHEN `informe`
+13	- THEN responde «Norte: lun (sala ocupada)», «Sur: mar (otro)» y «total: 2», en ese orden
+
+=== RESULTADO (5 turnos, 0.0964779 $)
+1. Crítico · Delta (`MODIFIED — El informe de canceladas…`) · El MODIFIED sustituye el comportamiento del requisito existente (agrupar por sala y dar total) por «usa canceladas». Eso es una retirada y no una modificación. Se pierde la agrupación y el total, y no queda ningún requisito que diga que se pierden. · Declararlo como `REMOVED` del requisito original, con su motivo y su migración. Después, un `ADDED` o `MODIFIED` aparte para el aviso «usa canceladas» de `informe`. Si el total o la agrupación se conservan, pasarlos al requisito de `canceladas`.
+
+2. Crítico · Delta (`ADDED — Canceladas lista…`) · Pasa por la misma condición que el requisito `informe` original: mismos datos de entrada, salida distinta («Norte lun — sala ocupada» frente a «Norte: lun (sala ocupada)»). Se pierde el total «total: 2» y no se dice que se pierda. La sustitución «entera» que pidió el dev-lead («que nadie eche de menos el informe») no se cumple. · Decidir con el dev-lead si el total y la agrupación por sala se mantienen en `canceladas`. Si se mantienen, añadirlos al THEN. Si no, declararlos retirados en el `REMOVED` y anotarlo en las decisiones.
+
+3. Importante · «✋ Decisiones que he tomado yo» · Falta la decisión más importante del agente: perder el total y la agrupación por sala, y cambiar el formato de la línea. La decisión 1 solo cubre el formato de la línea, y la 2 es la de `informe` («usa canceladas»). · Añadir la decisión «`canceladas` no da total ni agrupa». Añadir también el orden de las líneas. Hoy el escenario no lo fija.
+
+4. Importante · Delta, escenario de `canceladas` · No fija el orden ni el separador de salida: no dice si es una respuesta con dos líneas o una sola, ni en qué orden van. Un test podría pasar con cualquier orden. · Poner «en ese orden» en el THEN, como hace el requisito original, y decir cuántas líneas se emiten. Añadir un escenario para el caso sin canceladas (lista vacía), que ahora no está cubierto.
+
+5. Importante · Delta, escenario de `informe` · «GIVEN cualquier estado» no es un estado concreto, y «usa canceladas» es una frase que el agente escribe: el test pasa con solo devolver el literal. No hay escenario con datos reales que muestre que `informe` ya no lista. · Dar un GIVEN con las mismas dos canceladas del primer escenario. El THEN debe decir que responde «usa canceladas» y no muestra «Norte» ni «Sur».
+
+6. Importante · Terminología (PRODUCT.md) y Delta · La spec habla de «canceladas» y «cancelada» para todas las reservas anuladas. PRODUCT.md distingue **Cancelación** (la anula el cliente) de **Anulación** (la anula el responsable de sala). No se dice si `canceladas` incluye las anulaciones. Esa indefinición es una regla de alcance. · Declarar si el listado cubre solo las cancelaciones o también las anulaciones, y cómo se nombran en la interfaz. Añadir un escenario que lo pruebe.
+
+7. Importante · Scope · El Scope dice «el comando `canceladas` y la retirada de `informe`», pero el Approach dice que `informe` «deja de listar» y no se retira, porque sigue respondiendo «usa canceladas». Intent, Scope y delta no dicen lo mismo sobre `informe`. Además, el Intent promete «uno solo» y se quedan dos comandos. · Alinear los tres. Si `informe` queda como alias de aviso, decirlo en el Scope y en el Intent. Si se retira, quitar el aviso.
+
+8. Menor · Capacidades / cabecera · La capacidad `reports` se describe como «modificada», pero el delta mezcla un `ADDED` con lo que de hecho es una retirada. La lista «Capacidades» no cuenta que desaparece un requisito vigente. · Reflejarlo en «Capacidades»: «Modificadas: `reports` — añade `canceladas`, retira el informe agrupado».
+
+9. Menor · Reglas de la capacidad (5 bis) · El delta trae datos nuevos (motivo, línea de salida) y un conflicto de comportamiento con el requisito vigente. La spec no tiene la sección «Reglas de la capacidad» ni dice «no aplica» para dónde viven los datos, el idioma de los nombres, los límites, los avisos y la regla de conflicto. · Añadir la sección. Declarar cada una de las cinco reglas por su nombre o poner «no aplica». Por ejemplo, el idioma es castellano (constitución, regla 4) y el aviso es «usa canceladas».
+
+10. Menor · «Dónde se prueba» · Cita `test/cancel.test.js` como ejemplo, y cubre solo el listado. No dice dónde se prueba la respuesta de `informe`, que es la parte que cambia el contrato. · Añadir la prueba de `informe`, con su ruta y la forma de ejecutarla (`node --test`, según la regla 2 de la constitución).

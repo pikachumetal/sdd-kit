@@ -1,0 +1,98 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [24]
+Lancé la re-revisión del commit de documentación (`3d28bd6..0d00b24`) con su vigilancia de silencio. No escribo ningún registro del cierre hasta que vuelva.
+
+Mientras tanto no hay nada más que pueda hacer sin riesgo de duplicar trabajo, así que espero su resultado.
+
+Quedan pendientes, para cuando termine:
+- **Validación en campo** (`validation.mode: field`): smoke de cada THEN con ejecución real y la suite.
+- **Walkthrough**: no existe el de la 0010, lo creo desde la plantilla.
+- **Deuda**: el ruling del test de `canceladas`, que depende del primer test, es un workaround y pide su fila en `debt.md`.
+- **Capacidad `bookings`**: hay que fusionar el delta.
+- **Roadmap, retro, merge**: lo que marca el resto del checklist.
+
+Dos cosas que ya he visto y que dejo dichas:
+- **Ramas abiertas a la vez**: no hay otras ramas `feature/*` ni `patch/*` en este worktree.
+- **`merge --check`**: está listo, y `develop` irá en un worktree temporal.
+
+--- [31]
+**Veredicto: limpia.** El rango 3d28bd6..0d00b24 no da hallazgos.
+
+**1. ¿Toca algo fuera de la documentación?** No. El diff tiene un solo fichero nuevo, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, con 17 líneas añadidas. No cambia nada en `src/` ni en `test/`.
+
+**2. ¿Cuadran las filas con el log?** Sí.
+- La fila 1 («Cancelar con motivo», done, 393d4e7) corresponde a `393d4e7 feat(bookings): cancelar con un motivo de la lista`.
+- La fila 2 («Listado de canceladas», done, 3d28bd6) corresponde a `3d28bd6 feat(bookings): listado de canceladas con su motivo`.
+- Los nombres de las tasks coinciden con los del plan (Task 1 y Task 2).
+- La línea de revisión final dice «Spec limpia · Código limpia, sobre 3d28bd6», que coincide con lo que me pasas. «Arquitectura no (plan)» tampoco choca con el plan.
+- El ruling de la Task 2 describe el código tal como está. En `test/cancel.test.js:13-15`, el test `canceladas` espera «Norte lun — sala ocupada», pero ese dato no lo prepara él: viene de la cancelación del test de la línea 5. El ruling explica también qué pasa si la suposición es errónea.
+
+**3. ¿Contradice la spec?** No. Los títulos de las tasks y el ruling cuadran con el Scope (`cancelar --motivo` y `canceladas`) y con «Dónde se prueba» (`test/cancel.test.js`). El texto está en castellano, así que cumple la restricción de código.
+
+**Fuera del rango (no es hallazgo, solo para que lo sepas):** el escenario de la spec «sin `--motivo`» (`spec.md:54`) no tiene test propio en `test/cancel.test.js`. El comportamiento sí es el correcto: `reasonOf` devuelve `undefined` y `cancelBooking` responde «motivo no válido: …» (`src/app.js:14-20`). Esto pertenece al código que ya revisó la revisión final sobre 3d28bd6, no a este rango.
+
+Ficheros que he leído:
+- `/tmp/tmp.uppWFjZwmN/rereview-3d28bd6..0d00b24.diff`
+- `<run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md`
+- `<run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md`
+- `<run>\repo\test\cancel.test.js`
+- `<run>\repo\src\app.js`
+
+--- [33]
+La re-revisión salió limpia. Paro su vigilancia y anoto la línea en `tasks.md`.
+
+--- [37]
+La vigilancia ya había terminado. Ahora la validación en campo: compruebo si la base va por delante y corro la suite y el smoke con ejecución real.
+
+--- [40]
+Sin remoto, base sin avanzar y sin otras ramas: el gate de cierre corre aquí, entero.
+
+--- [43]
+Gate verde (unit 5/5, e2e 7/7). Ahora el smoke con ejecución real, un caso por THEN, en mi propia sesión contra el servidor levantado.
+
+--- [46]
+Los cuatro THEN dan lo que dice la spec. Sigo con los registros: leo la plantilla del walkthrough, la deuda, el roadmap y la receta de merge.
+
+--- [49]
+Faltan walkthrough, delta de capacidad, deuda y roadmap. Empiezo por fusionar el delta de `bookings`, que no existe todavía como capacidad.
+
+--- [52]
+Delta fusionado y validadores en verde. Ahora la retro, que el cierre pide invocar con el argumento `cierre`.
+
+--- [58]
+Squash del cierre sobre el commit de la última task, comprobando antes que ningún registro cite `0d00b24`.
+
+--- [61]
+Base al día. Antes de fusionar leo la receta de merge, incluido lo de la CI de la base.
+
+--- [66]
+Bloque `merge` completo en `delegate`, sin CI declarada y sin otras ramas: fusiono con el script, `--verified-at` con el commit de cierre.
+
+--- [69]
+🦆 Cancelar una reserva ahora exige un motivo de la lista. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lo lista como «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Si es erróneo, el test falla al correr solo o en otro orden. Tiene fila en `debt.md`.
+
+**Qué he hecho**
+- **Validación en campo** (`validation.mode: field`): suite unitaria 5/5 y e2e 7/7, con el gate de cierre completo. Smoke 4/4 THEN con ejecución real contra el servidor, en una sesión propia.
+- **Revisión final**: la revisión final (Spec y Código) cubría `3d28bd6`. `HEAD` iba un commit por delante, solo de documentación (`tasks.md`). El kit pide entonces una re-revisión, y salió limpia. La línea de `tasks.md` queda como «juntada en el cierre».
+- **Capacidad `bookings`**: no existía. La creé con el delta de la spec mediante `sdd capability merge`, y los validadores pasan.
+- **Registros**: walkthrough nuevo, con `Retro: sin señales`. La 0010 pasa a ✅ en `ROADMAP.md`, y `sdd roadmap check` da «Roadmap válido». El cierre va en un solo commit sobre la última task.
+- **Estimación**: no hay `estimation.md`, así que no hay tiempo real ni log de estimación.
+
+**Pendiente**
+- **Deuda nueva** (tres filas en «Por triar»):
+  - El workaround del test de `canceladas`.
+  - El THEN «sin `--motivo`» solo lo cubre el smoke, sin test automático. Lo señaló también la re-revisión.
+  - El e2e tarda 48 s, con un presupuesto de 0,5 min. Es deuda del proyecto.
+- **Posible solape**: en el roadmap, la 0014 («el motivo se guarda en el almacén de reservas») parece solapar con lo que ya guarda la 0010. Lo digo por si conviene revisarla.
+- **Ramas abiertas**: no hay otras ramas `feature/*` ni `patch/*`.
+- **Merge**: sin conflictos ni gates pendientes. No hay remoto ni `merge.push`, así que no hay push.
+
+**Ticket del kit**: la retro no dejó ninguna línea `→ ticket del kit`. Si quieres igualmente el feedback de mejora del kit sobre esta sesión, dímelo y invoco `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (2a0927c) · push: no hecho: `merge.push` no lo autoriza
+

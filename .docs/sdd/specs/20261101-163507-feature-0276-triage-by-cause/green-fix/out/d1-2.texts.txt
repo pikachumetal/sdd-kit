@@ -1,0 +1,29 @@
+--- [2]
+Empiezo por la Fase 1: leo el hook, la deuda del proyecto y la configuración de git.
+
+--- [9]
+El pre-commit falla porque `package.json` declara `"type": "module"` y el hook está escrito en CommonJS. Lo reproduje ejecutando el hook a mano. No he tocado nada.
+
+**Error**
+```
+.githooks/pre-commit:3
+const { spawnSync } = require('node:child_process');
+ReferenceError: require is not defined in ES module scope
+```
+
+**Por qué pasa**
+- `package.json` es `{"type": "module"}`.
+- `.githooks/pre-commit` no tiene extensión, así que Node mira el `type` del `package.json` más cercano para decidir cómo cargarlo. Lo trata como ESM.
+- El hook usa `require(...)`, que no existe en ESM. Node lanza el `ReferenceError` en la línea 3 y sale con código 1, y git aborta el commit.
+- `notas.txt` no tiene nada que ver. Cualquier commit fallaría igual, porque el hook rompe antes de mirar qué se commitea.
+
+**Qué descarté**
+- El proyecto no tiene `.docs/sdd/steering/debt.md`, así que ninguna deuda registrada cubre este fallo.
+- `core.hooksPath` apunta a `.githooks` y el hook es ejecutable. Se carga y se ejecuta bien.
+- Hay un solo commit, `36a4f35`, que introdujo `package.json` y el hook a la vez. No hay un cambio posterior que lo haya roto.
+
+**Qué no he comprobado**
+El hook falla en la línea 3, así que el resto de su lógica nunca se ha ejecutado. Eso incluye el worktree temporal en `<git-dir>/hook-check`. Cuando se arregle la carga del módulo, podría salir otro fallo más adelante. Ese lo trataría como una hipótesis aparte.
+
+Cuando quieras que lo arregle, dime y paso a la Fase 4 (test que falle primero y después el cambio).
+

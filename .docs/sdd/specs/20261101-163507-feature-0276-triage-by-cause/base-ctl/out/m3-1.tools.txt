@@ -1,0 +1,118 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo ----; cat .docs/sdd/steering/debt.md; echo ----; cat ROADMAP.md; git branch --all
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+----
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | 
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; git ls-files | head -50; cat package.json
+
+>>> Bash: node ".temp/../../../kit0276/cli/bin/sdd.js" roadmap check --path .docs/sdd 2>&1 | head; cat "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kit0276/skills/sdd-templates/templates/debt-template.md"
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/2026
+<<< node:internal/modules/cjs/loader:1595
+  throw err;
+  ^
+
+Error: Cannot find module 'D:\code\.worktrees\sdd-kit\feature-0276-triage-by-cause\.temp\r0276\base-ctl\kit0276\cli\bin\sdd.js'
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1591:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1145:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1169:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1196:12)
+    at Module._load (node:internal/modules/cjs/loader:1368:5)
+# Deuda técnica — <proyecto>
+
+> Documento d
+
+>>> Bash: cat src/app.js; cat CHANGELOG.md | head -20; ls; node src/app.js libres --planta 2 2>&1 | head; node src/app.js 2>&1 | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js exportar | od -c | head -3; git log --oneline -- src/app.js; git tag; cat test/app.test.js | head -30
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+db15187 feat: base del molde
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada'
+
+=== RESULTADO (8 turnos, 0.1633221 $)
+Este es el triaje que propongo. No he escrito nada todavía, porque con el perfil `delegate` tienes que confirmarlo antes.
+
+Reproduje los dos ítems de «Por triar» con el código actual (`src/app.js`).
+
+| Ítem | Reproducción | Estado propuesto |
+| --- | --- | --- |
+| `salas libres --planta 2` lista salas de la planta 1 | Sí. `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. | **Lista** |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | No. `node src/app.js exportar` emite UTF-8 correcto: `sala,d` + bytes `c3 ad` (la `í`) + `a,franja`. | **En espera**, con Falta `reproducirlo` |
+
+**Ítem de planta (Lista)**
+- **Causa:** `roomsOnFloor` filtra con `floors[room] <= floor` en lugar de `===`.
+- **Evidencia:** el comando anterior con su salida.
+- **Impacto:** medio (propuesta mía).
+- **Arreglo:** cambiar `<=` por `===` y añadir un test.
+- **Destino:** una fila nueva de Now con `**Carril:** patch`, tamaño S, que salde este ítem. Con un solo test de comportamiento nuevo entra como patch. Reservaría el id con `sdd id next --reserve`.
+- **Alternativa:** `sin fila`, si prefieres no planificarlo ahora.
+
+**Ítem del CSV (En espera)**
+- **Qué no cuadra:** el informe de QA solo cita la cabecera `sala,d?a,franja`, sin comando ni salida.
+- **Posible causa:** que el programa que abrió el fichero no lo leyó como UTF-8, por ejemplo Excel sin BOM. No lo he comprobado.
+- **Qué pedir:** a QA, el comando exacto y la herramienta con la que abrieron el CSV.
+- **Fecha:** 2026-10-12, la de entrada en la deuda.
+- **Impacto:** medio (propuesta mía).
+- **Nota:** `1.4.2` no existe en el changelog (la última es la 1.4.1) y no hay tags. QA habla de una versión que no está en el historial, y eso también hay que aclararlo.
+
+El «En espera» que ya había (reservas de más de 8 h) no caduca: no hay ninguna release `X.Y.0` posterior a su fecha. Lo dejo igual.
+
+**Cambio en `debt.md`:** las tablas del proyecto tienen columnas `Causa`, `Remedio temporal` y `Arreglo` que la plantilla del kit cargado (2.3.4) no trae. Mantendré las cabeceras del proyecto tal cual.
+
+¿Lo escribo así? Puedes cambiar el destino del ítem de planta o los impactos. Si dices «decide tú», lo escribo tal cual y dejo las decisiones en el cuerpo del commit.

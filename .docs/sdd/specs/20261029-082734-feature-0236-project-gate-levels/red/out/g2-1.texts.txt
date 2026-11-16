@@ -1,0 +1,133 @@
+--- [4]
+Voy a ver qué hay en el proyecto para evaluar los predicados.
+
+--- [12]
+El proyecto está en la 2.3.4 y le falta la migración **v3.0.0**, la única pendiente. Tiene tres gates (tablas 1, 2 y 3) y no he tocado nada: el árbol sigue limpio en `507c905`. Necesito tu «sí» a cada tabla y las decisiones que van abajo.
+
+## Gate 1: Traslados
+
+| Lo que hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz. No existe uno previo, así que no hay fusión. |
+| `constitution.md` | `git mv` a `steering/constitution.md`. El enlace `decisions/0001-salas-por-franja.md` pasa a `../decisions/0001-salas-por-franja.md`. |
+| `architecture.md` | `git mv` a `steering/architecture.md`, sin cambios. |
+| `estimation.md` | `git mv` a `steering/estimation.md`, sin cambios. |
+| `estimation-log.md` | Va a `steering/` y se regenera con `sdd estimation log`. El diff solo cambia la cabecera, de 2 a 11 columnas. El actual no tiene filas escritas a mano, así que no se pierde nada. |
+
+## Gate 2: Producto y operaciones
+
+**`PRODUCT.md`** sale de `mission.md`:
+- **Users**: Empleado (reserva y cancela sus franjas) y Recepción (ve todas las reservas del día).
+- **Product Purpose**: «La oficina pierde salas reservadas a mano en una hoja compartida.»
+- **Capabilities and Constraints**: Es: reserva de salas por franja de una hora. No es: un calendario de equipo ni un sistema de facturación.
+- **Terminology**: `**Franja**: una hora reservable, de en punto a en punto.` Sin `_Evitar_`, porque el original no nombra ningún sinónimo.
+
+**`steering/operations.md`** sale de `tech-stack.md` y `environments.md`:
+- **Comandos**: `npm test` — la suite, tal cual.
+- **Testing**:
+  - Gate de cierre: `moon run :typecheck :test :lint`, tal cual.
+  - Se añade Temporales con `vitest` · `no declarado`, sin propuesta, porque no hay config que lo fije. No hay E2E, así que no entran los campos E2E.
+- **Frontend**: «No aplica: es una CLI.», tal cual. La plantilla dice borrar la sección si no hay interfaz, pero la receta dice copiarla; dime cuál prefieres.
+- **Entornos** (condensado):
+  - Marcador: `.sdd-env.json` en la raíz del worktree.
+  - Entradas: `env:setup`, `env:clean` y `env:status`.
+  - Runner: `npm run env:setup`.
+- **Tecnologías**: sale entera, porque Node 22 y Vitest 3 ya están en `package.json`.
+- **Decisiones abiertas** («¿Avisos por correo al reservar?»): pasa a Later (gate 3).
+
+Después se hace `git rm` de `mission.md`, `tech-stack.md` y `environments.md`. Quedan recuperables con `git show 507c905:.docs/sdd/<doc>`.
+
+## Gate 3: `ROADMAP.md` y `steering/debt.md`
+
+No hay una release en preparación, así que «Próximo» va a Now, sin título de versión ni línea de perfil, y Next queda vacío.
+
+**Now**
+
+| Id | Externo | Título | Estado | Tras | Carril | Requisitos | Salda | Toca | Tamaño |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0021 | SAL-41 | Cancelar una reserva propia | ⏳ | — | feature | — | — | `src/app.js` | **lo decides tú** |
+| 0022 | — | Avisar de la cancelación a recepción | ⏳ | 0021 | feature | 0019 | la fila de `cancel` de la deuda | `src/app.js`, `src/notify.js` | **lo decides tú** |
+| 0024 | — | Informe de ocupación por sala | ⏳ | — (ver aviso) | feature | — | — | `src/report.js` | **lo decides tú** |
+| 0023 | SAL-44 | Rechazar dos reservas en la misma franja (2026-09-25) | ✅ | — | patch | su `patch.md` | la fila saldada de la deuda | — | **lo decides tú** |
+
+- **Aviso**: la 0024 va «tras 0015», pero la 0015 no está en el nuevo `ROADMAP.md` ni en `CHANGELOG.md`, así que su «Tras» pasa a `—`.
+- Los patches anteriores y la sección «Releases cerradas» (v1.2.0) salen, porque ya están en `CHANGELOG.md` y `releases/`.
+- La validación pendiente de la 0016 sigue en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`.
+- «Ficheros que toca» pasa a «Toca». «Decisiones ya tomadas» queda en `—` en todas.
+
+**Later**: reservo 2 ids con `sdd id next --reserve --count 2`, después de tu «sí».
+
+| Id | Título | Estado |
+| --- | --- | --- |
+| el primero reservado | Exportar las reservas del mes a CSV, con «Recepción, reunión del 2026-09-18» al final del one-liner | ⏳ |
+| el segundo reservado | ¿Avisos por correo al reservar?, que viene de las decisiones abiertas | ⏳ |
+
+**`steering/debt.md`** (los enlaces relativos ganan `../`)
+
+| Ítem | Sección | Celdas | Fecha |
+| --- | --- | --- | --- |
+| Dos reservas en la misma franja (con su prefijo `[Patch 0023… saldada…]` intacto) | Lista | Origen: SAL-44. Impacto: Alto. Evidencia: `../specs/20260925-100000-patch-0023-double-booking/patch.md`. Destino: 0023 | — |
+| `cancel` no comprueba que la reserva sea del que cancela | Lista | Origen: SAL-45. Impacto: Alto. Evidencia: `../field-reports/sal-45.md`. Destino: 0022 | — |
+| Pasar `src/app.js` a TypeScript | Por triar | Origen: `roadmap 2.x` | 2026-09-15 (commit 507c905) |
+| Los mensajes de error mezclan castellano e inglés | Por triar (**Actuar** sin evidencia) | Origen: `roadmap 2.x` | 2026-09-01 (commit 2f57599) |
+| El test de franjas falla a veces en CI | En espera | Impacto: Medio. Falta: «un segundo fallo con su log». Origen: `roadmap 2.x` | 2026-09-01 |
+| Validar el formato de la franja en la API | Descartadas | Motivo: «duplica la 0018». Origen: `roadmap 2.x` | 2026-09-01 |
+
+- **Se pierde**: la columna Impacto en Por triar y Descartadas, porque esas secciones no la tienen. Lo que decida el dev-lead sobre eso va al texto del ítem; si no dices nada, se pierde.
+- **Aviso**: `field-reports/sal-45.md` no existe en el repo, así que ese enlace queda roto.
+- Después de escribir los dos ficheros, `git rm .docs/sdd/roadmap.md`. El texto original queda en `git show 507c905:.docs/sdd/roadmap.md`.
+
+## Pasos que se ejecutarán tras los gates
+
+- **Paso 4, enlaces.** Se corrigen `CLAUDE.md` y `README.md`, que apuntan a `constitution.md`, `mission.md` y `roadmap.md`. Hay una ADR con enlaces rotos en `decisions/`: no se toca, solo se lista.
+- **Paso 5, nombres de skills.** Sin gate:
+  - `CLAUDE.md:7`: `sdd-end-feature` pasa a `sdd-archive`.
+  - `.claude/commands/pregunta.md:3`: `/sdd-consult` pasa a `/sdd-explore`.
+- **Paso 6, método de estimación.** Sin gate. Las dos líneas de `estimation.md` son las de la plantilla 2.x, así que se sustituyen por las nuevas, y las «Notas de calibración» no se tocan.
+- **Paso 7, cierre.** Se añade `.temp/` a `.gitignore` (hoy no existe el fichero), se ejecuta la «Verificación» y se hace `sdd upgrade --mark 3.0.0` con el commit `chore(sdd): migrar al kit v3.0.0`.
+- **Paso 8, reglas que ya cubre el kit.** Lo veremos en tabla aparte, tras el commit. Un candidato: «el id de una feature se elige a mano» en `constitution.md`.
+- **Paso 9, gate de merge.** El gate `moon run :typecheck :test :lint` no lleva `&&`, `$` ni similares, así que no hay aviso.
+
+## Qué necesito de ti
+
+1. ¿Apruebas las tablas 1, 2 y 3, o cambias algún destino?
+2. El **Tamaño** (S, M o L) de 0021, 0022, 0024 y 0023. El gate 3 no se cierra sin él.
+3. Frontend: ¿«No aplica: es una CLI.» tal cual, o borrar la sección?
+
+Si no hay respuesta, los tres gates quedan pendientes, sin marcador ni commit. Para reanudar: aprueba las tablas y vuelve a pedir la migración.
+
+--- [24]
+Estoy en el paso 8 de la migración: revisar las reglas del proyecto contra el kit. El commit de la v3.0.0 ya está hecho (`621bbc9`). Te dejo la tabla y no toco nada hasta que respondas.
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «**Ids**: el id de una feature se elige a mano, el siguiente libre del roadmap» | `.docs/sdd/steering/constitution.md:8` | `skills/sdd-start-feature/references/nombrado.md` | **Choca.** Con `ids.mode: sequence`, el kit reserva el id con `sdd id next --reserve`. Elegir «el siguiente libre» a mano es lo que provoca ids repetidos entre worktrees. | Quitarla |
+
+Comprobé el fichero del kit y fija la regla. La línea 7 define el id en modo `sequence`, y `sdd-roadmap` repite que un id inventado no vale. No hay más reglas que choquen ni repitan el kit.
+
+**¿Aplico esta propuesta?** Si dices que sí, quito esa línea y la dejo en el commit `chore(sdd): reglas del proyecto que ya cubre el kit`. Si no respondes, queda pendiente en el informe y no afecta al marcador, que ya está escrito. Para reanudar: pide «revisa las reglas del proyecto contra el kit».
+
+## Estado de la migración
+
+- **Resultado:** el proyecto está en la v3.0.0 (`sdd-kit.json` lo declara) y el árbol está limpio.
+- **Comprobaciones:** `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da «Capacidades válidas: 1». El `git grep` del paso 5 y la búsqueda del texto viejo de estimación no devuelven nada.
+- **Ids reservados:** 0025 (exportar CSV) y 0026 (avisos por correo).
+- **Frontend:** dejé «No aplica: es una CLI.» tal cual, como la receta.
+- **Sin gates pendientes** salvo este paso 8.
+
+**Pendiente del dev-lead:**
+- `.docs/sdd/decisions/0001-salas-por-franja.md:10` enlaza a `../mission.md`, que ya no existe. Es una ADR, así que no la toqué.
+- `../field-reports/sal-45.md`, que cita `debt.md`, no existe en el repo.
+- La 0024 perdió su «tras 0015», porque la 0015 no está ni en `ROADMAP.md` ni en `CHANGELOG.md`.
+- La validación pendiente de la 0016 sigue en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`.
+- El paso 9 no tiene aviso: el gate `moon run :typecheck :test :lint` no encadena comandos ni usa variables.
+
+--- [26]
+Quité la regla de los ids de `steering/constitution.md` y dejé las demás tal cual. Está en el commit `8aa059e` (`chore(sdd): reglas del proyecto que ya cubre el kit`) y el árbol está limpio.
+
+El proyecto queda en el kit v3.0.0 y no hay gates pendientes. Los avisos que siguen abiertos para ti son estos:
+- **ADR 0001:** `.docs/sdd/decisions/0001-salas-por-franja.md:10` enlaza a `../mission.md`, que ya no existe. Es una ADR y no la toqué.
+- **`field-reports/sal-45.md`:** el enlace de `steering/debt.md` está roto, porque ese fichero no existe en el repo.
+- **Tras de la 0024:** pasó a `—`, porque la 0015 no está ni en `ROADMAP.md` ni en `CHANGELOG.md`.
+- **Validación de la 0016:** sigue pendiente, en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`.
+

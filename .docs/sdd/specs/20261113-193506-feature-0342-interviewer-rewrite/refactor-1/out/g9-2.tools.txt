@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: node -v; cat package.json; ls -a; ls test tests src 2>/dev/null | head -30; cat .github/workflows/*.yml 2>/dev/null | head -40
+<<< v26.10.0
+{"type": "module"}
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+src:
+app.js
+
+test:
+app.test.js
+
+>>> Bash: cat src/app.js test/app.test.js; head -40 PRODUCT.md; ls .docs/sdd; cat .docs/sdd/steering/* 2>/dev/null | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> ToolSearch: {"query":"select:WebFetch","max_results":1}
+<<< 
+
+>>> WebFetch: {"url":"https://nodejs.org/api/test.html","prompt":"Collecting code coverage section: which flag enables coverage (--experimental-test-coverage?), in which Node versions it was added and became stable, what reporters it supports (text, lcov), thresholds options (--test-coverage-lines etc.), include/exclude options, and any stated limitations."}
+<<< ## Code coverage in `node:test`
+
+**Enabling coverage:** Pass `--experimental-test-coverage` to Node.js. Coverage statistics are reported after all tests finish. Coverage is an experimental feature (Stability: 1). The section doesn't give an "Added in" version, so the page doesn't say when the flag was introduced or when it might become stable. The `run()` options table lists coverage options under v23.0.0 and v22.10.0, which suggests when they appeared in the API.
+
+```bash
+node --test --experimental-test-coverage
+```
+
+**Reporters:**
+- The `tap` and `spec` reporters print a coverage summary.
+- 
+
+=== RESULTADO (9 turnos, 0.13759880000000002 $)
+❓ **Cómo medir la cobertura de `salas`**
+
+Esto es lo que he encontrado:
+- `docs/sdd/steering/operations` fija **Node 22 y cero dependencias externas**. Aquí tienes Node 26, pero el despliegue es el de Node 22.
+- El proyecto tiene un solo fichero, `src/app.js`, con 3 tests en `test/app.test.js`. Los comandos son `node --test` y no hay CI ni `package.json` con scripts.
+- Según la [documentación de Node](https://nodejs.org/api/test.html), la cobertura nativa se activa con `node --test --experimental-test-coverage`. Sigue marcada como **experimental (Stability 1)**. Imprime un resumen con los reporters `spec` y `tap`, y genera `lcov` con `--test-reporter=lcov`.
+- Los umbrales por línea, rama y función hacen que el proceso salga con código 1 si no se alcanzan. La doc que he leído solo los lista como opciones de `run()`. Las opciones `--test-coverage-*` de la línea de comandos no las he comprobado. Los de línea de comandos habría que verificarlos antes de usarlos.
+- Hay include y exclude por glob, y se puede ignorar código con comentarios `/* node:coverage ignore next */`.
+- La doc que he leído (la versión actual) lista las opciones de `run()` desde la 22.10. No he verificado cómo se comporta cada flag en tu 22 concreta.
+
+1️⃣ **Cobertura nativa de Node**: añade `--experimental-test-coverage` a `node --test`. No suma dependencias ni toca el modelo de operaciones. Cuesta que la salida sea más sobria y que, al ser experimental, los flags puedan cambiar entre versiones.
+
+2️⃣ **Meter `c8`**: es una devDependency con informes más ricos, como HTML y `text-summary`, y la configuración es estable. Cuesta romper la regla de «sin dependencias externas», añadir `node_modules` y mantener la herramienta, todo para un fichero y tres tests.
+
+3️⃣ **Nativa ahora y `c8` solo si se queda corta**: es 1️⃣ con una salida de emergencia, sin decidir hoy.
+
+➡️ **Recomiendo 1️⃣**, porque ya has fijado «sin dependencias» y el proyecto es tan pequeño que el resumen por línea y rama basta para ver qué comandos de `src/app.js` quedan sin test. A cambio, aceptas depender de un flag experimental. Si cambia, lo ajustas en un solo sitio.
+
+¿Cuál eliges?

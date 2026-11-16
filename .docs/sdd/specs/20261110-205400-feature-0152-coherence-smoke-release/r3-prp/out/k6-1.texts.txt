@@ -1,0 +1,26 @@
+--- [4]
+Es un cambio de configuración de CI/gate, así que entra por `sdd-propose`.
+
+--- [11]
+Esto es un cambio de **config** (no altera lo que ve el usuario del producto), así que antes de tocar nada te pregunto.
+
+🦆 Voy a tocar solo `gate.json`: añadir `src/shared/**` a la lista `inputs` de la tarea `rooms:test`. Así el gate afectado (`--affected`) volverá a ejecutar `rooms:test` cuando cambie algo bajo `src/shared/`. Hoy `src/shared/` no existe, así que el cambio no tiene efecto hasta que se cree. Antes de guardarlo correré el gate de cierre de `operations.md`: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`. Como edito la definición de una tarea, `rooms:test` correrá primero sin el filtro. Si sale verde, haré un único commit en `develop`, con la línea `Gate:` en el cuerpo.
+
+¿Cómo seguimos?
+
+1. **Hacerlo como config (Recomendada):** edito `gate.json`, corro el gate y, si sale verde, hago el commit.
+2. **Cambiar algo:** por ejemplo, el patrón exacto (`src/shared/**` frente a `src/shared/**/*.js`) o añadirlo también a `bookings:test`.
+
+--- [14]
+Sin dependencias que instalar (solo Node). Primero `rooms:test` sin filtro, como indica la lane; después el gate de cierre.
+
+--- [18]
+He añadido `src/shared/**` a los `inputs` de `rooms:test` en `gate.json`. El gate salió verde y el cambio está commiteado en `develop` (`0447996`).
+
+- **`rooms:test` sin filtro:** corrió 1/1 y pasó. Lo hice así porque edité la definición de la tarea.
+- **Gate de cierre con `--affected --base develop`:** no ejecutó ninguna tarea, porque ningún fichero modificado coincide con los `inputs` de `bookings:test` ni de `rooms:test`. Terminó con exit 0.
+- **`src/shared/`:** todavía no existe, así que el cambio no tendrá efecto hasta que se cree.
+- **Merge:** no hice merge, porque la rama es `develop` y no una `feature/*`.
+
+El commit lleva las dos líneas `Gate:` en el cuerpo. No hay spec, plan ni entrada en el roadmap, porque la lane config no los pide.
+

@@ -1,0 +1,58 @@
+--- [3]
+Ahora: cerrar la revisión final con `sdd-verify`. Queda: leer los informes `review-spec.md` y `review-code.md` y dejar la feature lista para ✋, ~5 min.
+
+--- [15]
+Estoy cerrando la revisión final: el eje Spec sale con 1 Minor y el eje Código con 1 Important. Voy a arreglar el Important con TDD (test en rojo primero) en una sola pasada.
+
+--- [19]
+RED confirmado. Ahora el arreglo.
+
+--- [28]
+Ahora: re-revisión única del rango `b79e38e..0a758e0` (opus+high, en segundo plano) con su vigilancia de silencio. Queda: leer su veredicto y dejar `tasks.md` para ✋, ~5 min.
+
+--- [32]
+La re-revisión está en marcha y no conozco su veredicto todavía.
+
+Estado hasta ahora:
+- **Eje Spec** (opus+high): listo para merge. Deja 1 Minor, que va diferido al ledger: el test `canceladas` depende de que `cancelar` se haya ejecutado antes.
+- **Eje Código** (sonnet+high): 1 Important, que `reasonOf` conservaba los espacios del motivo. Lo arreglé en `0a758e0` con un test que primero falló y luego pasó. La suite queda en 6/6.
+- **Eje Arquitectura:** no sale, porque el plan no lo pide y el diff no cruza ninguna señal.
+
+Cuando vuelva la re-revisión de `b79e38e..0a758e0`, escribo su línea `Re-revisión:` en `tasks.md`. Después retiro el worktree `review-0010-0a758e0` y dejo la feature lista para ✋.
+
+--- [39]
+### Finding Verdicts
+- **`reasonOf` keeps the spaces around the reason, so `--motivo "sala ocupada "` is rejected** — ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`. The reason is trimmed before `cancelBooking` checks it against `reasons` at `src/app.js:20`. That same trimmed value is what gets stored and echoed (`src/app.js:24-25`), so `cancelada Norte lun (sala ocupada)` and `canceladas` both show the clean reason. The optional chaining keeps the spec case "sin `--motivo`" (spec.md:54) working. When `--motivo` is the last argument, `reasonOf` still returns `undefined` and the answer is «motivo no válido: …», with no crash. The new test `test/cancel.test.js:50-52` fails before the fix and passes after it: before, `' sala ocupada '` got «motivo no válido: …»; after, the reason passes and the call reaches the booking lookup.
+
+### New Breakage in the Fix Diff
+- **Minor, `test/cancel.test.js:50-52`:** the test is named «cancelar acepta un motivo con espacios alrededor» but asserts `'sin reserva Sur mar'`. It shows only that the reason passed validation. It does not cover the finding's case: a booking that exists, cancelled with a padded reason, answering `cancelada … (sala ocupada)` with the reason stored trimmed. It probably uses Sur/mar because the first test has already cancelled Norte lun. That is the same order dependence as the deferred Spec Minor.
+- **Minor, behaviour missing from the spec:** trimming the reason is new behaviour, but the spec has no scenario for it and the «Enmiendas» section still says «(ninguna)» (spec.md:45-63). A one-line AND under «Cancelar pide un motivo de la lista» would keep the spec in line with the code.
+
+### Out-of-Scope Observations
+- The exported function `cancelBooking` (`src/app.js:19`) still does not trim. Only the CLI path through `reasonOf` is fixed. Today `run` is the only caller in the file, so nothing a user can reach is affected.
+- The package lists `tasks.md` (+15) in the stat but does not include its diff. I did not review it. The task 1 row is unchanged and nothing in it mentions the fix.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [42]
+La revisión final de la 0010 está cerrada y la feature queda lista para tu ✋. La suite está en 6/6 y el worktree de revisión ya está retirado.
+
+Resultado de los ejes (no los he mezclado):
+- **Spec** (opus+high): listo para merge, con 1 Minor diferido.
+- **Código** (sonnet+high): 1 Important, que `reasonOf` conservaba los espacios del motivo. Lo arreglé en `0a758e0` con el test `cancelar acepta un motivo con espacios alrededor`, que primero falló y luego pasó.
+- **Arquitectura:** no sale. El plan no la pide y el diff no cruza ninguna señal.
+- **Re-revisión** `b79e38e..0a758e0` (opus+high): el hallazgo queda resuelto y no hay Critical ni Important nuevos. Deja 2 Minor.
+
+`tasks.md` lleva las líneas de `Revisión final:`, `Pasada de fix:` y `Re-revisión:`. El commit `77990b2` las registra.
+
+**Minors diferidos:**
+- El test `canceladas` depende de que `cancelar` se haya ejecutado antes (test/cancel.test.js:13).
+- `cancelBooking`, que es exportada, no recorta el motivo; solo lo hace la vía CLI (`reasonOf`). Hoy `run` es su único llamador.
+
+**Decisiones mías que conviene que mires:**
+- **Recorte del motivo:** lo traté como normalización de entrada del THEN «motivo de la lista», no como un AND nuevo. Por eso no toqué `spec.md`, y su «Enmiendas» sigue en «(ninguna)». Si prefieres un AND explícito, se añade.
+- **Test del fix:** solo prueba que el motivo con espacios pasa la validación (responde `sin reserva Sur mar`). No comprueba que el motivo se guarde ya recortado. Usé Sur/mar porque Norte/lun ya queda cancelada por el primer test, y usar esa reserva reintroduciría la dependencia de orden.
+
+Los dos puntos están como `Final: Ruling:` en el ledger.
+

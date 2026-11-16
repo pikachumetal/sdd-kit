@@ -1,0 +1,83 @@
+--- [3]
+Ahora: leo la spec de la 0021 y las referencias del paso 4 para completarlo. Queda: pasada de coherencia, revisión y presentarte la spec, ~5 min.
+
+--- [21]
+Sigo con el paso 4. La spec tenía huecos: `rooms` no existe en `capabilities/` y el caso real `10:00-10:00` no tenía su escenario. Los corrijo antes de la revisión.
+
+--- [26]
+Ya he dado los pasos de la pasada de coherencia y lancé la revisión de la spec. La fusión del delta sobre una copia sale bien (`rooms.md: añadido «Ver las salas libres»`). Espero al revisor para plegar sus hallazgos antes de presentártela.
+
+--- [31]
+1. Crítico · Delta de comportamiento (ADDED `rooms`) · El escenario 1 (`libres 10:00-12:00` responde `Sur`) pasa hoy sin ninguna validación, así que no prueba el cambio. Además, el GIVEN no dice que Sur exista ni que Norte y Sur sean las únicas salas. El comportamiento nuevo (rechazo) solo lo cubren los escenarios 2 y 3, y la ausencia de listado ni siquiera se comprueba. · Mantener el escenario 1 como regresión, pero añadir al GIVEN el catálogo de salas (Norte, Sur). En los escenarios de rechazo, añadir «y no lista salas», o un THEN que verifique que no aparece `Norte` ni `Sur`.
+
+2. Importante · Delta de comportamiento / Decisiones nº 1 · El `ADDED` titulado «Ver las salas libres» solo describe una franja válida (`Sur`) y los rechazos. No hay escenario para una franja que no se solape con la reserva, para una sala libre en otro día ni para cuando todas están ocupadas. Esto es comportamiento ya existente que la capacidad dice recoger, y su único test es el de Sur. · Reducir el requisito a lo nuevo («Rechazar franja no válida en libres») y dejar el resto como comportamiento existente sin escribir, o añadir los escenarios que faltan para que la capacidad recoja de verdad el comportamiento actual.
+
+3. Importante · Delta de comportamiento · Mezcla de ADDED en un solo requisito: la consulta de salas libres (ya existente en el código) y la validación (nueva). Si `capabilities/rooms` nace con este spec, el requisito queda como «Ver las salas libres» y la regla de franja queda sin un nombre propio. Eso la hace difícil de referenciar o modificar después. · Separar en dos requisitos ADDED, «Consultar salas libres de una franja» y «Rechazar franja no válida».
+
+4. Importante · Delta de comportamiento · El rechazo dice «responde …» pero no define si es exit code distinto de cero, stdout o stderr. Es una terminal y las pruebas se hacen sobre `run()`, así que el contrato de la respuesta queda ambiguo. Tampoco hay escenario para argumentos ausentes, mal formados (`10:00`, `abc`) o con más de un guion. · Declarar el canal y el código de salida en el THEN, o decir expresamente que los argumentos mal formados quedan fuera y dejarlo en la fila de deuda con un comportamiento «sin medir».
+
+5. Importante · Decisiones (nº 4) / Scope · La comparación de texto produce un resultado incorrecto conocido con `9:00-10:00`: la cadena `"9:00" > "10:00"` es verdadera, así que una franja válida se rechaza con el mensaje «el final va después del inicio». Se publica un falso rechazo y la spec lo trata como «sin medir». También hay otro caso: `10:00-9:00` pasaría como válida. · Medir lo que pasa hoy con una hora de un dígito, declararlo como limitación en el delta (un escenario o una nota con el resultado real) y confirmar con el dev-lead que se acepta un falso rechazo. Si no, pasar al enfoque B, que es pequeño.
+
+6. Importante · Decisiones / Aprobaciones / Frontmatter · La spec pide validación de dev-lead y la persona aprobadora es «Laura». PRODUCT.md dice que solo hay un usuario y un desarrollador, que es el propio autor. Además, el perfil `delegate` y la política de revisión por un solo revisor (sonnet), con «Mínimo razonable: sin review», no están justificados frente a un cambio que crea una capacidad nueva. · Aclarar quién es Laura y por qué aprueba (en PRODUCT.md no existe). Justificar el perfil y la revisión mínima, o subir el nivel de revisión.
+
+7. Menor · Intent / Ejemplos · Se citan datos de un cliente real («Conserjería reportó…»), y PRODUCT.md dice que no hay más usuarios que el autor. Contradice la premisa del producto o es un dato inventado sin marcar. Además se cita `src/app.js:5` y `src/app.js:28` como números de línea que cambiarán con la propia edición. · Quitar el origen del reporte o redactarlo como un ejemplo («una franja de cero minutos»), y citar la función en lugar de la línea.
+
+8. Menor · Lo que se retira o cambia de forma / Scope · Dice que `libres` aparece solo en `src/app.js:28`, `test/app.test.js:5` y `CHANGELOG.md:10`, pero el Intent también cita `src/app.js:5` (`freeRooms`). Las referencias son inconsistentes entre sí. «Filas que implementa: nada» contradice que la spec resuelve un reporte (no hay ticket ni fila de ROADMAP asociada), cuando la feature 0021 se llama así. · Reconciliar las referencias a líneas y confirmar que la feature 0021 existe en el ROADMAP o dar el ticket que la origina.
+
+9. Menor · Decisiones / Terminología · El texto del rechazo usa «franja», pero PRODUCT.md no la define en la Terminología (sí «sala» y «reserva»). El mensaje de la decisión nº 2 no figura como regla de glosario y en la capacidad se escribe `rooms` mientras PRODUCT.md dice «Evitar: room». El nombre de la capacidad contradice el glosario. · Nombrar la capacidad `salas` (o justificar en la spec que el nombre es un identificador de carpeta), y añadir «franja» al glosario.
+
+10. Menor · Dónde se prueba / Constitución · Regla 2 (tests antes que código) y gate `node --test`: la spec solo dice que se prueba por `run('libres', …)` en `test/app.test.js`. No indica que los tres escenarios deben existir como tests ni el orden (rojo primero). Tampoco declara la línea de ejemplo en `test/app.test.js:5` como contrato tocado. · Mapear cada escenario a un test concreto, con el rojo previo, y declarar el fichero de test como tocado en Scope.
+
+--- [33]
+Llegó el revisor. Pliego sus hallazgos en la spec.
+
+--- [40]
+Ahora: segunda ronda de revisión de la spec, porque acepté un hallazgo Crítico. Queda: plegar lo que salga y presentarte la spec para aprobar, ~2 min. Espero al revisor.
+
+--- [44]
+1. Crítico · Delta `rooms` / requisito «Rechazar una franja no válida» · Con la comparación como texto (decisión 4), `10:00-9:00` pasa como válida y `9:00-10:00` se rechaza, y ningún escenario lo cubre. La spec admite que el rechazo falla en un caso ordinario, y el gate no lo detecta. · Añadir un escenario que fije el comportamiento aceptado con hora de un dígito, o pasar a B y validar la forma `HH:MM`. Si se mantiene A, redactar el requisito acotado a «franjas `HH:MM` de dos dígitos».
+
+2. Importante · Delta, escenario `10:00-10:00` · El texto de rechazo dice «el final va después del inicio», lo cual es cierto, pero no hay escenario del límite «final = inicio + 1 minuto», que es el único que prueba el «estrictamente posterior». Una implementación con `>=` mal puesta pasaría los tres escenarios. · Añadir `libres 10:00-10:01` (válida, responde `Sur`, o la sala libre que corresponda) para fijar la frontera.
+
+3. Importante · «✋ Decisiones» 5 y Scope · La forma de salida del rechazo («stdout, sin código de salida propio») se decide en el cuerpo, pero el THEN solo dice «responde». No hay forma de comprobar el «sin código de salida propio». Además, `10:00` o `abc` quedan «fuera» sin decir qué hacen hoy: la mezcla con el nuevo `if` puede cambiar su comportamiento sin que nada lo cubra. · Definir en el THEN el canal observable (valor devuelto por `run`) y añadir una nota o escenario de no regresión para los argumentos mal formados con la comparación de texto. Hoy `10:00` o `abc` podrían terminar en rechazo con el mensaje equivocado.
+
+4. Importante · Delta, requisito «Consultar las salas libres» · El escenario de regresión no prueba el requisito que enuncia. Dice «consultar las salas libres de una franja» pero solo cubre una franja con un único resultado. No cubre el caso de todas libres ni el de ninguna libre. Un `run` que devolviera siempre `Sur` pasaría. · Añadir un escenario con una franja sin reservas (responde `Norte, Sur`) o rebajar el título del requisito a lo que cubre.
+
+5. Importante · Intent / Delta vs. «Dónde se prueba» · El Intent da `Norte, Sur` como respuesta actual para `10:00-10:00`, pero el GIVEN del delta pone una reserva de Norte de 10:00 a 12:00. Con esa reserva, `10:00-10:00` hoy no responde `Norte, Sur` (Norte está ocupada si el solapamiento es inclusivo), o depende de cómo `freeRooms` trate el solapamiento, y la spec no lo fija. El RED podría no reproducir el bug reportado. · Alinear el GIVEN con el caso reportado: indicar si el reporte fue sin reservas, o mostrar qué responde hoy `libres 10:00-10:00` con ese GIVEN. Si no es el mismo caso, añadir un escenario sin reservas.
+
+6. Importante · «Lo que se retira» / Scope · «Entra: `src/app.js`» y «Dónde se prueba: `test/app.test.js`», pero `freeRooms` queda como no cambia y el delta crea una capacidad `rooms` nueva en `capabilities/`. El fichero `capabilities/rooms.md` es un artefacto que entra y no aparece en Scope. Además, la tabla de retiros tiene una fila vacía `—`. · Listar en Scope la creación de `capabilities/rooms.md` al archivar, y quitar la fila vacía o dejar «Nada» sin tabla.
+
+7. Importante · «✋ Decisiones» 1 y Aprobaciones · La capacidad `rooms` se describe como «lo que el código hace hoy», pero la review marcó «Mínimo razonable: sin review» sobre esa afirmación y queda sin comprobar. Se está escribiendo como contrato una capacidad entera sobre un único escenario inferido. · Comprobar con una ejecución real el comportamiento actual de la franja, o decir en la capacidad que solo recoge este escenario de regresión y no es una descripción completa.
+
+8. Menor · «✋ Decisiones» 6 / Política de modelos · La decisión 6 repite el Approach, pero la línea de «Política de modelos» incluye una autorización de paralelizar («esta línea es la confirmación…») metida en un bullet de decisiones. Es una decisión de proceso colada en medio de la lista. · Sacarla a su propia línea con nombre, o confirmar que el aprobador la ve como tal.
+
+9. Menor · Cabecera / Aprobaciones · `Validación: dev-lead` y aprobador `Laura` en una spec de perfil `delegate` sin explicar qué rol es Laura, y `approved_at: null` en un `status: draft`. Sin impacto en el gate, pero la autoría («agente con el dev-lead») y la aprobación siguen sin cerrarse. · Dejarlo como está hasta la aprobación, o poner el rol de Laura en la cabecera. Es nombre propio de una persona; usar el rol si el repo lo permite.
+
+10. Menor · «Lo que se retira» · La cita `CHANGELOG.md:10` y el comando `git grep` apuntan a una línea concreta que se desplaza en cuanto cambie el fichero; la fila de roadmap de la 0021 «se reservó con la rama» sin que exista fila. · Citar la entrada (0006) en vez del número de línea y, si la 0021 debe tener fila en `ROADMAP.md`, indicarlo como paso en vez de dejarlo implícito.
+
+--- [49]
+Ahora: la spec está lista y te la presento para aprobar. Queda: tu aprobación; después el plan, ~3 min.
+
+🦆 Hoy `libres 10:00-10:00` responde `Norte, Sur`, como si una franja de cero minutos fuera válida. Después de este cambio, `libres` rechazará con «franja no válida: el final va después del inicio» cualquier franja cuyo final no sea posterior al inicio (`12:00-10:00`, `10:00-10:00`). `libres 10:00-12:00` seguirá respondiendo `Sur`. Por dentro, es una comprobación de dos líneas en `run('libres', …)` que compara los dos extremos como texto.
+
+Spec: `.docs/sdd/specs/20261008-190000-feature-0021-slot-check/spec.md`
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Capacidad nueva `rooms`, porque no había ninguna capacidad escrita. Recoge solo estos escenarios, no describe `libres` entera.
+2. Texto del rechazo: «franja no válida: el final va después del inicio».
+3. Una franja es válida solo si su final es estrictamente posterior a su inicio, así que `10:00-10:00` también se rechaza.
+4. **La comparación es sobre el texto `HH:MM`, y tiene un fallo conocido.** Con una hora de un dígito, `9:00-10:00` se rechazaría por error y `10:00-9:00` pasaría como válida. Es el formato de franja, que sigue en su fila de deuda. La alternativa B (convertir a minutos) lo evita, pero entra en esa fila de deuda. Si no aceptas el fallo, elige B.
+5. El rechazo es el valor de texto que devuelve `run`. Los argumentos mal formados (`10:00`, `abc`) quedan fuera.
+6. Enfoque: A frente a B y C (ver Approach en la spec).
+
+**Review:** un revisor en sonnet y una segunda ronda, porque acepté un hallazgo Crítico (el fallo de `9:00`). Los hallazgos aceptados y rechazados están en la spec. El delta se fusiona sin errores en una copia de `.docs/sdd`.
+
+Dos puntos de la spec que no he podido cerrar yo:
+- **Aprobador.** Figura «Laura» como aprobadora en la cabecera. Salió de la spec que ya existía y no sé quién es en este repo. Dime si la fila de aprobación debe llevar otro nombre.
+- **Fila de roadmap.** La 0021 no tiene fila en `ROADMAP.md`; solo existe la rama `feature/0021`.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios (por ejemplo, pasar al enfoque B)
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media. Solo tiene sentido con más de una task, y aquí prevé una o dos.
+

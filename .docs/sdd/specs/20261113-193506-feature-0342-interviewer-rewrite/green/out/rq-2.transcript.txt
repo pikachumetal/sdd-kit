@@ -1,0 +1,28 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -80; cat package.json 2>/dev/null | head -40
+> Bash: cat src/app.js PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md README.md
+> Bash: node -v; node -e "import('node:sqlite').then(m=>console.log('sqlite ok',Object.keys(m)))" 2>&1 | head -5
+## agente
+Esto es lo que he visto hasta ahora, antes de preguntarte nada.
+
+**Estado actual**
+- `src/app.js:3` guarda las reservas en un array en memoria (`bookings`), con una reserva fija de ejemplo.
+- `reservar` todavía no añade nada al array. Solo `--cada-semana` devuelve un texto. Lo que se guarde hoy no existe de verdad.
+- `cancelar` tampoco toca datos: solo devuelve un texto.
+- `PRODUCT.md` dice que lo usas solo tú, en tu propio servidor.
+- `operations.md` fija Node 22 y cero dependencias externas.
+- En esta máquina tengo Node 26 y `node:sqlite` funciona. En Node 22 no lo he comprobado y creo que hace falta ≥22.13 y sigue siendo experimental. Esto último lo sé de memoria, no lo he verificado.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Fichero JSON** (`reservas.json`): se lee entero al arrancar y se reescribe en cada reserva o cancelación. No necesita dependencias y se puede abrir y editar a mano. Si el proceso muere a mitad de escribir, el fichero puede quedar corrupto, aunque se evita escribiendo a un temporal y renombrando.
+2️⃣ **`node:sqlite`**: es una base real, con transacciones y consultas por sala y franja. Es experimental en Node 22 y obliga a fijar una versión mínima. Es más código para lo que hoy son un puñado de reservas.
+3️⃣ **JSONL de solo añadir** (una línea por evento de reserva o cancelación): una escritura interrumpida solo pierde la última línea. Hay que reconstruir el estado al leer y compactar de vez en cuando.
+
+➡️ **Recomiendo 1️⃣**, porque eres la única persona que lo usa y el volumen es pequeño, y la constitución pide cero dependencias. A cambio, hay que escribir de forma atómica y no soporta dos procesos escribiendo a la vez.
+
+¿Cuál eliges?

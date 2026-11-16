@@ -8,9 +8,12 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### La spec presenta primero las decisiones tomadas sin el usuario
 
-- GIVEN una feature en modo full o lite
+- GIVEN una feature en modo full o lite, con una entrevista que fijó el filtro por sala y en la que nadie habló de cuántas filas enseña la exportación
 - WHEN el agente presenta la spec en el gate
-- THEN el primer bloque que el dev-lead lee es "Decisiones que he tomado yo — valida estas", con una línea por decisión, y el resto de la spec cabe en una pantalla
+- THEN lo primero que lee el dev-lead es un párrafo que empieza por 🦆, escrito por `sdd-rubber-duck` en modo corto, y después «✋ Decisiones que he tomado yo — valida estas», con una línea por decisión
+- AND en la `spec.md`, el 🦆 va bajo el título, antes de «Capacidades», y el ✋ va justo después de «Capacidades»
+- AND si la spec fija un tope de 50 filas, ese tope está en ✋, porque no salió de la entrevista ni del roadmap
+- AND la spec lleva la sección «Términos y ADR»: los términos que la entrevista resolvió y las ADR candidatas (difícil de deshacer, sorprende sin contexto y hubo una alternativa real), o «ninguno» y «ninguna»
 
 ### Lo técnico no vive en la spec
 
@@ -22,20 +25,25 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 - GIVEN una spec en modo full recién redactada
 - WHEN el agente cuenta las señales de la rúbrica
-- THEN por defecto no hay review; con 4 señales o más, o contrato público + datos, el agente la recomienda **antes** de presentar la spec, en una sola pregunta con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
-- AND si el Scope cambia menos de ~50 líneas (texto y código), el nivel baja de dos revisores a uno con los siete puntos, nunca a ninguno: con contrato público + datos y dos líneas en `db/002-site.sql` y `src/api.js`, un revisor
-- AND si el nivel sería dos revisores, la spec va aprobada por delegación (la opción «apruebo la spec por delegación» de la primera pregunta) y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo; con un nivel de «ninguna» no despacha ninguno
+- THEN la review lleva dos revisores, dominio y técnica, y el agente no pregunta si se hace: el bloque de la review abre el ✋ con el nivel, las señales, el tamaño, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir
+- AND si el Scope cambia menos de ~50 líneas (texto y código) y el delta no toca un contrato público ni lleva un `MODIFIED`, el nivel baja a un revisor con los siete puntos, nunca a ninguno: con dos líneas en `docs/guia.md` y un `ADDED`, un revisor; con dos líneas en `db/002-site.sql` y `src/api.js` que cambian un contrato público, dos
+- AND si el nivel es dos revisores, la spec va aprobada por delegación (la opción o la frase «apruebo la spec por delegación») y las instrucciones del usuario piden confirmar antes de paralelizar, el agente despacha un revisor con los siete puntos sin preguntar, y la segunda lente queda en la línea del mínimo
+- AND si el nivel es dos revisores, la spec no va delegada y las instrucciones del usuario piden confirmar antes de paralelizar, el agente pregunta una sola vez, antes de despacharlos, con los dos revisores, el modelo de cada uno y su coste
 - AND con 4 señales o más y un delta grande (seis ficheros, uno de ellos una migración), sin esa restricción, siguen siendo dos revisores
 - AND ninguna de esas líneas es genérica: cita un requisito, una sección o un valor de esta spec
-- AND en `unattended` el agente decide y lo registra; en modo lite no se propone
+- AND en `unattended` el agente decide y lo registra, nunca con menos revisores de los que da la rúbrica; en modo lite, un revisor con los siete puntos en Sonnet
+- AND un spike no lleva review, y un cambio de config, tampoco, porque no tiene spec
+- AND si la petición o el prompt de arranque piden «sin review» u otro nivel, el agente lo aplica y escribe la frase literal en «Decisiones tomadas con el dev-lead»
 
 ### La review adversarial tensa la spec antes del gate
 
-- GIVEN un nivel de review activado por el usuario o, en `unattended`, decidido y registrado por el agente
-- WHEN el agente despacha el revisor con la spec, la constitution, la mission y las capacidades tocadas
+- GIVEN un nivel de review decidido por la rúbrica
+- WHEN el agente despacha el revisor con la spec, la constitution, `PRODUCT.md` y las capacidades tocadas
 - THEN cada hallazgo aparece en «Decisiones a validar» como aceptado (con el cambio en la spec) o rechazado con motivo, antes de pedir la aprobación
 - AND con dos revisores cada lente recibe puntos disjuntos y el encargo le prohíbe reportar lo que pertenece al punto de la otra
 - AND con un revisor la lente única recibe todos los puntos
+- AND si se aceptó un Crítico o se reescribió la decisión central —la que fija el enfoque elegido, en el mensaje de los enfoques o en el ✋, o, sin enfoques, la que el Intent pone como condición de éxito—, un revisor nuevo con los siete puntos, en Sonnet, relee la spec corregida una sola vez, en full y en lite, y sus hallazgos se incorporan igual; después, el gate
+- AND sin un Crítico aceptado ni la decisión central reescrita, no hay segunda ronda; y un Crítico de la segunda ronda va al gate aceptado o rechazado con motivo, sin tercera ronda
 
 ### La review mira los ejemplos de la spec contra la constitution
 
@@ -58,29 +66,29 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN el plan tiene una sección `## Review Focus` entre «Restricciones globales» y «Phase -1», con una línea por entrada o fallo que ningún test de las tasks ejercita, con su comportamiento esperado y su task (p. ej. «`status=Foo` → 400 con los estados válidos · Task 1, `Rejects_unknown_status`»), o «ninguna: comprobado»
 - AND «Decisiones que he tomado yo» lleva una línea que la resume («Review Focus: 3 entradas que la spec no fija, con su comportamiento esperado; ver la sección»)
 - AND el self-review §4 lleva una fila por línea del Review Focus con su task y su test
-- AND al despachar el revisor final, su encargo lleva la sección `## Review Focus` del plan, copiada literal
+- AND al despachar la revisión final, el encargo del eje Spec lleva la sección `## Review Focus` del plan, copiada literal
 
 ### El artículo de calidad de código viaja a implementadores y revisores
 
 - GIVEN un plan cuyas Restricciones globales tienen un bloque «De código», con el artículo de calidad de la constitution, y un bloque «De proceso», o una feature en modo lite, que no tiene plan
-- WHEN se despacha un implementador, un revisor de task, un re-revisor o el revisor final
+- WHEN se despacha un implementador, un revisor de task, un re-revisor o un eje de la revisión final
 - THEN el encargo lleva el bloque «De código» literal como primera sección
 - AND el bloque «De proceso» (política de modelos, modo de ejecución, atribución de commits) no aparece en el encargo de ningún revisor
 - AND en modo lite el bloque es el artículo de calidad de código de la constitution, copiado literal; la política de modelos la aplica quien despacha
 
 ### El trabajo se valida con el usuario antes de cerrar
 
-- GIVEN una feature con la implementación terminada y la revisión final limpia, en un proyecto con `validation.mode` `manual` o sin la clave
+- GIVEN una feature con la implementación terminada y el cierre de la revisión final terminado (sin Critical abiertos ni Important sin adjudicar), en un proyecto con `validation.mode` `manual` o sin la clave, y una spec sin `Validación: agente`
 - WHEN el agente va a cerrar
-- THEN antes de invocar `sdd-end-feature` presenta, empezando por «Me salí del plan en…», las decisiones sin el dev-lead, el guion de pruebas y el smoke que ejecutó, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
-- AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, con los datos de los escenarios de la spec. Lo que no se puede probar en la aplicación lo dice en su paso, con la comprobación que sí se puede hacer. Va separado del smoke.
+- THEN antes de invocar `sdd-archive` presenta el mensaje de `validation-template.md`, empezando por un párrafo con 🦆 sobre lo que cambia para quien usa el producto y siguiendo con «✋ Me salí del plan en…», las decisiones sin el dev-lead, el smoke que ejecutó y el guion de pruebas, el último, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
+- AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, compuestos y ensayados como dice «El guion de la validación empieza por el reporte y lo ha corrido el agente» de [`archive`](archive.md). Va separado del smoke.
 - AND el smoke da una fila por THEN de la spec con su evidencia, que es uno de tres valores: `suite`, `ejecución real` o `no probado`. Un THEN que se observa en una interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado con `ejecución real`.
 - AND un THEN de fallo (un error, un rechazo, un 400) se provoca de verdad con la entrada que falla: con la feature 0012, `curl -i localhost:<puerto>/api/bookings?status=Lost` → `400` con «Estado no válido: Lost», no «lo cubre el test de la task 3»
 - AND el smoke dice cuánto tardó la suite completa
-- AND un «sí» sin detalle a la pregunta de validación, que ya pedía el detalle, es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
+- AND «validado» o un «sí» sin detalle a la pregunta de validación es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
-- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
+- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, el mensaje con el que pasa al cierre empieza por el 🦆 y el ✋ de los rulings, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
 
 ### El walkthrough crece por adendas
 
@@ -108,14 +116,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND el encargo del implementador nombra su ruta como contrato: no los modifica; si uno le parece incorrecto, para y lo explica; los commitea con su implementación con `git add` de rutas explícitas y nunca con `--no-verify`
 - AND el hilo guarda una copia fuera del repo antes del despacho y, al volver el implementador, la compara con el test commiteado; un cambio que no sea de formato va al revisor de la task
 
-### Un aprendizaje sin destino no se redirige en silencio
-
-- GIVEN un cierre de feature cuyo walkthrough tiene un aprendizaje estructural y un proyecto sin `architecture.md`
-- WHEN `sdd-end-feature` vuelca los aprendizajes a los docs vivos
-- THEN crea `architecture.md` calcando `architecture-template.md` de `sdd-templates`, vuelca ahí el aprendizaje y lo dice en el informe final («`architecture.md` no existía: creado desde la plantilla»)
-- AND no escribe el aprendizaje estructural en `tech-stack.md` ni en otro documento en su lugar
-- AND lo mismo con cualquier otro destino que falte (`constitution.md`, `tech-stack.md`): se crea calcando su plantilla y se dice en el informe; si un destino no tiene plantilla, no se inventa: se dice y se añade una fila en la tabla de deuda técnica del roadmap
-
 ### Un documento de anclaje que falta se calca de su plantilla
 
 - GIVEN un proyecto al que le falta un documento de anclaje con plantilla en `sdd-templates`
@@ -135,6 +135,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN un plan cuyas tasks usan firmas, formatos o valores que fija otra task o una sección del plan
 - WHEN se extrae una task para su encargo
 - THEN el texto de la task lleva `Interfaces: Consume / Produce` con los nombres y firmas exactos, y los valores que necesita copiados, sin remitir a otras secciones
+- AND ninguna task pide leer otra task ni el plan entero: un implementador con el contexto vacío la hace con su texto, los ficheros que nombra y las Restricciones globales
 
 ### Un umbral superado en una unidad es Minor
 
@@ -149,13 +150,6 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN el revisor de task revisa el diff
 - THEN no lo reporta como Critical ni como Important
 
-### El revisor final revisa el paquete sin ejecutar la suite
-
-- GIVEN el despacho del revisor final con el paquete de review de la rama
-- WHEN revisa
-- THEN lee el paquete y no ejecuta la suite, el build ni el lint del proyecto
-- AND si cree que hace falta una verificación pesada, la recomienda en su informe
-
 ### La spec se repasa antes del gate
 
 - GIVEN una spec redactada en la que un mismo literal (una expresión, un fichero, un umbral) aparece en una decisión y en un escenario que se contradicen
@@ -163,6 +157,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
+- AND si la spec retira algo o cambia la forma o el sitio de un documento (un literal de plantilla incluido: una etiqueta, un encabezado, una línea fija), busca en todo el repo con `git grep`, salvo las carpetas de evidencia, cada forma del literal —la cadena y su valor suelto—, y escribe cada resultado en «Lo que se retira o cambia de forma», con su destino: el delta, el Scope o una decisión con su motivo; con `"base": "."` pasado a `"./out"` en `config.json`, el `toBe('.')` de `test/config.test.js` sale en esa sección, aunque no esté en `capabilities/`, en los documentos ni en `skills/`
+- AND con la etiqueta `- Real:` pasada a `- Esfuerzo real:` en `patch-template.md` y dos requisitos de `estimation` que la nombran, los dos van al delta como `MODIFIED`
+- AND cada caso real que la spec cita (un `fichero:línea`, un sha) se pasa por el THEN que lo debe atrapar: con un THEN que solo rechaza importes negativos y un caso citado, `src/invoice.js:42`, que es un importe cero, el agente cambia el THEN o lo señala antes del gate
+- AND cada recuento de una comprobación que la spec fija se pasa por lo que da correrla, sobre el texto de hoy o sobre una copia con el cambio hecho, y si no se puede correr antes del gate va al ✋ como `sin medir`: con «lint da exactamente una línea» y un lint que, corrido sobre la copia con el texto movido, da tres, el agente corrige el recuento o lo señala antes del gate
+- AND al retirar algo con pasos numerados busca también esos pasos: con una skill retirada cuyo «paso 3» citan dos requisitos sin nombrarla, los dos salen en esa sección con su destino
+- AND la misma sección lleva cada id de fila que la spec implementa con los ficheros que la nombran («la define la 0009» en `docs/config.md` → Scope), o «nada: comprobado con `git grep -n 0009`», y no se borra con los bloques de ayuda
+- AND antes del gate ejecuta `sdd capability merge --path <copia> --artifact <spec.md>` sobre una copia de `.docs/sdd` fuera del repo, corrige en la spec lo que rechace y escribe la línea del resultado en «Decisiones que he tomado yo»; la `capabilities/` del repo no cambia
 
 ### Cada task del plan verifica solo sus superficies
 
@@ -170,6 +171,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan
 - THEN cada task declara sus superficies (BD · backend · frontend · tooling · docs) y una verificación con los comandos de esas superficies y ninguno más
 - AND la suite de BD solo aparece en las tasks cuyas superficies incluyen BD (migraciones, persistencia o dialecto)
+- AND con «Suites» `unit` · `dotnet test Api.UnitTests` · ~20 s · unitario y `api` · `dotnet test Api.IntegrationTests` · ~1 min · integración, una task que cambia `Domain/Pricing.cs` sin escribir tests de integración verifica con `unit`, y `api` lo corre el gate de cierre si `--affected` lo marca; una task que escribe `Api.IntegrationTests/PeopleTests.cs` corre también ese fichero
 
 ### El gate de cierre se ejecuta una vez
 
@@ -177,6 +179,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan y se despacha una task de solo frontend
 - THEN el gate completo aparece una sola vez, en la validación final, y lo ejecuta el hilo principal
 - AND no aparece en «De código» ni en la verificación de esa task, y el encargo de su implementador le dice que ejecute su verificación y no la suite completa
+- AND tras su merge de sincronización, el cierre de `sdd-archive` repite solo lo que afecta lo que trajo la base, y con otra rama abierta o la base por delante la validación no lo corre: lo corre el cierre una sola vez sobre el merge de sincronización
 
 ### Una task que cambia la UI se mira en un navegador
 
@@ -184,7 +187,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN se escribe el plan y, después, cuando esa task termina su revisión
 - THEN la task lleva una verificación visual con la pantalla o ruta, los estados, los temas, el criterio en frases medibles y la pantalla de referencia (la de `§Frontend` si la task no nombra otra), escritos en el plan antes de tocar el código
 - AND el hilo principal la abre en un navegador real con Playwright —el MCP si está en la sesión, un script del paquete `playwright` si no—, sobre el entorno que el usuario tenga levantado si lo hay, sin build dedicado ni suite de specs nueva
-- AND pasa el detector que declara `§Frontend` de `tech-stack.md` en sus dos viewports, y saca una captura por estado y tema, que mira con la rúbrica de composición (jerarquía, ritmo de espaciado, densidad, alineación) contra la referencia, con 3 rondas de arreglo de composición como máximo, y guarda fuera de git sin borrarla hasta la validación, antes de darla por terminada en `tasks.md`
+- AND pasa el detector que declara `§Frontend` de `steering/operations.md` en sus dos viewports, y saca una captura por estado y tema, que mira con la rúbrica de composición (jerarquía, ritmo de espaciado, densidad, alineación) contra la referencia, con 3 rondas de arreglo de composición como máximo, y guarda fuera de git sin borrarla hasta la validación, antes de darla por terminada en `tasks.md`
 - AND con la tarjeta de resumen de la Task 2 con borde y 0 px de padding, y un criterio que no nombra el padding, el detector da `cramped-padding` y la task no se da por terminada hasta que el hallazgo se arregla o se justifica por escrito; «ya estaba antes» no justifica un hallazgo del elemento que la task toca, y «falso positivo» o «es intencional» no valen sin citar la frase del criterio o el rasgo de la referencia que lo exige
 - AND mide en estilos computados solo lo que el criterio fija con un valor numérico
 - AND si la task cambia comportamiento, recorre el flujo real con sus estados de carga, error y deshabilitado, con la consola y la red sin errores, con el usuario de pruebas de `§Frontend`, nunca contra producción y sin borrar ni modificar datos que no creó la verificación
@@ -193,10 +196,10 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La verificación visual se enseña con medidas y capturas
 
 - GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, el criterio «el selector filtra la lista por estado» y contraste del texto ≥ 4,5:1
-- WHEN el agente para tras la task en `pair`, o presenta la validación del paso 7 en `delegate`
+- WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-archive` en `delegate`
 - THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
 - AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
-- AND sin detector declarado, el aviso literal «composición no medida: `tech-stack.md` no declara detector en §Frontend»
+- AND sin detector declarado, el aviso literal «composición no medida: `operations.md` no declara detector en §Frontend»
 - AND si la composición sigue mal tras la tercera ronda, lo dice ahí, para que decida el dev-lead
 - AND una task que quedó «no probado» lo dice en ese sitio, con su motivo
 
@@ -222,19 +225,16 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El revisor de spec se despacha con su effort
 
-- GIVEN una spec con review de uno o dos revisores
-- WHEN el hilo despacha cada revisor
-- THEN el despacho lleva `subagent_type: sdd-kit:effort-medium` y `model: sonnet`
-
-### En Windows, el workspace de ejecución se usa en su ruta Windows
-
-- GIVEN Windows y la ruta que imprimen `sdd-workspace`, `task-brief` o `task-start` de superpowers en forma POSIX (empieza por `/`, por ejemplo `/tmp/claude/…` o `/d/code/…`)
-- WHEN el agente va a escribir o leer por primera vez en ese workspace (el ledger, un brief, un informe)
-- THEN usa la ruta que da `cygpath -w`, y el `Write` no pide un permiso que un sujeto sin usuario no puede conceder
+- GIVEN una spec de permisos por rol del gestor de cobros, con review de uno o dos revisores
+- WHEN el agente despacha la review
+- THEN el revisor de dominio va en Opus porque la spec toca roles; para «renombrar una columna del listado», en Sonnet; sin preguntarlo
+- AND con un solo revisor de siete puntos en full, su modelo se elige igual, porque incluye la lente de dominio; en lite y en el revisor del patch, Sonnet, aunque la spec o el patch toquen roles
+- AND si la petición o el prompt de arranque dicen «revisor de dominio en Opus», lo aplica
+- AND cada despacho lleva `subagent_type: sdd-kit:effort-medium` y el modelo elegido; el revisor técnico, siempre `model: sonnet`
 
 ### Cada cambio de paso lleva un aviso en llano
 
-- GIVEN una feature en curso con `sdd-start-feature`
+- GIVEN una feature en curso con `sdd-propose` o `sdd-implement`
 - WHEN el agente pasa de un paso del flujo al siguiente
 - THEN su mensaje dice, en lenguaje llano, qué hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará cuando el paso lanza subagentes o sujetos
 - AND un contador («van 7 de 15») o un número de paso sin esa frase no cuentan como aviso
@@ -242,23 +242,9 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Una decisión del dev-lead que sale de la revisión final se pregunta sola
 
 - GIVEN la revisión final de rama con un hallazgo cuya resolución es del dev-lead
-- WHEN el agente llega al paso 7
+- WHEN el agente llega a la validación de `sdd-archive`
 - THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
 - AND no la resuelve por defecto ni la mete en el mensaje de la validación
-
-### Una task Native se registra en el ledger de `executing-plans`
-
-- GIVEN un plan con `Ejecución: native`
-- WHEN el hilo ejecuta cada task
-- THEN la abre con `task-start` y la cierra con `task-done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
-
-### Los scripts de Native se lanzan con la herramienta Bash y con salida
-
-- GIVEN un plan con `Ejecución: native` en Windows, con PowerShell como shell principal, y una «Verificación» que no imprime nada si pasa
-- WHEN el hilo abre y cierra cada task con `task-start` y `task-done`
-- THEN los lanza con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell, y comprueba que la ruta de `sdd-workspace` no está vacía antes de escribir en el ledger
-- AND pasa a `task-done` un comando que imprime algo (`sh -c '<comando> && echo ok'`), y la línea `Task <N>: complete` queda en el ledger a la primera
-- AND el comando sale con un código distinto de 0 si algo falla: con Pester, `Invoke-Pester … -CI`, y la «Verificación» del plan ya lo trae así; con un test en rojo, `task-done` no escribe `Task <N>: complete`
 
 ### La base se comprueba antes de cada task Native
 
@@ -273,41 +259,26 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN escribe los tests de sus THEN antes del código y guarda una copia fuera del repo
 - AND antes del commit de la task compara la copia con el test con `git diff --no-index`, y un cambio que no sea de formato es un ruling del ledger
 
-### El revisor final de Native va con el techo del kit
-
-- GIVEN un plan con `Ejecución: native` con todas sus tasks completas en el ledger
-- WHEN el hilo despacha el revisor final de rama
-- THEN el despacho lleva `subagent_type: sdd-kit:effort-high` y `model: opus`
-- AND el encargo lleva la cabecera de `encargo-revision.md` y su sección «Cómo revisar»
-
 ### Sin el tipo de effort, se dice antes del primer despacho
 
 - GIVEN una sesión cuyos tipos de agente no incluyen el `sdd-kit:effort-<nivel>` que toca
 - WHEN el hilo va a hacer el primer despacho de la feature (implementador en SDD, revisor final en Native)
 - THEN antes de despachar dice que el tipo falta, despacha con el `model` y la frase de respaldo «effort: no disponible en este harness, hereda el de la sesión», y lo registra como ruling
 
-### El cierre no repite la revisión final de Native
-
-- GIVEN una feature cuya línea `Revisión final:` de `tasks.md` registra la revisión final de rama `sobre a1b2c3d`, y después de ese commit solo hay commits de los que se revisan en el hilo
-- WHEN se entra en `sdd-end-feature`
-- THEN no lanza otra revisión: comprueba que hubo revisión final y con qué modelo
-- AND si después de `a1b2c3d` hay un commit del hilo `e4f5a6b` que cambia `src/slots.js`, antes de escribir el walkthrough despacha la re-revisión del tramo `a1b2c3d..HEAD` con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
-- AND el commit con el que compara `HEAD` es el último revisado: el segundo sha de la `Re-revisión:` más reciente; si no hay, el de `Pasada de fix:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
-- AND la pasada de fix exime solo sus propios commits: si entre el `sobre a1b2c3d` y el primer commit de la pasada hay un commit del hilo `b2c3d4e` que cambia `src/slots.js`, hecho mientras el revisor trabajaba, el último revisado es `a1b2c3d` y la re-revisión cubre `a1b2c3d..HEAD`
-- AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe del revisor de esta sesión) lanza `requesting-code-review`
-
 ### Los minors diferidos llegan al walkthrough
 
 - GIVEN una feature Native con líneas `Final: minor (deferred)` en el ledger
 - WHEN se escribe el walkthrough
-- THEN «Decisiones tomadas sin el dev-lead» lleva los «Rulings I made» y los «Deferred minors» del mensaje final de `executing-plans`
+- THEN «Decisiones tomadas sin el dev-lead» lleva las líneas `Ruling:` y `minor (deferred)` que da `sdd ledger rulings`, ejecutado antes de que el workspace se borre
 
 ### Cada task de producto acaba en algo que se prueba en la aplicación
 
 - GIVEN un plan para las salas favoritas, que tocan la migración `favorite_rooms`, la API y la estrella de la pantalla de salas
 - WHEN se parte en tasks
 - THEN la task «Marcar Sur como favorita» atraviesa migración, API y estrella, y su línea «Se prueba en la aplicación» dice «Ana pulsa la estrella de Sur y la ve llena tras recargar». No sale una task «BD y API» seguida de otra «web».
-- AND una task que no deja nada probable (una migración de datos previa, un refactor) lleva en esa línea «no, porque <motivo>»
+- AND una task que no deja nada que se pueda probar (una migración de datos previa, un refactor) lleva en esa línea «no, porque <motivo>»
+- AND cada task lleva `**Tras**:` con la task de la que depende, o `—`: «Quitar Sur de favoritas» lleva `Tras: Task 1`
+- AND el plan dice que las tasks se ejecutan en orden, sin paralelo
 - AND el plan no fija un tamaño en horas por task
 
 ### En `pair`, cada task cerrada para con su guion de pruebas
@@ -319,37 +290,32 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El gate del plan en `pair` ofrece parar para bajar la sesión a gama media
 
-- GIVEN una feature en `pair`, una sesión con Opus 5.5 y un plan con `Ejecución: native, porque…`
+- GIVEN una feature en `pair`, una sesión con Opus 5.5 y un plan de dos o más tasks con `Ejecución: native, porque…`
 - WHEN el agente presenta el gate del plan
-- THEN entre las opciones está «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con su motivo: Native va bien en gama media (Sonnet, effort medium) y bajar solo el effort de Opus no es gama media
+- THEN entre las opciones está «Apruebo, con Native, y paras antes de la Task 1 para que baje la sesión a gama media (quedan 3 tasks)», con las tasks del plan, que no es la recomendada, con su motivo: Native va bien en gama media (Sonnet, effort medium) y bajar solo el effort de Opus no es gama media
 - AND si el usuario la elige, el agente junta la apertura en su commit y termina el turno antes de la Task 1 diciendo el cambio (`/model`, Sonnet con effort medium)
+- AND con un plan de una sola task no la ofrece
 
 ### El gate de la spec en `delegate` ofrece parar tras el plan para bajar la sesión a gama media
 
-- GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate
+- GIVEN una feature en `delegate`, una sesión con Opus 5.5 y la spec lista para el gate, con dos o más tasks previstas
 - WHEN el agente presenta la spec
-- THEN entre las opciones está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media», que no es la recomendada, con el mismo motivo
+- THEN entre las opciones numeradas está «Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 3 tasks)», con las tasks previstas, que no es la recomendada, con el mismo motivo
 - AND si el usuario aprueba sin esa opción, el agente sigue sin parar hasta la validación, como hoy
+- AND con una sola task prevista no la ofrece
 
 ### Con Native, el plan registra el modelo recomendado para la sesión
 
 - GIVEN un plan cuyo método es Native
 - WHEN el agente escribe su línea `Ejecución`
-- THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para la revisión final.»
+- THEN la línea lleva, literal, «La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.»
 
 ### La carpeta de una feature nueva lleva `-feature-`
 
 - GIVEN un proyecto en modo `sequence` con la fila 0081 «Avisos de reserva» pendiente en el roadmap
-- WHEN `sdd-start-feature` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
-- THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
+- WHEN `sdd-propose` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
+- THEN la carpeta es `.docs/sdd/changes/20261001-091500-feature-0081-booking-reminders/`
 - AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
-
-### Una carpeta `-task-` se cierra como legado
-
-- GIVEN la rama `feature/0064-task-to-feature-rename` con su carpeta `20260925-163055-task-0064-task-to-feature-rename/`, cuyo `spec.md` lleva `task: 0064`
-- WHEN `sdd-end-feature` cierra la feature
-- THEN escribe `walkthrough.md` en esa misma carpeta, sin renombrarla
-- AND el estimation-log regenerado tiene una fila con id `0064` y carpeta `20260925-163055-task-0064-task-to-feature-rename`
 
 ### Las tasks del plan conservan su nombre
 
@@ -368,16 +334,18 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado
 
-- GIVEN la validación del paso 7 de la feature 0012, con la web levantada por el agente en el puerto 4656
+- GIVEN la validación de `sdd-archive` de la feature 0012, con la web levantada por el agente en el puerto 4656
 - WHEN el agente presenta el guion de pruebas sin `validation.startEnvironment` en `.docs/sdd/sdd-kit.local.json`, o con `false`
 - THEN antes de presentarlo ha parado lo que arrancó, y el guion empieza por cómo arrancarla
 - AND con `validation.startEnvironment: true`, la deja arrancada, y el guion dice en qué puerto está y cómo pararla
+- AND con `validation.startEnvironment: true` y el entorno sin levantar (el gate de cierre `node --test test/` no lo arranca), lo levanta antes del guion con `env:setup` de `## Entornos` de `operations.md` si la sección existe, o si no con «Arrancar» (`node scripts/env-up.mjs`), comprueba que responde, y el guion abre con su puerto y cómo pararlo (`node scripts/env-down.mjs`)
+- AND sin «Arrancar» ni `## Entornos` en `operations.md`, el guion dice que no hay comando de arranque declarado y empieza por cómo arrancarla
 
 ### Una task Native no se da por completa sin su commit
 
 - GIVEN la Task 1 de un plan Native, cuya «Verificación» (`node --test tests/slot-format.test.js`) pasa, y un pre-commit que corre la suite y rechaza el commit porque `tests/import.test.js` falla
 - WHEN el agente cierra la task
-- THEN no ejecuta `task-done` ni escribe la línea `Task 1: complete` mientras `HEAD` siga en la base de la task
+- THEN no ejecuta `sdd task done` ni escribe la línea `Task 1: complete` mientras `HEAD` siga en la base de la task
 - AND lee el mensaje del hook y arregla la causa antes de volver a commitear
 
 ### Un THEN que solo se observa con la base al día declara cómo se valida
@@ -385,26 +353,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN la fila 0012 «`npm run check:changed` … si la rama no cambia ninguno, escribe «Nada que comprobar» y sale con 0», cuyo THEN negativo no se puede observar desde `feature/0012`, porque la rama siempre cambia `scripts/check-changed.mjs`
 - WHEN el agente escribe la spec
 - THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
-- AND en el paso 7 prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
-
-### El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite
-
-- GIVEN una feature cerrada con `sdd-end-feature`
-- WHEN se escribe «4. Verificación» del walkthrough
-- THEN «4.1 Builds» lleva la suite completa con su comando, su resultado y su duración
-- AND «4.2 Smoke / tests» tiene una fila por THEN con su evidencia (`suite` · `ejecución real` · `no probado`)
-- AND si la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
-
-### Un commit del hilo posterior a la revisión final se revisa antes de la validación
-
-- GIVEN `tasks.md` con `Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d` y, después, un commit del hilo `e4f5a6b` que cambia 3 líneas de `hooks/hooks.json`
-- WHEN el hilo va a presentar la validación del paso 7
-- THEN antes despacha un revisor con el encargo del revisor final (`sdd-kit:effort-high` + `opus`) sobre el tramo `a1b2c3d..HEAD`, y no presenta la validación hasta que vuelve sin Critical ni Important abiertos
-- AND apunta en `tasks.md` `Re-revisión: a1b2c3d..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
-- AND si el commit llega con la validación ya presentada (un fix que sale de una pregunta del dev-lead), la re-revisión va antes de invocar `sdd-end-feature`, y el mensaje dice qué cambió y su veredicto
-- AND si el tramo solo tiene commits de solo docs de menos de 20 líneas (`.docs/sdd/roadmap.md`, 2 líneas), no despacha revisor: lo anota como `revisado en el hilo`
-- AND la pasada de fix de la propia revisión final no abre la re-revisión. Ejemplo: la revisión final vuelve con `Needs fixes (0 Critical, 1 Important, 0 Minor)` sobre `a1b2c3d` y la pasada queda en `c7d8e9f`, con su test RED→GREEN. El hilo apunta `Pasada de fix: c7d8e9f, 1 hallazgo RED→GREEN`, no despacha revisor y lo dice al presentar
-- AND un commit del hilo posterior a la pasada, en `src/`, sí abre la re-revisión, sobre el tramo `c7d8e9f..HEAD`
+- AND en la validación de `sdd-archive` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
 
 ### Un hallazgo de ejecución se reproduce antes de arreglarse
 
@@ -415,35 +364,13 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND no reproducirlo no descarta el hallazgo: el hilo decide arreglar sin RED, rechazarlo o diferirlo, y lo registra como ruling con la salida del intento
 - AND un hallazgo que se ve leyendo el diff (un nombre, la estructura, una duplicación) no lleva este paso
 
-### El paquete del revisor final sale del merge-base actual y sin evidencia
-
-- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/specs/<carpeta>/red/out.jsonl` en su rama
-- WHEN el hilo prepara el paquete del revisor final
-- THEN la sección de diff del paquete no contiene `skills/otra/SKILL.md` ni ningún fichero bajo `red/` o `green/`
-- AND la sección de commits lista solo los de la feature y el merge
-- AND el paquete se genera a la primera, con `spec.md` como `PLAN_FILE`
-
-### El paquete del revisor final deja fuera los borrados y la carpeta de la feature
-
-- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/specs/`
-- WHEN el hilo prepara el paquete del revisor final
-- THEN el paquete no contiene el cuerpo de los ficheros borrados ni ningún fichero de la carpeta de la feature
-- AND lista los borrados por nombre en su sección «Ficheros borrados»
-- AND el revisor lo lee en tramos de 400 líneas con `offset` y `limit`, y ningún `Read` devuelve `exceeds maximum allowed tokens (25000)`
-
-### El plan escribe al revisor final con el techo del kit
-
-- GIVEN una spec aprobada en `delegate` y un plan Native de una sola task pequeña
-- WHEN el agente escribe `plan.md`
-- THEN el revisor final aparece como `sdd-kit:effort-high` + `opus`, o no aparece
-
 ### Todo subagente y toda verificación lenta llevan su vigía de silencio
 
 - GIVEN un proyecto con `"control": { "silence": { "betweenStepsMinutes": 8, "longCommandMinutes": 20 } }` en `sdd-kit.json`, y un plan Native con la implementación terminada
 - WHEN el hilo despacha el revisor final de rama
-- THEN en el mismo turno lanza en segundo plano `Watch-SubagentSilence.ps1` sobre el transcript de ese revisor, y la orden no lleva ni 8 ni 20: los umbrales los lee el script
+- THEN en el mismo turno lanza en segundo plano `sdd watch subagent` sobre el transcript de ese revisor, y la orden no lleva ni 8 ni 20: los umbrales los lee el script
 - AND lo mismo al despachar un implementador, un revisor de task, un fix wave o una re-revisión en SDD, un revisor de spec o la re-revisión del cierre
-- AND al lanzar la verificación lenta `Invoke-Pester tests/` en segundo plano, lanza el vigía sobre el fichero de salida de ese comando
+- AND la verificación lenta `Invoke-Pester tests/` la lanza en segundo plano el propio vigía, `sdd watch command -- Invoke-Pester tests/`, que guarda su salida y termina con `TERMINADO: Invoke-Pester tests/ salió con <rc>` en cuanto el comando sale, o con `SILENCIO:` si deja de escribir; `sdd watch command --path <fichero>` queda para un comando que ya corre
 
 ### El umbral del silencio depende de la herramienta que espera
 
@@ -510,56 +437,403 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Una spec que cambia lo que se ve propone `§Frontend` si falta
 
-- GIVEN un proyecto ya inicializado con interfaz cuyo `tech-stack.md` no tiene `§Frontend`, y una fila que pide una pantalla nueva
+- GIVEN un proyecto ya inicializado con interfaz cuyo `steering/operations.md` no tiene `§Frontend`, y una fila que pide una pantalla nueva
 - WHEN el agente escribe la spec
 - THEN «Decisiones que he tomado yo» lleva la propuesta de `§Frontend` con sus campos rellenos, recomendando impeccable y Playwright, y el acceso que se ve en el código
-- AND al aprobar la spec, `tech-stack.md` gana esa `§Frontend`, sin parada nueva
+- AND al aprobar la spec, `steering/operations.md` gana esa `§Frontend`, sin parada nueva
 - AND si el dev-lead no quiere detector, queda `Detector: ninguno`, la verificación sigue con capturas y rúbrica y el aviso «composición no medida», y la propuesta no se repite en las features siguientes
-
-### El revisor final sale en segundo plano con el commit de la última task
-
-- GIVEN una feature Native con una task que cambia la UI, cuyo commit `a1b2c3d` acaba de hacerse, y su «Verificación visual» pendiente
-- WHEN el hilo cierra esa task
-- THEN el siguiente despacho es el revisor final en segundo plano sobre `a1b2c3d`, antes de arrancar la aplicación para la verificación visual
-- AND mientras el revisor trabaja, el hilo hace la verificación visual y escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
-- AND la validación se presenta cuando vuelve el revisor sin Critical ni Important abiertos (tras su pasada de fix, si la hay), no antes
-- AND en SDD el disparador es el commit juntado de la última task, tras su revisión limpia
-
-### El revisor final trabaja aislado en el sha que revisa
-
-- GIVEN el revisor final despachado sobre `a1b2c3d` y el hilo que commitea después `e4f5a6b` (un fix de la verificación visual)
-- WHEN el revisor lee el código y el historial
-- THEN trabaja en un worktree desanclado `review-0096-a1b2c3d` creado con `git worktree add --detach` en `a1b2c3d`, con el paquete construido allí, y su encargo le dice que no mire ramas ni commits posteriores
-- AND su informe no cita `e4f5a6b`
-- AND lo mismo vale para la re-revisión de un tramo: su worktree se ancla en el último sha del tramo
-- AND el hilo retira el worktree con `git worktree remove` al volver el revisor
 
 ### Lo cambiado tras la validación se separa de lo validado
 
 - GIVEN una feature validada con «probé borrar un fichero y funciona» y, después, a petición del dev-lead, un commit `c7d8e9f` que cambia el texto del error «No se pudo borrar» por «El fichero ya no existe»
 - WHEN se cierra
-- THEN el commit pasa por la re-revisión del tramo antes del walkthrough
+- THEN si la re-revisión de la revisión final aún no salió, el commit entra en ella antes del walkthrough; si ya salió, no se despacha otra y el walkthrough lleva en ✋ `sin revisar: c7d8e9f — el texto del error de borrar`, como dice «Una re-revisión nunca abre otra» de [`verification`](verification.md)
 - AND la verificación del walkthrough y el mensaje final dicen que el dev-lead probó la versión anterior y qué verificó el agente del cambio (`c7d8e9f`), separado de la línea de validación
 - AND el hilo no para a pedir otra validación
 
 ### Una migración solo de datos no descarta el modo lite
 
 - GIVEN una feature que quita un botón de una pantalla y cuya única migración da de baja sus dos textos con un procedimiento idempotente y reversible
-- WHEN `sdd-start-feature` cita el predicado de lite en la primera pregunta
+- WHEN `sdd-propose` cita el predicado de lite en la pregunta del carril
 - THEN lo ofrece como lite y nombra la migración
 - AND con una migración que añade una columna no lo ofrece: cambia el schema
 
-### Saltarse las preguntas de brainstorming no se lleva la spec
+### El diseño de una feature pregunta con `sdd-grilling`
 
-- GIVEN una feature en el paso 4 de `sdd-start-feature`, con `superpowers:brainstorming` 7.0.0, cuyo primer mensaje ofrece saltarse las preguntas
+- GIVEN el paso de spec de `sdd-propose`, con el diseño de una feature que cambia lo que ve el usuario
+- WHEN el agente necesita una decisión del usuario
+- THEN la pregunta sigue `sdd-grilling` ([`interviewing`](interviewing.md)): una por turno, en texto con el formato fijo, con escena concreta si es de producto
+- AND la spec se escribe siguiendo `references/spec-writing.md` de `sdd-propose`, y el plan, `references/plan-writing.md`, sin invocar `superpowers:brainstorming` ni `superpowers:writing-plans`
+
+### Los rulings del ledger se cosechan antes de borrar el workspace
+
+- GIVEN el ledger de un plan con `Task 2: Ruling: el umbral queda en 30 s — el plan decía 20 y el test tarda 24`, `Final: minor (deferred) nombre de variable poco claro en parse()` y `Final: Ruling: no se renombra Foo — fuera de alcance`
+- WHEN el cierre ejecuta `node sdd.js ledger rulings <plan.md>`
+- THEN escribe esas tres líneas en el orden del ledger y sale con 0
+- AND sin ledger escribe `Sin rulings` y sale con 0
+- AND una fila de tabla del ledger (la del pre-flight) que contiene `Ruling:` no sale: solo cuentan las líneas que no empiezan por `|`
+
+### Las tasks Native se abren y cierran desde cualquier shell
+
+- GIVEN un plan con `Ejecución: native` en Windows, con PowerShell como shell principal, y una «Verificación» que no imprime nada si pasa
+- WHEN el hilo abre y cierra cada task con `sdd task start` y `sdd task done <plan> <n> <base> -- pwsh -NoProfile -Command "Invoke-Pester -Path tests/Foo.Tests.ps1 -CI"` desde la herramienta PowerShell
+- THEN `sdd task start` imprime la ruta del workspace en forma Windows (`D:\…`), y la línea `Task <N>: complete (…, tests: <comando> → (sin salida))` queda en el ledger a la primera
+- AND si `sdd task start` falla o no imprime ruta, sale con un código distinto de 0 y el hilo no escribe en el ledger
+- AND con un test en rojo, `sdd task done` no escribe `Task <N>: complete` y sale con el código del comando; con un comando que no existe, sale con 127 y tampoco lo escribe
+- AND con una salida de vitest, que acaba en `Duration …`, la línea del ledger lleva la de `Tests N passed`; sin línea `Tests …`, la última línea no vacía de la salida
+
+### La spec dice dónde se prueba cada comportamiento
+
+- GIVEN una feature que añade cancelar una reserva por el endpoint y por la pantalla, en un proyecto cuyos tests de reservas van contra el endpoint
+- WHEN el agente escribe la spec
+- THEN la sección «Dónde se prueba» dice «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
+
+### La pregunta del gate de la spec lleva opciones fijas
+
+- GIVEN una feature en `pair` o `delegate`, con la spec lista para el gate
+- WHEN el agente presenta la spec
+- THEN la pregunta del gate va en prosa al final del mensaje, con las opciones numeradas y, al menos, «Apruebo (Recomendada)», la primera, y «Cambios»
+- AND el turno acaba ahí: no llama a `AskUserQuestion`, cuyo diálogo tapa el mensaje, ni implementa
+
+### El gate de cierre del plan sale de `operations.md`
+
+- GIVEN el molde `reservas`, con `operations.md` §Testing «Gate de cierre: `node --test`» y sin script `test` en `package.json`
+- WHEN `sdd-propose` escribe el plan
+- THEN la línea del gate de cierre de §3 dice `node --test`, literal
+- AND sin `steering/operations.md`, toma el de la constitution; y si no hay ninguno, escribe `no declarado` y lo apunta en las decisiones del plan, sin inventar un comando como `npm test`
+
+### `sdd-propose` entrega el cambio a la skill que lo sigue
+
+- GIVEN la feature 0010 en `delegate`, con la spec aprobada y el plan escrito por `sdd-propose`
+- WHEN `sdd-propose` termina el plan
+- THEN invoca `sdd-implement`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
+- AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-implement` con la clase del patch y la estimación de la pregunta
+- AND si se invoca `sdd-implement` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
+
+### La implementación la lleva `sdd-implement`
+
+- GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
+- WHEN `sdd-propose` entrega la feature
+- THEN invoca `sdd-implement`, que invoca `sdd-implement-native` con `Skill`; esta ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, invoca `sdd-archive`, que abre con la validación
+- AND con `Ejecución: subagent`, `sdd-implement` invoca `sdd-implement-subagent`
+- AND ningún texto que carga el agente (`skills/` sin las marcas `<!-- kit: … -->`) invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
+- AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
+
+### Una task Native se registra en el ledger de `sdd-implement`
+
+- GIVEN un plan con `Ejecución: native`
+- WHEN el hilo ejecuta cada task
+- THEN la abre con `sdd task start` y la cierra con `sdd task done` y el comando de su «Verificación», y el ledger del workspace tiene su línea `Task <N>: complete`
+
+### El encargo del implementador lleva el decálogo de calidad
+
+- GIVEN un plan con el bloque «De código» en sus Restricciones globales
+- WHEN se despacha el implementador de una task, o el hilo prepara la ejecución en Native
+- THEN el encargo lleva, tras `## Code constraints`, la sección `## Quality decalogue` con las diez reglas y la frase de que, si una choca con las Code constraints, mandan las constraints
+- AND en Native el hilo la lee una vez, al preparar la ejecución
+- AND el encargo del revisor de task y el del re-revisor no la llevan
+
+### El workspace del plan se anuncia
+
+- GIVEN un plan con `## Task 1` y `## Task 2`
+- WHEN `sdd-implement-native` o `sdd-implement-subagent` corre `sdd workspace <plan>`, al empezar o al retomar
+- THEN el comando escribe en stderr `Workspace del plan: <ruta absoluta del workspace> — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia`
+- AND con `Task 1: complete …` en el ledger del plan, la línea acaba en `· retomo en la Task 2`; sin ninguna task completa, o con las dos, no lleva sufijo
+
+### Tras una caída o un corte por cuota, la ejecución sigue desde el ledger
+
+- GIVEN un plan SDD con `Task 1: complete (commits a1b2c3d..d4e5f6a, review clean)` en el ledger, `task-2-report.md` con `Status: DONE` y su commit `b7c8d9e`, y la notificación de fallo del implementador de la Task 2 por cuota agotada
+- WHEN el hilo retoma
+- THEN no relanza la Task 1 ni la Task 2: despacha la revisión de la Task 2 sobre `d4e5f6a..b7c8d9e` y deja `Task 2: Ruling: recuperación tras corte por cuota — informe completo, sigue a revisión`
+- AND si la Task 2 no tuviera informe, la relanza una vez con el mismo brief y el mismo modelo, y el encargo nombra los ficheros que `git status` da cambiados
+
+### El walkthrough dice si la ejecución compactó
+
+- GIVEN una feature en Native de 4 tasks cuya sesión compactó en la Task 2 con dos tasks pendientes
+- WHEN el hilo retoma
+- THEN escribe en el ledger `Task 2: Ruling: compactación — sigo con SDD — quedan 2 tasks`
+- AND el walkthrough lleva en su §2 «Tiempo y coste» `Compactación: sí, en la Task 2 → SDD desde la Task 3`, y en una feature que no compactó, `Compactación: no`
+
+### Un E2E rojo por tiempo se ajusta sin tocar sus aserciones
+
+- GIVEN un RED de E2E que espera 500 ms a un guardado que tarda 2 s, con el código de la task ya correcto
+- WHEN el implementador lo ve fallar por tiempo
+- THEN cambia la espera por la señal de guardado, sin cambiar aserciones ni datos, y lo lista en su informe bajo `Ajustes de espera`
+
+### Una feature grande devuelve el diseño por secciones antes de la spec
+
+- GIVEN la feature 0012 en `pair`, con 5 tasks previstas en el recuento del paso 2 y la entrevista cerrada
+- WHEN el agente va a escribir `spec.md`
+- THEN antes dice los enfoques en un mensaje propio —dos o tres maneras de construirlo, con lo que cuesta cada una y la que recomienda— y, elegido uno, presenta el diseño por secciones, una por mensaje, y pregunta «¿va bien?» tras cada una
+- AND lo que el usuario corrige en una sección entra en la spec antes de escribirla
+- AND lo que el agente rellenó sin que el usuario lo dijera va en la sección como su propuesta, con su motivo
+- AND el recuento es el de la feature que se especifica, hecho al entrar en el paso de spec: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
+- AND con 2 tasks previstas, en lite o en spike, escribe la spec sin secciones y la presenta en el gate
+- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con su coste y el porqué del elegido, van al Approach de la spec, y «✋ Decisiones que he tomado yo» nombra el elegido y los descartados («Enfoque: A, frente a B y C (ver Approach)») y lleva las secciones; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
+- AND con la spec aprobada por delegación o en `unattended` no presenta secciones ni mensaje de enfoques: los enfoques van al Approach de la spec y lo que habría preguntado, a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
+- AND cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos («`informes --sala Norte` enseña las cuatro vistas solo de Norte»), y la pregunta es sobre eso; un nombre de código (`active`, `rooms`, `src/app.js`) no abre ninguna sección y, si hace falta, va detrás
+
+### Pedir empezar ya no se lleva la spec
+
+- GIVEN una feature en el paso de spec de `sdd-propose`
 - WHEN el agente pregunta al usuario
 - THEN no le ofrece saltarse las preguntas
-- AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «Decisiones que he tomado yo», y la spec pasa por su gate
+- AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «✋ Decisiones que he tomado yo», y la spec pasa por su gate
+
+### Quien implementa ve fallar los RED antes de implementar
+
+- GIVEN un plan con `Ejecución: subagent` y la Task 1 con el RED `test/informe.test.js` escrito por el hilo y sin commitear
+- WHEN el implementador recibe su encargo
+- THEN ejecuta `test/informe.test.js` antes de editar ningún fichero de `src/`
+- AND su informe lleva en «TDD Evidence» el comando, la salida en rojo de antes de implementar y por qué se esperaba ese fallo
+
+### Un fallo se investiga con `sdd-debugging`
+
+- GIVEN un patch de un fallo determinista («`libres 10:00-12:00` devuelve Norte aunque Norte tiene una reserva activa en esa franja»), o un paso del plan cuyo `Expected:` no coincide porque el código falla
+- WHEN el agente lo investiga
+- THEN invoca `sdd-debugging` y escribe la causa raíz con su evidencia en el código antes de proponer el arreglo
+- AND antes del arreglo hay un test en rojo que reproduce el fallo, escrito con `sdd-tdd`
+- AND en un patch, §2 de `patch.md` lleva la causa raíz con su evidencia antes de editar el código: la fase 4 de `sdd-debugging` empieza con ella escrita
+- AND ningún fichero de `skills/` invoca `superpowers:test-driven-development` ni `superpowers:systematic-debugging`
+
+### El worktree de la implementación lo prepara `sdd-worktrees`
+
+- GIVEN la 0010 con la spec y el plan aprobados, abierta en un worktree que creó Orca en la rama `feature/0010-cancel`, y un proyecto con `## Entornos` y §Testing `Gate de cierre: node --test` en `steering/operations.md`
+- WHEN la copia del método (`sdd-implement-native` o `sdd-implement-subagent`) hace su preparación
+- THEN invoca `sdd-worktrees`, que detecta que ya está en un worktree enlazado, lo dice con su rama, y no crea otro
+- AND ejecuta `env:setup` después de instalar las dependencias, y los encargos de implementador dicen dónde está `.sdd-env.json`
+- AND la baseline ejecuta `node --test`, el gate de cierre del proyecto; sin gate declarado en `steering/operations.md` ni en la constitution, lo dice y pregunta qué ejecutar
+- AND con un gate filtrado (`moon run app:test api:test --affected --base develop`), la baseline corre sin el filtro solo las tareas cuyos inputs incluyen ficheros del Scope de la spec (`moon run api:test` si el Scope solo toca `src/api/`), y su informe es la línea `Gate:` con `app:test: saltada (fuera del Scope de la spec)`; nunca da la baseline por buena con un filtro que no corrió ninguna tarea; si ninguna tarea lee ficheros del Scope (un cambio solo en `.docs/`), las nombra todas saltadas fuera del Scope, lo dice y da la baseline por lista
+- AND si la baseline falla, corre el mismo comando en un worktree temporal desanclado de la rama de integración; si también falla allí, busca las primeras líneas de error en la deuda del proyecto y cita la fila o abre una en «Por triar»; después informa de los fallos con ese veredicto y pregunta si sigue o investiga
+- AND ningún fichero de `skills/` invoca `superpowers:using-git-worktrees` ni `superpowers:dispatching-parallel-agents`
+
+### Dos revisores de spec se despachan con `sdd-parallel-agents`
+
+- GIVEN la spec de permisos por rol del gestor de cobros, con dos revisores por la rúbrica y `control.maxParallelAgents: 3`
+- WHEN el agente despacha la review
+- THEN invoca `sdd-parallel-agents` y despacha los dos revisores en la misma respuesta, cada uno con su lente
+- AND cada despacho lleva `model` y `subagent_type: sdd-kit:effort-medium`, como dice «El revisor de spec se despacha con su effort»
+- AND nunca hay a la vez más agentes que `control.maxParallelAgents` (3 si falta); con más, se despachan por tandas
+- AND dos tasks independientes del plan no se despachan con `sdd-parallel-agents`: las ejecuta `sdd-implement` una detrás de otra
+
+### El revisor de la spec comprueba que cada decisión del dev-lead tiene una regla que la cubre entera
+
+- GIVEN una spec con «artifacts cubre el visual companion entero» en «Decisiones tomadas con el dev-lead», y un delta cuyo único requisito sobre el companion habla de pantallas
+- WHEN la revisa el revisor de la spec (la lente de dominio, o el revisor único)
+- THEN devuelve, como Importante o Crítico, «Delta · la decisión del dev-lead sobre el visual companion queda cubierta solo para pantallas · ampliar el requisito a flujos y diagramas»
+
+### La spec mide el margen de palabras de lo que edita
+
+- GIVEN un proyecto con topes de palabras (`cli/test/kit/word-budget.test.ts` con `'sdd-propose': { skillMd: 5000, total: 6325 }`) y una spec que edita `sdd-propose`, medido en 4.908 y 6.324
+- WHEN el agente escribe la spec
+- THEN la sección «Topes de palabras» lleva una fila por skill o documento con tope que la spec edita, con lo medido, el tope, el margen y el tope propuesto: `sdd-propose · 4.908 / 5.000 y 6.324 / 6.325 · 92 y 1 · 5.200 / 6.700`
+- AND el tope propuesto es lo medido más lo previsto más un 2 % (mínimo 20 palabras) para la pasada de fix, y el gate lo aprueba como decisión del dev-lead
+- AND lo previsto lleva el comando que contó lo que entra y sale, con el conteo del test, y su cifra: +40 (`echo "<texto que entra>" | wc -w` → 40); o `sin medir`, y entonces la fila va también al ✋ y su tope propuesto es «sin cambio» hasta la medida
+- AND el de una skill que funde otras parte de la suma medida de las fuentes, menos lo común, más margen
+- AND si durante la feature se recorta texto para caber, el recorte es una edición de skill: si quita una instrucción, lleva su RED
+- AND sin topes en el proyecto, la sección no se escribe
+
+### La política de modelos de la spec vale como confirmación de paralelizar
+
+- GIVEN una feature en `delegate`, con la spec aprobada y la línea `Política de modelos: revisores de la spec dominio opus + técnica sonnet · ejes de la revisión final Spec opus+high, Código sonnet+high · en paralelo hasta control.maxParallelAgents`, y unas instrucciones del usuario que piden confirmar antes de paralelizar
+- WHEN el hilo va a despachar los ejes de la revisión final con `sdd-parallel-agents`
+- THEN los despacha en la misma respuesta sin preguntar, porque la aprobación de la spec fue esa confirmación
+- AND un modelo o un despacho que la línea no nombra se confirma como piden las instrucciones
+- AND en `delegate` la spec sin esa línea no pasa el repaso de coherencia
+
+### El self-review del plan asigna cada cláusula de un THEN a lo que la observa
+
+- GIVEN una spec con «THEN el agente ha preguntado el umbral · AND la sección lleva la respuesta», y una task cuyo test solo mide lo escrito
+- WHEN el agente escribe §4 del plan
+- THEN §4 lleva una línea por cláusula, cada una con su task y el test o la fila de medición que la observa: `THEN ha preguntado → Task 2, escenario n1 (turno 1)` y `AND la sección lleva la respuesta → Task 2, n1 (spec-new.md)`
+- AND una cláusula que nada observa dice `sin observar: <motivo>`, y el plan lo avisa en sus decisiones antes de ejecutar
+- AND si la spec trae la tabla «regla retirada → dónde vive ahora», §4 lleva una línea por fila con su task y el test que busca la regla en su destino
+
+### La verificación de una task dice su línea de resumen
+
+- GIVEN una task con superficie tooling en un proyecto con `node --test`, cuya salida acaba en `ℹ duration_ms 52.1` y no en el resumen
+- WHEN el agente escribe su «Verificación»
+- THEN es un comando que sale con un código distinto de 0 si algo falla, sin códigos de color, y la línea dice, literal, la línea de resumen que imprime (`ℹ fail 0` con `node --test`, `Tests  12 passed (12)` con Vitest)
+- AND sin tests automáticos, dice el smoke manual con su resultado esperado
+
+### La fila de «Aprobaciones» dice quién y cómo aprobó
+
+- GIVEN una spec calcada de `spec-template.md` y aprobada por Ana con la opción «Apruebo (Recomendada)» de la pregunta del gate el 2026-10-18
+- WHEN el agente registra la aprobación
+- THEN la tabla «Aprobaciones» tiene las columnas `Nombre | Fecha | Estado`, sin «Rol», y la fila dice `Ana | 2026-10-18 | aprobada (opción «Apruebo»)`
+- AND si Ana escribe «sí, adelante», el Estado es `aprobada: «sí, adelante»`
+- AND el frontmatter `approvers` lleva `name` y `approved_at`, sin `role`
+
+### Un E2E espera solo a lo que el usuario ve
+
+- GIVEN una task que escribe el E2E de «copiar A1 con Ctrl+C, clic derecho en B1, «Pegar», B1 muestra 4321», en una app que guarda la copia en el servidor y monta el editor de celda unos cientos de ms después de Enter
+- WHEN el implementador escribe el test
+- THEN entre Ctrl+C y el clic derecho no hay ninguna espera al API ni a un estado interno
+- AND tras Enter espera a que el editor tenga el foco antes de teclear «4321»
+- AND no usa `waitForTimeout` ni cambia retries o timeouts
+- AND una espera a un estado interno entre dos acciones lleva su motivo en un comentario, y «sin esperarlo, la app no tendría el dato» no cuenta como motivo
+
+### Un E2E inestable no se tapa con retries ni timeouts
+
+- GIVEN un E2E que falla 1 de cada 5 pasadas con `Timeout 5000ms exceeded` en un `toHaveText`, y la petición de dejar la suite en verde
+- WHEN el agente lo arregla
+- THEN repite solo ese test con `--repeat-each`, dice qué causa encontró (carrera del test, carrera de la app, entorno o datos compartidos) y la arregla
+- AND si no la arregla, lo marca con `test.fixme()` y el enlace a su issue
+- AND no sube `retries` ni ningún timeout, ni en el test ni en `playwright.config.ts`
+
+### Una prueba de estrés no entra en la suite E2E del gate
+
+- GIVEN un proyecto con «Flujos core» en `operations.md` §Testing, entre ellos «editar celdas de una hoja y que se guarden», y un gate de cierre que corre `playwright test` sobre `e2e/`
+- WHEN una task pide una prueba de estrés de cinco sesiones editando la misma hoja a la vez
+- THEN la prueba no queda en `e2e/` ni en ninguna suite que corra el gate de cierre, aunque ejerza un flujo core
+- AND vive en una suite aparte con su propio comando, o se ejecuta como medida del smoke con su resultado en el walkthrough
+
+### El vigía de una verificación lenta termina con su comando
+
+- GIVEN `longCommandMinutes: 20`
+- WHEN se ejecuta `sdd watch command -- node -e "setTimeout(()=>{},100)"` y el comando sale con 0
+- THEN el vigía termina con `TERMINADO: node -e setTimeout(()=>{},100) salió con 0` y `salida: <ruta del log>`, y no escribe `SILENCIO:`
+- AND con un comando que no escribe nada en 20 min 30 s, el vigía termina con `SILENCIO:` y el comando ya no corre
+
+### La línea base corre en un worktree desanclado en el commit de apertura
+
+- GIVEN la 0010 con el commit de apertura `a1b2c3d` en `feature/0010-cancel` y la línea base de `sdd-worktrees` en segundo plano
+- WHEN la sesión escribe los RED de la Task 1 en su árbol mientras la línea base corre
+- THEN la línea base corre en `git worktree add --detach <padre de los worktrees>/baseline-0010 HEAD`, con las dependencias (y `env:setup`, si hay `## Entornos` en `steering/operations.md`) instaladas allí, y su resultado es el de `a1b2c3d`: no cambia con los ficheros que la sesión escribe
+- AND al acabar, verde o rojo, quita ese worktree (`env:clean` antes, si hubo `env:setup`); la sesión sigue en el suyo
+- AND si sale roja, corre el mismo comando en un worktree desanclado de la rama de integración, como «El worktree de la implementación lo prepara `sdd-worktrees`»
+
+### La spec que edita una skill con sujetos prevé su coste
+
+- GIVEN un repo con `tests/batteries/aviso-cierre/`, `steering/operations.md` con «un sujeto de `aviso-cierre` cuesta ~0,70 $» y con la previsión de una tanda en `SCENARIOS="<escenarios>" N=<n> node scripts/plan.mjs <battery.md>`, y una spec que edita `skills/aviso-cierre/SKILL.md`
+- WHEN el agente escribe la spec
+- THEN «Previsión de coste» lleva las filas RED, GREEN, una tanda de REFACTOR, controles y medición tras la revisión final, cada una con sus sujetos y sus dólares
+- AND cada fila cita la línea `suma: <n> sujetos · coste previsto: <x> $` del comando de previsión para sus escenarios y su n, y el total es la suma de las filas
+- AND con un `steering/operations.md` que no nombra comando de previsión, cada cifra cita su batería y el precio por sujeto de `steering/operations.md`
+- AND una spec que no edita una skill probada con sujetos no lleva la sección
+
+### El guion arranca por el entorno y acaba en texto
+
+- GIVEN la 0010, con servidor en `node scripts/env-up.mjs` y parada en `node scripts/env-down.mjs`, lista para validar en `validation.mode` `manual`
+- WHEN el agente presenta la validación
+- THEN el guion es lo último del mensaje y empieza por la rama, el worktree y el entorno, con un bloque de código sin lenguaje por terminal y cada comando en su línea, sin puntuación al final
+- AND sigue con pasos de uno en uno, con sus datos y su resultado esperado, y acaba con cómo parar el entorno y «dime "validado" o qué paso falla», en texto
+- AND con `validation.startEnvironment: true`, el guion dice que el entorno está arrancado, con su puerto, en vez de dar los comandos de arranque
+
+### `tasks.md` nace antes de la primera task
+
+- GIVEN un plan con dos tasks y la apertura commiteada sin `tasks.md`
+- WHEN el agente va a empezar la Task 1, en Native o en SDD
+- THEN escribe `tasks.md` antes del primer `sdd task start` o del primer despacho
+- AND va en el commit de la apertura o, si ya está hecho, en el de la Task 1
+- AND con una sola task no lo escribe por esta regla
+- AND con más de una task y sin `tasks.md` junto al plan, `sdd task start` y `sdd task brief` fallan con un error que nombra el fichero, sin escribir el brief
+
+### Un patch sigue en `sdd-implement`, con verificación y sin revisión final
+
+- GIVEN el patch 0031, confirmado en `sdd-propose`: si cancelo Norte el martes, que no tengo reservado, me quita la del lunes
+- WHEN `sdd-propose` lo entrega
+- THEN invoca `sdd-implement`, que lee lo primero `references/patch-flow.md` y sigue su flujo: causa raíz, `patch.md`, fix mínimo y commit; ni el Setup ni los bucles de tasks aplican
+- AND antes de decir que está arreglado, §4 de `patch.md` lleva el comando del test y su salida leída en esta sesión, como dice la «Gate Function» de `sdd-verify`
+- AND antes del commit del fix, un revisor en Sonnet lee `patch.md` y el diff —la causa raíz, el arreglo y su test— y §4 responde cada hallazgo: arreglado, o rechazado con su motivo
+- AND no se despacha ningún eje de la revisión final, y sigue en `sdd-archive`
+
+### Ninguna skill intermedia entre propose e implement
+
+- GIVEN la feature 0010 con la spec aprobada y el plan escrito
+- WHEN el hilo pasa de `sdd-propose` a implementar y, al acabar, a cerrar
+- THEN las únicas skills de flujo que invoca son `sdd-implement`, la copia de su método (`sdd-implement-native` o `sdd-implement-subagent`), `sdd-verify` y `sdd-archive`
+- AND mientras trabaja el revisor final, `sdd-implement` escribe sin commitear el borrador de `walkthrough.md` y el delta fusionado, sin adelantar el roadmap, y `sdd-archive` los completa
+
+### Un test del proyecto compara los títulos E2E con Flujos core
+
+- GIVEN un proyecto con «Flujos core» declarados en `operations.md` §Testing y un `test(...)` cuyo título no está en la lista
+- WHEN una task toca un E2E siguiendo la guía de `sdd-tdd`
+- THEN deja un test en una suite que el cierre corre entera, que sale en rojo y nombra ese título
+- AND con el título en la lista sale en verde
+- AND sin E2E, no se pide ese test
+
+### El test de títulos E2E nace en verde y su lista de heredados solo encoge
+
+- GIVEN una suite con 70 tests en 2 configs de Playwright, sin el test de títulos y con «Flujos core» sin declarar
+- WHEN una task toca un E2E siguiendo la guía de `sdd-tdd`
+- THEN `operations.md` lleva todos sus títulos en «Títulos heredados» y el test sale en verde
+- AND con un `test('exporta a PDF')` nuevo, sale en rojo y nombra `exporta a PDF`
+- AND con un bucle nuevo sobre `claro` y `oscuro` cuyo `test(...)` tiene de título una plantilla `pinta en ${t}`, sale en rojo y nombra `pinta en claro` y `pinta en oscuro`
+- AND al borrar un test heredado, sale en rojo y nombra su título hasta que se quita su línea
+- AND el título nuevo es propuesta para el ✋: la task no añade su línea a «Títulos heredados»
+
+### El test de títulos lee los títulos que corre Playwright
+
+- GIVEN una config con `grepInvert: /@slow/` que esconde 5 de 70 tests, y otra config con 34 tests en 2 `projects`
+- WHEN corre el test de títulos
+- THEN compara los 70 títulos de la primera y los 19 distintos de la segunda, salidos de `playwright test --list`
+- AND sin arrancar servidor, `globalSetup` ni navegador
+- AND si `--list` sale con un código distinto de 0, el test sale en rojo con el error de Playwright, no con una lista vacía
+
+### Quien depura busca el fallo en la deuda antes de investigar
+
+- GIVEN el molde `remedy`: `npm run informe` falla con `ENOENT` sobre `.cache/informes/ocupacion.csv`, y en «Lista» de `debt.md` hay una fila de problema «El listado de ocupación no sale tras limpiar el repo», con «Remedio temporal» `recrea la carpeta de la caché`
+- WHEN se invoca `sdd-debugging` para ese fallo
+- THEN compara el fallo con las filas de la deuda por significado, no solo por las palabras del error, y dice que esa fila lo cubre, con su remedio
+- AND aplicar el remedio no se da por causa raíz: la fila sigue abierta y el arreglo sigue pendiente
+- AND sin una fila que lo nombre, sigue la Fase 1 sin cambios
+
+### Un spike tiene spec corta
+
+- GIVEN el molde `reservas`
+- WHEN el usuario escribe «¿aguanta `libres` con 1.000 reservas? quiero la tabla de medidas»
+- THEN `spec.md` lleva `mode: spike`, «Capacidades: Ninguna, porque investigación», y en vez de Intent, Scope, Approach, «Dónde se prueba» y delta, la pregunta, los objetivos con su umbral numérico y la decisión que desbloquea
+- AND un objetivo de rendimiento lleva la peor carga, con la frase del dev-lead que la confirma o `sin confirmar` en ✋
+- AND el plan se escribe con «Evidencia» en cada task en vez de «Tests RED»
+
+### Un spike deja su evidencia en `research.md`
+
+- GIVEN un spike con el objetivo «≥ 5 min» medido en 2,5 min, un objetivo sin medir y uno que el agente simuló en vez de una persona
+- WHEN el agente escribe `research.md`, calcado de `research-template.md`
+- THEN hay una fila por objetivo, con Objetivo, Estado, Detalle y Evidencia, y la primera dice `no cumple tal como se definió`
+- AND el segundo dice `no medido` y el tercero `no medido con una persona`; ninguna fila dice «cumple en parte»
+- AND la recomendación no cita ninguno de los tres como apoyo
+- AND con un objetivo de rendimiento, hay una tabla de aguante de ≥ 10 repeticiones con la peor carga, tiempo y recurso acumulado por repetición
+
+### Un spike cierra sin código de producción
+
+- GIVEN un spike cuya medida deja a la vista un arreglo de una línea en `src/`
+- WHEN el agente termina las tasks
+- THEN el arreglo no está en la rama, y `research.md` §5 lo nombra con su fila del roadmap
+- AND los scripts de medida y las salidas en bruto quedan en la carpeta de la spec
+- AND cada task corre en Native, con su salida en bruto como evidencia y sin tests RED
+
+### El Scope marca lo condicionado al RED
+
+- GIVEN una spec que edita una skill, con el frente «la nota sin fecha» que viene de un ticket y aún no se ha medido
+- WHEN el agente escribe el Scope antes de medirlo
+- THEN el frente va en una línea `Entra, si el RED lo exhibe:`, separada de los `Entra:`
+
+### Tras compactar, las skills de la implementación vuelven enteras
+
+- GIVEN el kit construido en `dist/`
+- WHEN corre `moon run kit:skill-size`
+- THEN `dist/skills/sdd-implement/SKILL.md`, `dist/skills/sdd-implement-native/SKILL.md` y `dist/skills/sdd-implement-subagent/SKILL.md` ocupan menos de 20.000 bytes cada una, por debajo del corte con que Claude Code vuelve a adjuntar cada skill tras compactar
+- AND la fase de ninguna de las tres pasa de 100.000 caracteres
+
+### La spec guarda sus enfoques en el Approach
+
+- GIVEN la feature 0013 de `reservas`, en `delegate`, con la entrevista hecha
+- WHEN el agente escribe `spec.md`
+- THEN su `## Approach` lleva dos o tres enfoques, cada uno con lo que cuesta, y una línea `Elegido: <enfoque> — <porqué>`; con una sola vía sensata, esa y por qué no encajan las otras
+- AND en `pair`, los del mensaje de enfoques y el que eligió el dev-lead, con su frase; en `unattended` o tras «empieza ya», los del agente
+
+### El revisor de la spec señala una prueba que pasa sin la conducta
+
+- GIVEN una spec que edita `skills/aviso-cierre/SKILL.md` para que el aviso nombre la fila 0011, y prueba su THEN con la fila de rúbrica `` `text: /pendiente/` ``
+- WHEN la revisa el revisor de la spec
+- THEN devuelve un hallazgo que dice que la fila pasa con un aviso que dice «pendiente» sin nombrar la 0011
 
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `tech-stack.md`.
+- **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `steering/operations.md`.
 - **Idioma de los nombres**: nombres de skill y de fichero en inglés kebab-case. El contenido de los documentos sigue en castellano.
-- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución.
-- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `tech-stack.md` no declara detector en §Frontend».
-- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`.
+- **Límites**: detector en dos viewports (por defecto `1280x800` y `390x844`), sin tope de rondas; como máximo 3 rondas de arreglo de composición; la sesión se rehace una vez por ejecución; el diseño por secciones, desde 4 tasks previstas, con secciones de unas frases a ~250 palabras; el tope de palabras propuesto en una spec es lo medido más lo previsto más un 2 %, con un mínimo de 20 palabras; la review de spec, dos revisores en full, uno con un Scope de menos de ~50 líneas sin contrato público ni `MODIFIED`, uno en lite y uno en patch; la segunda ronda, una sola vez.
+- **Avisos**: cada cambio de paso dice en llano qué se hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará si lanza subagentes o sujetos. Sin detector declarado, la presentación lleva «composición no medida: `operations.md` no declara detector en §Frontend».
+- **Regla ante conflicto**: `§Frontend` gana sobre los valores por defecto de la verificación (viewports), y la pantalla de referencia que nombra la task gana sobre la de `§Frontend`. El gate de cierre del plan se toma de `steering/operations.md` §Testing; sin él, de la constitution.

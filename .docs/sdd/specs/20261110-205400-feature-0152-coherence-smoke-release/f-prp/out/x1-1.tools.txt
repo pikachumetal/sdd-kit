@@ -1,0 +1,90 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -50; ls node_modules 2>&1 | head -2
+
+>>> Bash: node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/architecture.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md package.json; ls -R src test scripts .docs/sdd/specs | head -60
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Bash: cat src/app.js; head -40 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (7 turnos, 0.1382536 $)
+Ahora: clasifico y te planteo una decisión antes de abrir ninguna spec. Queda: tu respuesta a esta pregunta y, después, la spec con sus preguntas de diseño, ~10 min.
+
+**Qué he entendido:** cuatro piezas: usuarios con login, rol de responsable de sala, autor guardado en cada reserva, y migrar las reservas actuales a un usuario genérico.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+
+**Antes de seguir:** prevé unas 4 tasks y una lleva migración (las reservas existentes pasan al usuario genérico). Eso toca identidad, datos de reserva y permisos, y todo junto es una feature grande. Además, la fila **0011 (Anular reservas de otros)** ya pide que solo el responsable de cada sala anule reservas ajenas. El rol que pides se solapa con ella y conviene decidir cómo se reparten.
+
+1. **Dividir en 3 features, cada una con su fila de roadmap (Recomendada):**
+   - **A. Usuarios y login:** alta de usuarios y acceso con sesión.
+   - **B. Autor en la reserva y migración:** cada reserva guarda quién la hizo y las actuales pasan al usuario genérico. Depende de A.
+   - **C. Rol de responsable de sala:** el rol y sus permisos, coordinado con la 0011 (la absorbe o se apoya en ella). Depende de A.
+2. **Mantenerlo entero** como una sola feature (no se vuelve a proponer dividir).
+
+Si te vas a ausentar, puedes elegir con una de estas frases:
+- «apruebo la spec por delegación, nos vemos en la validación»
+- «…, y paras antes de la Task 1 para que baje la sesión a gama media» (la sesión corre en el modelo más capaz y prevé más de una task)
+- «perfil `<otro>` para esta feature», si quieres otro perfil.
+
+¿Qué eliges, 1 o 2? Si es la 1, dime también cuál arranco primero (recomiendo la A) y cómo quieres tratar la 0011.

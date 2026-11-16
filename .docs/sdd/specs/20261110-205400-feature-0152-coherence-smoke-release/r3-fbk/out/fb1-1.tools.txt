@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-feedback
+<<< Launching skill: sdd-kit:sdd-feedback
+
+>>> Bash: cat notas-sesion.md; echo ----; cat .docs/sdd/sdd-kit.json; echo ----; ls .docs/sdd .docs/sdd/kit-feedback 2>&1 | head -30; ls D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-templates
+<<< # Notas de la sesión
+
+Resumen que dejó el dev-lead al acabar la feature 0012 (exportar las reservas a Excel), para que se escriba el ticket de mejora del kit.
+
+- Trabajé con el kit 2.4.0 y superpowers 7.1.0.
+- La spec se aprobó a la primera, pero el plan se rehízo una vez porque la task 2 no decía qué fichero tocar.
+- El implementador de la task 3 pidió dos veces el mismo contexto: la skill no dice cuándo adjuntar el brief.
+- Saltó el pre-commit por un fichero sin final de línea; se arregló en un minuto.
+- Toda la sesión nos llevó unos 40 min más de lo estimado, sobre todo por el plan 
+
+>>> Bash: cd D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-templates; grep -n -i feedback SKILL.md | head; cat templates/kit-feedback-template.md; cd - >/dev/null; ls -R .docs/sdd/specs .docs/sdd/steering | head -30; git log --oneline | head
+<<< 30:| [kit-feedback-template.md](templates/kit-feedback-template.md) | ticket in `.docs/sdd/kit-feedback/` | When closing a feature or a patch, via `sdd-feedback` |
+---
+kit_version: <de .docs/sdd/sdd-kit.json>
+lane: <feature|patch>
+id: <yyyyMMdd-HHmmss>-(feature|patch)-<id>-<slug>   # igual que el nombre del fichero
+task: <id>                                    # id de la feature o del patch, según el modo del proyecto
+mode: <full|lite>          # vacío en patch
+date: <YYYY-MM-DD>
+---
+
+# Ticket para el kit — <feature|patch> <id>: <resumen de una línea>
+
+> Lo lee un agente que mantien
+
+>>> Bash: cd D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152; ls skills/sdd-implement skills/sdd-implement/* | head -30; grep -rn -i "brief" skills/sdd-implement/SKILL.md | head -20; grep -rn -i "Files\|fichero" skills/sdd-templates/templates/plan-template.md | head; grep -n -i "lint\|pre-commit" <run>/repo/.docs/sdd/steering/operations.md
+<<< skills/sdd-implement/SKILL.md
+
+skills/sdd-implement:
+references/
+SKILL.md
+
+skills/sdd-implement/references:
+commit-milestones.md
+frontend-verification.md
+patch-flow.md
+44:4. **In SDD, a «Verificación lenta»**: the implementer doesn't run it. You launch it in the background as soon as it reports, while the task review runs; dispatch the next task meanwhile only if it shares no files with the running one and its brief forbids the commands that compete for the same binaries. If it fails, it opens the task's fix round.
+71:After a crash or a quota cut, first reread the ledger, `git log` and the wor
+
+>>> Bash: date -u +%Y%m%d-%H%M%S; cd D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152; grep -n "plan-template.md:\|^\*\*Ficheros" skills/sdd-templates/templates/plan-template.md | head -3; grep -n -i "adjunt\|attach\|task brief" skills/sdd-implement/SKILL.md | head
+<<< 20261111-230807
+163:**Ficheros**: crear/modificar `path/...`
+
+>>> Bash: R="<run>/repo"; mkdir -p "$R/.docs/sdd/kit-feedback"; cat > "$R/.docs/sdd/kit-feedback/20261111-230807-feature-0012-exportar-datos.md" <<'EOF'
+---
+kit_version: 3.0.0
+lane: feature
+id: 20261111-230807-feature-0012-exportar-datos
+task: 0012
+mode: full
+date: 2026-11-12
+---
+
+# Ticket para el kit — feature 0012: plan rehecho por una task sin fichero y brief pedido dos veces
+
+## Contexto
+
+- Carril y modo: feature full (hubo plan; el modo se deduce de ello, no está en las notas)
+- Skills del kit usadas: sdd-propose, sdd-implement (el resto no consta en las notas)
+- Proyecto: aplicación con una función de exportación a hoja de cálculo; stack y tamaño no consta
+- Modelo del hilo: no consta
+- Modelos de los subagentes: no consta
+- Coste en reloj: unos 40 min por encima de la estimación (cifra de las notas del dev-lead, sin medir en la sesión)
+- Coste en tokens: no medido
+
+## Cómo leer este ticket
+
+Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y van ordenados por coste observado.
+
+## Hallazgos
+
+### 1. Plan rehecho porque una task no nombraba el fichero a tocar
+
+- **Qué pasó**: la spec se aprobó a la primera, pero el plan se rehízo una vez porque la task 2 no decía qué fichero tocar. El dev-lead atribuye a ese rehecho la mayor parte de los ~40 min de desvío.
+- **Fuente**: notas de sesión del dev-lead (fichero del proyecto, sin más medición); `.docs/sdd/sdd-kit.json:1` → `"version": "3.0.0"`. Las notas citan el kit 2.4.0; prevalece el fichero.
+- **Dónde en el kit**: `skills/sdd-templates/templates/plan-template.md:163` (línea `**Ficheros**` de la task); el control que debería rechazar una task sin ella no se ha localizado.
+- **Por qué el kit no lo evitó**: la plantilla ya pide `**Ficheros**` en cada task, así que o no se rellenó o ningún paso de revisión del plan comprueba que esté. Sin verificar cuál de las dos.
+- **Coste**: ~40 min sobre la estimación en total; la causa «plan rehecho» va **sin respaldo** (no hay spec, walkthrough ni commit que la sostengan, solo la frase del dev-lead).
+- **Propuesta**: que la revisión del plan rechace una task sin `**Ficheros**` con al menos una ruta.
+- **Verificada**: sin verificar
+- **Criterio de aceptación**: GIVEN un plan cuya task 2 deja `**Ficheros**` vacío, WHEN se ejecuta la revisión del plan, THEN el plan se devuelve con esa task señalada antes de pasar a implementación.
+
+### 2. El implementador pidió dos veces el mismo contexto: no hay regla de cuándo adjuntar el brief
+
+- **Qué pasó**: el implementador de la task 3 pidió dos veces el mismo contexto; el dev-lead lo atribuye a que la skill no dice cuándo adjuntar el brief.
+- **Fuente**: notas de sesión del dev-lead; `skills/sdd-implement/SKILL.md` → `grep -n -i "adjunt\|attach\|task brief"` sin coincidencias (bash).
+- **Dónde en el kit**: `skills/sdd-implement/SKILL.md`, paso de despacho del implementador; la plantilla del plan menciona `sdd task brief` (`plan-template.md:161`) pero no la skill.
+- **Por qué el kit no lo evitó**: la skill no fija si el despacho lleva el brief completo de la task desde el primer mensaje.
+- **Coste**: no medido; se repitió dos veces en la sesión, por eso no es un menor. Causa sin respaldo.
+- **Propuesta**: que el despacho de cada implementador incluya siempre el texto de su task (`sdd task brief`) y las restricciones globales.
+- **Verificada**: sin verificar
+- **Criterio de aceptación**: GIVEN un plan con la task 3, WHEN `sdd-implement` despacha a su implementador, THEN el primer mensaje contiene el brief de la task y el implementador no pide contexto adicional ya contenido en él.
+
+## Lo que hice por iniciativa propia
+
+- Nada que reportar.
+
+## Funcionó, no tocar
+
+- La spec se aprobó a la primera.
+- El merge a la rama de integración se hizo sin conflictos.
+
+## Menores
+
+- El pre-commit falló por un fichero sin final de línea; se arregló en ~1 min — no localizado.
+EOF
+cat "$R/.docs/sdd/steering/operations.md" | grep -n -i "lint\|docs" | head
+<<< (Bash completed with no output)
+
+=== RESULTADO (8 turnos, 0.1638769 $)
+He guardado el ticket, pero con tres pegas: sin pasada de lint, sin verificar las propuestas y sin un dato de las notas.
+
+El ticket está en `.docs/sdd/kit-feedback/20261111-230807-feature-0012-exportar-datos.md`. Es el ticket completo, no el mínimo, porque hubo hallazgos y el tiempo superó la estimación. Tiene dos hallazgos:
+1. **Plan rehecho.** La task 2 no nombraba el fichero a tocar. La plantilla del plan ya pide `**Ficheros**` (`plan-template.md:163`), pero no encontré ningún paso de revisión que lo compruebe.
+2. **Brief pedido dos veces.** `sdd-implement/SKILL.md` no dice cuándo adjuntar el brief de la task al implementador. Lo busqué con grep y no hay coincidencias.
+
+El pre-commit por el fichero sin final de línea quedó en «Menores».
+
+- **Versión del kit.** Las notas dicen 2.4.0, pero `.docs/sdd/sdd-kit.json` dice 3.0.0. En el ticket puse 3.0.0, que es lo que marca el fichero.
+- **Superpowers 7.1.0.** No lo incluí, porque no pude comprobarlo.
+- **Propuestas y causas.** Las dos propuestas van «sin verificar». La causa del sobrecoste de ~40 min va «sin respaldo»: no hay spec, walkthrough ni commit de la 0012, solo la frase del dev-lead.
+- **Datos que no constan.** No constan en las notas el modelo del hilo, los de los subagentes ni el stack. Los dejé como «no consta».
+- **Privacidad.** Usé el slug genérico `exportar-datos` en lugar del dominio del proyecto.
+- **Carpeta.** La carpeta `kit-feedback/` no existía y la he creado. Puede ir en `.gitignore`; yo no lo he tocado.
+- **Lint.** `operations.md` no menciona ningún lint de docs, así que no pasé ninguno.

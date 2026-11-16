@@ -1,0 +1,98 @@
+--- [4]
+Voy a leer el contexto del proyecto y la referencia del carril patch.
+
+--- [9]
+Es un patch y lo confirma el código: no hace falta una decisión de diseño.
+
+🦆 **En llano:** `cancelar` busca la reserva activa de la sala sin mirar el día. Por eso `cancelar Norte mar` encuentra la reserva de Norte del lunes y la cancela, y el mensaje usa el día que escribiste. El arreglo es hacer que la búsqueda compare también el día. Con eso, `cancelar Norte mar` debería decir `sin reserva Norte mar` y dejar intacta la del lunes.
+
+**Causa raíz** (`src/app.js:10`): `findBooking(room, day)` recibe `day` pero solo filtra por `room` y `status === 'active'`. Es determinista, y el informe solo describe el síntoma.
+
+- **Test que falla hoy:** `run('cancelar', ['Norte', 'mar'])` devuelve `cancelada Norte mar` y marca como cancelada la reserva del lunes. Esperamos `sin reserva Norte mar` y la reserva del lunes todavía activa. Pasará a verde con el arreglo.
+- **Alcance:** `anular` usa la misma `findBooking`, así que tiene el mismo fallo y se arregla con el mismo cambio. Lo cubro con un segundo test de regresión, porque es la misma causa y no un comportamiento nuevo.
+- **Estimación:** unas 0,5 h, como el patch 0007 de otro fallo de la misma búsqueda. No hay un gate de cierre medido en los patches anteriores, así que no puedo darte esa duración.
+- **Perfil:** `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Lo abro como patch?
+
+1. **Sí, como patch (recomendada).** Creo la rama y la carpeta `patch-`, hago el test en rojo, arreglo `findBooking` y verifico.
+2. **Sí, pero con otro perfil.** Dime cuál, por ejemplo «perfil `pair` para este patch».
+3. **No.** Lo dejamos sin tocar.
+
+--- [15]
+Rama creada con el id 0012. Ahora la carpeta del patch y la entrega a `sdd-implement`.
+
+--- [17]
+Es un patch: leo `patch-flow.md` y lo sigo.
+
+--- [24]
+Reproducido: `cancelar Norte mar` cancela la reserva del lunes, y después `cancelar Norte lun` dice `sin reserva`. Busco la plantilla de `patch.md`.
+
+--- [29]
+Los tests existentes comparten estado y cancelan la reserva del lunes. Pongo los míos en un fichero aparte, y compruebo que la reserva del lunes sigue activa con `libres`, que no la modifica.
+
+--- [33]
+Los dos tests fallan por el motivo correcto. El segundo queda contaminado por el primero, que ya canceló el lunes, así que lo compruebo aislado.
+
+--- [35]
+RED confirmado en ambos. Ahora aplico el fix mínimo.
+
+--- [39]
+6/6 en verde y el lint limpio. Actualizo `patch.md` y lanzo el revisor del patch, que usa Sonnet según el flujo.
+
+--- [43]
+Ese comando no aplicó los cambios. Los hago con Edit.
+
+--- [47]
+Lanzado el revisor. Espero su resultado antes de hacer el commit del fix.
+
+--- [54]
+**Hallazgos**
+
+Sin Críticos. `node --test` da 6/6 con el fix. La causa raíz de §2 es correcta: `src/app.js:9-10` ignoraba `day`.
+
+**Importante**
+- Ninguno.
+
+**Menor**
+1. `test/cancel-day.test.js:5-13`: los dos tests comparten el array `bookings` del módulo. Con el fix no se mutan entre sí, porque ninguno cancela nada. Antes del fix sí dependen del orden. El test 1 cancela la reserva del lunes y falla en su primer `assert`, pero el estado ya ha cambiado. El test 2 entonces falla por la herencia de ese estado: `anular` devuelve `sin reserva` y falla el `libres`, no el mensaje. Por eso el RED «aislado» de §4 solo es cierto ejecutando cada test por separado. Para que sea robusto, se puede dar a cada test su propio estado, por ejemplo con un fichero por test, ya que `node --test` ejecuta cada fichero en un proceso distinto.
+2. `test/cancel-day.test.js`: falta la prueba del caso positivo del día correcto, `cancelar Norte lun` y `anular Norte lun`. `test/cancel.test.js:5-7` ya cubre `cancelar` con ese caso, así que el fix no sobrerrestringe `cancelar`. `anular` no tiene ninguna prueba positiva, ni con el día correcto ni con otro. Un `voidBooking` que fallara siempre pasaría todos los tests.
+3. `.docs/sdd/specs/20261106-094631-patch-0012-cancel-dia/patch.md` §3: dice que se toca `test/cancel.test.js`, pero los tests nuevos están en el fichero nuevo `test/cancel-day.test.js` y `cancel.test.js` no cambia. Hay que corregir el nombre del fichero.
+
+Sobre el resto de lo pedido:
+- **Completitud del fix.** `voidBooking` (`src/app.js:20-25`) y `cancelBooking` (`src/app.js:13-18`) son los únicos llamadores de `findBooking`, y ambos reciben el arreglo. El cambio es mínimo, una sola línea.
+- **Mensaje.** Ahora el día del mensaje coincide con el de la reserva, porque solo se encuentra una reserva cuando `b.day === day`.
+- **Casos de borde.** `day` sin definir, por ejemplo `cancelar Norte` sin día, ya no cancela nada. Antes cancelaba la primera reserva de la sala. No lo veo como problema, pero el patch no lo documenta.
+- **Ejecución.** Para comprobar el RED hice un `git stash` de `src/app.js` y luego `git stash pop`. El árbol quedó igual, con `src/app.js` modificado y el test sin commitear. La salida de esa ejecución sin fix no se llegó a ver, porque el filtro `grep` no coincidió con el formato de salida.
+
+--- [56]
+Sin Críticos ni Importantes. Acepto los tres Menores, que son baratos y mejoran el patch. Separo cada test en su propio fichero, porque `node --test` usa un proceso por fichero. Añado el caso positivo de `anular` y corrijo §3.
+
+--- [59]
+RED sin el fix (3 de 3 fallan por el motivo correcto) y GREEN con él (7/7, lint limpio). Cierro `patch.md` con la respuesta a cada hallazgo.
+
+--- [64]
+Commit del fix. Antes miro la convención de commits del proyecto.
+
+--- [68]
+El patch 0012 está arreglado y commiteado en `feature/0012-cancel-dia` (`1486a1d`). Paro aquí, como pediste: no he cerrado con `sdd-archive`, que queda para la validación.
+
+**Causa:** `findBooking(room, day)` en `src/app.js` recibía `day` y no lo usaba, así que `cancelar Norte mar` cancelaba la reserva del lunes. `anular` tenía el mismo fallo. El fix es una línea: la búsqueda compara también `b.day === day`.
+
+**Verificación:**
+- **Sin el fix:** los 3 tests nuevos fallan por el motivo correcto (`cancelada Norte mar`, `anulada Norte mar` y `sin reserva Norte lun`).
+- **Con el fix:** `node --test` da 7/7, 4 previos y 3 nuevos, y el lint sale limpio.
+- **Revisión:** la hizo un revisor en Sonnet y no vio Críticos ni Importantes. Acepté sus tres Menores: un fichero por test para que no compartan estado, un caso positivo de `anular` y un nombre de fichero mal escrito en `patch.md`.
+
+**Cambios:**
+- **Código y tests:** `src/app.js`, `test/cancel-day.test.js` y `test/void-day.test.js`.
+- **Registro:** `.docs/sdd/specs/20261106-094631-patch-0012-cancel-dia/patch.md`.
+
+**Pendiente para el cierre:**
+- **`patch.md`:** `commit:` queda en `pendiente` y la validación está marcada como del dev-lead. Esos campos los rellena `sdd-archive`.
+- **Esfuerzo real:** `sdd session tokens` no encontró respuestas de la rama, así que lo dejé como 0,3 h aproximado.
+- **Roadmap:** la fila del patch 0012 la añade el cierre; yo no toqué el roadmap.
+- **Cambio de comportamiento:** `cancelar Norte` sin día ahora responde `sin reserva Norte undefined` en lugar de cancelar la primera reserva de la sala. Lo anoté en `patch.md`.
+
+Cuando quieras cerrarlo, dime «cierra el patch».
+

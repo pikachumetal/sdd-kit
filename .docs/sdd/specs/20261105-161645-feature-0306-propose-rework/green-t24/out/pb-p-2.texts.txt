@@ -1,0 +1,79 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto para pasar a la spec. Queda: clasificar, anunciar y escribir la spec hasta el gate de aprobación, ~5 min.
+
+--- [15]
+Ahora: la nota de lo que he entendido y las formas de construirlo. Queda: tu elección de enfoque, las secciones del diseño (5 tasks → van una a una), la spec y su aprobación, ~15 min.
+
+Carril: feature, modo full · Perfil: pair, el que has pedido para esta feature (el proyecto tiene `delegate` en sdd-kit.json)
+Para otro perfil: «perfil `<otro>` para esta feature»
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+
+Dos avisos:
+- **Versión del kit.** Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Los pasos que sigo son los de la versión cargada. Para actualizar, `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+- **Partir la feature.** No la parto: son 5 tasks sobre la misma superficie (el CLI), sin migración.
+
+He reservado el id **0012** y creado la rama `feature/0012-informes` desde `develop`. No hay remoto, así que el id vale por el contador local. El roadmap no tenía fila para esto y la añadiré al cerrar la spec.
+
+**Lo que he entendido**
+- Un comando nuevo `informes` con cuatro vistas, todas en una tabla de texto:
+  1. ocupación por sala
+  2. ocupación por día de la semana
+  3. franjas más reservadas
+  4. salas que nadie ha reservado
+- `--sala <nombre>` filtra las cuatro vistas.
+- Si no hay reservas, cada vista dice «sin reservas».
+- El plan sale en 5 tasks: una por vista y otra para `--sala`.
+
+Con los datos de hoy (`Norte · lun · 10:00-12:00`) la ocupación por sala sería, por ejemplo:
+
+```
+sala   reservas
+Norte  1
+Sur    0
+```
+
+**Formas de construirlo**
+
+1. **Una función por vista y un `informes` que las junta (recomendada).**
+   - Cada vista es una función pura sobre la lista de reservas, y `run('informes', …)` las concatena.
+   - Encaja con `src/app.js`, que ya separa `freeRooms` y `findBooking`, y cada vista tiene su test y su task.
+   - `--sala` se aplica una vez, filtrando las reservas antes de calcular las cuatro vistas.
+   - Con ese filtro, «salas que nadie ha reservado» pasaría a mostrar solo la sala pedida, si no tiene reservas.
+2. **Un único recorrido que calcula los cuatro conteos de una vez.**
+   - Es más corto, pero mezcla las vistas, y tu reparto en 5 tasks no se corresponde con el código.
+3. **Un módulo `src/informes.js` aparte.**
+   - Deja `app.js` más limpio, pero `tech-stack.md` dice «un solo fichero de entrada: `src/app.js`». Habría que cambiar esa regla, y no te lo he oído decir.
+
+**¿Qué enfoque quieres?** Recomiendo el 1. Si me dices que sí, sigo con las secciones del diseño, empezando por la ocupación por sala.
+
+--- [17]
+Ahora: diseño de la primera vista, la ocupación por sala. Queda: las otras 3 vistas y `--sala`, una sección por mensaje, y luego la spec y su aprobación, ~12 min.
+
+**Sección 1 de 5: ocupación por sala**
+
+`informes` enseña, para cada sala, cuántas reservas tiene. Con los datos de hoy (una reserva de Norte el lunes de 10:00 a 12:00) sale así:
+
+```
+Ocupación por sala
+sala   reservas
+Norte  1
+Sur    0
+```
+
+Con las reservas de varias semanas, Norte con 3 y Sur con 2:
+
+```
+sala   reservas
+Norte  3
+Sur    2
+```
+
+Esto es lo que propongo yo, y irá a «Decisiones que he tomado yo» si no lo cambias:
+- **Cuenta solo las reservas activas.** Las canceladas y las anuladas no cuentan, porque la sala quedó libre.
+- **Cuenta reservas, no horas ni porcentajes.** Es lo más sencillo de leer.
+- **Salen todas las salas**, también las que tienen 0. Así se ve cuál está vacía.
+- **El orden es el de la lista de salas** (Norte, Sur), no por número de reservas.
+- **Sin reservas en ninguna sala**, la vista dice solo «sin reservas» en lugar de la tabla con ceros.
+
+¿Va bien? Si cambias algo, dime qué.
+

@@ -1,0 +1,29 @@
+--- [2]
+Es un fallo a corregir, así que entro por `sdd-propose`.
+
+--- [13]
+Ahora: clasifico el cambio y arranco la entrevista de la spec. Queda: unas 2 o 3 preguntas, la spec con su revisión y tu aprobación, ~20 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Qué he entendido.** `cancelar` responde «cancelada …» sin mirar si la reserva existe. Hoy `src/app.js:12` solo repite los argumentos, así que `cancelar vie 09:00` dice «cancelada vie 09:00» aunque no haya nada ese día.
+
+**Por qué es feature y no patch.** El fallo es determinista, pero el arreglo exige decidir un texto que nadie ha fijado (qué dice cuando no existe) y qué cuenta como «existe». Esas decisiones son tuyas. Toco `src/app.js` y `test/app.test.js`, unas 2 tasks, así que no propongo dividirla.
+
+**Lo que he visto en el código.**
+- Las reservas guardan la franja entera: `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`.
+- `cancelar` recibe día y hora suelta (`lun 10:00`), sin sala ni franja.
+- Las reservas viven en memoria y no se borra nada. Por eso «cancelada» solo puede significar «esa reserva está en la lista».
+- El test actual, `cancelar respeta el día`, espera `cancelada mar 10:00` sin que exista ninguna reserva el martes. Tendrá que cambiar.
+
+❓ **¿Cuándo existe la reserva que `cancelar <día> <hora>` pretende cancelar?**
+1️⃣ **Por día y hora de inicio de la franja.** `cancelar lun 10:00` encuentra `Norte lun 10:00-12:00` y responde «cancelada lun 10:00». `cancelar mar 10:00` no encuentra nada. No cambia el formato del comando.
+2️⃣ **Por día y franja completa.** `cancelar lun 10:00-12:00` es lo único que encuentra la reserva. El comando es más preciso, pero `cancelar lun 10:00` deja de valer.
+➡️ **Recomiendo 1️⃣**, porque conserva el formato que ya usas y el test actual. A cambio, si algún día hay dos reservas que empiecen a la misma hora en salas distintas, `cancelar` no sabrá cuál es. Eso lo trataríamos entonces.
+
+Cuando me contestes, creo la rama `feature/<id>` con `sdd id claim`, antes de la carpeta. Después te pregunto el texto del aviso para el caso «no existe».
+

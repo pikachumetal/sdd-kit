@@ -1,0 +1,52 @@
+--- [9]
+Reservo id y rama (sequence, sin fila en roadmap).
+
+--- [12]
+Paso a implementar el patch.
+
+--- [22]
+RED confirmado. Ahora el fix.
+
+--- [27]
+Despacho el revisor único del patch antes del commit.
+
+--- [30]
+Ahora: espero al revisor del patch. Queda: commit del fix, cierre con `sdd-archive` (validación del dev-lead), ~5 min.
+
+El cambio ya está hecho y verificado, pero sin commit: el revisor del patch sigue en marcha y no he visto su resultado.
+
+- **Fix:** `cancelBooking` en `src/app.js` devuelve ahora «reserva cancelada: Norte lun». El test `cancelar una reserva activa` pasó a esperar ese texto.
+- **Pruebas:** el test falló antes del cambio y `node --test` da 4/4 después. `node scripts/lint.mjs` no encuentra nada.
+- **Rama y patch:** rama `feature/0012-cancel-message`, id 0012, con `patch.md` en `.docs/sdd/changes/20261112-160208-patch-0012-cancel-message/`.
+- **Estimación:** 0,25 h más 0,63 h del gate de cierre. Esa duración es la del patch 0007 (38 min); no he corrido el gate completo aquí.
+- **Pendiente en `patch.md`:** el hash del commit y el esfuerzo real.
+- **Siguiente paso:** cuando vuelva el revisor, respondo a sus hallazgos, hago el commit y cierro con `sdd-archive`. Ahí te pedirá validar, porque el texto es visible para el usuario.
+
+--- [31]
+Sin hallazgos.
+
+- **Solución fijada:** el texto nuevo coincide con lo pedido. `cancelBooking` devuelve `reserva cancelada: ${room} ${day}`, que da «reserva cancelada: Norte lun».
+- **Fix mínimo y correcto:** el diff de `src/app.js` es de una sola línea. No toca la rama «sin reserva» ni el cambio de estado a `cancelled`.
+- **Test:** `test/cancel.test.js` ya espera el texto nuevo en «cancelar una reserva activa». El test «cancelar sin reserva» no cambia, y es correcto porque ese mensaje no se ha tocado.
+- **Usos del texto antiguo:** `git grep -n -i cancelada` solo encuentra el código y el test ya actualizados. También sale `ROADMAP.md:7`, pero es la palabra «canceladas» en la descripción de otra tarea (0010), sin relación con el mensaje.
+
+No he ejecutado `node --test` (solo lectura, y el patch afirma 4/4).
+
+--- [41]
+🦆 Al cancelar una reserva, el mensaje pasa de «cancelada Norte lun» a «reserva cancelada: Norte lun». El de «sin reserva Sur mar» no cambia.
+
+**✋ Decisiones que he tomado yo:** ninguna. El texto es el que pediste.
+
+**Estado del cierre:** el fix está commiteado (`52e889b`) y verificado por mí: `node --test` da 4/4 y el lint sale limpio. Ejecuté también `node src/app.js cancelar Norte lun` y devuelve «reserva cancelada: Norte lun». El cierre se detiene aquí: en `patch.md` la validación es del dev-lead, porque el texto lo ve el usuario, y «cierra» no cuenta como validar.
+
+**Aún sin hacer:** el tiempo real, la fila de `ROADMAP.md` (no hay fila para el 0012), el commit de cierre y el merge.
+
+**Para el merge:** `sdd-kit.json` no declara `merge.into` ni `merge.noFf`, así que `sdd merge --check` falla. Sin ese bloque no fusiono por mi cuenta. Te preguntaré el destino cuando valides.
+
+**Para validar:** pruébalo tú con estos pasos.
+
+1. En el repo, ejecuta `node src/app.js cancelar Norte lun`. Debe imprimir `reserva cancelada: Norte lun`.
+2. Ejecuta `node src/app.js cancelar Sur mar`. Debe imprimir `sin reserva Sur mar`.
+
+¿Qué has probado y funciona (**«validado»**)? Si prefieres, puedes diferir la validación diciéndome el disparador y quién se encarga.
+

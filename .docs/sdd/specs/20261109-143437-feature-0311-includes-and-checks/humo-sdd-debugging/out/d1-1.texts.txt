@@ -1,0 +1,46 @@
+--- [2]
+Voy a empezar por la Fase 1: leer la deuda técnica del proyecto, el hook y reproducir el fallo.
+
+--- [5]
+No hay fichero de deuda, así que no hay fila que lo cubra. Ahora reproduzco el fallo ejecutando el hook directamente, sin commitear.
+
+--- [9]
+El hook falla antes de ejecutar nada: Node trata el fichero como módulo ES. Falta saber por qué lo hace, así que miro la configuración de módulos.
+
+--- [12]
+Encontrada la causa probable. Falta mirar la «Deuda técnica» del roadmap, porque el proyecto es 2.x, y confirmar que el módulo ES es lo único que falla.
+
+--- [14]
+Causa raíz encontrada. No he arreglado nada.
+
+## Qué lo provoca
+
+`.githooks/pre-commit` está escrito en CommonJS, pero Node lo carga como módulo ES:
+
+- El hook usa `require('node:child_process')`.
+- No tiene extensión, así que Node decide el formato por el `package.json` más cercano.
+- El `package.json` de la raíz contiene `{"type": "module"}`. Node trata entonces el hook como ESM, donde `require` no existe.
+
+El error es `ReferenceError: require is not defined in ES module scope`, en la línea 3 del hook. Sale con código 1 antes de ejecutar nada de su lógica, y eso hace fallar el commit.
+
+## Evidencia
+
+- Ejecutar `node .githooks/pre-commit` falla con ese error. Pasa igual si simulo `GIT_DIR` y `GIT_INDEX_FILE` como en un hook real, así que no es un problema de entorno.
+- Copié el mismo contenido a `/tmp/hook-check.cjs` y salió con código 0. El código del hook funciona y falla solo por cómo se interpreta el formato.
+- `notas.txt` no tiene nada que ver. Cualquier commit en este repo fallaría igual.
+- No hay deuda en el roadmap que cubra este fallo. La única fila es sobre la validación de franjas horarias.
+
+## Descartado
+
+No he comprobado si el resto del hook funciona bajo un commit real. Con la copia `.cjs` sí pasó, pero fuera del contexto de `git commit`. Como el fallo actual llega antes, no hay señal de otros problemas.
+
+## Siguiente paso, cuando quieras
+
+Cuando des luz verde, el arreglo iría por `sdd-propose`, como patch con su `patch.md`, y empezaría por un test que reproduzca el fallo. Las opciones, de menos a más invasiva, son estas:
+
+1. Convertir el hook a ESM (`import` en vez de `require`).
+2. Poner un `package.json` con `{"type": "commonjs"}` dentro de `.githooks/`.
+3. Renombrarlo a `.cjs` y hacer que `pre-commit` sea un lanzador.
+
+Mi recomendación es la 1. Es coherente con el `"type": "module"` del proyecto y no añade ficheros.
+

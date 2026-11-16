@@ -1,0 +1,131 @@
+
+>>> Skill: sdd-kit:sdd-start-feature
+<<< Launching skill: sdd-kit:sdd-start-feature
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd .docs/sdd/specs/*0010* && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat .docs/sdd/specs/*0010*/tasks.md; git log --oneline -8; git status --short
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | 4b37f55 | 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0010*/spec.md; git show 730f1c7 --stat --format=%B; git show 730f1c7 | head -80; ls; cat package.json 2>/dev/null | head -30; cat .docs/sdd/tech-stack.md | head -40
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señale
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls test; time node --test 2>&1 | tail -15; grep -n "sin canceladas" -r src test
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  return index === -
+
+>>> Bash: cd "<run>/repo" && echo "1:"; node src/app.js canceladas; echo "2:"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; echo "3:"; node src/app.js cancelar Norte lun --motivo "porque sí"; echo "4:"; node --input-type=module -e "
+process.argv=['node','x'];
+const m=await import('./src/app.js');
+console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));
+console.log(m.run('canceladas',[]));"
+<<< 1:
+sin canceladas
+2:
+cancelada Norte lun (sala ocupada)
+3:
+motivo no válido: cambio de planes, sala ocupada, otro
+4:
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+=== RESULTADO (7 turnos, 0.22621259999999999 $)
+Ahora: presento la validación de la 0010. Queda: tu prueba y tu «validado» (o diferirla); después `sdd-end-feature`.
+
+## 🦆 Qué hay, en llano
+
+Cancelar una reserva exige un motivo de una lista cerrada (cambio de planes, sala ocupada, otro). El comando `canceladas` enseña `sala día — motivo`. Cuando no hay ninguna cancelada, `canceladas` responde «sin canceladas» en vez de una línea vacía.
+
+## ✋ Me salí del plan en…
+
+- **`730f1c7` — `canceladas` sin canceladas dice «sin canceladas».** Es un cambio de comportamiento pedido por el dev-lead después de la revisión final y de su re-revisión, y la spec no lo recoge.
+  - **Sin revisar:** `730f1c7` — con una `Re-revisión:` ya en `tasks.md` (`4b37f55..3b2436b`, limpia) no abro otra.
+  - **Sin test:** el commit no añade ninguno. Lo cubro solo con la ejecución real de abajo.
+  - **Spec sin actualizar:** el comportamiento «sin canceladas» no está en ningún escenario y `Enmiendas` sigue en «(ninguna)». Lo recogerá el delta de `bookings` al cerrar si lo apruebas.
+- El resto va según el plan. La revisión final (Spec: 1 Minor; Código: 1 Important, arreglado en `3b2436b`) y su re-revisión están cerradas.
+
+## Smoke (lo que ya ejecuté yo)
+
+Suite completa: 6/6 en ~0,2 s (~0,6 s con arranque de Node).
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo responde «cancelada Norte lun (sala ocupada)» | `ejecución real`: `node src/app.js cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista responde «motivo no válido: …» | `ejecución real`: `--motivo "porque sí"` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` responde «Norte lun — sala ocupada» | `ejecución real`: cancelar y listar en el mismo proceso (`node` en una sola invocación) | «Norte lun — sala ocupada» |
+| (cambio `730f1c7`, fuera de spec) `canceladas` sin canceladas | `ejecución real`: `node src/app.js canceladas` | «sin canceladas» |
+
+## Guion de pruebas (lo haces tú)
+
+No hay nada que arrancar: es una CLI, y el estado vive solo en memoria de cada ejecución. Desde la raíz del repo, en la rama `feature/0010-cancel-reason`:
+
+1. `node src/app.js canceladas` → responde `sin canceladas`.
+2. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → responde `cancelada Norte lun (sala ocupada)`.
+3. `node src/app.js cancelar Norte lun --motivo "porque sí"` → responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+4. `node src/app.js cancelar Norte lun --motivo "otro"` → responde `cancelada Norte lun (otro)`.
+5. Cada ejecución arranca de cero, así que el listado con una cancelada solo se ve dentro de un mismo proceso. Comprueba con `node --test` que pasa `canceladas enseña sala, día y motivo`.
+
+## Qué necesito de ti
+
+Dime **qué has probado y que funciona**. Un «sí» sin detalle también vale: quedará registrado tal cual y como «no detalló qué probó». Si no puedes probarlo ahora, lo difiero a la prueba de la release con dueño el dev-lead; dime si lo prefieres.
+
+Mientras tanto, los borradores de cierre siguen sin commitear y el roadmap sin tocar.

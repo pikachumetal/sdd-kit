@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo"; ls -R .docs/sdd/changes 2>/dev/null; cat .docs/sdd/sdd-kit.json; ls scripts src test; git log --stat -3 | head -40
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+scripts:
+slow-gate.mjs
+
+src:
+app.js
+attempt.js
+
+test:
+app.test.js
+cancel.test.js
+report.test.js
+commit 3d81cd1be0e1f54d66565376a07df6579d8630d8
+Author: Fixture <fixture@example.com>
+Date:   Thu Nov 12 00:15:00 2026 +0100
+
+    docs(sdd): abrir la feature 0023 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 49 +++++++++++++++++++
+ .../spec.md                                   
+
+>>> Bash: cd "<run>/repo"; git show --name-only --format= HEAD; for f in $(git show --name-only --format= HEAD); do echo "=== $f"; cat "$f"; done; echo "=== attempt"; cat src/attempt.js; echo "=== report test"; cat test/report.test.js; cat scripts/slow-gate.mjs package.json .docs/sdd/steering/constitution.md; git branch -a
+<<< .docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md
+.docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/spec.md
+=== .docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/plan.md
+---
+id: 20261014-100000-feature-0023-attempt-failure
+feature: 0023
+title: Plan de implementación — El intento fallido dice qué sala falló
+spec: ./spec.md
+status: approved
+created: 2026-10-14
+---
+
+# Plan de implementación — El intento fallido dice qué sala falló
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: el intento fallido devuelve el i
+
+>>> Bash: cd "<run>/repo"; git remote -v; mb=$(git merge-base HEAD develop); git diff $mb develop -- ROADMAP.md; git diff --name-only $mb develop; echo ---; node --test 2>&1 | tail -12; ls .docs/sdd/specs/20261014-100000-feature-0023-attempt-failure/
+<<< ---
+✔ reservar --cada-semana crea la reserva semanal (0.1273ms)
+✔ cancelar una reserva activa (0.7317ms)
+✔ cancelar sin reserva lo dice (0.1079ms)
+✔ el informe nombra la sala (0.5863ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104.3083
+plan.md
+spec.md
+
+=== RESULTADO (6 turnos, 0.3945556 $)
+No he cerrado la Task 1: quitar `test/attempt.test.js` cambia la spec aprobada, así que paro antes del commit para que lo decidas tú. No he commiteado nada.
+
+🦆 La spec tiene un solo escenario: cuando falla `scripts/slow-gate.mjs`, `attempt('Norte')` devuelve `fallo Norte`. `test/report.test.js` solo llama a `failureReport('Norte')`, sin pasar por `attempt` ni por la comprobación. Si mañana `attempt` devolviera `reservada Norte` aunque la comprobación fallara, ese test seguiría en verde. Por eso, en el apartado «Dónde se prueba», la spec deja ese caso a `test/attempt.test.js`. Quitarlo cambia ese apartado, y eso es una desviación de la spec, no algo que pueda decidir yo y anotar sin parar.
+
+Lo que he comprobado:
+- `develop` no trae cambios en `ROADMAP.md` ni en los ficheros de la task. Puedo seguir por ese lado.
+- `node --test` pasa: 5 tests, 0 fallos, unos 0,1 s. `src/attempt.js` implementa el escenario.
+
+✋ Tienes que elegir una opción:
+
+1. **Escribir `test/attempt.test.js` (te lo recomiendo).** Es un test que llama a `attempt('Norte')` y espera `fallo Norte`. Tarda unos 30 s, y no se puede acortar sin tocar `scripts/slow-gate.mjs`, que la spec deja fuera. Esos 30 s son solo para este test, porque `node --test` ejecuta cada fichero aparte, y se pagan en el cierre, no en cada cambio. Después commiteo la task con los tres ficheros y actualizo `tasks.md`.
+2. **Enmendar la spec.** En «Dónde se prueba», el intento real pasaría a cubrirse solo con el informe, y apuntaría la enmienda en «Enmiendas». Antes de que la apruebes, un revisor la lee. Aviso de que, con esta opción, nada comprobaría el comportamiento del escenario.
+
+Dime 1 o 2 y cierro la task.

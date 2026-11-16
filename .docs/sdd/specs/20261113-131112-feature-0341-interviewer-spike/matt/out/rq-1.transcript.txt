@@ -1,0 +1,23 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -50; ls .docs/sdd 2>/dev/null
+> Bash: cat PRODUCT.md ROADMAP.md package.json src/app.js; cat .docs/sdd/steering/*.md
+## agente
+❓ **¿Dónde guardamos las reservas?**
+Lo que he encontrado:
+- `src/app.js:3` tiene las reservas en un array en memoria, con una reserva de ejemplo fija. Cada ejecución del CLI arranca de cero, así que hoy no se persiste nada.
+- `PRODUCT.md` dice que lo usas tú solo y lo despliegas en tu servidor.
+- `operations.md` fija Node 22 y **sin dependencias externas**.
+- Nada de lo documentado habla de persistencia. Esto sale de leer el código y los documentos, no lo he supuesto.
+
+1️⃣ **Un fichero JSON** (`reservas.json`), leído y escrito con `node:fs`. No añade dependencias. Se puede abrir y editar a mano, y se testea con un fichero temporal. Su coste es que no hay concurrencia ni transacciones. Hay que escribir de forma atómica (fichero temporal y renombrar) para no corromperlo si el proceso muere a mitad.
+2️⃣ **SQLite con `node:sqlite`**, que viene incluido en Node 22 pero sigue marcado como experimental. Da consultas y transacciones. Su coste es depender de una API experimental y que el esquema se vuelve más pesado.
+3️⃣ **Un fichero por reserva o un log de líneas (JSONL)**. Solo se añaden líneas, así que una caída no corrompe lo anterior. Su coste es que cancelar obliga a reescribir el fichero o a escribir un registro de borrado.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, no hay concurrencia y la regla de no tener dependencias externas encaja justo con `node:fs`. A cambio, si algún día hay varios procesos escribiendo a la vez, habrá que migrar.
+
+Si aceptas, la siguiente pregunta es dónde vive el fichero: junto al código, en el directorio del usuario o en una ruta configurable.

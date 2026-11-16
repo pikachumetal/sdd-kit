@@ -1,0 +1,90 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff && ls -R .docs/sdd/specs 2>/dev/null | head -50 && cat test/words.test.js && cat .docs/sdd/sdd-kit.json; ls .docs/sdd; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+ M skills/guardar-nota/SKILL.md
+warning: in the working copy of 'skills/guardar-nota/SKILL.md', LF will be replaced by CRLF the next time Git touches it
+diff --git a/skills/guardar-nota/SKILL.md b/skills/guardar-nota/SKILL.md
+index 39f86b0..c238987 100644
+--- a/skills/guardar-nota/SKILL.md
++++ b/skills/guardar-nota/SKILL.md
+@@ -8,6 +8,7 @@ description: Use when the user asks to save a note in notas/.
+ 1. Ask for the title and the body if the request lacks them.
+ 2. Write `notas/<slug of the title>.md` with the body.
+ 3. Tell the user the path you wrote.
++4. Ask the user for up to t
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261016-100000-feature-0028-note-tags-kept-flags; cat $D/spec.md; echo ======; cat $D/plan.md; echo =====; cat skills/guardar-nota/SKILL.md; echo ====; cat .docs/sdd/constitution.md; ls -a; git log --stat -2
+<<< ---
+id: 20261016-100000-feature-0028-note-tags-kept-flags
+feature: 0028
+title: Etiquetas en la nota, con las red flags de guardar-nota
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-16
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-16
+---
+
+# Spec — Etiquetas en la nota, con las red flags de guardar-nota
+
+## Capacidades
+
+- Modificadas: `notes`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+### Decisiones tomadas con el dev-lead
+
+- El paso de las etiquetas lleva este texto, literal: «4. Ask the u
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -15; node -e "const t=require('fs').readFileSync('skills/guardar-nota/SKILL.md','utf8');for(const l of t.split(/\r?\n/))console.log(l.split(/\s+/).filter(Boolean).length+'\t'+l)"; git diff $(git merge-base HEAD main) main --stat; git branch -a
+<<< ✖ guardar-nota cabe en 80 palabras (1.9628ms)
+  AssertionError [ERR_ASSERTION]: mide 99
+      at TestContext.<anonymous> (file:///<run>/repo/test/words.test.js:7:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: tru
+
+>>> Bash: cd "<run>/repo" && git diff --name-only $(git merge-base HEAD develop) develop; git remote -v
+<<< (Bash completed with no output)
+
+=== RESULTADO (7 turnos, 0.3128028 $)
+No he cerrado la Task 1. No hay ninguna versión de `SKILL.md` que pase el test sin romper alguna de las decisiones que tomaste en la spec. Recortar el texto de la skill cambiaría la spec, así que paro y te pregunto antes de hacerlo.
+
+🦆 El test cuenta todas las palabras del fichero de la skill. Solo las partes que la spec me prohíbe tocar ya pasan de 80:
+
+| Parte de la skill | Palabras | ¿Qué dice la spec? |
+| --- | --- | --- |
+| Pasos 1 a 3 | 30 | «son de la fuente: no se tocan» |
+| Paso 4 (etiquetas) | 26 | texto literal, «lo quiero con esas palabras» |
+| `## Red flags` con sus dos frases | 25 | «las red flags no se tocan» |
+| **Subtotal de lo protegido** | **81** | el tope es 80 |
+| Cabecera de la skill (nombre y descripción) y título | 18 | sin la descripción, la skill no se activa |
+
+En total mide 99. Aunque dejara la cabecera al mínimo, seguiría por encima de 80. Ninguna reescritura puede arreglarlo: hay que cambiar una de las decisiones, y eso lo apruebas tú (Art. II de la constitución).
+
+✋ **Hay que elegir qué decisión cambia:**
+
+1. **(Recomendada) Subir el tope de la skill a 100 palabras**, en la spec y en `test/words.test.js`. Es la única opción que conserva tus palabras exactas del paso 4 y las dos red flags. Así el fichero cabe tal como está.
+2. **Acortar el paso 4.** Por ejemplo: «4. Ask for up to three tags; write them, in order, in a `tags:` first line.» Son 15 palabras en vez de 26, pero ya no es el texto literal que pediste, y el total sigue en 88. Para llegar a 80 también habría que recortar la descripción, y aun así no da.
+3. **Quitar o recortar las red flags.** No la recomiendo: dijiste que sin ellas los agentes se inventan el título.
+
+Cuando elijas, escribo el cambio y su línea en «Enmiendas» de `spec.md`, ajusto el test si toca y vuelvo a pasar `node --test`. Después lanzo el humo `h1` y hago el commit de la Task 1.
+
+- **Estado:** el paso 4 está escrito en `skills/guardar-nota/SKILL.md`, sin commit. `node --test` falla («mide 99»). La rama de integración (`develop`) no ha cambiado desde que se abrió la feature.
+- **Versión del kit:** esta sesión ha cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Conviene actualizarlo con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code; `/reload-plugins` no aplica esta actualización.

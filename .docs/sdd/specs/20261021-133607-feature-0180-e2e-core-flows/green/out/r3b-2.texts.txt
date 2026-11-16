@@ -1,0 +1,27 @@
+--- [10]
+Encontré la causa: `typeInCell` escribe justo después de Enter, antes de que cargue el editor lazy, y se pierden las teclas. Arreglo el helper y quito las esperas a la API entre acciones.
+
+--- [12]
+Python no está disponible; edito con las herramientas.
+
+--- [18]
+He arreglado la causa de los fallos intermitentes y lo he dejado en commit (`12d9a3c`). No lo he ejecutado, así que no sé si la suite queda en verde.
+
+**Causa.** `typeInCell` en `e2e/helpers.ts` pulsaba Enter y escribía enseguida. `CellEditor` se carga en diferido (`lazy`), así que, cuando el editor aún no estaba montado, se perdían las primeras teclas. Por eso 0021 recibía la celda vacía y 0012 se quedaba esperando hasta el timeout de 30 s. Pasaba a ratos porque depende de cuánto tarde en cargar el editor.
+
+**Cambios.**
+- **Helper:** `typeInCell` espera a que el editor («Editor de celda») tenga el foco, rellena con `fill` y confirma con Enter.
+- **Specs 0012 y 0021:** he quitado los `expect.poll(cellValue…)` que había entre acciones del usuario. Esa espera no es de lo que ve el usuario y tapaba la carrera. Si la celda tarda en guardarse, el test debe fallar ahí. No he tocado timeouts ni reintentos.
+
+**Cómo lo comprobaría.**
+1. Repetir solo los dos tests afectados: `npx playwright test e2e/0021-cell-format.spec.ts e2e/0012-sum-row.spec.ts --repeat-each=10`. Deberían pasar las 20 ejecuciones.
+2. Pasar la suite completa con el gate de cierre: `npm test && npm run e2e`. Para ver la mejora, lanzarla otra vez con `--repeat-each=3`, como el log original.
+3. Si algún test sigue fallando, clasificarlo por la regla 7 de `writing-e2e.md`: carrera en el test, carrera en la app, entorno o datos compartidos.
+
+**Qué no he podido hacer.** Al no poder ejecutar nada, no he visto el test en rojo antes del arreglo. Es una excepción a la ley de sdd-tdd, y la verificación del punto 1 es lo que la cubre.
+
+**Qué he visto sin tocarlo.**
+- `ContextMenu.tsx` solo tiene «Pegar». No encuentro «Formato moneda» en `src` ni en `server`, así que 0021 puede seguir fallando aunque el helper ya esté bien.
+- 0021 no está claramente ligado a un flujo core, y en `operations.md` no hay sección de «Flujos core».
+- El hook de sesión avisa de que el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0.
+

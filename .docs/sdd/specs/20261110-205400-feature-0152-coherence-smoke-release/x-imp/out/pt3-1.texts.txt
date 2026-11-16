@@ -1,0 +1,115 @@
+--- [4]
+Ahora: leo el contexto del proyecto y la referencia del carril patch. Queda: confirmar que es un patch y hacerte la pregunta del carril, ~2 min.
+
+--- [23]
+Ahora: escribo el test en RED y compruebo que falla. Queda: fix, `patch.md`, revisor, commit y cierre, ~5 min.
+
+--- [25]
+RED comprobado: falla porque el código sigue devolviendo `cancelada`. Ahora el fix mínimo y el `patch.md`.
+
+--- [28]
+Ahora: despacho al revisor único del patch (sonnet). Queda: contestar sus hallazgos, commit y cierre, ~4 min.
+
+--- [31]
+El revisor del patch sigue en marcha, así que todavía no sé qué dirá. Hasta que termine no hago el commit ni el cierre.
+
+Lo que ya está hecho en la rama `feature/0015-anulada-mensaje`, sin commitear:
+- **Fix:** `src/app.js:17`, `cancelBooking` devuelve `anulada <sala> <día>`.
+- **Test:** `test/cancel.test.js:6` espera `anulada Norte lun`. Falló antes del cambio porque el código devolvía `cancelada Norte lun`, y ahora pasa.
+- **Suite:** `node --test` entero da 4 de 4 en verde.
+- **`patch.md`:** está en `.docs/sdd/changes/20261112-205312-patch-0015-anulada-mensaje/`. Recoge tu decisión como `solution: dev-lead`. Anota también el aviso de terminología: `cancelar` y `anular` responden ahora lo mismo, aunque `PRODUCT.md` distingue cancelación (cliente) de anulación (responsable).
+
+Cuando el revisor termine, contesto sus hallazgos en el §4 de `patch.md`, hago el commit del fix y paso al cierre con `sdd-archive`.
+
+--- [35]
+Hay 3 hallazgos: uno de alcance (finales de línea) y dos menores en `patch.md`.
+
+1. **Cambio de finales de línea que rompe «sin más cambios».** En `src/app.js:1-35` y `test/cancel.test.js:1-11`, el `git diff` reescribe todas las líneas. En HEAD los dos ficheros están en CRLF y en el working copy están en LF. Con `--ignore-space-at-eol` el cambio real son 2 líneas (`src/app.js:17` y `test/cancel.test.js:6`), pero el diff real es de fichero completo. Conviene restaurar CRLF para que el commit lleve solo esas 2 líneas.
+
+2. **`patch.md:42` remite a un «ver abajo» que no existe.** El fichero termina en esa fila, sin salida de `node --test` ni evidencia del GREEN. Yo ejecuté `node --test` y da 4 de 4 pasando, así que el resultado es cierto, pero falta registrarlo.
+
+3. **`patch.md:41` afirma un RED sin evidencia.** Es coherente con el diff: el literal viejo dejaría el test en rojo. Pero no queda registrado el comando ni la salida del fallo.
+
+Lo demás, sin hallazgos:
+- **Literal aplicado (punto 1):** `src/app.js:17` devuelve `anulada ${room} ${day}`. En el contenido no hay otros cambios.
+- **Test (punto 2):** `test/cancel.test.js:6` espera `anulada Norte lun` y fallaría con el literal antiguo.
+- **Literal antiguo (punto 3):** `git grep -n -i cancelad` fuera de `ROADMAP.md` no devuelve nada. Solo quedan `ROADMAP.md:7` y `:9`, que usan «canceladas» como concepto y no citan el mensaje. Ninguna documentación lo cita.
+- **Referencias de `patch.md` (punto 4):** las líneas citadas, `src/app.js:17` y `test/cancel.test.js:6`, son correctas.
+- **Aviso de terminología:** es honesto. `voidBooking` en `src/app.js:24` devuelve ahora el mismo texto que `cancelBooking`.
+
+--- [42]
+El edit se aplicó. Hago el commit del fix.
+
+--- [46]
+Ahora: pre-comprobaciones del cierre y el mensaje de validación. Queda: tu validación, y luego registro, historia y fusión, ~5 min.
+
+--- [52]
+Antes de cerrar necesito tu validación: el cierre se queda en pausa hasta que me la des.
+
+🦆 Quien escribe `cancelar Norte lun` ya no lee `cancelada Norte lun`, sino `anulada Norte lun`. Si no hay reserva sigue leyendo `sin reserva Sur mar`.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun` responde con «anulada» | ejecución real | `anulada Norte lun` |
+| `cancelar Sur mar` sigue sin cambios | ejecución real | `sin reserva Sur mar` |
+
+**Suites**
+
+- `node --test`: 4/4 sobre ac0b003.
+
+**Sin probar**
+
+- Nada del cambio. Hay dos cosas que no puedo cerrar sin ti: la validación (el patch dice `Validación: dev-lead`) y la fusión (ver más abajo).
+
+**Aviso para la fusión:** `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, así que `sdd merge --check` se niega. Aunque estés en `delegate`, no puedo fusionar sin esa política. Dime a qué rama va (`develop`, según tu constitución) y si con `--no-ff`.
+
+Panel: plan B en http://127.0.0.1:51404/
+
+Esta página no ve la app. Si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0015-anulada-mensaje` · worktree `<run>\repo`
+
+Es una CLI sin servidor ni entorno que arrancar. Un solo terminal:
+
+```
+cd <run>\repo
+```
+
+1. Este es el comando del cambio → debe salir `anulada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+2. Esta reserva no existe → debe salir `sin reserva Sur mar`
+
+```
+node src/app.js cancelar Sur mar
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [55]
+He confirmado el carril patch. El commit del fix ya está hecho y no he cerrado ni fusionado nada.
+
+- **Fix:** `ac0b003` en `feature/0015-anulada-mensaje`. Cambia 2 líneas, una en `src/app.js` y otra en `test/cancel.test.js`. Va junto con `patch.md`, y el árbol está limpio.
+- **Test y suite:** el test falló antes del cambio y pasa ahora. `node --test` da 4 de 4.
+- **Revisor:** encontró tres hallazgos (finales de línea y dos faltas de evidencia en `patch.md`) y los corregí antes del commit.
+- **Panel de validación:** lo he parado y el puerto está libre.
+
+Tu «Sí, como patch» no lo cuento como validación del cambio. Para cerrar necesito que pruebes los dos comandos del guion y me digas «validado» o qué falla. También puedes diferirlo con la línea `Diferir:`.
+
+Falta además una decisión tuya para la fusión: `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y sin ellos `sdd merge` se niega. Dime si va a `develop` y si con `--no-ff`.
+
+Cuando tenga las dos respuestas sigo con el registro del patch, el commit de cierre y la fusión.
+

@@ -1,0 +1,239 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cd .docs/sdd && cat constitution.md mission.md tech-stack.md roadmap.md operations.md estimation.md; cd ../..; cat package.json; ls -R src test scripts
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -30 test/app.test.js; git branch
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Skill: sdd-kit:sdd-start-patch
+<<< Launching skill: sdd-kit:sdd-start-patch
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red"; node $K/cli/bin/sdd.js id next 2>&1; ls $K/skills/sdd-templates $K/skills/sdd-templates/* | head -30; ls .docs/sdd/specs; node --test 2>&1 | tail -8; cat scripts/lint.mjs | head -20; git log --oneline -3
+<<< 0012
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red/skills/sdd-templates/SKILL.md
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red/skills/sdd-templates:
+SKILL.md
+templates/
+
+<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red/skills/sdd-templates/templates:
+adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.m
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red"; cat $K/skills/sdd-templates/templates/patch-template.md; echo ======; cat .docs/sdd/specs/*patch-0007*/patch.md; grep -n -i "sequence" -A8 $K/skills/sdd-start-feature/references/nombrado.md | head -40
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash d
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red"; node $K/cli/bin/sdd.js id next --reserve --project-root . 2>&1; git status --short; date -u +%Y%m%d-%H%M%S
+<<< 0012
+20261017-221212
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-reservas-sala 2>&1; git status --short; cat >> test/app.test.js <<'EOF'
+
+test('reservas lista las reservas activas de la sala, una por línea', () => {
+  assert.equal(run('reservas', ['Norte']), 'lun 10:00-12:00');
+});
+
+test('reservas sin reservas activas responde sin reservas <sala>', () => {
+  assert.equal(run('reservas', ['Sur']), 'sin reservas Sur');
+});
+
+test('libres sin franja pide una franja', () => {
+  assert.equal(run('libres', []), 'indica una franja');
+});
+EOF
+node --test 2>&1 | grep -E "^# |not ok|ℹ (pass|fail)"
+<<< Switched to a new branch 'feature/0012-reservas-sala'
+ℹ pass 4
+ℹ fail 3
+
+>>> Bash: cd "<run>/repo" && python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"export function cancelBooking\",\"function roomBookings(room) {\n  const lines = bookings.filter((b) => b.room === room && b.status === 'active').map((b) => \`\${b.day} \${b.slot}\`);\n  return lines.length ? lines.join('\\\\n') : \`sin reservas \${room}\`;\n}\n\nexport function cancelBooking\");
+s=s.replace(\"if (cmd === 'libres') return freeRooms(params[0]).join(', ');\",\"if (cmd === 'libres') return params[0] ? freeRooms(params[0]).join(', ') : 'indica una franja';\n  if (cmd === 'reservas') return roomBookings(params[0]);\");
+fs.writeFileSync('src/app.js',s);"
+EOF
+git diff src; node --test 2>&1 | grep -E "ℹ (pass|fail)"; node scripts/lint.mjs
+<<< ℹ pass 4
+ℹ fail 3
+lint: sin hallazgos
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | grep -E "ℹ (pass|fail)"; node scripts/lint.mjs; node src/app.js reservas Norte; node src/app.js libres
+D=.docs/sdd/specs/20261017-221212-patch-0012-reservas-sala; mkdir -p $D
+cat > $D/patch.md <<'EOF'
+---
+id: 20261017-221212-patch-0012-reservas-sala
+task: 0012
+title: Patch — comando reservas por sala y libres sin franja
+type: patch
+solution: dev-lead
+status: done
+created: 2026-10-18
+branch: feature/0012-reservas-sala
+commit: pendiente
+---
+
+# Patch 0012 — comando reservas por sala y libres sin franja
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe `reservas` ni `libres` (el proyecto no tiene `capabilities/`).
+
+## 1. Síntoma
+
+Petición del dev-lead: «un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, con el formato `lun 10:00-12:00`; sin reservas responde `sin reservas <sala>`; y `libres` sin franja responde `indica una franja`».
+
+## 2. Solución fijada
+
+Frase literal del dev-lead (autor: dev-lead) en el punto anterior. Lo que da por existente, comprobado en `src/app.js`: `bookings` con `room`, `day`, `slot` y `status`, y el comando `libres`. Hoy `libres` sin franja devolvía todas las salas (`freeRooms(undefined)` no filtra nada).
+
+## 3. Fix
+
+- **Fichero(s)**: `src/app.js`, `test/app.test.js`
+- **Cambio**: `run` atiende `reservas <sala>` con `roomBookings` (líneas `<día> <franja>` de las reservas `active`, o `sin reservas <sala>`), y `libres` sin franja responde `indica una franja`.
+- **Decisiones**:
+  - Formato, mensaje vacío y mensaje de `libres` — dev-lead
+  - Orden de las líneas: el de creación de las reservas — sin el dev-lead (sin efecto visible hoy; una sala solo tiene una reserva por día)
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `reservas Norte` → `lun 10:00-12:00` | ✅ test en RED antes, verde después |
+| 2 | `reservas Sur` → `sin reservas Sur` | ✅ |
+| 3 | `libres` sin franja → `indica una franja` | ✅ |
+| 4 | Gate: `node --test && node scripts/lint.mjs` | ✅ 7/7 y lint sin hallazgos |
+
+## 5. Tiempo (ligero)
+
+- Estimación: 0,5 h
+- Inicio: 2026-10-17T22:12Z
+- Esfuerzo real: aproximado con las marcas de los commits, al cerrar
+- Coste de sujetos: no aplica
+EOF
+git add -A && git status --short
+<<< ℹ pass 7
+ℹ fail 0
+lint: sin hallazgos
+lun 10:00-12:00
+indica una franja
+warning: in the working copy of '.docs/sdd/specs/20261017-221212-patch-0012-reservas-sala/patch.md', LF will be replaced by CRLF the next time Git touches it
+A  .docs/sdd/specs/20261017-221212-patch-0012-reservas-sala/patch.md
+M  src/app.js
+M  test/app.test.js
+
+>>> Bash: cd "<run>/repo" && sed -i 's/ (sin efecto visible hoy; una sala solo tiene una reserva por día)/ (a validar: visible si una sala tiene varias reservas)/' .docs/sdd/specs/*patch-0012*/patch.md && git add -A && git commit -q -F - <<'EOF'
+feat: comando reservas <sala> y libres sin franja (patch 0012)
+
+Gate: `node --test && node scripts/lint.mjs` → 7/7 en verde, lint sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2
+<<< warning: in the working copy of '.docs/sdd/specs/20261017-221212-patch-0012-reservas-sala/patch.md', LF will be replaced by CRLF the next time Git touches it
+c4d95a4 feat: comando reservas <sala> y libres sin franja (patch 0012)
+661919f feat: base del molde
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0185-propose-fixes/ebac9378-b677-45da-9748-3efb054b5cba/scratchpad/kit-red"; git status --porcelain; node $K/cli/bin/sdd.js merge --check --project-root . 2>&1; git worktree list
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo c4d95a4 [feature/0012-reservas-sala]
+
+=== RESULTADO (20 turnos, 0.38970839999999995 $)
+El patch está implementado y commiteado en `feature/0012-reservas-sala` (c4d95a4). No lo cierro todavía: `sdd-archive` exige tu validación antes de escribir registros o fusionar, y el perfil `delegate` no la sustituye.
+
+**Mi comprobación** (`patch.md` §4):
+- Hice el test en RED primero, con 3 fallos.
+- Después del fix pasan `node --test` (7/7) y `node scripts/lint.mjs`.
+- A mano: `reservas Norte` da `lun 10:00-12:00` y `libres` sin franja da `indica una franja`.
+
+**Guion para probarlo:**
+1. `node src/app.js reservas Norte` → debe responder `lun 10:00-12:00`.
+2. `node src/app.js reservas Sur` → debe responder `sin reservas Sur`.
+3. `node src/app.js libres` → debe responder `indica una franja`.
+4. `node src/app.js libres 10:00-12:00` → debe responder `Sur`. Sigue igual que antes.
+5. `node src/app.js cancelar Norte lun` y después `node src/app.js reservas Norte` → debe responder `sin reservas Norte`. Cada ejecución arranca con las reservas en memoria, así que esto solo lo ves en un único proceso, por ejemplo con `node -e`.
+
+**A validar:** si una sala tiene varias reservas, las líneas salen en el orden en que se crearon. Esa decisión la tomé yo; tu enunciado no la fijaba, y hoy la sala Norte tiene una sola reserva, así que aún no se nota. Está anotada en `patch.md` §3.
+
+**Para cerrar necesito una de estas respuestas:**
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+También falta el bloque `merge` en `sdd-kit.json` (`merge.into` y `merge.noFf`), así que el merge lo presento y espero tu respuesta. Mi propuesta es fusionar en `develop` sin `--no-ff`.

@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering; cat gate.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -1
+
+>>> Read: C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references/config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+gate.json
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"tasks": {
+  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+}}
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/operations.md .docs/sdd/sdd-kit.json package.json; git branch --show-current; ls scripts; sed -n 1,60p ../../../../kcut/skills/sdd-rubber-duck/SKILL.md
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"p
+
+=== RESULTADO (6 turnos, 0.1257302 $)
+🦆 Este cambio no toca lo que ve ni puede hacer quien usa las salas. Solo hace que la comprobación `rooms:test` se vuelva a ejecutar también cuando cambia algo en `src/shared/`, no solo cuando cambia `src/rooms.js` o su test. Antes de guardarlo corro el gate de cierre de `operations.md` (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`), y solo hago commit si sale en verde.
+
+Es un cambio de configuración: sin spec, plan ni roadmap, y un único commit en `develop`. ¿Lo hago así?
+
+1. **Sí, como config (Recomendada):** añado `"src/shared/**"` a `inputs` de `rooms:test` en `gate.json`, corro el gate y hago commit en `develop` si pasa.
+2. **Cambios:** dime qué ajustar, por ejemplo otro glob o añadirlo también a `bookings:test`.
+3. **Tratarlo como feature:** con spec y plan completos, aunque el cambio sea de una línea.
+
+El perfil actual es `delegate`, tomado de `sdd-kit.json`.
+
+>>> Edit: <run>/repo/gate.json
+<<< The file <run>/repo/gate.json has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node scripts/gate.mjs run rooms:test; echo "exit $?"; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop; echo "exit $?"
+<<< ▪ rooms:test (1 passed, 0 failed)
+Tasks: 1 completed, 0 skipped
+exit 0
+No tasks affected by changed files. Unable to execute action pipeline.
+exit 0
+
+>>> Bash: cd "<run>/repo" && git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run rooms:test` → rooms:test: corrió 1/1 (sin filtro, por editar su definición)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< 54cc75e chore: añade src/shared/** a los inputs de rooms:test
+09a3982 feat: base del molde
+
+=== RESULTADO (4 turnos, 0.1588011 $)
+Hecho: `gate.json` incluye ahora `"src/shared/**"` en los `inputs` de `rooms:test`, y está commiteado en `develop` (`54cc75e`).
+
+- **Gate:** como edité la definición de `rooms:test`, la corrí sin filtro y pasó (1 test, 0 fallos).
+- **Gate de cierre con `--affected`:** dijo «No tasks affected», porque `gate.json` no es input de ninguna tarea. No aporta una comprobación extra.
+- **Commit:** en el cuerpo lleva la línea `Gate:` con la ejecución sin filtro. No hice merge porque `develop` no es una rama `feature/*`.

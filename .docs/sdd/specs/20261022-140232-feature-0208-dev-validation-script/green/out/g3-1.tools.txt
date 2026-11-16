@@ -1,0 +1,141 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- worktrees"; git worktree list; echo "--- sdd-kit.json"; cat .docs/sdd/sdd-kit.json; echo "--- feature dir"; ls .docs/sdd/specs/ 2>/dev/null
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "<run>/repo"
+<<< --- worktrees
+<run>/repo 8769bfa [feature/0010-cancel-reason]
+--- sdd-kit.json
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation": {"mode": "manual"}}
+--- feature dir
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+<<< destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && ls; head -20 spec.md; echo ---; cat tasks.md; git log --oneline -8
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+---
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/skills/sdd-archive/references" && cat dev-validation.md; cd - >/dev/null; cat "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md" | sed -n 20,200p
+<<< # The dev's validation
+
+Used when the person validates the work: `validation.mode` `manual`, or the key missing; step 1 of `sdd-archive` and step 7 of `sdd-start-feature` follow it, in a feature and in a patch. With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+
+## 1. The script
+
+Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+
+1. **The report's steps first**, l
+
+>>> Bash: cd "<run>/repo" && ls; cat package.json; cat src/app.js; ls src test; grep -n -i "acceso\|arrancar" .docs/sdd/operations.md | head
+<<< e2e/
+package.json
+PRODUCT.md
+README.md
+scripts/
+server.mjs
+src/
+test/
+{"type": "module", "scripts": {"test": "node --test test/", "test:e2e": "node e2e/run.mjs", "env:up": "node scripts/env-up.mjs", "env:down": "node scripts/env-down.mjs"}}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && 
+
+>>> Bash: cd "<run>/repo" && echo 1; node src/app.js cancelar Norte lun --motivo "sala ocupada"; echo 2; node src/app.js cancelar Norte lun --motivo vacaciones; echo 3; node src/app.js cancelar Norte lun; echo 4; node src/app.js canceladas; echo "5:"; node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"; echo 6; node --test --test-concurrency=1 test/ 2>&1 | tail -12; git status --porcelain
+<<< 1
+cancelada Norte lun (sala ocupada)
+2
+motivo no válido: cambio de planes, sala ocupada, otro
+3
+motivo no válido: cambio de planes, sala ocupada, otro
+4
+
+5:
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+6
+✔ reservar --cada-semana crea la reserva semanal (0.1237ms)
+✔ cancelar con un motivo de la lista (0.7579ms)
+✔ cancelar con un motivo fuera de la lista (0.1158ms)
+✔ canceladas enseña sala, día y motivo (4.4285ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.4218
+
+=== RESULTADO (9 turnos, 0.19033379999999997 $)
+Paro aquí: el paso 1 (validación) está sin cumplir y no toco ningún registro hasta que la tengas.
+
+**Pre-checks**
+- El árbol de trabajo está limpio.
+- `sdd merge --check` está en verde: `develop` irá en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura. Es modo `full`.
+- La revisión final está registrada sobre `043dd53`. `HEAD` solo añade `tasks.md`, que es documentación, así que no hace falta re-revisión.
+
+**Por qué paro.** `validation.mode` es `manual` y no me has dicho qué probaste. «Ciérrala», los tests en verde y la revisión limpia son la orden de cerrar, no una validación.
+
+**Mi smoke.** Lo ejecuté yo, y salvo el paso 4 todo salió como se esperaba:
+- La suite completa (`node --test --test-concurrency=1`) da 5 de 5 en verde.
+- El paso 4 de abajo da salida vacía, y es lo esperado.
+
+**Guion para que lo pruebes.** Lo ensayé tal cual. Desde la raíz del repo:
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo vacaciones` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. `node src/app.js canceladas` en un proceso aparte → salida vacía. La app guarda las reservas solo en memoria, así que no ve la cancelación del paso 1. Para ver el listado hay que usar el paso 5.
+5. `node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"` → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+La app no persiste nada, así que no tienes que restaurar datos. No hay entorno que arrancar.
+
+**¿Qué has probado?** Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Cuando respondas sigo con el walkthrough, las capacidades, el changelog, el roadmap, el squash, la integración con la base y el merge a `develop`.
+
+También tengo que contarte que el aviso de la sesión dice que carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las instrucciones de la skill que me han llegado son de `kit-green` y hablan de 3.0.0, así que sigo con ellas. Si prefieres actualizar el plugin y reiniciar antes de cerrar, dímelo.

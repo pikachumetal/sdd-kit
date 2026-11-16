@@ -1,0 +1,110 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [25]
+Mientras la re-revisión corre, no escribo ningún registro. Preparo lo que no depende de ella: miro la plantilla del walkthrough y las recetas de capacidad y merge.
+
+--- [32]
+Hasta ahora el cierre de la 0010 va así:
+
+- **Pre-checks:** el único fichero sin commitear es el borrador `walkthrough.md`. `sdd merge --check` da `destino: listo` (se fusionará en `develop`). No hay otras ramas abiertas.
+- **Validación en campo (la hago yo, `validation.mode: field`):** la suite da 6/6 sobre 63a0612 y el gate pasa. Ejecuté el smoke de verdad sobre los THEN, incluidos los dos de fallo. Un motivo inventado y la ausencia de `--motivo` dan «motivo no válido: …». En un solo proceso, `cancelar … --motivo "sala ocupada"` seguido de `canceladas` da «Norte lun — sala ocupada».
+- **Dos cosas del borrador no cuadran, y las corregiré al escribir el registro:**
+  - Su smoke usa `--motivo sala-ocupada`, que la CLI rechaza porque el motivo válido es «sala ocupada».
+  - El almacén es en memoria, así que `canceladas` en una invocación aparte imprime vacío. Esto lo cubre la 0014, «Motivo guardado».
+- **Revisión final:** `HEAD` (63a0612) avanzó sobre lo revisado (a7297dd) con un commit solo de documentación (17 líneas, `tasks.md`). La regla pide una re-revisión única antes de escribir registros, y está corriendo en segundo plano. No escribo nada hasta que vuelva.
+- **Ruling de la Task 2:** dice que `--test-concurrency=1` está «en el gate», pero no consta en `gate.json` ni en `scripts/gate.mjs`. Si la re-revisión lo confirma, lo anotaré como discrepancia y añadiré una fila de deuda por el workaround.
+
+Espero a que termine la re-revisión.
+
+--- [37]
+### Nuevas roturas en el tramo
+
+- **Important**: el Ruling de `tasks.md:17` dice que `node --test --test-concurrency=1` está «en el gate». No está en ningún fichero del repo:
+  - `gate.json:2` define `bookings:test` como `node --test test/app.test.js test/cancel.test.js`, sin `--test-concurrency`.
+  - `gate.json:3` define `rooms:test` como `node --test test/rooms.test.js`, también sin la opción.
+  - `scripts/gate.mjs` ejecuta tal cual el `command` de `gate.json` (línea 29, `spawnSync(tasks[name].command, …)`) y no añade opciones.
+  - El gate de cierre de `.docs/sdd/constitution.md:4` (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`) no la incluye.
+  - En el plan tampoco: `plan.md:45` (verificación de la Task 2: `node --test test/cancel.test.js`) y `plan.md:50` (gate: `node --test`).
+  - Una búsqueda de `concurrency` en todo `HEAD` solo encuentra el propio `tasks.md:17`.
+
+  El registro da por aplicada una mitigación que no existe. Hay que quitarla del Ruling o ponerla de verdad en el gate.
+
+- **Minor**: `tasks.md:10` atribuye la Task 1 al commit `a7297dd`. La Task 1 («cancelar con un motivo de la lista») está en `6ee4375`, que toca `src/app.js` y `test/cancel.test.js`. `a7297dd` es el commit de la Task 2 («listado de canceladas con su motivo»).
+
+Comprobación (1): el tramo `a7297dd..63a0612` es un solo commit que crea un fichero nuevo, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (17 líneas añadidas). No toca código ni tests. Esa parte está bien.
+
+### Observaciones fuera de alcance
+
+- El motivo que da el Ruling no se sostiene bien. `node --test` ejecuta cada fichero en su propio proceso, así que los ficheros no comparten el almacén en memoria. Dentro de un fichero, los `test()` de primer nivel ya van en orden. Por eso `--test-concurrency=1` no cambiaría nada aquí. El acoplamiento real es de orden, no de concurrencia: `test/cancel.test.js:13-15` depende de que el test de las líneas 5-7 haya cancelado antes la reserva de Norte del lunes, sobre el array `bookings` de `src/app.js:4`.
+- El escenario de `spec.md:54` (cancelar sin `--motivo` da «motivo no válido: …») no tiene test en `test/cancel.test.js`. El código sí lo cumple: `reasonOf` devuelve `undefined` y lo rechaza `src/app.js:20`. Esto es anterior al tramo y la revisión final lo dio por bueno.
+- `test/cancel.test.js:10` prueba el motivo inválido con `Sur mar`, que no tiene reserva. Pasa porque el motivo se valida antes de buscar la reserva, pero no prueba el caso de una reserva que sí existe.
+- `plan.md:50` (gate `node --test`) no coincide con el gate de `constitution.md:4`. Viene de antes del tramo.
+- No he podido comprobar desde el repo los datos de modelo y effort de la línea de revisión final (`tasks.md:13`).
+- `walkthrough.md` sigue sin commitear. No forma parte del tramo.
+
+### Veredicto
+
+**Re-revisión:** hallazgos abiertos.
+- Important: el Ruling de la Task 2 (`tasks.md:17`) dice que `--test-concurrency=1` está en el gate, y no consta ni en `gate.json`, ni en `scripts/gate.mjs`, ni en ningún otro fichero.
+- Minor: el commit de la Task 1 en `tasks.md:10` es `6ee4375`, no `a7297dd`.
+
+--- [39]
+La re-revisión dejó dos hallazgos abiertos, ambos en el registro y no en el código. Corrijo `tasks.md` en una sola pasada de fix, que es lo que permite la regla.
+
+--- [46]
+Pasada de fix hecha (solo documentación). Ahora la capacidad: fusiono el delta de la spec con la CLI.
+
+--- [48]
+Ahora el walkthrough completo, con la verificación real en lugar del borrador.
+
+--- [60]
+Quito la línea en blanco sobrante y sigo con el roadmap (fila 0010 y deuda).
+
+--- [65]
+Paso 6: integro la base.
+
+--- [75]
+🦆 Cancelar ahora exige un motivo de la lista. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo inválido, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…** un Ruling de la Task 2. El Ruling original decía que `--test-concurrency=1` estaba «en el gate», pero no estaba en `gate.json` ni en `scripts/gate.mjs`, y además no arreglaría nada, porque cada fichero de test corre en su proceso. Lo reescribí en `tasks.md` y en el walkthrough. El acoplamiento real es de orden: el test de `canceladas` depende de que el de `cancelar` haya cancelado antes. Ese acoplamiento está como fila nueva en «Deuda técnica» del roadmap.
+
+**Cierre**
+- **Revisión final:** `HEAD` había avanzado desde a7297dd con un commit solo de documentación, así que hice la re-revisión única que pide la regla. Dio un Important (el Ruling de arriba) y un Minor (en `tasks.md` la Task 1 apuntaba al commit equivocado, ahora `6ee4375`). Corregí ambos en el cierre y no cambié código.
+- **Validación en campo (hecha por mí):** el borrador citaba `--motivo sala-ocupada`, que la CLI rechaza. Lo sustituí por mi propio smoke: los 5 THEN con ejecución real, incluidos los dos de fallo, y la suite en verde.
+- **Gate sobre el merge de sincronización 520fead:** `Gate: node --test · node scripts/gate.mjs run bookings:test rooms:test --affected --base d8bcbae → 7/7 en la suite unitaria · rooms:test: corrió 2/2 · bookings:test: saltada (la base no toca sus inputs)`. También pasó con `--base develop`, con `bookings:test` 5/5.
+- **Registros escritos:**
+  - Capacidad nueva `bookings`, fusionada con `sdd capability merge`.
+  - Entrada en el changelog.
+  - Fila 0010 a ✅ en el roadmap.
+  - Línea `Retro:` en el walkthrough: un documento desmentido, corregido en su propio fichero.
+- **No aplican:** estimación (no hay `estimation.md`), ADR (la spec no tenía candidatas), CI de la base y `env:clean`.
+
+**Pendiente y avisos**
+- **Persistencia del listado:** dos invocaciones de la CLI no comparten estado. Un `canceladas` ejecutado aparte tras `cancelar` imprime vacío, porque el almacén es en memoria. Es la fila 0014 «Motivo guardado», pero conviene saberlo si lo pruebas a mano.
+- **Tests sin cubrir:** «sin `--motivo`» no tiene test propio, y el motivo inválido se prueba con una reserva inexistente (`Sur mar`).
+- **`roadmap check`:** da 8 avisos en líneas que no toqué (secciones fuera de plantilla). Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- **Versión del kit:** el aviso de arranque decía que la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+- **Ticket del kit:** el cierre no dejó ninguna línea `Retro:` de tipo «ticket del kit». Si quieres el feedback de mejora de esta sesión, lo genero con `sdd-feedback`.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (7db0b51) · push: no hecho: `merge.push` no lo autoriza
+
+--- [78]
+El cierre ya está terminado, así que no queda nada que seguir.
+
+Confirmé el estado del repo ahora mismo:
+- El walkthrough sin commitear del arranque es el borrador que completé. Lo reescribí con la verificación real y entró en el commit de cierre `d8bcbae`.
+- `git status` está vacío.
+- `develop` (7db0b51) contiene el walkthrough de la 0010 y `capabilities/bookings.md`.
+
+La rama quedó fusionada en `develop` y no se hizo push, porque `merge.push` no lo autoriza. No voy a repetir el merge ni a reescribir el walkthrough: el cuerpo del walkthrough no se reescribe tras el cierre.
+
+Los avisos del mensaje anterior siguen pendientes:
+- `canceladas` sale vacío entre invocaciones de la CLI, hasta la 0014.
+- Los 8 avisos de `roadmap check`, que son de antes de este cambio.
+- La actualización del kit de 2.3.4 a 3.0.0.
+
+Si quieres que `develop` se publique, dime «súbelo» y lo hago con `sdd merge --push`. Si quieres el ticket de mejora del kit, lo genero con `sdd-feedback`.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (7db0b51) · push: no hecho: `merge.push` no lo autoriza
+

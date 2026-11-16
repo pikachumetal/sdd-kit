@@ -1,0 +1,40 @@
+--- [3]
+Ahora: leo el estado de la feature 0010 (tasks.md, spec, configuración) para ver qué revisión falta y preparar la validación. Queda: re-revisión del último commit, smoke y guion, ~10 min.
+
+--- [12]
+Ahora: presento la validación de la 0010. Queda: tu respuesta (qué probaste y si funciona), después `sdd-end-feature`, ~5 min. No he lanzado subagentes ni procesos que haya que parar.
+
+🦆 La feature añade un motivo cerrado al cancelar (`cambio de planes`, `sala ocupada`, `otro`) y hace que `canceladas` lo enseñe. El último commit, a petición del dev-lead, cambia qué responde `canceladas` cuando no hay ninguna: ahora dice `sin canceladas` en vez de una línea vacía.
+
+## ✋ Me salí del plan en…
+
+- **`730f1c7` (sin revisar)**: `fix(bookings): canceladas sin canceladas dice «sin canceladas»`. Es una línea en `src/app.js:36` (`|| 'sin canceladas'`), posterior a la revisión final y a su re-revisión (`4b37f55..3b2436b`, limpia). Esa re-revisión ya salió, así que no despacho otra: queda como `sin revisar: 730f1c7 — canceladas sin canceladas responde «sin canceladas»`.
+- **Sin escenario en la spec**: la spec aprobada no tiene ningún THEN para «sin canceladas», así que el comportamiento nuevo no está en el delta de `bookings`. Hay que decidir si lo añado como enmienda en la spec antes de fusionar el delta al cierre.
+- **Sin test**: el commit no añade test, y los 6 de `test/cancel.test.js` y `test/` no cubren el caso vacío. Lo he comprobado solo con ejecución real (abajo).
+
+## Smoke
+
+La suite completa (`node --test`) pasa: 6 de 6, en 0,16 s.
+
+| THEN de la spec | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real (`node src/app.js …`) | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real, con `--motivo "me aburro"` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, en un solo proceso, porque el estado es en memoria | `Norte lun — sala ocupada` |
+| (fuera de spec, `730f1c7`) `canceladas` sin canceladas → «sin canceladas» | ejecución real | `sin canceladas` |
+
+## Guion de pruebas (para ti)
+
+No hay nada que arrancar: es una CLI sin servidor ni puerto. Desde la raíz del repo:
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js canceladas` → `sin canceladas` (proceso nuevo, no hay ninguna cancelada)
+4. Como el estado no persiste entre procesos, el listado con una cancelada solo se ve en un proceso: `node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[]))"` → `Norte lun — sala ocupada`
+
+## Pregunta
+
+Dime qué has probado tú y si funciona. Y una decisión que es tuya: ¿añado el escenario «sin canceladas» como enmienda de la spec, con su test, antes de cerrar, o lo dejamos solo como `sin revisar` en ✋?
+
+Hasta que respondas, la feature queda en espera: los borradores de cierre (walkthrough, delta en `capabilities/`, changelog) no están escritos ni commiteados y el roadmap sigue sin tocar.
+

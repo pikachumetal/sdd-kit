@@ -1,0 +1,54 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && find .docs -type f | head -50 && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -2
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat .docs/sdd/steering/*.md; ls src test; wc -l src/*; cat package.json; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/cli/bin/sdd.js" capability index --path .docs/sdd; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat src/app.js test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cd ../../../../kit/skills/sdd-propose/references; ls; cat spec-writing.md | head -80
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references" && cat nombrado.md; sed -n 1,60p control-profiles.md
+## agente
+Ahora: clasifico tu petición y abro la entrevista de la spec. No he creado ninguna rama ni carpeta todavía. Queda: unas pocas preguntas, después la spec para que la apruebes y el plan, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+- Hoy `reservar <sala>` no comprueba si la sala está ocupada. `libres <franja>` solo lista las salas libres, y las reservas viven en memoria en `src/app.js`.
+- Quieres que, si pides una sala ocupada, la petición quede apuntada en una lista de espera para esa sala y franja. Así no tienes que volver a intentarlo a mano.
+- Es una herramienta de línea de comandos que usas tú solo, sin servidor ni proceso en segundo plano.
+- Ninguna capacidad documentada se toca: el proyecto no tiene `capabilities/`.
+- Es una feature nueva, no un patch. Hay que decidir comportamiento, y no es el arreglo de un fallo determinista.
+- Estimo unas 3 tareas, así que no propongo dividirla.
+
+¿Qué esperas que pase, paso a paso, cuando la sala que querías se libere después de haberte apuntado en la lista de espera?
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Entendido: el problema es tener que volver a mirar `libres` cada rato. Todavía me falta una decisión de producto, y es la que más condiciona el resto.
+
+Hoy `cancelar` solo devuelve el texto `cancelada mar 10:00` y no toca la lista de reservas. Lo único que cambia una sala de ocupada a libre es una cancelación.
+
+❓ **Qué pasa cuando se libera la sala en la que estás en espera**
+
+1️⃣ **Reserva automática.** Al cancelar la reserva de Norte, la primera petición en espera pasa a ser reserva.
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   - Luego, tras `cancelar lun 10:00` → `cancelada lun 10:00; Norte reservada para ti (estabas en espera)`
+   - Coste: reservas sin confirmar en el momento. Si ya no la quieres, tienes que cancelarla.
+
+2️⃣ **Solo aviso.** Al cancelar queda marcada la espera como «disponible» y no se reserva nada.
+   - `libres` no hace falta, pero hay que volver a ejecutar algo para enterarte: `esperas` → `Norte lun 10:00-12:00: disponible, reserva con 'reservar'`
+   - Coste: sigues teniendo que mirar a mano, aunque solo un comando.
+
+3️⃣ **Solo ver la lista.** Existe `esperas` con tu posición, y la liberación no cambia nada.
+   - Coste: no resuelve tu problema de fondo.
+
+➡️ **Recomiendo 1️⃣**, porque lo que cuentas es que no quieres vigilar `libres`, y 1️⃣ es la única opción en la que no vigilas nada. A cambio, una espera que ya no quieras puede acabar en una reserva que tendrás que cancelar.
+
+¿Cuál eliges?

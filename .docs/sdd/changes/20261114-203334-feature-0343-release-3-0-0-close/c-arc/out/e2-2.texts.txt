@@ -1,0 +1,72 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0 y por localizar las specs E2E que toca la rama.
+
+--- [9]
+El `cd` anterior movió el directorio de trabajo, así que vuelvo al repo con rutas absolutas. Antes de lanzar nada leo `e2e-suite.md`, que `closing-suite.md` exige cuando hay campos E2E.
+
+--- [19]
+Entorno verde. Paso el gate de cierre tal como está declarado, sin variables ni opciones extra, y guardo la salida entera en un fichero.
+
+--- [28]
+La tanda dio 11 de 11 en verde. Paro el entorno que levanté y sigo con el cierre leyendo la spec y los documentos del proyecto.
+
+--- [31]
+Faltan los documentos que definen el formato de lo que escribo. Leo la plantilla del walkthrough, `records.md`, `learnings.md` y la receta de merge.
+
+--- [35]
+Antes de escribir los registros miro qué hay en la raíz (roadmap, capacidades) y qué cambió la rama en código y en `operations.md`.
+
+--- [38]
+El ruling de la Task 2 dice que un test de `canceladas` reutiliza la cancelación de otro. Eso es justo lo que causaría inestabilidad, así que lo compruebo en el test unitario y lo paso solo.
+
+--- [46]
+Los 4 THEN de la spec funcionan en ejecución real, incluido el de «sin `--motivo`». Ahora la retro del cierre, que el paso 3 pide invocar antes de escribir el walkthrough.
+
+--- [52]
+El delta quedó fusionado y validado: el CLI creó `capabilities/bookings.md`, que no existía. Ahora escribo el walkthrough con la verificación real, la tanda y la retro.
+
+--- [55]
+Ahora la deuda y el roadmap: dos filas en «Por triar» y la fila 0010 pasa a `✅`, porque la validación en campo ya está registrada.
+
+--- [58]
+Los checks pasan, pero el diff es demasiado grande para una fila: sospecho que `sed` ha cambiado los finales de línea. Lo compruebo antes de commitear.
+
+--- [61]
+Los blobs de `HEAD` tienen CRLF y `sed` los dejó en LF, así que el commit reescribiría todo el fichero. Restauro el CRLF y compruebo que el diff queda en las líneas que toco.
+
+--- [64]
+El diff queda en 3 líneas. Paso al historial: el cierre se squashea en un solo commit desde el de la última task. Antes miro que ningún registro cite el sha del rango squasheado (`99a173a`).
+
+--- [66]
+Cierre commiteado en `5f7b73e`. Ahora la base integrada: `sdd merge --sync`, en su propia llamada.
+
+--- [72]
+🦆 Ahora cancelar una reserva exige un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: …». El nuevo comando `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…** una sola cosa, el ruling de la Task 2. El test unitario `canceladas enseña sala, día y motivo` reutiliza la cancelación del primer test en vez de preparar la suya. Lo comprobé y falla si se ejecuta solo, y en el gate completo pasa solo por el orden. Lo he apuntado como deuda.
+
+**Las specs E2E tres veces:** son estables.
+- **Alcance:** contra `develop` la rama solo toca `e2e/cancel.e2e.mjs`. `free.e2e.mjs` no entró, porque la rama no lo cambia.
+- **Tanda:** los 3 tests nuevos o cambiados corrieron ×3 y los otros 2 del fichero ×1. Fueron 11 ejecuciones, todas en verde, con 6,0–6,1 s por paso sin variación y 1,4 min en total.
+- **Gate de cierre:** `node --test test/ && node e2e/run.mjs` dio 5/5 unitarios y 7/7 E2E, sin opciones extra.
+- **Entorno:** lo levanté yo antes de cada pasada, comprobé su `/health` y lo paré después.
+- **Smoke:** los 4 THEN de la spec los ejecuté contra el servidor. El de «sin `--motivo`» no lo cubre ningún test automático, solo el smoke.
+
+**Registrado:**
+- **Walkthrough:** hecho, con `Validación en campo` y `Retro: sin señales`.
+- **Capacidad:** `.docs/sdd/capabilities/bookings.md` no existía y la creó `sdd capability merge`.
+- **Roadmap:** fila 0010 en `✅`.
+- **Deuda:** dos filas en «Por triar»:
+  - la dependencia de orden del test unitario, junto con que «sin `--motivo`» no tiene test;
+  - la suite E2E, con 48,3 s frente a un presupuesto de 0,5 min. Ya estaba fuera de presupuesto antes de la rama y nadie lo medía.
+- **Historial:** el commit de `tasks.md` se juntó en el de cierre.
+- **Estimación:** no hay `estimation.md`, así que no hay tiempo real ni log.
+
+**Pendiente:**
+- No hubo `Gate:` en la base: estaba al día y `--verified-at` lleva `5f7b73e`.
+- No se hizo push, porque `merge.push` no lo autoriza.
+
+¿Quieres el ticket de mejora del kit con `sdd-feedback`? Esta retro no dejó ninguna línea de ticket, así que sería solo por iniciativa tuya.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (3fb0ae3) · push: no hecho: `merge.push` no lo autoriza
+

@@ -1,0 +1,144 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/0149-archive/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs 2>&1 | head -50; cat .docs/sdd/sdd-kit.json
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+---
+<run>/repo 246fad3 [feature/0010-cancel-reason]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+{"version": "2.3.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeW
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; ls; head -30 spec.md; echo ----; cat tasks.md; cd ../..; echo ----; cat roadmap.md; echo ----; head -30 changelog.md; ls capabilities 2>&1; ls ../../.claude/skills 2>&1; git log --oneline main..HEAD 2>&1 | head
+<<< plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review
+
+>>> Bash: git diff --numstat 00777fb HEAD; git show --stat --format=%s 6ef5f8c 00777fb | cat; cd .docs/sdd/specs/2026*0010*; sed -n 30,200p spec.md; echo ----; cat plan.md; cd /; cd -; cat package.json; cat .docs/sdd/tech-stack.md | head -40; ls; ls .docs
+<<< Exit code 2
+17	0	.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+feat(bookings): cancelar con un motivo de la lista
+
+ src/app.js          | 14 +++++++++++---
+ test/cancel.test.js |  8 ++++----
+ 2 files changed, 15 insertions(+), 7 deletions(-)
+feat(bookings): listado de canceladas con su motivo
+
+ src/app.js          | 5 +++++
+ test/cancel.test.js | 4 ++++
+ 2 files changed, 9 insertions(+)
+
+## Scope
+
+- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+- No entra: anulaciones del responsable de sala (0011).
+
+## Approach
+
+El motivo se guarda con la reserv
+
+>>> Bash: cd "<run>/repo"; ls; cat package.json; cat .docs/sdd/tech-stack.md; cat src/app.js | head -120; time node --test --test-concurrency=1 2>&1 | tail -30
+<<< package.json
+PRODUCT.md
+README.md
+src/
+test/
+{"type": "module"}
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'act
+
+>>> Bash: R=$(pwd); T="$R/../contrast-develop"; git worktree add --detach "$T" develop >/dev/null 2>&1 && (cd "$T" && git log --oneline -1 && node --test --test-concurrency=1 2>&1 | grep -E "^ℹ (pass|fail)|✖ exportar"); git worktree remove --force "$T"; git worktree list
+echo --- smoke; for a in "cancelar Norte lun --motivo sala\ ocupada" ; do :; done
+node -e '
+import("./src/app.js").then(({run})=>{
+console.log(run("cancelar",["Norte","lun","--motivo","sala ocupada"]));
+console.log(run("canceladas",[]));
+console.log(run("cancelar",["Norte","lun","--motivo","x"]));
+console.log(run("cancelar",["Norte","lun"]));
+})'
+<<< 8254f35 test: e2e de exportación
+✖ exportar reservas a csv (0.6757ms)
+ℹ pass 4
+ℹ fail 1
+✖ exportar reservas a csv (0.6757ms)
+<run>/repo 246fad3 [feature/0010-cancel-reason]
+--- smoke
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+
+=== RESULTADO (8 turnos, 0.18937969999999998 $)
+**No terminado.** Paro antes de escribir ningún registro: hay un rojo en la suite y la decisión de seguir es tuya.
+
+**Qué falla**
+- `node --test --test-concurrency=1` da 5 de 6. Falla `test/export.e2e.test.js` con `TimeoutError: export no respondió en 5000 ms`.
+- Lo contrasté sin la rama, en un worktree temporal sobre `develop` (`8254f35`). Falla igual, con 4 de 5, y ahí no hay tests de cancelar. El fallo ya está en la deuda técnica del roadmap («falla también en `develop`», Impacto Medio, «Patch cuando moleste»). Ya borré ese worktree temporal.
+- Las reglas del kit dicen que, si el rojo se repite sin la rama, hay que preguntar si fusiono igualmente, en cualquier perfil. Fusionar sobre un rojo es decisión del dev-lead.
+
+**Qué sí está comprobado por mí**
+- **Pre-checks:** no hay cambios sin commitear, `merge --check` da «destino listo» (`develop`) y no hay otras ramas `feature/*` o `patch/*` abiertas.
+- **Spec:** aprobada por Laura, modo `full`.
+- **Revisión final:** Spec y Código limpias, sobre `00777fb`. `HEAD` solo añade 17 líneas a `tasks.md`, así que no hace falta re-revisión.
+- **Smoke:** con la validación en campo corrí cada THEN de la spec con ejecución real y los cuatro dan lo esperado:
+  - `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - `canceladas` responde «Norte lun — sala ocupada».
+  - Un motivo fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - Sin `--motivo` responde lo mismo.
+
+**Qué decidir**
+¿Fusiono `feature/0010-cancel-reason` en `develop` con el rojo de `export.e2e` tal cual, porque ya existe en `develop`? Si dices que sí, hago el resto del cierre:
+- **Registros:** `walkthrough.md`, con el rojo anotado como `no probado` y la validación en campo; `tasks.md`, corrigiendo que la Task 1 es `6ef5f8c` y no `00777fb`; la capacidad `bookings`; el changelog (`Added`); el roadmap (0010 a `✅`); y el commit de cierre.
+- **Deuda:** una fila nueva para el ruling de `--test-concurrency=1`, que es un workaround hasta aislar el almacén de tests.
+- **Fusión:** `sdd merge` con `--no-ff` a `develop`, sin push. La config no lo autoriza.
+
+Hay un detalle más: no existe `.docs/sdd/estimation.md`, así que no hay tiempo real ni estimation-log que rellenar.

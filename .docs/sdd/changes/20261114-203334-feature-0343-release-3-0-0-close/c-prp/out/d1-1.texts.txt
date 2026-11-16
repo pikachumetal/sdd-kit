@@ -1,0 +1,107 @@
+--- [10]
+Ahora: confirmo que es un patch (la causa está en `findBooking`, que ignora el día) y reservo su id y su rama. Queda: pasar a implementarlo, ~5 min.
+
+--- [19]
+Reproduzco el fallo y leo la deuda antes de escribir nada.
+
+--- [22]
+Reproducido: `cancelar Norte mar` responde "cancelada Norte mar" y deja sin reserva el lunes. La deuda no cubre este fallo. Ahora leo la plantilla del patch.
+
+--- [25]
+Escribo `patch.md` con la causa raíz y la estimación antes del fix, que es lo que pide el flujo.
+
+--- [34]
+RED confirmado: tres fallos, los tres por el síntoma del informe (`cancelar` y `anular` coinciden con cualquier día, y la del lunes se pierde). Ahora el fix mínimo.
+
+--- [38]
+Verde: 6 de 6 y lint sin hallazgos. El diff es de 1 línea en `src/app.js` y 5 en tests. Antes del commit, el flujo pide un revisor para el patch.
+
+--- [44]
+El revisor no tiene hallazgos críticos ni importantes. Contesto los tres menores en `patch.md` y relleno la verificación.
+
+--- [47]
+Las comillas inversas del script se ejecutaron como comandos y dejaron huecos en el §4. Reescribo ese apartado con el editor.
+
+--- [50]
+Hago el commit del fix con el código, los tests y `patch.md`.
+
+--- [52]
+Ahora: cierro el patch con `sdd-archive` (validación, hash y tiempo en `patch.md`, roadmap). Queda: tu validación y el merge, ~5 min.
+
+--- [60]
+Los cinco pasos dan lo esperado. Ahora levanto el panel plan B, porque no hay herramientas de Chrome en esta sesión.
+
+--- [63]
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la del lunes y decía "cancelada Norte mar". Ahora dice `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda corregido.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar`, sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| `cancelar Norte lun` sigue funcionando | `ejecución real` | `cancelada Norte lun` |
+| `anular Norte mar`, sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| `anular Norte lun` sigue funcionando | `ejecución real` | `anulada Norte lun` |
+| La del lunes sigue activa tras cancelar el martes | `suite` | `cancelar una reserva activa` pasa justo después del test del martes. |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y `lint: sin hallazgos`, sobre 75777da. Antes del fix fallaban 3 tests, por el síntoma del informe.
+
+**Sin probar**
+
+- Que el lunes siga activa *entre dos comandos*. Las reservas viven en memoria y cada `node src/app.js …` es un proceso nuevo, así que desde la terminal cada comando empieza con la reserva del lunes activa. Eso lo cubre el test, no el guion.
+
+**Avisos antes del guion**
+
+- `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le falta `merge.into` o `merge.noFf`. No fusiono nada hasta que me digas el destino (por git-flow, `develop`) y si va con `--no-ff`.
+- El panel escribe en `.temp/validation/`, que no está en un `.gitignore` (el proyecto no tiene). Te propongo añadir `.temp/` al `.gitignore`; por ahora son ficheros sin seguimiento y no entran en el commit.
+
+Panel: plan B en http://127.0.0.1:8172/ (no hay herramientas de Chrome en esta sesión. Esta página no ve la app, así que si algo falla, cuéntamelo en el comentario del paso.)
+
+**Guion**
+
+Rama `feature/0012-cancel-day` · worktree `<run>/repo`
+
+Es una CLI sin servidor: no hay entorno que arrancar. Los pasos 1 y 2 son los de tu informe.
+
+Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Cancelas Norte el martes, que no tienes reservado → debe salir `sin reserva Norte mar`
+
+```
+node src/app.js cancelar Norte mar
+```
+
+2. Cancelas Norte el lunes → debe salir `cancelada Norte lun`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Anulas Norte el martes → debe salir `sin reserva Norte mar`
+
+```
+node src/app.js anular Norte mar
+```
+
+4. Anulas Norte el lunes → debe salir `anulada Norte lun`
+
+```
+node src/app.js anular Norte lun
+```
+
+Para parar el panel: `kill 2079`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,70 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && node "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-control/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js .docs/sdd/steering/debt.md; head -60 .docs/sdd/specs/*0005*/spec.md .docs/sdd/specs/*0006*/spec.md .docs/sdd/specs/*0007*/patch.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+=== RESULTADO (7 turnos, 0.11509280000000001 $)
+Antes de proponer nada, esto es lo que he visto en el repo.
+
+- **Documentado:** `PRODUCT.md` dice que es una CLI para reservar salas del coworking y que la usas solo tú.
+- **En el código (`src/app.js`):** una franja es un texto opaco, como `'10:00-12:00'`. `freeRooms` solo compara con `===`, así que `10:00-11:30` y `10:00-12:00` no se considerarían solapadas. `reservar` no guarda nada todavía.
+- **Deuda ya apuntada:** «Sin validación del formato de franja horaria», pendiente de triar.
+
+Lo que haga falta para las medias horas depende de para qué las quieres. Por eso no te propongo nada todavía.
+
+❓ ¿Qué situación concreta te lleva a querer reservar medias horas, y qué haces hoy cuando te pasa?
+
+=== RESULTADO (1 turnos, 0.1345672 $)
+Entendido. El problema es que la unidad mínima hoy es la franja entera. Una reunión de 30 minutos no puede convivir con otra en la misma sala y el mismo tramo de dos horas.
+
+Antes de decidir cómo medir el tiempo, miro cómo es una franja en lo que ya tienes. `10:00-12:00` ya es inicio-fin, pero la comparación es de igualdad de texto. Esto vale para cualquier opción. Aunque solo permitieras `10:00-10:30`, haría falta detectar solapes por intervalo. Si no, `10:30-11:00` pasaría como libre dentro de una reserva `10:00-12:00`.
+
+❓ **¿Cómo se expresa una reserva de media hora?**
+Con `Norte lun 10:00-12:00` ya reservada:
+1️⃣ **Franja libre inicio-fin en múltiplos de 30 min, con solape por intervalo.**
+   - `libres 10:30-11:00` → `Sur` (Norte ocupada por la de 10:00-12:00).
+   - `libres 12:00-12:30` → `Norte, Sur`.
+   - Acepta también 90 min o 1 h sin tocar nada más.
+   - Coste: hay que parsear y validar las horas, y esto salda de paso la deuda «sin validación del formato». Cambia `freeRooms`.
+2️⃣ **Cuadrícula fija de bloques de 30 min.** Una reserva de dos horas se guarda como 4 bloques.
+   - `libres 10:30-11:00` → `Sur`, igual que en la 1.
+   - Coste: cambia el modelo de datos y hay que convertir las reservas actuales (`10:00-12:00` pasa a 4 bloques). Es más rígido.
+3️⃣ **Mantener las franjas de hoy y añadir una duración corta con un flag** (algo como `--media`).
+   - Coste: dos tipos de reserva conviviendo, y sigue haciendo falta el solape por intervalo.
+
+➡️ **Recomiendo 1️⃣.** Tus reservas ya tienen forma inicio-fin y el solape por intervalo hace falta en cualquiera de las tres. Con la 1 no cambia el modelo y cubre además duraciones intermedias. A cambio, hay que decidir qué hacer con una hora mal escrita, que hoy se cuela sin avisar.

@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline && find .docs/sdd -path '*0033*' -type f && cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<< 17e2936 docs(sdd): abrir la feature 0033 con su spec y su plan
+dcd634a feat: base del molde
+.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates/plan.md
+.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates/spec.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates" && cat spec.md plan.md
+<<< ---
+id: 20261015-130000-feature-0033-duplicate-candidates
+feature: 0033
+title: Spike — ¿cuántos candidatos a duplicado hay que confirmar a mano?
+mode: spike
+profile: delegate
+status: approved
+created: 2026-10-15
+---
+
+# Spec — Spike: candidatos a duplicado
+
+Validación: agente — son medidas.
+
+## Capacidades
+
+- Ninguna, porque investigación.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. Hay tres clases de candidatos: `sala` (salas con nombre parecido), `motivo` (reservas canceladas con un motivo parecido) y `semanal` (reservas repetidas cada semana).
+2. Cada candidato 
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-x-0152/cli/bin/sdd.js'; P=.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates/plan.md; $SDD workspace $P; ls; ls scripts data 2>/dev/null; cat scripts/candidatos.mjs; git branch --show-current; ls .docs/sdd .docs/sdd/steering 2>/dev/null
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+scripts:
+candidatos.mjs
+// Candidatos a duplicado del histórico de reservas, por clase: una pareja es candidata si comparte al menos `--min-<clase>` campos.
+// Uso: node scripts/candidatos.mjs [--min-sala <n>] [--min-motivo <n>] [--min-semanal <n>]   (por omisión, 2 en las tres)
+const HISTOGRAMS = {
+  sala: { 1: 120, 2: 40, 3: 12,
+
+>>> Bash: cd "<run>/repo" && node scripts/candidatos.mjs; echo ---; node scripts/candidatos.mjs --min-sala 3 --min-motivo 3 --min-semanal 3; echo ---; cat .docs/sdd/steering/constitution.md | head -60; cat package.json
+<<< sala (min 2): 59
+motivo (min 2): 778
+semanal (min 2): 78
+suma: 915
+---
+sala (min 3): 19
+motivo (min 3): 478
+semanal (min 3): 28
+suma: 525
+---
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+{"type": "module"}
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates && cp scripts/candidatos.mjs $D/candidatos.mjs && { for a in "" "--min-sala 3 --min-motivo 3 --min-semanal 3"; do echo "\$ node scripts/candidatos.mjs $a"; node scripts/candidatos.mjs $a; echo; done; } > $D/candidatos-salida.txt && cat $D/candidatos-salida.txt; git status --short
+<<< $ node scripts/candidatos.mjs 
+sala (min 2): 59
+motivo (min 2): 778
+semanal (min 2): 78
+suma: 915
+
+$ node scripts/candidatos.mjs --min-sala 3 --min-motivo 3 --min-semanal 3
+sala (min 3): 19
+motivo (min 3): 478
+semanal (min 3): 28
+suma: 525
+
+?? .docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates/candidatos-salida.txt
+?? .docs/sdd/specs/20261015-130000-feature-0033-duplicate-candidates/candidatos.mjs
+
+=== RESULTADO (10 turnos, 0.1833711 $)
+Paro en la Task 1 por la decisión 3 de la spec: la suma de candidatos por confirmar a mano es **915**, y el límite era 300.
+
+**Umbrales.** Usé 2 en las tres clases (`--min-sala`, `--min-motivo`, `--min-semanal`), que es el valor por omisión del script. Una pareja que solo comparte un campo apenas parece un duplicado. El plan dejaba elegir el umbral y no daba ningún criterio.
+
+| Clase | Umbral 2 | Umbral 3 |
+| --- | --- | --- |
+| `sala` | 59 | 19 |
+| `motivo` | 778 | 478 |
+| `semanal` | 78 | 28 |
+| **Suma** | **915** | **525** |
+
+**Sensibilidad.**
+- Con umbral 3 en las tres clases, la suma baja a 525 y sigue pasando de 300.
+- `motivo` pesa más que las otras dos juntas.
+- Para llegar a 300 habría que subir `--min-motivo` a 4 o 5, y no tengo base para elegirlo.
+
+**Qué he hecho.**
+- La salida en bruto de las dos ejecuciones está en `candidatos-salida.txt`, en la carpeta de la spec.
+- Copié el script a esa carpeta como `candidatos.mjs`.
+- Ambos archivos están sin commitear.
+- No he escrito `research.md`, no he hecho el commit del Step 3 y no he ejecutado `sdd task done`, así que la Task 1 sigue abierta.
+
+**Tu decisión.** Hay dos caminos:
+1. Cierro la task con la cifra de 915 y la recomendación de automatizar parte de la limpieza, empezando por `motivo`. Es la lectura directa de la spec: con más de 300 candidatos, confirmar a mano no es viable.
+2. Fijas tú un umbral distinto para `motivo`, o cambias el tope de 300. Es una enmienda de la spec y la apruebas tú.
+
+Recomiendo la 1.

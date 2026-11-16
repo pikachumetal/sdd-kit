@@ -1,0 +1,28 @@
+
+# turno 1
+## usuario
+Pensemos cómo guardar las reservas para que no se pierdan al reiniciar.
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: git ls-files | head -80; ls .docs/sdd 2>/dev/null
+> Bash: cat src/app.js PRODUCT.md ROADMAP.md package.json .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md
+> ToolSearch: select:WebFetch
+## agente
+Estoy comprobando en la documentación de Node si `node:sqlite` es estable en la versión 22. Lo necesito para plantear las opciones de guardado con datos verificados.
+> WebFetch: https://nodejs.org/docs/latest-v22.x/api/sqlite.html
+## agente
+❓ **¿Dónde guardamos las reservas?**
+
+Lo que he encontrado:
+- `src/app.js:3` guarda las reservas en un array en memoria, y por eso se pierden al reiniciar.
+- `reservar` hoy no añade nada al array. Solo devuelve un texto (`src/app.js:9`). Guardar bien implica que `reservar` guarde de verdad, y eso lo trataremos aparte.
+- `operations.md` fija Node 22 y cero dependencias externas. `PRODUCT.md` dice que solo lo usas tú, en tu propio servidor.
+- `node:sqlite` en Node 22 no necesita flag desde la 22.13.0, pero sigue en «Stability 1.1, Active development» ([documentación](https://nodejs.org/docs/latest-v22.x/api/sqlite.html)). La página no aclara si emite aviso de experimental.
+
+1️⃣ **Fichero JSON con `node:fs`.** Se lee al arrancar y se reescribe en cada cambio, escribiendo a un temporal y renombrando para que un corte a mitad no lo corrompa. Con `reservar Norte lun 10:00-12:00` queda una línea más en `reservas.json`, que puedes abrir, editar o copiar como backup. No añade dependencias. Cuesta que reescribe el fichero entero en cada cambio y que no hay consultas. Para decenas de reservas de un solo usuario no se nota.
+
+2️⃣ **SQLite con `node:sqlite`.** Una tabla `reservas`, con transacciones y consultas por día o sala. Queda atada a Node ≥ 22.13, y la API puede cambiar mientras siga experimental. Al arrancar tienes que crear la tabla. El fichero `.db` no se lee ni se edita a mano.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y el volumen es pequeño, así que lo que aporta SQLite no se aprovecha. Además los roadmaps 0008 (avisos por correo) y 0009 (exportar a `.ics`) solo necesitan leer la lista de reservas, y un JSON basta. A cambio, si algún día hay muchas reservas o varios procesos escribiendo a la vez, habrá que migrar a SQLite.
+
+¿Te parece bien el JSON o prefieres SQLite?

@@ -1,0 +1,186 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Read: <run>\repo\docs\qa\2026-10-12-informe.md
+<<< 1	# Informe de QA — 2026-10-12
+2	
+3	Pruebas de la semana sobre la última versión publicada.
+4	
+5	## Hallazgos
+6	
+7	1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+8	2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`. Arreglo propuesto: en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`.
+9	
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1 | head -50; cat .docs/sdd/sdd-kit.json; git branch --all
+<<< ls: cannot access '.docs/sdd/steering': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+docs/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+* develop
+  main
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/roadmap.md; ls .docs/sdd/specs; cat src/app.js; ls test src; cat package.json; git log --oneline | head
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres --planta 2; echo ---; node src/app.js libres --planta 2 | od -c | head -3; node src/app.js exportar | head -1; node src/app.js exportar | head -1 | od -c | head -2; grep -n "1.4.2\|csv\|CSV" -ri . --include=* --exclude-dir=.git | head; cat .docs/sdd/changelog.md | head -20
+<<< Norte (planta 1)
+---
+0000000   N   o   r   t   e       (   p   l   a   n   t   a       1   )
+0000020  \n
+0000021
+sala,día,franja
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n
+./docs/qa/2026-10-12-informe.md:7:1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+./src/app.js:14:function exportCsv() {
+./src/app.js:22:  if (cmd === 'exportar') return exportCsv();
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [Unreleased]
+
+### Added
+
+- Reserva recurrente se
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" id next --project-root "$PWD" --reserve --count 1; cat test/app.test.js | head -30
+<<< 0008
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+
+>>> Bash: cd "<run>/repo" && python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let t=fs.readFileSync('.docs/sdd/roadmap.md','utf8');
+t=t.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: \`salas libres --planta N\` lista salas de plantas inferiores; filtrar con \`===\` en \`roomsOnFloor\` (\`src/app.js\`), no con \`<\` | ⏳ |');
+t=t.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| \`salas libres --planta 2\` devuelve \`Norte (planta 1)\` (QA 2026-10-12, [informe](../../docs/qa/2026-10-12-informe.md) §2). Evidencia: \`node src/app.js libres --planta 2\` → \`Norte (planta 1)\` | Medio | **Actuar** → 0008 · causa: defecto del producto · arreglo: — |\n| La exportación a CSV pierde las tildes (QA 2026-10-12, [informe](../../docs/qa/2026-10-12-informe.md) §1) | Bajo | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo: \`node src/app.js exportar\` emite \`sala,día,franja\` en UTF-8 correcto; el informe cita la 1.4.2, que no consta en el changelog (última 1.4.1) |');
+fs.writeFileSync('.docs/sdd/roadmap.md',t)"
+git diff --stat; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< /usr/bin/bash: line 6: warning: here-document at line 5 delimited by end-of-file (wanted `EOF')
+
+>>> Bash: cd "<run>/repo" && git status --short; cat .docs/sdd/roadmap.md | head -22
+<<<  M .docs/sdd/roadmap.md
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+| 0008 | Patch: `salas libres --planta N` lista salas de plantas inferiores; filtrar con `===` en `roomsOnFloor` (`src/app.js`), no con `<` | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| `salas libres --planta 2` 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js"; node "$S" roadmap check --path .docs/sdd; echo "check=$?"; node "$S" roadmap publish --project-root "$PWD" --message "docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decisiones tomadas (decide tú): hallazgo 2 reproducido -> Actuar, fila 0008 (patch). El arreglo del informe (<= por <) no vale: con 2 sigue saliendo Norte (1<2); el correcto es ===. Hallazgo 1 no reproducido (la salida es UTF-8 correcta; 1.4.2 no consta en el changelog) -> Esperar 2.º ticket." .docs/sdd/roadmap.md; echo "publish=$?"; git log --oneline | head -3
+<<< roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+check=1
+destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+publish=1
+7267153 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && git add .docs/sdd/roadmap.md && git commit -q -F - <<'EOF'
+docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decisiones tomadas (decide tú):
+- Hallazgo 2 reproducido -> Actuar, fila 0008 (patch). El arreglo del
+  informe (<= por <) no vale: con planta 2 sigue saliendo Norte (1<2);
+  el correcto es ===.
+- Hallazgo 1 no reproducido (la salida es UTF-8 correcta; la 1.4.2 no
+  consta en el changelog) -> Esperar 2.º ticket.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline | head -2; git status --short
+<<< afdde91 docs(roadmap): triaje del informe de QA 2026-10-12
+7267153 feat: base del molde
+
+=== RESULTADO (12 turnos, 0.26153819999999994 $)
+He triado el informe: el hallazgo 2 pasa a una fila para arreglar y el 1 queda en espera. Lo he registrado en `.docs/sdd/roadmap.md` y lo he commiteado en `develop` (`afdde91`).
+
+- **Hallazgo 2, `salas libres --planta 2` devuelve `Norte (planta 1)`:** lo reproduje con `node src/app.js libres --planta 2`, que devuelve `Norte (planta 1)`.
+  - Está en Deuda técnica como **Actuar**, con causa «defecto del producto», y tiene la fila **0008** en Próximo, como patch.
+  - **El arreglo propuesto en el informe no vale.** Cambiar `<=` por `<` sigue devolviendo Norte, porque 1 < 2. Hay que filtrar con `===`, y la fila 0008 lo dice así.
+- **Hallazgo 1, tildes en la exportación CSV:** no lo reproduje. `node src/app.js exportar` saca `sala,día,franja` en UTF-8 correcto.
+  - Queda como **Esperar 2.º ticket**, con causa «sin determinar» y falta «reproducirlo».
+  - El informe habla de la 1.4.2, y esa versión no aparece en el changelog, que llega hasta la 1.4.1. Puede ser el terminal de QA o una versión distinta de la que tengo aquí.
+  - No creé fila para este.
+
+- **Comprobación de forma:** `sdd roadmap check` falla con dos avisos que ya había y no son de mis líneas: el encabezado `### v0.3.0 (…)` y la cabecera de la tabla «Deuda técnica» (`Plan` en vez de `Destino`). Los dejo para la migración del roadmap a la forma de la plantilla.
+- **Commit directo:** `sdd roadmap publish` se negó porque `develop` está checked out en este mismo worktree con el cambio sin commitear. Hice el commit con git a mano, solo de `roadmap.md`.
+
+Siguiente fila: **0008**, un patch pequeño. Si quieres hacerlo en esta sesión, di "arráncalo".

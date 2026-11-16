@@ -1,0 +1,50 @@
+--- [13]
+Ya estoy en la rama. Compruebo el aislamiento y corro el gate base en un worktree separado, sin tocar el árbol que puede estar leyendo la verificación lenta.
+
+--- [24]
+La Task 1 está commiteada (`9006bc1`), con 4/4 en `node --test test/cancel.test.js`. La Task 2 no ha empezado: toca los mismos ficheros (`src/app.js`, `test/cancel.test.js`) y editarlos ahora podría invalidar la verificación lenta si lee este árbol. Espero los 10 minutos con un temporizador y sigo cuando termine; me avisará solo.
+
+--- [27]
+La ventana de 10 minutos ha pasado sin dejar rastro de la verificación lenta, y la base no se ha movido. Sigo con la Task 2: primero el RED.
+
+--- [37]
+No tengo herramienta de subagentes en esta sesión, así que aplica la vía de autorrevisión del kit: leo los encargos por eje y paso cada revisión contra el paquete.
+
+--- [43]
+**Las dos tasks de la 0010 están commiteadas y paro en la validación, pero la feature no se puede cerrar todavía.** Quedan dos cosas abiertas: `canceladas` sale vacío en la terminal real y no he podido confirmar la verificación lenta. El gate `node --test` da 7/7 sobre `9cc59ae`; después solo entró un commit de documentación.
+
+## Lo que queda abierto
+1. **`canceladas` no ve lo cancelado en la terminal real.** Las reservas viven en memoria, así que cada ejecución empieza de cero: tras `cancelar Norte lun --motivo "sala ocupada"`, `canceladas` imprime una línea vacía. El test pasa porque lo hace todo en el mismo proceso, y el Intent de la spec («dejar rastro») no se cumple de verdad. Ya pasa con el resto de la app, y no lo he tocado porque guardar en disco cambiaría el Approach de la spec.
+2. **La verificación lenta sigue sin confirmar.** No encontré ningún proceso ni salida suya, y el plan no la declara. Esperé los 10 minutos antes de empezar la Task 2, por no cambiar los ficheros que pudiera estar leyendo. Si falla, abre una ronda de arreglos en la Task 1.
+3. **La revisión final no fue independiente.** Esta sesión no tiene subagentes, así que hice yo los ejes Spec y Código sobre mi propio trabajo, y eso pesa menos que unos revisores nuevos. No he pasado por la re-revisión porque tampoco hay quien la haga.
+
+## Smoke
+
+| THEN | Resultado |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)» ✅ |
+| Motivo fuera de la lista | «motivo no válido: cambio de planes, sala ocupada, otro» ✅ |
+| Sin `--motivo` | el mismo mensaje ✅ |
+| `canceladas` → «Norte lun — sala ocupada» | ✅ en el test, ❌ en ejecuciones separadas |
+
+## Decisión para el dev-lead
+**¿Se acepta que `canceladas` no conserve nada entre ejecuciones?** Recomiendo aceptarlo aquí y abrir una fila en el roadmap para la persistencia: afecta a toda la app, incluidas `reservar` y `anular`, y no solo a esta feature. Si el rastro tiene que ser real ya, hace falta una enmienda de la spec con una task nueva.
+
+También me falta el resultado de la verificación lenta, o saber dónde mirarlo. Mientras tanto no invoco `sdd-archive`, y conservo el workspace del plan porque la revisión no ha quedado limpia.
+
+## Rulings I made
+- **Task 1, verificación lenta:** no doy su resultado por visto. Coste si es erróneo: una ronda de arreglos en la Task 1.
+- **Task 1, test nuevo:** añadí «cancelar sin motivo», un AND de la spec que nadie cubría y que falló contra el código base antes de pasar. Coste si es erróneo: un test de más.
+- **Task 1, test repuesto:** el diff recibido quitó «cancelar sin reserva lo dice» y lo devolví con un motivo válido. Pasa también contra el código base, así que solo fija lo que ya hacía. Coste si es erróneo: un test de más.
+- **Revisión, eje Arquitectura:** no sale, porque el diff no trae módulo, dependencia, contrato ni datos nuevos, y el plan no lo pedía. Coste si es erróneo: una revisión de frontera que no se hizo.
+- **Revisión, persistencia:** sin arreglar y llevada a esta validación. Coste si es erróneo: el motivo no deja rastro real.
+
+## Deferred minors
+- `canceladas` sin ninguna cancelada imprime una línea vacía, sin mensaje.
+- Los tests de `canceladas` y de «sin motivo» dependen del estado compartido del módulo y del orden del fichero.
+
+## Aviso del kit
+Esta sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizarlo, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+Commits: `9006bc1`, `9cc59ae` y `a8f6333`. Los rulings están en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`.
+

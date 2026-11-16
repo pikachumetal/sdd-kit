@@ -1,0 +1,99 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leer el contexto SDD del proyecto (docs, no código). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\PRODUCT.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\ROADMAP.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\steering\constitution.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\steering\operations.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls src test; cat package.json; ls node_modules 2>&1 | head -3
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\src\app.js
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat README.md; ls .docs/sdd/specs/*; node "D:/code/.worktrees/sdd-
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references" && cat control-profiles.md nombrado.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references" && grep -n -i -B2 -A12 "sequence" nombrado.md | he
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git remote -v; git branch -a; SDD="node D:/code/.worktrees/sdd-kit
+## agente
+Ahora: creo la rama `feature/0010-exportar-csv` y reservo el id. Queda: anuncio y entrevista de la spec, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git checkout -b feature/0010-exportar-csv && node D:/code/.worktre
+> Skill: sdd-kit:sdd-grilling
+> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references/spec-writing.md"
+## agente
+Ahora: anuncio del carril y nota de comprensión; primera pregunta de diseño. Queda: terminar la entrevista, escribir la spec y pasar por su aprobación, ~10 min.
+
+**Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto)**
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+Rama `feature/0010-exportar-csv` creada, id 0010 reservado (el proyecto no tiene remoto; el contador es local).
+
+**Lo que he entendido (corrígeme):** hoy, para cuadrar una sala los lunes, el responsable no tiene forma de sacar sus reservas de la herramienta. Quieres un comando nuevo de `salas` que, dada una sala, escriba sus reservas en CSV, para abrirlo en la hoja de cálculo. Éxito: el responsable lo ejecuta el lunes, abre el CSV sin retoques y las columnas le sirven para cuadrar. Hoy una reserva es `{ room, day, slot }` y los datos viven en memoria en `src/app.js`; no hay persistencia, y por eso el CSV solo puede reflejar lo que ese listado contenga.
+
+❓ **¿Cómo se pide la sala y adónde sale el CSV?**
+Los comandos actuales son `libres <franja>`, `reservar … --cada-semana` y `cancelar <día> <franja>`, y devuelven texto por stdout (`console.log`). No hay ficheros de salida en el proyecto.
+1️⃣ **`salas exportar <sala>` escribe el CSV por stdout.** Ejemplo: `salas exportar Norte > norte.csv`. Casa con el resto de comandos y no añade lógica de ficheros. Coste: el responsable tiene que usar la redirección `>` de su terminal.
+2️⃣ **`salas exportar <sala> --salida norte.csv` escribe un fichero.** Más cómodo si no se usa la redirección. Coste: añade escritura en disco (rutas, sobrescritura) que hoy no existe.
+➡️ **Recomiendo 1️⃣**, porque es lo más pequeño y es como ya funcionan los comandos. A cambio, depende de que el responsable sepa redirigir la salida.
+
+# turno 2
+## persona
+Opción 1: `salas exportar <sala>` por stdout, y yo lo redirijo a un fichero con `>`.
+## agente
+Decidido: `salas exportar <sala>` por stdout, y tú redirigiendo con `>`.
+
+❓ **¿Con qué separador sale el CSV?**
+Las reservas tienen tres datos: `room`, `day` y `slot` (por ejemplo `Norte · lun · 10:00-12:00`). El proyecto está en castellano y las hojas de cálculo en configuración regional española suelen esperar `;` como separador. Con `,`, Excel en español abre todo en una sola columna al hacer doble clic.
+1️⃣ **Separador `;`, con cabecera `sala;dia;franja`.** Ejemplo: `Norte;lun;10:00-12:00`. Se abre en columnas con doble clic en Excel en español. Coste: no es el CSV «estándar» con comas, y otra herramienta o una hoja configurada en inglés puede necesitar indicar el separador.
+2️⃣ **Separador `,`, con cabecera `sala,dia,franja`.** Es el CSV estándar. Coste: en Excel en español hay que importarlo con «Datos → Desde texto» en vez de abrirlo directamente.
+➡️ **Recomiendo 1️⃣**, porque cuadras las reservas los lunes en una hoja de cálculo y lo útil es que se abra sin pasos extra. A cambio, si tu hoja usa comas, tendrías que cambiarlo. Dime cuál usa la tuya.
+
+# turno 3
+## persona
+Con punto y coma (`;`), porque el Excel del responsable está en castellano. Cabecera y resto, decide tú.
+## agente
+Decidido: separador `;`. El resto lo decido yo y irá en «✋ Decisiones que he tomado yo». Ahora: leo la plantilla de spec y las reglas de coherencia y revisión. Queda: escribir la spec, revisarla y presentarla para tu aprobación, ~8 min.
+> Skill: sdd-kit:sdd-templates
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-matt/skills/sdd-propose/references" && cat coherence-pass.md review-spec.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\.temp\i\kit-matt\skills\sdd-templates\templates\spec-template.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git branch --show-current && cat .docs/sdd/specs/20260917-090000-t
+> ToolSearch: select:Agent
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git grep -niE "exportar|csv|0010" -- . ':!.docs/sdd/specs'; echo "
+> Write: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-145501-feature-0010-exportar-csv\spec.md
+## agente
+Ahora: repaso de coherencia, con la fusión del delta probada en una copia. Queda: presentar la spec para tu aprobación, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node D:/code/.worktr
+> Edit: D:\code\.worktrees\sdd-kit\feature-0341-interviewer-spike\<run>\repo\.docs\sdd\changes\20261113-145501-feature-0010-exportar-csv\spec.md
+## agente
+Ahora: presento la spec en la puerta de aprobación. Queda: tu respuesta; luego plan e implementación (~15 min).
+
+La spec está escrita en `.docs/sdd/changes/20261113-145501-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`.
+
+🦆 Hoy el responsable de una sala no puede sacar sus reservas de `salas`. Con esto ejecutará `salas exportar Norte > norte.csv` y obtendrá un fichero que su Excel en castellano abre en columnas con doble clic: `sala;dia;franja` y debajo `Norte;lun;10:00-12:00`. Si se equivoca de sala, el aviso sale por el canal de errores y no acaba dentro del CSV.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Cabecera `sala;dia;franja`, minúsculas y sin tilde: la salida va sin BOM y una tilde se vería rota en Excel.
+2. Una fila por reserva de esa sala, en el orden de la lista.
+3. Sala conocida sin reservas (`Sur`): solo la cabecera, código 0.
+4. Sala desconocida o sin indicar: stdout vacío, mensaje por stderr (`sala desconocida: Oeste` / `uso: salas exportar <sala>`) y código 1. Si no, con `>` el aviso acabaría en el fichero como una fila falsa.
+5. El nombre de la sala se compara exacto, con mayúsculas (`Norte`, no `norte`), como `libres`.
+6. Sin comillas ni escapes: ningún dato actual lleva `;` ni comillas.
+7. Capacidad nueva `booking-export`. Enfoque A: `run` lanza un `Error` y el punto de entrada lo lleva a stderr con código 1. Frente a B, devolver el aviso como texto, que mete el aviso en el CSV.
+
+**Una cosa que debes saber:** la regla pedía dos revisores de spec, porque el CSV es un formato que consume otra herramienta. En esta sesión no tengo herramienta para lanzar subagentes, así que no se lanzó ninguno. Hice una autorrevisión, anotada en «Hallazgos de la review» (3 aceptados, 1 rechazado, ningún Crítico). Es una revisión más floja que la prevista.
+
+Validación: la haces tú, abriendo el CSV en tu Excel en castellano.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajusto.
+
+# turno 4
+## persona
+déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+De acuerdo. La spec queda en espera: no hay plan ni código.
+
+Está sin commit en `feature/0010-exportar-csv`, en `.docs/sdd/changes/20261113-145501-feature-0010-exportar-csv/spec.md`, con estado `draft` y aprobación `pendiente`. Cuando quieras seguir, di «retoma la feature» y la presento de nuevo para tu aprobación. Si prefieres que la revisen subagentes de verdad, dilo entonces y se lanzan desde una sesión que pueda.

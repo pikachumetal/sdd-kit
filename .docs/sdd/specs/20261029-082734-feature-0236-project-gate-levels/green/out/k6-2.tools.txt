@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Glob: **/gate.json
+<<< gate.json
+
+>>> Bash: ls -a .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 1
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Read: <run>\repo\gate.json
+
+>>> Bash: cat .docs/sdd/operations.md; cat .docs/sdd/sdd-kit.json; git branch --show-current
+<<< 1	{"tasks": {
+2	  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+3	  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+4	}}
+5	
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"p
+
+=== RESULTADO (7 turnos, 0.1490469 $)
+Ahora: clasifico el cambio. Queda: tu confirmación, y después editar, correr el gate y hacer el commit (~3 min).
+
+**Carril: config.** Añadir una ruta a los `inputs` de una tarea del gate no cambia lo que ve o puede hacer quien usa el producto.
+
+🦆 Voy a tocar solo `gate.json`. En `rooms:test`, la lista `inputs` pasará de `["src/rooms.js", "test/rooms.test.js"]` a `["src/rooms.js", "src/shared/**", "test/rooms.test.js"]`. Con eso, un cambio en `src/shared/` hará que `--affected` ejecute `rooms:test`, cosa que hoy no pasa. Después correré el gate de cierre de `operations.md` (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`). Si sale en verde, haré un único commit con la línea `Gate:`. Si sale en rojo, no commiteo. Estamos en `develop`, que no es la rama estable `main`, así que el commit puede quedarse ahí. No creo spec, plan ni fila de roadmap.
+
+No tengo la herramienta de preguntas en esta sesión. ¿Lo hago así? Responde «sí» y sigo. Si quieres otra posición para la ruta en la lista, dímela.
+
+>>> Edit: <run>\repo\gate.json
+<<< The file <run>\repo\gate.json has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: ls node_modules 2>&1 | head -3; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop 2>&1
+<<< ls: cannot access 'node_modules': No such file or directory
+No tasks affected by changed files. Unable to execute action pipeline.
+
+>>> Bash: node scripts/gate.mjs run bookings:test rooms:test 2>&1
+<<< ▪ bookings:test (4 passed, 0 failed)
+▪ rooms:test (1 passed, 0 failed)
+Tasks: 2 completed, 0 skipped
+
+>>> Bash: git add gate.json && git commit -q -F - <<'EOF'
+chore: añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run bookings:test rooms:test` → rooms:test: corrió 1/1 (sin --affected, porque se editó su definición) · bookings:test: corrió 4/4
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -1; git status --short
+<<< aba9b44 chore: añade src/shared/** a los inputs de rooms:test
+
+=== RESULTADO (5 turnos, 0.1846558 $)
+Listo. `rooms:test` en `gate.json` ahora tiene `src/shared/**` entre sus `inputs`, y el cambio está commiteado en `develop` (`aba9b44`).
+
+- **Gate:** el de cierre con `--affected` no ejecutó nada, porque ningún input cambió. Como edité la definición de `rooms:test`, corrí `node scripts/gate.mjs run bookings:test rooms:test` sin el filtro. `bookings:test` pasó 4/4 y `rooms:test` pasó 1/1.
+- **Rama:** `develop` no es la rama estable, así que no hizo falta parar. No hice merge ni push.
+- **Qué no se creó:** spec, plan ni fila de roadmap, porque es el carril config.
+
+Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

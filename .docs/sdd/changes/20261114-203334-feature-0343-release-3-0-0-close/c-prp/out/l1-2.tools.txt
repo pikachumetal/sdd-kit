@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del co
+
+>>> Bash: cd "<run>/repo" && cat package.json; ls -R src test scripts; grep -rn -i "libres" --include=* . --exclude-dir=.git | head -30; cat .docs/sdd/steering/constitution.md | head -60
+<<< {"type": "module", "engines": {"node": ">=20"}}
+scripts:
+lint.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+./CHANGELOG.md:10:- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](.docs/sdd/specs/20260917-090000-task-0006-free/)
+./src/app.js:28:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+./test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+./test/app.test.js:6:  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` →
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; ls .docs/sdd/specs/*; cat .docs/sdd/specs/*free*/spec.md | head -60; cat .docs/sdd/steering/architecture.md | head -30
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+
+=== RESULTADO (10 turnos, 0.16983629999999997 $)
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas, la spec con su aprobación, el plan y la implementación, ~25 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido, corrígeme:**
+
+- Hoy `salas libres 10:00-12:00` mira solo la franja. Las reservas guardan también el día (`lun`, `mar`…), pero `libres` no lo usa. Ahora mismo, una reserva de Norte el lunes de 10:00 a 12:00 hace que Norte salga ocupada en esa franja cualquier día.
+- Quieres que `libres` pueda recibir también el día, para saber qué salas están libres en un día concreto.
+- No es un patch, aunque parezca pequeño: no has fijado la sintaxis, qué pasa si no das el día ni el mensaje ante un día no válido. Son decisiones de comportamiento, así que va como feature, en modo full. Prevé unas 2 tareas, así que no propongo dividirla.
+
+❓ ¿Para qué vas a usar `libres` con el día, qué quieres poder hacer que hoy no puedes?

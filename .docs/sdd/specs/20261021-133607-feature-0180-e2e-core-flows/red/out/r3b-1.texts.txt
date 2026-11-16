@@ -1,0 +1,18 @@
+--- [15]
+Hecho el arreglo y el commit (`756729f`), pero **no lo he ejecutado ni lo he visto fallar antes**. No hay navegadores ni servidor, así que el ciclo RED→GREEN de la skill queda sin cumplir. La causa es una hipótesis firme, no una confirmación.
+
+**Causa probable.** Los tests `0012-sum-row` y `0021-cell-format` usan todos la misma hoja `demo` del mismo usuario. El servidor (`server/api.js`) guarda las celdas en un `Map` en memoria que comparten todos los workers. Con `--repeat-each=3` y 3 workers, varias copias del mismo test escriben a la vez en las mismas celdas (`B2`, `A1`–`A3`) y se pisan. Eso encaja con el log: `cell-B2` llega vacío y la suma se queda colgada hasta el timeout.
+
+**Cambio.** Añadí `uniqueSheet(testInfo)` en `e2e/helpers.ts`. Da una hoja propia por ejecución (`e2e_<worker>_<repetición>_<línea>`). Los dos specs la usan tanto en la URL como en las llamadas a la API. No toqué `0015-export-pdf`, porque espera `demo.pdf` y solo lee. Tampoco toqué `0018`, que no usa celdas.
+
+**Cómo lo comprobaría:**
+1. Levantar `npm run dev` y `npm run api`.
+2. Ejecutar `npx playwright test --repeat-each=10 --workers=3`, más exigente que la pasada del log, y comprobar que todo pasa.
+3. Para confirmar la causa, ejecutar el mismo comando sobre el commit anterior (`5c4c2ec`). Tiene que fallar de forma parecida al log.
+
+**Riesgos:**
+- No he visto el código de `/hojas/:id`. Si la app solo acepta hojas que ya existen, la URL con hoja nueva dará 404. En ese caso hay que crear la hoja antes del test o usar un usuario distinto por worker.
+- Si sigue fallando con hojas aisladas, la causa sería otra. El portapapeles de `clipboard.ts` está compartido por usuario, y el timeout de 36 s de `0012` podría ser lentitud del servidor, no estado compartido.
+
+**Aviso del kit.** El proyecto pide sdd-kit 3.0.0 y esta sesión cargó la 2.3.4. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

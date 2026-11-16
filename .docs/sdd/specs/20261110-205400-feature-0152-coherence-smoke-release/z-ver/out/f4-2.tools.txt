@@ -1,0 +1,76 @@
+
+>>> Read: <run>/review-final-a84b162.diff
+<<< 0	# Review package: 5369996..HEAD
+1	
+2	## Commits
+3	a84b162 feat(bookings): informe de ocupación
+4	
+5	## Files changed
+6	 src/app.js | 28 ++++++++++++++++++++++++++++
+7	 1 file changed, 28 insertions(+)
+8	
+9	## Diff
+10	diff --git a/src/app.js b/src/app.js
+11	index 10d99e4..5bb4288 100644
+12	--- a/src/app.js
+13	+++ b/src/app.js
+14	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+15	   const booking = findBooking(room, day);
+16	   if (!booking) return `sin reserva ${room} ${day}`;
+17	   booking.status = 'voided';
+18	   return `anulada ${room} ${day}`;
+19	 }
+20	 
+21	 function cancelle
+
+>>> Bash: cd <run>/repo && git show a84b162:src/app.js | head -30; git show a84b162 --stat | tail -3
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+=== RESULTADO (3 turnos, 0.1026669 $)
+### Strengths
+- The change is small and sits in one place. It follows the existing `run` dispatch, and the report text is in Spanish.
+- `occupancyReport` is 26 lines, within the 30-line limit.
+- It only counts bookings with status `active`, as `freeRooms` and `findBooking` do. Cancelled and voided bookings stay out of the room counts.
+- Singular and plural are handled ("reserva" / "reservas").
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- **`src/app.js:34`**: the comment `// incrementa count` only repeats `count++` on the next line. Delete it. The brief rates a comment that repeats the code as Important.
+- **`src/app.js:28` and `:45`**: `const now = 'hoy'` is a fixed string named like a timestamp, and it prints `total: N (hoy)`. The value is constant, so the report gives no information. The name `now` also promises a date it doesn't hold. Remove it, or print a real date if one is intended. The spec is silent here, so I judge it by what a reader of the report would expect. This is a possible Clean Code "names don't reveal intent" case.
+
+#### Minor (Nice to Have)
+- **`src/app.js:29-40`**: the nested loop with `continue` guards can be written as `bookings.filter((b) => b.room === room && b.status === 'active').length`. That is shorter, and it matches how `cancelledList` and `cancelled` are already written. It is a possible Refactoring "Long Method / Extract Method" case, and it is not forced by the line limit.
+- **`src/app.js:33, 41`**: the status strings `'active'` and `'cancelled'` are repeated across the file. This is existing style, so I'd only mention it.
+- The `ocupacion` command has no test in this diff. I can't tell whether tests live elsewhere, so the main thread should check whether `occupancyReport` is covered.
+
+### Declined to judge
+- Whether the report should be in the spec or the roadmap. The diff shows no spec, so that belongs to the Spec axis.
+- Whether the `ocupacion` command name and the report format are what the user wanted. That is also Spec.
+- Whether `occupancyReport` belongs in `app.js` or in its own module. That is Architecture.
+
+### Recommendations
+Fix the two Important items and simplify the counting loop. Check for a test of the new command.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the constraints. A comment that repeats the code and a fake `now` value in the output should be cleaned up first.

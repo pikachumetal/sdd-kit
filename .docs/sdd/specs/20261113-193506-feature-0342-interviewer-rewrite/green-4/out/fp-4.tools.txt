@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md && ls -R .docs | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; ls -R src test; grep -rn "libres\|free" src | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; grep -n "libres" -B2 -A6 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.13407560000000002 $)
+El comando que pides ya existe, así que no abro ninguna feature todavía.
+
+- **Lo que hay:** `libres <franja>` está en `src/app.js:10`. Devuelve las salas sin reserva en esa franja y tiene su test, `libres excluye la sala reservada en la franja`.
+- **Cómo se hizo:** la task 0006 (`.docs/sdd/specs/20260917-090000-task-0006-free/`) está en `done`, con su walkthrough.
+- **Lo que no hace:** puede que lo que echas en falta sea alguno de estos huecos. Los he visto leyendo el código, sin ejecutarlo.
+  1. **Día:** `freeRooms` compara solo la franja y no el día, aunque cada reserva guarda `day`. Si Norte está reservada el lunes de 10:00 a 12:00, `libres 10:00-12:00` da «Sur» también para el martes.
+  2. **Solapes:** solo coincide la franja exacta. Con `10:00-12:00` reservada, `libres 11:00-13:00` da Norte como libre aunque se solapa.
+  3. **Formato:** no se valida el formato de la franja. Ya está en la deuda como «Sin validación del formato de franja horaria».
+
+¿Qué quieres que haga?
+
+1. **Ampliar `libres` para que tenga en cuenta el día y los solapes (recomendada).** Cambia lo que ve el usuario y hace falta más de un test. Iría como feature en modo full, con una fila nueva en el roadmap (0010).
+2. **Solo el formato de franja:** sería un patch pequeño, saldando esa deuda.
+3. **Otra cosa:** si pensabas en un comando distinto, dime cuál.
+
+Hasta que me respondas no creo rama, carpeta ni id.
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js libres 11:00-13:00; cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/skills/sdd-propose/references/spec-writing.md" | head -80
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Sur
+Norte, Sur
+# Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+If neither the user nor the project says why they want it, a
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r5/skills/sdd-propose/references" && head -40 control-profiles.md; grep -n "sequence" nombrado.md | head
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (5 turnos, 0.22104610000000002 $)
+Ahora: abro la feature con tu enunciado tal cual y empiezo la entrevista. Queda: la entrevista, la spec con su aprobación y el plan, ~15 min, ~0 $ (sin subagentes).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres un comando nuevo para ver qué salas están libres en una franja. Mantienes que no existe. Lo anoto en tus palabras: «mantengo lo que dije». Ya te señalé una vez que `libres` hace algo parecido, así que sigo adelante con tu enunciado aunque se solape con él. Lo que ya hay:
+
+```text
+$ node src/app.js libres 10:00-12:00   →  Sur
+$ node src/app.js libres 11:00-13:00   →  Norte, Sur   (Norte está reservada de 10:00 a 12:00 el lunes)
+```
+
+El comando que quieres tiene que comportarse distinto o aportar algo que `libres` no da, y eso es lo que necesito saber antes de decidir cómo construirlo.
+
+¿Qué esperas que haga el comando nuevo que `libres` hoy no te da?

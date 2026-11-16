@@ -1,0 +1,70 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [17]
+Estoy en el paso 0.6: `HEAD` (818ca99) se movió desde lo último que revisó la revisión final (720e07c), con un commit solo de docs. Voy a lanzar la única re-revisión que exige el cierre.
+
+--- [23]
+La re-revisión está en marcha en segundo plano, con su vigilante de silencio. No escribo ningún registro hasta que vuelva y quede cerrada.
+
+**Estado del cierre de la 0010:**
+- **Paso 0.1:** el árbol está limpio. No hay borradores de `walkthrough.md` ni de `capabilities/`, así que los escribiré yo en el cierre.
+- **Paso 0.2:** `merge --check` dice `destino: listo`. La base es `develop`.
+- **Paso 0.3:** no hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Paso 0.4:** la spec está `approved` y firmada por Laura. El modo es `full`.
+- **Paso 0.6:** la revisión final fue sobre 720e07c. `HEAD` es 818ca99, un commit de solo docs (17 líneas, crea `tasks.md`) que esa revisión no vio. No hay línea `Re-revisión:`, así que toca la única re-revisión.
+
+Cuando termine seguiré con la validación en campo (`validation.mode: field`, la hago yo con mi smoke y la suite), el walkthrough, la fusión de la capacidad `bookings`, el roadmap y el merge a `develop`.
+
+--- [31]
+### New Breakage in the Fix Diff
+- **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. The gate ruling is based on a race that doesn't exist, and it changes the closing gate without saying so.
+  - **The race it describes can't happen.** `node --test` runs each test file in its own process by default, so `test/app.test.js` and `test/cancel.test.js` never share the in-memory store in `src/app.js`. Within one file, top-level `test()` calls already run one after another. `--test-concurrency=1` only serializes the two files, so it fixes nothing.
+  - **It records debt that doesn't exist.** "hasta aislar el almacén por test" will mislead whoever acts on it.
+  - **The "coste si es erróneo" is wrong.** The stated cost ("la suite tarda el doble") isn't the real one. If the ruling is wrong, the real cost is a false diagnosis left in the record.
+  - **It may point away from the real flake.** The intermittent failure in this repo is the e2e server crashing on its first request: `server.mjs` writes `env-crash` and runs `process.exit(1)`, from commit 16bdfca. That has nothing to do with `node --test`.
+  - **The gate drifts from the plan without an amendment.** The plan sets the closing gate to `node --test` (`plan.md`, §3). The ruling replaces it with another command, and neither the plan nor the spec records the change.
+  - **It's filed under Task 2, but it's about the whole-branch gate**, not that task.
+  - **Fix:** remove the ruling and keep the plan's `node --test`. If a real race was seen, record the actual symptom and its cause instead.
+- **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. Task 1 ("Cancelar con motivo") cites commit `720e07c`, but it was built in `91d882c` ("feat(bookings): cancelar con un motivo de la lista", which touches `src/app.js` and `test/cancel.test.js`). `720e07c` is Task 2. Both commits exist, but Task 1 points to the wrong one. It should read `91d882c`, or `91d882c, 720e07c` if the e2e changes in 720e07c are counted.
+
+The rest of `tasks.md` matches the repo. The tasks agree with the plan (two tasks, Native, matching `.docs/sdd/sdd-kit.json`), the final-review line agrees with the brief (Spec and Code clean on 720e07c), and the text is in Spanish (art. 4). Nothing outside `tasks.md` changes, so no code or tests are affected.
+
+### Out-of-Scope Observations
+- `server.mjs` (commit 16bdfca, before the feature) deliberately crashes the server on its first `/run` unless the `env-crash` mark exists in the git common dir. This is the likely source of the intermittent failures any ruling should describe. It's worth recording as tech debt, but it's outside this range.
+- `spec.md`: the "Decisiones" list jumps from 1 to 3. It's cosmetic and was already there before this range.
+- The spec case "sin `--motivo` responde lo mismo" has no test in `test/cancel.test.js`. The code covers it (`reasonOf` returns `undefined`, which isn't in the list). The final review on 720e07c already saw this.
+
+### Verdict
+**Fix round:** Findings remain open:
+- Important: `tasks.md:17`. Gate ruling with a false premise, plus a gate change from the plan that no amendment records.
+- Minor: `tasks.md:10`. Task 1 cites 720e07c instead of 91d882c.
+
+--- [49]
+Estoy contrastando la suite E2E, que salió roja la primera vez y verde la segunda. Ahora la paso sobre `develop` en un worktree aparte.
+
+--- [68]
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…** nada del código. En `tasks.md` retiré un ruling de una sesión anterior (`--test-concurrency=1` en el gate) y corregí el commit citado de la Task 1 (91d882c, no 720e07c). El ruling decía que había una carrera entre tests sobre el almacén en memoria. No la hay, porque `node --test` ya corre cada fichero en su proceso. Esa bandera tampoco estaba en ningún gate.
+
+**Cómo se cerró** (validación en campo, la hice yo)
+- **Smoke:** 4 de 4 THEN con ejecución real. `canceladas` suelto desde la terminal sale vacío porque el almacén es en memoria. Lo verifiqué en un solo proceso y con la E2E.
+- **Suite:** unit 5/5. E2E 7/7 en 48,1 s.
+- **Gate:** `node --test test/ && node e2e/run.mjs` → unit corrió 5/5 · e2e corrió 7/7, sobre el commit de cierre d3c9d9e.
+- **Revisión:** la final (Spec y Código) fue limpia sobre 720e07c. El commit de docs posterior no lo había visto nadie, así que lancé la re-revisión única. Devolvió 1 Important y 1 Minor, los dos sobre `tasks.md`. Verifiqué ambos y los corregí en el cierre.
+- **Capacidad:** `bookings` creada con `sdd capability merge`.
+- **Roadmap:** la fila 0010 pasa a ✅. `roadmap check`, `decision check` y `capability check` salen en 0.
+- **Retro:** una señal, el error que cazaría un chequeo. Su salida es una línea en `operations.md` §Testing y una fila en `debt.md`.
+- No hay `estimation.md`, así que no hay tiempo real ni log de estimación.
+
+**Pendiente y avisos**
+- **E2E roja la primera vez:** salió 0/7 con `ERR_CONNECTION_REFUSED`, porque el servidor de la suite cae en la primera petición de un clon (`server.mjs`, 16bdfca). La contrasté sin limpiar estado. La E2E entera pasa 7/7 en la rama y 5/5 en `develop`, así que no se repite. Queda fila en «Por triar» y el workaround apuntado en `operations.md`.
+- **Presupuesto E2E:** 48,1 s frente a los 0,5 min declarados. Anoté la fila de deuda. El README menciona `E2E_TRACE=light` como atajo de Laura. No lo apliqué al gate, porque cambia la traza y esa decisión es de Laura.
+- **CI:** `operations.md` no declara CI de la base, así que no leí ninguna.
+- **Push:** no hecho, porque `merge.push` no lo autoriza (y el repo no tiene remoto).
+
+Si quieres, puedo preparar el ticket de mejora del kit con `sdd-feedback`. Esta sesión no dejó ninguna línea `Retro: … → ticket del kit`.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (abd8dd6) · push: no hecho: `merge.push` no lo autoriza
+

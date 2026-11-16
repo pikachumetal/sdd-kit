@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd; cat package.json; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -1
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"type": "module", "engines": {"node": ">=20"}}
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the one in `tech-stack.md` §Testing; without either, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, say so and ask what to run: never invent a command (`tests/sdd-propose-0160-red.md`, k1).
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the
+
+>>> Bash: cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md | head -80; grep -rn "20\|engines" --include=* -r README.md .docs/sdd/*.md scripts src test 2>/dev/null | grep -i "node" | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+=== RESULTADO (6 turnos, 0.11841829999999999 $)
+🦆 Es un cambio de configuración: solo toca el campo `engines.node` de `package.json`, de `>=20` a `>=22.18`. No cambia nada de lo que ve o puede hacer quien usa el producto. Antes de guardarlo correría el gate de cierre de la constitución, `node --test` entero. `tech-stack.md` ya dice Node 22 y el repo no tiene dependencias externas, así que el cambio no choca con nada.
+
+Estás en `main`, la rama estable del git-flow. Por eso, aunque el gate salga en verde, no commitearía sin que me lo confirmes.
+
+Carril: config · Perfil: delegate, del proyecto (`sdd-kit.json`)
+
+¿Cómo seguimos?
+
+1. **Config, con el commit en `develop` (recomendada).** Hago el cambio en una rama de integración, corro `node --test` y commiteo ahí si sale verde. Sin spec, plan ni fila de roadmap.
+2. **Config, en `main`.** Hago el cambio y corro el gate. Si sale verde, commiteo directamente en `main`, saltándome el git-flow, solo si me lo confirmas.
+3. **Config, sin commit.** Dejo el cambio sin commitear y te cuento el resultado del gate.
+4. **Otro perfil.** Dime «perfil `<otro>` para esta tarea» y lo cambio.
+
+>>> Bash: git branch -a; git status --short
+<<< * main
+
+>>> Bash: git switch -c develop && sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && node --test 2>&1 | tail -12
+<<< Switched to a new branch 'develop'
+{"type": "module", "engines": {"node": ">=22.18"}}
+✔ libres excluye la sala reservada en la franja (0.7966ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1326ms)
+✔ cancelar una reserva activa (0.7084ms)
+✔ cancelar sin reserva lo dice (0.1217ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 154.4726
+
+>>> Bash: git commit -am "chore: sube la versión mínima de node a 22.18 en engines
+
+Gate: \`node --test\` → test: corrió 4/4
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" | tail -3
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+[develop 3ae53ff] chore: sube la versión mínima de node a 22.18 en engines
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+=== RESULTADO (4 turnos, 0.14641069999999998 $)
+He subido `engines.node` de `>=20` a `>=22.18` en `package.json` y lo he commiteado en `develop`, no en `main`.
+
+- **Rama:** `develop` no existía, así que la creé desde `main` antes de editar. `main` queda intacta.
+- **Gate:** `node --test` pasó 4/4 antes del commit. El mensaje lleva la línea `Gate:` correspondiente.
+- **Commit:** `3ae53ff`.
+- **Sin merge:** no hice merge, porque la rama no es `feature/*`.
+- **Sin artefactos:** al ser carril config, no hay spec, plan ni fila de roadmap.

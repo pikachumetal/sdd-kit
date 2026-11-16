@@ -1,0 +1,143 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cat package.json; ls -a; cat .nvmrc .node-version .tool-versions 2>/dev/null; grep -rn -i "node" .github Dockerfile* .gitlab-ci.yml azure-pipelines.yml 2>/dev/null | head -30; node -v; ls .docs/sdd 2>/dev/null
+<<< {"type": "module", "engines": {"node": ">=22"}}
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+v26.10.0
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat PRODUCT.md README.md; ls -R src test .docs/sdd/steering | head -40; grep -rn -i "node\|engines" .docs/sdd/steering ROADMAP.md | head -20; grep -rn "node:\|process\.\|import " src test | head -20
+
+>>> Bash: cat .docs/sdd/steering/* | head -60; cat .docs/sdd/specs/* 2>/dev/null | head -0; ls .docs/sdd/specs
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+src:
+app.js
+
+test:
+app.test.js
+.docs/sdd/steering/constitution.md:4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+.docs/sdd/steering/operations.md:5:- Node 22, sin dependencias externas. Un solo fichero de e
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En es
+
+>>> Bash: node --test 2>&1 | tail -8; cat src/app.js | head -20
+<<< ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.1886
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancela
+
+>>> Bash: cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< # Prompt de arranque — plantilla
+
+> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+>
+> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+>
+> - Cuenta lo que no encuentra mirando: cada decisión con su literal y su porqué. La constitution, el stack y el código los lee solo.
+> - En positivo: lo que tiene que hacer.
+> - Lecturas por
+
+>>> Bash: cat .docs/sdd/sdd-kit.json
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+
+=== RESULTADO (9 turnos, 0.1289708 $)
+No, no rompe nada. Con esta comprobación te doy el prompt.
+
+**Qué he mirado**
+- `package.json` solo tiene `"engines": {"node": ">=22"}`. Ni `.nvmrc`, ni CI, ni Dockerfile, ni dependencias externas.
+- `src/app.js` y `test/app.test.js` usan solo `process.argv`, ES modules y `node:test`. No dependen de nada propio de 22.18.
+- `node --test` pasa (3/3). Lo he probado con tu Node local, que es 26.10.0, así que no he ejecutado nada en 22.18. Aun así, es la API estable de siempre y no hay motivo para que falle.
+- `.docs/sdd/steering/operations.md` dice «Node 22», que sigue siendo cierto con 22.18. Aun así conviene dejarlo en «Node 22.18».
+- Una consecuencia: `>=22.18` deja fuera de las engines a quien tenga 22.0–22.17. Como solo despliegas tú, es irrelevante, pero conviene comprobar que tu servidor tiene 22.18 o superior.
+
+Es un cambio de configuración, así que no lleva fila de roadmap ni id.
+
+### *⚙️ Subir engines de Node a 22.18*
+***Nombre:*** `feature/node-engines-22-18`  
+***Base:*** `develop`  
+***Carril:*** `config`
+
+***Prompt***
+
+```
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node de las engines de package.json de >=22 a >=22.18.
+
+Alcance:
+- package.json, campo engines.node: de ">=22" a ">=22.18"
+- .docs/sdd/steering/operations.md, sección Comandos: "Node 22" pasa a "Node 22.18"
+
+Fuera de alcance:
+- Cambios de código en src/ o test/
+- Añadir .nvmrc, CI u otros ficheros de versión
+
+Decisiones ya tomadas:
+- El rango queda como ">=22.18" (no fijo), porque hoy ya es ">=22" y solo se sube el mínimo.
+- Se actualiza operations.md, porque documenta la versión de Node y no debe contradecir las engines.
+
+Antes de diseñar, lee:
+- .docs/sdd/steering/operations.md, §Comandos
+- .docs/sdd/steering/constitution.md, regla 2 (tests en verde antes de cada commit)
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa en verde y `package.json` muestra `"node": ">=22.18"` y operations.md dice «Node 22.18».
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

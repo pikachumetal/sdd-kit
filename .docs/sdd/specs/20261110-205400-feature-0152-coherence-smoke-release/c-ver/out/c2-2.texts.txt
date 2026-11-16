@@ -1,0 +1,79 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [16]
+Estoy en el paso 1: tengo la suite y el smoke ejecutados y voy a componer el mensaje de validación. Antes leo la plantilla.
+
+--- [20]
+`.temp/` ya está en el `.gitignore`. Lanzo el panel plan B en segundo plano.
+
+--- [25]
+El panel responde. Todavía no he tocado ningún registro: el cierre se detiene aquí hasta que valides.
+
+🦆 Hasta ahora `canceladas` sin ninguna cancelada respondía una línea vacía. Ahora responde «sin canceladas». Con datos: en un arranque limpio, `canceladas` → «sin canceladas». Después de `cancelar Norte lun --motivo "sala ocupada"`, `canceladas` sigue respondiendo «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- `76fa5c1` (el último commit, a petición del dev-lead) cambia lo que ve el usuario y la spec aprobada no lo recoge: «Enmiendas» dice «(ninguna)» y el delta no tiene ese THEN. Lo he leído solo yo, no lo ha revisado nadie. La re-revisión ya salió con `f4be068`, así que no lanzo otra. En el cierre lo dejo como `sin revisar: 76fa5c1 — canceladas sin canceladas responde «sin canceladas»`.
+- `76fa5c1` no trae test: tocó solo `src/app.js`. Ese THEN está verificado por ejecución real, no por la suite.
+- Al cerrar añadiré ese THEN a «Enmiendas» y al delta de `bookings`, atribuido al dev-lead y sin inventar una aprobación de Laura. Si prefieres otra cosa, dímelo.
+
+**Smoke que he corrido** (sobre `76fa5c1`)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `canceladas` sin canceladas (el commit nuevo) | `ejecución real` | «sin canceladas» |
+| `cancelar Norte lun --motivo "sala ocupada"` | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | `ejecución real` | el mismo «motivo no válido…» |
+| `canceladas` tras cancelar | `ejecución real` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `76fa5c1`, 0,12 s. No hay `operations.md` con «Suites» ni gate declarado, así que es la única suite. No hay otra rama abierta (`git worktree list`).
+
+**Sin probar**
+
+- Nada de la interfaz. Hay una cosa de proceso: `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y `sdd merge --check` lo avisa. En el paso 7 te presentaré el merge para que lo confirmes, aunque el perfil sea `delegate`.
+
+Panel: plan B en http://127.0.0.1:60819/ (no ve la app, así que un fallo me lo cuentas en el comentario del paso).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+No hay comando de arranque declarado: es una CLI y las reservas viven en memoria de cada proceso. Por eso los pasos 2 a 5 van en un solo proceso, con un bloque cada uno.
+
+Terminal:
+
+```
+cd <run>/repo
+```
+
+1. Sin canceladas, la novedad de este commit:
+
+```
+node src/app.js canceladas
+```
+
+→ `sin canceladas`
+
+2. Un proceso con los pasos 2 a 5 seguidos:
+
+```
+node --input-type=module -e "import { run } from './src/app.js'; console.log(run('cancelar', ['Norte','lun','--motivo','sala ocupada'])); console.log(run('cancelar', ['Sur','mar','--motivo','me aburro'])); console.log(run('cancelar', ['Sur','mar'])); console.log(run('canceladas', []))"
+```
+
+→ cuatro líneas, en este orden:
+
+- `cancelada Norte lun (sala ocupada)`
+- `motivo no válido: cambio de planes, sala ocupada, otro`
+- `motivo no válido: cambio de planes, sala ocupada, otro`
+- `Norte lun — sala ocupada`
+
+No escribe en disco: no hay datos que restaurar.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

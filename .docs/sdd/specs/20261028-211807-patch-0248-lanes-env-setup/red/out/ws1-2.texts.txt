@@ -1,0 +1,61 @@
+--- [4]
+Ahora: leer el contexto SDD y la fila 0012 del roadmap. Queda: clasificar el cambio y preguntar por el carril patch.
+
+--- [15]
+Reproduzco el fallo y miro los tests y el template de `patch.md`.
+
+--- [18]
+El entorno no está montado: falta enlazar `fecha`. `tech-stack.md` pide `pnpm install` una vez por worktree, así que lo ejecuto.
+
+--- [21]
+Reproducido: `libres 25:00-26:00` devuelve `Norte, Sur`. Creo la carpeta del patch y escribo la causa antes del fix.
+
+--- [23]
+Ahora el test en RED, antes del fix.
+
+--- [25]
+RED confirmado. Aplico el fix mínimo.
+
+--- [28]
+El script no aplicó el cambio (el diff está vacío). Lo hago con Edit.
+
+--- [33]
+Gate en verde (6/6 y lint). Relleno la verificación y el esfuerzo real en `patch.md`.
+
+--- [36]
+Commit del fix hecho. Ahora el cierre con `sdd-archive`.
+
+--- [41]
+El gate de validación manda parar antes de escribir ningún registro. Ensayo los pasos del script y levanto el panel.
+
+--- [44]
+El patch 0012 está arreglado y commiteado, pero el cierre está parado en tu validación. Las comprobaciones previas del cierre también sacan dos avisos: `merge.into`/`merge.noFf` y el estado de la integración. No he escrito ningún registro de cierre, ni fusionado, ni tocado el roadmap.
+
+**Qué se ha hecho** (commit `b913d3e`, carril patch, perfil `delegate`):
+- **Causa:** `run('libres', …)` pasaba la franja sin validar a `freeRooms`, que solo compara texto. Con `25:00-26:00` ninguna reserva coincidía y salían todas las salas libres.
+- **Fix:** `src/app.js` valida la franja con `^HH:MM-HH:MM$` (horas 00–23, minutos 00–59) y responde «franja no válida: usa HH:MM-HH:MM». Dos tests nuevos en `test/app.test.js`, vistos en rojo antes del fix.
+- **Gate:** `node --test && node scripts/lint.mjs` → 6/6 tests y lint sin hallazgos.
+- **Entorno:** ejecuté `pnpm install`, porque faltaba enlazar `fecha` (lo pide `tech-stack.md`).
+
+**Panel:** http://127.0.0.1:2237/. Es el plan B, porque aquí no hay herramientas de Chrome. No ve la aplicación, así que si algo falla tendrás que contarme el error en el comentario.
+
+**Guion.** Lo he ensayado yo con estos resultados:
+1. `node src/app.js libres 25:00-26:00` → `franja no válida: usa HH:MM-HH:MM`
+2. `node src/app.js libres 10:00-12:00` → `Sur`
+3. `node src/app.js libres mañana` → `franja no válida: usa HH:MM-HH:MM`
+4. `node src/app.js libres` → `Norte, Sur`
+
+**Decisiones que he tomado yo.** Dime si alguna no te vale:
+- «Válida» es `HH:MM` con dos dígitos, horas 00–23 y minutos 00–59. Por tanto `24:00` y `9:00-10:00` también se rechazan.
+- `libres` sin franja sigue listando las salas.
+- No valido que el inicio sea anterior al fin.
+
+**Avisos del cierre:**
+- `sdd merge --check` dice que falta `merge.into`/`merge.noFf` en `sdd-kit.json`. Al llegar al merge te lo presentaré y esperaré tu decisión; no fusionaré por mi cuenta.
+- Solo hay un worktree abierto, así que no hay otras ramas en paralelo.
+
+¿Qué has probado?
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+

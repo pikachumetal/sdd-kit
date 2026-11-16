@@ -1,0 +1,138 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [6]
+Pre-checks 1–3 están limpios (sin cambios sin commitear, destino `develop` listo, sin otras ramas abiertas). Sigo con el 4 y el 6: spec, tasks y la revisión final.
+
+--- [15]
+Los dos commits suman 18 líneas, solo documentación, así que aplica la re-revisión única. Leo el cómo y el prompt del re-revisor.
+
+--- [18]
+Preparo el paquete de `7914ac5..HEAD` y el bloque «De código» del plan.
+
+--- [26]
+Lancé la re-revisión de `7914ac5..a770eab` en segundo plano, con su vigilancia de silencio. No escribo ningún registro hasta que vuelva y la cierre.
+
+Hasta ahora:
+- **Pre-checks:** árbol limpio, `merge --check` con destino `develop` listo y sin otras ramas abiertas a la vez.
+- **Spec:** aprobada (`status: approved`, firma de Laura), modo `full`.
+- **Revisión final:** existe y fue limpia (Spec + Código) sobre `7914ac5`. `HEAD` se movió con `e2af6e6` (tasks.md) y `a770eab` (una línea `Se valida en:` en la spec): 18 líneas, solo documentación, sin `Re-revisión:` previa. Por eso va esa re-revisión única.
+- **Validación:** `validation.mode: manual`. Cuando la re-revisión cierre, antes de tocar nada más tendré que pedirte que valides tú el trabajo: decirme qué probaste y que funciona, o diferirlo con sus tres condiciones. «Está implementada» y una revisión limpia no cuentan como validación.
+
+Sigo cuando vuelva el revisor.
+
+--- [38]
+**Findings**
+
+1. **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md:53`: the `- Se valida en: worktree con la base al día` line sits in the middle of the scenario. It falls between the THEN (line 52) and its two ANDs (lines 54-55). After it, the ANDs follow a bullet that isn't GIVEN/WHEN/THEN/AND. A validator that chains AND to the previous clause will attach them to "Se valida en" or treat the scenario as cut off. The line should come after the last AND (line 55), as the closing bullet of the scenario. The two ANDs are part of that same THEN, so it covers the whole scenario anyway. There is a second, smaller problem with the wording. "la base" could mean the integrated base branch or a database. The Approach (spec.md:38) and the code use an in-memory store with no database, so it should say "rama base al día" or something equally clear.
+
+2. **Important**, `tasks.md:17` (Ruling), checked against `plan.md:50` and `.docs/sdd/steering/constitution.md:2`. The Ruling says the gate ran with `node --test --test-concurrency=1`. Both the plan and the constitution fix the gate as `node --test`, the full suite in green. Nothing records the change: the plan was not amended, `package.json` has no script, and spec.md:64 says "Enmiendas: (ninguna)". The reason given also doesn't hold. `node --test` runs each file in its own process, so files never share the in-memory store. Inside a file, top-level tests already run one after another, so `--test-concurrency` cannot fix a "carrera". The real weakness is an order dependency. The test `canceladas enseña sala, día y motivo` (test/cancel.test.js, added in 7914ac5) depends on the first test having cancelled Norte lun. The Ruling names the wrong cause, and the cost it gives ("la suite tarda el doble") doesn't match that cause. The workaround ("hasta aislar el almacén por test") also has no entry in `.docs/sdd/steering/debt.md`. The format is fine, with a workaround and its cost, but what it records is neither true nor consistent with the plan.
+
+3. **Minor**, `tasks.md:10`: Task 1 lists commit `7914ac5`, but its commit is `59b48bd` ("feat(bookings): cancelar con un motivo de la lista": `reasons`, `reasonOf`, `cancelBooking` with a reason, and the two `cancelar` tests). `7914ac5` only adds `canceladas`, which is Task 2. Row 2 is correct.
+
+4. **Minor**, `spec.md:53` with `spec.md:7-13,64`: the line is added to a spec that is already `status: approved` (2026-10-08), but `## Enmiendas` still says "(ninguna)". It changes no behaviour, but a change after approval should be recorded there.
+
+5. **Minor**, `tasks.md:13`: the `Revisión final:` line matches the brief (Spec and Code clean, Architecture not in the plan, on 7914ac5). Once this re-review closes, it should also record the range `7914ac5..a770eab`. As it stands, the record ends before the two later commits.
+
+Behaviour: nothing in the range touches `src/` or `test/`. Both commits are documentation only, so behaviour is unchanged and the interface text stays in castellano.
+
+Outside this range, not counted as new breakage: the third AND (spec.md:55, without `--motivo`) still has no test in `test/cancel.test.js`. The code does handle it: `undefined` is not in `reasons`.
+
+**Fix round:** Findings remain open — 1 (where `Se valida en` sits in the scenario, spec.md:53), 2 (the Ruling's gate contradicts plan/constitution and its stated cause is wrong, tasks.md:17), 3 (Task 1's commit is 59b48bd, tasks.md:10), 4 (Enmiendas not updated), 5 (Revisión final line doesn't cover the new range).
+
+--- [40]
+Paro la vigilancia, quito el worktree de revisión y verifico yo los hallazgos antes de actuar.
+
+--- [52]
+Con y sin el flag la suite da 5/5 en verde, así que el gate del plan (`node --test`) basta y el workaround del Ruling no hace falta. Aplico las correcciones, que son solo documentales.
+
+--- [59]
+La re-revisión ya está cerrada. Paso 1: la validación es `manual`, así que leo cómo se presenta.
+
+--- [64]
+Rama sin otras abiertas y `develop` no va por delante, así que el gate corre aquí. Ensayo yo los pasos del guion como los hará la persona, y guardo la salida completa de la suite.
+
+--- [71]
+Abiertas a la vez: ninguna más; solo está esta rama.
+
+🦆 Antes, cancelar una reserva no dejaba rastro. Ahora `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- **Gate sin el flag del Ruling.** Cerré con `node --test` a secas, el gate del plan. El Ruling del Task 2 pedía `--test-concurrency=1`, pero con y sin el flag la suite da 5/5, así que no lo apliqué. El Ruling queda anotado como `Final: Ruling:` en `tasks.md`. La causa real es de orden: el test de `canceladas` espera que el primer test haya cancelado Norte lun. Lo dejé en deuda como «Por triar».
+- **Re-revisión.** Como `HEAD` se movió con dos commits de documentación, hubo una re-revisión (`sdd-kit:effort-high` + opus) con 2 Important y 3 Minor, todos de documentación, y los ajusté:
+  - `Se valida en:` pasó tras el último AND de la spec, con su línea en «Enmiendas» (sin aprobar, no cambia el comportamiento).
+  - El commit de la Task 1 en `tasks.md` es `59b48bd`, no `7914ac5`.
+  - Añadí la línea `Re-revisión:`.
+- **Pendiente de ti.** La spec ya aprobada recibió la línea `Se valida en:` (a770eab). Esa línea la puso un commit anterior a mi cierre. Su THEN se ve desde la rama, así que la plantilla no la pide. La dejo, pero dime si prefieres quitarla.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | ejecución real, en un solo proceso | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test`: 5/5 sobre a770eab, 108 ms. El árbol solo añade documentación a esa sha.
+
+**Sin probar**
+
+- El tercer AND (sin `--motivo`) no tiene test propio en `test/cancel.test.js`. Lo comprobé en ejecución real y el código lo cubre.
+- «Se valida en: worktree con la base al día»: no hay nada que ensayar, porque `develop` no va por delante de la rama (0 commits) y no hay remoto.
+
+Panel: plan B en http://127.0.0.1:62874/ (no ve la app, así que si un paso falla, cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+No hay comando de arranque declarado: es una CLI y no hay entorno que parar.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Comando:
+   ```
+   node src/app.js cancelar Norte lun --motivo "sala ocupada"
+   ```
+   → `cancelada Norte lun (sala ocupada)`
+2. Comando:
+   ```
+   node src/app.js cancelar Norte lun --motivo "me aburro"
+   ```
+   → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. Comando:
+   ```
+   node src/app.js cancelar Norte lun
+   ```
+   → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. Comando (la app guarda las reservas en memoria, por eso va en un solo proceso):
+   ```
+   node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(run('canceladas',[]))})"
+   ```
+   → `cancelada Norte lun (sala ocupada)` y, en la línea siguiente, `Norte lun — sala ocupada`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [72]
+El servidor del panel (plan B) se paró por llegar a su límite de tiempo en segundo plano, así que la dirección http://127.0.0.1:62874/ ya no responde. No lo reinicio, porque ya estaba en el tiempo máximo permitido.
+
+El guion de arriba sigue valiendo en el terminal, con los mismos comandos y resultados. Si un paso falla, cuéntamelo por aquí.
+
+El cierre sigue parado en la validación, porque `validation.mode` es `manual`. Esa notificación no cuenta como respuesta tuya, y no he commiteado ni fusionado nada. Necesito una de estas dos cosas:
+
+- **«validado»**, o qué probaste y que funciona.
+- **Qué paso falla**, y vuelvo al arreglo.
+- O diferirla con `Diferir: lo pruebo en <uso concreto>, a cargo de <quién valida>`.
+
+Hay también un asunto pendiente. La línea `Se valida en: worktree con la base al día`, que ya estaba en la spec aprobada, no la pide la plantilla para este THEN. La dejo salvo que me digas que la quite.
+

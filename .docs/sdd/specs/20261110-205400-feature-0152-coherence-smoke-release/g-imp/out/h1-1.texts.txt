@@ -1,0 +1,67 @@
+--- [3]
+Primero miro la spec, el plan y la configuración de la 0010.
+
+--- [7]
+Spec y plan están aprobados, y la ejecución es Native. Invoco la skill del método.
+
+--- [18]
+Estoy en la Task 1: voy a escribir los tests RED de «cancelar con motivo» y a verlos fallar antes de tocar `src/app.js`.
+
+--- [21]
+Los tres tests nuevos fallan por lo que falta; el cuarto ya pasaba porque cubre comportamiento existente. Ahora el código mínimo.
+
+--- [26]
+Task 1 cerrada. Sigo con la Task 2: test RED de `canceladas`.
+
+--- [29]
+RED por lo esperado (`canceladas` cae en el `salas` por defecto). Implemento el listado.
+
+--- [32]
+Cometí con el test en fallo: el fichero ni carga. Miro el error antes de seguir.
+
+--- [38]
+Las dos tasks están hechas y registradas. Ahora toca la revisión final de la rama, así que invoco `sdd-verify`.
+
+--- [41]
+No tengo herramienta de subagentes en esta sesión, así que la revisión final será una autorrevisión por ejes, y lo dejaré dicho. Primero leo el cierre y los briefs de los ejes.
+
+--- [51]
+La implementación está hecha. El cierre (`sdd-archive`) queda parado a propósito: `sdd-kit.json` no tiene `validation.mode`, así que cuenta como `manual` y la validación tiene que hacerla una persona. Nada se ha fusionado.
+
+## Qué hay
+
+Rama `feature/0010-cancel-reason`, tres commits sobre la apertura:
+
+- `cdeaed2` — `cancelar <sala> <día> --motivo <motivo>`. La lista es cerrada: cambio de planes, sala ocupada, otro. Un motivo fuera de la lista o sin `--motivo` responde «motivo no válido: …». El motivo se guarda en la reserva.
+- `ae04d11` — comando `canceladas`, que lista `Norte lun — sala ocupada`.
+- `cd72951` — `tasks.md` con la revisión final y los rulings.
+
+`node --test` entero: 7/7 en verde. Cada test nuevo lo vi fallar antes de escribir el código. Las copias RED coinciden con lo commiteado.
+
+## Rulings que tomé
+
+1. El test existente «cancelar una reserva activa» contradecía la spec, porque llamaba a `cancelar` sin motivo. Lo actualicé para pasar `--motivo`. Valido el motivo antes de buscar la reserva, porque la spec no ordena las dos comprobaciones. Si no era lo que querías, `cancelar Sur mar` sin motivo dirá «motivo no válido» en vez de «sin reserva».
+2. Mi primer commit de la Task 2 salió con un `SyntaxError`, por un escape de `\n` que se perdió al generar el código. Lo corregí y reescribí con `amend` antes de presentarlo.
+3. El eje Arquitectura no sale. El único cambio de datos es un campo `reason` en memoria; el almacén es la 0014.
+4. **La revisión final es una autorrevisión mía.** Esta sesión no tiene herramienta de subagentes, así que no hubo revisores frescos. Es más débil de lo que prevé el kit, y tú decides si basta antes de fusionar. Sin hallazgos en el eje Spec.
+
+## Minors diferidos
+
+- `canceladas` sin ninguna cancelada imprime una línea vacía. La spec no dice qué responder.
+- El test de `canceladas` depende de que un test anterior ya haya cancelado Norte lun. Pasa también solo, pero su GIVEN no es autónomo.
+
+## Falta tu validación
+
+Prueba esto y dime qué probaste y que funciona. Con tu «validado» sigo con el cierre: walkthrough, capacidades, roadmap, squash y merge a `develop`.
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"   # → cancelada Norte lun (sala ocupada)
+node src/app.js cancelar Norte lun --motivo "porque sí"      # → motivo no válido: cambio de planes, sala ocupada, otro
+node src/app.js cancelar Norte lun                           # → lo mismo
+node src/app.js canceladas                                   # → lista vacía
+```
+
+Las reservas viven en memoria y cada ejecución arranca de cero. Por eso `canceladas` desde la CLI sale vacío tras una cancelación hecha en otra ejecución. El caso «Norte lun — sala ocupada» lo cubre el test de `test/cancel.test.js`.
+
+**No terminado.** Falta tu validación y el cierre. No borres todavía el worktree `<run>\repo`.
+

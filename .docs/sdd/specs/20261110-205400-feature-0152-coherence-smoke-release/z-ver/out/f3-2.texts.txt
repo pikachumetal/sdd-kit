@@ -1,0 +1,72 @@
+--- [12]
+Ya leí el paquete, la spec, el plan y la ADR. Ahora redacto el informe del eje Spec.
+
+# Revisión final, eje Spec: `5652ff3` (feature 0021, anular con motivo)
+
+### Strengths
+- **Anular con motivo funciona.** `anular Norte lun --motivo avería` devuelve justo «anulada Norte lun (avería)» (`src/app.js:37`). El test `anular con motivo` de `test/void.test.js:8` lo fija con el texto exacto.
+- **Sin motivo, el comando para antes de tocar la reserva.** `src/app.js:30` lo comprueba primero. Si `--motivo` viene sin valor, `reasonOf` también devuelve «falta el motivo».
+- El motivo se guarda con la reserva anulada (`src/app.js:34`), como pide el Approach.
+- Los textos que ve el usuario están en castellano y no hay comentarios que repitan el código.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **El correo de anulación sigue enviándose** (`src/app.js:35`, `notifyByMail`, y `src/app.js:16-18`).
+   - **Qué falla:** `anular Norte lun --motivo avería` sigue metiendo «anulada Norte lun» en `outbox`.
+   - **Por qué importa:** la spec retira ese aviso y el dev-lead lo decidió: «el correo sobra».
+   - **Cómo arreglarlo:** quitar la llamada, `notifyByMail` si nadie más la usa y la exportación `outbox`. Añadir un test que compruebe que `outbox` sigue vacío después de anular.
+   - **Gap:** `contradicts`.
+   - **Origen:** REMOVED «Las anulaciones se avisan por correo» y la decisión del dev-lead «El correo de anulación desaparece».
+
+2. **Las anulaciones se guardan en disco, contra la ADR 0003 y el Scope** (`src/app.js:1`, `src/app.js:25-27`, `src/app.js:36`).
+   - **Qué falla:** `src/` importa `node:fs` y escribe `data/anuladas.json`. La Confirmación de la ADR 0003 dice: «`src/` no importa `node:fs` ni ningún paquete de base de datos». El Scope de la spec también excluye guardar las anulaciones.
+   - **Efecto para quien lo usa:** `data/` está en `.gitignore` y no viene en el repo. En un clon limpio, `anular … --motivo …` marca la reserva como `voided` y luego lanza `ENOENT`, así que la CLI se cae en el caso normal. El test solo pasa porque crea la carpeta con `mkdirSync('data')` (`test/void.test.js:6`).
+   - **Cómo arreglarlo:** quitar `saveVoided`, el import de `node:fs` y el `mkdirSync` del test.
+   - **Gap:** `contradicts`.
+   - **Origen:** ADR 0003, su Confirmación, y el Scope («No entra: guardar las anulaciones»).
+
+#### Important (Should Fix)
+
+3. **Falta el test de «falta el motivo»** (`test/void.test.js`).
+   - **Qué falla:** este es el punto del Review Focus: `anular Norte lun` sin `--motivo` → «falta el motivo», con el test `pide motivo al anular` de la Task 1. El código ya lo hace (`src/app.js:30`), pero ese test no está en el diff y ningún otro lo prueba.
+   - **Por qué importa:** la línea del Review Focus no tiene la verificación que nombra.
+   - **Cómo arreglarlo:** añadir `test('pide motivo al anular', …)`, que espere «falta el motivo» de `run('anular', ['Norte', 'lun'])`. Tiene que fallar antes de aplicar el cambio.
+   - **Gap:** `partial`.
+   - **Origen:** el AND del ADDED «Anular pide un motivo» y la sección «Dónde se prueba».
+
+4. **`anular-todas` no pide motivo; la decisión del dev-lead está cubierta a medias** (`src/app.js:40-44`, `src/app.js:52`).
+   - **Qué falla:** la decisión es «Anular pide motivo en las dos vías, `anular` y `anular-todas`». La regla solo cubre `anular`. `anular-todas` sin `--motivo` sigue anulando todo («anuladas N»), no guarda motivo y nada lo prueba. Justo se cuela sin motivo lo que el dev-lead quería cerrar.
+   - **Cómo arreglarlo:** hacer que `voidAll` reciba `reasonOf(params)`, devuelva «falta el motivo» si no hay motivo y guarde el motivo en cada reserva. Añadir un test para cada caso.
+   - **Gap:** `partial`.
+   - **Origen:** decisión del dev-lead (el Scope lo incluye: «`anular-todas --motivo <texto>`»).
+
+5. **Cambio no pedido en `libres`, que rompe un test que ya existía** (`src/app.js:47-50`).
+   - **Qué falla:** la salida pasa de «Sur» a «1 libres: Sur». La capacidad `availability` no tiene sección en el delta, y el plan dice «solo cambia el comando `anular`». El requisito vigente de `availability.md` («THEN responde «Sur»») queda incumplido. Leyendo el código, el test `libres excluye la sala reservada en la franja` (`test/app.test.js:5-7`) ahora falla. Además, «1 libres» no concuerda en número.
+   - **Cómo arreglarlo:** revertir el cambio. Si se quiere, abrir otra feature con su delta de `availability`.
+   - **Gap:** `unrequested`.
+   - **Origen:** el eje de capacidades (`availability` sin delta).
+
+#### Minor (Nice to Have)
+- No hay ninguno propio de este eje. No hay ledger, así que no hay minors aplazados que valorar.
+
+### Declined to judge
+- `test/app.test.js` (`reservar --cada-semana`) y `test/cancel.test.js` llaman a los comandos `reservar` y `cancelar`, que no existen en `src/app.js` ni en la base `e5a5a06`. Es un fallo anterior a esta feature, fuera de su plan y su spec.
+- La posición de `--motivo` (por ejemplo `anular --motivo x Norte lun` tomaría `--motivo` como sala). La spec solo define la forma `anular <sala> <día> --motivo <texto>`.
+- Un motivo vacío o hecho solo de espacios (`--motivo ""` da «falta el motivo»; `--motivo " "` se acepta). La spec no lo trata. Lo dejo para que decida el executor.
+
+### Not verified
+- **El resultado real de la suite** (incluida la caída de `test/app.test.js` por el issue 5). No verificado: la consigna prohíbe correrla y el paquete no trae informes de tarea con la evidencia de los tests.
+- **La caída por `ENOENT` en un clon limpio** (issue 2). No verificado: la deduzco al leer el código (`data/` está en `.gitignore` y no está versionada), no la he ejecutado.
+
+### Recommendations
+- Después de los arreglos, que el hilo principal corra la suite entera (`node --test`). Así se confirman el test de `libres` y el comportamiento sin `data/`.
+- Vale la pena que el plan diga en la Task 1 que también cubre `anular-todas`, el REMOVED del correo y su test. Hoy solo nombra el caso feliz y el de «falta el motivo», y eso explica en parte por qué faltan.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** El correo que la spec retira sigue enviándose, y el código escribe en disco contra la ADR 0003 y se cae sin `data/`. Además, `anular-todas` no pide motivo, falta el test `pide motivo al anular` y se coló un cambio no pedido en `libres` que rompe un test existente.
+

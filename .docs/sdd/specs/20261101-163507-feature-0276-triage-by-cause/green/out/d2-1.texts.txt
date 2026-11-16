@@ -1,0 +1,18 @@
+--- [2]
+Empiezo por la deuda del proyecto y el script, en paralelo.
+
+--- [7]
+**Causa raíz:** `scripts/informe.mjs` escribe en `.cache/informes/ocupacion.csv` con `writeFileSync` y nunca crea la carpeta. Si `.cache/informes/` no existe, Node lanza `ENOENT`, porque `writeFileSync` no crea directorios intermedios.
+
+**Evidencia**
+- El script tiene una sola línea de lógica: `writeFileSync('.cache/informes/ocupacion.csv', …)`, sin `mkdirSync` ni comprobación previa.
+- El `ENOENT` apunta a `…\repo\.cache\informes\ocupacion.csv` (`syscall: open`, lanzado en `informe.mjs:3`).
+- `.cache/` no está en el repo. Git no versiona carpetas vacías y no hay `.gitignore`. Un clon, un worktree nuevo o un repo recién limpiado nunca la tienen, y por eso falla en esos casos.
+- Es reproducible: ejecuté `npm run informe` y falló igual.
+
+**Deuda existente:** la fila «El listado de ocupación no sale tras limpiar el repo» de `.docs/sdd/steering/debt.md` cubre este fallo. Sus dos tickets (12 y 19 de octubre) describen el mismo síntoma. Su remedio temporal, recrear la carpeta de la caché, es lo que hay que hacer a mano ahora mismo, pero no es la causa raíz y la fila sigue abierta. La fila atribuye el fallo a «entorno de la máquina», y la evidencia no lo respalda. El fallo viene del código del script, que da por hecha una carpeta que nadie garantiza, y se da en cualquier máquina. Conviene corregir esa etiqueta al triar la fila. El arreglo que propone la fila, una comprobación automática, tampoco tiene un destino asignado («sin fila»).
+
+No he cambiado nada. Cuando quieras arreglarlo, entra por `sdd-propose`. El arreglo más pequeño sería crear la carpeta antes de escribir, con `mkdirSync(..., { recursive: true })`.
+
+Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las skills pueden ser de una versión vieja. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

@@ -1,0 +1,29 @@
+❓ **¿En qué formato exportamos las reservas?**
+
+Esto es lo que encontré:
+- `tech-stack.md`: Node 22 sin dependencias externas. Cada reserva guarda `sala`, `día` y `franja`, en ese orden.
+- Node 22 trae JSON de serie, pero no tiene módulo de CSV ni de iCalendar. Cualquiera de esos dos formatos habría que escribirlo a mano.
+- No pude comprobar en la web los puntos siguientes (no tenía acceso en esta sesión), así que están **sin verificar**:
+  - Google Calendar importa CSV con las columnas `Subject` y `Start Date`. Outlook en la web solo importa `.ics`.
+  - Excel muestra mal los acentos de un CSV en UTF-8 si el archivo no lleva BOM: `día` aparece como `dÃ­a`.
+  - Un evento `.ics` necesita una fecha concreta. Si `día` es «lunes», hay que convertirlo en un evento que se repite cada semana.
+
+Ejemplo con una reserva hecha con `reservar Norte 2026-10-07 9-10`:
+
+1️⃣ **CSV** (una fila por reserva)
+```
+sala,día,franja
+Norte,2026-10-07,9-10
+```
+Se abre en una hoja de cálculo, un script lo lee línea a línea y una persona lo entiende a simple vista. Para meterlo en un calendario solo sirve Google Calendar, y únicamente si `día` es una fecha. El coste es que hay que escribir el BOM para que Excel muestre bien los acentos.
+
+2️⃣ 🔀 **CSV y además `.ics`**
+El CSV de la opción 1️⃣, más un archivo que cualquier calendario importa como evento («Norte, 7 oct, 9:00–10:00»). Cubre los cuatro usos. El coste es escribir y probar dos formatos, y el `.ics` necesita traducir `franja` a una hora de inicio y otra de fin, y `día` a una fecha concreta.
+
+3️⃣ **JSON**
+```
+[{"sala":"Norte","día":"2026-10-07","franja":"9-10"}]
+```
+Un script lo lee con una línea y no hay que escribir nada de código nuevo. El coste es que una hoja de cálculo no lo abre directamente y un calendario no lo importa.
+
+➡️ **Te recomiendo 1️⃣**, porque con un solo formato y sin dependencias cubre tres de tus cuatro usos: hojas de cálculo, scripts y leerlas sin más. En exchange, para el calendario te quedas solo con Google Calendar y solo si los días son fechas. Si el calendario te importa tanto como lo demás, elige 2️⃣.

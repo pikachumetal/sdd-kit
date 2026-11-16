@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && ls .docs/sdd .docs/sdd/steering 2>/dev/null && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md src/app.js test/app.test.js package.json; git branch --show-current; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+<<< # Spec — free
+
+status: done
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-propose/references" && head -60 control-profiles.md; echo ======; cat spec-writing.md; echo =====; cat nombrado.md | head -80
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+>>> Bash: cd "<run>/repo" && S="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js"; git remote -v; node "$S" id next --project-root "$PWD" --reserve
+<<< 0010
+
+>>> Bash: cd "<run>/repo" && S="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js"; git switch -c feature/0010-estados-reserva develop && node "$S" id claim --project-root "$PWD"; git branch --show-current
+<<< Switched to a new branch 'feature/0010-estados-reserva'
+sin remoto: la 0010 vale (contador local)
+feature/0010-estados-reserva
+
+=== RESULTADO (9 turnos, 0.1910844 $)
+Ahora: nota de comprensión, con tu duda sobre el flujo. Queda: tu respuesta a esa duda, el enfoque, la spec y su aprobación, el plan y la implementación. Hasta la aprobación de la spec no hay más paradas, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He reservado el id 0010 y creado la rama `feature/0010-estados-reserva`. No hay fila de roadmap para esto. Prevé 3 tasks o menos, así que no propongo dividirla.
+
+## Lo que he entendido
+
+Una reserva pasa a tener un **estado**: `pendiente`, `confirmada` o `cancelada`. Hoy las reservas de `src/app.js` no tienen estado, y `cancelar` solo imprime un texto.
+
+| Desde | Puede pasar a |
+| --- | --- |
+| pendiente | confirmada, cancelada |
+| confirmada | cancelada |
+| cancelada | pendiente |
+
+Cualquier otro salto se rechaza con un mensaje en castellano. Por ejemplo, confirmar una reserva cancelada daría `no se puede pasar de cancelada a confirmada`.
+
+## Tu duda: ¿está bien el flujo?
+
+Las tres primeras filas son un flujo normal. La que merece decisión es **cancelada → pendiente**, por tres motivos:
+
+- **La sala puede estar ocupada.** Si cancelas Norte a las 10:00 y luego otra reserva ocupa esa franja, reactivar la primera la dejaría duplicada. Sería el mismo tipo de fallo que arregló el patch 0007.
+- **El camino es largo.** Reactivar deja la reserva en pendiente y obliga a confirmarla otra vez. Eso es coherente, pero conviene que sea intencionado.
+- **Una cancelada podría ser definitiva.** Entonces reservarías de nuevo en vez de reactivar. Pero tú has pedido expresamente la vuelta a pendiente, así que la mantengo.
+
+Mi recomendación es dejar el flujo como lo has descrito y añadir una condición: **reactivar solo si la sala y la franja siguen libres**. Si no, se rechaza con `la sala ya está reservada en esa franja`.
+
+**Pregunta (1 de 1):**
+
+1. **Reactivar solo si la franja sigue libre (recomendada).**
+2. Reactivar siempre, sin comprobar. Es más simple, pero admite duplicados.
+3. Quitar la vuelta de cancelada a pendiente y dejar cancelada como estado final.
+
+Con tu respuesta paso a la spec. En `delegate` lo que decida yo sin que me lo hayas dicho irá a «✋ Decisiones que he tomado yo», y el enfoque de implementación, a su Approach. Todo eso lo apruebas en la parada de la spec.

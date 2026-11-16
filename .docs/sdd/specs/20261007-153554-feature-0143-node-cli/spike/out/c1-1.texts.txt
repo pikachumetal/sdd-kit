@@ -1,0 +1,23 @@
+--- [3]
+Voy a mirar los documentos de anclaje y el código de reservas.
+
+--- [11]
+No hay mucho montado, y lo poco que hay engaña un poco.
+
+**El código** (`src/app.js:12`): cancelar es una sola línea en `run()`:
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+Se invoca como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`. Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**, así que no borra ninguna reserva y no comprueba que exista. Tampoco comprueba de quién es.
+
+**Lo que dicen los docs:**
+- El roadmap (línea 31) define la funcionalidad como «Cancelar una reserva propia». El código no tiene ninguna noción de «propia», porque las reservas ni siquiera guardan un usuario (`{ room, day, slot }`).
+- El patch 0007 y el changelog dicen que se arregló un bug: «La cancelación borraba reservas de otro día con la misma hora». La causa raíz era comparar solo por hora, y el patch dice «Fix y test de regresión. Verificado».
+- El código actual no contiene esa lógica de borrado. Lo único que queda del fix es el test `cancelar respeta el día` (`test/app.test.js:13`), que solo comprueba que el texto de salida incluye el día.
+
+**Lo que infiero yo:** la cancelación real no existe en este repo, o se perdió. Hoy es un stub, y el test pasa sin demostrar nada. Que el patch 0007 figure como verificado no coincide con lo que hay en `src/app.js`. Puede que ese código viviera en otra rama o que el fix nunca llegara a `develop`. Tampoco hay `capabilities/` ni `architecture.md` que lo aclaren.
+
+Si quieres, miro el historial de git (`git log -S cancelar`) para ver si el fix existió y dónde se perdió. Si lo que quieres es implementar la cancelación de verdad, sería una feature nueva y lo llevaríamos por `sdd-start-feature`.
+

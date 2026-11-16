@@ -1,0 +1,217 @@
+# shared-low-verdicts-1 — S149 a S358
+
+- S149 · descartado · fuente · la repetición ya está en superpowers 7.0.0 (reclasificado por el hilo)
+- S150 · descartado · fuente · la repetición ya está en superpowers 7.0.0 (reclasificado por el hilo)
+- S151 · descartado · preámbulo
+- S152 · descartado · frase común · uno es `merge --check`, el otro la política de merge
+- S153 · descartado · frase común · enlazan validation-template.md; uno es el modo manual, el otro field
+- S154 · confirmado · nuevo: guardar la salida completa de la suite en el scratchpad antes de filtrar · iguales · «Every run saves its whole output to a file in the session's scratchpad before any `tail`,» ‖ «Save every pass of the suite whole to a file in the session's scratchpad before filtering it»
+- S155 · confirmado · K28 · iguales · «first the failing file alone, with the project's runner, on the branch and at once in a detached worktree of the base» ‖ «on the branch and in that worktree at once, both in the background in the same turn»
+- S156 · descartado · frase común · capability merge/check frente a roadmap check
+- S157 · confirmado · P20 · iguales · «compare the capability that describes the piece the fix touched with what it does now» ‖ «open the capability that describes the piece the fix touched and compare it with what it does now»
+- S158 · descartado · preámbulo
+- S159 · descartado · productor/consumidor · puntero a root-cause-tracing.md y su entrada de índice
+- S160 · confirmado · P4 · difieren: A prohíbe otros documentos para el cliente; B prohíbe ids de feature, scopes y jerga en las notas · «`.docs/sdd/releases/vX.Y.Z/release-notes.md`, distilled from the sealed changelog» ‖ «Only with `release.hasRecipient: true`, at `.docs/sdd/releases/vX.Y.Z/release-notes.md`»
+- S161 · descartado · frase común · «stop what you started» es un puntero a sdd-implement
+- S162 · descartado · preámbulo
+- S163 · descartado · preámbulo · Overview que repite el resumen de la skill
+- S164 · descartado · frase común
+- S165 · confirmado · nuevo: comparar la copia RED con el test commiteado; un cambio que no es formato se juzga · difieren: A lo anota como ruling en el ledger; B lo manda al revisor de la task · «compare the RED copy with the committed test using `git diff --no-index` — a change that isn't formatting is a ruling in the ledger» ‖ «compare the RED copy with the committed test: a change that isn't formatting goes to the task reviewer.»
+- S166 · descartado · productor/consumidor · config pregunta la clave, implement aplica el vigía
+- S167 · confirmado · nuevo: los rulings del ledger pasan a tasks.md y al walkthrough «Decisiones tomadas sin el dev-lead» · iguales · «from `## Rulings` of `tasks.md` and, if the workspace still exists, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" ledger rulings <plan>`» ‖ «paste its lines into `tasks.md` under `## Rulings`»
+- S168 · confirmado · nuevo: la apertura se commitea antes de los RED de la primera task · iguales · «antes de escribir los RED de la primera task (en Native, antes de su `sdd task start`); lite: antes de implementar» ‖ «La apertura se junta antes de escribir los RED de la primera task, y cada hito, antes de los de la task siguiente.»
+- S169 · confirmado · nuevo: REPORT_FILE es la ruta del brief con -report.md · iguales · «the report file (the brief's path with `-report.md`)» ‖ «`[REPORT_FILE]`, the brief's path with `-report.md` instead of `-brief.md`»
+- S170 · descartado · preámbulo
+- S171 · confirmado · P1 · difieren: explore lee la única capacidad que apunta su propósito; propose lee todas las que el cambio tocará · «pick the capability with `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` before opening any, and read the one its purpose points to» ‖ «Before opening any capability, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` and read only those that, by their purpose, the change will touch»
+- S172 · descartado · frase común · smoke del cierre frente a paso de spec
+- S173 · descartado · frase común · squash del cierre frente a paso de plan
+- S174 · confirmado · K20 · difieren: A sin gate escribe `no declarado` en el plan; B pregunta qué ejecutar · «copied literally from `operations.md` §Testing `Gate de cierre`; without it, from `tech-stack.md` §Testing; without either, the constitution's» ‖ «its §Testing `Gate de cierre`; without that gate, the one in `tech-stack.md` §Testing; without either, the constitution's»
+- S175 · descartado · frase común · `merge --check` frente a merge de la rama de config
+- S176 · descartado · productor/consumidor · la línea `Aviso:` se define en control-profiles
+- S177 · descartado · productor/consumidor · la línea `Aviso:` se define en control-profiles
+- S178 · descartado · productor/consumidor · el cierre reescribe la línea que control-profiles define
+- S179 · confirmado · nuevo: el mensaje de validación abre con 🦆 y «✋ Me salí del plan en…» · iguales · «its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`» ‖ «abre con el 🦆 y «✋ Me salí del plan en…».»
+- S180 · confirmado · nuevo: el agente concreta el disparador de diferir (uso más próximo, con dueño) · iguales · «concreta tú el uso más próximo, con quien difiere como dueño, y escríbelo así: `disparador: <uso más próximo>, a cargo de <quien difiere>`» ‖ «ofrece diferir con un disparador concreto que elige el agente, con dueño: «Diferir: lo pruebo en <uso más próximo>, a cargo de <quien valida>»»
+- S181 · confirmado · P19 · iguales · «record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is» ‖ «`Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutaste»
+- S182 · confirmado · K33 · iguales · «lo aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md), que lee `control.maxParallelAgents`» ‖ «`control.maxParallelAgents` solo se declara aquí: su conducta la aplica [sdd-parallel-agents](../../sdd-parallel-agents/SKILL.md)»
+- S183 · confirmado · K11 · iguales · «or «composición no medida» or «no probado» with its reason» ‖ «la presentación enseña su salida, o el aviso «composición no medida», o «no probado» con su motivo»
+- S184 · descartado · productor/consumidor · commit-milestones define el squash de hitos; control-profiles lo nombra
+- S185 · confirmado · nuevo: la spec dice también qué no puede ver ni hacer cada rol o estado nuevo · iguales · «el delta introduce un rol, un estado o una condición que decide **qué no debe ver o hacer** alguien» ‖ «para cada rol o estado nuevo, qué queda prohibido —qué no ve, qué no puede hacer— y si la spec lo dice»
+- S186 · confirmado · nuevo: umbral para proponer partir una feature (más de 5 tasks, o 4-5 con superficies distintas o migración) · iguales · «With 3 or fewer never propose splitting; with more than 5, always; with 4 or 5, only if they touch different capabilities or surfaces (DB, UI, API) or one carries a migration» ‖ «more than 5 internal tasks, or 4 or 5 that touch different capabilities or surfaces —DB, UI, API— or any with a migration; with 3 or fewer, never»
+- S187 · confirmado · P1 · difieren: explore lee la que apunta su propósito; roadmap lee las tocadas y solo si va a escribir reglas o nombrar capacidades · «pick the capability with `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` before opening any, and read the one its purpose points to» ‖ «run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" capability index --path .docs/sdd` and read the ones that, by their purpose, are touched»
+- S188 · descartado · preámbulo
+- S189 · descartado · plantilla · campo Avisos, solo difiere «pendiente»
+- S190 · descartado · frase común · definición de hallazgo frente a hint de un campo
+- S191 · descartado · plantilla
+- S192 · descartado · plantilla
+- S193 · confirmado · P19 · iguales · «record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran» ‖ «`Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>`»
+- S194 · descartado · plantilla
+- S195 · descartado · frase común
+- S196 · confirmado · nuevo: reglas y escenarios con ejemplo de datos de entrada y salida, no frase abstracta · iguales · «cada una con un ejemplo con datos de entrada y de salida, no una frase abstracta» ‖ «lleva datos concretos de entrada y de salida, no una frase abstracta»
+- S197 · descartado · plantilla
+- S198 · confirmado · nuevo: el agente concreta el disparador de diferir (uso más próximo, con dueño) · iguales · «El mensaje de validación ofrece diferir con un disparador concreto que elige el agente, con dueño: «Diferir: lo pruebo en <uso más próximo>, a cargo de <quien valida>»» ‖ «Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>»
+- S199 · descartado · plantilla
+- S200 · confirmado · nuevo: pasarse del presupuesto de tiempo se apunta en 4.3 como deuda del proyecto · difieren: A usa 10 min por defecto y pide la duración; B usa el «Presupuesto E2E» · «si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración» ‖ «si lo pasa, apúntalo en 4.3 como deuda del proyecto»
+- S201 · confirmado · P19 · iguales · «record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran» ‖ «Validación en campo: <fecha> · <verificación del agente, p. ej. «suite 412/412 · smoke 5/5 THEN con ejecución real»
+- S202 · confirmado · nuevo: tras el cierre el cuerpo del walkthrough no se reescribe; lo posterior va en Adendas · iguales · «El cuerpo no se > reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra feature)» ‖ «El cuerpo de arriba > (secciones 1-5) no se reescribe.»
+- S203 · descartado · frontmatter
+- S204 · descartado · preámbulo
+- S205 · confirmado · nuevo: si la rama toca un fichero de «Sin filtro» el gate corre sin --affected y marca `(sin filtro: cambia el build)` · iguales · «run the gate without `--affected`, every task of the line with `(sin filtro: cambia el build)`» ‖ «the gate runs without `--affected` and every task carries `(sin filtro: cambia el build)`»
+- S206 · confirmado · P18 · iguales · «each axis gets its own brief, model and effort» ‖ «each with its own brief, model and effort, in parallel»
+- S207 · descartado · frase común · dos filas de la tabla de ejes comparten el tipo y el modelo
+- S208 · descartado · productor/consumidor · verify remite al vigía que implement define
+- S209 · descartado · frase común · enlace al vigía de silencio
+- S210 · descartado · frase común · enlace a encargo-revision.md
+- S211 · confirmado · K5 · iguales · «once that re-review is out, it doesn't open another and goes to ✋ as `sin revisar: <sha> — <what it changes>`» ‖ «**A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread»
+- S212 · confirmado · nuevo: tasks.md anota «Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN» · iguales · «como `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`.» ‖ «After the fix pass, `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`.»
+- S213 · descartado · productor/consumidor · encargo-revision remite al vigía que implement define
+- S214 · descartado · frase común
+- S215 · descartado · preámbulo
+- S216 · confirmado · K20 · difieren: verify omite el gate de la constitución y el preguntar sin inventar; worktrees los incluye · «from `operations.md` §Testing (without it, `tech-stack.md` §Testing)» ‖ «`Gate de cierre` of `.docs/sdd/operations.md` §Testing; without it, `tech-stack.md` §Testing; without either, the constitution's.»
+- S217 · descartado · preámbulo
+- S218 · descartado · fuente · la repetición ya está en superpowers 7.0.0 (reclasificado por el hilo)
+- S219 · descartado · fuente · la repetición ya está en superpowers 7.0.0 (reclasificado por el hilo)
+- S220 · descartado · frase común
+- S221 · descartado · frase común
+- S222 · descartado · frase común
+- S223 · descartado · frase común
+- S224 · descartado · frase común
+- S225 · confirmado · nuevo: si el destino de un aprendizaje no existe, créalo desde su plantilla y dilo en el informe · iguales · «If the destination doesn't exist, create it from its template in `sdd-templates`, put the learning there and say «`<documento>` no existía: creado desde la plantilla»» ‖ «dilo en el informe final del cierre: «`<documento>` no existía: creado desde la plantilla»»
+- S226 · descartado · frase común
+- S227 · descartado · frase común · enlace a control-profiles
+- S228 · descartado · frase común · enlace a control-profiles
+- S229 · confirmado · nuevo: con bloque merge completo y perfil delegate o unattended el agente fusiona en merge.into sin preguntar · iguales · «with the block complete and profile `delegate` or `unattended`, merge into `merge.into` without asking, with `--no-ff` if `merge.noFf` is `true`» ‖ «the agent applies it (complete `merge` block, profile `delegate` or `unattended`) or the user asked for it. The destination is `merge.into`, with `--no-ff` if `merge.noFf` is `true`»
+- S230 · confirmado · K9 · iguales · «there's nothing to integrate: no sync merge, no second suite, and the merge carries `--verified-at <sha of the validation's suite>`» ‖ «only if you resolved a conflict or, since the sha of the validation's suite, something changed outside `.docs/` that isn't `*.md`»
+- S231 · confirmado · nuevo: --verify no admite un gate que encadene comandos; conviértelo en tarea moon o script · iguales · «a gate that chains commands (`&&`, `;`, a pipe) exits 2, and becomes a moon task or a `package.json` script» ‖ «the gate chains or redirects commands; nothing was locked | make it a moon task or a `package.json` script, and run the script again»
+- S232 · descartado · frase común · dos filas de error distintas con la misma acción
+- S233 · confirmado · K27 · iguales · «On `vuelta: conflicto en`, the script has undone everything: «No terminado», and a person ports the fix and runs the hotfix again» ‖ «`vuelta: conflicto en <files>; se deshacen …` means the script undid it all: the close stays «No terminado», and a person ports the fix to the integration branch and runs the hotfix again.»
+- S234 · descartado · frase común
+- S235 · descartado · frase común
+- S236 · descartado · frase común
+- S237 · descartado · frase común · enlace a control-profiles
+- S238 · descartado · fuente · línea idéntica copiada de superpowers en dos referencias
+- S239 · descartado · frase común
+- S240 · descartado · preámbulo
+- S241 · descartado · frase común
+- S242 · descartado · frase común
+- S243 · descartado · frase común
+- S244 · descartado · frase común
+- S245 · descartado · frase común
+- S246 · descartado · art-ii
+- S247 · descartado · frase común
+- S248 · descartado · frase común
+- S249 · descartado · frase común
+- S250 · descartado · frase común · mismo bloque «De código» para dos despachos distintos
+- S251 · descartado · frase común · pre-flight frente a hallazgo plan-mandated
+- S252 · descartado · frase común
+- S253 · descartado · frase común
+- S254 · descartado · frase común
+- S255 · descartado · art-ii
+- S256 · descartado · art-ii
+- S257 · descartado · productor/consumidor · la nota del prompt cita lo que implement ya manda
+- S258 · confirmado · K12 · iguales · «If the investigation shows the cause needs interpreting requirements, or the fix leaves something the user sees unfixed → STOP: it was a feature, move up through step 4 of `sdd-propose`» ‖ «If writing the sentence makes you decide what moves or where, that's interpreting requirements: it's a feature.»
+- S259 · confirmado · K12 · difieren: patch-flow:18 manda borrar la carpeta y `patch.md` sin commitear antes de subir a feature; el paso 1 no lo dice · «STOP: it was a feature, move up through step 4 of `sdd-propose`, unless it's settled by choosing between options already written (step 3)» ‖ «stop: delete the patch's folder and its `patch.md` uncommitted, tell the user and move up through step 4 of `sdd-propose` with the half-done change as a starting point»
+- S260 · confirmado · nuevo: el FIX_BASE de la re-review es el head que vio la review anterior · iguales · «where FIX_BASE is the head the previous review saw» ‖ «`[FIX_BASE_SHA]`, the head the previous review saw»
+- S261 · confirmado · P18 · iguales · «the `model` and the `subagent_type` that the task's **Modelo** line names (an omitted model inherits the session's, the most expensive)» ‖ «the reviewer `model` and `subagent_type` of the plan (an omitted model inherits the session's)»
+- S262 · descartado · plantilla · placeholders de dos prompts distintos
+- S263 · descartado · frase común
+- S264 · descartado · frase común
+- S265 · descartado · frase común
+- S266 · confirmado · nuevo: un patch es un cambio pequeño cuya solución ya está fijada · iguales · «A **patch** is a small change whose **solution is already fixed**» ‖ «**patch** — a small change whose **solution is already fixed**»
+- S267 · descartado · frase común
+- S268 · descartado · frase común
+- S269 · descartado · frase común
+- S270 · confirmado · nuevo: tras la compactación se relee el plan y el ledger, no la skill · iguales · «After compaction you reread the plan and the ledger, not this skill.» ‖ «after compaction, the session rereads the plan and the ledger, not this skill»
+- S271 · descartado · frase común
+- S272 · descartado · art-ii
+- S273 · descartado · frase común
+- S274 · confirmado · K10 · difieren: control-profiles excluye del cruce roadmap.md, changelog.md y estimation-log.md; implement no · «Then cross `git diff --name-only $(git merge-base HEAD <integration>) <integration>` with the task's «Crear» and «Modificar» files» ‖ «`git diff --name-only $(git merge-base HEAD <integración>) <integración>` se cruza con los ficheros de «Crear» y «Modificar» de la task»
+- S275 · confirmado · nuevo: con la spec delegada la aprueba el agente con las decisiones registradas · iguales · «la aprueba el agente con las decisiones registradas» ‖ «La spec la aprueba el agente, con las decisiones registradas en «Decisiones que he tomado yo».»
+- S276 · descartado · productor/consumidor · config pregunta el tope; control-profiles lo declara
+- S277 · descartado · frase común
+- S278 · confirmado · nuevo: `execution` auto/native/subagent y su precedencia · iguales · «Un `execution: auto` en local también cuenta: pisa un `native` o `subagent` del proyecto y el método lo recomienda el handoff.» ‖ «con `native` o `subagent`, el método está dado y no se pregunta en ningún perfil»
+- S279 · descartado · productor/consumidor · config pregunta el tope; control-profiles lo declara
+- S280 · descartado · productor/consumidor · propose remite a spec-writing.md
+- S281 · descartado · productor/consumidor · propose remite a spec-writing.md
+- S282 · descartado · frontmatter
+- S283 · descartado · preámbulo
+- S284 · descartado · frase común
+- S285 · descartado · preámbulo
+- S286 · descartado · preámbulo
+- S287 · descartado · frase común
+- S288 · descartado · frase común
+- S289 · descartado · frase común
+- S290 · descartado · frase común
+- S291 · descartado · frase común
+- S292 · descartado · art-ii
+- S293 · descartado · preámbulo
+- S294 · descartado · frontmatter
+- S295 · descartado · fuente · la repetición ya está en superpowers 7.0.0 (reclasificado por el hilo)
+- S296 · descartado · frase común
+- S297 · descartado · productor/consumidor · templates define el verbo `sdd id next`, roadmap lo usa
+- S298 · descartado · frase común
+- S299 · descartado · frase común · dos filas de la tabla de verbos de la CLI
+- S300 · descartado · productor/consumidor · templates define `roadmap publish`, roadmap lo usa
+- S301 · descartado · plantilla
+- S302 · confirmado · P10 · iguales · «Run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" session tokens --path <worktree> --branch <rama> --artifact <carpeta del artefacto>`» ‖ «la línea de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, pegada tal cual»
+- S303 · confirmado · P16 · difieren: plan-template dice «solo» en `capabilities/` y añade «avisos»; operations-template no dice «solo» · «Los valores de comportamiento (tiempos, límites, cuotas) viven en `capabilities/`.» ‖ «Los valores de comportamiento (tiempos, límites, cuotas, avisos) viven solo en `capabilities/`.»
+- S304 · descartado · frase común
+- S305 · descartado · plantilla
+- S306 · confirmado · nuevo: la deuda es solo ingeniería; las peticiones de producto van al backlog · difieren: debt-template manda a Later de `ROADMAP.md`; roadmap-template al Backlog (2.x) · «Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.» ‖ «Solo ingeniería. Las peticiones de producto van al Backlog, nunca aquí.»
+- S307 · descartado · frase común · formas 3.0.0 y 2.x de marcar una fila cerrada
+- S308 · descartado · frase común · una enruta aprendizajes, la otra define el reparto de la spec
+- S309 · descartado · plantilla
+- S310 · confirmado · nuevo: el título del requisito es la clave de fusión y no cambia salvo renombrado explícito · iguales · «no lo cambies al fusionar salvo que la spec lo renombre explícitamente» ‖ «El título de cada requisito es la clave de fusión de `sdd-archive`: estable, no cambia salvo que la spec lo renombre explícitamente.»
+- S311 · descartado · frase común
+- S312 · descartado · plantilla
+- S313 · descartado · plantilla
+- S314 · confirmado · nuevo: una task cerrada afectada por una enmienda no se reabre: nota y task nueva al final · iguales · «en `tasks.md` cada task cerrada afectada lleva la nota `afectada por enmienda <fecha> → Task N`: no reabre ninguna» ‖ «Una task cerrada que cambia por una enmienda no se reabre: lleva en «Notas» `afectada por enmienda <fecha> → Task N`, y la Task N nueva hace el trabajo»
+- S315 · confirmado · P11 · difieren: control-profiles añade que `agente` no vale si solo lo aprobó el agente; validation-template no · «La línea `Validación: dev-lead | agente` de la spec o de `patch.md`; sin ella, `dev-lead`.» ‖ «**Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`.»
+- S316 · descartado · plantilla
+- S317 · confirmado · P10 · iguales · «Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte» ‖ «desde el arranque de la sesión que lo abrió, investigación previa incluida, sin las esperas al dev-lead»
+- S318 · descartado · frase común
+- S319 · descartado · frontmatter
+- S320 · descartado · frase común
+- S321 · confirmado · nuevo: mientras corre la revisión final se escriben los borradores de cierre · iguales · «while the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time» ‖ «while it reviews, you do that check and write the closing drafts of step 7»
+- S322 · descartado · frase común
+- S323 · descartado · frase común · re-review y eje Spec comparten solo `effort-high` + `opus`
+- S324 · descartado · frase común
+- S325 · descartado · frase común · re-review frente a eje Arquitectura
+- S326 · descartado · frase común · re-review frente a eje Código
+- S327 · confirmado · P18 · iguales · «Dispatch it with `subagent_type: sdd-kit:effort-high` + `model: opus` and `description: "Final review — Architecture axis"`» ‖ «Spec y Arquitectura con `subagent_type: sdd-kit:effort-high` + `model: opus`, Código con `subagent_type: sdd-kit:effort-high` + `model: sonnet`»
+- S328 · descartado · frase común
+- S329 · descartado · frase común · re-review frente a eje Spec
+- S330 · descartado · frontmatter
+- S331 · descartado · frontmatter · fila de using-sdd que repite la description
+- S332 · descartado · frontmatter · fila de using-sdd que repite la description
+- S333 · descartado · productor/consumidor · puntero a skill-mechanics.md
+- S334 · descartado · fuente · la repetición ya está en superpowers 7.0.0 (reclasificado por el hilo)
+- S335 · descartado · productor/consumidor · la description de add-to-changelog y la viñeta que la invoca
+- S336 · confirmado · nuevo: si la rama toca un fichero de «Sin filtro» el gate corre sin --affected y marca `(sin filtro: cambia el build)` · iguales · «run the gate without `--affected`, every task of the line with `(sin filtro: cambia el build)`» ‖ «If the base brought a file of «Sin filtro», the gate runs whole, without the filter, and every task of the line carries `(sin filtro: cambia el build)`»
+- S337 · descartado · frase común
+- S338 · descartado · art-ii
+- S339 · descartado · art-ii
+- S340 · descartado · frase común
+- S341 · descartado · frase común · ambas remiten a «Running a gate» de sdd-verify
+- S342 · confirmado · K28 · iguales · «search the first error lines (the test file, the error's name) in the project's debt» ‖ «search the `headSha` and the workflow's name in the project's debt as «Fails without the branch» says, and with no row that names them open one»
+- S343 · descartado · frase común · formas 2.x y 3.0.0 de la fila del roadmap
+- S344 · descartado · preámbulo
+- S345 · descartado · frase común
+- S346 · descartado · frase común
+- S347 · confirmado · nuevo: el usuario confirma la versión en la propuesta final · difieren: versionado.md aclara que pedir la versión por nombre no la confirma; end-release no · «Propose the version with its reason ([versionado.md](references/versionado.md)); **the user confirms it** on the final proposal.» ‖ «The version is proposed and **the user confirms it** on the final closing proposal: a request that names the version («cierra la v0.2.0») describes the milestone, it is NOT the confirmation.»
+- S348 · descartado · frase común
+- S349 · descartado · frase común
+- S350 · descartado · frase común
+- S351 · descartado · frase común
+- S352 · descartado · art-ii
+- S353 · descartado · productor/consumidor · dev-validation define el guion, implement lo usa en pair
+- S354 · descartado · art-ii
+- S355 · descartado · frase común · dos reglas distintas sobre el pre-commit y los RED
+- S356 · descartado · frase común
+- S357 · descartado · frase común
+- S358 · confirmado · nuevo: en el init con código, debt.md lleva la deuda y bloqueos del inventario en «Por triar» · iguales · «*(with code: the inventory's debt and blocks, in «Por triar»)*» ‖ «with code only: the inventory's debt and blocked dependencies in «Por triar».»
+
+Total: 210 entradas · 59 confirmadas (24 en grupos existentes, 35 nuevas) · 151 descartadas
+
+Total: 210 entradas · 58 confirmadas (26 en grupos existentes, 32 nuevas) · 152 descartadas
+Releídas: 48 · cambian: S258, S259, S270

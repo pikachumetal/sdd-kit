@@ -1,0 +1,58 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, que lee los informes de los ejes. Queda: el cierre de la revisión y la parada, ~5 min.
+
+--- [9]
+That search from `/` was too broad. I'll stop it and look in the likely places.
+
+--- [23]
+Ahora: aplico la pasada de fix del hallazgo Important del eje Código (`reasonOf` conserva los espacios), con el test en RED primero. Queda: fix, suite completa y re-revisión, ~10 min.
+
+--- [36]
+Ahora: lanzo la única re-revisión del fix (opus + high) y su vigilancia de silencio. Queda: su informe y el cierre en `tasks.md`, ~5 min.
+
+--- [43]
+La re-revisión está en marcha. Mientras tanto no toco nada que dependa de ella. Esto es lo que hay hasta ahora:
+
+- **Eje Spec:** limpio. Deja un Minor: el test `canceladas` depende de que `cancelar` haya corrido antes. Lo difiero al ledger porque `review.minors` no es `fix`.
+- **Eje Código:** un Important. `reasonOf` conservaba los espacios del motivo, así que `"sala ocupada "` se rechazaba. Lo arreglé en `449725d`: el test nuevo pasó de RED a GREEN y la suite quedó en 6/6.
+- **Eje Arquitectura:** no sale. El diff no trae módulo, dependencia, contrato ni datos nuevos.
+- **Registros:** el ledger y `tasks.md` (`Revisión final:` y `Pasada de fix:`) están escritos. `tasks.md` sigue sin commit, como estaba.
+
+Cuando llegue el informe de la re-revisión escribo su línea `Re-revisión:` en `tasks.md`, quito el worktree de revisión y sigo hacia el cierre.
+
+--- [50]
+### Finding Verdicts
+- **[Code, Important] `src/app.js:14-17`: `reasonOf` kept the spaces around the reason, so `--motivo "sala ocupada "` was rejected.** ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`. The trim happens before `cancelBooking` checks the reason against the list at `src/app.js:20`, so it also reaches what gets saved and printed at `src/app.js:24-25`. I ran the scenario from the finding at 449725d: `node src/app.js cancelar Norte lun --motivo "sala ocupada "` now answers «cancelada Norte lun (sala ocupada)». The optional chaining keeps the case of `--motivo` with no value working: it gives `undefined`, which still gets «motivo no válido…» as the spec requires. `git diff --stat 5779a1b 449725d` matches the diff file: two files, +5/-1. `node --test test/cancel.test.js` passes 4/4, including the new test. The working tree is clean.
+
+### New Breakage in the Fix Diff
+- **Minor**, `test/cancel.test.js:17-19`: the new test is weaker than the bug it covers. It sends `' otro '` for `Norte mar`, where there is no booking, and expects «sin reserva Norte mar». That only proves the trimmed reason now passes the check. It doesn't prove a cancellation succeeds with a padded reason, or that the saved reason is the trimmed one, which is what the finding describes. The test probably avoids a real booking because the module shares state between tests: the first test already cancels Norte lun. The code fix is right. Only the test's coverage is short.
+
+### Out-of-Scope Observations
+- In `src/app.js`, only the edges are trimmed. A reason with doubled spaces inside, like `"sala  ocupada"`, is still rejected. The finding didn't ask for this, so it's only worth noting.
+- `voidBooking`/`anular` (`src/app.js:28-33`) belongs to 0011, which the spec leaves out of scope. It comes from the base commit `0e5edeb` and is not part of this feature.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. One Minor remains: the new test checks the «sin reserva» path, not a successful cancellation.
+
+--- [53]
+La revisión final de la 0010 está cerrada y el único fallo grave que encontró ya está corregido. Falta cerrar la feature con `sdd-archive`, y esa parada es tuya. `tasks.md` y el ledger tienen todo anotado. `tasks.md` sigue sin commit.
+
+**Revisión final**
+- **Eje Spec:** limpio. Solo deja un Minor: el test `canceladas` depende de que `cancelar` haya corrido antes. Lo dejo diferido, porque `review.minors` no está en `fix`.
+- **Eje Código:** un Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` se rechazaba.
+- **Eje Arquitectura:** no sale. El diff no trae módulo, dependencia, contrato ni datos nuevos, y lo dejé anotado en el ledger.
+
+**Pasada de fix**
+- **Corrección:** el commit `449725d` recorta el motivo en `src/app.js:16`.
+- **Tests:** escribí el test antes y falló. Con el fix pasa, y `node --test` da 6/6. Es el resultado que obtuve yo al ejecutarlo.
+
+**Re-revisión**
+- **Resultado:** la única re-revisión (opus + high) da el hallazgo por corregido y sin Critical ni Important nuevos. Ejecutó el escenario del hallazgo y ahora responde «cancelada Norte lun (sala ocupada)».
+- **Minor:** el test nuevo cubre el camino «sin reserva», no una cancelación con motivo con espacios. Lo comprobó la re-revisión ejecutando el caso, y el estado compartido del módulo impide reutilizar `Norte lun`. Queda como `Ruling` en el ledger.
+- **Fuera de alcance:** `"sala  ocupada"` con doble espacio interno sigue rechazado. El hallazgo y el spec solo piden recortar los bordes. También queda como `Ruling`.
+
+**Pendiente**
+- **Sin commit:** `tasks.md` está sin commit y no lo he commiteado porque no me lo has pedido.
+- **Marca de `tasks.md`:** las dos tasks aparecen con el mismo commit `5779a1b`. Es el registro que ya traía, no lo he tocado.
+- **Sin tocar:** no hice ni la verificación visual (`sdd-archive` la valida) ni los borradores de cierre.
+

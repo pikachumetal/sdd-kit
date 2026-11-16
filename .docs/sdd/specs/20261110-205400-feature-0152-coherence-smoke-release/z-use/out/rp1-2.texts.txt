@@ -1,0 +1,135 @@
+--- [3]
+Ahora: leo el flujo de patch y el estado de la rama. Queda: decidir por dónde seguir, ~2 min.
+
+--- [14]
+Retomo en el paso 4: el patch tiene carpeta y `patch.md` (pasos 1–3), pero el fix no está hecho. Escribo primero los tests, en RED.
+
+--- [17]
+RED confirmado: falla porque devuelve `cancelada` sin mirar `bookings`. Ahora el fix mínimo.
+
+--- [21]
+Verde (4/4, diff de 10 líneas, 2 ficheros). Ahora: anoto la verificación en `patch.md` y lanzo el revisor único del patch. Queda: aplicar sus hallazgos, commit y cierre, ~5 min.
+
+--- [25]
+Retomé el patch 0021 y el fix está hecho, pero sin commit todavía. Estoy esperando al revisor.
+
+- **Estado de ayer:** la carpeta y `patch.md` existían (pasos 1–3). Faltaba el fix. La causa raíz está bien: `cancelar` en `src/app.js:12` devolvía `cancelada` sin mirar `bookings`.
+- **RED:** el test nuevo `cancelar una reserva que no existe responde no existe` fallaba con `actual: 'cancelada mar 10:00-12:00'`.
+- **Fix:** si no hay reserva de ese día y franja, `cancelar` responde `no existe`. El test `cancelar respeta el día` ahora usa `lun 10:00-12:00`, como fija §3.
+- **GREEN:** `node --test` pasa 4 de 4. El diff es de 2 ficheros y 10 líneas, así que sigue siendo patch.
+- **`patch.md` §4:** ya tiene el comando y la salida.
+- **Revisor:** lanzado un revisor `sonnet`, el único que pide un patch. Cuando vuelva, respondo cada hallazgo en §4, hago el commit del fix y cierro con `sdd-archive`.
+
+No he hecho el `sdd id claim`, porque la carpeta ya existía con el id 0021. Tampoco he rellenado `Estimación` en §5: no hay `estimation.md` en el proyecto.
+
+--- [27]
+**Resumen:** sin hallazgos bloqueantes. `node --test` da 4 tests, 4 pass, 0 fail. Hay dos observaciones menores sobre los tests.
+
+**(1) Causa raíz: correcta.**
+- Antes del fix, la línea 12 de `src/app.js` era `if (cmd === 'cancelar') return \`cancelada ${params[0]} ${params[1]}\`;`.
+- Esa línea no consulta `bookings` (declarado en la línea 3), así que cualquier día y franja daban `cancelada`.
+- El patch.md describe esto bien.
+
+**(2) Fix: mínimo y correcto.**
+- En `src/app.js:12-16`, `cancelar` comprueba `bookings.some(b => b.day === day && b.slot === slot)` y devuelve `no existe` si no hay coincidencia.
+- No filtra por `room` porque el comando no recibe sala. Es coherente con el patch.
+- La salida de la rama feliz no cambia.
+- No toca `libres`, `reservar` ni nada fuera de `cancelar`.
+
+**(3) Tests: prueban comportamiento, no implementación.**
+- No miran estructuras internas. Llaman a `run` y comprueban la cadena devuelta.
+- El cambio del test existente (`mar 10:00` a `lun 10:00-12:00`) está justificado. Con el comportamiento nuevo, `mar 10:00` ya no existe en `bookings`, y patch.md §3 lo deja registrado.
+- El test nuevo usa `mar 10:00-12:00`: misma franja que la reserva pero distinto día. Eso cubre que el día se respeta.
+
+**Observaciones (severidad baja):**
+- **Baja, `test/app.test.js:13-15`:** el test `cancelar respeta el día` ahora solo comprueba el caso positivo (`lun`). El nombre ya no describe lo que verifica. La parte de respetar el día la cubre el test nuevo. Convendría renombrarlo, por ejemplo a `cancelar una reserva existente la cancela`.
+- **Baja, `test/app.test.js:17-19`:** falta el caso mismo día con franja distinta, por ejemplo `lun 14:00-16:00`. Sin él, un fix que solo comparara el día pasaría los tests, aunque el código actual sí compara ambos campos.
+
+--- [29]
+El revisor no encuentra nada bloqueante. Respondo a sus dos observaciones: la segunda la arreglo y la primera la rechazo.
+
+--- [33]
+Ahora: commit del fix, con código, tests y `patch.md` juntos. Queda: cerrar con `sdd-archive`, ~3 min.
+
+--- [37]
+Ahora: pre-checks del cierre. Queda: validación, que decide quién valida, ~3 min.
+
+--- [47]
+🦆 Antes, `cancelar` de una reserva que no existía decía «cancelada» igual. Ahora responde `no existe`. Por ejemplo, `cancelar mar 10:00-12:00` responde `no existe` porque la única reserva es la del lunes.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar una reserva que no existe responde `no existe` | `ejecución real` | `cancelar mar 10:00-12:00` → `no existe` |
+| Cancelar una reserva existente la cancela | `ejecución real` | `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00` |
+| El mismo día con otra franja no existe | `ejecución real` | `cancelar lun 14:00-16:00` → `no existe` |
+
+**Suites**
+
+- `node --test`: 5/5 sobre `adbd3e5`, antes de este cierre. Corre otra vez sobre el árbol que se fusione.
+
+**Sin probar**
+
+- Nada del patch. Sí hay un bloqueo del cierre, que está más abajo, después del guion.
+
+Panel: plan B en http://127.0.0.1:59141/
+
+El servidor del panel corre en segundo plano (PID 237855). Lo paro cuando me digas «listo». La página no ve la app, así que si un paso falla, cuéntame el error en el comentario. Los ficheros del panel están en `.temp/`, y el proyecto no tiene `.gitignore`. Propongo crear uno con `.temp/` y no lo he hecho.
+
+**Guion**
+
+Rama `patch/0021-cancel-missing` · worktree `<run>/repo`
+
+No hay comando de arranque declarado: es una CLI sin entorno.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. El reporte: «cancelo una reserva que no existe y me dice cancelada igual».
+
+```
+node src/app.js cancelar mar 10:00-12:00
+```
+
+→ `no existe`
+
+2. Una reserva que sí existe:
+
+```
+node src/app.js cancelar lun 10:00-12:00
+```
+
+→ `cancelada lun 10:00-12:00`
+
+3. Mismo día, otra franja:
+
+```
+node src/app.js cancelar lun 14:00-16:00
+```
+
+→ `no existe`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+**Bloqueo del cierre:** el merge no se puede preparar todavía. `sdd merge --check` falla porque a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Tras tu validación, dime a qué rama integro y si va con `--no-ff`. Recomiendo `main`, que es la rama principal, con `noFf: true`.
+
+Dime "validado" o qué paso falla.
+
+--- [53]
+El panel sigue vivo: `http://127.0.0.1:59141/` responde 200. El aviso de que la tarea en segundo plano terminó era del lanzador del shell, no del servidor. El `netstat` no lo muestra escuchando, pero `curl` lo alcanza dos veces.
+
+Sigo esperando tu validación. No es una confirmación tuya el aviso automático ni nada que haya pasado desde mi último mensaje. Necesito de ti:
+
+1. **Validación:** prueba los 3 pasos del guion y dime «validado», o qué paso falla. También puedes diferirla con la línea `Diferir:`.
+2. **Merge:** dime a qué rama integro y si va con `--no-ff`. Recomiendo `main` con `noFf: true`, y con eso completo `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`.
+
+Hasta entonces no toco nada más: ni merge, ni cierre de `patch.md`, ni el roadmap.
+

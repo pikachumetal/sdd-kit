@@ -1,0 +1,37 @@
+--- [2]
+Esto es una investigación que deja mediciones, así que entra por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto del proyecto (docs, roadmap, steering) para clasificar. Queda: clasificar y presentarte el anuncio del carril, ~2 min.
+
+--- [11]
+Ahora: clasifico el cambio y te cuento lo que he entendido. Queda: una pregunta tuya sobre qué es «aguantar», y después la spec de la investigación (que apruebas tú), el plan y las mediciones, ~15 min.
+
+```text
+Carril: spike (investigación que deja una tabla de medidas) · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta spike»
+```
+
+No hay `sdd-kit.local.json` ni dependencias que instalar: el proyecto no usa ninguna.
+
+**Lo que he entendido (corrígeme):**
+
+- Quieres saber si `node src/app.js libres <franja>` sigue respondiendo bien cuando hay 1.000 reservas, y que quede una tabla con las medidas. No se toca código de producción.
+- Cómo funciona hoy `libres`, en `src/app.js:5`:
+  - Para cada sala (solo hay 2) hace un `bookings.some(...)` sobre todas las reservas.
+  - El coste es lineal en el número de reservas, así que no esperaría un problema serio a 1.000.
+  - Eso es una hipótesis hasta medirla.
+- Hay un obstáculo para medir: las reservas viven solo en memoria, con una reserva fija de arranque, y `reservar` no guarda nada. Desde la terminal no se pueden cargar 1.000 reservas.
+- Por eso el plan sería medir con un script de medición aparte, sin tocar `src/`. El script importaría `run` y rellenaría `bookings` con N reservas, y N sería 10, 100, 1.000 y 10.000 para ver cómo crece el tiempo. Habría que exportar `bookings`, o replicar la lógica de `freeRooms` en el script. Esa decisión la tomo yo en la spec y te la marco en «✋ Decisiones que he tomado yo».
+- Para medir cada tamaño usaría muchas repeticiones, con la mediana y el p95 en ms.
+- Medir el proceso completo (arranque de Node incluido) y la función sola daría dos columnas distintas.
+
+**Una pregunta antes de escribir la spec:** ¿qué significa «aguanta» para ti? Sin un umbral, la tabla no tiene veredicto.
+
+1. **(Recomendada)** Umbral de 100 ms por invocación completa del comando, con el arranque de Node incluido. Es lo que notas en la terminal, y 100 ms es un listón razonable para una herramienta interactiva.
+2. Umbral de 10 ms solo para la función `libres`, sin el arranque de Node. Es más estricto y mide solo nuestro código.
+3. Sin umbral: la tabla se entrega sin veredicto y tú juzgas.
+
+Dime el número, o «1» si te vale la recomendada, y escribo la spec.
+

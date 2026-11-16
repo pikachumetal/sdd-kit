@@ -1,0 +1,72 @@
+--- [2]
+Ahora: invoco sdd-implement para ejecutar el plan de la 0010. Queda: implementación, revisión final y validación.
+
+--- [5]
+Ahora: preparo el workspace y leo el plan y la spec de la 0010. Queda: las tasks, la revisión final y la validación.
+
+--- [11]
+Ya estoy en el worktree aislado (rama feature/0010-cancel-reason). Veo el código, el baseline y arranco la Task 1.
+
+--- [19]
+RED correcto (3 fallan por la función que falta). Implemento.
+
+--- [29]
+RED por la razón correcta (el comando no existe). Implemento.
+
+--- [34]
+Ahora: revisión final de toda la rama. Queda: cierre de la revisión y presentar la validación, ~10 min.
+
+--- [37]
+No hay herramienta de subagentes en esta sesión, así que hago la revisión final como autorrevisión por ejes y lo dejo registrado.
+
+--- [41]
+🦆 La 0010 está implementada y la revisión final no encontró nada que arreglar. Falta tu validación.
+
+**Ahora:** presento la validación. **Queda:** que pruebes tú y me digas qué probaste y si funciona; después el cierre con `sdd-end-feature`, ~10 min.
+
+## Qué hay
+
+- Task 1 (`cc7ecb5`): `cancelar <sala> <día> --motivo <motivo>`, con la lista cerrada «cambio de planes, sala ocupada, otro».
+- Task 2 (`13ea791`): el comando `canceladas`, que enseña `<sala> <día> — <motivo>`.
+- Ficheros tocados: `src/app.js` y `test/cancel.test.js`.
+- Suite completa (`node --test`): 7/7 en verde, ~0,1 s.
+
+## Smoke por THEN
+
+| THEN de la spec | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real, con `--motivo "porque sí"` |
+| sin `--motivo` → el mismo mensaje | ejecución real |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, en el mismo proceso tras cancelar |
+
+## Guion de pruebas
+
+La reserva es en memoria y cada invocación de `node` empieza de cero. Por eso `canceladas` solo muestra algo si se llama en el mismo proceso que `cancelar`.
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "porque sí"` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → el mismo «motivo no válido…».
+4. `node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[]))"` → «Norte lun — sala ocupada».
+
+## ✋ Me salí del plan en…
+
+- **Revisión final:** no hay herramienta de subagentes en esta sesión. La hice yo mismo, por ejes, y es más débil que revisores con contexto fresco. Tú decides si basta.
+- **Ejes:** spec y código sin hallazgos; arquitectura no sale (sin módulo, dependencia ni contrato nuevos).
+- **Sin re-revisión:** no hubo pasada de fix.
+- **`tasks.md` no existe** en esta feature, así que los rulings y la revisión van aquí.
+
+## Rulings I made
+
+1. Task 1: el test existente «cancelar una reserva activa» llamaba a `cancelar` sin `--motivo`, y la spec ahora exige rechazarlo. Lo adapté a la spec. Si me equivoco, hay que reescribir un test.
+2. Task 1: valido el motivo antes de buscar la reserva, porque la spec no fija el orden. Si me equivoco, se reordena un `if`.
+
+## Deferred minors
+
+- `canceladas` sin ninguna cancelada imprime una línea vacía.
+- `cancelar Sur mar` sin reserva y sin motivo responde «motivo no válido» en lugar de «sin reserva».
+
+Los borradores de cierre (walkthrough, delta en `capabilities/`, changelog) los escribo en el cierre. El roadmap no lo he tocado.
+
+¿Qué has probado tú y funciona? Cuando me lo digas cierro con `sdd-end-feature`. Si prefieres diferirlo, dime con qué disparador.
+

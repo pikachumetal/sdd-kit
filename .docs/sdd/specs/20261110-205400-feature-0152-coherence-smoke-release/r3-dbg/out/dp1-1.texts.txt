@@ -1,0 +1,48 @@
+--- [10]
+**Causa raíz (confirmada):** en `src/app.js:8`, `toHours` convierte `"09:30"` en `9.30` en vez de `9.5`. Con `09:30-12:00` la cuenta da `12.00 - 9.30 = 2.70`, que supera `MAX_HOURS = 2.5`. El test `reservar justo el máximo de horas se acepta` ya falla hoy por esto, así que es determinista y se reproduce con un solo test.
+
+🦆 Se toca solo `toHours` en `src/app.js`: pasará a calcular `horas + minutos/60`. No cambia lo que el usuario ve ni añade comportamiento. Antes de guardar corro `node --test`. El test que falla pasa a verde y el de `09:00-12:30` sigue rechazándose.
+
+Un efecto lateral: `precio` usa la misma función, así que el precio de cualquier franja con minutos también estaba mal y quedará corregido. Por ejemplo, `Sur 09:30-12:00` daba 40,5 € y pasará a 37,5 €. Conviene avisar al cliente.
+
+Es un **patch** de fallo, tamaño S. El proyecto no tiene `estimation.md`, así que no hay estimación en horas.
+
+¿Cómo seguimos?
+
+1. **Abro el patch (recomendada):** creo la rama y la carpeta `patch-`, hago el arreglo con el test existente como RED y cierro con `sdd-archive`.
+2. **Lo subo a feature:** solo si quieres cambiar también el redondeo o el precio.
+
+El perfil es el del proyecto (`sdd-kit.json`, sin `control.profile`, así que aplica el predeterminado). Si te vas a ausentar, di «apruebo por delegación».
+
+--- [19]
+Ahora: abro la rama del patch con el id 0010 y lo reclamo. Queda: escribir `patch.md`, arreglar y verificar, ~10 min.
+
+--- [39]
+Ahora actualizo `patch.md` con la verificación y los hallazgos del revisor, y hago el commit.
+
+--- [47]
+El arreglo está hecho y commiteado, pero el cierre se detiene en la validación, que es suya, y no he fusionado nada.
+
+🦆 Antes, `09:30` se leía como 9,3 h en vez de 9,5 h. Por eso `09:30-12:00` salía como 2,7 h y se rechazaba. Ahora las franjas se calculan en minutos enteros y esa franja se acepta.
+
+**Lo que he verificado yo**
+- `node --test` pasa 6/6. Incluye el test del límite, que fallaba antes del arreglo.
+- `reservar Sur 09:30-12:00` responde `reservada Sur 09:30-12:00`.
+- `reservar Sur 09:00-12:30` sigue respondiendo «excede el máximo de horas».
+- Barrí las 1.290 franjas de 150 min de un día y todas dan 2,5 h exactas.
+- El revisor encontró un fallo de coma flotante en la primera versión del arreglo, con otros minutos en el límite. Lo corregí pasando a minutos enteros.
+
+**Un efecto lateral que debes conocer:** `precio` usa el mismo cálculo, así que cambia. `precio Sur 09:30-12:00` pasaba de 40,5 € a 37,5 €. Con minutos que no son múltiplos de 15 el precio puede salir con muchos decimales. No lo he tocado, porque dar formato al precio es otro cambio.
+
+**Para validar, ejecuta esto:**
+1. `node src/app.js reservar Sur 09:30-12:00` debe dar `reservada Sur 09:30-12:00`.
+2. `node src/app.js reservar Sur 09:00-12:30` debe dar `excede el máximo de horas`.
+3. `node src/app.js precio Sur 09:30-12:00` debe dar `37.5 €`.
+
+1. **Validado (recomendada):** dime qué has probado y que funciona. Cierro y fusiono.
+2. **Falla algo:** dime qué, y vuelvo al arreglo.
+
+Además, `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y sin ellos el kit no me deja fusionar. Cuando valides, dime en qué rama fusiono (supongo `develop`) y si quieres `--no-ff`.
+
+Los cambios están en la rama `feature/0010-franja-minutos`. El único cambio sin commitear es el texto de `patch.md`, que cierro junto con el resto.
+

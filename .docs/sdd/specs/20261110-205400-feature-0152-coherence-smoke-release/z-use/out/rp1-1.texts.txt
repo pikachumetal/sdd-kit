@@ -1,0 +1,146 @@
+--- [9]
+Ahora: reviso el código y los tests para hacer el fix mínimo (paso 4). Queda: fix, verificación, un revisor y commit, ~15 min, ~0,3 $.
+
+--- [13]
+Escribo primero los tests (RED): el existente pasa a usar la reserva real y añado el caso de la reserva inexistente.
+
+--- [16]
+RED confirmado: falla porque devuelve `cancelada mar 10:00-12:00` en vez de `no existe`. Ahora el fix mínimo.
+
+--- [21]
+GREEN: 4 de 4. Relleno §4 de `patch.md` y lanzo el revisor.
+
+--- [29]
+Retomé el patch 0021 (cancelar una reserva que no existe). El fix y los tests están hechos, pero todavía no hay commit. Falta el resultado del revisor, que sigue en marcha.
+
+**Qué estaba hecho y qué faltaba:** ayer solo quedó escrito `patch.md`, con la causa raíz y el fix pendiente de §4.
+
+**Lo que he hecho hoy:**
+- **RED:** cambié el test `cancelar respeta el día` para que use la reserva real (`lun 10:00-12:00`). Añadí un test nuevo para una reserva inexistente. Falló con `actual: 'cancelada mar 10:00-12:00', expected: 'no existe'`.
+- **Fix (`src/app.js`):** `cancelar` mira ahora `bookings`. Si no hay reserva de ese día y franja, responde `no existe`.
+- **GREEN:** `node --test test/` pasa 4 de 4.
+- **`patch.md`:** §4 recoge el RED, el GREEN y que no se borra ningún símbolo.
+
+**Pendiente:**
+1. El revisor (sonnet, `effort-medium`) está revisando la causa raíz, el fix y el test. Cuando vuelva, respondo cada hallazgo en §4.
+2. Commit único con el código, los tests y `patch.md`, con tipo `fix`. Aún no lo he hecho.
+3. Cierre con `sdd-archive`.
+
+Una cosa que no hice: no registré `Estimación` en §5. `estimation.md` no existe en este proyecto, así que no aplica.
+
+--- [32]
+**Veredicto:** el fix es correcto y mínimo. Hay 1 hallazgo medio, 1 bajo y 1 informativo. Ejecuté `node --test test/` y da 4 de 4 en verde, igual que dice patch.md.
+
+**(1) Causa raíz**
+- Es correcta. En la línea original, `run` devolvía `cancelada ${params[0]} ${params[1]}` sin consultar `bookings`. El diff confirma que ese era el único `return` del comando `cancelar`.
+- **Bajo** — `.docs/sdd/changes/20260921-090000-patch-0021-cancel-missing/patch.md:13`. La referencia `src/app.js:12` coincide con la línea original, pero tras el fix esa línea pasa a ser `if (cmd === 'cancelar') {`. No es un error, solo una referencia que queda desfasada.
+- **Bajo** — `patch.md:13`. La evidencia es solo la lectura del código. No hay una reproducción del síntoma con salida real, aunque el RED de la sección 4 lo cubre indirectamente.
+
+**(2) Fix**
+- `src/app.js:12-15`. Añade `bookings.some(day && slot)` y devuelve `no existe` si no hay coincidencia.
+- No toca nada más, y no hay símbolos eliminados, como dice patch.md.
+- Resuelve el síntoma.
+
+**(3) Test**
+- Los tests nuevos están en `test/app.test.js:13-19`.
+- El test `cancelar una reserva que no existe responde no existe` cubre el escenario. Sin el fix, `run('cancelar', ['mar','10:00-12:00'])` devolvería `cancelada mar 10:00-12:00`, así que falla. Coincide con el RED de patch.md:21. No lo pude comprobar ejecutando, porque no puedo revertir el fix en solo lectura.
+- **Medio** — `test/app.test.js:13-15`. El test existente `cancelar respeta el día` se reescribió: antes usaba `mar 10:00` y ahora `lun 10:00-12:00`. Ya no prueba que cancelar respete el día, porque el caso positivo no distingue días. Esa intención la cubre ahora el test nuevo, pero el nombre del primero es engañoso. Sugiero renombrarlo, por ejemplo a «cancelar una reserva existente la cancela». patch.md:17 documenta el cambio.
+
+**(4) Casos borde**
+- **Día correcto con franja distinta** (`lun 11:00-12:00`). El fix lo trata bien, porque exige coincidencia de día y de franja. No hay test para este caso.
+- **Franja correcta con día distinto** (`mar 10:00-12:00`). Está cubierto por el test nuevo.
+- **Parámetros ausentes** (`cancelar` sin argumentos). `params[0]` y `params[1]` son `undefined`, `some` da `false` y devuelve `no existe`. No lanza excepción, y el resultado es razonable.
+- **Formato de franja** (`10:00` en vez de `10:00-12:00`). Devuelve `no existe`, porque la comparación es por igualdad exacta. Es coherente con el modelo de datos, pero el test antiguo usaba `10:00` y por eso hubo que cambiarlo.
+- **Informativo.** La cancelación no elimina la reserva de `bookings`. Ya era así antes y queda fuera del alcance del patch. Cancelar dos veces la misma reserva responde `cancelada` las dos veces.
+
+**Recomendación**
+- Añadir un test de «día correcto con franja distinta».
+- Renombrar el test reescrito (hallazgo medio de arriba).
+
+--- [34]
+Respondo a los hallazgos del revisor. Aplico los tres cambios pequeños y rechazo el informativo por quedar fuera del patch.
+
+--- [37]
+El script no aplicó el cambio, así que lo hago con Edit.
+
+--- [40]
+Ahora actualizo `patch.md`: §3 por el test renombrado, la referencia de línea y la respuesta a cada hallazgo en §4.
+
+--- [46]
+Commit hecho. Paso 7: cierro con `sdd-archive`.
+
+--- [60]
+Estoy en el cierre del patch (`sdd-archive`). Compruebo que el panel de validación sigue activo y presento el mensaje de validación.
+
+--- [62]
+🦆 Antes, `cancelar` decía «cancelada» aunque la reserva no existiera: `cancelar mar 10:00-12:00` respondía `cancelada mar 10:00-12:00`. Ahora responde `no existe`, y solo dice «cancelada» si hay una reserva de ese día y franja.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Reserva inexistente (`mar 10:00-12:00`) | `ejecución real` | `no existe` |
+| Día correcto, otra franja (`lun 11:00-12:00`) | `ejecución real` | `no existe` |
+| Reserva existente (`lun 10:00-12:00`) | `ejecución real` | `cancelada lun 10:00-12:00` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `8779f5c`.
+
+**Sin probar**
+
+- Nada.
+
+**Avisos antes de seguir**
+
+- **Merge:** `sdd merge --check` dice `falta 'merge.into' o 'merge.noFf'` en `.docs/sdd/sdd-kit.json`. Sin ese bloque tendré que presentarte el merge y esperar tu respuesta, tanto en el paso 7 como si activas `sdd-config`.
+- **`.temp/`:** el panel escribe en `.temp/validation/`, y el proyecto no tiene `.gitignore`. ¿Añado `.temp/` a un `.gitignore`? Ahora aparece como `??` en `git status`.
+- **Estimación:** el proyecto no tiene `estimation.md`, así que no hay fila de estimación.
+
+Panel: plan B en http://127.0.0.1:52628/
+Esta página no ve la app, así que no recoge consola, red ni capturas. Si algo falla, cuéntamelo en el comentario del paso.
+
+**Guion**
+
+Rama `patch/0021-cancel-missing` · worktree `<run>\repo`
+
+No hay comando de arranque declarado: es una CLI y no queda nada en marcha.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. El reporte: cancelo una reserva que no existe →
+
+```
+node src/app.js cancelar mar 10:00-12:00
+```
+
+Debe salir `no existe`.
+
+2. Día correcto, otra franja →
+
+```
+node src/app.js cancelar lun 11:00-12:00
+```
+
+Debe salir `no existe`.
+
+3. La reserva que sí existe →
+
+```
+node src/app.js cancelar lun 10:00-12:00
+```
+
+Debe salir `cancelada lun 10:00-12:00`.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

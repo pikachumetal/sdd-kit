@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cd "<run>/repo" && git config core.hooksPath; ls -la .githooks; for f in .githooks/*; do echo "=== $f"; cat "$f"; done; echo; echo "=== notas.txt"; cat -A notas.txt | head -30
+<<< .githooks
+total 5
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:28 .
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:28 ..
+-rwxr-xr-x 1 <user> 197609 394 Oct 28 13:28 pre-commit
+=== .githooks/pre-commit
+#!/bin/sh
+# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+tmp="$(git rev-parse --git-dir)/hook-check"
+rm -rf "$tmp"
+git worktree add -q --detach "$tmp" HEAD || exit 1
+if ! (cd "$tmp" && git status --porcelain >/dev/null); then
+  echo "pre-commit: el worktree temporal no responde" >&2
+  git worktree remove --force "$tmp"
+  exit 1
+fi
+git worktree remove --force "$tmp"
+
+=== notas.txt
+
+
+>>> Bash: cd "<run>/repo" && sh -x .githooks/pre-commit; echo "exit=$?"; echo ---; env | grep -i '^GIT_'; git rev-parse --git-dir; git worktree list; git log --oneline -3
+<<< ++ git rev-parse --git-dir
++ tmp=.git/hook-check
++ rm -rf .git/hook-check
++ git worktree add -q --detach .git/hook-check HEAD
++ cd .git/hook-check
++ git status --porcelain
++ git worktree remove --force .git/hook-check
+exit=0
+---
+GIT_LFS_PATH=C:\Program Files\Git LFS
+GIT_ASKPASS=
+GIT_CONFIG_VALUE_1=fixture@example.com
+GIT_CONFIG_VALUE_0=Fixture
+GIT_EDITOR=true
+GIT_CONFIG_COUNT=2
+GIT_CONFIG_KEY_1=user.email
+GIT_CONFIG_KEY_0=user.name
+GIT_TERMINAL_PROMPT=0
+.git
+<run>/repo 5142332 [develop]
+5142332 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && cp .git/index /tmp/idx-copy && git ls-files -s | head; echo "--- hook con GIT_INDEX_FILE (copia), como hace git commit"; GIT_INDEX_FILE=/tmp/idx-copy sh -x .githooks/pre-commit; echo "exit=$?"; echo "--- índice copia tras hook:"; GIT_INDEX_FILE=/tmp/idx-copy git ls-files -s; echo "--- índice real:"; git ls-files -s; git worktree list
+<<< This Bash command contains multiple operations. The following parts require approval: cd "<run>/repo" && cp .git/index /tmp/idx-copy && git ls-files -s, head; echo "--- hook con GIT_INDEX_FILE (copia), como hace git commit"; GIT_INDEX_FILE=/tmp/idx-copy sh -x .githooks/pre-commit; echo "exit=$?"; echo "--- índice copia tras hook:"; GIT_INDEX_FILE=/tmp/idx-copy git ls-files -s; echo "--- índice real:"; git ls-files -s; git worktree list
+
+>>> Bash: cd "<run>/repo" && git ls-files -s && git status --short
+<<< 100644 442b9ba33ac858795075cf0f4b1e017446d266b0 0	.docs/sdd/changelog.md
+100644 036c70004c9a3d41412de417b6baee57856b6eca 0	.docs/sdd/constitution.md
+100644 7bdb047084f3ef8440f5ea8314da2678c46dde2d 0	.docs/sdd/mission.md
+100644 f90deb44c3492ef5d792eeb25eefc51004a2330e 0	.docs/sdd/roadmap.md
+100644 c39ab52e2cfb70c6dd86804f3bc74690642a80ce 0	.docs/sdd/sdd-kit.json
+100644 8852d97158baa0f0405d9e4e98f03cd77992b9de 0	.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+100644 b302f8823c0d1264dbd3525f496e393ad88377a0 0	.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+100644 331975b6
+
+>>> Bash: cd "<run>/repo" && cp .git/index .git/index-copy && GIT_INDEX_FILE=.git/index-copy sh -x .githooks/pre-commit; echo "exit=$?"
+<<< ++ git rev-parse --git-dir
++ tmp=.git/hook-check
++ rm -rf .git/hook-check
++ git worktree add -q --detach .git/hook-check HEAD
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index-copy.lock': No such file or directory
++ exit 1
+exit=1
+
+>>> Bash: cd "<run>/repo" && rm -f .git/index-copy && rm -rf .git/hook-check && git worktree prune && git worktree list && git status --short
+<<< This Bash command contains multiple operations. The following parts require approval: rm -f .git/index-copy, rm -rf .git/hook-check, git worktree prune
+
+>>> Bash: cd "<run>/repo" && git worktree list; ls .git | grep -E 'index-copy|hook-check'
+<<< <run>/repo 5142332 [develop]
+index-copy
+
+=== RESULTADO (10 turnos, 0.2245551 $)
+**Causa raíz:** el hook `.githooks/pre-commit` falla por la variable de entorno `GIT_INDEX_FILE`, no por `notas.txt`. El contenido del fichero ("Revisar el aforo de la sala 3.") no interviene.
+
+**Qué pasa**
+- Cuando `git commit` ejecuta un hook, exporta `GIT_INDEX_FILE` con una ruta relativa al repo, por ejemplo `.git/index` o `.git/index.lock`.
+- El hook ejecuta `git worktree add -q --detach .git/hook-check HEAD`, y el comando hereda esa variable.
+- Git intenta crear el índice del worktree nuevo en `GIT_INDEX_FILE`, resuelta dentro de `.git/hook-check/`. Ese directorio aún no existe, así que falla y el hook sale con `exit 1`.
+
+**Evidencia**
+- Ejecutado a mano (`sh .githooks/pre-commit`, sin `GIT_INDEX_FILE`), el hook termina con `exit=0`.
+- Con `GIT_INDEX_FILE=.git/index-copy` falla:
+  ```
+  fatal: Unable to create '.../repo/.git/hook-check/.git/index-copy.lock': No such file or directory
+  exit=1
+  ```
+- Ese `GIT_INDEX_FILE` lo simulé a mano. No lancé un `git commit` real, porque habría creado el commit si el hook pasaba.
+- El resto del entorno es normal: `core.hooksPath=.githooks` y el único `GIT_*` relevante es `GIT_CONFIG_*`.
+
+**Más allá de `notas.txt`:** cualquier commit con este hook fallaría, no solo el de `notas.txt`. El hook es el commit `5142332` ("base del molde") y nunca se había ejecutado dentro de un commit real.
+
+**Queda sin limpiar:** al reproducirlo dejé `.git/index-copy` (una copia de mi prueba). El permiso para borrarlo se denegó en esta sesión. No afecta al repo y puedes borrarlo sin problema. No quedó ningún worktree colgado (`git worktree list` solo muestra el principal).
+
+No he tocado el hook, como pediste. Cuando quieras el arreglo, `sdd-propose` clasificaría el cambio y lo trataría como un patch.
+
+Además, el aviso del kit dice que esta sesión carga la versión 2.3.4 y el proyecto pide la 3.0.0. La skill que he seguido puede ser la de una versión anterior.

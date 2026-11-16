@@ -1,0 +1,172 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -a .docs/sdd .docs/sdd/specs 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -50
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>&1; done
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+./
+../
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< Exit code 1
+=== constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde traba
+
+>>> Bash: cd "<run>/repo" && cat package.json; ls src test scripts; wc -l src/*; cat src/app.js; git branch -a; ls .docs/sdd/specs/*; cat PRODUCT.md | head -30
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat spec-writing.md nombrado.md
+<<< {"type": "module", "engines": {"node": ">=20"}}
+scripts:
+lint.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+35 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export functio
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview covers g
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" id next --reserve --project-root . 2>&1; git status --short; git branch --show-current
+<<< 0012
+develop
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-informes develop 2>&1; git status --short
+<<< Switched to a new branch 'feature/0012-informes'
+
+=== RESULTADO (9 turnos, 0.17500500000000002 $)
+Ahora: clasificado el cambio y reservada la rama `feature/0012-informes`. Te dejo la nota de comprensión y las formas de construirlo, y espero tu elección. Queda: elegir enfoque, las secciones del diseño, la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: pair, dicho por ti en este mensaje (el proyecto tiene delegate en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No separo la feature. Prevé 5 tasks, pero todas tocan la misma superficie (la CLI, `src/app.js`) y no hay migración. Las sesiones no pasan por el modelo más capaz, así que no hay opción de parar antes de la Task 1.
+
+## Lo que he entendido (corrígeme)
+
+- Un comando nuevo, `informes`, con cuatro vistas:
+  1. ocupación por sala,
+  2. ocupación por día de la semana,
+  3. franjas más reservadas,
+  4. salas que nadie ha reservado.
+- `--sala <nombre>` filtra las cuatro vistas.
+- La salida es una tabla de texto.
+- Sin reservas, cada vista dice «sin reservas».
+- Plan en 5 tasks: una por vista y otra para `--sala`.
+
+Lo que vi en el código:
+- `src/app.js` guarda las reservas en memoria, con un `status` (`active`, `cancelled`, `voided`).
+- Salas: Norte y Sur.
+- Hay una reserva activa de ejemplo.
+- Cada reserva tiene `room`, `day` y `slot`.
+
+Con esto quedan dos preguntas abiertas, que llevaré a ✋ salvo que me digas otra cosa:
+- ¿Cuenta una reserva cancelada o anulada en la ocupación? Propongo que no: solo las `active`.
+- «Sin reservas» se aplica por vista, como dijiste. En la vista de salas sin reservas no tiene sentido: si no hay reservas, todas las salas salen como no reservadas. Propongo que esa vista liste todas las salas en vez de decir «sin reservas».
+
+## ¿Cómo lo construimos?
+
+1. **Una función por vista y un despachador (Recomendada).** Cada vista es una función pura `(reservas, filtro) → filas`. Otra función las pinta como tabla, y `run('informes', params)` elige la vista y aplica `--sala`.
+   - Cuadra con el estilo del proyecto (funciones exportadas y probables con `node --test`).
+   - Cada task toca una función, con su test, sin pisar a las demás.
+   - Coste: algo más de estructura que un solo bloque.
+2. **Un único recorrido que calcula las cuatro vistas.** Un solo pase por las reservas acumula los contadores de las cuatro vistas.
+   - Es más corto.
+   - Las tasks dejan de ser independientes: la 2.ª y la 3.ª editan el mismo bloque, y cada vista se prueba peor por separado.
+3. **Un subcomando por vista** (`informes sala`, `informes dia`…). Es más explícito, pero es otra interfaz de la que decidiste. Tú pediste un comando con cuatro vistas y un filtro, así que no encaja.
+
+Recomiendo la 1. ¿Cuál eliges?
+
+=== RESULTADO (1 turnos, 0.19379890000000002 $)
+Voy con la 1: una función por vista y un despachador. Como la feature prevé 5 tasks, te presento el diseño por secciones, una por mensaje. Esta es la primera.
+
+## Sección 1: la forma general y «ocupación por sala»
+
+**Lo que ves tú.** `informes` a secas enseña las cuatro vistas una tras otra, cada una con su título y su tabla de texto. Esta es la primera, con tres reservas activas en Norte y una en Sur:
+
+```text
+Ocupación por sala
+Sala   Reservas
+Norte  3
+Sur    1
+```
+
+**Sin reservas.** Si no hay ninguna reserva activa, bajo el título sale una sola línea:
+
+```text
+Ocupación por sala
+sin reservas
+```
+
+**Lo que decido yo en esta sección** (irá a ✋ en la spec):
+- «Ocupación» es el **número de reservas activas** de cada sala. No es un porcentaje, porque el proyecto no define cuántas horas tiene una sala.
+- Las canceladas y las anuladas **no cuentan**.
+- Se ordena de más a menos reservas y, en empate, por nombre de sala.
+- Esta vista lista solo las salas con al menos una reserva. Las que no tienen ninguna salen en la vista 4.
+
+**Por dentro** (solo si te hace falta): una función pura que recibe las reservas y devuelve las filas, y otra que las pinta como tabla alineada.
+
+¿Va bien?

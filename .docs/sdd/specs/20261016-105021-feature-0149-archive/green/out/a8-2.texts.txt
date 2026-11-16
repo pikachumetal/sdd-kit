@@ -1,0 +1,132 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [5]
+Pre-checks 1–3 limpios: sin cambios sin commitear, destino `develop` listo, sin otras ramas abiertas. Sigo con la spec, la revisión final y la configuración.
+
+--- [14]
+Mi `cd` anterior dejó la shell en el directorio del kit. Vuelvo al repo de la 0010 y miro ahí el diff de `9abcd77`.
+
+--- [24]
+Paquete listo. Despacho la re-revisión única (`sdd-kit:effort-high` + `opus`) con su vigía de silencio.
+
+--- [30]
+El cierre de la 0010 está parado en el paso 0.6: todavía no he escrito ningún registro.
+
+La revisión final cubrió hasta `a963cec`, pero después hay un commit de código sin revisar, `9abcd77`. Su cambio real es un `?.trim()` en `src/app.js`, pero también pasó todo el fichero de CRLF a LF (48 líneas). Eso supera el umbral de 20 líneas, y `tasks.md` no tiene línea `Re-revisión:`. Por eso he lanzado la re-revisión única de `a963cec..533692a` (`sdd-kit:effort-high` + `opus`, en segundo plano, con su vigía de silencio). Sigue en curso y no sé qué devolverá.
+
+Las otras pre-comprobaciones salieron limpias:
+- No hay cambios sin commitear.
+- `merge --check` dice que `develop` está listo.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, firmada por Laura.
+
+Cuando vuelva la re-revisión haré, en este orden:
+1. Anotar `Re-revisión:` en `tasks.md`.
+2. Retirar el worktree de revisión.
+3. Seguir el cierre.
+
+Hay dos cosas más que tendré en cuenta, aunque no pido nada ahora:
+- **Validación:** `validation.mode` es `field`, así que no te la pregunto. Pasaré mi smoke y la suite completa, y lo que no pruebe lo dejaré como `no probado`.
+- **Workaround sin deuda:** `tasks.md` recoge el ruling `--test-concurrency=1` como workaround de la carrera sobre el almacén compartido. Hoy no tiene fila de deuda, y el cierre exige una.
+
+--- [34]
+### Finding Verdicts
+No findings were open. Here is what I checked from the What to Check of both axes.
+
+**Spec axis** (`spec.md` and `plan.md` of 0010):
+- **Closed list:** unchanged. `reasons` is still `['cambio de planes', 'sala ocupada', 'otro']`, and `cancelBooking` still checks with `reasons.includes(reason)`. The only change is at `src/app.js:16`: `params[index + 1]?.trim()`.
+- **Reason with spaces around it:** `--motivo "  sala ocupada "` now becomes `sala ocupada`. It validates, it is saved trimmed in `booking.reason`, and both `canceladas` and the reply show it without spaces. Before the change it was rejected. Spaces inside the reason (`sala  ocupada`) and changes of case are still rejected.
+- **Reason made only of spaces:** it becomes `''`, which is not in the list, so it is rejected with «motivo no válido: …». Same as before.
+- **No `--motivo`:** `index === -1` returns `undefined`, so it is rejected. Same as before. This matches the spec scenario «sin `--motivo` responde lo mismo».
+- **`--motivo` with no value after it:** `params[index + 1]` is `undefined`, and `?.trim()` short-circuits to `undefined` without throwing, so it is rejected. Same as before. Without the `?.`, a plain `.trim()` would have thrown a `TypeError`. The optional chaining is correct.
+- **Interface text in Spanish:** the change adds no new text.
+
+**Code axis:** the change brings no functional bug. The rest of the diff in `src/app.js` is identical line by line apart from the line endings. I checked this visually in the package; I did not regenerate the diff with git.
+
+**Tests:** no test covers a reason with spaces, a reason made only of spaces, or `--motivo` with no value. `test/cancel.test.js` has only the three original tests: a valid reason, a reason outside the list, and the `canceladas` listing.
+
+### New Breakage in the Fix Diff
+- **Important — `src/app.js:16` (commit `9abcd77`): behaviour change with no test and no spec amendment.**
+  - **No test:** the fix changes something you can see from outside. A reason with spaces around it used to be rejected as outside the list and is now accepted. No test proves it. The constitution (`.docs/sdd/constitution.md`, point 2) requires «Tests antes que código», and no RED test came before this fix.
+  - **No amendment:** the spec does not cover trimming, and its `## Enmiendas` section still says «(ninguna)». The spec says only that a reason outside the list is rejected. Whether `" sala ocupada "` counts as outside the list is a decision nobody recorded.
+  - **Fix:** add a test in `test/cancel.test.js` (e.g. `['Norte','lun','--motivo','  sala ocupada ']` → `cancelada Norte lun (sala ocupada)`), ideally plus one where the reason is only spaces and stays rejected. Also record the amendment in the spec, or at least the decision in `tasks.md`.
+- **Minor — `src/app.js` (whole file, commit `9abcd77`): CRLF→LF conversion mixed into the fix.**
+  - **Runtime:** no effect; Node does not care about line endings.
+  - **Churn:** the diff is 48+/48− for a one-line change, so the real fix is hidden in review, and `git blame` now gives every line of `src/app.js` to `9abcd77`.
+  - **Mixed line endings:** there is no `.gitattributes`, no `.editorconfig` and no formatter in `package.json`. In the index, `src/app.js` is now LF while `test/*.js`, `package.json` and most of `.docs` stay CRLF. With `core.autocrlf=true` on this machine the working tree is CRLF in every case, so this is invisible locally. On another machine with a different setting, it can cause fake diffs and more churn.
+  - **Fix:** revert the line endings in this commit and keep only the `?.trim()`. If the team wants LF, that is a separate decision: add `.gitattributes` and renormalize the whole repo in its own commit.
+- **Minor — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:30-33` (commit `49cd172`): the record stops at `a963cec`.**
+  - The record says the final review was «sobre a963cec» and has no row for the later fix `9abcd77`. The code changed after the final review, so the tasks log, which is meant to be kept current, does not match the branch. Only the walkthrough draft (`walkthrough.md:6`) mentions the fix.
+
+### Out-of-Scope Observations
+- **Trim only on the command-line path:** `?.trim()` is only in `reasonOf`. The exported `cancelBooking(room, day, reason)` does not trim, so a direct call with `' otro '` is still rejected. The two entry points behave differently. Minor; `cancelBooking` has no other caller today.
+- **Untested spec scenario:** the spec scenario «sin `--motivo` responde …» has no test in `test/cancel.test.js`. This predates the reviewed range.
+- **Order-dependent tests:** the Task 2 ruling (`--test-concurrency=1`) confirms that the tests share the in-memory store and depend on order. For example, `canceladas enseña sala, día y motivo` only passes after the cancellation test has run. It is recorded as a workaround; it is technical debt to track.
+
+### Verdict
+Findings remain open:
+1. **Important** — `src/app.js:16`: the reason trimming has no test and no spec amendment.
+2. **Minor** — `src/app.js`: whole-file CRLF→LF conversion mixed into the functional fix.
+3. **Minor** — `tasks.md`: does not record `9abcd77`; the final review still points at `a963cec`.
+
+--- [36]
+La re-revisión devolvió un hallazgo Important: el `trim()` no tiene test ni enmienda de la spec. Los dos Minor van al ledger. Hago la única pasada de fix con TDD: primero el test en RED, quitando el `trim` temporalmente.
+
+--- [41]
+El filtro no capturó nada, porque el formato del reporter es otro. Repito las dos ejecuciones mostrando el resumen.
+
+--- [44]
+RED→GREEN confirmado: sin el `trim` falla el test nuevo (6/7) y con él pasan los 7. Commiteo el test y miro qué documentos vivos tiene el proyecto.
+
+--- [47]
+Para escribir los registros necesito la plantilla del walkthrough, las reglas de records y la de aprendizajes.
+
+--- [53]
+Sin `estimation.md` ni `architecture.md`, esos pasos no aplican. La validación es en campo (`field`), así que corro mi smoke con una fila por THEN y la suite completa sobre el código final.
+
+--- [56]
+Smoke y suite verdes sobre `73fbda9`. Escribo los registros, empezando por la spec: añado la enmienda y el requisito del recorte al delta, porque el comportamiento ya existe en el código.
+
+--- [59]
+El script no tocó nada. Uso Edit directamente.
+
+--- [69]
+Ahora fusiono el delta en la capacidad con el CLI y paso las comprobaciones.
+
+--- [72]
+Capacidad fusionada y las tres comprobaciones en exit 0. Sigo con el changelog, que pasa por su skill.
+
+--- [81]
+Corrijo dos detalles del walkthrough: `73fbda9` caerá dentro del rango que voy a juntar, y la línea de ADR no es una adenda.
+
+--- [87]
+Cierre en un commit (`eb7ad58`), suite 7/7 y los sha citados siguen siendo ancestros. No hay remoto; compruebo si `develop` ya está integrada y hago el merge con el script.
+
+--- [90]
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`51a4da9`) · push: no hecho: `merge.push` no lo autoriza (y el repo no tiene remoto).
+
+La rama está en el checkout principal del repo, así que no hay worktree que borrar.
+
+**Qué ha pasado en el cierre**
+- **Re-revisión:** el fix de validación `9abcd77` cambió `src/app.js` después de la revisión final y superaba las 20 líneas. Lancé la re-revisión única y devolvió un hallazgo Important: el `?.trim()` no tenía test ni estaba en la spec.
+- **Fix:** añadí dos tests, uno con espacios alrededor y otro de solo espacios. Sin el `trim` falla el primero (6/7), y con él pasan los 7. Quedó todo en un solo commit de cierre.
+- **Validación en campo (`field`):** la hice yo, no tú. Suite 7/7 y smoke de 5/5 THEN con ejecución real. Nada lo ha probado el dev-lead.
+- **Documentación:** walkthrough, `tasks.md` (el commit de la Task 1 era `977e219`, no `a963cec`) y la capacidad `bookings.md`, fusionada con el CLI. También el changelog, y la fila 0010 del roadmap pasa a ✅. Las comprobaciones de capacidad y de ADR dieron exit 0.
+- **No aplicaron:** `estimation.md`, `architecture.md`, `environments.md` y `.claude/skills/` no existen.
+
+**Decisiones que tomé sin el dev-lead (la primera es la que más importa)**
+1. **Enmienda a la spec aprobada:** añadí a su `## Enmiendas` y a su delta el requisito «El motivo se recorta». El código ya recortaba y la capacidad tenía que decirlo. Si Laura prefiere rechazar los motivos con espacios, se quita el `trim()` y el requisito.
+2. **Gate de la suite:** `--test-concurrency=1`, un ruling de la Task 2.
+3. **Fin de línea:** dejé la conversión CRLF→LF de `src/app.js` como estaba, en vez de reescribir el commit.
+
+**Pendiente**
+- Abrí tres filas de deuda en el roadmap:
+  - Los tests comparten el almacén en memoria y dependen del orden.
+  - `src/app.js` está en LF y el resto del repo en CRLF, sin `.gitattributes`.
+  - `cancelBooking` exportada no recorta el motivo.
+- `sdd roadmap check` falla en 2 líneas que no escribí: la cabecera de «Deuda técnica» (línea 22) y el título de `v0.3.0` (línea 37). Las arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La fila 0014 («Motivo guardado») puede haber quedado saldada por esta feature, porque el motivo ya se guarda con la reserva. No la he tocado; decide tú.
+
+¿Quieres el ticket de mejora del kit con `sdd-feedback`? Lo ofrezco porque esta sesión no tiene uno propio, y no bloquea nada.
+

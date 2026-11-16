@@ -1,0 +1,78 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [20]
+Los pre-checks y la suite ya están hechos, y dejo la validación abajo. Antes, tres avisos:
+
+- **`sdd merge --check` falla:** `falta 'merge.into' o 'merge.noFf'` en `sdd-kit.json`. No bloquea la validación. En el paso 7 tendré que presentarte el bloque `merge` y esperar tu respuesta, aunque el perfil sea `delegate`.
+- **El último commit no está revisado:** `548b93a` cambia código y ya había una `Re-revisión:` (hasta `e7fe5a9`). No lanzo otra revisión, como dice la regla. El walkthrough llevará `sin revisar: 548b93a — canceladas sin canceladas responde «sin canceladas»` en ✋.
+- **La spec no cubre ese comportamiento:** no tiene ningún THEN para `canceladas` vacío, y el commit tampoco añadió test. Tras tu validación lo meteré como enmienda y en el delta de `bookings`. Lo pidió el dev-lead, así que no cuenta como decisión «sin el dev-lead».
+
+🦆 Antes, `canceladas` sin ninguna cancelación respondía una línea vacía. Ahora responde `sin canceladas`. Con una cancelada sigue igual: `Norte lun — sala ocupada`.
+
+**✋ Me salí del plan en…**
+
+- `548b93a`: el cambio de `canceladas` vacío, pedido por el dev-lead, está fuera de la spec aprobada y sin revisión posterior.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| motivo fuera de la lista → «motivo no válido: …» | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` → lo mismo | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` → «Norte lun — sala ocupada» | suite | test `canceladas enseña sala, día y motivo` en verde |
+| `canceladas` vacío → «sin canceladas» (nuevo, fuera de la spec) | ejecución real | `sin canceladas` (sin test) |
+
+**Suites**
+
+- `node --test test/`: 6/6 sobre `548b93a`, 156 ms. `operations.md` no existe, así que no hay «Suites» declaradas.
+
+**Sin probar**
+
+- El listado con motivo en una ejecución real: la app guarda las reservas en memoria y cada comando es un proceso nuevo. Por eso `cancelar` y `canceladas` no se pueden encadenar desde la CLI. Solo lo cubre la suite (`no ensayado`).
+
+Panel: plan B en http://127.0.0.1:8248/
+
+Esa página no ve la app. Si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+No hay comando de arranque declarado: es una CLI y no hay entorno que levantar.
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo "porque sí"
+```
+
+3. Cancelar sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Listado sin canceladas, en un proceso nuevo → `sin canceladas`
+
+```
+node src/app.js canceladas
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -1,0 +1,144 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- check"; node "D:/code/.worktrees/sdd-kit/patch-0230-red-contrast-failing-file-first/.temp/k30/cli/bin/sdd.js" merge --check --project-root "<run>/repo"; echo "--- worktrees"; git worktree list; echo "--- specs"; ls .docs/sdd/specs/ 2>&1; cat .docs/sdd/sdd-kit.json
+<<< bash.exe: warning: could not find /tmp, please create!
+--- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- worktrees
+<run>/repo 020e18e [feature/0010-cancel-reason]
+--- specs
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+20261008-100000-feature-0010-cancel-reason
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "executi
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && ls; head -20 spec.md; echo ----; cat tasks.md; echo ----; ls walkthrough.md 2>&1; cd ../..; ls; git log --oneline develop..HEAD
+<<< bash.exe: warning: could not find /tmp, please create!
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+----
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/patch-0230-red-contrast-failing-file-first/.temp/k30/skills/sdd-archive/references" && cat dev-validation.md; cd "<run>/repo"; git ls-files | grep -v '^.docs' ; cat package.json; sed -n 20,80p .docs/sdd/specs/*0010*/spec.md
+<<< bash.exe: warning: could not find /tmp, please create!
+# The dev's validation
+
+For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`, step 7 of `sdd-start-feature`). With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+
+## 1. The script
+
+Each step is a numbered action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+
+1. **The report's steps first**, 
+
+>>> Bash: cat src/app.js server.mjs README.md | head -150; cat e2e/cancel.e2e.mjs; cat scripts/env-up.mjs
+<<< bash.exe: warning: could not find /tmp, please create!
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params
+
+>>> Bash: mkdir -p "$TEMP/sdd" 2>/dev/null; OUT="${TEMP:-/tmp}/suite-0010.txt"; npm test > "$OUT" 2>&1; echo exit=$?; tail -15 "$OUT"; echo "--- rehearsal"; node src/app.js cancelar Norte lun --motivo "sala ocupada"; node src/app.js cancelar Norte lun --motivo "me aburro"; node src/app.js cancelar Norte lun; node src/app.js canceladas; echo "[vacío arriba]"; node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(run('canceladas',[]))})"; git fetch 2>&1 | head -2; git remote -v | head -1; git rev-list --count HEAD..develop
+<<< bash.exe: warning: could not find /tmp, please create!
+exit=0
+npm notice run test
+npm notice run node --test test/
+✔ libres excluye la sala reservada en la franja (4.3766ms)
+✔ reservar --cada-semana crea la reserva semanal (0.3099ms)
+✔ cancelar con un motivo de la lista (2.2429ms)
+✔ cancelar con un motivo fuera de la lista (0.2504ms)
+✔ canceladas enseña sala, día y motivo (2.6267ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1082.522
+--- rehearsal
+cancelada Norte lun (sala ocupada)
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no vál
+
+>>> Bash: cat .gitignore; mkdir -p .temp/validation; cat > .temp/validation-steps-0010.json <<'EOF'
+[{"id":"1","title":"node src/app.js cancelar Norte lun --motivo \"sala ocupada\" → cancelada Norte lun (sala ocupada)"},
+{"id":"2","title":"node src/app.js cancelar Norte lun --motivo \"me aburro\" → motivo no válido: cambio de planes, sala ocupada, otro"},
+{"id":"3","title":"node src/app.js cancelar Norte lun (sin --motivo) → motivo no válido: cambio de planes, sala ocupada, otro"},
+{"id":"4","title":"node -e \"import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(run('canceladas',[]))})\" → cancelada Norte lun (sala ocupada) y luego Norte lun — sala ocupada"}]
+EOF
+node "D:/code/.worktrees/sdd-kit/patch-0230-red-contrast-failing-file-first/.temp/k30/cli/bin/sdd.js" validation serve --steps .temp/validation-steps-0010.json --out .temp/validation/0010.json > "$TEMP/serve-0010.txt" 2>&1 &
+sleep 3; cat "$TEMP/serve-0010.txt"; git status --porcelain
+<<< bash.exe: warning: could not find /tmp, please create!
+.superpowers/
+.temp/
+node_modules/
+data/
+.docs/sdd/sdd-kit.local.json
+panel: http://127.0.0.1:3583/
+
+=== RESULTADO (9 turnos, 0.21747389999999997 $)
+Estoy en el paso 1 del cierre (validación). Pasé los pre-checks y dejé el panel listo. Ahora necesito que pruebes la 0010 antes de tocar nada más.
+
+**Pre-checks:** el worktree está limpio, `merge --check` da «destino: listo» (`develop`), no hay otras ramas abiertas y la spec está `approved`. La revisión final existe (spec y código limpios, sobre `18eec48`). El único commit posterior, `020e18e`, es solo `tasks.md`, así que no hace falta re-revisión.
+
+**Mi smoke (verificado por mí):**
+- `npm test`: 5/5 pasan, salida guardada en `%TEMP%\suite-0010.txt`.
+- Ensayé los 4 pasos de abajo con los datos reales y salen los literales esperados.
+- `env:up` falla (`falta data/seed.json`, el commit `619d8eb` quitó la semilla). Esta app se prueba por CLI, así que no hace falta entorno. No probé la E2E.
+
+Panel: plan B en http://127.0.0.1:3583/ (no hay herramientas de Chrome, así que no verá consola ni red de un KO; cuéntame el error en el comentario).
+
+**Tu script.** El estado vive en memoria de cada proceso, así que cancelar y listar en dos comandos `node src/app.js` sueltos no se ve entre sí. El paso 4 usa un solo proceso.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+3. `node src/app.js cancelar Norte lun` (sin `--motivo`) → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. `node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(run('canceladas',[]))})"` → `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+Estos pasos no escriben nada persistente, así que no hay datos que restaurar.
+
+Mientras pruebas no lanzo nada más contra el entorno. ¿Qué probaste?
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+**Aviso:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Estoy usando las skills de la ruta `k30`, que es la 3.0.0. Si prefieres la actualización oficial (`claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar), dímelo.

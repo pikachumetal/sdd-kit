@@ -1,0 +1,29 @@
+--- [13]
+Ahora: preparo la spec de la feature, ya en la rama `feature/0011`, y te hago la primera pregunta de diseño. Queda: la entrevista, la spec y tu aprobación, que es la próxima parada.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Es la fila 0011 del roadmap, «Anular reservas de otros». Prevé 3 tareas o menos, así que no propongo partirla.
+
+**Lo que he entendido, corrígeme:**
+
+- Hoy `anular <sala> <día>` ya existe en `src/app.js` y **cualquiera puede ejecutarlo**. Marca la reserva como `voided` sin comprobar quién lo pide.
+- No hay concepto de persona. Las reservas no guardan a nombre de quién están, aunque `PRODUCT.md` dice que la reserva es «a nombre de quien la pide». Tampoco hay un responsable por sala.
+- Quieres que **solo el responsable de cada sala** pueda anular reservas de otras personas. Cada sala tiene su responsable. El de Norte no podría anular en Sur.
+- Esto no es un patch: el qué está sin fijar. Hay que decidir cómo se sabe quién eres y cómo se define el responsable.
+
+❓ **¿Cómo sabe la herramienta quién ejecuta `anular`?**
+
+Es una CLI sin login, así que necesita una identidad para comprobar que quien anula es el responsable de esa sala.
+
+1️⃣ **Opción `--como <nombre>` en cada comando.** `anular Norte lun --como Marta` → `anulada Norte lun`. Con `--como Pedro`, que no es responsable de Norte → `solo el responsable de Norte puede anular: Marta`.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Se fija una vez en el terminal y `anular Norte lun` funciona sin repetirla. Si no está definida, el comando rechaza anular.
+3️⃣ **Nombre de usuario del sistema operativo.** No hay que indicar nada, pero acopla la herramienta a la máquina y no sirve si el servidor se comparte.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta no guarda estado entre ejecuciones y cada comando ya recibe sus datos por argumentos, como `cancelar`. A cambio, escribir `--como` cada vez es incómodo y cualquiera puede escribir el nombre de otro. Aquí no hay autenticación, solo evitar errores.
+

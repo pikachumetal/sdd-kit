@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/changes/ 2>/dev/null; find . -name "re-review.md" -not -path "./node_modules/*" 2>/dev/null; find .docs -path "*0010*" | head -30
+<<< ./.temp/sdd/plan/re-review.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/re-review.md; ls .temp/sdd/plan; cat .docs/sdd/specs/*0010*/tasks.md; git log --oneline | head -20
+<<< ## Re-review of the fix range
+
+### Findings of the review
+1. `reasonOf` keeps the spaces around the reason — ADDRESSED (`src/app.js:16`).
+
+### New breakage in the fix range
+1. **Critical · `src/app.js:20`: `cancelar` without `--motivo` cancels the booking.** The fix pass changed the check to `reason !== undefined && …`, so a missing reason skips it: `cancelar Norte lun` answers «cancelada Norte lun (undefined)», Norte lun is cancelled with no reason, and `libres 10:00-12:00` lists Norte as free. The THEN «Cancelar pide un motivo de la lista» no longer holds.
+
+### Verdict
+1 Critical op
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/progress.md .temp/sdd/plan/plan-path; cat -n src/app.js; ls; ls test* 2>/dev/null; cat package.json; git show 49ea404 --stat
+<<< # SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 30639bc..7647fb9, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 7647fb9..4d4c922, tests: node --test test/cancel.test.js → 3/3 pass)
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+     1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+     4	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'act
+
+>>> Bash: cd "<run>/repo" && cat test/cancel.test.js; git show 49ea404 -- src | head -30
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar con un motivo de la lista', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');
+});
+
+test('cancelar con un motivo fuera de la lista', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar', '--motivo', 'me aburro']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+});
+
+test('canceladas enseña sala, día y motivo', () => {
+  assert.equal(run('canceladas', []), 'Norte lun — sal
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='test/cancel.test.js'
+s=open(p,encoding='utf-8').read()
+t="""test('cancelar sin motivo no cancela', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+"""
+s=s.replace("test('cancelar con un motivo de la lista'",t+"test('cancelar con un motivo de la lista'",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+mkdir -p /tmp/red && cp test/cancel.test.js /tmp/red/ ; node --test test/cancel.test.js 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | tail -30
+<<<     code: 'ERR_ASSERTION',
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun (sala ocupada)',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cancel.test.js:18:1
+✖ canceladas enseña sala, día y motivo (0.2485ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte lun — undefined'
+  - 'Norte lun — sala ocupada'
+                 ^
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:19:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/t
+
+>>> Bash: cd "<run>/repo" && sed -i "s/if (reason !== undefined \&\& !reasons.includes(reason))/if (!reasons.includes(reason))/" src/app.js && sed -n 19,21p src/app.js && node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index /tmp/red/cancel.test.js test/cancel.test.js && echo "RED copy idéntica"
+<<< export function cancelBooking(room, day, reason) {
+  if (!reasons.includes(reason)) return `motivo no válido: ${reasons.join(', ')}`;
+  const booking = findBooking(room, day);
+ℹ pass 7
+ℹ fail 0
+RED copy idéntica
+
+>>> Bash: cd "<run>/repo" && git add src test && git commit -q -m "fix(bookings): cancelar sin motivo vuelve a pedirlo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && sha=$(git rev-parse --short HEAD) && echo "Task 2: Ruling: la re-revisión halló 1 Critical (cancelar sin --motivo cancelaba); fix $sha RED→GREEN, sin segunda re-revisión (ya hubo una): sin revisar" >> .temp/sdd/plan/progress.md && printf "Fix de la re-revisión: %s, Critical RED→GREEN, sin revisar\n" "$sha" >> .docs/sdd/specs/*0010*/tasks.md && git add .docs && git commit -q -m "docs(sdd): tasks.md con el fix de la re-revisión
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -3
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+b949bbe docs(sdd): tasks.md con el fix de la re-revisión
+cb0cc0b fix(bookings): cancelar sin motivo vuelve a pedirlo
+94edce1 docs(sdd): tasks.md con la re-revisión
+
+=== RESULTADO (11 turnos, 0.1757123 $)
+🦆 La re-revisión halló un Critical que introduje yo en la pasada de fix. Para tolerar `--motivo` sin valor había relajado la validación a `reason !== undefined && …`, y con eso `cancelar Norte lun` sin `--motivo` cancelaba la reserva. Ya está corregido.
+
+**Qué hice**
+- Añadí un test en `test/cancel.test.js` que falla con el bug: `cancelar Norte lun` sin motivo debe responder «motivo no válido…» y `libres 10:00-12:00` debe seguir sin listar Norte. Lo vi en RED antes de tocar código.
+- Restauré la validación original en `src/app.js:20` (`!reasons.includes(reason)`). El `?.trim()` de `reasonOf` ya cubre `--motivo` sin valor, así que el guard sobraba.
+- `node --test`: 7 pasan, 0 fallan.
+- Commits: `cb0cc0b` (fix) y `b949bbe` (`tasks.md`). También dejé el ruling en el ledger.
+
+✋ **sin revisar: `cb0cc0b`.** Cambia código y la regla dice que no se abre una segunda re-revisión tras la primera. Es un cambio de una línea que restaura el comportamiento ya revisado en `4d4c922`, y su test cubre el THEN «Cancelar pide un motivo de la lista».
+
+Con tu visto bueno sigo con `sdd-archive`, que ya hace la validación final y el cierre.

@@ -1,0 +1,31 @@
+--- [4]
+Ahora: leer el contexto SDD del proyecto (constitución, misión, stack, roadmap, capacidades). Queda: clasificar, anunciar y empezar la entrevista de diseño, ~5 min.
+
+--- [21]
+Ahora: dejo anunciada la feature y te cuento lo que he entendido. Queda: tu respuesta a una decisión de diseño, los enfoques, la spec con su puerta de aprobación, el plan y la implementación, ~25 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Veo unas 2 o 3 tasks, todas en el mismo fichero, así que no propongo dividirla. Ya está reservada la 0008 y la rama `feature/0008-exportar-reservas-csv`.
+
+**Lo que he entendido (corrígeme):**
+- Hoy `src/app.js` solo tiene `libres`, `reservar`, `cancelar` y un listado por defecto. Cada reserva guarda `sala`, `día` y `franja`, por ejemplo `Norte · lun · 10:00-12:00`.
+- Quieres un comando nuevo que, dada una sala, saque sus reservas en CSV. Cada lunes el responsable de esa sala lo abre en su hoja de cálculo y las cuadra.
+- Entiendo que el éxito es abrir el CSV y que las columnas queden bien repartidas, sin tocar nada a mano.
+
+Una cosa del código afecta al diseño: las reservas no llevan fecha, solo el día de la semana (`lun`). Por eso no hay un periodo que filtrar: se exportan todas las de la sala.
+
+❓ **¿Dónde sale el CSV?**
+Tu flujo de los lunes pide un fichero que se abra en la hoja de cálculo.
+1️⃣ **Por pantalla, y redirige quien lo use.** `salas exportar Norte > norte.csv` deja el fichero. Sale `sala,día,franja` y debajo `Norte,lun,10:00-12:00`. Es lo más simple y encaja con cómo ya imprime `run`. A cambio, quien no sabe redirigir ve el texto en la terminal y no obtiene fichero.
+2️⃣ **Escribe un fichero.** `salas exportar Norte` crea `norte.csv` y responde `exportadas 1 reservas de Norte en norte.csv`. El responsable no necesita redirigir. A cambio, hay que decidir el nombre y la ruta, y qué hacer si el fichero ya existe, y `run` deja de ser una función que solo devuelve texto.
+➡️ **Recomiendo 1️⃣**, porque `run` solo devuelve cadenas y esa es la forma del resto de comandos, que quedan probables con un test simple. A cambio, el responsable tiene que redirigir la salida una vez.
+
+Dos avisos:
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills podrían ser de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code. Lo dejo a tu criterio y sigo con lo que hay.
+- Si el CSV lo abre una hoja de cálculo con configuración regional española, suele esperar `;` como separador y no `,`. Te lo preguntaré en su turno, no en este.
+

@@ -1,0 +1,100 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json && git branch --show-current && ls; for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>/dev/null; done; node "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -1
+<<< ./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+{"merge": {"push": true}}
+develop
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+=== constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests ant
+
+>>> Bash: cd "<run>/repo" && cat package.json PRODUCT.md; ls -R src test scripts .docs/sdd/specs; cat src/app.js; cat .docs/sdd/operations.md .docs/sdd/estimation.md
+<<< {"type": "module", "engines": {"node": ">=20"}}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. _Evitar_: baja.
+- **Anulación**: la reserva que anula el responsable de sala, por cualquier motivo. _Evitar_: baja.
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011 && node "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-green/cli/bin/sdd.js" id claim --project-root "$PWD"; git remote -v; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60; cat "D:/code/.worktrees/sdd-kit/feature-0279-drop-superpowers-dependency/.temp/sdd/plan/kit-green/skills/sdd-propose/references/spec-writing.md"
+<<< Switched to a new branch 'feature/0011'
+sin remoto: la 0011 vale (contador local)
+# Spec — free
+
+status: done
+# Writing the spec
+
+Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-t
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.1895092 $)
+Ahora: te presento lo que entendí y te hago la primera pregunta de diseño. Queda: entrevista corta, spec para tu aprobación y plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He creado la rama `feature/0011` (la fila 0011 del roadmap, «Anular reservas de otros», es tu enunciado). Prevé unas 3 tasks, así que no propongo partirla.
+
+**Lo que entendí (corrígeme):**
+- Hoy `anular <sala> <día>` en `src/app.js` anula cualquier reserva activa de esa sala y día. No mira quién la pide ni quién la hizo.
+- Quieres que solo el responsable de cada sala pueda anular reservas de otras personas. Esa anulación es la de `PRODUCT.md`: el responsable la hace por cualquier motivo, y es distinta de la cancelación, que hace el propio cliente.
+- Hay un hueco de base: las reservas no guardan a nombre de quién están, y la app no sabe quién la está usando ni quién es responsable de cada sala. Esos tres datos no existen todavía.
+
+❓ **¿Cómo sabe la app quién eres y quién es responsable de cada sala?**
+Hoy una reserva es `{ sala, día, franja, estado }`, sin persona.
+
+1️⃣ **Quien actúa se indica en cada comando y los responsables se declaran en el código.**
+Las reservas guardan el nombre de quien las hizo y cada sala tiene un responsable fijo, por ejemplo Norte → `marta` y Sur → `luis`.
+- `anular Norte lun --como marta` → `anulada Norte lun`
+- `anular Norte lun --como pablo` → `solo el responsable de Norte puede anular reservas de otros`
+- `anular Norte lun` (sin `--como`) → `indica quién eres con --como`
+- Coste: hay que escribir `--como` cada vez. No es autenticación: cualquiera puede escribir el nombre de otro.
+
+2️⃣ **Quien actúa sale de una variable de entorno (`SALAS_USUARIO`).**
+Los responsables se declaran igual que en 1️⃣.
+- `SALAS_USUARIO=marta` → `anular Norte lun` → `anulada Norte lun`
+- Coste: no hay que repetir el nombre en cada comando, pero queda oculto en el entorno y es más fácil equivocarse.
+
+3️⃣ **Los responsables se guardan en un fichero de configuración.**
+Es la opción 1️⃣ con los responsables en un fichero editable en lugar de en el código.
+- Coste: añade lectura de ficheros a una app que hoy no tiene ninguno y vive en memoria.
+
+➡️ **Recomiendo 1️⃣**, porque la app es un solo fichero sin dependencias y sin estado fuera de la memoria, y `--como` es lo mínimo que hace que «de otros» tenga sentido sin añadir ficheros ni entorno. A cambio, no impide que alguien se haga pasar por otro, y eso no se arregla sin login.

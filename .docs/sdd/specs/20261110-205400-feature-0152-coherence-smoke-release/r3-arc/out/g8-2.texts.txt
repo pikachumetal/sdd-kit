@@ -1,0 +1,74 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+Mientras tanto leo las referencias de los pasos de registros y de fusión.
+
+--- [32]
+**Verdict: con hallazgos** (2 Important, 1 Minor)
+
+**Check 1, no code or behaviour change: OK.** `git diff c6e8fdb 82d83c1` only adds `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (+17 lines). No code, test or config file changes, and the interface text is in Spanish.
+
+**Findings**
+
+- **Important, `tasks.md:10`.** The table says Task 1 («Cancelar con motivo») was done in commit `c6e8fdb`. That's wrong: Task 1 is `e75954d` («feat(bookings): cancelar con un motivo de la lista», `src/app.js` +14/−3, `test/cancel.test.js` +8/−4). `c6e8fdb` («listado de canceladas con su motivo», +9) only covers Task 2 (`tasks.md:11`, correct). Fix: Task 1 → `e75954d`.
+
+- **Important, `tasks.md:17`.** The ruling says the gate runs `node --test --test-concurrency=1`, but nothing in the repo at `82d83c1` does:
+  - `gate.json` defines `bookings:test` as `node --test test/app.test.js test/cancel.test.js`, with no concurrency flag.
+  - The closing gate in `plan.md` (§3) is plain `node --test`.
+  - `git grep concurrency` finds the flag only in `tasks.md` itself.
+
+  So the ruling describes a gate change that was never made, and the race it's meant to avoid is still unguarded. Either apply the flag in `gate.json` (and in the plan's gate) or drop or rewrite the ruling.
+
+- **Minor, `tasks.md:17`.** The ruling calls itself a «workaround hasta aislar el almacén por test», but `.docs/sdd/steering/debt.md` has no entry for it, under «Por triar» or anywhere else. The temporary fix leaves no trace in the debt list.
+
+**Lines that check out**
+
+- **«Revisión final», `tasks.md:13`.** Consistent with the repo. «Arquitectura no (plan)» matches «Review Focus: ninguna» in `plan.md`. «sobre c6e8fdb» is the last code commit.
+- **Spec decision 3 («Sin review de spec»).** It doesn't contradict the «Spec» axis of the final review. Decision 3 skips the review of the spec itself, while the «Spec» axis checks the code against the spec.
+
+--- [36]
+La re-revisión devolvió hallazgos. Los compruebo contra el repo antes de aceptarlos.
+
+--- [45]
+Ahora la retro del cierre, como pide el paso 3.
+
+--- [49]
+Ahora el ADR check, la fila del roadmap y sus validadores.
+
+--- [53]
+Ningún registro cita `82d83c1`, así que puedo juntar el cierre en un solo commit desde el de la última task.
+
+--- [56]
+La base trajo `package-lock.json`, que es de «Sin filtro». El gate corre entero, sin `--affected`.
+
+--- [63]
+🦆 Cancelar ahora pide un motivo de la lista. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y sin motivo o con uno fuera de la lista responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` muestra «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…** el ruling de la Task 2, que pedía `--test-concurrency=1` en el gate para esquivar la carrera de los tests sobre el almacén en memoria. Nunca se aplicó: `gate.json` y el gate del plan siguen sin el flag, y la suite pasa igual. Lo he dejado escrito como «no aplicado» en `tasks.md` y en el walkthrough, con una fila nueva en «Por triar» de `debt.md`. Si prefieres aplicar el flag, es un cambio aparte.
+
+- **Validación en campo:** la hice yo, sin pedírtela. Es la 2026-11-11 y la ejecución real de los 4 THEN salió bien. El borrador del walkthrough traía otra línea de validación, fechada el 2026-10-26, y la sustituí por la mía.
+- **`canceladas` por la CLI:** el THEN de `canceladas` lo ejecuté en un solo proceso. Por la CLI, en un proceso nuevo sale vacío, porque el almacén vive en memoria. Lo recojo como residual; la fila 0014 «Motivo guardado» ya lo cubre.
+- **Re-revisión:** `HEAD` había avanzado con el commit de `tasks.md`, solo de documentación, y el kit exige re-revisarlo. Dio dos Important, y ambos eran reales:
+  - La Task 1 apuntaba a `c6e8fdb`; era `e75954d`. Corregido.
+  - El ruling descrito arriba.
+
+  También dio un Minor, el workaround sin fila de deuda, ya cubierto con la fila nueva de `debt.md`.
+- **Registros:** creé la capacidad `bookings`, con su `capability merge` y su check en verde. Cerré la fila 0010 en ✅ y `roadmap check` y `decision check` salen limpios. Retro: un solo señal, «documento o skill desmentido», ya corregido en su documento. El proyecto no tiene `estimation.md`, así que no hay tiempo real ni estimation-log.
+- **Gate:**
+  - Antes del sync: `bookings:test` 5/5, `rooms:test` saltada.
+  - Tras el sync con `develop`, que trajo `package-lock.json` (de «Sin filtro»): `Gate: node scripts/gate.mjs run bookings:test rooms:test` → bookings:test: corrió 5/5 · rooms:test: corrió 2/2 (sin filtro: cambia el build), sobre `30d0a77`. Es el sha de `--verified-at`.
+- **Historia:** junté el commit de `tasks.md` y el cierre en uno, `68ebc09`. No se sincronizó ni se subió nada a ningún remoto: el repo no tiene.
+- **Ticket del kit:** ninguna línea de Retro apunta al kit. Si quieres el feedback de mejora de esta sesión, dímelo y lo lanzo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`0a9afe9`) · push: no hecho: `merge.push` es `false` y no hay remoto.
+
+--- [66]
+El cierre ya está hecho, así que no queda nada por continuar. El walkthrough que estaba sin commitear lo completé y quedó dentro del commit de cierre `68ebc09`.
+
+- **Árbol de trabajo:** `git status` sale limpio.
+- **`develop`:** `feature/0010-cancel-reason` está fusionada en `develop` (`0a9afe9`). `develop` ya contiene el walkthrough de la 0010 y la capacidad `bookings`.
+- **Push:** no se hizo, porque `merge.push` es `false` y no hay remoto.
+
+Si querías algo distinto en el walkthrough, dime qué cambiar. Como el cuerpo ya no se reescribe tras el cierre, iría como una entrada fechada en `## 6. Adendas`, en un commit nuevo. También puedo lanzar el feedback del kit con `sdd-feedback` si lo quieres.
+

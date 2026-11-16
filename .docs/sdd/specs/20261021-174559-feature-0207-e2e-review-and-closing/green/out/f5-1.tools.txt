@@ -1,0 +1,81 @@
+
+>>> Read: <run>/review-final-51cd93b.diff
+<<< 0	# Review package: c1b491f..HEAD
+1	
+2	## Commits
+3	51cd93b test(invoices): e2e de recordar el filtro
+4	9e50539 feat(invoices): la lista recuerda el último estado elegido
+5	
+6	## Files changed
+7	 e2e/0024-remember-filter.spec.ts | 16 ++++++++++++++++
+8	 e2e/helpers.ts                   |  5 +++++
+9	 playwright.config.ts             |  2 ++
+10	 server/api.js                    |  4 ++++
+11	 src/invoices/InvoiceList.tsx     | 14 +++++++++++---
+12	 5 files changed, 38 insertions(+), 3 deletions(-)
+13	
+14	## Diff
+15	diff --git a/e2e/0024-remember-filter.spec.ts b/e2e/0024-remember-filter.spec.ts
+1
+
+>>> Grep: timeout|90
+<<< .docs\sdd\steering\operations.md:22:- **Timeouts**: por defecto
+
+=== RESULTADO (3 turnos, 0.1283214 $)
+### Strengths
+- `InvoiceList.tsx` is small. The `Status` type removes the repeated `(typeof STATUSES)[number]`.
+- The UI text is in Spanish and the component is a function with hooks, so «Restricciones de código» is met.
+- The server endpoint for prefs follows the style of the existing endpoints.
+- The second e2e test is cheap and independent.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+
+1. **`playwright.config.ts:8-9` — timeouts raised without a reason in `operations.md`.**
+   - The config sets `timeout: 90_000` and `expect: { timeout: 20_000 }`. `operations.md:22` declares «por defecto».
+   - Fix: remove both lines. If they are really needed, write the reason in `operations.md` first. Raising them probably hides slowness or flakiness.
+
+2. **`e2e/0024-remember-filter.spec.ts:27` — wait on internal state between two user actions, with no comment.**
+   - `expect.poll(() => savedStatus(request))` polls the API between the select and the navigation. A user doesn't see that state.
+   - It also hides a real bug (see item 3). If the PUT hasn't arrived when the user navigates, the test should fail, because that is what the test exists to catch.
+   - Fix: remove the poll and `savedStatus`. The final assertion on the select value after navigating already proves persistence. If the wait stays, add a comment with its reason.
+
+3. **`e2e/0024-remember-filter.spec.ts:24` — the first test names no core flow and does not cover the feature.**
+   - The first test doesn't name any core flow (sum column, export PDF, mark invoice as paid). The feature is a UI preference, so it belongs one layer down: a component or unit test of `InvoiceList` with a mocked `fetch`. The second test (four options) is also not a flow.
+   - It also doesn't prove the feature. The Hojas→Facturas navigation probably doesn't reload the page, so the `InvoiceList` remount could pass from a state outside the component.
+   - Fix: move the coverage to a component test. Keep an e2e only if it extends a core flow (for example, «marca una factura como cobrada» then reload).
+
+4. **`src/invoices/InvoiceList.tsx:115-119` — no error handling and a race between load and choice.**
+   - There is no `.catch` on the GET. A failed fetch gives an unhandled rejection, and a `null` body makes `saved.value` throw.
+   - The PUT's failure is silent.
+   - The saved value isn't validated against `STATUSES`. An invalid value would leave `<select>` with no matching option and `shown` empty.
+   - If the user picks a status before the GET resolves, the late GET overwrites that choice with the old saved value.
+   - Fix: validate with `STATUSES.includes`, handle errors, and ignore the GET response if the user has already chosen.
+
+5. **`server/api.js:94-96` — prefs are global, not per user.**
+   - `prefs` is keyed only by name, while `clipboard` and the other stores use `x-user`. One user's filter would show up for everyone.
+   - `savedStatus` in `helpers.ts:54` doesn't send `x-user` either, and the component's fetches don't send it.
+   - Fix: key by `${user}:${name}` and send the header, as the other endpoints do.
+
+#### Minor
+- `InvoiceList.tsx:115`: a one-line `.then` chain with an `&&` short-circuit used as a statement. A named `loadSavedStatus` helper would be clearer. The PUT also doesn't set a `content-type` header.
+- The same file now mixes UI with persistence. A `useRememberedStatus` hook would hide the fetch (Philosophy of Software Design, row «each module hides a decision»; possible).
+- `e2e/0024-remember-filter.spec.ts:33`: the test name is about the count of options, which is an implementation detail with low value.
+
+### Recommendations
+Move the persistence tests to a component or server test, and keep e2e for the core flows. Run the e2e suite locally with the default timeouts, to confirm the test passes without the raised values.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works on the happy path. However, the undeclared timeout increases, the polling wait, the e2e test that names no core flow, and the global (not per-user) prefs with a load/choice race need fixing first.
+
+### Declined to judge
+- Whether remembering the filter on the server instead of in `localStorage` is what the spec wanted: that is the Spec axis.
+- Where `server/api.js` sits relative to the front-end modules: that is the Architecture axis.
+- Whether the two commits follow a RED→GREEN order: it is about process, not the diff. No RED tests were visible to compare against.

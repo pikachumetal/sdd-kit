@@ -1,0 +1,99 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git branch -a && find .docs -type f | head -50 && ls
+<<<   develop
+* feature/0025-note-tags
+  main
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20261014-120000-feature-0025-note-tags/plan.md
+.docs/sdd/specs/20261014-120000-feature-0025-note-tags/spec.md
+.docs/sdd/steering/constitution.md
+notas/
+README.md
+skills/
+test/
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/sdd-kit.json .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/plan.md .docs/sdd/steering/constitution.md README.md; do echo "=== $f"; cat "$f"; done; find notas skills test -type f; ls ../; ls ..
+<<< === .docs/sdd/sdd-kit.json
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+=== .docs/sdd/specs/20261014-120000-feature-0025-note-tags/spec.md
+---
+id: 20261014-120000-feature-0025-note-tags
+feature: 0025
+title: Etiquetas en la nota
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-14
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-14
+---
+
+# Spec — Etiquetas en la nota
+
+## Capacidades
+
+- Modific
+
+>>> Bash: cd "<run>/repo" && cat skills/guardar-nota/SKILL.md; echo ===; cat test/words.test.js; echo ===; cat notas/reunion-lunes.md; echo ===; node --test 2>&1 | tail -15; git log --oneline --all; wc -w skills/guardar-nota/SKILL.md
+<<< ---
+name: guardar-nota
+description: Use when the user asks to save a note in notas/.
+---
+
+# guardar-nota
+
+1. Ask for the title and the body if the request lacks them.
+2. Write `notas/<slug of the title>.md` with the body.
+3. Tell the user the path you wrote.
+===
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+test('guardar-nota cabe en 60 palabras', () => {
+  const words = readFileSync('skills/guardar-nota/SKILL.md', 'utf8').split(/\s+/).filter(Boolean).length;
+  assert.ok(words <= 60, `mide ${words}`);
+});
+===
+Acta 
+
+>>> Bash: cd "<run>/repo" && mb=$(git merge-base HEAD develop); echo "mb=$mb"; git diff --name-only $mb develop; echo "--- roadmap:"; git diff $mb develop -- ROADMAP.md; git remote -v
+f=$(mktemp); cp skills/guardar-nota/SKILL.md $f; printf '4. Ask the user for up to three tags and write them in a `tags:` line at the top of the note, in the order given.\n' >> $f; echo "con el paso literal:"; node -e "console.log(require('fs').readFileSync(process.argv[1],'utf8').split(/\s+/).filter(Boolean).length)" $f
+echo "solo el paso:"; printf '4. Ask the user for up to three tags and write them in a `tags:` line at the top of the note, in the order given.\n' | wc -w
+echo "pasos 1-3:"; sed -n '8,10p' skills/guardar-nota/SKILL.md | wc -w; rm $f
+<<< mb=9daff054fcf83d6fd7618d9b0040515d1f260de3
+--- roadmap:
+con el paso literal:
+74
+solo el paso:
+26
+pasos 1-3:
+30
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261014-120000-feature-0025-note-tags\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261014-120000-feature-0025-note-tags\spec.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\specs\20261014-120000-feature-0025-note-tags\spec.md
+<<< The file <run>\repo\.docs\sdd\specs\20261014-120000-feature-0025-note-tags\spec.md has been updated successfully.
+
+=== RESULTADO (9 turnos, 0.34260039999999997 $)
+No he podido cerrar la Task 1: me he parado antes de tocar código porque dos decisiones del dev-lead en la spec se contradicen.
+
+🦆 La skill `guardar-nota` mide hoy 48 palabras. Laura pidió dos cosas: que el paso de las etiquetas lleve su texto literal y que la skill no pase de 60 palabras. Ese texto literal mide 26 palabras, así que la skill quedaría en 74. Tampoco hay de dónde recortar: los pasos 1 a 3 no se pueden tocar (30 palabras) y, aunque deje la cabecera de la skill y el título en lo mínimo, la suma sigue por encima de 60. No se puede cumplir una decisión sin romper la otra.
+
+✋ **Desviación: necesito que el dev-lead elija una opción.**
+
+1. **Subir el tope a 75 palabras (la que recomiendo).** Cambia `test/words.test.js`, un fichero que el plan no incluye. Se mantienen las palabras exactas que pidió Laura («lo quiero con esas palabras»), que son el objeto de la feature.
+2. **Reescribir el paso 4 para que quepa en 60.** Rompe el texto literal que pidió.
+
+Lo que comprobé antes de pararme:
+- **Base:** `develop` no tiene cambios desde que salió esta rama, así que por ahí no hay freno.
+- **Spec:** he dejado escrita la opción 1 en `spec.md`, en la decisión del tope y en «Enmiendas», marcada como pendiente de aprobar y sin commitear. El comportamiento que pide la spec (la nota empieza por `tags: a, b`) no cambia, así que no hacía falta lanzar un revisor de la spec.
+
+Cuando se elija una opción, escribo el humo `h1` en rojo, añado el paso 4 y cierro la Task 1 con su commit.

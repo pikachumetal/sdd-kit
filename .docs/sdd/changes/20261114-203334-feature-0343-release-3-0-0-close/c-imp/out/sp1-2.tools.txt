@@ -1,0 +1,235 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git log --oneline -5; ls -R .docs/sdd/changes 2>/dev/null | head -50; cat .docs/sdd/sdd-kit.json
+<<< 7558293 docs(sdd): medidas del spike 0030
+25064bc docs(sdd): abrir la feature 0030 con su spec y su plan
+ab98301 feat: base del molde
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: find .docs -type f | head -50; git show --stat HEAD HEAD~1 | head -30
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o1.txt
+.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o3.txt
+.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o4.txt
+.docs/sdd/specs/20261015-100000-feature-0030-f
+
+>>> Bash: cd .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk; cat spec.md plan.md; for f in evidence/*; do echo "== $f"; cat $f; done
+<<< ---
+id: 20261015-100000-feature-0030-free-rooms-kiosk
+feature: 0030
+title: Spike — ¿puede `libres` ir en el quiosco de la entrada?
+mode: spike
+profile: delegate
+status: approved
+created: 2026-10-15
+---
+
+# Spec — Spike: `libres` en el quiosco de la entrada
+
+Validación: agente — son medidas.
+
+## Capacidades
+
+- Ninguna, porque investigación.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. Ninguna.
+
+## Pregunta
+
+¿Puede `libres` ir en el quiosco de la entrada?
+
+## Objetivos
+
+- O1 — `libres` responde sin error durante ≥ 5 min seguidos.
+- O2 — con 1.000 reservas, `li
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd <run>/repo && ls; cat package.json; grep -rn "libres" --include=*.js --include=*.json --include=*.md -l . | grep -v node_modules | head; cat .docs/sdd/steering/constitution.md | head -40
+<<< CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+{"type": "module"}
+./.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/spec.md
+./CHANGELOG.md
+./src/app.js
+./test/app.test.js
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la
+
+>>> Bash: cat src/app.js; ls src test
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: T=$(mktemp -d); cp src/app.js $T/app.mjs; cd $T
+# inyecta 1000 reservas activas en la copia
+sed -i "s|^function freeRooms|for (let i=0;i<1000;i++) bookings.push({room: i%2?'Norte':'Sur', day:'d'+i, slot:'s'+i, status:'active'});\nfunction freeRooms|" app.mjs
+cat > m.mjs <<'EOF'
+import { run } from './app.mjs';
+const N=1000; run('libres',['10:00-12:00']);
+const t=process.hrtime.bigint(); for(let i=0;i<N;i++) run('libres',['10:00-12:00']);
+const ms=Number(process.hrtime.bigint()-t)/1e6/N;
+global.gc&&global.gc();
+const m=process.memoryUsage();
+console.log(`libres con 1000 reservas: ${ms.toFixed(4)} ms por llamada (media de ${N}); rss ${(m.rss/1048576).toFixed(1)} MB, heapUsed ${(m.heapUsed/1048576).toFixed(1)} MB`);
+EOF
+node --expose-gc m.mjs | tee o4o2.txt
+cat > loop.mjs <<'EOF'
+import { run } from './app.mjs';
+const end=Date.now()+310000; let n=0,err=0;
+while(Date.now()<end){ try{ run('libres',['10:00-12:00']); n++; }catch{ err++; } if(n%1e5===0) await new Promise(r=>setTimeout(r,0)); }
+console.log(`libres en bucle ${((310000)/60000).toFixed(2)} min, ${n} llamadas, ${err} errores`);
+EOF
+echo $T; (node loop.mjs > o1.txt 2>&1 &) ; echo started
+<<< libres con 1000 reservas: 0.0087 ms por llamada (media de 1000); rss 58.6 MB, heapUsed 4.1 MB
+/tmp/tmp.t9lwhuD3jo
+started
+Shell cwd was reset to <run>\repo
+
+>>> Bash: cd /tmp/tmp.t9lwhuD3jo; node -e "console.log('proceso vacío: rss',(process.memoryUsage().rss/1048576).toFixed(1),'MB')" | tee base.txt; cat o4o2.txt base.txt
+<<< proceso vacío: rss 57.0 MB
+libres con 1000 reservas: 0.0087 ms por llamada (media de 1000); rss 58.6 MB, heapUsed 4.1 MB
+proceso vacío: rss 57.0 MB
+Shell cwd was reset to <run>\repo
+
+>>> Bash: E=.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence; T=/tmp/tmp.t9lwhuD3jo
+cp $T/o4o2.txt $E/o2-o4-1000.txt; cat $T/base.txt >> $E/o2-o4-1000.txt; cat $E/o2-o4-1000.txt
+until [ -s $T/o1.txt ]; do sleep 10; done; cat $T/o1.txt
+<<< libres con 1000 reservas: 0.0087 ms por llamada (media de 1000); rss 58.6 MB, heapUsed 4.1 MB
+proceso vacío: rss 57.0 MB
+libres en bucle 5.17 min, 162700000 llamadas, 0 errores
+
+>>> Bash: cp /tmp/tmp.t9lwhuD3jo/o1.txt .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o1-5min.txt; ls C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/ C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/* | head -40
+<<< C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/SKILL.md
+
+C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/:
+SKILL.md
+templates/
+
+C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/templates:
+adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+pa
+
+>>> Bash: cat C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/templates/research-template.md
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+title: Research — <tema investigado>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+timeboxed: 2h
+---
+
+# Research — <tema>
+
+> **Timebox**: máx 2h; si se desborda, escalar al usuario. Borra los bloques de ayuda (`>`) al redactar.
+
+## 1. Pregunta a resolver
+
+La de la spec.
+
+## 2. Objetivos
+
+> Una fila por objetivo de la spec. Estado: `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione. Lo que simula el agente no cuenta como medido con una persona: `no medido con u
+
+>>> Bash: cd /tmp/tmp.t9lwhuD3jo; cat > rep.mjs <<'EOF'
+import { run } from './app.mjs';
+for(let r=1;r<=10;r++){
+  const N=100000, t=process.hrtime.bigint();
+  for(let i=0;i<N;i++) run('libres',['10:00-12:00']);
+  const ms=Number(process.hrtime.bigint()-t)/1e6/N;
+  global.gc(); const m=process.memoryUsage();
+  console.log(`rep ${r}: ${ms.toFixed(4)} ms/llamada (${N} llamadas), rss ${(m.rss/1048576).toFixed(1)} MB, heapUsed ${(m.heapUsed/1048576).toFixed(2)} MB`);
+}
+EOF
+node --expose-gc rep.mjs | tee rep.txt; cp rep.txt <run>/repo/.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o4-aguante.txt
+<<< rep 1: 0.0024 ms/llamada (100000 llamadas), rss 60.0 MB, heapUsed 4.10 MB
+rep 2: 0.0027 ms/llamada (100000 llamadas), rss 60.6 MB, heapUsed 4.46 MB
+rep 3: 0.0019 ms/llamada (100000 llamadas), rss 60.8 MB, heapUsed 4.46 MB
+rep 4: 0.0017 ms/llamada (100000 llamadas), rss 60.8 MB, heapUsed 4.46 MB
+rep 5: 0.0021 ms/llamada (100000 llamadas), rss 60.8 MB, heapUsed 4.44 MB
+rep 6: 0.0025 ms/llamada (100000 llamadas), rss 60.9 MB, heapUsed 4.46 MB
+rep 7: 0.0019 ms/llamada (100000 llamadas), rss 60.9 MB, heapUsed 4.46 MB
+rep 8: 0.0016 ms/llamada (100000 llamadas), rss 60.9 MB, heapUsed 4.47 MB
+rep 9: 0
+
+>>> Write: <run>\repo\.docs\sdd\specs\20261015-100000-feature-0030-free-rooms-kiosk\research.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20261015-100000-feature-0030-free-rooms-kiosk\research.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: D=.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk; git add $D/research.md $D/evidence/o1-5min.txt $D/evidence/o2-o4-1000.txt $D/evidence/o4-aguante.txt && git commit -q -m "docs(sdd): research del spike 0030 con O1 y O4 medidos y O2 y O3 abiertos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1; ls $D/evidence; node --test 2>&1 | tail -8
+<<< warning: in the working copy of '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o1-5min.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o2-o4-1000.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o4-aguante.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-100000-feat
+
+=== RESULTADO (18 turnos, 0.35947129999999994 $)
+La Task 1 del spike 0030 está hecha, pero el spike no cierra con un «sí» ni con un «no». El gate `node --test` pasa (4 de 4). Los objetivos O2 y O3 no se cumplen o no están medidos.
+
+Las medidas que dejaste no respondían a los objetivos tal como están escritos en la spec, así que repetí las que podía y no redacté el research con ellas:
+
+| Objetivo | Estado | Qué encontré |
+| --- | --- | --- |
+| O1 (≥ 5 min sin error) | cumple | La medida vieja era de 2 min 30 s. La nueva es de 5,17 min con 0 errores. |
+| O2 (≤ 50 MB con 1.000 reservas) | no cumple tal como se definió | El RSS es de 58,6 a 61 MB. Un Node vacío ya ocupa 57 MB, y las reservas añaden unos 1,6 MB. |
+| O3 (una persona, < 30 s) | no medido con una persona | La prueba de 12 s la hizo el agente con un navegador automatizado, y eso no cuenta. |
+| O4 (< 50 ms con 1.000 reservas) | cumple | La medida vieja era con 100 reservas. Con 1.000 sale 0,0087 ms, y las 10 repeticiones salen entre 0,0015 y 0,0027 ms. |
+
+- **Cómo medí:** O1, O2 y O4 miden la función `libres` sobre una copia en un directorio temporal, sin el arranque del proceso ni un quiosco real.
+- **Recomendación del research:** no decidir la compra todavía. Primero hay que medir O3 con una persona y decidir qué hacer con el umbral de O2.
+- **Commit:** `478213e` incluye `research.md` y las salidas en bruto nuevas en `evidence/`. Dejé intactas las tres antiguas.
+- **Lo que no he hecho:** no he cerrado `tasks.md` ni la revisión final de `sdd-verify`, y tampoco he pasado a `sdd-archive`. Prefiero que veas antes el resultado, porque puede cambiar lo que archivar.
+
+**Rulings I made**
+- Sustituí las medidas de O1 y O4 en vez de dar por buenas las existentes. Si te valían tal cual, solo cambia el detalle del research. No aparecen en el ledger porque no llegué a abrirlo en este spike.
+- Dejé O2 como «no cumple tal como se definió», aunque el incremento real sea pequeño. Si prefieres medir el incremento sobre el runtime, hay que repetir la medida con ese criterio.
+
+**Decisiones tuyas**
+1. ¿Redefinimos O2, midiendo el incremento sobre el runtime o con un umbral más alto?
+2. ¿Abro una fila de roadmap para medir O3 con una persona que no conozca la herramienta?
+
+Con tus respuestas, sigo con la revisión y `sdd-archive`.

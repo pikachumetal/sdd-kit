@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-upgrade
+<<< Launching skill: sdd-kit:sdd-upgrade
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" upgrade --root "<run>/repo"
+<<< el proyecto ya está al día con el kit 3.0.0
+
+>>> Grep: ^\d+\.|rules|reglas
+<<< 9:1. **Predicate.** If it doesn't hold, skip the step and say so.
+10:2. **Starting point.** `git status --short` over the step's files has to come out empty; if not, stop and say so. Note `git rev-parse --short HEAD`: it's the sha of what was before.
+11:3. **Destination table**, one row per block (a document, a section, a roadmap row) with its destination per the step's recipe. For each value the new form requires and the old one didn't have, the table says where it comes from. What is rewritten (a glossary, a condensed section) goes with the resulting text, and what is lost (a cell with no co
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-r4\skills\sdd-upgrade\references\migrations\v3.0.0.md · offset=166 · limit=36
+<<< 166	7. **Marker.** With the gates of steps 1 to 6 resolved, add to `.gitignore` the line `.temp/` if it's missing, without duplicating it, and create the file if it doesn't exist (if the line was already there, say so); run `sdd upgrade --root "<raíz>" --project-hook`, no gate: it leaves `.claude/hooks/sdd-kit-loaded.mjs` and its entry in `hooks.UserPromptSubmit` of `.claude/settings.json`, so that a session without the kit warns about it; run the «Verification», then `sdd upgrade --root "<raíz>" --mark 3.0.0`, and make the commit `chore(sdd): migrar al kit v3.0.0`. With a gate pending, neithe
+
+>>> Bash: cd "<run>/repo" && ls -a . .claude .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .claude/settings.json 2>&1
+<<< Exit code 1
+ls: cannot access '.claude': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .claude/settings.json: No such file or directory
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/steering/*.md PRODUCT.md; do echo "=== $f"; cat -n "$f"; done; cat package.json
+<<< === .docs/sdd/steering/constitution.md
+     1	# Constitution — salas
+     2	
+     3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+     4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+     5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+     6	4. Texto de la interfaz y de los documentos en castellano.
+=== .docs/sdd/steering/debt.md
+     1	# Deuda técnica — salas
+     2	
+     3	## P
+
+>>> Grep: git-flow|Git-flow|gitflow|node --test|castellano|Gate de merge|Gate de cierre
+<<< No matches found
+
+>>> Grep: test-first|failing test first|patch lane|sdd-propose
+<<< 3:description: Use when sdd-implement or an implementer brief reaches code to write or a test to add, to keep it test-first. Invoked from there; not the entry of a change (that is sdd-propose).
+26:**Exceptions** — the kit's lanes skip the cycle: a **config** change runs its gate instead (`sdd-propose`), and a **spike** task carries «Evidencia» instead of RED tests. Anything else you think is an exception (throwaway prototypes, generated code) is a question: the thread stops as at a deviation; an implementer returns `NEEDS_CONTEXT`.
+
+=== RESULTADO (10 turnos, 0.1242838 $)
+La configuración del kit está al día. No he cambiado ningún archivo.
+
+- **Migraciones:** `sdd upgrade` dice que el proyecto ya está al día con el kit 3.0.0. No hay nada pendiente y no he tocado `sdd-kit.json`.
+- **Reglas del proyecto contra el kit (paso 8 de la migración 3.0.0):** hay dos reglas de `constitution.md` que el kit ya cubre. Las otras dos no.
+
+| Regla del proyecto | Dónde | Kit | Choca o repite | Propuesta |
+| --- | --- | --- | --- | --- |
+| «Los cambios no triviales pasan por el flujo SDD… los bugs deterministas, por el carril patch» | `constitution.md:3` | `skills/using-sdd/SKILL.md` (puertas de entrada) y `skills/sdd-propose` | Repite | Quitarla |
+| «Tests antes que código» | `constitution.md:4`, primera mitad | `skills/sdd-tdd/SKILL.md` | Repite | Reescribirla. Quitar «Tests antes que código» y dejar solo «`node --test` en verde antes de cada commit». |
+
+- **Reglas que se quedan:** git-flow (regla 3) y el castellano (regla 4). Ningún archivo del kit las fija, así que son del proyecto.
+- **Gate de merge (paso 9):** `operations.md` no tiene línea «Gate de merge» ni «Gate de cierre». No hay nada que avisar, aunque sin gate `sdd merge --verify` no tiene qué ejecutar.
+- **Superpowers (paso 10):** no hay `.claude/settings.json`, así que no hay nada que quitar.
+
+¿Aplico estas propuestas, es decir, quito la regla 1 y reescribo la regla 2? Si dices que sí, las aplico en un commit `chore(sdd): reglas del proyecto que ya cubre el kit`.
+
+=== RESULTADO (1 turnos, 0.154563 $)
+Entiendo que no lo tengas claro, y por eso no he aplicado nada. Mi recomendación es **aplicar las dos propuestas**:
+
+- **Regla 1 (quitarla):** el kit ya decide por su cuenta qué entra por `sdd-propose` y qué va por el carril patch. Si la dejas en la constitución, tendrás dos fuentes que pueden acabar diciendo cosas distintas.
+- **Regla 2 (reescribirla):** `sdd-tdd` ya obliga a escribir primero el test. Lo único propio del proyecto es el comando, así que quedaría «`node --test` en verde antes de cada commit».
+
+Los cambios son pequeños y se revierten con `git revert`. Además, las reglas 3 y 4 no se tocan.
+
+Dime una de estas tres:
+- **«sí»:** aplico las dos y hago el commit `chore(sdd): reglas del proyecto que ya cubre el kit`.
+- **«solo la 1»** o **«solo la 2»:** aplico solo esa.
+- **«no»:** lo dejo como está.
+
+Si no contestas, no toco nada. Para retomarlo más tarde, pide «revisa las reglas del proyecto contra el kit».
+
+=== RESULTADO (1 turnos, 0.15742512 $)
+conversación con persona: 1 respuestas

@@ -1,0 +1,126 @@
+--- [3]
+Voy a leer los dos ficheros de configuración y el contrato de perfiles.
+
+--- [10]
+Faltan ocho decisiones del catálogo y las voy a preguntar de una en una. La primera es de quién es el perfil de control (`control.profile`).
+
+1. **Para todo el equipo (`sdd-kit.json`)**: el perfil queda en git y vale para quien trabaje en el proyecto. Es lo que recomiendo, porque el proyecto aún no tiene la clave y ahora rige el valor por defecto sin que nadie lo haya elegido. La contrapartida es que cambiarlo después es una decisión del equipo.
+2. **Solo para ti (`sdd-kit.local.json`)**: el perfil queda fuera de git y no cambia lo que ve el resto. La contrapartida es que el equipo sigue sin perfil declarado.
+
+¿Cuál eliges?
+
+--- [12]
+Entiendo «por defecto» como mi recomendación. Queda el perfil `delegate` para todo el equipo, y lo escribo en `sdd-kit.json` al terminar las preguntas.
+
+Sigue el cierre de las features, con `develop` como rama de integración (`merge`).
+
+1. **Sí**: al cerrar una feature hago merge a `develop` con `--no-ff` y no borro el worktree sin que una persona lo decida. Es lo que recomiendo. `--no-ff` deja la feature en un solo commit que se revierte de golpe, y borrar un worktree con cambios sin commitear no tiene vuelta atrás.
+2. **No**: cada cierre pregunta cómo hacer el merge.
+3. **Otra combinación**: me dices los valores de `into`, `noFf` y `removeWorktree`.
+
+¿Cuál eliges?
+
+--- [13]
+Anotado: `merge` con `into: develop`, `noFf: true` y `removeWorktree: false`.
+
+La siguiente decisión es el push (`merge.push`).
+
+1. **Sí**: tras el merge a `develop` hago push de esa rama a su remoto sin preguntar. Es lo que recomiendo. Tu convención es `main` estable y `develop` para integración, así que `develop` es una rama compartida y un merge sin push no lo ve nadie más. El push de `main`, de los tags y cualquier otro sigue siendo de una persona.
+2. **No**: tras el merge no hago push y lo hace una persona.
+
+¿Cuál eliges?
+
+--- [15]
+Anotado: `merge.push: true` y `validation.mode: manual`.
+
+Siguen los frenos (`control.maxParallelAgents` y `control.silence`).
+
+1. **Sí, los de por defecto**: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o 20 en un comando largo. Es lo que recomiendo, porque el kit los calibra así y no hay un caso en este proyecto que pida otros.
+2. **Números propios**: me dices el máximo de agentes y los dos minutos.
+
+¿Cuál eliges?
+
+--- [16]
+Anotado: `maxParallelAgents: 3`, `betweenStepsMinutes: 8` y `longCommandMinutes: 20`.
+
+Ahora decido el método de ejecución de los planes (`execution`).
+
+1. **`auto`**: cada plan recomienda su método. Es lo que recomiendo. El handoff pesa cada plan: Native es lo más barato y los subagentes se reservan para planes largos o para revisar cada tarea.
+2. **`native`**: siempre en la sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3. **`subagent`**: siempre con subagentes.
+
+¿Cuál eliges?
+
+--- [17]
+Entonces `execution: auto`.
+
+La siguiente decisión es qué hacer con los hallazgos Minor de la revisión final (`review.minors`).
+
+1. **`defer`**: los Minor van al ledger como diferidos. Es lo que recomiendo. Un Minor no cambia lo que recibe quien usa el producto, y cada arreglo alarga la pasada de fix. La contrapartida es que se acumulan hasta que alguien los triaje.
+2. **`fix`**: entran en la pasada de fix y se cierran en cada feature. Los cierres duran más.
+
+¿Cuál eliges?
+
+--- [19]
+Anotado: `review.minors: defer`.
+
+Falta la tabla de precios (`pricing`). Antes de preguntar, leo la página de precios para proponerte la tabla.
+
+--- [25]
+Leí la página de precios. Esta es la tabla que propongo, en USD por millón de tokens y con los ids de API:
+
+| Modelo | `input` | `cacheWrite5m` | `cacheWrite1h` | `cacheRead` | `output` |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+- **Haiku 5.5:** la tabla usa la tarifa de prompts de hasta 100.000 tokens. Por encima de ese tamaño la página cobra 0.50, 0.625, 1, 0.05 y 2.50.
+- **Notas al pie:** las tarifas de caché de Opus 5.5 y Sonnet 5.5 llevan una nota que no he leído. Puede matizar el precio de `cacheRead`.
+- **Fuente y fecha:** `pricing.source` sería la URL de la página y `pricing.updated` sería 2026-11-12.
+
+1. **Sí**: escribo esta tabla. Es lo que recomiendo, porque así el cierre de cada feature da el coste de la sesión en vez de «sin precio». La contrapartida es que los precios cambian y habrá que releer la página de vez en cuando.
+2. **No**: no escribo nada y el cierre da «sin precio».
+
+¿Cuál eliges?
+
+--- [27]
+Anotado: `pricing` con la tabla propuesta.
+
+La última es personal y va a `sdd-kit.local.json`, fuera de git (`validation.startEnvironment`).
+
+1. **No**: cuando te toque validar una feature, el guion de pruebas explica cómo arrancar el entorno. Es lo que recomiendo y es el valor por defecto. Arrancar el entorno sin que lo pidas deja procesos abiertos que luego hay que parar.
+2. **Sí**: arranco el entorno antes de darte el guion, para que lo encuentres funcionando.
+
+¿Cuál eliges?
+
+--- [29]
+Ya no queda ninguna decisión. Escribo `sdd-kit.json`, `sdd-kit.local.json` y el `.gitignore`.
+
+--- [33]
+La configuración del kit está al día. No he hecho commit y los cambios están sin commitear.
+
+**Qué has decidido tú**
+- `control.profile: delegate`, para todo el equipo.
+- `merge`: a `develop`, con `--no-ff` y sin borrar el worktree. También `merge.push: true`.
+- `control`: hasta 3 agentes en paralelo, y aviso tras 8 minutos de silencio entre pasos o 20 en un comando largo.
+- `execution: auto`.
+- `validation.mode: manual`.
+- `review.minors: defer`.
+- `pricing`: tabla de Opus 5.5, Sonnet 5.5 y Haiku 5.5. Es la de la página de precios leída hoy, 2026-11-12.
+- `validation.startEnvironment: false`, solo para ti, en `sdd-kit.local.json`.
+
+**Qué he decidido yo**
+- Tomé «el que venga por defecto» como mi recomendación. Por eso el perfil quedó para el equipo y lo escribí como `delegate`.
+- Para Haiku 5.5 usé la tarifa de prompts de hasta 100.000 tokens.
+- `ids.mode: sequence`, `release.hasRecipient`, `version` y `channel` ya estaban y no los toqué.
+
+**Qué queda por saber**
+- Las tarifas de caché de Opus 5.5 y Sonnet 5.5 llevan una nota al pie en la página. No la he leído y podría matizar `cacheRead`.
+- `.gitignore` no existía, así que lo creé con la línea de `sdd-kit.local.json`.
+
+**Ficheros tocados**
+- `.docs/sdd/sdd-kit.json`
+- `.docs/sdd/sdd-kit.local.json` (nuevo, fuera de git)
+- `.gitignore` (nuevo)
+

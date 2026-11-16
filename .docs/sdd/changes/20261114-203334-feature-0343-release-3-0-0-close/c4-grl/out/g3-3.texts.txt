@@ -1,0 +1,35 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar el cambio y presentarte la nota de comprensión, ~2 min.
+
+--- [16]
+Ahora: te presento lo que he entendido y te hago la primera pregunta de diseño. Queda: unas 3-4 preguntas, la spec para tu aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no declara otro)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** quieres poder apuntarte a una sala que está ocupada en una franja y quedar en lista de espera. Es una feature, no un patch: la regla de qué pasa al liberarse la sala no la fija nadie. Preveo 2-3 tasks, así que no propongo dividirla.
+
+**Lo que he visto en el código** (`src/app.js`):
+- `reservar` solo reconoce `--cada-semana`. Hoy no comprueba si la sala está ocupada.
+- `cancelar` solo devuelve el texto «cancelada mar 10:00». No libera nada.
+- Las reservas son un array fijo en memoria, sin persistencia entre ejecuciones.
+- Esto afecta al diseño: la lista de espera solo existe mientras dura la ejecución, salvo que decidamos otra cosa más adelante.
+
+❓ **¿Qué pasa con quien está en la lista cuando la sala se libera?**
+1️⃣ **Solo queda apuntado:** `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Tras `cancelar lun 10:00`, `espera` muestra la cola y tú reservas a mano. Es lo más pequeño y no inventa reservas.
+2️⃣ **Promoción automática:** el mismo `reservar` responde `Norte ocupada; en espera (1.º)`. Tras `cancelar lun 10:00` responde `cancelada lun 10:00; Norte pasa a tu nombre`. Reserva por ti, pero obliga a que `cancelar` libere de verdad la sala.
+3️⃣ **Solo aviso al liberarse:** el mismo `reservar` responde `en espera (1.º)`. Tras `cancelar lun 10:00` responde `cancelada lun 10:00; Norte libre, avisa al 1.º`. Necesita un canal de aviso, y el correo es la 0008, que aún no está hecha.
+➡️ **Recomiendo 1️⃣**, porque usas tú solo la herramienta y no hay a quién avisar. La reserva automática de 2️⃣ añadiría un cambio en `cancelar` que no has pedido. A cambio, tendrás que mirar la cola tú mismo cuando se libere la sala.
+
+--- [18]
+Gracias, queda anotado: feature, modo full, perfil delegate. Tu motivo me hace corregir mi recomendación anterior. Si tienes que volver a mirar `libres` a mano, la opción 1️⃣ no te quita ese trabajo: solo cambia `libres` por `espera`. Todavía no has elegido una opción, así que te lo pregunto de nuevo con ese dato.
+
+❓ **¿Cómo quieres que te quite el mirar a mano?**
+1️⃣ **Reserva automática al cancelar (cambia mi recomendación):** `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Cuando alguien ejecuta `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu nombre`. No vuelves a mirar nada. Cuesta que `cancelar` libere la sala de verdad, porque hoy solo imprime texto, y eso entra en el alcance.
+2️⃣ **Solo apuntarte a la cola:** `reservar Norte lun 10:00-12:00` → `en espera (1.º)`. Sigues teniendo que consultar `espera` para ver si se liberó, es decir, el mismo sondeo con otro comando.
+3️⃣ **Aviso al liberarse:** `cancelar lun 10:00` → `Norte libre, avisa al 1.º`. Necesita un canal de aviso, y el correo es la 0008, que aún no está hecha.
+➡️ **Recomiendo 1️⃣**, porque es la única que elimina el sondeo que describes. En exchange, el alcance crece: `cancelar` pasa a liberar la sala y tendrá sus propios tests.
+

@@ -1,0 +1,203 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-propose\references\plan-writing.md
+<<< 1	# Writing the plan
+2	
+3	Inspired by superpowers `writing-plans` (MIT).
+4	
+5	Write `plan.md` for an engineer who hasn't seen this codebase or this spec. Assume they write idiomatic code once they know the exact interface and the exact test, and that they make a reasonable choice wherever the plan leaves one open. What they can't know is what you decided: which files, which names and signatures, which values from the spec, which tests prove each task. That is the plan. Trace it from `plan-template.md` of `sdd-templates`: the template fixes the form of each field (header, «Restricciones globale
+
+>>> Glob: **/*
+<<< .docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\spec.md
+<<< 1	---
+2	id: 20261008-100000-feature-0010-cancel-reason
+3	feature: 0010
+4	title: Motivo al cancelar
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-08
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-08
+14	---
+15	
+16	# Spec — Motivo al cancelar
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21	
+22	## Decisiones que he tomado yo — valida estas
+23	
+24	1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con 
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-templates\templates\plan-template.md
+<<< 1	---
+2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+3	feature: <id>
+4	title: Plan de implementación — <título de la spec>
+5	spec: ./spec.md
+6	status: draft
+7	created: <YYYY-MM-DD>
+8	---
+9	
+10	# Plan de implementación — <título>
+11	
+12	> Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
+13	> `Ejecución` de abajo, para el plan entero.
+14	> Borra los bloques de ayuda (`>`) al redactar.
+15	
+16	## Decisiones que he tomado yo — valida estas
+17	
+18	> Una línea por decisión: **modelo y effort por task** (y por qué; la revisión final de rama no s
+
+>>> Bash: cd "<run>/repo" && cat package.json .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md; ls -R src test scripts; git branch --show-current; wc -l src/* test/*
+<<< {"type": "module", "engines": {"node": ">=20"}}
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de en
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/*.js scripts/lint.mjs; grep -n "Art\. X" -A6 .docs/sdd/steering/constitution.md | head -30; ls .docs/sdd/changes 2>&1 | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/constitution.md; git log --oneline | head -3
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+24dd56f feat: base del molde
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+>>> Write: <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md
+<<< File created successfully at: <run>\repo\.docs\sdd\specs\20261008-100000-feature-0010-cancel-reason\plan.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && python3 - <<'EOF'
+p='plan.md'
+s=open(p,encoding='utf-8').read()
+a=s.index("  - `canceladas no lista las anuladas`")
+b=s.index("  Ejecútalos y mira que fallen.\n- [ ] **Step 2: Implementación** — `cancelledBookings")
+s=s[:a]+"  - `canceladas sin cancelaciones`: primer test del fichero, antes de que ninguno cancele (estado compartido): `run('canceladas', [])` → `'sin canceladas'`. Los que cancelan van después.\n"+s[b:]
+s=s.replace("- `canceladas` sin cancelaciones, o con una anulada con `anular` → no la lista; sin ninguna responde «sin canceladas» · Task 2, `canceladas no lista las anuladas`","- `canceladas` sin ninguna cancelación → «sin canceladas» · Task 2, `canceladas sin cancelaciones`")
+s=s.replace("anuladas fuera → Task 2, `canceladas no lista las anuladas`","sin cancelaciones → Task 2, `canceladas sin cancelaciones`")
+s=s.replace("- Review Focus: sin motivo","- `canceladas` excluye las anuladas (decisión 6) → sin observar: no hay forma de crear una reserva anulada sin una activa y el estado es privado; lo fija el filtro `status === 'cancelled'` y lo revisa el eje Código. ⚠\n- Review Focus: sin motivo")
+s=s.replace("Cada task","Cada task")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+grep -n "anulad" plan.md
+<<< 206:- `canceladas` excluye las anuladas (decisión 6) → sin observar: no hay forma de crear una reserva anulada sin una activa y el estado es privado; lo fija el filtro `status === 'cancelled'` y lo revisa el eje Código. ⚠
+
+>>> Bash: cd "<run>/repo" && git add .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && git commit -q -m "docs(0010): spec y plan de motivo al cancelar
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+
+>>> Skill: sdd-kit:sdd-implement
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+50e2ec3 docs(0010): spec y plan de motivo al cancelar
+24dd56f feat: base del molde
+<<< Launching skill: sdd-kit:sdd-implement
+
+=== RESULTADO (19 turnos, 0.3820335 $)
+Plan escrito y commiteado (`50e2ec3`); no he empezado a implementar.
+
+Está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md`, junto a la spec. El commit incluye spec y plan.
+
+- **Método:** Native, fijado en `sdd-kit.json`. Perfil `delegate`, así que el plan no es una parada.
+- **Task 1:** `cancelar` exige `--motivo` de la lista cerrada. Se conservan «sin reserva…» y los textos literales de la spec.
+- **Task 2:** el comando `canceladas` lista «Norte lun — sala ocupada», solo las canceladas.
+- **Gate de cierre:** `node --test && node scripts/lint.mjs`.
+- **Estimación:** unas 0,5 h de implementación, con confianza alta.
+
+Decisiones mías que conviene validar, porque la spec no las fija:
+1. `cancelar` sin `--motivo` responde «motivo no válido…». Lo tomo como obligatorio y lo valido antes de buscar la reserva.
+2. `canceladas` sin ninguna cancelación responde «sin canceladas», un texto que me he inventado.
+3. El test de `canceladas` cancela él mismo antes de listar, porque los tests de `cancel.test.js` comparten el estado en memoria.
+
+Dos avisos sobre la spec:
+- La regla retirada «la reserva de otra persona no se toca» no tiene test, porque el modelo no tiene dueño de reserva. Queda marcada ⚠ en el self-review.
+- Que `canceladas` excluya las anuladas tampoco se puede observar con un test. También queda marcada ⚠ y la revisaría el eje Código de la revisión final.
+- La numeración de «Decisiones» en la spec salta del 1 al 3. Eso no lo he tocado.
+
+Ya invoqué `sdd-implement`, que es el traspaso del paso 6, pero paré antes de despachar `sdd-implement-native`. Dime «sigue» y arranco la Task 1.

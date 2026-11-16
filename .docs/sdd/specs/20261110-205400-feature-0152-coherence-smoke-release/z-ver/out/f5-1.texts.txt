@@ -1,0 +1,51 @@
+--- [4]
+### Strengths
+- `InvoiceList` stays a function component with hooks. `Status` is extracted as a type, which removes the repeated `(typeof STATUSES)[number]`.
+- The UI text is in Spanish.
+- The server endpoint is small and follows the existing style in `server/api.js`.
+- The `savedStatus` helper matches the existing helpers in `e2e/helpers.ts`.
+- Retries are unchanged (`0` local, `2` CI).
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+1. **`playwright.config.ts:7-8`: timeouts raised above the declared value with no reason.** The test timeout goes to `90_000` and the expect timeout to `20_000`. `operations.md:22` declares "Timeouts: por defecto", and the diff adds no reason there. This also slows the whole suite and hides slowness. Revert both lines. If the test needs them, write the reason in `operations.md`.
+
+2. **`e2e/0024-remember-filter.spec.ts:24-31`: the new E2E names no core flow.** The core flows are sum column, export PDF and mark invoice as paid. Remembering a filter is none of them, so it should be tested one layer down (component or API test).
+
+3. **`e2e/0024-remember-filter.spec.ts:27`: `expect.poll(() => savedStatus(request))` waits on server state between two user actions, with no comment giving a reason.** If the app had not saved the value, the later `toHaveValue` check would catch it. The poll hides a possible race between the PUT and the navigation. Remove it, and drop the `savedStatus` helper if nothing else uses it.
+
+4. **`e2e/0024-remember-filter.spec.ts:33-36`: the "cuatro opciones" test is a second E2E that covers no core flow.** It tests a static list, and a unit test would cover it better. Remove it or move it down a layer.
+
+5. **`server/api.js:94-96`: the preference is global, not per user.** The clipboard and cells endpoints are keyed by `x-user`, but `prefs` is keyed only by name. One user's filter is therefore restored for every other user, which is surprising. Key it by user, and send `x-user` from `InvoiceList` and from `savedStatus` (the helper at `e2e/helpers.ts:53` omits the header that the other helpers send). Possible Pragmatic Programmer "business rule in one place" and Ousterhout "information leak" rows.
+
+6. **`src/invoices/InvoiceList.tsx:115-119`: the fetches have no error handling, and the initial load can overwrite a choice made in the meantime.**
+   - **Overwrite:** if the GET resolves after the user picks a status, it replaces the user's choice with the stale saved value.
+   - **Unvalidated value:** `saved.value` is not checked against `STATUSES`, so a bad value would put the `<select>` into an invalid state.
+   - **Missing `.catch`:** a failed fetch is an unhandled rejection, and `choose` ignores a failed PUT.
+   
+   Validate with `STATUSES.includes`, add `.catch`, and ignore the loaded value if the user has already chosen.
+
+#### Minor
+- `src/invoices/InvoiceList.tsx:114-120`: the persistence logic (load plus save) is inlined in the component. A small `useRememberedStatus` hook would hide the endpoint knowledge. It is a judgement call.
+- `server/api.js:95`: the PUT returns `204` with a JSON body. This is the existing pattern, so it is not new.
+
+### Declined to judge
+- `JSON.parse` on a malformed body crashes the server in `read`. This is existing code that the diff did not introduce.
+- The `/api/prefs/...` contract (no `x-user`, null default). The spec axis decides whether the requirements ask for per-user preferences.
+- The placement of persistence in the server module (the Architecture axis).
+- Whether the Spanish text "Estado" and the option values match the spec's wording (the Spec axis).
+
+### Recommendations
+- Keep the feature's test at the component or API level, and leave E2E for the declared core flows.
+- Handle the load/choose race and the invalid saved value before merge.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works in the happy path. However, it raises the timeouts beyond the declared values, adds E2E tests that cover no core flow and wait on server state, and stores the preference globally instead of per user. The load/choose race and the unvalidated saved value are also unhandled.
+

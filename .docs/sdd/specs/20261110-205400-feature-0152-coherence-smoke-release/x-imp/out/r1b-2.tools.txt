@@ -1,0 +1,131 @@
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; ls; git ls-files
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> canceladas`; sin `--por`, `
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/informe.test.js | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled',
+
+>>> Bash: cd "<run>/repo" && python3 - <<'EOF'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+helpers='''const reportGroupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    belongs: (b, group) => b.room === group,
+    detail: (b) => `${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    groups: () => reasons,
+    belongs: (b, group) => b.reason === group,
+    detail: (b) => `${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function byRoomAndDay(a, b) {
+  return rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day);
+}
+
+function cancelledReport(grouping) {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled');
+  const lines = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.belongs(b, group));
+    if (!members.length) continue;
+    lines.push(`${group}: ${members.length} canceladas`);
+    for (const b of [...members].sort(byRoomAndDay)) lines.push(`  ${grouping.detail(b)}`);
+  }
+  lines.push(`Total: ${cancelled.length} canceladas`);
+  return lines.join('\\n');
+}
+
+'''
+s=s.replace("export function run",helpers+"export function run",1)
+s=s.replace("  return 'salas';","""  if (cmd === 'informe') {
+    const i = params.indexOf('--por');
+    const grouping = i === -1 ? undefined : reportGroupings[params[i + 1]];
+    return grouping ? cancelledReport(grouping) : 'uso: informe --por sala|motivo';
+  }
+  return 'salas';""",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"
+<<< ✖ test\informe.test.js (66.9206ms)
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ test\informe.test.js (66.9206ms)
+
+>>> Bash: cd "<run>/repo" && which python3 python; node --test test/informe.test.js 2>&1 | head -20; git status --short
+<<< which: no python3 in (<home>/.moon/bin:<home>/.proto/shims:<home>/.proto/bin:<home>/bin:/ucrt64/bin:/usr/local/bin:/usr/bin:/bin:/ucrt64/bin:/usr/bin:<home>/bin:/d/code/.worktrees/sdd-kit/feature-0152-coherence-smoke-release/tests/headless/no-claude:<home>/.proto/tools/node/26.10.0:<home>/.proto/tools/node/globals/bin:<home>/.moon/bin:<home>/.proto/shims:<home>/.proto/bin:<home>/bin:/ucrt64/bin:/usr/local/bin:/usr/bin:/usr/bin:/ucrt64/bin:/usr/bin:<home>/bin:<home>/.proto/tools/node/26.10.0:<home>/.proto/tools/node/globals/bin:/c/Program Files/coreutils/bin:/c/WINDOWS:/c/WINDOWS/System32:/c/WI
+
+>>> Bash: cd "<run>/repo" && node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"lines.join('\n')\",\"lines.join('\\\\n')\");fs.writeFileSync('src/app.js',s)" && grep -n "lines.join" src/app.js && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"
+<<< 40:  return lines.join('
+✖ test\informe.test.js (86.8125ms)
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ test\informe.test.js (86.8125ms)
+
+>>> Read: <run>/repo/src/app.js
+<<< 38	  }
+39	  lines.push(`Total: ${cancelled.length} canceladas`);
+40	  return lines.join('
+41	');
+42	}
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; git diff --stat; git file src/app.js 2>/dev/null; git config core.autocrlf
+<<< ℹ pass 3
+ℹ fail 0
+ src/app.js | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
+true
+
+>>> Bash: cd "<run>/repo" && git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe por sala y por motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'EOF'
+# Task 1 — Comando informe
+
+## Implementado
+`informe --por sala|motivo` en `src/app.js`: tabla `reportGroupings` (grupos, pertenencia, detalle), `byRoomAndDay` y `cancelledReport`; sin `--por` válido responde `uso: informe --por sala|motivo`.
+
+## TDD
+- RED: `node --test test/informe.test.js` → 3 fail (`informe` caía en el `'salas'` por defecto). Esperado: el comando no existía.
+- GREEN: mismo comando → pass 3, fail 0.
+
+## Ficheros
+src/app.js, test/informe.test.js (commiteado sin cambios)
+
+## Notas
+- `--por` con valor desconocido también responde con el uso (decisión mía; el brief solo cubre su ausencia).
+- Sin `Ajustes de espera`.
+EOF
+<<< 24b20d5 feat: comando informe por sala y por motivo
+
+=== RESULTADO (10 turnos, 0.17142319999999997 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** 24b20d5 feat: comando informe por sala y por motivo
+- **Tests:** RED con 3 de 3 fallando antes de implementar. El comando no existía y caía en `'salas'`. Después, 3 de 3 pasan con `node --test test/informe.test.js`. La salida no tiene avisos.
+- **Concern:** el brief solo define el uso cuando falta `--por`. Un valor desconocido, como `--por foo`, también responde con el uso.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

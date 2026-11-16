@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: ls -la .githooks; git config core.hooksPath; for f in .githooks/pre-commit; do echo "=== $f"; cat "$f"; done; echo "=== notas"; cat notas.txt | head -50
+
+>>> Bash: git commit -m "test: reproducir" 2>&1 | head -40; echo "exit=${PIPESTATUS[0]}"
+<<< total 5
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:32 ./
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:32 ../
+-rwxr-xr-x 1 <user> 197609 394 Oct 28 13:32 pre-commit*
+.githooks
+=== .githooks/pre-commit
+#!/bin/sh
+# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+tmp="$(git rev-parse --git-dir)/hook-check"
+rm -rf "$tmp"
+git worktree add -q --detach "$tmp" HEAD || exit 1
+if ! (cd "$tmp" && git status --porcelain >/dev/null); then
+  echo "pre-commit: el worktree temporal no responde" >&2
+  git worktree remove --force "$tmp"
+  exit 1
+fi
+git worktree remove --force "$tmp"
+=== notas
+Re
+<<< fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit=1
+
+>>> Bash: cat > /tmp/probe.sh <<'EOF'
+#!/bin/sh
+for v in GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE GIT_PREFIX GIT_EXEC_PATH; do
+  eval "val=\${$v-__UNSET__}"
+  echo "$v=$val" >&2
+done
+EOF
+chmod +x /tmp/probe.sh
+git -c core.hooksPath=/tmp/hp status >/dev/null 2>&1
+mkdir -p /tmp/hp && cp /tmp/probe.sh /tmp/hp/pre-commit
+git -c core.hooksPath=/tmp/hp commit -m probe 2>&1 | head; git status --short; ls .git | head -20
+<<< GIT_DIR=__UNSET__
+GIT_INDEX_FILE=.git/index
+GIT_WORK_TREE=__UNSET__
+GIT_PREFIX=
+GIT_EXEC_PATH=C:/Program Files/Git/ucrt64/libexec/git-core
+[develop 9f1eb67] probe
+ 1 file changed, 1 insertion(+)
+ create mode 100644 notas.txt
+COMMIT_EDITMSG
+config
+description
+HEAD
+hooks/
+index
+info/
+logs/
+objects/
+refs/
+worktrees/
+
+>>> Bash: git log --oneline -2; git reset --soft HEAD~1 && git log --oneline -1 && git status --short; rm -rf /tmp/hp /tmp/probe.sh
+<<< 9f1eb67 probe
+f9a6d3b feat: base del molde
+f9a6d3b feat: base del molde
+A  notas.txt
+
+>>> Bash: echo "--- sin variable"; sh .githooks/pre-commit; echo "exit=$?"
+echo "--- con GIT_INDEX_FILE=.git/index (como durante un commit)"; GIT_INDEX_FILE=.git/index sh .githooks/pre-commit; echo "exit=$?"
+git worktree list; git status --short
+<<< --- sin variable
+exit=0
+--- con GIT_INDEX_FILE=.git/index (como durante un commit)
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+exit=1
+<run>/repo f9a6d3b [develop]
+A  notas.txt
+
+=== RESULTADO (8 turnos, 0.14176619999999998 $)
+**Causa raíz:** el hook hereda `GIT_INDEX_FILE` y eso rompe el `git worktree add` que hace por dentro. El problema no está en `notas.txt`.
+
+**Cómo ocurre**
+1. Cuando `git commit` lanza un hook, le pasa `GIT_INDEX_FILE=.git/index`. Es una ruta **relativa**, y la comprobé con una sonda.
+2. `.githooks/pre-commit` ejecuta `git worktree add -q --detach "$tmp" HEAD`, con `tmp=.git/hook-check`. Ese comando hereda la variable.
+3. Git resuelve `.git/index` respecto al worktree nuevo. Termina buscando `.git/hook-check/.git/index.lock`, y esa carpeta no existe todavía.
+4. Falla con `fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory` y el hook sale con `exit 1` (por el `|| exit 1`).
+
+**Evidencia**
+- Con el commit real, el mensaje es el de arriba.
+- Ejecutando el hook a mano, sin la variable, sale con `exit=0`.
+- Ejecutándolo a mano con `GIT_INDEX_FILE=.git/index`, falla igual que en el commit. Esa es la única diferencia entre los dos casos.
+
+**Aviso sobre mi sonda:** con un hook de prueba que no hacía nada, el commit sí se completó y creé un commit `probe`. Lo deshice con `git reset --soft HEAD~1`. Ahora HEAD está en `f9a6d3b` y `notas.txt` sigue en el índice (`A`). El resto del repo está igual que al empezar.
+
+**Otras notas**
+- Como pediste, no he tocado el hook.
+- La sesión carga sdd-kit 2.3.4 y el proyecto pide la 3.0.0. La skill de debugging que seguí puede ser la de una versión antigua.
+- Cuando quieras que lo arregle, dímelo.

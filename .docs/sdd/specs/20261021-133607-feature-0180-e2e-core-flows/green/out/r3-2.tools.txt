@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\e2e-flaky.log
+<<< 1	$ npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=5
+2	Running 5 tests using 3 workers
+3	
+4	  ✓  1 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.1s)
+5	  ✓  2 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (2.9s)
+6	  ✘  3 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (5.4s)
+7	  ✓  4 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.0s)
+8	  ✓  5 [chromium] › 0021-cell-format.spec.ts:4:5 › formatea una celda como moneda (3.2s)
+9	
+10	  1) [chromium] › 0021-cell-forma
+
+>>> Read: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('formatea una celda como moneda', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'B2', '1234.5');
+7	  await expect.poll(() => cellValue(request, 'demo', 'B2')).toBe('1234.5');
+8	  await page.getByTestId('cell-B2').click({ button: 'right' });
+9	  await page.getByRole('menuitem', { name: 'Formato moneda' }).click();
+10	  await expect(page.getByTestId('cell-B2')).toHaveText('1.234,50 €');
+11	});
+12	
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0180-e2e-core-flows\4e6b3416-44e5-41b5-8c65-85439c8b6f13\scratchpad\kit2\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts come from its docs (`docs/src`, branch `main`, 1.65, read 2026-10-21).
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
+8	
+9	```
+10	1. An E2E names a core flow
+11	2. Between
+
+>>> Read: <run>\repo\e2e\helpers.ts
+<<< 1	import { APIRequestContext, Page } from '@playwright/test';
+2	
+3	export async function login(page: Page, path: string) {
+4	  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+5	}
+6	
+7	export async function typeInCell(page: Page, cell: string, text: string) {
+8	  await page.getByTestId(`cell-${cell}`).click();
+9	  await page.keyboard.press('Enter');
+10	  await page.keyboard.type(text);
+11	  await page.keyboard.press('Enter');
+12	}
+13	
+14	export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+15	  const res = await request.get(`http://localho
+
+>>> Grep: aria-label|data-testid=.cell-editor|role="textbox"|contentEditable|<input
+<<< src\invoices\InvoiceList.tsx:10:    <section aria-label="Facturas">
+src\sheet\CellEditor.tsx:6:    <input
+src\sheet\CellEditor.tsx:7:      aria-label="Editor de celda"
+src\sheet\ContextMenu.tsx:3:    <div role="menu" aria-label="Menú de celda" style={{ position: 'fixed', left: x, top: y }} onMouseLeave={onClose}>
+src\sheet\Grid.tsx:34:    <table role="grid" aria-label="Hoja" tabIndex={0} onKeyDown={onKeyDown}>
+src\sheet\Grid.tsx:44:                  aria-label={cell}
+
+>>> Grep: typeInCell
+<<< Found 4 files
+e2e-flaky.log
+e2e\0012-sum-row.spec.ts
+e2e\helpers.ts
+e2e\0021-cell-format.spec.ts
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< The file <run>\repo\e2e\0021-cell-format.spec.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: git add e2e && git commit -q -m "test: espera al editor de celda antes de escribir en typeInCell
+
+La pasada fallida recibía '234.5': las teclas se escribían antes de que
+el editor tuviera el foco. El helper espera el editor visible y usa fill;
+el spec 0021 ya no sondea la API entre dos acciones del usuario.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of 'e2e/0021-cell-format.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'e2e/helpers.ts', LF will be replaced by CRLF the next time Git touches it
+1d831e5 test: espera al editor de celda antes de escribir en typeInCell
+
+=== RESULTADO (13 turnos, 0.1735838 $)
+Está arreglado y commiteado (`1d831e5`), pero no lo he ejecutado: aquí no hay navegadores ni servidor.
+
+**Causa:** el log del fallo da `Received: "234.5"`, así que se perdía la primera tecla. En `typeInCell` (`e2e/helpers.ts`), el test pulsaba Enter y escribía con `keyboard.type` antes de que el editor de celda tuviera el foco. Es una carrera en el test (regla 4 de `writing-e2e.md`). Falla 1 de cada 5 pasadas porque depende del momento en que aparece el editor.
+
+**Cambios:**
+- **`typeInCell`:** ahora espera a que el textbox «Editor de celda» tenga el foco (`toBeFocused`) y escribe con `fill`. Al ser un helper compartido, esto también protege a `0012-sum-row.spec.ts`, que lo usa.
+- **`0021-cell-format.spec.ts`:** quité el `expect.poll` a la API entre la escritura y el clic derecho. Esperar al servidor entre dos acciones del usuario esconde carreras de la app (regla 3). La comprobación del valor en el servidor pasa al final, después de la última acción.
+
+No he tocado timeouts ni reintentos.
+
+**Cómo lo comprobaría**, en una máquina con Playwright y el servidor:
+1. `npx playwright test e2e/0021-cell-format.spec.ts -g "formatea una celda como moneda" --repeat-each=20`. Tiene que dar 20 de 20; con 1 de 5 de fallo antes, 20 pasadas casi seguro habrían sacado algún rojo.
+2. `npx playwright test e2e/0012-sum-row.spec.ts --repeat-each=10`, porque comparte el helper.
+3. La suite completa una vez, como puerta de cierre.
+
+**Limitaciones:**
+- No pude ver el RED, porque la carrera no se puede reproducir sin ejecutar. El log es la única evidencia del fallo.
+- No he comprobado que el textbox «Editor de celda» sea el que recibe el foco tras Enter. Lo deduje de `CellEditor.tsx`, que tiene `aria-label="Editor de celda"` en un `<input>`.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que las reglas que apliqué pueden ser de una versión vieja.

@@ -1,0 +1,124 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Árbol limpio, destino listo, sin otras ramas abiertas. Miro dónde vive la feature.
+
+--- [29]
+Ya tengo lo necesario para el cierre. Me queda esperar la re-revisión antes de escribir nada.
+
+--- [34]
+Todavía no he escrito nada del cierre de la 0010. Estoy esperando a la re-revisión, que sigue en marcha.
+
+- **Pre-checks:** el árbol está limpio y `merge --check` da `destino: listo` hacia `develop`. No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- **Por qué hay re-revisión:** la revisión final limpia fue sobre `4da2327`, y después llegaron `900f34b` (solo `tasks.md`) y `97bfe45` (`package.json`). `97bfe45` no es documentación ni comentarios, así que no puedo darlo por revisado en el hilo. Lancé la única re-revisión del rango `4da2327..97bfe45`, con `opus` y `effort-high`. Tiene su vigilancia de silencio en segundo plano y vive en un worktree desacoplado.
+- **Qué falta del cierre:**
+  - No hay `walkthrough.md` ni borrador de `capabilities/bookings`, así que los escribo yo.
+  - Falta pasar la suite entera sin filtro, porque `package.json` entra en «Sin filtro».
+  - Falta mi smoke de cada THEN con ejecución real (validación en campo).
+  - Después vienen la retro, el roadmap, el commit de cierre, el sync con la base y el merge a `develop`.
+
+Cuando vuelva la re-revisión sigo con todo eso.
+
+--- [36]
+## Re-review of feature 0010, range 4da2327..97bfe45: findings remain
+
+### Finding Verdicts
+
+None under verification.
+
+### New Breakage in the Range
+
+**1. Important: the Ruling describes a gate change that is not in the code.** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`
+- The Ruling says the gate runs `node --test --test-concurrency=1` to work around a race on the shared in-memory store.
+- No gate at `97bfe45` runs that:
+  - The `bookings:test` task in `gate.json` runs `node --test test/app.test.js test/cancel.test.js`.
+  - The gate the constitution sets is `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`.
+  - The plan's closing gate is `node --test`.
+  - `git grep concurrency 97bfe45` only finds this line in tasks.md.
+- No commit on the branch touches `gate.json` or `scripts/gate.mjs`. The last change to them is a3613c7, which is older than the feature.
+- The race it describes doesn't fit how the tests run either. `node --test` runs each test file in its own process, so the in-memory store is not shared between files. Inside `test/cancel.test.js` the tests already run one after another.
+- So the record holds a workaround that was never applied, for a problem that doesn't show. Anyone reading it will believe the gate has been changed. Either remove the Ruling, or apply it and say why.
+
+**2. Minor: Task 1 has the wrong commit.** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`
+- The Task 1 row ("Cancelar con motivo") points to `4da2327`.
+- Task 1 is actually `b706fb2` ("feat(bookings): cancelar con un motivo de la lista"). It changes `src/app.js` and `test/cancel.test.js` (+15/−7).
+- `4da2327` only adds the list of cancelled bookings (Task 2, +9). The row should say `b706fb2`.
+
+**3. Minor: commit `97bfe45` is not in the record.** `package.json:1`
+- No plan task and no tasks.md row or note covers adding the `cancelar` script.
+- tasks.md was written before this commit and only shows two tasks, both closed at 4da2327. The script is not in the record anywhere.
+- The script itself is correct:
+  - `"node src/app.js cancelar"` passes the command name as the first argument, which is what `src/app.js:1` reads (`const [command, ...args] = process.argv.slice(2)`).
+  - `src/app.js:42` sends `params[0]` (room), `params[1]` (day) and the value after `--motivo` to `cancelBooking`.
+  - `npm run cancelar -- Norte lun --motivo "sala ocupada"` gives `cancelar Norte lun --motivo "sala ocupada"`, as the spec defines.
+  - `package.json` is still valid JSON and keeps `"type": "module"`.
+- Note that you need the `--` separator, or npm takes `--motivo` as its own config option.
+
+### Out-of-Scope Observations
+
+- The spec scenario "sin `--motivo` responde lo mismo" has no test in `test/cancel.test.js`. The code handles it: `reasonOf` returns `undefined`, and `cancelBooking` rejects it with the expected message. This code was already in the reviewed state (b706fb2/4da2327), so it is outside this range.
+- The test "canceladas enseña sala, día y motivo" relies on the state the first test in the same file leaves behind. It passes because the tests in that file run in order, but it is fragile. This was also already there before the range.
+- The "Revisión final" line in tasks.md (Spec opus+high, Código sonnet+high, Arquitectura no, on 4da2327) matches the brief. I can't check the models it names from the repo.
+
+### Verdict
+
+Findings remain: 1 Important (the Ruling with nothing behind it in the code) and 2 Minor (the wrong commit on Task 1, and the script commit missing from the record).
+
+--- [38]
+La re-revisión devuelve 1 Important y 2 Minor, todos sobre `tasks.md`. Antes de actuar los compruebo yo.
+
+--- [48]
+Suite entera verde 8 de 8 pasadas, sin rastro de la carrera, y el smoke por la CLI funciona. Ahora los documentos vivos: leo las referencias de aprendizajes y capacidades.
+
+--- [52]
+Capacidad fusionada con el CLI. Ahora los registros: `tasks.md`, walkthrough, arquitectura, deuda y roadmap.
+
+--- [59]
+Walkthrough escrito. Ahora la retro del cierre.
+
+--- [66]
+Todo en orden. Ahora el commit de cierre, juntando en uno lo posterior a la última task (`4da2327`), y el sync con la base.
+
+--- [69]
+Base al día: no hay merge de sync ni segunda suite. Fusiono con el script, con `merge.noFf` y sin push, porque `merge.push` es `false`.
+
+--- [72]
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Añadí el script `cancelar` en `package.json` (`npm run cancelar -- <sala> <día> --motivo <motivo>`), que el plan no pedía. Si no lo quieres, se borra con una línea.
+- El Ruling de la Task 2, `--test-concurrency=1` en el gate, lo retiré. Nunca se aplicó, porque `gate.json` y `scripts/gate.mjs` no cambian en la rama. La carrera que decía esquivar no se reproduce: la suite entera pasó 8 de 8 veces sin ello.
+
+**Re-revisión.** La revisión final limpia era sobre `4da2327` y después llegó `97bfe45`, que toca `package.json` y no es solo documentación. Lancé la única re-revisión del rango, con `opus` y `effort-high`. Devolvió 1 Important y 2 Minor, los tres sobre `tasks.md`:
+- **Important:** el Ruling sin código detrás, ya retirado.
+- **Minor:** la Task 1 apuntaba al commit equivocado y ahora apunta a `b706fb2`.
+- **Minor:** el script no figuraba en el registro y ahora tiene su fila.
+
+**Verificación.** Corrí yo la suite y el smoke, con la validación en campo:
+- **Suite y gate:** suite unitaria 2/2 y gate 6/6, sin filtro porque cambia `package.json`.
+- **Smoke:** los tres THEN de `cancelar` funcionan con ejecución real por la CLI. El de `canceladas` solo lo probé importando `run` de `src/app.js` y llamándola dos veces en un proceso.
+- **No probado por CLI:** `node src/app.js canceladas` suelto responde vacío, porque las reservas viven en la memoria del proceso. Lo cubre la fila 0014 «Motivo guardado» del roadmap.
+- **Sin validar por ti:** no has dicho qué probaste, así que la validación es solo mía.
+
+**Pendiente.**
+- **Deuda nueva:** `test/cancel.test.js` no tiene test de «sin `--motivo`», que probé a mano, y el de `canceladas` depende del estado que deja el anterior. Está en «Por triar» de `debt.md`.
+- **Retro:** una señal, `documento o skill desmentido`, que corregí en `tasks.md`.
+- **Documentos vivos:** creé `capabilities/bookings.md` con `sdd capability merge`. Añadí a `architecture.md` que las reservas viven en memoria. La fila 0010 del roadmap pasa a ✅.
+- **Sin estimación:** no hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+
+La base estaba al día, así que no hubo merge de sync ni segunda suite. El merge lleva `--verified-at 2cc0f76`. Dejé la rama en dos commits de tareas más uno de cierre: junté `900f34b` y `97bfe45` en `2cc0f76`.
+
+¿Quieres que genere el ticket de mejora del kit con `sdd-feedback`? No es obligatorio. La retro no dejó ninguna línea de «ticket del kit».
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (96c056d) · push: no hecho: `merge.push` no lo autoriza
+
+--- [74]
+El cierre de la 0010 ya terminó: la re-revisión volvió y el resto del cierre está hecho. Ese aviso era el temporizador de respaldo que dejé programado, y ya no hace falta.
+
+La rama `feature/0010-cancel-reason` está fusionada en `develop` (96c056d) y no he hecho push, porque `merge.push` no lo autoriza. El resumen completo está en mi mensaje anterior.
+
+Quedan dos cosas por si las quieres:
+- **Ticket del kit:** puedo generarlo con `sdd-feedback`. No es obligatorio.
+- **Fila de deuda en «Por triar»:** `test/cancel.test.js` no tiene test de «sin `--motivo`», y el test de `canceladas` depende del que corre antes.
+

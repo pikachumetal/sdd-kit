@@ -1,0 +1,67 @@
+--- [12]
+Estoy leyendo las reglas del kit para cerrar la revisión antes de actuar sobre los hallazgos de los dos ejes.
+
+--- [26]
+Ahora dejo la enmienda en la spec, sin commitear, y corrijo `tasks.md` (el commit de la Task 1 estaba mal: es `6846e90`).
+
+--- [31]
+Ahora: un revisor `sonnet` lee la enmienda con los siete puntos de `review-spec.md` antes de pararme. Queda: el ✋ con sus hallazgos, ~5 min, ~$0.5.
+
+--- [37]
+He hecho la pasada de fix (`05f1720`). El revisor de la enmienda está trabajando en segundo plano. Cuando vuelva te presento el ✋ con los dos hallazgos de Código que cambian la spec. Hasta entonces no hay nada que decidir.
+
+--- [39]
+**Revisión de la enmienda a la spec 0010 (un revisor, siete puntos)**
+
+Señales: `MODIFIED` no hay, porque el AND se añade a un requisito `ADDED` de la propia spec. Contrato público no hay. Tamaño: 2 líneas en 1 fichero. Un revisor es suficiente. No he leído `capabilities/` ni `constitution.md`, así que el punto 1 se limita a las contradicciones internas de la spec.
+
+**Critical**
+- Ninguno.
+
+**Important**
+1. **Punto 2, motivo guardado y `canceladas`.** El AND solo define la respuesta del comando. No dice si el motivo se guarda recortado. En `src/app.js`, `cancelBooking` guarda `reason`, y `canceladas` lo imprime tal cual. Si se recorta solo para comparar con la lista, `canceladas` enseñaría `Norte lun — sala ocupada ` con el espacio final. Cámbialo así: añade «AND `canceladas` responde «Norte lun — sala ocupada», sin el espacio».
+2. **Punto 2, interacción con los AND existentes.** El AND «sin `--motivo`» sigue siendo comprobable, pero la enmienda lo pone en riesgo. `reasonOf` devuelve `undefined` sin la opción o con `--motivo` como último argumento. Un `reason.trim()` ingenuo lanzaría una excepción en lugar de responder «motivo no válido». Tampoco se dice qué pasa con `--motivo "   "`, que tras recortar queda vacío. Cámbialo así: añade una frase que mantenga ambos casos en «motivo no válido: …». Esto cubre también `--motivo "   "`.
+3. **Punto 2, espacios internos y mayúsculas.** «Alrededor» cubre inicio y final, pero el ejemplo solo prueba el final. Nada dice que `"sala  ocupada"` (doble espacio interno) o `"Sala ocupada"` siguen siendo motivo no válido, y hoy lo son. Cámbialo así: declara que solo se recortan los extremos, y que los espacios internos y las mayúsculas no se normalizan, por lo que siguen siendo no válidos. O decide lo contrario, pero dilo.
+4. **Punto 4, decisión en el cuerpo.** El recorte, y que solo sea de los extremos, es una decisión de comportamiento. No está en «✋ Decisiones que he tomado yo». Cámbialo así: añade un punto 5 con ella. De paso, la lista salta del 1 al 3, algo que ya venía de antes.
+
+**Minor**
+5. **Punto 2, «Dónde se prueba».** La sección es genérica («por el comando `cancelar`, como `test/cancel.test.js`»). No nombra el caso del espacio final ni la comprobación en `canceladas`. Cámbialo así: cita el caso `"sala ocupada "` y el listado recortado.
+6. **Punto 2, verificabilidad en test.** El GIVEN del AND es Norte lun. En `test/cancel.test.js` el estado de `bookings` es compartido entre tests. El primer test ya cancela Norte lun, así que un test nuevo con la misma reserva respondería «sin reserva Norte lun». Cámbialo así: el plan debe indicar que el test prepara su propia reserva. El último commit ya hizo algo parecido con el test de canceladas.
+7. **Aprobaciones.** La línea de «## Enmiendas» queda como «pendiente de aprobar» y la tabla sigue en «aprobada» (2026-10-08). Es coherente mientras no se apruebe. Al aprobar, hay que actualizar la línea y la fecha. Los puntos 3, 6 y 7 de la rúbrica no tienen hallazgos: el Scope ya cubre `cancelar --motivo`, no hay contrato, datos ni dependencias nuevas, y los ejemplos son inventados.
+
+**Veredicto:** aprobar con cambios. El AND es comprobable y no contradice los existentes. Falta fijar el motivo guardado y el que enseña `canceladas` (1), los casos límite (2 y 3) y la cobertura en «Dónde se prueba» (5).
+
+--- [41]
+Aplico los hallazgos del revisor a la enmienda, que sigue sin commitear, y me paro.
+
+--- [47]
+He parado en dos hallazgos de la revisión final que, para arreglarlos, hay que cambiar la spec aprobada. Necesito que decidas sobre los dos.
+
+🦆 Al cerrar la revisión salieron tres cosas. La del eje Spec ya está arreglada: el test de `canceladas` solo pasaba si antes había corrido el de `cancelar`. Lo comprobé ejecutándolo solo, que fallaba, y ahora prepara su propia cancelación. Está en `05f1720` y la suite pasa 5/5. Las dos del eje Código no son solo de código: cada una cambia lo que la spec promete que responde el programa.
+
+✋ **Decisiones que te pido**
+
+1. **Espacios alrededor del motivo** (Important, `src/app.js:14-17`). Hoy `--motivo "sala ocupada "`, con un espacio al final, se rechaza como «motivo no válido».
+   - **Recomiendo aceptarlo.** He dejado la enmienda escrita en `spec.md`, sin commitear:
+     - se quitan solo los espacios del principio y del final, y el motivo se guarda así;
+     - `canceladas` enseña el motivo sin el espacio;
+     - `"   "`, `"sala  ocupada"` y `"Sala ocupada"` siguen siendo «motivo no válido».
+   - Un revisor `sonnet` leyó la enmienda: «aprobar con cambios». Ya están aplicados: fijar el motivo guardado, los casos límite, la decisión 5 y los casos en «Dónde se prueba».
+   - Alternativa: dejarlo como está y descartar la enmienda.
+
+2. **El separador ` — ` de `canceladas`** (Minor, `src/app.js:36`). El revisor dice que en una consola `cp850` se ve `Norte lun ÔÇö sala ocupada` y propone usar ` - `.
+   - **Recomiendo no tocarlo.** El texto «Norte lun — sala ocupada» está en la spec como resultado esperado y es la decisión 4, que aprobaste. Además, no he podido comprobar que se rompa: Node escribe en la consola de Windows en UTF-16. Donde se estropearía es al redirigir la salida a algo que lea `cp850`.
+   - Alternativa: cambiarlo a ` - `, lo que exige corregir la spec y la decisión 4.
+
+Si apruebas alguna, el trabajo irá en una task nueva al final del plan: `Task 3 — enmienda 2026-11-09`, con su test primero. Las Tasks 1 y 2, ya cerradas, no se tocan. Después saldrá la única re-revisión del rango `26b0ee8..HEAD`, que cubrirá también `05f1720`.
+
+**Me salí del plan en…**
+- `tasks.md` tenía mal el commit de la Task 1 (`26b0ee8` en lugar de `6846e90`). Lo he corregido y le he añadido las líneas de la revisión final y de la pasada de fix. Sigue sin commitear.
+- La línea del eje Arquitectura no estaba en el registro de la sesión y la he escrito ahora. El diff sí añade un dato: el campo `reason` de la reserva. Decidí que no hacía falta revisarlo desde arquitectura porque es un campo en memoria, sin esquema ni persistencia. Si me equivoco, nadie ha revisado dónde vivirá el motivo cuando la app guarde datos.
+
+**Dos cosas que ningún revisor marcó**
+- El caso «sin `--motivo` responde motivo no válido» no tiene test.
+- Las reservas viven en memoria, así que `canceladas` lanzado como comando aparte siempre sale vacío: cada llamada es un proceso nuevo. Pasa igual con el resto de la app y es anterior a esta feature, pero conviene que lo sepas.
+
+**Aviso del kit:** esta sesión ha cargado el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

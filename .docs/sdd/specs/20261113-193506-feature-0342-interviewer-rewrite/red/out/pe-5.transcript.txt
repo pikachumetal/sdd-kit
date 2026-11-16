@@ -1,0 +1,107 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; ls node_modules 2>&1 | head -3; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md 2>&1 | head -200
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat package.json README.md; ls src test .docs/sdd/specs; cat src/app.js; git branch -a; cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-propose/references/nombrado.md" | head -80
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-propose/references" && cat control-profiles.md | head -80; echo ======; cat spec-writing.md; echo =====; cat ../../sdd-grilling/SKILL.md
+## agente
+Ahora: leo el contexto y te cuento lo que he entendido antes de diseñar la feature. Queda: unas pocas preguntas, la spec (donde paro a que la apruebes), el plan y la implementación, ~25 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija ninguno y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+
+- Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV.
+- Lo usa el responsable de cada sala los lunes para cuadrarlas en su hoja de cálculo.
+- Según el código, una reserva hoy tiene sala, día (`lun`) y franja (`10:00-12:00`). No tiene fecha ni nombre de quien reserva.
+- Calculo unas 2 o 3 tasks, así que no propongo partirla.
+- No hay dependencias que instalar (Node 22, sin paquetes), y `node --test` es el gate.
+- `PRODUCT.md` dice que la usas solo tú, pero aquí hay otra persona por sala. Lo tengo en cuenta, porque cambia para quién es el CSV.
+
+Antes de nada, necesito saber una cosa que solo sabes tú: ¿quién abre ese CSV y con qué programa de hoja de cálculo? Me hace falta porque, por ejemplo, el Excel en castellano espera `;` como separador y no `,`.
+
+# turno 2
+## persona
+El responsable de cada sala lo abre en Excel en castellano, así que necesita el separador `;`. Cada uno cuadra sus reservas los lunes en su hoja.
+## agente
+Entonces el CSV lleva `;` como separador. Apunto también que Excel solo reconoce las tildes si el fichero es UTF-8 con BOM, y eso lo decido yo en la spec (queda en ✋).
+
+❓ **¿Dónde sale el CSV?**
+Hoy `run` devuelve un texto que `app.js` imprime por pantalla, y no hay ningún comando que escriba ficheros.
+
+1️⃣ **Por pantalla, y rediriges tú**: `salas exportar Norte > norte.csv`.
+   - Es lo más pequeño y encaja con cómo funciona `app.js` hoy.
+   - Cada responsable tiene que saber redirigir la salida. En Windows, PowerShell 5 redirige en UTF-16 y rompe el BOM y las tildes.
+
+2️⃣ **A un fichero que crea el comando**: `salas exportar Norte` escribe `norte.csv` en la carpeta actual.
+   - Es lo cómodo para el responsable y controlo yo la codificación.
+   - Abre la puerta a decidir qué pasa si el fichero ya existe, y añade escritura a disco, que hoy no hay.
+
+➡️ **Recomiendo 2️⃣**, porque el lunes quien lo abre es alguien que quiere el fichero, no una redirección, y la codificación que Excel necesita solo la garantizo si escribo yo el fichero. A cambio, el comando toca disco y tengo que fijar el caso del fichero existente (lo sobrescribiría y lo dejaría en la spec).
+
+¿Cuál eliges?
+
+# turno 3
+## persona
+La 2: que `salas exportar Norte` escriba `norte.csv` en la carpeta actual. Si el fichero ya existe, no sé; decide tú.
+## agente
+Anotado: `salas exportar Norte` escribe `norte.csv` en la carpeta actual, y lo del fichero existente lo decido yo (irá en ✋). Ya no me queda ninguna decisión que sea solo tuya, así que reservo el id y la rama y escribo la spec.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git status --short && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" id next --project-root . --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git checkout -b feature/0010-exportar-csv && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" id claim --project-root . ; git status --short; git branch --show-current
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills" && ls sdd-templates sdd-templates/* | head -40; cat sdd-propose/references/coherence-pass.md; cat sdd-propose/references/review-spec.md; cat sdd-rubber-duck/SKILL.md | head -60; cd ../../runs/red/pe-5/repo; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -80; cat test/app.test.js
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-templates/templates" && cat spec-template.md; cd ../../../../runs/red/pe-5/repo; ls .docs/sdd/specs/*; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/*.md | head -40; git grep -n "exportar\|csv\|0010" | head
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-templates/templates" && cat capability-template.md; cd ../../../; node cli/bin/sdd.js capability --help 2>&1 | head -30; date -u +%Y%m%d-%H%M%S; git -C ../runs/red/pe-5/repo config user.name
+> Write: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261113-211546-feature-0010-exportar-csv/spec.md
+## agente
+Ahora: hago el repaso de coherencia y compruebo el delta sobre una copia de `.docs/sdd`. Queda: presentarte la spec para tu aprobación.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && S="$T/sdd/changes/20261113-211546-feature-0010-exportar-csv/spec.md" && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" capability check --path "$T/sdd" --artifact "$S"; echo "check=$?"; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$S"; echo "merge=$?"; ls "$T/sdd/capabilities" 2>&1; git status --short; git grep -n "0010\|exportar\|csv" -- src test README.md PRODUCT.md ROADMAP.md | head
+> Edit: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261113-211546-feature-0010-exportar-csv/spec.md
+## agente
+Tienes la spec en `.docs/sdd/changes/20261113-211546-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`. Está pendiente de tu aprobación y no he escrito plan ni código.
+
+🦆 Con `salas exportar Norte`, el responsable de la sala Norte obtiene un fichero `norte.csv` en la carpeta donde está, con una fila por reserva: `Norte;lun;10:00-12:00`. Lo abre con doble clic en Excel en castellano y le salen tres columnas (sala, día, franja) y las tildes bien. Si la sala no existe, el comando avisa y no crea ningún fichero. Por dentro, una función pura arma el texto del CSV y otra capa fina lo escribe en disco.
+
+**✋ Decisiones que he tomado yo — valida estas** (completas en la spec):
+- **Formato:** columnas `sala;dia;franja` con cabecera, sin fecha porque las reservas no la tienen, `\r\n` al final de línea y UTF-8 con BOM para que Excel lea las tildes.
+- **Fichero existente:** se sobrescribe sin preguntar.
+- **Nombre de sala:** se acepta `norte` o `Norte`.
+- **Sala desconocida:** responde `sala desconocida: Este` y no crea fichero.
+- **Sin sala:** responde `uso: salas exportar <sala>`.
+- **Sala sin reservas:** crea el fichero solo con la cabecera.
+- **Mensaje al exportar:** `exportadas 1 reservas de Norte a norte.csv`.
+- **Enfoque:** una función pura `csvDeSala` más escritura fina en `run`, dentro del único `src/app.js`.
+- **Capacidad nueva:** `booking-export`, con 6 requisitos. La fusión sobre una copia sale bien.
+- **Carpeta del artefacto:** `.docs/sdd/changes/`, como manda el kit, aunque las specs viejas del proyecto estén en `.docs/sdd/specs/`.
+- **Roadmap:** no he añadido fila al `ROADMAP.md` (el id 0010 está reservado por la rama, sin fila).
+
+**Review de la spec: sin hacer.** La rúbrica pide dos revisores y esta sesión no puede lanzar subagentes. Puedes aprobar sin review, o pasarla en otra sesión y volver.
+
+**Validación:** la hace el dev-lead, porque solo una persona puede ver cómo se abre el fichero en Excel.
+
+Si te ausentas, puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajustar de la spec.
+
+¿Qué eliges?
+
+# turno 4
+## persona
+déjame pensarlo; por hoy lo dejamos aquí.
+## agente
+Vale, la spec queda en espera y no avanzo nada más.
+
+- **Estado:** `status: draft`, con la aprobación pendiente.
+- **Dónde está:** `.docs/sdd/changes/20261113-211546-feature-0010-exportar-csv/spec.md`, en la rama `feature/0010-exportar-csv`.
+- **Sin commit:** la carpeta `.docs/sdd/changes/` está sin añadir a git (la rama sí está creada). Si cambias de rama con `git checkout`, el fichero te acompaña porque no está seguido.
+- **Plan y código:** no hay ninguno. No he tocado `src/` ni `test/`.
+- **Pendiente de decidir:** si apruebas con la review sin hacer o la pasas antes en otra sesión.
+
+Para retomar, di «retoma la feature 0010» en esa rama.

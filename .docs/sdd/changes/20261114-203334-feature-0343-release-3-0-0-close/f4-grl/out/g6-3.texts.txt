@@ -1,0 +1,52 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y presentarte el aviso, ~2 min.
+
+--- [20]
+Ya estoy en la rama `feature/0010-lista-espera` y la 0010 está reservada. Aún no he tocado código ni creado la spec.
+
+Antes de diseñar nada necesito entender el porqué, y eso solo lo sabes tú. Hoy `reservar` no comprueba si la sala está ocupada, y `libres` solo te lista las que quedan libres.
+
+**¿Qué vas a hacer con la lista de espera cuando la sala que quieres esté ocupada?**
+
+--- [22]
+Entendido: lo que quieres es dejar de vigilar `libres` a mano. Lo apunto como Intent. La antimeta es que acabes revisando la lista igual de a mano.
+
+Dato del repo, `src/app.js`: las reservas viven en memoria (`bookings` es una constante del proceso). Cada ejecución del CLI empieza de cero, así que `cancelar` en una ejecución no libera nada para otra. Esto condiciona qué puede hacer la lista de espera, y lo dejo para una decisión posterior.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+Es la decisión que más condiciona el resto de la spec.
+
+1️⃣ **Reserva automática al primero de la cola.** Al hacer `cancelar` sobre Norte, la reserva pasa a quien esperaba.
+`reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`.
+Luego `cancelar lun 10:00` → `cancelada lun 10:00; Norte reservada para ti`.
+Coste: reservas sin que lo confirmes, y hay que decidir qué hacer si ya no la quieres.
+
+2️⃣ **Aviso al liberarse, sin reservar.** La cancelación te avisa y tú reservas.
+`cancelar lun 10:00` → `cancelada lun 10:00; Norte libre, 1 en espera`.
+Coste: puedes perderla si otra persona reserva antes, y sigues haciendo un paso a mano.
+
+3️⃣ **Solo consulta.** Un comando `espera` lista tus esperas y marca cuáles ya están libres.
+`espera` → `Norte lun 10:00-12:00: libre ahora`.
+Coste: sigues teniendo que mirar tú, así que apenas mejora lo que haces hoy.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que volver a mirar cada rato. 1️⃣ es la única opción en la que no tienes que volver. A cambio, la reserva se crea sin pedirte confirmación, y en la spec dejaré anotado cómo darte de baja de la cola.
+
+--- [26]
+Vuelvo a contarlo más despacio.
+
+**Dónde estamos.** Estamos decidiendo qué hace la lista de espera en el momento en que alguien cancela la reserva que te bloqueaba. Es lo único que falta para que la lista te quite el trabajo de mirar `libres` a mano.
+
+**Un caso con datos.** Norte está reservada el lunes de 10:00 a 12:00 y tú quieres esa franja.
+
+1. Pides `reservar Norte` para el lunes de 10:00 a 12:00. Hoy no te dice que está ocupada. Con la lista de espera te diría `Norte ocupada; en espera (1.º)`, y tu nombre quedaría apuntado en la cola de esa sala y esa franja.
+2. El martes, quien tenía Norte cancela esa reserva.
+3. Aquí está lo que falta por decidir: qué pasa justo en ese momento, cuando Norte queda libre y tú estás primero en la cola.
+
+Hay tres formas de resolver ese momento:
+
+- El sistema te reserva Norte solo y te lo dice. Ya tienes la sala, aunque no hayas vuelto a mirar.
+- El sistema solo te avisa de que Norte está libre. Tienes que reservarla tú, y otra persona puede reservarla antes.
+- El sistema no hace nada. Tú preguntas con un comando y él te dice si ya está libre. Es parecido a mirar `libres`, pero solo de las salas que esperas.
+
+**¿Cuál de las tres quieres para ese momento?**
+

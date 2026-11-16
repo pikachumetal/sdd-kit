@@ -1,0 +1,80 @@
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261013-110000-feature-0023-cancelled-list\spec.md
+<<< 1	---
+2	id: 20261013-110000-feature-0023-cancelled-list
+3	feature: 0023
+4	title: Listado de canceladas
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-13
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Listado de canceladas
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `reports` — `canceladas` sustituye a `informe`.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. Cada línea del listado es «<sala> <día> — <motivo>».
+25	2. `informe` responde «usa canceladas».
+26	
+27	### Deci
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\mission.md
+<<< 1	# Misión — salas
+2	
+3	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+4	
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\reports.md
+<<< 1	# Capacidad — reports
+2	
+3	## Propósito
+4	
+5	los informes de la app de salas
+6	
+7	## Requisitos
+8	
+9	### El informe de canceladas agrupa por sala y da el total
+10	
+11	- GIVEN Norte lun cancelada con «sala ocupada» y Sur mar con «otro»
+12	- WHEN `informe`
+13	- THEN responde «Norte: lun (sala ocupada)», «Sur: mar (otro)» y «total: 2», en ese orden
+
+=== RESULTADO (5 turnos, 0.0883185 $)
+1. Crítico · Delta de comportamiento, `MODIFIED — El informe de canceladas agrupa por sala y da el total` · El requisito vivo (agrupa por sala y da total) se sustituye por «responde "usa canceladas"»: el MODIFIED conserva el título pero contradice el nombre y la intención de «retirada entera». El GIVEN «cualquier estado» es una excusa, no un escenario del requisito existente. · Cambiar a `REMOVED — El informe de canceladas agrupa por sala y da el total` (con motivo y qué lo sustituye), y la respuesta «usa canceladas» como `ADDED` aparte (o declarar que `informe` queda como alias de redirección).
+
+2. Crítico · Intent / Decisiones vs Delta · Contradicción interna: el dev-lead dijo que `canceladas` «sustituye entero a `informe`» («que nadie eche de menos el informe»), pero `informe` sigue existiendo y respondiendo «usa canceladas»; no se retira. · Decidir y alinear: o se retira `informe` (REMOVED, sin respuesta) o se conserva como redirección y se corrige la decisión con el dev-lead.
+
+3. Crítico · Delta, `ADDED — Canceladas lista sala, día y motivo` · Se pierde información del informe vivo: el **total** y la **agrupación por sala** y el **orden** («en ese orden») desaparecen sin declararlo; el «que nadie eche de menos» no se cumple. Tampoco se dice el orden de las líneas nuevas. · Declarar explícitamente qué se pierde (total, agrupación) en «Decisiones que he tomado yo» y fijar el orden del listado en el escenario, o conservar el total.
+
+4. Importante · Delta, `ADDED` · Faltan escenarios: sin canceladas (lista vacía), reserva cancelada sin motivo, varias en la misma sala, y reservas no canceladas que no deben aparecer. El «lee las reservas canceladas» del Approach no tiene escenario de exclusión. · Añadir escenarios GIVEN/WHEN/THEN para vacío, sin motivo y filtrado de no canceladas.
+
+5. Importante · Decisiones («✋») · La decisión 1 (formato «<sala> <día> — <motivo>») cambia el formato vivo («Norte: lun (sala ocupada)») y no justifica el cambio; la decisión 2 está presentada como del agente pero ya es del dev-lead en el cuerpo. Tampoco figura la decisión de **perder el total**, ni la de mantener `informe` vivo. · Listar en «✋» el cambio de formato, la pérdida del total y la permanencia de `informe` como redirección.
+
+6. Importante · Scope · El Scope dice «Entra: la retirada de `informe`» pero el delta no retira, lo redirige; es un alcance que no coincide con el comportamiento (y el «No entra» menciona «el motivo al cancelar (ya existe)» sin referencia a la capacidad que lo recoge, que no está en `capabilities/`). · Reescribir el Scope según la decisión del punto 2 y referenciar dónde vive el motivo al cancelar (¿otra capacidad? si falta en `capabilities/`, declararlo).
+
+7. Importante · Capacidades / Dónde se prueba · Se dice «`canceladas` sustituye a `informe`» pero `test/cancel.test.js` es el modelo del test del listado y no se indica qué pasa con los tests existentes de `informe` (que fallarán contra «usa canceladas»). El gate es `node --test` entero en verde. · Añadir a «Dónde se prueba» qué test(s) de `informe` se actualizan o eliminan, y no solo el nuevo.
+
+8. Menor · Delta, `MODIFIED` · «GIVEN cualquier estado» no es verificable como precondición concreta; los escenarios deben partir de un estado reproducible. · Dar un GIVEN concreto (p. ej. «hay una cancelada» y «no hay ninguna») para `informe`.
+
+9. Menor · Reglas de la capacidad (5 bis) · El delta introduce un comando nuevo, un texto de aviso («usa canceladas») y un formato de línea, pero la spec no declara las cinco reglas (datos, idioma de nombres, límites, avisos, conflicto) ni «no aplica». El nombre `canceladas` no se justifica frente a la constitution (castellano: correcto, pero sin declarar). · Añadir sección «Reglas de la capacidad» con las cinco reglas o «no aplica» y el valor tomado de la constitution.
+
+10. Menor · Ejemplos del delta · Los datos (Norte, Sur, «sala ocupada», «otro») son inventados y no contradicen la constitution; sin embargo el motivo «otro» no está declarado como valor del catálogo de motivos que dice «ya existe». · Confirmar que «sala ocupada» y «otro» son motivos válidos del catálogo existente, o marcarlos como ilustrativos.

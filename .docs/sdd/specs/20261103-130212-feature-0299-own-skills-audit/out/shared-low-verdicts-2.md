@@ -1,0 +1,212 @@
+- S359 · confirmado · nuevo: no crear carpetas vacías ni `.gitkeep` en `.docs/sdd/` · iguales · git doesn't version empty folders, and none is created empty or with `.gitkeep` ‖ Git doesn't version empty folders: no folder of `.docs/sdd/` is created empty or with `.gitkeep`.
+- S360 · descartado · frontmatter
+- S361 · confirmado · P18 · iguales · Declare model and effort on every dispatch: an omitted model inherits your session's ‖ **Model and effort on every dispatch**: the `model` and the agent type `sdd-kit:effort-<level>` the calling skill names; omitted, both inherit the session's.
+- S362 · confirmado · nuevo: aviso de fase `Ahora:`/`Queda:` al cambiar de paso · iguales · Each change of step opens with a plain line: `Ahora: <what you do, without a step number>. Queda: ‖ every time you move from one step to the next, your message opens with a plain line: `Ahora: <qué haces, dicho sin número de paso>. Queda:
+- S363 · descartado · frase común
+- S364 · descartado · frase común
+- S365 · descartado · frase común · archive:14 es la cláusula de escalada; propose:46 define patch, no escala
+- S366 · confirmado · nuevo: leer `sdd-kit.local.json` aunque el listado de la carpeta no lo muestre · iguales · read `.docs/sdd/sdd-kit.json` and `.docs/sdd/sdd-kit.local.json` (even if listing the folder doesn't show it) ‖ Read `.docs/sdd/sdd-kit.local.json` even if it doesn't show when listing the folder
+- S367 · descartado · frase común · patch-flow:15 describe patch.md; propose:54 es la pregunta del carril
+- S368 · descartado · frase común
+- S369 · descartado · frase común · propose:60 no lleva la línea `Política de modelos:`
+- S370 · descartado · frase común
+- S371 · descartado · frase común
+- S372 · descartado · frase común · propose:72 da la cadena del gate; archive:51 no
+- S373 · descartado · frase común · propose:102 define «solución fijada», no la cláusula de escalada
+- S374 · descartado · art-ii
+- S375 · descartado · frase común · propose:60 no trata la enmienda de una task cerrada
+- S376 · descartado · frase común
+- S377 · descartado · frase común
+- S378 · descartado · frase común · dos disparadores distintos (fila nueva / fichero cambiado), misma respuesta de `unattended`
+- S379 · confirmado · P11 · iguales · No line, something user-visible, or no human approval (patch: dev-lead phrase): the user validates. ‖ `agente` no vale si solo lo aprobó el agente (spec delegada sin frase que lo nombre, `unattended`, patch sin la frase del dev-lead).
+- S380 · confirmado · P19 · iguales · `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>` ‖ Walkthrough: `Validación diferida: <fecha> · «<frase literal>» · disparador: <feature, release o uso con dueño>`
+- S381 · descartado · frase común · dos líneas distintas de patch.md §4
+- S382 · confirmado · K19 · iguales · (UTC timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` ‖ Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- S383 · confirmado · K19 · iguales · `<id>` by the mode of `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `tracker`): in `tracker`, the ticket, and `0000` without one ‖ `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (`ids.mode`; sin campo ⇒ `tracker`). En `tracker`: el id del ticket en el gestor del proyecto, `0000` si no hay.
+- S384 · confirmado · P17 · iguales · a fresh subagent per task (no context pollution) instead of one context doing every task; a review after each task ‖ **SDD** (`subagent`): a fresh implementer per task and a fresh reviewer after each, then the whole-branch review.
+- S385 · descartado · frase común · validación con entorno vs método de ejecución fijado
+- S386 · descartado · frase común
+- S387 · descartado · frase común
+- S388 · descartado · frase común
+- S389 · descartado · frase común
+- S390 · descartado · frase común · una es territorio de entrevista, la otra el campo Intent de la plantilla
+- S391 · confirmado · nuevo: con 4 o más tasks en feature full, presentar el diseño por secciones antes de escribir la spec · difieren: spec-writing añade las excepciones (lite, spike, delegada, `unattended`, «empieza ya») que propose:60 no dice · With 4 or more tasks foreseen in a full feature, before writing `spec.md` present the design by sections, as the reference says. ‖ No sections with 3 tasks or fewer, in lite, in a spike, with the spec approved by delegation, in `unattended`, or once the user asks to start right away
+- S392 · descartado · frase común
+- S393 · descartado · frontmatter
+- S394 · descartado · frontmatter
+- S395 · descartado · frase común
+- S396 · descartado · frase común
+- S397 · confirmado · P5 · iguales · check with step 1 whether its branch is open, and give the launch prompt traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md) ‖ give its launch prompt, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md)
+- S398 · descartado · frase común
+- S399 · confirmado · nuevo: patch pendiente = fila de Now con `**Carril:** patch` (2.x: «Patch:») · iguales · | A patch in Now, with `**Carril:** patch` | «Próximo», with «Patch:» at the start of the item | ‖ A pending patch is a row of Now with `**Carril:** patch` in its brief.
+- S400 · descartado · frase común
+- S401 · descartado · preámbulo
+- S402 · descartado · fuente
+- S403 · descartado · frase común
+- S404 · descartado · productor/consumidor
+- S405 · descartado · plantilla
+- S406 · descartado · productor/consumidor
+- S407 · descartado · productor/consumidor
+- S408 · descartado · plantilla
+- S409 · descartado · plantilla
+- S410 · confirmado · P12 · difieren: capability-template añade que lo aprueba el dev-lead y que la capacidad es un sustantivo · declare it in the decisions with its name in English kebab-case: the slug is a file name, even if the content is in Spanish. ‖ Su slug (el nombre del fichero) va en inglés kebab-case aunque el contenido vaya en castellano (`invoicing.md`, no `facturacion.md`), y lo aprueba el dev-lead.
+- S411 · descartado · plantilla
+- S412 · descartado · plantilla
+- S413 · descartado · plantilla
+- S414 · descartado · plantilla
+- S415 · confirmado · nuevo: lista de las nueve causas de la deuda técnica · iguales · the root that vanishes with the remedy (`debt-template.md` defines them): `entorno de la máquina`, `carga o paralelismo`, `herramienta del kit` ‖ **Causa**: una de estas, y la que vale es la raíz que desaparece con el remedio.
+- S416 · descartado · plantilla
+- S417 · descartado · plantilla
+- S418 · descartado · plantilla
+- S419 · descartado · plantilla
+- S420 · descartado · plantilla
+- S421 · descartado · plantilla
+- S422 · descartado · plantilla
+- S423 · descartado · plantilla
+- S424 · descartado · plantilla
+- S425 · confirmado · P13 · iguales · **URL**: dónde responde la aplicación arrancada con el comando «Arrancar». ‖ **URL**: <dónde responde la aplicación con el comando «Arrancar», p. ej. `http://localhost:4200`>
+- S426 · confirmado · P13 · iguales · **Temas**: cómo se activa cada uno. ‖ **Temas**: <cómo se activa cada uno, p. ej. oscuro con `?theme=dark`>
+- S427 · descartado · plantilla
+- S428 · confirmado · P19 · difieren: archive añade `· no detalló qué probó` para un «validado» pelado y que un «Validado por el dev-lead» no dado es invención; la plantilla no · `Validado: <fecha> · «<frase literal>»` (with `· no detalló qué probó` for a bare «validado» or «sí») ‖ `Validado: <fecha> · «<frase literal>»`,
+- S429 · confirmado · P19 · iguales · then `Validación por el agente: <fecha> · <evidencia>`. ‖ con `Validación: agente`, `Validación por el agente: <fecha> · <evidencia>`.
+- S430 · descartado · frase común
+- S431 · descartado · plantilla
+- S432 · descartado · frase común · una aprueba el plan y el método, la otra lista decisiones del plan
+- S433 · confirmado · P18 · iguales · The effort travels in the agent type (`sdd-kit:effort-low`, `-medium`, `-high`) next to `model`. ‖ <modelo **y** effort, los dos explícitos, con el despacho literal: `subagent_type: sdd-kit:effort-<low|medium|high>` + `model: <sonnet|opus>`
+- S434 · descartado · frase común · RED tests sin commitear vs línea Modelo del plan
+- S435 · descartado · plantilla
+- S436 · descartado · plantilla
+- S437 · descartado · plantilla
+- S438 · descartado · plantilla
+- S439 · descartado · plantilla
+- S440 · descartado · plantilla
+- S441 · confirmado · nuevo: la versión de la release la dice el usuario, nunca una supuesta · iguales · con la versión que dice el usuario, nunca una supuesta. ‖ `<N>` es la versión que dice el usuario (`1.3`, `2.3.0`), nunca una supuesta
+- S442 · confirmado · nuevo: la versión de la release la dice el usuario, nunca una supuesta · iguales · with the version the user gives, never an assumed one ‖ `<N>` es la versión que dice el usuario (`1.3`, `2.3.0`), nunca una supuesta
+- S443 · descartado · plantilla
+- S444 · descartado · plantilla
+- S445 · descartado · plantilla
+- S446 · descartado · plantilla
+- S447 · confirmado · nuevo: una capacidad nueva se declara en «Decisiones que he tomado yo» · difieren: capability-template añade que `sdd-archive` nunca la crea por su cuenta · La crea la spec que la declara en "Decisiones que he tomado yo — valida estas" ‖ Una capacidad nueva va en «Nuevas» y también en «Decisiones que he tomado yo»
+- S448 · descartado · frase común
+- S449 · descartado · productor/consumidor
+- S450 · descartado · plantilla
+- S451 · confirmado · P11 · difieren: validation-template no repite cuándo no vale (algo visible, sin aprobación humana) · No line, something user-visible, or no human approval (patch: dev-lead phrase): the user validates. ‖ **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`.
+- S452 · descartado · plantilla
+- S453 · confirmado · K11 · difieren: validation-template omite las medidas con valor y esperado y los hallazgos resueltos o justificados · La presentación (la parada de `pair`, la validación de `sdd-archive`) lleva el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado ‖ Solo si alguna task tiene «Verificación visual»: su criterio, la salida del detector por viewport y la ruta de cada captura.
+- S454 · descartado · plantilla
+- S455 · confirmado · P10 · difieren: el patch pega una línea («Esfuerzo real») con su alternativa fuera de Claude Code; el walkthrough pega tres (hilo, subagentes, coste) · la línea de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, pegada tal cual ‖ esta línea, la de subagentes y la del coste se pegan tal cual de `sdd session tokens --path <worktree> --branch <rama de la feature> --artifact <carpeta>`
+- S456 · confirmado · P19 · difieren: archive pide `Validado: <fecha> · «<frase literal>»`; la plantilla del walkthrough, `Validado por el dev-lead: <fecha> · <qué probó>` · `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>`, `Validación en campo: …` or `Validación por el agente: …` ‖ Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
+- S457 · confirmado · P19 · difieren: patch-template pide `Validado: <fecha> · «<frase literal>»`; la plantilla del walkthrough, `Validado por el dev-lead: <fecha> · <qué probó>` · `Validado: <fecha> · «<frase literal>»`, ‖ Validado por el dev-lead: <fecha> · <qué probó> **o** Validación diferida: <fecha> · «<frase literal>» ·
+- S458 · confirmado · P19 · iguales · then `Validación por el agente: <fecha> · <evidencia>`. ‖ con `Validación: agente` en la spec,
+- S459 · descartado · frase común
+- S460 · descartado · art-ii
+- S461 · confirmado · P14 · iguales · The line names every command that ran before the arrow, the unit suites first: ‖ The commands that ran go before the arrow, each in backticks, separated by ` · `.
+- S462 · descartado · frase común
+- S463 · descartado · frase común · comparten la ruta de `patch.md`/skill, no el mandato
+- S464 · descartado · frase común
+- S465 · confirmado · P18 · iguales · Dispatch it with `description: "Implement Task N: <task name>"`, the `model` and the `subagent_type` that the task's **Modelo** line names (an omitted model inherits the session's, the most expensive) ‖ Specify model and effort on every dispatch; an omitted model inherits the session's.
+- S466 · confirmado · nuevo: modelo de cada eje de la revisión final: Spec y Arquitectura opus, Código sonnet, también en Native · iguales · sus ejes van con el modelo de `sdd-verify` —Spec y Arquitectura con `sdd-kit:effort-high` + `opus`, Código con `sdd-kit:effort-high` + `sonnet`— ‖ Spec y Arquitectura con `subagent_type: sdd-kit:effort-high` + `model: opus`, Código con `subagent_type: sdd-kit:effort-high` + `model: sonnet`—, también en Native
+- S467 · descartado · plantilla
+- S468 · descartado · fuente
+- S469 · descartado · frase común · archive:51 no da la cadena de dónde sale el gate; worktrees sí
+- S470 · descartado · frase común
+- S471 · descartado · frase común
+- S472 · descartado · frase común
+- S473 · descartado · fuente
+- S474 · descartado · frase común
+- S475 · descartado · fuente
+- S476 · descartado · fuente
+- S477 · descartado · frase común
+- S478 · descartado · frase común
+- S479 · descartado · frase común
+- S480 · descartado · frase común
+- S481 · confirmado · nuevo: sin suite previa, el gate de cierre corre una vez en el sync merge y es la suite de la validación · iguales · step 6 runs it once (g6); otherwise run the closing gate here. ‖ the closing gate runs once here, on the sync merge (on `HEAD` if `--sync` said `base: al día`)
+- S482 · confirmado · P14 · iguales · The line names every command that ran before the arrow, the unit suites first: ‖ Record each run with the `Gate:` line of `sdd-verify`, one entry per task, `<tarea>: saltada (<porqué>)` too
+- S483 · descartado · frase común
+- S484 · descartado · frase común
+- S485 · descartado · frase común
+- S486 · descartado · frase común
+- S487 · descartado · frase común
+- S488 · descartado · art-ii
+- S489 · confirmado · nuevo: tras el commit de cierre, `sdd merge --sync` en el worktree del cambio · iguales · Run `sdd merge --sync --project-root "<worktree>"` in its own call ‖ After the closing commit, in the change's worktree: `sdd merge --sync --project-root "<worktree>"`
+- S490 · descartado · frase común · casos distintos: base con cambios vs `base: al día`
+- S491 · confirmado · nuevo: el merge lleva `--verified-at` con el sha de la suite de la validación · iguales · The merge carries `--verified-at` with the sha of that run, or of the validation's suite if nothing ran. ‖ the merge carries `--verified-at <sha of the validation's suite>`
+- S492 · confirmado · nuevo: tras el sync merge la suite solo corre si hubo conflicto o cambió algo fuera de `.docs/` y `*.md` · difieren: archive mira lo que trajo la base; merge-recipe mide el diff desde el sha de la suite de la validación (`git diff --quiet`) · nothing runs if the base only brought `.docs/` or `*.md` and you resolved no conflict. ‖ only if you resolved a conflict or, since the sha of the validation's suite, something changed outside `.docs/` that isn't `*.md`
+- S493 · confirmado · nuevo: sin suite previa, el gate de cierre corre una vez en el sync merge y es la suite de la validación · iguales · the closing gate runs once here, on the sync merge (on `HEAD` if `--sync` said `base: al día`) ‖ run the closing gate once, as declared, on the sync merge (with `base: al día` there is none: on `HEAD`
+- S494 · confirmado · K28 · iguales · A red suite —here or in step 1— is contrasted by hand ‖ A red is contrasted by hand, and nothing merges before the contrast ends
+- S495 · confirmado · K28 · iguales · at once in a detached worktree of the base prepared as Step 2 of `sdd-worktrees` ‖ prepare it as Step 2 of `sdd-worktrees` says (dependencies; `env:setup` with `environments.md`)
+- S496 · descartado · frase común · archive:32 no trae la regla «pasa sin la rama, rojo en la rama»
+- S497 · descartado · frase común
+- S498 · confirmado · nuevo: `base: conflicto`: solo Markdown que solo añade lo resuelve el agente; si no, «No terminado» · iguales · Only Markdown whose sides only add: the agent resolves them as step 6 of `sdd-archive` says. ‖ only Markdown whose sides only add: step 6 of `sdd-archive`; otherwise «No terminado»: a person resolves
+- S499 · descartado · frase común
+- S500 · descartado · frase común · ambas citan `sdd-kit.local.json`; mandan cosas distintas
+- S501 · descartado · frase común
+- S502 · descartado · frase común
+- S503 · descartado · frase común
+- S504 · descartado · frase común
+- S505 · descartado · frase común
+- S506 · descartado · frase común
+- S507 · descartado · frase común
+- S508 · descartado · fuente
+- S509 · descartado · fuente
+- S510 · descartado · preámbulo
+- S511 · descartado · fuente
+- S512 · descartado · frase común
+- S513 · descartado · frase común
+- S514 · descartado · frontmatter
+- S515 · descartado · frase común
+- S516 · descartado · frase común
+- S517 · confirmado · nuevo: explore no deja artefactos: ni carpeta de spec, ni rama, ni código · iguales · Nothing persists: no spec folder, no branch, no kept code. ‖ Zero artifacts by default** — no spec folder, no branch, no code touched
+- S518 · descartado · frase común
+- S519 · descartado · art-ii
+- S520 · descartado · preámbulo
+- S521 · descartado · frase común
+- S522 · descartado · frase común
+- S523 · descartado · frase común
+- S524 · confirmado · P17 · iguales · SDD pays for a fresh implementer and a fresh reviewer on every task, each re-reading the codebase from zero; Native pays for one context (yours) plus one reviewer at the end. ‖ it costs a fresh context per task and per review, where Native costs one context plus one final reviewer.
+- S525 · descartado · frase común
+- S526 · descartado · frase común
+- S527 · confirmado · K7 · difieren: archive guarda cada pasada en el scratchpad de la sesión (para leer un rojo); implement redirige la salida larga al workspace del plan, por el contexto · Every run saves its whole output to a file in the session's scratchpad before any `tail`, `grep` or `Select-String` ‖ Redirect long test output to a file in the workspace and read its tail
+- S528 · descartado · frase común
+- S529 · descartado · frase común · `task start` vs `task brief`, comandos distintos
+- S530 · descartado · frase común
+- S531 · descartado · frase común
+- S532 · descartado · frase común
+- S533 · descartado · frase común · misma frase de contexto, resuelven cosas distintas
+- S534 · descartado · frase común
+- S535 · descartado · frase común
+- S536 · confirmado · K11 · difieren: archive añade la ruta de cada captura; implement:293 detalla cuándo vale «falso positivo» o «ya estaba» · the detector's output per viewport with each finding fixed or justified, each measurement with its value and the expected one if the criterion fixes a value ‖ computed-style measurements only if the criterion fixes a value. Don't mark it done with a detector finding open and unjustified
+- S537 · descartado · art-ii
+- S538 · descartado · frase común
+- S539 · descartado · frase común · elección de modelo del revisor vs alcance de revisión de commits
+- S540 · confirmado · K2 · iguales · with `Re-revisión:` already there, don't dispatch another: the walkthrough carries `sin revisar: <sha> — <qué cambia>` in ✋. ‖ once that re-review is out, it doesn't open another and goes to ✋ as `sin revisar: <sha> — <what it changes>`.
+- S541 · descartado · frase común
+- S542 · descartado · frase común
+- S543 · descartado · frase común
+- S544 · descartado · frase común · una registra los rulings, la otra los entrega al usuario
+- S545 · descartado · frase común
+- S546 · descartado · art-ii
+- S547 · descartado · frase común
+- S548 · confirmado · nuevo: dónde vive el criterio y la referencia de la verificación visual según el carril · iguales · En full van en el campo «Verificación visual» del plan; en lite, en el Approach de la spec; en el patch, la intención de §2 es el criterio ‖ | Criterio y referencia | en el plan | en el Approach de la spec | la intención; la captura del antes |
+- S549 · descartado · frase común
+- S550 · descartado · frase común
+- S551 · descartado · frase común
+- S552 · descartado · frase común
+- S553 · descartado · frase común
+- S554 · descartado · frase común
+- S555 · confirmado · K12 · difieren: archive añade «o el fix acabó interpretando requisitos» y la escalada al cierre · if the `Decisiones` list of `patch.md` §3 has a decision about what the user sees or can do with author `sin el dev-lead`, or the fix ended up interpreting requirements, it was a feature ‖ You're about to decide something the user sees or can do that neither the ticket nor the dev-lead fixed → it was a feature.
+- S556 · descartado · productor/consumidor · implement despacha; el prompt define qué devuelve el re-revisor
+- S557 · descartado · plantilla
+- S558 · descartado · preámbulo
+- S559 · descartado · preámbulo
+- S560 · descartado · frase común
+- S561 · confirmado · nuevo: init pregunta las cinco reglas de producto por su nombre · iguales · The five product rules, by name: where data lives (file, table, memory, client storage) · naming language (API, keys, messages) ‖ Ask the five product rules by name: without them the agent decides them at random in each feature.
+- S562 · descartado · frase común
+- S563 · descartado · frase común
+- S564 · descartado · frase común
+- S565 · descartado · frontmatter
+- S566 · descartado · frontmatter
+- S567 · descartado · preámbulo
+- S568 · descartado · art-ii
+Total: 210 entradas · 48 confirmadas (29 en grupos existentes, 19 nuevas) · 162 descartadas
+Releídas: 112 · cambian: S465, S527, S536

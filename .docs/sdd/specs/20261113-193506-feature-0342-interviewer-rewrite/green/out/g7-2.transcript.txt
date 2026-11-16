@@ -1,0 +1,139 @@
+
+# turno 1
+## usuario
+Revisa la configuración del kit y ponla al día.
+> Skill: sdd-kit:sdd-config
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a .docs/sdd; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/sdd-kit.local.json; echo ---; cat .gitignore; echo ---; cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit/skills/sdd-propose/references/control-profiles.md"
+> Skill: sdd-kit:sdd-grilling
+## agente
+Antes de preguntar por el perfil de control, hay que decidir a quién se aplica. Esa respuesta cambia en qué fichero se escribe.
+
+❓ **¿Para quién configuro `control.profile` y `execution`?**
+El proyecto no tiene ninguna de las dos claves en `sdd-kit.json` y no existe `sdd-kit.local.json`.
+1️⃣ **Para todo el equipo (`sdd-kit.json`)**: va a git y rige para cualquiera que trabaje en el repo. Si más adelante alguien quiere otro perfil, lo cambia en su fichero local.
+2️⃣ **Solo para ti (`sdd-kit.local.json`)**: queda fuera de git y no cambia nada al resto. Hay que añadir `.gitignore` con esa línea, porque ahora no existe.
+➡️ **Recomiendo 1️⃣**, porque las dos claves faltan en el proyecto, así que la elección pasa a ser la base del equipo. A cambio, tu preferencia queda fijada para todos hasta que alguien la sobrescriba en local.
+
+¿Cuál eliges?
+
+# turno 2
+## persona
+No sé.
+## agente
+Anoto `control.profile` y `execution` como pendientes. No escribo nada y siguen los valores por defecto: `delegate` y `auto`.
+
+Sigo con el cierre de las features. El repo tiene `main` como rama estable y `develop` como rama de integración (la rama actual).
+
+❓ **¿Cómo se integra una feature al cerrarla?**
+Ahora no hay política de `merge` declarada, así que el cierre preguntará cada vez.
+1️⃣ **Merge a `develop` con `--no-ff`, sin borrar el worktree**: la feature queda en un solo commit que se revierte de una vez. Borrar un worktree con cambios sin commitear no se puede deshacer, y eso lo decide una persona. Escribe `merge: {into: develop, noFf: true, removeWorktree: false}` en `sdd-kit.json`.
+2️⃣ **Otra combinación**: tú me dices la rama, si usa `--no-ff` y si se borra el worktree.
+3️⃣ **No declararlo**: el cierre sigue preguntando cada vez.
+➡️ **Recomiendo 1️⃣**, porque `main` y `develop` siguen git-flow y esa combinación es la más segura. A cambio, el worktree se borra a mano después de cada cierre.
+
+¿Cuál eliges?
+
+# turno 3
+## persona
+La 1️⃣: merge a `develop` con `--no-ff` y sin borrar el worktree; lo borro yo a mano después del cierre.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && python -c " import json p='.docs/sdd/sdd-kit.json' d=json.load(open(p)) d['merge']={'into':'develop','noFf':True,'removeWorktree':False} json.dump(d,open(p,'w'),indent=2);open(p,'a').write('\n') " && cat .docs/sdd/sdd-kit.json
+## agente
+Escrito en `sdd-kit.json`: `merge: {into: develop, noFf: true, removeWorktree: false}`.
+
+Ahora toca el push, que sí depende de que `merge` esté declarado.
+
+❓ **¿Hago push de `develop` a su remoto tras el merge del cierre, sin preguntar?**
+1️⃣ **Sí (`merge.push: true`)**: `develop` es la rama compartida, y un merge sin push no lo ve nadie más. El push de `main`, los tags y cualquier otro push siguen siendo decisión tuya.
+2️⃣ **No (`merge.push: false`)**: el cierre se queda en local y haces el push tú.
+➡️ **Recomiendo 1️⃣**, porque con `main` estable y `develop` de integración, la integración debe llegar al remoto. A cambio, un merge con un error llega al remoto antes de que lo revises.
+
+¿Cuál eliges?
+
+# turno 4
+## persona
+Sí, haz push de `develop` tras el merge (`merge.push: true`). El push de `main`, los tags y cualquier otro push siguen siendo decisión mía, y lo de quién valida: manual.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && python -c " import json p='.docs/sdd/sdd-kit.json' d=json.load(open(p)) d['merge']['push']=True d['validation']={'mode':'manual'} json.dump(d,open(p,'w'),indent=2);open(p,'a').write('\n') " && cat .docs/sdd/sdd-kit.json
+## agente
+Escrito en `sdd-kit.json`:
+- `merge.push: true`.
+- `validation.mode: manual`.
+
+Quedan sin tocar el push de `main`, los tags y cualquier otro push.
+
+Sigo con los frenos de ejecución.
+
+❓ **¿Te valen los frenos por defecto?**
+Son hasta 3 agentes en paralelo, un aviso tras 8 minutos de silencio entre pasos y otro tras 20 en un comando largo.
+1️⃣ **Sí, los de por defecto**: no escribo nada y siguen aplicando esos valores.
+2️⃣ **Números propios**: me dices el máximo de agentes y los minutos de cada aviso. Los escribo en `control.maxParallelAgents` y `control.silence.*`.
+➡️ **Recomiendo 1️⃣**, porque son los valores del kit y no hay nada en el proyecto que pida otros. A cambio, si una revisión tarda más de 8 minutos sin dar señales, saltará el aviso.
+
+¿Cuál eliges?
+
+# turno 5
+## persona
+Los de por defecto: opción 1, como recomiendas.
+## agente
+Los frenos por defecto no escriben nada y siguen aplicando.
+
+Sigo con la revisión final.
+
+❓ **Cuando la revisión final devuelve hallazgos Minor, ¿entran en la pasada de fix o van al ledger como diferidos?**
+1️⃣ **`defer`**: van al ledger como diferidos. Un Minor no cambia lo que recibe quien usa el producto, y cada arreglo alarga la pasada de fix. Escribe `review.minors: defer`.
+2️⃣ **`fix`**: entran en la pasada de fix y se cierran en cada feature.
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe quien usa el producto. A cambio, los Minor se acumulan en el ledger hasta que alguien los triage.
+
+¿Cuál eliges?
+
+# turno 6
+## persona
+No sé. La hoja no cubre los hallazgos Minor, así que no tengo criterio para elegir entre `defer` y `fix`.
+## agente
+Anoto `review.minors` como pendiente. No escribo nada y aplica `defer`.
+
+Queda la tabla de precios. Antes de preguntar, leo la página de precios.
+> ToolSearch: select:WebFetch
+> WebFetch: https://platform.claude.com/docs/en/about-claude/pricing
+> Grep: ^\| Claude (Opus|Sonnet|Haiku|Fable|Mythos)
+## agente
+Leí la página de precios (2026-11-13). Esta es la tabla que propongo, con el modelo actual de cada familia, en USD por millón de tokens:
+
+| Modelo | `input` | `cacheWrite5m` | `cacheWrite1h` | `cacheRead` | `output` |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Haiku 5.5 tiene dos tramos de precio. La fila usa el de prompts de hasta 100.000 tokens. Por encima, el precio es cinco veces mayor.
+
+❓ **¿Escribo esta tabla de precios para que el cierre dé el coste de la sesión?**
+1️⃣ **Sí**: la escribo en `sdd-kit.json` como `pricing`, con `source` (la página) y `updated: 2026-11-13`.
+2️⃣ **No**: no escribo nada y el cierre dirá «sin precio».
+➡️ **Recomiendo 1️⃣**, porque son los precios publicados hoy de los tres modelos actuales. A cambio, hay que releer la página cuando cambien los precios o salga un modelo nuevo.
+
+¿Cuál eliges?
+
+# turno 7
+## persona
+Elijo la 1️⃣: escribe la tabla como `pricing` en `sdd-kit.json`, con `source` (la página de precios) y `updated: 2026-11-13`.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && python -c " import json p='.docs/sdd/sdd-kit.json' d=json.load(open(p)) def m(i,w5,w1,r,o): return {'input':i,'cacheWrite5m':w5,'cacheWrite1h':w1,'cacheRead':r,'output':o} d['pricing']={'source':'https://platform.claude.com/docs/en/about-claude/pricing','updated':'2026-11-13','usdPerMillionTokens':{ 'claude-opus-5-5':m(4,5,8,0.20,20), 'claude-sonnet-5-5':m(2,2.5,4,0.10,10), 'claude-haiku-5-5':m(0.10,0.125,0.20,0.01,0.50)}} json.dump(d,open(p,'w'),indent=2);open(p,'a').write('\n') " && python -c "import json;json.load(open('.docs/sdd/sdd-kit.json'));print('ok')"; git status --short
+## agente
+Escribí `pricing` en `sdd-kit.json` con los tres modelos, `source` y `updated: 2026-11-13`. El JSON es válido. No he hecho commit.
+
+**Decidido por ti y escrito en `sdd-kit.json`**
+- `merge`: `into: develop`, `noFf: true`, `removeWorktree: false` y `push: true`.
+- `validation.mode: manual`.
+- `pricing`: Opus 5.5, Sonnet 5.5 y Haiku 5.5, este último con el tramo de hasta 100.000 tokens.
+
+**Sin escribir, con el valor por defecto**
+- Frenos: 3 agentes en paralelo, aviso a los 8 minutos de silencio entre pasos y a los 20 en un comando largo. Los aceptaste tal cual.
+
+**Pendientes** (dijiste «no sé», así que no escribí nada)
+- `control.profile` y `execution`: aplican `delegate` y `auto`.
+- `review.minors`: aplica `defer`.
+
+**No preguntado**
+- `validation.startEnvironment` es personal y lo pregunté solo si lo pedías tú. Aplica `false`. `ids.mode: sequence` ya tenía valor.
+
+**Nota sobre el commit**
+- Si quieres commitear, el cambio es solo `sdd-kit.json`.

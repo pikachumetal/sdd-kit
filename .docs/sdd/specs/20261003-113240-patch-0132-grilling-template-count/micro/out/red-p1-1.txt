@@ -1,0 +1,23 @@
+Esta es la pregunta que le haría ahora:
+
+---
+
+❓ **¿En qué formato guardamos las reservas en disco?**
+
+Lo que he encontrado:
+- `tech-stack.md` dice que el proyecto usa Node 22 sin dependencias externas y que ahora las reservas viven en memoria y se pierden al salir.
+- `tech-stack.md` no fija qué versión concreta de Node 22 se usa.
+- Node trae SQLite integrado (`node:sqlite`). Según la [documentación de Node 22](https://nodejs.org/docs/latest-v22.x/api/sqlite.html), existe desde la 22.5.0. Hasta la 22.12 hay que arrancar Node con `--experimental-sqlite`. Desde la 22.13.0 ya no hace falta, pero sigue siendo experimental (nivel 1.1, «en desarrollo activo»).
+
+🅰️ **Un archivo JSON**, que se lee al arrancar y se reescribe en cada `reservar` o `cancelar`. Funciona con cualquier Node 22, no añade dependencias y el archivo se puede leer a mano. A cambio, si dos personas reservan a la vez puede perderse una reserva:
+`reservar Norte lunes 10-11` (Ana) y `reservar Sur lunes 10-11` (Luis) al mismo tiempo → el archivo solo guarda `Sur lunes 10-11`, y la reserva de Ana desaparece sin ningún aviso.
+
+🅱️ **SQLite integrado (`node:sqlite`)**. Las dos reservas a la vez se guardan bien:
+`reservar Norte lunes 10-11` y `reservar Sur lunes 10-11` → aparecen las dos en `libres 10-11`.
+A cambio, el proyecto pasa a necesitar Node 22.13 o superior (o el flag, desde la 22.5), dependemos de una API que Node sigue marcando como experimental y que puede cambiar, y el archivo ya no se puede leer ni arreglar a mano.
+
+➡️ **Te recomiendo 🅰️**, porque `salas` es una CLI que se ejecuta y termina, y la ficha técnica no dice nada de que la usen varias personas a la vez. Con JSON no subimos la versión mínima de Node ni dependemos de algo experimental. A cambio, si algún día la usan varias personas a la vez, podría perderse una reserva sin aviso, y habría que pasar a 🅱️.
+
+---
+
+Pregunto el formato primero porque de él dependen las demás decisiones de guardado: dónde va el archivo, cómo se llama y qué pasa si está dañado.

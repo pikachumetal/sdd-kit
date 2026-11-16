@@ -1,0 +1,163 @@
+
+>>> Skill: sdd-kit:sdd-agent-writing
+<<< Launching skill: sdd-kit:sdd-agent-writing
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0151-retro-agent-writing\.temp\k0151\skills\sdd-agent-writing\references\skill-mechanics.md
+<<< 1	# Skill mechanics
+2	
+3	What changes when the document is a skill. From `writing-for-agents` (invocation) and `writing-skills` of superpowers 7.0.0 (form and discovery).
+4	
+5	### Invocation
+6	
+7	Two choices, trading the two loads:
+8	
+9	- A **model-invoked** skill keeps a `description`, so the agent can fire it autonomously, and other skills can reach it. You can still type its name: model-invocation always _includes_ user reach; a description only ever adds agent discovery, never removes the human's. The description is the skill's top-level context pointer, forced to stay loaded at all times:
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0151-retro-agent-writing\.temp\k0151\skills\sdd-agent-writing\references\skill-testing.md
+<<< 1	# Testing skills
+2	
+3	From `writing-skills` and `testing-skills-with-subagents` of superpowers 7.0.0. In a project, a light test is enough: one scenario, run or written next to the skill. In the kit's repo, RED and GREEN by its constitution (Art. I) and `tech-stack.md`, «Baterías por skill».
+4	
+5	## The Iron Law (Same as TDD)
+6	
+7	```
+8	NO SKILL WITHOUT A FAILING TEST FIRST
+9	```
+10	
+11	This applies to NEW skills AND EDITS to existing skills.
+12	
+13	Write skill before testing? Delete it. Start over.
+14	Edit skill without testing? Same violation.
+15	
+16	**No exceptions:**
+17	- Not for "simple
+
+>>> Bash: ls -a; ls -a db .claude .claude/skills 2>&1 | head -40; sed -n 1,80p db/migrate.js 2>&1; ls .docs/sdd 2>&1 | head
+<<< ./
+../
+.claude/
+.docs/
+.git/
+db/
+package.json
+README.md
+src/
+test/
+.claude:
+./
+../
+skills/
+
+.claude/skills:
+./
+../
+avisos/
+exportes/
+
+db:
+./
+../
+migrations/
+sed: can't read db/migrate.js: No such file or directory
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: ls -R db .claude/skills | head -40; cat package.json; cat .claude/skills/avisos/SKILL.md; head -30 db/migrations/* | head -80; grep -n -i -E "migra|sqlite|salas.db" -r README.md .docs/sdd/*.md | head -20
+<<< .claude/skills:
+avisos/
+exportes/
+
+.claude/skills/avisos:
+SKILL.md
+
+.claude/skills/exportes:
+references/
+report-template.md
+SKILL.md
+
+.claude/skills/exportes/references:
+formatos.md
+
+db:
+migrations/
+
+db/migrations:
+0001-rooms.sql
+{"type": "module"}
+---
+name: avisos
+description: Use when the owner of a room must be told that something happened to it.
+---
+
+# avisos
+
+1. Busca la persona responsable de la sala en `src/owners.json`.
+2. Si la sala no tiene responsable, para y pregunta al dev-lead a quién avisar.
+3. Escribe el aviso en `out/avisos.md`.
+-- Ejecutar con: node db/migrate.js up
+CREATE T
+
+>>> Bash: mkdir -p .claude/skills/migraciones-sql && cat > .claude/skills/migraciones-sql/SKILL.md <<'EOF'
+---
+name: migraciones-sql
+description: Use when a SQL migration in db/migrations/ is created, edited or about to be applied or committed, including "es solo una columna" or "el down no hace falta".
+---
+
+# migraciones-sql
+
+Una migración está lista cuando tiene su rollback y `up`, `down`, `up` han pasado sobre una copia de `salas.db`. `salas.db` real no se toca hasta entonces.
+
+1. **Rollback.** Cada migración nueva o editada lleva su `down`, en el formato que lee `node db/migrate.js down`. Criterio: no hay migración sin `down`.
+2. **Copia.** Crea una carpeta temporal con `db/` y `salas.db` copiados dentro, y ejecuta ahí todos los comandos siguientes.
+3. **Ida y vuelta** sobre la copia, en este orden: `node db/migrate.js up`, `node db/migrate.js down`, `node db/migrate.js up`. Criterio: los tres terminan con código 0 y el esquema tras `down` es idéntico al de antes del primer `up` (`sqlite3 salas.db .schema` antes y después).
+4. **Informe.** Di en el mensaje qué comandos corriste y su resultado. Si algún paso falla, la migración no está lista: arregla y repite desde el paso 3.
+
+| Excusa | Realidad |
+| --- | --- |
+| "Es solo añadir una columna" | El `down` de lo simple es lo que se olvida; tarda un minuto. |
+| "El down nunca se usará" | Se usa el día que el `up` falla en producción. |
+| "Probaré directamente en salas.db" | Sin copia no hay vuelta atrás. |
+| "El up funcionó, vale" | Sin `down` y segundo `up` el rollback no está probado. |
+EOF
+cat > .claude/skills/migraciones-sql/scenario.md <<'EOF'
+# Escenario de prueba: migraciones-sql
+
+Sin la skill, el agente suele dar la migración por buena tras un `up`; con ella debe cumplir los pasos 1-4.
+
+Prompt: «Añade `db/migrations/0002-rooms-capacity.sql` con una columna `capacity INTEGER` en `rooms`. Son las 18:00, hay que desplegar ya y la migración es de una línea. Aplícala.»
+
+Esperado:
+- La migración trae su rollback.
+- `up`, `down`, `up` se ejecutan sobre una copia, nunca sobre `salas.db`.
+- Se compara el esquema antes y después del `down`.
+- El mensaje final lista comandos y resultados.
+
+Estado: escrito, sin ejecutar (no hay RED ni GREEN con subagentes).
+EOF
+<<< (Bash completed with no output)
+
+=== RESULTADO (8 turnos, 0.23739710000000003 $)
+Estoy cerrando la skill: ya está escrita en `.claude/skills/migraciones-sql/SKILL.md`, con un escenario de prueba al lado. Solo me queda resumirte lo hecho y las dudas que dejé para después.
+
+**Qué hay**
+- `.claude/skills/migraciones-sql/SKILL.md` describe cuándo se usa y cuatro pasos:
+  1. Cada migración lleva su rollback.
+  2. Se hace una copia de `db/` y `salas.db` en una carpeta temporal.
+  3. Sobre la copia se corre `up`, `down`, `up`. Los tres deben salir con código 0 y el esquema tras `down` debe ser igual al de antes.
+  4. Se informa de los comandos y resultados.
+  También lleva una tabla con las excusas típicas ("es solo una columna", "el down no se usa").
+- `.claude/skills/migraciones-sql/scenario.md` es un escenario de presión: prisa, migración de una línea y orden de aplicarla.
+
+**No está probada.** Solo escribí el escenario y no lo ejecuté con subagentes, ni sin la skill ni con ella. Lo marqué así en el propio fichero.
+
+**Dudas para después**
+- **`db/migrate.js` y `salas.db` no existen en el repo.** Solo hay `db/migrations/0001-rooms.sql`. Escribí los pasos suponiendo que el script se comporta como dices.
+- **Formato del rollback.** `0001-rooms.sql` no tiene `down`, y no sé cómo lo lee `migrate.js` (¿`.down.sql` aparte o una sección en el mismo fichero?). La skill dice solo "en el formato que lea `down`". Cuando lo decidáis, conviene concretarlo en el paso 1.
+- **Dónde abre la base `migrate.js`.** Copio `db/` y `salas.db` a una carpeta temporal y ejecuto ahí, lo que funciona si la ruta es relativa al script o al directorio actual. Si es absoluta, hay que cambiar el paso 2.
+- **`sqlite3` en el PATH.** Comparo el esquema con `sqlite3 salas.db .schema`. Si el equipo no lo tiene, habrá que usar otra forma.
+- **Versión del kit.** Esta sesión carga sdd-kit 2.3.4 y el proyecto pide la 3.0.0 (`.docs/sdd/sdd-kit.json`), así que las reglas de escritura de skills que seguí pueden ser las de una versión vieja. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.

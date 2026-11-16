@@ -1,0 +1,114 @@
+--- [3]
+Ahora: leer el contexto SDD del proyecto. Queda: clasificar el cambio y escribir la spec hasta el gate de aprobación, ~10 min.
+
+--- [14]
+Ahora: creo la rama con el id reservado (0012) y lo confirmo con el remoto. Queda: la nota de comprensión, la spec y su revisión hasta el gate de aprobación.
+
+--- [27]
+Ahora: lanzo el revisor de la spec (uno, en sonnet, según la rúbrica). Queda: integrar sus hallazgos y presentar la spec en el gate.
+
+--- [32]
+La spec 0012 está escrita, pero todavía no la presento en el gate. Falta el revisor de la spec, que sigue en marcha. Sus hallazgos no han llegado, así que no sé qué dirá.
+
+Ya hecho:
+- **Rama y id:** `feature/0012-libres-por-planta`, con el id 0012 reservado. No hay remoto, así que el claim solo lo valida en local.
+- **Spec:** `.docs/sdd/specs/20261105-211837-feature-0012-libres-por-planta/spec.md`, en modo full y perfil delegate.
+- **Capacidad nueva:** `room-availability`, con dos escenarios. Sin `--planta` el comando sigue igual, y con `--planta` filtra las libres por planta.
+- **Delta probado:** lo fusioné en una copia de `.docs/sdd` y no hubo rechazos. El repo no lo toca.
+- **Decisión pendiente de tu validación:** las salas no tienen planta en el código. He puesto `Norte` en la planta 1 y `Sur` en la 2, inventado, y está en ✋ para que lo corrijas con las plantas reales.
+- **"Sin `--planta`, lista todas las salas":** lo he leído como todas las libres de la franja, que es lo que hace hoy el comando. Si querías ver también las ocupadas, es otra feature. También está en ✋.
+
+Cuando llegue el revisor, integro sus hallazgos en la spec. Si acepto algún Crítico o reescribo la decisión central, habrá una segunda ronda con otro revisor. Después la presento con su 🦆 y la pregunta de aprobación. Con delegate, el plan no es un stop, así que tras tu «apruebo» escribo el plan e invoco `sdd-implement` en el mismo turno.
+
+--- [33]
+1. Crítico · Delta de comportamiento, escenario «Libres filtradas por planta» (GIVEN) · El GIVEN fija `Norte` reservada de 10:00-12:00 sin día, mientras el otro escenario dice «el lunes». Además, ambos escenarios dependen de que las plantas `Norte`=1 y `Sur`=2 sean dato de partida del código, y eso no está dicho como precondición verificable del test. · Unificar el GIVEN de los dos escenarios (mismo día y misma reserva) y declarar que las plantas de las salas son parte del GIVEN. Cuando el dev-lead corrija las plantas reales, los escenarios y el Intent deberán cambiar con ellas.
+
+2. Crítico · Decisiones 1 y 3 / Delta de comportamiento · El dato de partida de las plantas (`Norte`=1, `Sur`=2) está inventado y los THEN del delta dependen de él. Si el dev-lead lo corrige, el delta y los tests quedan falsos. Además hay otro riesgo: ¿dónde vive ese dato? No hay regla sobre su sitio (código, fichero o config), ni sobre qué pasa con una sala nueva sin planta. · Bloquear la aprobación hasta tener las plantas reales. Añadir una decisión que diga dónde vive el dato (`src/app.js`, como dice el Approach) y qué pasa con una sala sin planta (¿se excluye de todo filtro?).
+
+3. Importante · Delta, escenario sin filtro · «Libres sin filtro de planta» se presenta como ADDED, pero la spec dice que describe el comportamiento actual. Con `capabilities/` vacío es legítimo, pero el escenario fija una sola configuración (`Norte` reservada, `Sur` libre). No cubre el caso de todas las salas libres ni el de ninguna libre, que son la salida real «lista de nombres separados por coma». · Añadir un escenario con las dos salas libres (salida `Norte, Sur` o `Norte,Sur`) para fijar el formato real del separador. Si no, el test no demuestra que no cambia.
+
+4. Importante · Decisión 4 / Decisiones tomadas con el dev-lead · El dev-lead dijo «sin --planta, lista todas las salas». La spec lo reinterpreta como «todas las libres» (decisión 4) y lo presenta como lectura propia. La frase del dev-lead apunta a una posible contradicción con el filtro de libres, y la spec la reduce sin confirmarlo. · Marcar la decisión 4 como pendiente de confirmación explícita del dev-lead en la validación, no como cerrada. Si el dev-lead quería ver también las ocupadas, el Scope y el delta cambian.
+
+5. Importante · Decisión 3 / Scope «No entra» · El comportamiento con `--planta` sin valor, con un valor no numérico (`--planta abc`) o con `--planta` antes de la franja queda fuera de scope sin dar un resultado definido. Es un conflicto sin regla: puede tomar `--planta` como franja, o devolver lista vacía sin avisar. Además, `--planta 02` y `--planta 2.0` no tienen regla. · Fijar la regla (error con mensaje en castellano, o ignorar) en un escenario, o declarar explícitamente que el comportamiento es indefinido y está sin testear. Hoy la decisión 2 dice que la franja es el primer argumento, pero no qué pasa si no lo es.
+
+6. Importante · Delta / Intent · El Intent promete «quien está en una planta y quiere una sala cerca» y la motivación es no conocer de memoria dónde está cada sala. Pero el Scope excluye enseñar la planta en la salida. Así el usuario sigue sin ver la planta de las salas, y solo puede filtrar a ciegas. · Aclarar en el Intent que el valor es filtrar, no informar. Si de verdad hace falta informar, el Scope debe incluir la planta en la salida (con su escenario).
+
+7. Importante · Decisiones, bloque de revisión · Una decisión (la 7, «Delta probado en una copia de `.docs/sdd`: `sdd capability merge`…») afirma una verificación ya hecha que la spec no puede acreditar, y no es una decisión sino un hecho. Además la línea «Política de modelos» aparece colgada como sub-ítem de esa decisión y mezcla la confirmación de paralelizar con la lista. · Sacar la 7 de «Decisiones que he tomado yo» y moverla a un sitio de evidencia, o quitarla si no está probada. Separar la política de modelos en su propia línea.
+
+8. Menor · Scope / «Lo que se retira o cambia de forma» · La spec dice que `rooms` pasa de lista de nombres a lista `{nombre, planta}`: eso cambia un contrato interno que usan `reservar`, `cancelar` y `anular` (se nombran en «No entra»). La tabla de cambios de forma dice «Nada se retira», y el Approach no declara el impacto en esos comandos ni en los tests existentes que usan `rooms`. · Añadir a la tabla la fila «`rooms` cambia de forma» y listar los consumidores (validación de la sala en `reservar`, etc.). Añadir un escenario o criterio de que esos comandos siguen igual.
+
+9. Menor · Dónde se prueba / Delta · Las rutas de test usan `run('libres', ['10:00-12:00', '--planta', '2'])`, pero el GIVEN de los escenarios habla de una reserva que el test tiene que preparar y no se dice cómo. Tampoco se dice cómo se arregla el reloj o el día, si «lunes» importa. · Indicar cómo se prepara la reserva previa en el test (llamada a `run('reservar', …)` o estado inyectado) y quitar «el lunes» si el día no interviene.
+
+10. Menor · Intro 🦆 / Decisiones · Hay una inconsistencia con el vocabulario del comando: el 🦆 y el Intent hablan de «salas de partida: `Sur`», una expresión que no se define y que confunde «sala de partida» con «dato de partida». El nombre `libres` está en castellano, pero la capacidad `room-availability` va en inglés (decisión 5) mientras la constitución exige castellano solo para el texto de la interfaz y de los documentos. · Cambiar «salas de partida» por «con los datos de partida». Confirmar que el nombre en inglés de la capacidad es una convención del kit y no una excepción a la constitución 4.
+
+--- [35]
+Ahora: integro los hallazgos en la spec. Queda: una segunda ronda con un revisor, porque acepto dos Críticos, y después el gate, ~4 min.
+
+--- [37]
+Ahora: segunda ronda con un revisor sobre la spec corregida. Queda: integrar sus hallazgos y presentar el gate.
+
+--- [42]
+He integrado en la spec los hallazgos de la primera revisión y he lanzado la segunda ronda con un revisor. Todavía no ha respondido, así que no sé qué dirá. En cuanto llegue, integro sus hallazgos y te presento la spec en el gate de aprobación.
+
+Cambios de la primera ronda:
+- **Aceptados:** 8 de 10 hallazgos, entre ellos los dos Críticos.
+  - Los escenarios comparten GIVEN, sin «el lunes», y las plantas forman parte del GIVEN.
+  - Hay un escenario nuevo con las dos salas libres: `Norte, Sur`.
+  - El Intent aclara que el valor es filtrar, no informar.
+  - La tabla de cambios de forma recoge `rooms`, que solo usa `freeRooms`.
+  - Las decisiones 7 y 8 fijan dónde vive la planta y qué pasa con una sala sin planta.
+  - La interpretación de «sin `--planta`, lista todas las salas» queda marcada para que la confirmes en el gate.
+- **Rechazado:** definir qué pasa con `--planta` sin valor, no numérico o antes de la franja. Nadie lo pidió, así que queda sin definir (decisión 8 y «No entra»).
+- **Aceptado en parte:** la decisión «delta probado» era un hecho, no una decisión. La saqué de ✋ y el resultado (sin rechazos) irá en el mensaje del gate.
+
+--- [43]
+1. Crítico · «Hallazgos de la review» (Rechazado) + decisión 8 + «No entra» · El rechazo de `--planta` sin valor o no numérico deja sin definir una entrada que, con la construcción de «Approach» (el valor que sigue a `--planta`), puede lanzar error o devolver todas las salas según cómo se implemente. Eso contradice la constitución 2 (tests antes que código) y deja una rama sin escenario. · Añade un escenario mínimo (por ejemplo, `--planta` sin valor da error en castellano o se ignora) o declara en el Approach el comportamiento exacto y justifica por qué no hay test.
+
+2. Crítico · Decisión 1 y GIVEN de ambos escenarios · Las plantas son un dato inventado que el propio texto pide corregir. Los dos escenarios, el Intent y el éxito dependen de ese dato, así que la spec no es verificable hasta que el dev-lead lo confirme. El Intent promete `--planta 1` vacío y `--planta 2` igual a `Sur` solo con ese invento. · Marca el spec como bloqueado hasta que se confirmen las plantas, o pide el dato real al dev-lead antes del gate en vez de aprobar con el invento.
+
+3. Importante · «Decisiones tomadas con el dev-lead» vs decisión 4 · El dev-lead dijo «sin --planta, lista todas las salas». La decisión 4 lo reinterpreta como «todas las libres», lo contrario de lo literal, y se presenta como decisión del agente. Esa lectura es el riesgo principal y está enterrada en el punto 4 de la lista. · Súbela a lo más visible del gate como interpretación a confirmar y cita la frase literal junto a la lectura. Si el dev-lead quería ver también las ocupadas, hay que cambiar el escenario sin filtro.
+
+4. Importante · «Delta» (ADDED — Libres sin filtro de planta) · El escenario fija como ADDED el comportamiento actual de `libres`, que ya existe. La spec lo dice en la decisión 5, pero el delta lo marca como nuevo. Además, el GIVEN (planta de cada sala) mezcla dato nuevo con comportamiento antiguo. · Márcalo como comportamiento existente que se fija (nota explícita en el escenario) o sepáralo en dos. Quita las plantas del GIVEN del escenario sin filtro, porque no le afectan.
+
+5. Importante · «Delta» (AND con `--planta 9` y `--planta 1`) · Un solo escenario junta tres casos con THEN distintos. La salida vacía de `--planta 1` (sala reservada) y la de `--planta 9` (planta inexistente) son causas distintas. Sin separarlas, un fallo no se localiza. · Parte en tres escenarios: planta con libre, planta con sala reservada y planta inexistente.
+
+6. Importante · Decisión 7 (sala sin planta) · Fija una regla («queda fuera de cualquier filtro y sigue saliendo sin filtro») sin escenario ni test. Además, con solo dos salas, ambas con planta, la regla no se puede ejercitar con los datos de partida. · Añade un escenario con una sala sin planta o elimina la regla del cuerpo por no verificable.
+
+7. Importante · Cabecera ✋, línea «Review de spec propuesta…» · Una línea de proceso (revisor, señales, tamaño «~25 líneas en 3 ficheros») está mezclada con las decisiones y no está numerada. Declara además `test/app.test.js` y «la capacidad» como ficheros tocados, pero la capacidad no aparece como ruta. El «Mínimo razonable: sin revisor» contradice «un revisor de la spec en sonnet». · Saca el bloque de proceso de ✋, deja solo decisiones numeradas y concreta la ruta de la capacidad. Reconcilia cuántos revisores hay.
+
+8. Menor · «Lo que se retira o cambia de forma», fila 1 · «Nada se retira» ocupa una fila de la tabla con «—» y destino «decisión 4», que es una decisión y no un destino. · Quita la fila, o pon «Nada se retira» en prosa.
+
+9. Menor · «Scope» y Decisión 3 · La planta es «un número entero escrito tal cual», pero «No entra» excluye validar valores no numéricos. Entonces la decisión 3 afirma un contrato (entero) que no se garantiza y que no tiene escenario para plantas con ceros a la izquierda o negativas (`--planta 02`, `-1`). · Reformula la decisión 3 como «la planta se compara tal cual con la de la sala», o añade el criterio de comparación (cadena o número).
+
+10. Menor · «Términos y ADR» y «Capacidades» · Declara `room-availability` como «Nueva», pero la propia spec dice que el proyecto no tiene capacidades y que el comportamiento actual entra en ella. La carpeta `capabilities/` no existe y ni «Scope» ni la tabla dicen que hay que crearla, ni el nombre de fichero. · Indica en Scope que se crea `capabilities/room-availability.md` (o la ruta real) y añádelo a los ficheros tocados.
+
+--- [50]
+Ahora: gate de aprobación de la spec. Queda: tu respuesta; con ella escribo el plan y paso a la implementación, ~2 min.
+
+La spec está en `.docs/sdd/specs/20261105-211837-feature-0012-libres-por-planta/spec.md`, sin commitear todavía.
+
+🦆 Hoy `libres 10:00-12:00` enseña las salas libres sin decir en qué planta están. Con esta feature, `libres 10:00-12:00 --planta 2` enseña solo las libres de esa planta (con los datos de partida: `Sur`). Sin `--planta` todo sigue igual (`Sur`). Por dentro, cada sala lleva su planta y `libres` filtra por ella si se la piden.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+A confirmar primero:
+- **Sin `--planta`:** dijiste «lista todas las salas» y yo lo leo como todas las libres de la franja, que es lo que hace hoy el comando. Si querías ver también las ocupadas, es otra feature.
+- **Plantas inventadas:** puse `Norte` en la planta 1 y `Sur` en la 2, porque el código no recoge ese dato. Dime las reales. El Intent y los escenarios cambian con ellas.
+
+El resto:
+- **Forma del comando:** `libres <franja> --planta <n>`, con la franja primero y `--planta` detrás.
+- **Comparación de la planta:** el valor se compara tal cual, como texto, con la de la sala. `--planta 9` da la lista vacía.
+- **Capacidad nueva:** `room-availability`, que se crea en `.docs/sdd/capabilities/room-availability.md`. Contiene los dos comportamientos: sin filtro, que fija lo que ya hace, y con filtro.
+- **Enfoque central:** cada sala pasa a `{ nombre, planta }` en `src/app.js`. Descarté un mapa aparte sala→planta y deducir la planta del nombre.
+- **Sin definir:** `--planta` sin valor, con un valor no numérico o antes de la franja no tienen regla ni test.
+
+**Revisión de la spec:** hubo dos rondas con un revisor cada una, en sonnet. En la segunda, el revisor marcó dos Críticos que rechazo:
+- **`--planta` sin valor o no numérico:** nadie lo pidió, así que queda sin definir.
+- **Plantas inventadas como bloqueo:** no bloqueo la spec por ellas. Las validas aquí, y por eso van arriba.
+
+El detalle de los demás hallazgos está en la spec. El delta lo probé fusionándolo en una copia de `.docs/sdd`, sin rechazos.
+
+**¿Apruebas la spec?**
+1. **Apruebo (Recomendada)**
+2. **Cambios**: dime las plantas reales, la lectura de «todas las salas» o lo que quieras mover.
+

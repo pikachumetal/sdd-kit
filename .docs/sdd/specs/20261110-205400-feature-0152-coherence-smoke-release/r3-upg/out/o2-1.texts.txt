@@ -1,0 +1,68 @@
+--- [2]
+Antes de ponerme con el filtro: el proyecto tiene aplicado el kit 2.3.3 y el kit cargado trae migraciones hasta la 2.3.4. ¿Quieres que las aplique ahora (sí/no)?
+
+- **Sí:** ejecuto `sdd-upgrade` y, cuando termine, sigo con el filtro por sala en `libres`.
+- **No:** voy directo al filtro y no te lo vuelvo a ofrecer en esta sesión.
+
+--- [17]
+La 2.3.4 está aplicada y commiteada (`de34096`). La 3.0.0 tiene tres gates de movimiento y borrado, así que no he tocado nada de ella y te paso las tablas para que las apruebes.
+
+Punto de partida: árbol limpio, sha previo `de34096`. No hay `estimation.md`, `architecture.md` ni `estimation-log.md`, así que los pasos 6 y 10 y parte del 1 no aplican.
+
+## Paso 1: movimientos
+
+| Qué hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz. Los enlaces `specs/…` pasan a `.docs/sdd/specs/…`. |
+| `constitution.md` | `git mv` a `.docs/sdd/steering/constitution.md`. No tiene enlaces relativos. |
+
+## Paso 2: producto y operaciones
+
+| Origen | Destino |
+| --- | --- |
+| `mission.md`, todo el texto | `PRODUCT.md` → `## Product Purpose`. No tiene las secciones «Usuarios», «Qué es» ni «Dominio», así que las demás cabeceras de la plantilla no se escriben. |
+| `tech-stack.md` «Tecnologías» (Node 22, sin dependencias, `src/app.js`) | Ya lo dice `package.json`. El «Node 22» no está en ningún manifiesto, así que propongo llevarlo a `steering/architecture.md`. |
+| `tech-stack.md` «Tests: node --test» | `steering/operations.md` → `## Testing`. Nivel de suite `pendiente` (no hay config que lo diga), «Sin filtro» y «Lint» `ninguno` (no hay script ni pre-commit), «CI de la base» `ninguna`. «Temporales» propuesto como en el init, sin E2E. |
+| `tech-stack.md` «Git: git-flow» | `steering/operations.md`, como está. |
+| `environments.md` | No existe, así que no se escribe `## Entornos`. |
+| «Decisiones abiertas» | No hay ninguna. |
+
+Después de aplicarlo hago `git rm` de `mission.md` y `tech-stack.md`. Quedan recuperables con `git show de34096:.docs/sdd/<doc>`.
+
+## Paso 3: roadmap y deuda
+
+**Publicado:** la última release cerrada es 0.3.0, pero el repo no tiene tags. Necesito que me digas si el patch 0007 (2026-09-18) está **publicado** o no. Lo propongo como **no publicado**, porque `[Unreleased]` lo lista.
+
+`ROADMAP.md`, sin release en preparación (sin «Release N»):
+
+| Fila 2.x | Destino |
+| --- | --- |
+| «Próximo» 1 · Avisos por correo antes de la reserva · ⏳ | Now, con título `## Now` sin versión. No tiene id de secuencia, así que propongo uno nuevo con `sdd id next --reserve`. Carril `feature`, Externo `—`, Tras `—`. **Tamaño: lo decides tú (S, M o L).** |
+| «Backlog» B1 · Exportar a .ics · idea propia | Later, con id nuevo de la misma reserva (2 en total) y estado `⏳`. «Origen» «idea propia» al final del one-liner. Tamaño y Tras `—`. |
+| «Patches» 0007 | Now con `✅`. Título y fecha de su descripción, `**Carril:** patch`, `**Requisitos:**` a su `patch.md`. Solo si lo confirmas como no publicado. |
+| «Releases cerradas» v0.3.0 | Sale. Vive en `CHANGELOG.md`. |
+
+`steering/debt.md`:
+
+| Fila 2.x | Sección | Celdas |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria · Bajo · «Patch cuando moleste» | «Por triar», porque su plan no es `Actuar`, `Esperar` ni `Descartada`. | «Fecha» 2026-11-12, la del único commit que toca `roadmap.md` (`git log -S`). Es la fecha del commit base, no la original: dime si quieres otra. «Origen» `roadmap 2.x`. **«Impacto: Bajo» se pierde**, porque «Por triar» no tiene columna. ¿Lo pego al texto del ítem? |
+
+Después de aplicarlo hago `git rm .docs/sdd/roadmap.md`, recuperable con `git show de34096:.docs/sdd/roadmap.md`.
+
+## Pasos que no necesitan gate
+
+- **Paso 5 (nombres de skills):** no cambio nada. `constitution.md` cita `sdd-start-task` y `sdd-end-task`, que no están en la tabla de renombrados. Te las dejo anotadas en el informe.
+- **Paso 7:** añado `.temp/` a `.gitignore`, instalo el hook `.claude/hooks/sdd-kit-loaded.mjs` y marco 3.0.0.
+- **Paso 8:** después te propongo una tabla con las reglas del proyecto que el kit ya cubre.
+
+## Qué necesito de ti
+
+1. ¿Apruebas las tres tablas? Si quieres cambiar algún destino, dímelo.
+2. **Tamaño** (S, M o L) de «Avisos por correo» y del patch 0007.
+3. ¿El patch 0007 está publicado? Recomiendo que no.
+4. ¿El «Impacto: Bajo» de la deuda va al texto del ítem? Recomiendo que sí.
+5. ¿Llevo «Node 22» a `steering/architecture.md`? Recomiendo que sí.
+
+Mientras no respondas, el paso queda pendiente y sin tocar.
+

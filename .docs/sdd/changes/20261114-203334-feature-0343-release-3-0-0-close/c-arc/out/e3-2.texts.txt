@@ -1,0 +1,42 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [15]
+Estoy en el paso 1 del cierre (validación en `field`): voy a ejecutar la suite y el smoke reales antes de escribir ningún registro.
+
+--- [19]
+Levanto el entorno yo mismo, en una llamada propia, y compruebo su salud.
+
+--- [23]
+**No terminado.** Paro el cierre en el paso 1, antes de escribir ningún registro, porque el puerto de la suite lo ocupa un proceso que no es mío.
+
+**Qué pasa**
+- El puerto 13144, el de `e2e/config.json`, lo tiene el proceso `node.exe` con PID 33596. Lo lanzó `…\tests\batteries\sdd-archive\fixtures\e2e\foreign.mjs 13144`, no `server.mjs` de este repo.
+- `/health` responde «otra aplicación: no es el entorno de la suite».
+- `node scripts/env-up.mjs` falla: su `/shutdown` no libera el puerto y el entorno no arranca.
+- Cambiar de puerto comprobaría un servidor equivocado, y matar un proceso ajeno no me corresponde. Por eso no hago ninguna de las dos cosas.
+
+**Lo que ya está comprobado**
+- Pre-checks del paso 0:
+  - El árbol está limpio.
+  - `sdd merge --check` da «destino: listo» para `develop`.
+  - No hay otros worktrees de `feature/*` ni `patch/*` abiertos.
+  - La spec está `approved` y firmada por Laura.
+  - La revisión final está limpia sobre `08b5aba`. `HEAD` solo añadió `tasks.md`, así que no hace falta re-revisión.
+- La suite unitaria pasa: `node --test test/`, 5 de 5. La salida está guardada en `/tmp/sdd/unit.txt`.
+- Falta la pasada E2E del gate de cierre (`node --test test/ && node e2e/run.mjs`) y el smoke con `ejecución real`.
+
+**Qué necesito de ti**
+- Libera el puerto 13144 (para el PID 33596), o dime que lo pare yo. Después levanto el entorno, hago la pasada E2E y el smoke, y sigo con el cierre.
+
+**Lo que queda del cierre**
+- Cuando el entorno esté libre, el cierre hará lo siguiente:
+  - Crear `walkthrough.md`.
+  - Pasar el `capability merge` de `bookings`.
+  - Marcar la fila 0010 como ✅ en el roadmap.
+  - Hacer el commit de cierre.
+  - Fusionar en `develop` con `sdd merge`, sin push (`push: false`).
+- El ruling de la task 2 es un workaround: el test de `canceladas` depende del estado que deja el primer test. Pide su fila en `debt.md`, y la añadiré en el cierre.
+
+No borres todavía el worktree `<run>/repo`.
+

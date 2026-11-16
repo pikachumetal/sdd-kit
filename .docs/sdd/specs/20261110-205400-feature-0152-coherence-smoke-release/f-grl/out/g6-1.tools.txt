@@ -1,0 +1,134 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git branch --show-current
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"h
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test; ls node_modules 2>&1 | head -2
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat README.md; cat .docs/sdd/specs/*free/spec.md | head -60
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/skills/sdd-propose/references" && cat control-profiles.md | head -80; echo =====; cat spec-writing.md; echo =====; cat nombrado.md | head -60
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.1834855 $)
+Ahora: clasifico y te presento lo que he entendido, antes de la primera pregunta de diseño. Queda: entrevista corta, spec con su 🦆 y ✋, y tu aprobación (parada), ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme): hoy `salas` solo tiene `libres`, `reservar` y `cancelar`. Cuando la sala que quieres está ocupada en una franja, no hay forma de dejar constancia de que la quieres. Quieres apuntarte a una lista de espera de esa sala y franja, y que el flujo de reserva lo tenga en cuenta. Es una feature de comportamiento nuevo, con decisiones de producto abiertas, así que no es patch. Preveo 3 tareas o menos, así que no propongo dividirla. El proyecto no tiene dependencias externas, así que no hace falta instalar nada.
+
+Lo primero, y no lo adivino: ❓ **¿Qué harás con la lista de espera?** Cuéntame un caso real: la última vez que la sala que querías estaba ocupada, ¿qué hiciste y qué te habría gustado que pasara después?
+
+=== RESULTADO (1 turnos, 0.2016372 $)
+Entendido: lo que quieres evitar es ir mirando `libres` a mano. Un dato del código condiciona la respuesta: hoy `salas` no guarda nada entre ejecuciones (las reservas son una lista fija en `src/app.js`) y no tiene ningún proceso que se quede vigilando. Una espera que te avise sola no se puede hacer sin decidir cómo se entera de que la sala se libera.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+Escena: `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Después alguien ejecuta `cancelar lun 10:00`.
+
+1️⃣ **Se te reserva sola.** Al cancelar, la primera espera de esa sala y franja pasa a ser una reserva: `cancelada lun 10:00; Norte reservada para ti (de la espera)`. No tienes que mirar nada. Cuesta: reservas algo sin confirmarlo en ese momento.
+2️⃣ **Solo se queda apuntada, y la ves tú.** Un comando nuevo (`espera`) lista tus esperas y dice cuáles ya están libres: `Norte lun 10:00-12:00: libre ya, reserva con reservar`. Sigues teniendo que ejecutar algo, pero una sola vez y sin comparar a mano. Cuesta: sigue sin ser automático.
+3️⃣ **Aviso por correo al liberarse.** Encaja con la 0008 (`src/correo.js`), pero esa feature aún no está hecha y la 0009 y la 0008 quedarían acopladas. Cuesta: depende de otra feature pendiente.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es precisamente tener que volver a mirar, y es la única que lo elimina sin depender de la 0008. A cambio, la reserva se hace sin tu confirmación en ese instante; se arregla con `cancelar` si ya no la quieres.
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+=== RESULTADO (3 turnos, 0.23106099999999996 $)
+Te lo cuento más despacio, con un ejemplo.
+
+**Dónde estamos.** Estamos diseñando la lista de espera. Ya sé para qué la quieres: Norte está ocupada y no quieres tener que mirar `libres` cada rato. Me falta decidir una sola cosa: qué debe pasar en el momento en que Norte queda libre.
+
+**El ejemplo.** Norte está reservada el lunes de 10:00 a 12:00. Tú quieres esa sala a esa hora, así que le dices a la herramienta que la reserve. Ahora mismo no podría, porque está ocupada. Con la lista de espera, la herramienta te dice «Norte está ocupada, te apunto en la espera» y se acuerda de ti.
+
+Más tarde, la reserva que ocupaba Norte se cancela. En ese momento hay dos formas de que tú consigas la sala:
+
+- **Opción A, automática.** En cuanto se cancela la reserva, la herramienta mira la lista de espera. Ve que tú eres el primero y te reserva Norte directamente. Tú no haces nada: la próxima vez que mires, ya tienes la sala. Lo único que pierdes es que no la has confirmado en ese momento. Si ya no la quieres, la cancelas.
+- **Opción B, con aviso.** La herramienta no te reserva nada. Cuando tú le preguntas por tus esperas, te dice «Norte ya está libre». Entonces reservas tú. Sigues teniendo que preguntar, pero una sola vez, sin comparar listas a mano.
+
+(Hay una tercera, el aviso por correo, pero depende de otra feature que aún no existe, así que la dejo aparte.)
+
+Para tu caso, la A es la que quita del todo el tener que volver a mirar.
+
+¿Qué prefieres: que la sala se te reserve sola al liberarse, o que solo te diga que ya está libre y reserves tú?

@@ -1,0 +1,77 @@
+--- [3]
+Los ejes de la revisión final ya volvieron. Toca invocar `sdd-verify` y seguir su «Closing the review».
+
+--- [13]
+Hay un Important en el eje Code: `reasonOf` no recorta los espacios. Lo arreglo con TDD, en una sola pasada. Primero el test, que tiene que fallar.
+
+--- [15]
+RED confirmado (falla con el síntoma del informe). Ahora el arreglo.
+
+--- [23]
+Arreglo hecho. Falta la re-revisión única de la pasada de fix. Leo cómo se arma el encargo.
+
+--- [29]
+Ahora la re-revisión única (`sdd-kit:effort-high` + `opus`) y su vigilancia de silencio, en el mismo turno.
+
+--- [34]
+Ahora: espero la re-revisión única de la pasada de fix. Queda: leer su veredicto, anotar la línea `Re-revisión:` y presentar la validación, ~3 min.
+
+**Hecho hasta ahora**
+- **Eje Spec:** limpio. Solo trae un Minor, el orden de los tests, que queda aplazado en el ledger como `minor (deferred)`.
+- **Eje Code:** tenía un Important. `reasonOf` no recortaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Arreglo `2b487cf`:**
+  - Añadí el test «cancelar acepta un motivo con espacios alrededor».
+  - Falló antes del arreglo con el síntoma del informe.
+  - Tras el arreglo, `node --test test/cancel.test.js` pasa 4/4.
+  - No he corrido la suite completa, solo ese fichero. Esa corrida va en la validación.
+- **`tasks.md`:** corregí el commit de la Task 1 (`d841991`, antes ponía `6ecc97a`) y añadí las líneas `Revisión final:` y `Pasada de fix:` (`55d50fd`).
+- **Re-revisión:** lanzada en segundo plano (`opus` + `high`) sobre `6ecc97a..55d50fd`, con su vigilancia de silencio.
+
+Hasta que vuelva la re-revisión no doy la revisión por limpia ni escribo la línea `Re-revisión:`.
+
+--- [39]
+### Finding Verdicts
+- `reasonOf` kept the spaces around the reason, so `--motivo "sala ocupada "` was answered with «motivo no válido: …» — **ADDRESSED**. `src/app.js:16` now returns `params[index + 1]?.trim()`. `run` sends that value into `cancelBooking` (`src/app.js:42`), so the reason is trimmed before the `reasons.includes` check (`src/app.js:20`) and before it is stored (`src/app.js:24`). The cases with no `--motivo`, or with `--motivo` as the last token, still give `undefined`, which still gets «motivo no válido…» (spec.md:54). The new test at `test/cancel.test.js:17-19` does tell the old and new code apart. Before the fix it gets «motivo no válido…». After the fix the reason passes the list check, and the command answers «sin reserva Sur mar» because the only booking is Norte lun (`src/app.js:4`). That matches the failing-then-passing evidence the thread reported. I did not run the test.
+
+### New Breakage in the Fix Diff
+- Minor — `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:15` records the fix commit as `2b487cf`, but the real SHA is `2b487fc`, so the record points to a commit that doesn't exist. This file is in the 6ecc97a..55d50fd range, but the review package left it out: its diff only lists `src/app.js` and `test/cancel.test.js`.
+
+### Out-of-Scope Observations
+- The new test only shows that a padded reason passes validation. It ends in «sin reserva», so it never checks a successful cancellation that stores the trimmed reason and shows it in `canceladas`. That is the scenario the finding describes (Norte lun). The test can't use Norte lun because the first test has already cancelled it, which is the deferred Minor about test order. Once that is fixed, the test is worth strengthening.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [41]
+La re-revisión da el hallazgo como resuelto. Corrijo el sha mal copiado, que fue mi error. Después anoto la línea `Re-revisión:`, el ledger y limpio el worktree.
+
+--- [43]
+La revisión final de la 0010 está cerrada. Me queda la validación, y no he corrido todavía la suite completa.
+
+**Qué pasó con los ejes**
+- **Spec:** limpio. Solo trae un Minor: el test de `canceladas` depende de que antes se haya ejecutado el de `cancelar`. Queda aplazado en el ledger como `minor (deferred)`.
+- **Code:** tenía un Important. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Arreglo `2b487fc`:** recorta el motivo con `.trim()`. Añadí el test «cancelar acepta un motivo con espacios alrededor», que falló antes del arreglo y pasa ahora (4/4 en `test/cancel.test.js`).
+- **Re-revisión (`opus` + `high`, sobre `6ecc97a..55d50fd`):** da el hallazgo por resuelto, sin nuevo Critical ni Important.
+
+**Registros**
+- La re-revisión encontró un Minor mío: había copiado mal el sha en `tasks.md`. Lo corregí en `15fe…`, el commit de docs de 3 líneas que revisé yo en el hilo.
+- Escribí las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:` en `tasks.md`.
+- Corregí además el commit de la Task 1 (`d841991`).
+- Quité el worktree de revisión.
+
+**Decisión mía en el ledger**
+- El test del arreglo acaba en «sin reserva Sur mar». No comprueba que se guarde el motivo recortado, porque Norte lun ya está cancelada por el primer test.
+- Lo dejé como `Ruling:` ligado al Minor aplazado. El coste: una regresión del recorte podría pasar sin que ningún test lo note.
+
+**Sin revisar:** nada. Todos mis commits están revisados, y ninguno abre otra re-revisión.
+
+**Siguiente paso:** `sdd-archive` (validación con el gate completo y cierre). Aún no he corrido la suite completa de la rama, ni el walkthrough ni el merge de capabilities.
+
+--- [44]
+La vigilancia de silencio de la re-revisión terminó sin avisos (código de salida 0). Esa notificación no cambia nada del estado.
+
+La revisión final de la 0010 sigue cerrada, con el hallazgo Important resuelto y el Minor aplazado en el ledger. Lo siguiente es `sdd-archive`: validación con el gate completo, walkthrough y cierre. No lo he lanzado.
+
+Un detalle de mi resumen anterior: dije que el commit de docs con la corrección del sha era `15fe…`. Ese hash no lo había comprobado. El commit existe en la rama, pero el sha exacto es el que muestra `git log`.
+

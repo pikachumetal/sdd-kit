@@ -1,0 +1,93 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls; cat .docs/sdd/sdd-kit.json; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/steering/debt.md; git branch --all
+<<< CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+.docs/sdd:
+changes/
+constitution.md
+mission.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/steering:
+debt.md
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+|
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat ROADMAP.md; ls docs docs/qa src test; cat CHANGELOG.md | head -30; cat package.json
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:** f
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -50; git log --oneline -5; ls .docs/sdd/changes .docs/sdd/specs
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js exportar | od -c | head -3; node src/app.js exportar; node src/app.js libres --planta 2; grep -rn "csv\|planta\|tilde" -i .docs/sdd/specs .docs/sdd/changes | head -20; cat .docs/sdd/constitution.md | head -40
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+Norte,lun,10:00-12:00
+Norte (planta 1)
+.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md:13:Los responsables de cada planta no saben qué salas se usan ni cuándo, y reservan de más por si acaso.
+.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md:19:- **Aviso semanal**: los lunes a las 9:00 cada responsable recibe las reservas de su planta de la semana. Lunes 6 → reser
+
+=== RESULTADO (7 turnos, 0.1466673 $)
+Reproduje los dos ítems de «Por triar». Aún no he escrito nada: en `delegate` te enseño la propuesta y espero tu decisión.
+
+| Ítem | Qué vi | Estado propuesto |
+| --- | --- | --- |
+| CSV pierde las tildes | `node src/app.js exportar` saca `sala,día,franja` en UTF-8 correcto (bytes `303 255`). No lo reproduzco. Además, el changelog llega a 1.4.1 y no existe ninguna 1.4.2. Lo más probable es que el `?` venga del programa que abre el CSV (por ejemplo Excel sin BOM) o de la consola, pero no puedo afirmarlo. | **En espera**, con «Falta» `reproducirlo`. Causa `sin determinar`, impacto Medio, fecha 2026-10-12. |
+| `libres --planta 2` lista salas de la planta 1 | Reproducido: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. La causa está en `src/app.js`, en `roomsOnFloor`, que filtra con `floors[room] <= floor` en vez de `===`. | **Lista**, con causa `defecto del producto`. Evidencia: el comando y su salida. Remedio temporal `ninguno` (lo busqué). Arreglo `—`. Destino: una fila nueva. |
+
+La fila nueva sería un patch en **Now**, de tamaño S. Lleva un test nuevo, así que cumple el criterio de patch. Su brief diría `**Carril:** patch` y `**Toca:** src/app.js`, `test/app.test.js`. Pediría un id con `sdd id next --reserve` y lo publicaría con `sdd roadmap publish`.
+
+No cruza con ninguna fila existente: ni 0013 (aviso semanal), ni la fila de «En espera» de las reservas de más de 8 h, ni B1. Tampoco hay ramas `feature/*` abiertas.
+
+Dime si te cuadra, o si el CSV lo quieres en otro estado. Si prefieres que decida yo, dímelo y lo escribo tal cual, dejando lo decidido en el cuerpo del commit.

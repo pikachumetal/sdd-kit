@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: git ls-files | head -100; ls .docs/sdd 2>/dev/null
+
+>>> Grep: reserva|reservation|booking
+<<< Found 6 files
+test\app.test.js
+src\app.js
+ROADMAP.md
+README.md
+PRODUCT.md
+CHANGELOG.md
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs/
+steering/
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\steering\operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+8	## Testing
+9	
+10	- Tests: `node --test` (carpeta `test/`).
+11	
+
+>>> Bash: node --version; node -e "import('node:sqlite').then(m=>console.log('ok',Object.keys(m))).catch(e=>console.log('err',e.message))" 2>&1 | head -5
+<<< v26.10.0
+ok [
+  'DatabaseSync',
+  'Session',
+  'StatementSync',
+  'backup',
+
+=== RESULTADO (14 turnos, 0.1808998 $)
+Ya he leído el código y los documentos del proyecto. Esto es lo que encontré antes de preguntarte nada.
+
+- **Dónde viven hoy las reservas:** en `src/app.js:3`, un array en memoria con una reserva de ejemplo. Al terminar el proceso desaparece todo.
+- **Reservar y cancelar no escriben nada:** `reservar --cada-semana` solo devuelve el texto «reserva semanal creada» y `cancelar` solo devuelve «cancelada…». Ninguno toca `bookings`. Solo `libres` lee el array.
+- **Es una CLI:** cada comando arranca un proceso nuevo. Así que las reservas se pierden después de cada comando, no solo al reiniciar el servidor.
+- **Restricciones del proyecto** (`PRODUCT.md` y `operations.md`):
+  - Eres el único usuario y desarrollador.
+  - Node 22 y sin dependencias externas.
+  - Un solo fichero de entrada.
+- **Lo que sé del entorno:** en esta máquina hay Node 26 y `node:sqlite` carga. No he verificado cómo se comporta en Node 22, que es lo que declara el proyecto.
+
+❓ **¿Qué formato de almacenamiento usamos?**
+1️⃣ **Un fichero JSON** (`reservas.json`). Se lee entero al arrancar y se reescribe en cada cambio. Es legible a mano y no necesita dependencias. Su coste es que no hay transacciones: un fallo a mitad de escritura puede corromper el fichero. Dos comandos a la vez pueden pisarse, aunque con un solo usuario es poco probable.
+2️⃣ **`node:sqlite`** (módulo integrado). Tiene transacciones y consultas por día y sala. Su coste es que depende de que Node 22 lo tenga estable, y no lo he comprobado. El fichero no se lee a mano.
+3️⃣ **Fichero de líneas JSON (JSONL), solo añadiendo.** Cada reserva o cancelación es una línea nueva. Una escritura cortada solo estropea la última línea. Su coste es que hay que recorrer todo el historial para saber qué reservas siguen vivas.
+
+➡️ **Recomiendo 1️⃣**, porque con un único usuario, una CLI y sin dependencias es lo más simple que cumple, y puedes abrir y corregir las reservas a mano. A cambio, hay que escribir el fichero de forma atómica (a un temporal y luego renombrar) para no perderlo por un corte.

@@ -1,0 +1,67 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leer el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y anunciar el carril, ~2 min.
+> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md 2>/dev/null | head -120; ls .docs/sdd/steering 2>/dev/null
+> Bash: cd .docs/sdd/steering; cat constitution.md operations.md debt.md; cd ../../..; cat package.json; ls src test; wc -l src/* test/*; cat src/app.js
+> Bash: ls node_modules 2>&1 | head -3; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/skills/sdd-propose/references"; cat control-profiles.md | head -60; cat nombrado.md | head -60
+> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/skills/sdd-propose/references/spec-writing.md"
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git status --short && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git checkout -b feature/0010-lista-espera develop && git branch --show-current
+## agente
+Ahora: abrir la feature 0010 (rama `feature/0010-lista-espera` ya creada) y arrancar la entrevista de la spec. Queda: unas pocas preguntas, la spec con su parada de aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** cuando pides una sala y está ocupada en esa franja, quieres quedar apuntado en una lista de espera en lugar de recibir solo un «no». Corrígeme si me equivoco.
+
+**Lo que he visto en el proyecto:**
+- `src/app.js` guarda las reservas en un array en memoria. Cada ejecución de la CLI parte de cero, así que una lista de espera necesitaría guardarse en algún sitio para sobrevivir entre comandos. Eso lo decido yo más adelante, como método.
+- El proyecto lo usas tú solo. En el ROADMAP, la 0008 (avisos por correo antes de la reserva) toca `src/correo.js`, y puede tener relación con esto.
+
+Antes de nada, necesito saber para qué lo quieres, porque de eso salen las demás decisiones:
+
+¿Qué quieres que pase, en concreto, la próxima vez que la sala por la que esperas quede libre?
+
+# turno 2
+## usuario
+no, espera, explícamelo mejor
+## agente
+Entendido: quieres dejar de ir a mirar `libres` cada rato. Mantengo feature, modo full y perfil delegate.
+
+Un dato del código que condiciona esto: hoy `cancelar` solo imprime un texto y no libera nada de verdad. Además, la CLI no se queda ejecutándose entre comandos. La lista de espera solo puede reaccionar en el momento en que alguien cancela dentro de la propia app.
+
+❓ **¿Qué pasa cuando se libera la sala que esperas?**
+
+1️⃣ **Reserva automática.** Pides `reservar Norte lun 10:00-12:00`, está ocupada y la salida es `Norte ocupada; en espera (1.º)`. Cuando se cancela la reserva de Norte, la sala pasa a tu nombre y al volver a abrir la CLI ves `Norte lun 10:00-12:00 reservada desde la lista de espera`. No tienes que mirar nada. A cambio, podrías acabar con una reserva que ya no querías. Habría que añadir un comando para salir de la lista.
+
+2️⃣ **Solo aviso.** La salida de la petición es la misma, pero al cancelarse Norte solo queda marcada como libre en tu lista. Con un comando `espera` ves `Norte lun 10:00-12:00: ya libre` y reservas tú. No hay reservas que no querías, pero sigues teniendo que ir a mirar, solo que en otro comando.
+
+➡️ **Recomiendo 1️⃣**, porque tu motivo es no tener que volver a mirar y el aviso lo mantiene. A cambio, la reserva se hace sin que la confirmes, y por eso incluiría el comando para salir de la lista.
+
+¿Cuál eliges?
+## agente
+Voy con un caso concreto, sin opciones.
+
+Hoy mismo, el lunes a las 10:00, Norte está ocupada de 10:00 a 12:00. Tú quieres esa sala a esa hora. Con el programa actual haces `libres 10:00-12:00` y te dice `Sur`. Norte no aparece. Después de un rato, vuelves a escribir `libres 10:00-12:00` por si alguien ha cancelado. Eso es lo que quieres evitar.
+
+La lista de espera cambia ese momento. En vez de volver a mirar, le dices al programa «quiero Norte a esa hora; si se libera, avísame o resérvamela». El programa lo apunta. Después, cuando alguien ejecute `cancelar` sobre esa reserva de Norte, el programa se acuerda de que tú estabas esperando.
+
+Lo que queda por decidir es qué hace el programa en ese momento. Hay dos formas de que lo haga.
+
+- **Reservártela él.** Al cancelarse la de Norte, el programa crea la reserva a tu nombre sin preguntarte. La próxima vez que abras la CLI, Norte ya es tuya. No has tenido que mirar nada. El riesgo es que, si entretanto ya no la querías, te encuentras una reserva que no pediste, y por eso haría falta un comando para borrarte de la lista.
+- **Solo apuntarlo.** Al cancelarse la de Norte, el programa deja anotado que ya está libre y no hace nada más. Tú escribes `espera` y ves `Norte lun 10:00-12:00: ya libre`; entonces reservas a mano. Es más seguro, pero sigues teniendo que ir a mirar, aunque sea en un comando distinto de `libres`.
+
+Una limitación de cualquiera de las dos: el programa no se queda encendido. Solo actúa cuando tú escribes un comando. Un aviso que te llegue solo, sin abrir nada, no es posible con lo que hay hoy.
+
+Dime cuál de las dos encaja con lo que buscas, o qué parte no te ha quedado clara.

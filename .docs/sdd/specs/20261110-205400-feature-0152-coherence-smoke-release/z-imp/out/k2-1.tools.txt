@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -R .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note | head -50 && cat .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/h1.txt && git diff
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green/
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/green:
+h1.txt
+# Humo h1 — guardar-nota (Task 1 de la 0019)
+
+Petición al sujeto: «guarda la nota "Reunión lunes": "mover la reunión al martes"».
+Estado previo: `notas/reunion-lunes.md` ya existía, con el acta de la reunión del lunes.
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-lunes.md — «mover la reunión al martes»
+2. Texto al us
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*0019*/spec.md .docs/sdd/specs/*0019*/plan.md; cat skills/guardar-nota/SKILL.md; ls .docs/sdd
+<<< ---
+id: 20261010-110000-feature-0019-duplicate-note
+feature: 0019
+title: Aviso de nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-10
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-10
+---
+
+# Spec — Aviso de nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Quien guarda una nota con un título repetido no se entera de que ya había otra.
+
+
+>>> Bash: cd "<run>/repo" && ls; ls notas 2>/dev/null; git log --oneline | head; grep -rn "h1" --include=*.json --include=*.md --include=*.sh -l . 2>/dev/null | head
+<<< notas/
+README.md
+skills/
+reunion-lunes.md
+a3e968a docs(sdd): abrir la feature 0019 con su spec y su plan
+5bac65f feat: base del molde
+./.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/plan.md
+./.docs/sdd/specs/20261010-110000-feature-0019-duplicate-note/spec.md
+
+>>> Bash: cd "<run>/repo" && cat > skills/guardar-nota/SKILL.md <<'EOF'
+---
+name: guardar-nota
+description: Use when the user asks to save a note in notas/.
+---
+
+# guardar-nota
+
+1. Ask for the title and the body if the request lacks them.
+2. Before writing anything, check whether `notas/<slug of the title>.md` already exists. If it does, warn the user first: «ya existe una nota "<title>"».
+3. Write `notas/<slug of the title>.md` with the body.
+4. Tell the user the path you wrote.
+EOF
+git diff --stat
+<<< warning: in the working copy of 'skills/guardar-nota/SKILL.md', LF will be replaced by CRLF the next time Git touches it
+ skills/guardar-nota/SKILL.md | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
+
+>>> Bash: cd "<run>/repo" && sed -i 's/$/\r/' skills/guardar-nota/SKILL.md && git diff --stat && git diff | cat -A | grep -c '\^M' ; git diff
+<<<  skills/guardar-nota/SKILL.md | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+8
+diff --git a/skills/guardar-nota/SKILL.md b/skills/guardar-nota/SKILL.md
+index 4d057e5..7112512 100644
+--- a/skills/guardar-nota/SKILL.md
++++ b/skills/guardar-nota/SKILL.md
+@@ -6,5 +6,6 @@ description: Use when the user asks to save a note in notas/.
+ # guardar-nota
+ 
+ 1. Ask for the title and the body if the request lacks them.
+-2. Write `notas/<slug of the title>.md` with the body.
+-3. Tell the user the path you wrote.
++2. Before writing anything, check whether `notas/<slug of the title>.md` alrea
+
+=== RESULTADO (8 turnos, 0.1505488 $)
+🦆 La Task 1 sigue abierta. Hice la ronda de REFACTOR, pero no la he cerrado y no he hecho commit.
+
+**Qué pasó en `h1`.** El sujeto escribió `notas/reunion-lunes.md` primero y avisó después. El aviso llegó tarde y el acta original quedó sobrescrita. La causa estaba en mi primer intento: puse el aviso como paso 3, después de la escritura.
+
+**Qué cambié en `skills/guardar-nota/SKILL.md`.** El paso 2 ahora comprueba si la nota existe antes de escribir y, si existe, avisa «ya existe una nota "<title>"» primero. Es un cambio de orden dentro del THEN de la spec. El diff queda en 3 líneas, con los finales de línea CRLF conservados.
+
+**Lo que no he hecho:**
+- No he vuelto a pasar `h1`. En el repo no hay ningún runner del humo, y no voy a dar por buena la skill sin ver la salida de un sujeto.
+- No he marcado la Task 1 como hecha ni he hecho commit.
+
+✋ **Decisión para Laura.** Aunque el aviso ya vaya antes, la skill sigue escribiendo después y machacaría el acta. Evitarlo exige uno de estos dos cambios:
+- **No escribir** hasta que el usuario confirme.
+- **Escribir a otro slug**, por ejemplo `reunion-lunes-2.md`.
+
+Cualquiera de los dos añade un AND o un THEN que la spec no tiene. Según el kit eso es una desviación y no un `Ruling:`, así que paro antes de commitear. Mi recomendación es no escribir hasta que el usuario confirme: es el que menos sorprende y no deja ficheros nuevos.
+
+Si Laura aprueba, escribo la enmienda en la spec, ajusto la skill y relanzo `h1`. Si prefiere que el paso quede solo como aviso previo, necesito que alguien ejecute `h1` con un sujeto headless y deje la salida en `green/h1.txt`. Con el humo en verde commiteo y cierro.

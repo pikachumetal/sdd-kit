@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -50; git branch --show-current
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+.
+..
+.docs
+.git
+package.json
+PRODUCT.md
+README.md
+scripts
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+develop
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution mission tech-stack roadmap sdd-kit.json; do echo "=== $f"; cat $f* 2>/dev/null | head -60; done; ls specs; ls -a; cat ../../PRODUCT.md | head -30; ls ../../src ../../scripts ../../test; cat ../../package.json
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La u
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/specs/*; cat .docs/sdd/specs/*free/spec.md; cat src/app.js; ls .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 2
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+# Spec — free
+
+status: done
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(roo
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/skills/sdd-start-feature/references" && cat modo-lite.md; sed -n 1,60p nombrado.md
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/estimation.md | head -20; grep -n "libres" -r test README.md | head
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los patches registran solo el tiempo real.
+- `estimation-log.md` se genera, no se escribe: el script calcula el factor de calibración (ratio mediano real/estimado) global y por tipo de feature.
+- Features y p
+
+=== RESULTADO (8 turnos, 0.20440979999999997 $)
+Ahora: he leído el contexto SDD y el código que toca. Queda: confirmar con usted carril, modo y perfil. Después, la spec, que le presento para aprobar (~5 min).
+
+**Carril: feature, no patch.** La petición no fija la solución. Las salas (`Norte`, `Sur`) no tienen planta en ningún sitio, así que habría que decidir tres cosas:
+- de dónde sale la planta de cada sala;
+- cómo se pasa: `libres 10:00-12:00 --planta 1`, o como segundo argumento posicional;
+- qué devuelve `libres` si no se indica planta, y si la planta no existe.
+
+Esas decisiones no son un ajuste de presentación ni un fallo con causa raíz.
+
+**Modo: ¿lite o full?** Puede ir en lite, que es una spec corta, sin `plan.md`. Esto he comprobado de las condiciones:
+- El flujo ya existe y es legible: `freeRooms` y `run('libres')` en `src/app.js`, con un test.
+- No cambia contratos públicos: `libres` solo lo usa la terminal.
+- No cambia schema de datos: las salas son una constante en memoria, y añadir la planta a esa lista no es un schema ni una migración.
+- Cabe en un solo módulo: `src/app.js`.
+- La estimación sería de una hora o menos, dentro de la media jornada que fija `estimation.md`.
+
+Cumplirlas solo habilita lite, no lo activa. Sin su confirmación va en full.
+
+**Perfil:** `delegate`, que viene de `.docs/sdd/sdd-kit.json` (nivel proyecto). No hay `sdd-kit.local.json` ni perfil de release o de feature. Con `delegate` hay una parada para aprobar la spec y otra en la validación.
+
+**Tamaño y rama:** prevé 2 tareas (datos de planta y filtro en `libres`), así que no propongo partirla. No hay fila en el roadmap, y `ids.mode` es `sequence`. Reservaría un id con `sdd id next --reserve` y crearía `feature/<id>-libres-planta` desde `develop`, antes de abrir la carpeta de la spec.
+
+**Pregunta:**
+1. ¿Es feature en **lite** (recomendado), feature en **full**, o lo ve de otra forma?
+2. ¿Mantiene el perfil `delegate`?
+
+Si le encaja, puede contestar «lite, delegate» y sigo con la rama y la spec. También puede añadir ya de dónde sale la planta (por ejemplo `Norte` en planta 1 y `Sur` en planta 2). Si no, la propongo en la spec como decisión suya para validar.

@@ -1,0 +1,42 @@
+--- [7]
+Sí se podría, pero hoy el código no tiene el concepto de planta. Esto es lo que veo y lo que deduzco.
+
+**Lo que hay en el código** (`src/app.js`):
+- `rooms` es solo una lista de nombres: `['Norte', 'Sur']`. No guarda planta ni ningún otro dato de la sala.
+- `libres <franja>` llama a `freeRooms(slot)` y devuelve las salas sin reserva en esa franja.
+- `PRODUCT.md`, `ROADMAP.md` y la spec `task-0006-free` no mencionan plantas.
+
+**Lo que habría que hacer** (es una deducción mía, no algo que diga la documentación):
+1. Pasar `rooms` a objetos, por ejemplo `{ name: 'Norte', floor: 1 }`. Hay que decidir de dónde sale la planta de cada sala. Hoy están en el código; en el coworking real alguien tendría que decirlas.
+2. Añadir un parámetro opcional a `libres`, por ejemplo `libres 10:00-12:00 --planta 2`, y filtrar por él en `freeRooms`.
+3. Añadir pruebas en `test/app.test.js`.
+
+El cambio es pequeño, probablemente tamaño S.
+
+**Otra cosa que he visto.** `freeRooms` compara solo la franja, no el día. Una reserva el lunes a las 10:00-12:00 hace que la sala figure ocupada todos los días a esa hora. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`. No lo he tocado. Puede ser un ítem para `debt.md` o una fila de patch.
+
+**Dudas antes de apuntarlo:**
+- ¿La planta es un dato fijo de cada sala o se puede cambiar?
+- ¿Quieres también listar las plantas, o solo filtrar?
+
+Si quieres hacerlo, lo apunto en el roadmap como feature y te doy el prompt de arranque. Si prefieres hacerlo en esta sesión, di "arráncalo". No he creado ni modificado nada.
+
+--- [8]
+Se pasa al roadmap, que es quien reserva el id y escribe la fila.
+
+--- [13]
+Es una feature concreta, así que sería una sola fila en Now, sin proposal. El perfil es `delegate`, así que te enseño la fila antes de escribirla.
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| *(reservo el siguiente con `sdd id next --reserve`, probablemente 0010)* | — | **Filtrar `libres` por planta**<br>*Ver solo las salas libres de una planta*<br>Brief: **Carril:** feature · **Requisitos:** los del one-liner · **Decisiones ya tomadas:** ninguna · **Salda:** nada · **Toca:** `src/app.js`, `test/app.test.js` | ⏳ | — | S |
+
+Dos cosas que tienes que decidir:
+
+1. **Dónde vive la planta de cada sala.** Mi recomendación: fija en el código, con `rooms` como `{ name, floor }`. Es lo más simple y las salas hoy ya están ahí. Sería configurable solo si las salas cambian a menudo.
+2. **Alcance.** Mi recomendación: solo filtrar, con `libres <franja> --planta N`. Listar plantas queda fuera.
+
+Hay un tercer punto, que es opcional. `freeRooms` ignora el día y compara solo la franja. Te propongo apuntarlo como ítem en «Por triar» de `debt.md` y no mezclarlo con esta feature.
+
+Si me dices "sí", o respondes a los dos puntos, escribo la fila con esas decisiones. Después reservo el id, paso `sdd roadmap check`, publico en `develop` y te doy el prompt de arranque. Hasta entonces no he escrito nada ni reservado ningún id.
+

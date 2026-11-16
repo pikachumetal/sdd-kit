@@ -1,0 +1,102 @@
+--- [2]
+Esto es un fallo en un proyecto con SDD, así que empiezo por `sdd-kit:sdd-propose`.
+
+--- [10]
+🦆 **En corto:** `toHours` en `src/app.js` convierte `"09:30"` en `9.30` (cambia los `:` por `.`), no en 9,5 horas. Por eso `09:30-12:00` da 12,00 − 9,30 = 2,7 h, que supera las 2,5 h permitidas. El límite (`MAX_HOURS = 2.5`) está bien. El fallo es la conversión de la hora, no el límite.
+
+Ya tenemos una prueba que lo reproduce y falla hoy: `reservar justo el máximo de horas se acepta` en `test/reservar.test.js`. Es un fallo determinista y la causa raíz fija la solución, que es convertir minutos a fracción de hora (`h + m/60`). Por eso lo clasifico como **patch**, no como feature. El mismo error afecta a `precio` con horas que no son en punto, por ejemplo `09:30-12:00` daría un importe incorrecto. Se arregla solo con la misma corrección, y lo apunto en el patch.
+
+No hay `estimation.md` en el proyecto, así que no hay estimación en horas.
+
+¿Abro el patch así?
+
+1. **Sí, patch (Recomendada):** creo la rama y el patch, escribo la prueba de regresión de `precio` con media hora, corrijo `toHours` y verifico.
+2. **Patch con perfil distinto:** dime cuál (por ejemplo «perfil `unattended`») y lo abro con ese.
+3. **No, tratarlo como feature:** spec y plan completos. No te lo recomiendo, porque la solución ya está fijada.
+
+--- [15]
+Rama creada con el id 0010. Paso a `sdd-implement`.
+
+--- [20]
+Primero leo la deuda y reproduzco con datos, antes de tocar nada.
+
+--- [26]
+Los dos tests fallan por el motivo esperado (RED). Escribo el `patch.md` con la causa antes del fix.
+
+--- [29]
+Me equivoqué de ruta: el repo está en `D:\code\.worktrees\…`, con punto.
+
+--- [33]
+Arreglado y en verde. Antes del commit, el patch exige un revisor (sonnet). Actualizo la verificación y lo despacho.
+
+--- [41]
+El revisor no ve nada que bloquee. Respondo sus hallazgos en §4 y hago el commit del fix.
+
+--- [43]
+Commit hecho. Paso al cierre con `sdd-archive`.
+
+--- [51]
+El fallo está arreglado y commiteado en `d9de6a5`, pero no está cerrado. Falta tu validación y no voy a darla por buena por ti.
+
+Mientras esperaba tu validación, he hecho el cierre en `sdd-archive`. Dos cosas:
+- **Configuración del merge:** `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Hasta que los fijes no puedo fusionar. Cuando valides te los propongo (`develop`, y `noFf` a tu elección).
+- **Abiertas a la vez:** no hay otras ramas abiertas.
+
+🦆 **Qué cambia:** `reservar Sur 09:30-12:00` ya se acepta (2,5 h exactas, el máximo). Antes se leía `09:30` como 9,30 h y salía 2,7 h. Lo mismo arreglaba `precio`: `09:30-12:00` en Sur da 37.5 € y antes daba 40.5 €.
+
+**✋ Me salí del plan en…**
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `reservar Sur 09:30-12:00` se acepta | ejecución real | «reservada Sur 09:30-12:00» |
+| `reservar Sur 09:00-12:30` (3,5 h) se rechaza | ejecución real | «excede el máximo de horas» |
+| `precio Sur 09:30-12:00` | ejecución real | «37.5 €» |
+
+**Suites**
+- `node --test`: 7/7 sobre `d9de6a5`. El gate del cierre lo repito tras la fusión.
+
+**Sin probar**
+- Nada.
+
+Revisión del patch (sonnet): causa raíz y fix confirmados. Dejé dos hallazgos fuera del patch, y ambos están anotados en `patch.md`:
+- `precio` puede mostrar ruido decimal en franjas con minutos, por ejemplo `12.500000000000009 €` para `09:10-10:00`. Redondear cambia lo que ve el usuario, así que lo decides tú.
+- Una franja sin `:` (`9-12`) ahora se acepta. Es la deuda ya registrada «Sin validación del formato de franja horaria».
+
+Panel: plan B en http://127.0.0.1:64624/
+(No tengo las herramientas de Chrome. Esta página no ve la app: si un paso falla, cuéntame el error en el comentario.)
+
+**Guion**
+
+Rama `feature/0010-horas-media-hora` · worktree `<run>\repo`
+
+Es una CLI y no hay entorno que arrancar.
+
+```
+cd <run>\repo
+```
+
+1. El comando del cliente → «reservada Sur 09:30-12:00»
+
+```
+node src/app.js reservar Sur 09:30-12:00
+```
+
+2. Una franja de 3,5 h sigue rechazada → «excede el máximo de horas»
+
+```
+node src/app.js reservar Sur 09:00-12:30
+```
+
+3. El precio con media hora → «37.5 €»
+
+```
+node src/app.js precio Sur 09:30-12:00
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

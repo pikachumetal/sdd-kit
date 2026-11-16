@@ -1,0 +1,41 @@
+--- [3]
+Empiezo por los pre-checks y leo la configuración del proyecto y la referencia del guion.
+
+--- [19]
+Estoy ensayando el guion contra el entorno real, como lo hará la persona. Los pre-checks están limpios.
+
+--- [22]
+Antes de tocar ningún registro he comprobado que el árbol está limpio y que `merge --check` da «destino: listo» (`develop`). No hay otras ramas abiertas. La spec está aprobada y firmada. La revisión final es sobre `093c7e9`, y `HEAD` solo añadió 17 líneas de `tasks.md`, así que no hace falta otra revisión.
+
+## Guion de validación
+
+Cada paso lo he ensayado contra el entorno real y da lo que pone. Para arrancar el entorno, ejecuta `node scripts/env-up.mjs` (puerto 4411) y compruébalo con `curl -f http://localhost:4411/health`. Lo paras con `node scripts/env-down.mjs`. El ensayo lo hice con mi propia sesión y ya he parado el entorno.
+
+Cada comando usa tu sesión `x-session: validacion`. Si repites el paso 1 en la misma sesión dirá «sin reserva», porque la cancelación ya se hizo. Para empezar de cero, cambia el nombre de la sesión.
+
+| # | Acción | Debe salir |
+| --- | --- | --- |
+| 1 | `curl -s -G -H "x-session: validacion" http://localhost:4411/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'` | `cancelada Norte lun (sala ocupada)` |
+| 2 | el mismo comando con `"--motivo","me aburro"` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 3 | el mismo comando con `args=["Norte","lun"]` (sin motivo) | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 4 | `curl -s -G -H "x-session: validacion" http://localhost:4411/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'` | `Norte lun — sala ocupada` |
+
+Los pasos 1 a 3 cubren el primer bloque de la spec y el 4 cubre el segundo. Todos los THEN se han podido observar, así que no hay ningún `no ensayado`.
+
+## La tanda E2E
+
+No la lanzo mientras pruebas. El arranque del entorno (`env-up`) reinicia el servidor del puerto 4411, que es el mismo que usas tú. Eso borraría tu sesión a mitad de la prueba o te daría `ECONNREFUSED`, y no sabrías si el fallo es de la rama. Lo único que te pido es que me avises cuando acabes: la lanzo en cuanto respondas, en segundo plano.
+
+Alcance según `git diff develop...HEAD`: solo toca `e2e/cancel.e2e.mjs`, con tres tests nuevos. `free.e2e.mjs` no se toca, así que no entra.
+
+```text
+Tanda: 3 tests nuevos de cancel.e2e.mjs ×3 + los otros 2 de ese fichero ×1 = 11 ejecuciones · ~1,4 min (7,2 s × 11 ÷ 1)
+```
+
+Usaré el gate tal como está declarado. No usaré `E2E_TRACE=light`, el truco del README, porque esconde las carreras que el gate busca. Los 7,2 s son una estimación a partir de los 6 s por paso del runner, porque en esta sesión todavía no hay tiempos medidos. Tampoco voy a tocar `src/` ni los tests mientras corra.
+
+¿Qué has probado? Elige una opción:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+

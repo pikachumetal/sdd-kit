@@ -1,0 +1,107 @@
+--- [3]
+Ahora: cierro la revisión final de la 0010 a partir de los informes ya emitidos. Queda: triaje de hallazgos, fixes si hacen falta, rulings a `tasks.md` y validación.
+
+--- [17]
+Se coló un salto de línea real dentro de los `split`. Lo arreglo con Edit.
+
+--- [22]
+RED por compilación (falta el export). Añado solo el export, sin cambiar comportamiento, para ver los tres fallar por su causa:
+
+--- [25]
+RED visto: fallan los dos de los hallazgos; el de «20 o menos» pasa, como guarda de regresión. Ahora la implementación:
+
+--- [27]
+El shell se comió las plantillas. Lo reescribo con Edit.
+
+--- [31]
+La suite pasa (8/8), pero el diff es enorme: reescribí los ficheros con LF y estaban en CRLF. Restauro los finales de línea.
+
+--- [36]
+Falta la re-revisión única del fix. Leo el encargo y la plantilla.
+
+--- [51]
+La pasada de fix está hecha y commiteada (`607080f`). Queda esperar a la re-revisión única, que sigue en segundo plano. Hasta que vuelva no puedo decir que la revisión quedó limpia, y el workspace no se borra todavía.
+
+**Lo que hice**
+- **Hallazgo de Código (Important):** `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Ahora lo recorta. Test en RED primero y en verde después.
+- **Hallazgo de Spec (Minor, re-graduado a Important):** el informe lo graduó contra el silencio de la spec, pero la decisión 4 de la spec ya fija el tope de 20 y la línea «… y N más», y el código no lo hacía. `canceladas` ahora enseña las 20 últimas y añade «… y N más» si hay más. Test en RED primero y en verde después.
+- **Suite:** 8/8 en verde. Dos tests de este pase tuve que reescribirlos porque el shell rompió un `\n`, y restauré los finales de línea CRLF de los dos ficheros.
+- **Re-revisión:** va con `sdd-kit:effort-high` + `opus`, sobre `b5be669..607080f`, en un worktree desanclado.
+- **`tasks.md`:** ya lleva `Revisión final:`, `Pasada de fix:` y los rulings. Falta la línea `Re-revisión:` cuando llegue el veredicto.
+
+**Rulings I made**
+1. «Las 20 últimas» son las últimas 20 en el orden del array de reservas, y «… y N más» va al final. La spec no fija orden ni posición y no se guarda fecha de cancelación. Si estaba mal, es un cambio de una línea.
+2. No apliqué el «10» que sugería el informe de Spec: el tope es el 20 de la decisión 4. Si el dev-lead quería otro, es una constante.
+3. `cancelledList` se exporta con parámetro opcional `list = bookings`. Ningún comando crea reservas, así que era la única forma de probar más de 20. Cuesta un export más.
+4. El test del espacio asserta «sin reserva Norte lun». La única reserva ya la cancela otro test, así que el test comprueba que el motivo se acepta y se llega a buscar la reserva. Si se añade un comando que cree reservas, podrá asertar «cancelada».
+
+**Deferred minors:** ninguno.
+
+Cuando llegue el veredicto de la re-revisión escribo su línea en `tasks.md`, retiro el worktree de revisión y borro el workspace del plan. Después paso a la validación (paso 7 de `sdd-start-feature`).
+
+--- [58]
+### Finding Verdicts
+
+1. **[Código, Important] `reasonOf` conserva los espacios: ADDRESSED**
+   - `src/app.js:17` ahora devuelve `params[index + 1]?.trim()`. Así, «sala ocupada » se recorta antes de que `cancelBooking` lo compare con `reasons.includes` (`src/app.js:21`).
+   - Con `--motivo` sin valor, `params[index + 1]` es `undefined`, `?.trim()` da `undefined` y la respuesta sigue siendo «motivo no válido: …». No lanza error y el AND «sin `--motivo`» se mantiene. Un motivo hecho solo de espacios se queda en `""` y también se rechaza, que es lo correcto.
+   - El test está en `test/cancel.test.js:92-95`. Prueba lo que dice: si no se recortara, la salida sería «motivo no válido…» y no «sin reserva Norte lun». La cadena «sin reserva» solo se alcanza después de pasar la validación del motivo (`src/app.js:21-23`).
+   - **Ruling sobre la aserción «sin reserva Norte lun»:** lo acepto. Es la única salida observable que demuestra que el motivo se aceptó, porque `bookings` es estado de módulo y el test de `cancel.test.js:5-6` ya canceló Norte lun. Fragilidad: ver Out-of-Scope.
+
+2. **[Spec, Important] `cancelledList` sin límite: ADDRESSED**
+   - `src/app.js:3` define `CANCELLED_LIMIT = 20`. Es el 20 de la decisión 4 de la spec (`spec.md:26`), no el 10 que sugería el informe.
+   - `src/app.js:38` toma las 20 últimas con `slice(-CANCELLED_LIMIT)`. `src/app.js:39` añade `… y ${N} más` solo si hay más de 20.
+   - Los tests son `test/cancel.test.js:97-104` y `test/cancel.test.js:106-109`.
+     - Con 23 canceladas: 21 líneas, de `d3` a `d22`, y al final «… y 3 más».
+     - Con exactamente 20: no aparece la línea del resto, así que el límite queda cubierto por el lado de «≤ 20».
+   - **Rulings:**
+     - «Las 20 últimas» en el orden del array, con «… y N más» al final: lo acepto para esta pasada, porque la spec no fija ni orden ni posición. Hay un matiz sobre el orden (ver Out-of-Scope).
+     - Exportar `cancelledList(list = bookings)`: lo acepto. `run('canceladas')` sigue llamando a `cancelledList()` sin argumentos (`src/app.js:47`), así que el comando no cambia. Es la única forma de probar más de 20, porque `reservar` no añade nada a `bookings` (`src/app.js:45`).
+
+### New Breakage in the Fix Diff
+
+None.
+- **Regresiones:** no hay. `cancelBooking` no cambia de firma ni de semántica; el recorte vive solo en el parseo de la línea de comandos. El resto de `run` queda intacto.
+- **Restricción «Texto de la interfaz en castellano»:** se cumple. «… y N más» está en castellano y no aparece ningún texto nuevo en otro idioma.
+- **Lista vacía:** sigue devolviendo `''`, igual que antes.
+
+### Out-of-Scope Observations
+
+- **[Minor] El test del espacio depende del orden de los tests y del estado compartido** (`test/cancel.test.js:92-95`). Si se ejecuta aislado (`--test-name-pattern`) o si se reordena el fichero, la reserva sigue activa, la salida es «cancelada Norte lun (sala ocupada)» y el test falla aunque el recorte funcione. Se arregla con una de estas dos opciones:
+  - asertar `assert.notMatch(salida, /^motivo no válido/)`;
+  - exponer un punto de prueba con datos propios, como el de `cancelledList`.
+- **[Minor] Orden de «las últimas» frente a la spec.** `spec.md:26` habla de «las 20 últimas *cancelaciones*». El orden del array es el de creación de las reservas, no el momento en que se cancelaron. Una reserva antigua cancelada hace poco quedaría fuera si hay 20 reservas posteriores canceladas antes que ella. Hoy no se nota, porque nada añade reservas a `bookings`. Recomiendo dejar el ruling escrito en `## Enmiendas` de la spec (ahora dice «ninguna»), o guardar un orden de cancelación cuando la app pueda crear reservas.
+- **[Minor] La decisión 4 no tiene escenario en el Delta de comportamiento**, y sus tests no pasan por el comando `canceladas`, que es lo que pide «Dónde se prueba» (`spec.md:44`); llaman a `cancelledList(list)` directamente. Está justificado por el ruling del punto de prueba, pero conviene dejarlo en Enmiendas junto con un escenario GIVEN/WHEN/THEN para el límite.
+- **[Important para la feature; previo al rango de esta pasada] El AND «sin `--motivo` responde lo mismo» (`spec.md:55`) no tiene ningún test** en `test/cancel.test.js`. El código lo cumple (`src/app.js:17,21`), pero ningún test lo fija. Tampoco hay test para `--motivo` sin valor, que es el camino que toca el nuevo `?.trim()`. Recomiendo añadir antes del cierre `run('cancelar', ['Sur','mar'])` y `run('cancelar', ['Sur','mar','--motivo'])`, ambos asertando «motivo no válido: cambio de planes, sala ocupada, otro».
+- **Verificación recomendada:** pasar `node --test` completo (el gate de cierre del plan) con `test/app.test.js` y `test/cancel.test.js` juntos. No lo he ejecutado, porque el encargo lo excluye. Node ejecuta cada fichero de test en su propio proceso, así que no espero que el estado de módulo se cruce entre ficheros, pero no lo he comprobado.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [60]
+La re-revisión confirma los dos hallazgos como corregidos, sin roturas nuevas. Sus observaciones fuera de rango las registro como rulings y las reflejo en `tasks.md`. Luego retiro el worktree y borro el workspace.
+
+--- [62]
+La revisión final de la 0010 está cerrada y la re-revisión salió limpia. El único worktree que queda es el de la feature, y el workspace del plan está borrado. `tasks.md` sigue sin commitear, y lo recogerá el commit del siguiente hito.
+
+**Estado**
+- **Fix:** commit `607080f`, suite 8/8 en verde.
+- **Re-revisión (`sdd-kit:effort-high` + `opus`, `b5be669..607080f`):** los dos hallazgos quedan corregidos y no hay roturas nuevas.
+- **`tasks.md`:** incluye `Revisión final:`, `Pasada de fix:`, `Re-revisión:` y los rulings. Corregí el hash de la Task 1, que decía `b5be669` y es `9ea4bcb`.
+
+**Rulings I made**
+1. «Las 20 últimas» son las últimas 20 en el orden del array de reservas, con «… y N más» al final. La spec no fija orden ni posición. Si estaba mal, es un cambio de una línea.
+2. No apliqué el «10» que sugería el informe de Spec: el tope es el 20 de la decisión 4. Si se quería otro, es una constante.
+3. `cancelledList` se exporta con parámetro opcional `list = bookings`, porque ningún comando crea reservas y era la única forma de probar más de 20. Cuesta un export más.
+4. El test del espacio asserta «sin reserva Norte lun», porque la única reserva ya la cancela otro test. Si se añade un comando que cree reservas, podrá asertar «cancelada».
+5. No añadí tests para el AND «sin `--motivo` responde lo mismo» ni para `--motivo` sin valor. La re-revisión lo marcó como Important, aunque ya existía antes del fix y el código lo cumple. Un commit de tests tras la re-revisión no se revisaría, así que queda como hueco. Si un cambio futuro rompe ese camino, nada lo detecta.
+6. El orden de «las 20 últimas» es el de creación de la reserva, no el de cancelación, y la decisión 4 no tiene escenario ni test por el comando `canceladas`. No enmendé la spec porque cambiaría el Delta. Hoy nada crea reservas, así que no se nota. Si se pudieran crear, una reserva cancelada hace poco podría quedar fuera del listado.
+
+**Deferred minors**
+- El test del espacio depende del orden de los tests por el estado compartido de `bookings`. Asertar `notMatch(/^motivo no válido/)` lo haría independiente.
+
+**Para el ✋ de la validación:** el hueco de tests del ruling 5, que está abierto, y que el commit `607080f` lo revisó la re-revisión única, sin commits posteriores sin revisar.
+
+Sigo con el paso 7 de `sdd-start-feature` (validación).
+

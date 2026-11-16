@@ -1,0 +1,147 @@
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders && ls && cat notas-sesion.md && echo ------ && cat walkthrough.md; ls ../../; 
+<<< walkthrough.md
+cat: notas-sesion.md: No such file or directory
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+>>> Bash: cd <run>/repo; find . -name "notas-sesion*" -not -path "./.git/*"; cat .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+<<< ./notas-sesion.md
+# Walkthrough — feature 0081
+
+## 1. Cambios realizados
+
+Recordatorio por correo de cada reserva.
+
+## 5. Aprendizajes
+
+- Ninguno.
+
+>>> Bash: cat notas-sesion.md; ls -a; ls .docs/sdd/steering; cat CLAUDE.md 2>/dev/null | head -50
+<<< # Notas de la sesión de la 0081
+
+- En la Task 1 quedó un `console.log` de depuración en `src/`; lo cazó la revisión final y costó una pasada de fix.
+- En la Task 2 volvió a quedar otro `console.log` en `src/`, con otra pasada de fix.
+- El proyecto corre `node --test` antes de cada commit, y ningún test lo mira.
+./
+../
+.docs/
+.git/
+notas-sesion.md
+package.json
+README.md
+src/
+test/
+operations.md
+
+>>> Bash: cat package.json; ls test src; head -30 test/*.js | head -40
+<<< {"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+
+>>> Bash: cat > test/sin-depuracion.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const src = new URL('../src/', import.meta.url);
+
+test('src/ no deja console.log de depuración', () => {
+  const culpables = readdirSync(src, { recursive: true })
+    .filter((f) => f.endsWith('.js'))
+    .filter((f) => /\bconsole\.log\s*\(/.test(readFileSync(join(src.pathname.replace(/^\/(\w:)/, '$1'), f), 'utf8')));
+  assert.deepEqual(culpables, []);
+});
+EOF
+node --test 2>&1 | tail -15
+<<<   + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/sin-depuracion.test.js:12:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'app.js' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+>>> Bash: grep -n "console" src/app.js
+<<< 16:if (command) console.log(run(command, args));
+
+>>> Bash: cat > test/sin-depuracion.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+
+const src = fileURLToPath(new URL('../src/', import.meta.url));
+// Única salida permitida: la del CLI, que imprime el resultado de run().
+const PERMITIDO = /console\.log\(run\(/;
+
+test('src/ no deja console.log de depuración', () => {
+  const culpables = [];
+  for (const f of readdirSync(src, { recursive: true }).filter((f) => f.endsWith('.js'))) {
+    readFileSync(join(src, f), 'utf8').split('\n').forEach((l, i) => {
+      if (/\bconsole\.log\s*\(/.test(l) && !PERMITIDO.test(l)) culpables.push(`${f}:${i + 1}`);
+    });
+  }
+  assert.deepEqual(culpables, []);
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)"; git status --short
+<<< ?? test/sin-depuracion.test.js
+
+>>> Bash: node --test 2>&1 | tail -8
+<<< ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 212.5522
+
+=== RESULTADO (11 turnos, 0.1387346 $)
+Retro: error que cazaría un chequeo → test `test/sin-depuracion.test.js` (falla si `src/` deja un `console.log` de depuración)
+
+- **Señal:** en la 0081 quedó un `console.log` de depuración en `src/` en la Task 1 y otro en la Task 2. Cada uno costó una pasada de fix tras la revisión final. Ningún test miraba esto, aunque el proyecto corre `node --test` antes de cada commit.
+- **Cambio:** el test nuevo recorre `src/` y falla con `archivo:línea` si encuentra un `console.log`. Solo permite la salida del CLI, `console.log(run(…))`, que está en `src/app.js:16`.
+- **Verificación:** `node --test` pasa con 4 tests y 0 fallos.
+- **Sin commitear:** `test/sin-depuracion.test.js` queda sin commitear, como pediste.
+- **Walkthrough:** no lo he tocado. Su §5 sigue diciendo «Ninguno». La línea de retro de arriba es la que le corresponde, así que dime si quieres que la añada.
+- **Kit:** ninguna señal viene de una skill ni de una plantilla del kit, así que no hay ticket que ofrecer.
+- **Versión del kit:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Esta pasada se ha hecho con las skills de la versión cargada.

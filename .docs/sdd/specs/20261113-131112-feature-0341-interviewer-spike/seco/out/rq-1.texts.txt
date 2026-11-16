@@ -1,0 +1,22 @@
+--- [11]
+Estoy mirando el repo antes de preguntar. Esto es lo que he encontrado.
+
+**Lo que dicen los documentos**
+- `PRODUCT.md`: es una CLI para ti solo, desplegada en tu servidor.
+- `operations.md`: Node 22 y sin dependencias externas.
+
+**Lo que veo en `src/app.js`**
+- `bookings` es un array en memoria con una reserva fija escrita en el código.
+- El proceso termina tras cada comando. Aunque `reservar` añadiera algo al array, se perdería al acabar ese mismo comando, sin esperar a ningún reinicio.
+- Hoy `reservar` ni siquiera añade nada: solo devuelve «reserva semanal creada».
+
+**Lo que no he podido comprobar**
+- Aquí tengo Node 26 y `node:sqlite` carga. El proyecto usa Node 22, donde ese módulo era experimental. No sé cuál es su estado en tu versión exacta de 22, así que no me fío de lo de aquí.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON** (`reservas.json`). No necesita dependencias, lo puedes leer y editar a mano y se escribe de forma atómica (fichero temporal y renombrado). Cada comando lo lee entero y lo reescribe. Con tus volúmenes es instantáneo, pero no sirve para consultas complejas.
+2️⃣ **`node:sqlite`**, integrado en Node. Tiene consultas y transacciones, pero en Node 22 puede dar avisos de módulo experimental o necesitar un flag. Además, tu fichero de entrada único dejaría de ser un JSON legible.
+3️⃣ **Fichero de líneas JSON, solo con añadidos**. Es difícil de corromper y deja historial. A cambio, cancelar exige escribir un registro de baja y reconstruir el estado al leer.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, la CLI se lanza una vez por comando y la regla es no tener dependencias, así que un fichero que puedes abrir y arreglar a mano basta. A cambio, si algún día quieres consultas complejas o varios procesos escribiendo a la vez, habrá que migrar a 2️⃣.
+

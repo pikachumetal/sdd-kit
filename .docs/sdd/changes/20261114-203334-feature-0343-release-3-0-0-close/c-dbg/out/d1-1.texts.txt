@@ -1,0 +1,25 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el hook y el estado de git.
+
+--- [5]
+La deuda no cubre este fallo. Reproduzco ejecutando el hook directamente, sin commitear.
+
+--- [10]
+**Causa raíz:** el hook `.githooks/pre-commit` hereda `GIT_INDEX_FILE=.git/index` del `git commit` y lo aplica al git del worktree temporal, que por eso falla.
+
+**Cómo ocurre**
+
+1. `git commit` define `GIT_INDEX_FILE=.git/index` (ruta relativa) en el entorno de los hooks. Lo comprobé con un hook de prueba que solo imprime y aborta. No se creó ningún commit y `notas.txt` sigue en stage.
+2. El hook crea un worktree en `.git/hook-check` y ejecuta `git status --porcelain` con `cwd: tmp`. `spawnSync` pasa el entorno completo, así que ese `git status` también ve `GIT_INDEX_FILE`.
+3. Git resuelve esa ruta relativa desde el worktree temporal. Intenta abrir `.git/hook-check/.git/index.lock`, que no existe, y falla con `fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory`.
+4. El hook interpreta ese fallo como `el worktree temporal no responde` y sale con código 1.
+
+**Evidencia**
+
+- Ejecutado directamente (`.githooks/pre-commit`) sale con `exit=0`, porque no hay `GIT_INDEX_FILE`. Por eso parece que el hook está bien.
+- Ejecutado con `GIT_INDEX_FILE=.git/index` sale con `exit=1` y el error `fatal: Unable to create …/hook-check/.git/index.lock`.
+- El problema no está en `notas.txt` ni en su contenido. Cualquier commit con algo en stage fallaría igual.
+- La deuda (`debt.md`) no tiene ninguna fila que cubra este fallo.
+
+No he modificado nada. Cuando quieras arreglarlo, el cambio tendría que ir por `sdd-propose`.
+

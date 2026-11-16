@@ -1,0 +1,71 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: ls -a; ls .docs/sdd 2>/dev/null; grep -ril "cancel" --exclude-dir=.git --exclude-dir=node_modules . 2>/dev/null | head -30
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+./.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+./CHANGELOG.md
+./ROADMAP.md
+./src/app.js
+./test/app.test.js
+
+>>> Bash: cat src/app.js; cat test/app.test.js; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; grep -i -n cancel CHANGELOG.md ROADMAP.md; cat PRODUCT.md; ls .docs/sdd/steering
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (5 turnos, 0.1012448 $)
+Respuesta corta: **casi no hay "montaje"**. Cancelar es un stub, y por eso cuesta pillarlo.
+
+**Lo que hay en el código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Se invoca como `cancelar <día> <franja>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**, no comprueba que la reserva exista y no borra nada.
+- `bookings` es un array en memoria con una sola reserva de ejemplo (`Norte`, `lun`, `10:00-12:00`). No hay persistencia, así que aunque se borrara algo, se perdería al terminar el proceso.
+- `reservar` tampoco añade nada. Solo responde "reserva semanal creada" si llevas `--cada-semana`.
+
+**Lo que dice la documentación** (esto es lo que dicen los docs, no lo que yo deduzco)
+
+- El patch 0007 (`.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`) dice: *"Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado."* El `CHANGELOG.md:14` lo presenta como "la cancelación ya no borra reservas de otro día con la misma hora". La fila 0007 del `ROADMAP.md` figura como ✅ y toca `src/app.js`.
+- `CHANGELOG.md:20` lista "Cancelar una reserva propia" como novedad.
+
+**Lo que infiero**
+
+- Hay un desajuste entre los docs y el código. El patch habla de una comparación por día y hora que ya no existe en `src/app.js`, y el código no borra nada.
+- El único test (`test/app.test.js`, "cancelar respeta el día") solo comprueba que el texto devuelto incluye el día. Por eso pasa aunque la lógica real no exista.
+- Puede que el patch se haya aplicado sobre una versión anterior y se haya perdido. También puede que este repo sea una base mínima (el commit se llama "base del molde") y el fix nunca estuviera aquí. El historial de git lo aclararía, pero solo hay un commit.
+
+Con esto, el comportamiento real hoy es: `cancelar` imprime un mensaje de éxito sin cancelar nada.
+
+¿Quieres que mire si algún otro sitio guarda reservas (no he visto ninguno) o que te explique cómo debería ser el flujo completo? Si lo que quieres es arreglarlo para que cancele de verdad, eso es trabajo nuevo. Lo apuntaría en el roadmap como patch y, si prefieres hacerlo en esta sesión, dices "arráncalo".

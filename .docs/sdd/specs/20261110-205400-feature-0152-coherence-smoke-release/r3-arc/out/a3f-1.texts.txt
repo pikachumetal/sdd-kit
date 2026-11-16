@@ -1,0 +1,76 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [15]
+Las dos referencias parecen no coincidir sobre este caso, así que miro «Every commit of yours» en `sdd-implement`.
+
+--- [23]
+Ahora el smoke con ejecución real (una fila por THEN) y la suite completa. Guardo la salida en el scratchpad.
+
+--- [26]
+La suite da rojo en `test/ids.test.js`, un test que esta feature no toca. Antes de abrir su código hago el contraste que pide el cierre. Leo la receta.
+
+--- [32]
+Verde en los dos: «No se repite». El error guardado (`TypeError … 'trim'`) no es un timeout ni un recurso de la máquina, así que la receta pide correr la tarea roja entera en ambos.
+
+--- [40]
+Ya tengo lo que necesito. Empiezo por los registros del cierre. Primero el delta de capacidad (con la CLI, no a mano) y la comprobación de ADRs.
+
+--- [43]
+Escribo el walkthrough (no existía borrador), con la verificación hecha por mí y lo que dejó la revisión.
+
+--- [46]
+Compruebo las cifras reales de la primera pasada antes de dejarlas escritas.
+
+--- [48]
+Coincide (5 de 6). Ahora `tasks.md`, la deuda y el roadmap.
+
+--- [51]
+Ahora la retro del cierre.
+
+--- [54]
+Recorro la sesión con las cuatro señales. Salen dos: una contradicción entre referencias del kit, que no corrijo aquí, y un test con estado que costó el contraste del rojo.
+
+--- [57]
+Historia: junto el cierre en un commit desde el de la última task. Antes compruebo que ningún registro cita un sha del rango que se junta.
+
+--- [59]
+Ahora la base integrada, en su propia llamada.
+
+--- [62]
+Base al día: no hay sync merge ni segunda suite, y `--verified-at` sería `8ea51b4`. Antes del merge preparo el informe del rojo, que la receta exige cuando el rojo también falla sin la rama.
+
+--- [64]
+**No terminado.** La 0010 está implementada y cerrada en la rama, pero no la he fusionado en `develop`: necesito que decidas sobre un test en rojo.
+
+**El rojo**
+- Comando: `node --test --test-concurrency=1`, salida con código 1. Log: `scratchpad/suite-0010-5e9882a.txt`.
+- Falla `test/ids.test.js` («una reserva nueva lleva su id»), que ya está en `develop` y esta feature no toca:
+  ```
+  TypeError [Error]: Cannot read properties of undefined (reading 'trim')
+      at TestContext.<anonymous> (test/ids.test.js:12:19)
+  ```
+- El test espera un fichero `ids-store` en el directorio común de git. Sin él falla, y a partir de la segunda pasada da verde.
+- Contraste: con el fichero ya creado, el test solo y la suite entera pasan en la rama (6/6) y en un worktree desacoplado de `develop` (5/5). Si borro `ids-store`, el test solo falla igual en el worktree de `develop`. No lo trae la rama.
+- `develop` sigue sin tocar, en `e52b642`.
+
+**Qué decidir:** si fusiono la 0010 en `develop` por encima de ese rojo. Mi recomendación es que sí: la rama no lo causa y queda anotado en `debt.md`. Dime «fusiona» y lo hago con `sdd merge`, sin push (`merge.push: false`).
+
+**Qué queda hecho en la rama** (commit de cierre `8ea51b4`, base `develop` al día)
+- **Validación:** en campo. El smoke dio 4/4 THEN con ejecución real, y la suite 6/6 en la repetición (la primera pasada dio 5/6).
+- **Revisión final:** Spec y Código limpias sobre `c9b0cd4`. El único commit posterior era `tasks.md` (17 líneas, solo `.docs/`), que leí en el hilo sin re-revisión.
+- **Tasks y capacidades:** el `tasks.md` decía que la Task 1 estaba en `c9b0cd4`; era `d53b8e3`, corregido. Creé `capabilities/bookings.md` con `sdd capability merge`.
+- **Registros y retro:** la fila 0010 del roadmap está en ✅ y `roadmap check`, `capability check` y `decision check` pasan. Sin `estimation.md`, no hay bloque de tiempo. Dejé dos filas de deuda en «Por triar», una por el test y otra por el workaround `--test-concurrency=1`. No hay `Pasada de fix` ni ADR.
+- **Decisión sin el dev-lead:** el ruling de la Task 2 (`--test-concurrency=1` en el gate, para esquivar la carrera sobre el almacén en memoria).
+
+**Pendiente**
+- **Spec:** estaba aprobada y firmada, así que no hay nada que señalar.
+- **Ramas abiertas:** no hay otras `feature/*` ni `patch/*`.
+- **Smoke:** el estado vive en memoria, así que `canceladas` solo enseña lo cancelado en su mismo proceso. La persistencia es la 0014.
+
+**Ticket del kit:** puedo ofrecerlo con `sdd-feedback`. La retro encontró una contradicción en el kit: `final-review-check.md` manda re-revisar un commit de menos de 20 líneas solo de documentación, y `sdd-verify` y `sdd-implement` dicen que ese commit se lee en el hilo.
+
+**Para acabar:** la 0011 a la 0014 siguen abiertas, pero no hay `parent:` ni `proposal:` en esta spec, así que no hay familia que recomendar.
+
+**No terminado.** Falta la fusión en `develop`, a la espera de tu decisión sobre el rojo. No borres todavía el worktree `<run>/repo`.
+

@@ -1,0 +1,54 @@
+--- [3]
+Ahora: leo el contexto del proyecto y clasifico el cambio. Queda: el anuncio y la nota de comprensión, luego la spec para tu aprobación, ~5 min.
+
+--- [14]
+Ahora: dejo anunciado el carril y te presento los enfoques. Queda: tu elección de enfoque, el diseño por secciones, la spec y su aprobación, ~8 min.
+
+Carril: feature, modo full · Perfil: pair, el que has pedido para esta feature (el del proyecto es delegate, en `sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+He creado la rama `feature/0012-informes` desde `develop`. El id 0012 lo reservó `sdd id next` porque el roadmap no tiene fila para esta feature. `sdd id claim` lo dio por válido, porque no hay remoto.
+
+**Lo que he entendido, corrígeme:**
+- Habrá un comando `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado.
+- `--sala <nombre>` filtra las cuatro vistas.
+- La salida es una tabla de texto. Si no hay reservas, cada vista dice «sin reservas».
+- El plan tiene 5 tasks: una por vista y otra para `--sala`.
+- No propongo dividirla. Son 5 tasks, todas en la misma superficie (el CLI de `src/app.js`) y sin migración.
+
+**Enfoques.** Lo ya decidido es el qué. El cómo sigue abierto:
+
+1. **Filtrar primero y contar después (recomendado).** Una función pura por vista en `src/app.js`, con la misma forma que `freeRooms`. `informes` filtra las reservas por `--sala` una sola vez y se las pasa a las cuatro vistas.
+   - Ventaja: el filtro vive en un único sitio y las vistas no saben que existe.
+   - Coste: la task de `--sala` es fina, porque sobre todo comprueba el cableado.
+2. **Cada vista recibe la sala y filtra ella misma.** Cada task es autónoma.
+   - Coste: el filtro se repite cuatro veces y puede divergir.
+3. **Módulo nuevo `src/informes.js`.** Separa mejor el código.
+   - Coste: `tech-stack.md` fija «un solo fichero de entrada», y con 35 líneas de código hoy no compensa.
+
+Recomiendo el 1. ¿Con cuál sigo?
+
+--- [16]
+Ahora: te presento el diseño en secciones, una por mensaje. Esta es la primera. Queda: dos secciones más, la spec y su aprobación, ~7 min.
+
+**Sección 1: el comando y la vista «ocupación por sala»**
+
+Al escribir `informes` verás las cuatro vistas una detrás de otra, cada una con su título y su tabla de texto. La primera es la ocupación por sala: cuántas reservas tiene cada sala. Con los datos de hoy saldría así:
+
+```text
+Ocupación por sala
+sala    reservas
+Norte   1
+Sur     0
+```
+
+Son mis propuestas, no me las habías dicho:
+- **«Ocupación» es el número de reservas activas.** Las canceladas y las anuladas no cuentan. No hay capacidad ni horario de apertura, así que un porcentaje no se puede calcular con lo que hay.
+- **Salen todas las salas, también las de 0.** Así la tabla sirve para comparar.
+- **Orden:** de más a menos reservas y, en empate, por nombre de sala.
+
+Por dentro, es una función pura que recibe las reservas, igual que `freeRooms`. Será la Task 1.
+
+¿Va bien?
+

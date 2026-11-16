@@ -1,0 +1,366 @@
+--- [3]
+Ahora: leo la referencia de redacción del plan y la spec aprobada. Queda: escribir `plan.md` y pasar a la implementación, sin más paradas si el perfil lo permite.
+
+--- [17]
+Ahora: commit de apertura (spec y plan) y paso a la implementación. Queda: Task 1 y Task 2, y la revisión final.
+
+--- [21]
+Ahora: arranco la implementación con el método Native del plan. Queda: Task 1 y Task 2, y la revisión final.
+
+--- [27]
+Estoy usando la skill sdd-worktrees para comprobar el espacio de trabajo aislado.
+
+--- [32]
+Línea de base limpia (4 tests en verde, lint sin hallazgos). Ahora: ledger, `tasks.md` y el pre-flight scan.
+
+--- [35]
+Base sin cambios en `develop`. Ahora: tests RED de la Task 1.
+
+--- [38]
+RED correcto (fallan por falta de la función). Ahora: implementación.
+
+--- [42]
+El script no aplicó nada; edito con Edit.
+
+--- [49]
+Verde. Ahora: commit de la Task 1 (con `tasks.md` y el ledger), y después `task done`.
+
+--- [53]
+Task 1 completa. Ahora: Task 2, tests RED primero.
+
+--- [55]
+Los dos fallan porque falta el comando. Ahora: implementación.
+
+--- [61]
+Las dos tasks están completas. Ahora: revisión final de la rama con `sdd-verify`. Queda: cierre de la revisión y `sdd-archive`.
+
+--- [64]
+Ahora: preparo la revisión final (paquete y encargos por eje). Queda: despachar los ejes, cerrar la revisión y pasar a `sdd-archive`.
+
+--- [72]
+Ahora: ledger del eje de arquitectura, paquete de revisión y worktree aislado.
+
+--- [77]
+Ahora: despacho los tres ejes en paralelo, cada uno con su vigilancia de silencio.
+
+--- [99]
+Los tres ejes de la revisión final están en marcha, cada uno con su vigilancia de silencio. Mientras tanto, la rama queda así:
+
+- **Task 1** (`e29272c`): `cancelar` exige `--motivo` de la lista cerrada, validado con `zod`. Un motivo ausente, sin valor o fuera de la lista responde `motivo no válido: cambio de planes, sala ocupada, otro`.
+- **Task 2** (`db596ab`): el comando `canceladas` lista `<sala> <día> — <motivo>`, o `sin canceladas` si no hay ninguna.
+- Con ambas tasks, `node --test test/cancel.test.js` da 7 en verde. El gate de cierre completo corre una vez más en la validación.
+
+Hay dos desvíos del plan, apuntados en el ledger:
+- Añadí `.temp/` al `.gitignore`, porque el workspace de la implementación está dentro del repo.
+- Trabajo en el checkout actual, sin crear otro worktree.
+
+En la spec, `architecture.md` decía «sin dependencias externas». Seguí la spec aprobada y actualicé esa línea para citar `zod`; conviene que el dev-lead lo valide.
+
+Queda esperar a los tres informes (Spec, Código y Arquitectura), re-graduar los hallazgos, hacer una sola pasada de fix y pasar a `sdd-archive`.
+
+--- [103]
+### Strengths
+- The change is small and easy to read. `cancelBooking` keeps the existing shape, and `listCancelled` and `optionValue` are short with names that say what they do.
+- The three literal response texts, including the em dash in `—`, match the constraints.
+- `zod` is in `dependencies`.
+- `src/app.js` has no tabs (I counted zero in `db596ab:src/app.js`).
+- There are no comments, so none repeat the code or cite documents.
+- The tests cover the edge cases for the new option: an out-of-list reason, no reason, and `--motivo` with no value.
+- Reviewing only the diff, I did not run the suite or the lint. The architecture doc was updated for the new dependency, and `.gitignore` excludes `node_modules/` and `.temp/`.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+#### Minor (Nice to Have)
+1. `src/app.js:70` · `z.enum(REASONS).safeParse(...)` builds the schema on every call. Move it to a module constant next to `REASONS`, for example `const reasonSchema = z.enum(REASONS);`. The schema is then declared once, the rule sits in one place, and `cancelBooking` reads better. This is a possible "name and place the rule once" point (Clean Code).
+2. `test/cancel.test.js:128-154` · The tests share the module's `bookings` state and depend on running in file order. The first test needs nothing cancelled yet. The invalid-reason tests need `Norte lun` to still be active. The last test needs the earlier test to have cancelled `Norte lun`. Reordering or running one test alone breaks them. Making each test self-contained would remove that coupling. This is a possible "independent tests" point (Clean Code, F.I.R.S.T.).
+3. `test/cancel.test.js` (whole file) · The file went from CRLF to LF line endings, so the diff shows every line as changed and hides what really changed. `src/app.js` is still CRLF, so line endings are now inconsistent. Keep one convention. If the project's formatter requires it, this is not a problem.
+4. `package.json` · It was rewritten as minified single-line JSON with no trailing newline. Adding `dependencies` only needed one extra key, and the original formatting could have stayed. This makes future diffs noisier. I saw no lockfile in the package; if the project tracks one, check that it was committed.
+5. `src/app.js:90-93` · `optionValue` returns the next token even when it is another flag, for example `--motivo --x`. The result is still the "motivo no válido" message, so the behavior is acceptable. It is only worth knowing if more options are added.
+
+### Declined to judge
+- Whether `cancelar` should report `sin reserva` before validating the reason, as it does now. This is the order of rules in the spec, so it belongs to the Spec axis.
+- Whether using `zod` instead of `REASONS.includes` is justified. The constraints and the plan set the dependency, so I did not question it.
+- The split between `run`, the command parser and the domain functions, and the single-file layout. These are boundary questions for the Architecture axis.
+- Whether `voidBooking` and the `anular` command should also take a reason. The spec does not ask for it, so it is outside this review.
+- E2E tests and end-to-end CLI invocation. The project declares no E2E, and I did not run the suite.
+
+### Recommendations
+- Apply Minor 1 and Minor 2. Both are cheap and help maintainability.
+- The main thread should run the full suite and `scripts/lint.mjs`. I did not run either, and the lint may be sensitive to the CRLF/LF change.
+
+### Assessment
+**Ready to merge?** Yes
+
+**Reasoning:** The implementation is correct and clean, and it meets every code constraint. The findings are Minor: a schema built on every call, tests that depend on file order, and formatting noise in `package.json` and the test file.
+
+--- [106]
+Ese aviso es solo del lanzador de las vigilancias, no de los revisores: los tres ejes siguen en marcha y no tengo ningún informe todavía. No sé si las vigilancias siguieron vivas al cerrarse ese shell. Sus logs están en `.temp/sdd/plan/watch-*.log`. Espero las notificaciones de los revisores para seguir con el cierre de la revisión.
+
+--- [110]
+Llegó el eje de Código: sin Critical ni Important, cinco Minor, veredicto «Yes». Faltan los ejes de Spec y Arquitectura. No cierro la revisión hasta tenerlos, porque los hallazgos se re-gradúan dentro de cada eje y los Minor van al ledger o a una única pasada de fix.
+
+Hay un punto que puedo comprobar ya sin esperar. El revisor dice que `test/cancel.test.js` pasó de CRLF a LF.
+
+--- [114]
+Confirmado: `test/cancel.test.js` y `package.json` perdieron los CR al reescribirlos yo, y `src/app.js` los conserva. Es un Minor real, y lo adjudico junto con los demás cuando lleguen Spec y Arquitectura. Sigo esperando esos dos informes.
+
+--- [120]
+### Strengths
+- The new dependency is declared the right way. In `package.json` (db596ab), `zod` is under `dependencies` with a caret range `^4.6.7`. The lockfile `package-lock.json` (lockfileVersion 3, `resolved` + `integrity`, MIT) was committed in e29272c and matches the range.
+- `.gitignore` now has `node_modules/`, so installed packages stay out of git. The plan (decision 7) anticipated this.
+- `architecture.md:5` matches the code. It says `zod` is the only external dependency and names what it is for, and that is exactly what `src/app.js` uses. The conflict with the old line («sin dependencias externas») is recorded in plan decision 7, and the dev-lead approved the spec that requires `zod`.
+- The design is as small as it can be. There are no new layers. The data model change is one optional field, `booking.reason`, and `voidBooking`/`anular` are untouched, which respects the 0011 boundary. `listCancelled` follows the same filter → format pattern as `freeRooms`.
+- The order of checks is right (find the booking, then validate the reason), so the existing "sin reserva" contract is unchanged. `safeParse` turns a missing or invalid reason into the literal message rather than a thrown `ZodError`, so a library error never reaches the user.
+- No security concerns: input is compared against a closed list and nothing is evaluated.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`.docs/sdd/steering/operations.md:5-12` · the project now needs an install step and the operations doc doesn't say so.**
+   - **What's wrong:** before this branch, `node src/app.js …` and the gates (`node --test && node scripts/lint.mjs`) ran on a fresh clone. Now `src/app.js:1` imports `zod` at the top level. Every command fails with `ERR_MODULE_NOT_FOUND` until someone runs `npm ci` / `npm install`, and so does every test file, including `test/app.test.js`, which imports `run`. That covers `libres` and `anular`, which have nothing to do with the reason. The review checkout itself has no `node_modules/`, which shows the clean state a new developer or CI gets. `operations.md` was not updated: it has no setup step and its gates assume nothing needs installing.
+   - **Why it matters:** the branch crosses the "no dependencies" boundary and updates `architecture.md`, but not the operational doc a person actually follows. The first thing they see after cloning is a broken gate.
+   - **How to fix:** add a setup line to `operations.md`, e.g. `**Instalar**: npm ci`. Also put it in front of the closing and merge gates (`npm ci && node --test && node scripts/lint.mjs`) or say it is a prerequisite. Optionally mention it in `README.md`.
+
+#### Minor (Nice to Have)
+1. **`src/app.js:1,19` · possible Clean Architecture row: "is the library confined to the outermost circle?"** The business rule (`cancelBooking`) calls `z.enum` directly, so the core of the app depends on the validation library. This is a judgement call, not a violation. The documented standard (`architecture.md`: a single entry file) and the approved spec ("el motivo se valida con `zod`") take precedence, and with one file there is no outer layer to move it to. It is only worth revisiting if the project grows into modules.
+2. **Is the dependency justified?** Here it does `REASONS.includes(reason)` on three literal strings. A new runtime dependency (supply-chain surface, an install step, the finding above) is a lot of cost for that. This was an explicit spec decision approved by the dev-lead, so it is not a defect of the branch. I note it so the dev-lead can confirm the cost knowingly; plan decision 7 already asks them to validate it.
+
+### Declined to judge
+- Code-level details, such as rebuilding the `z.enum(REASONS)` schema on every call (`src/app.js:19`) or the `optionValue` helper's design: Code axis.
+- Whether the spec's behaviours are met (texts, a missing `--motivo`, `sin canceladas`, order of the RED tests): Spec axis.
+- `.temp/` in `.gitignore`: it is outside the plan's file list (which only names `node_modules/`), but it is harmless repo hygiene and a scope question for the Spec axis.
+- `engines: ">=20"` vs "Node 22" in `architecture.md`: the mismatch already existed before this branch.
+- `"name": "repo"` in `package-lock.json`: npm takes it from the folder name because `package.json` has no `name`. It has no functional effect.
+- Bookings that only live in memory, so `canceladas` loses its data between processes: this was already the architecture (`operations.md`, «Motor de producción»).
+
+### Recommendations
+- The review package's "Files changed" list and its diff leave out `package-lock.json`, even though the branch adds it (+24 in `git diff ed4f422 db596ab --stat`). I checked the lockfile directly in the checkout. The tool that builds the package should not filter out lockfiles: for a branch whose architecture concern is a new dependency, the lockfile is the central file.
+- Heavy check for the main thread: on a clean checkout, run `npm ci && node --test && node scripts/lint.mjs`. This confirms the lockfile installs and that the gates pass once the install step is in place, and it would also show whether CI or other gates need `npm ci`.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The dependency is declared correctly (in `dependencies`, with a range and a committed lockfile) and `architecture.md` now matches the code. But the branch adds a mandatory install step without updating `operations.md`, so on a fresh clone the start command and both gates fail until someone runs `npm ci`.
+
+Relevant paths:
+- `<run>\review-0010-db596ab\src\app.js`
+- `<run>\review-0010-db596ab\.docs\sdd\steering\operations.md`
+- `<run>\review-0010-db596ab\.docs\sdd\steering\architecture.md`
+- `<run>\review-0010-db596ab\package.json`
+- `<run>\review-0010-db596ab\package-lock.json`
+
+--- [121]
+Llegó el eje de Arquitectura: una Important (falta el paso de instalación en `operations.md`) y dos Minor, veredicto «With fixes». Falta el eje de Spec. Mientras llega, compruebo el hecho que sostiene la Important.
+
+--- [125]
+La Important es real: `operations.md` no tiene paso de instalación y `README.md` tampoco menciona `npm`. En un clon limpio, `src/app.js` falla al importar `zod`. Entra en la única pasada de fix. Espero el informe del eje de Spec antes de tocar nada.
+
+--- [126]
+## Revisión final, eje Spec: 0010 «Motivo al cancelar» (`db596ab`)
+
+He leído el paquete entero (155 líneas, una sola pasada) y la spec y el plan con `git show db596ab:...`. También he leído con `git show db596ab:` estos ficheros: `src/app.js`, `test/cancel.test.js`, `package-lock.json`, `tasks.md`, el ledger, `operations.md`, `debt.md`, `PRODUCT.md` y `CHANGELOG.md`.
+
+### Strengths
+
+- Las tres entradas del Review Focus se cumplen y cada una tiene su test con nombre:
+  - **`cancelar Norte lun` sin `--motivo`.** `optionValue` devuelve `undefined` (`src/app.js:38-41`), y `z.enum(REASONS).safeParse(undefined)` falla sin lanzar error (`src/app.js:19`), así que sale `INVALID`. Lo fija `cancelar sin motivo` (`test/cancel.test.js:15-17`). Que no se cancele sin motivo también queda fijado, de forma indirecta: si se hubiera cancelado, `cancelar una reserva activa con motivo` (`:27-29`) respondería `sin reserva Norte lun`.
+  - **`cancelar Norte lun --motivo` sin valor.** `params[3]` es `undefined`, y `safeParse` no lanza, así que sale `INVALID` y no un error de `zod`. Lo fija `cancelar con --motivo sin valor` (`:19-21`).
+  - **`canceladas` sin canceladas.** Responde `sin canceladas` (`src/app.js:34`). Lo fija `canceladas sin ninguna cancelada` (`:7-9`), que es el primero del fichero, antes de cualquier cancelación.
+- Los dos THEN del delta y el AND tienen implementación y test, en el fichero que pide «Dónde se prueba»:
+  - `cancelada Norte lun (sala ocupada)` → `:27-29`
+  - `motivo no válido: …` → `:11-13`
+  - `Norte lun — sala ocupada`, con raya larga → `:31-33`
+- La spec tiene una sola decisión de código, y está cubierta:
+  - La lista cerrada y literal está en `REASONS` (`src/app.js:4`).
+  - `zod` está en `dependencies` y no en `devDependencies`.
+  - `package-lock.json` está commiteado en `e29272c`.
+  - `architecture.md` está al día.
+- Las decisiones del plan también están cubiertas:
+  - **Decisión 4 (orden de validación).** Primero se busca la reserva y luego se valida el motivo (`src/app.js:18-19`). Lo fija `cancelar sin reserva lo dice`.
+  - **Decisión 5 (sin normalizar).** `z.enum` compara el texto tal cual.
+  - **`anular` / `voidBooking`.** No se han tocado, como pide el scope (la 0011).
+- Las restricciones de código se cumplen:
+  - No hay tabuladores en `src/app.js`; lo he comprobado con `grep -P '\t'`.
+  - No hay comentarios.
+  - Los textos están en castellano.
+  - Las respuestas son literales.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+
+**1. Fuera de los tests, el CLI siempre responde `sin canceladas`, y no se puede hacer la prueba en la aplicación de la Task 2.**
+
+- **Dónde:** `src/app.js:6` y `src/app.js:32-36`.
+- **Qué falla:**
+  - `bookings` es un literal del módulo, y `operations.md` lo dice: «las reservas viven en memoria».
+  - Cada `node src/app.js <comando>` arranca con la reserva de Norte activa.
+  - Por eso, `node src/app.js cancelar Norte lun --motivo "sala ocupada"` seguido de `node src/app.js canceladas` da `sin canceladas`, no `Norte lun — sala ocupada`.
+  - La línea «Se prueba en la aplicación» de la Task 2 del plan espera esa segunda salida, y no se puede obtener. El ledger no registra que se ejecutara.
+- **Por qué importa:** el Intent de la spec es «nadie sabe por qué se liberó una sala. Se quiere el motivo de cada cancelación». Quien use la herramienta desde la terminal, que es el único uso que describe `PRODUCT.md`, nunca recupera un motivo. El THEN del listado solo se cumple dentro de un mismo proceso de test.
+- **Origen:** es un fallo del plan y de la spec, no de la implementación. La spec no menciona persistencia, y el plan prometió una verificación que su propia arquitectura no permite.
+- **Cómo arreglarlo:** el dev-lead tiene que elegir antes del merge.
+  - Opción a: aceptar la limitación. En ese caso hay que dejarla escrita en `debt.md` y en el walkthrough, y corregir la línea de la Task 2.
+  - Opción b: abrir una feature de persistencia.
+
+  No pido implementar la persistencia en esta rama.
+- **Gap:** `partial`, frente al Intent y la verificación en la aplicación de la Task 2 del plan.
+
+#### Minor (Nice to Have)
+
+**2. El delta llama ADDED a algo que cambia un comportamiento que ya existía.**
+
+- **Qué falla:**
+  - Antes, `cancelar <sala> <día>` respondía `cancelada …` (CHANGELOG 0.3.0, «Cancelar una reserva propia»).
+  - Ahora sin motivo se rechaza, y con motivo cambia el formato de la respuesta.
+  - Esto lo recoge la decisión 3 del plan, pero el delta de la spec no tiene un MODIFIED que lo cubra. Para el único usuario es un cambio que rompe la invocación anterior.
+- **Origen:** es un fallo de la spec, no de la implementación.
+- **Cómo arreglarlo:** al archivar, apuntarlo en el CHANGELOG como `Changed` (cancelar exige `--motivo`) y como enmienda de la spec.
+- **Gap:** `partial`, frente al delta de `bookings`.
+- De paso: las «Decisiones» de la spec van numeradas 1 y 3, sin la 2.
+
+**3. La decisión 6 del plan no tiene test para el caso de varias canceladas.**
+
+- **Dónde:** `src/app.js:35`.
+- **Qué falla:** la decisión dice «con varias, una línea por reserva, en orden de la lista». El `join('\n')` lo implementa, pero ningún test lo fija. Con una sola reserva en memoria no se puede probar sin tocar los datos.
+- **Gap:** `partial`, frente a la decisión 6 del plan.
+
+**4. `tasks.md` dice `pendiente` en las dos tasks.**
+
+- **Dónde:** `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`.
+- **Qué falla:** el ledger da las dos como `complete`. Hay que actualizarlo en el cierre (`sdd-archive`).
+
+### Declined to judge
+
+- **`cancelar --motivo otro Norte lun`**, con la opción antes de los posicionales: responde `sin reserva --motivo otro`. El análisis de argumentos por posición ya existía y la spec no habla de él.
+- **Mensaje propio para «falta el motivo»**, distinto de `motivo no válido`: la decisión 3 del plan decidió usar el mismo texto. Es criterio del dev-lead.
+- **Cancelar dos veces la misma reserva:** responde `sin reserva …`. Es comportamiento anterior y no lo toca el delta.
+- **CRLF a LF en `test/cancel.test.js`:** el fichero se reescribe entero. Es formato, no una modificación de los tests; los tests cambian según la decisión 3 del plan.
+- **`architecture.md` dice «Node 22» y `package.json` pide `engines >=20`:** lo dejo al eje Arquitectura.
+- **`.temp/` en `.gitignore`:** es un ruling del ledger, razonable y fuera del eje Spec.
+- **Tests que dependen del orden del fichero por el estado compartido:** es un ruling del ledger que el plan pedía. Lo dejo al eje Código.
+
+### Not verified
+
+- **Que la suite pase:** no verificado, el brief prohíbe ejecutarla. Las líneas de las tasks en el ledger traen solo `duration_ms`, no `ℹ fail 0`, así que el ledger no deja constancia del resultado de los tests.
+- **Las pruebas en la aplicación de las Tasks 1 y 2:** no verificado, el ledger no las registra. La de la Task 2 no puede dar lo esperado; ver el punto 1.
+- **`package-lock.json`:** no viene en el paquete de revisión, ni en «Files changed» ni en el diff. Lo he leído con `git show db596ab:package-lock.json`: está bien, con `zod` 4.6.7 en `dependencies`.
+
+### Recommendations
+
+- El hilo principal debería ejecutar el gate de cierre (`node --test && node scripts/lint.mjs`) y comprobar que sale `fail 0`, porque el ledger no lo registra.
+- Hacer a mano la prueba de la Task 1 en el CLI. Para la Task 2, decidir qué hacer con el punto 1 antes de dar la línea por buena.
+- No hay minors diferidos en el ledger que haya que arreglar antes del merge.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** las tres entradas del Review Focus y los THEN del delta están implementados y fijados con tests con nombre. Antes del merge, el dev-lead tiene que decidir sobre el punto 1: en el CLI real `canceladas` nunca muestra un motivo, y la prueba en la aplicación de la Task 2 no se puede cumplir. La salida es dejar la limitación escrita y corregir esa línea del plan, o abrir una feature de persistencia.
+
+--- [128]
+Ahora: cierre de la revisión. Re-gradúo los hallazgos por su efecto y miro el formato de `debt.md` antes de decidir qué entra en la pasada de fix.
+
+--- [134]
+Gate verde: 9 tests, 0 fallos, lint sin hallazgos. Ahora: commit de la pasada de fix (solo documentación, 3 líneas, la reviso yo en el hilo), ledger y `tasks.md`.
+
+--- [149]
+Antes de redactar nada, compruebo si `HEAD` se movió con commits que no estén cubiertos por la revisión, y ensayo cada paso del guion con ejecución real.
+
+--- [155]
+🦆 Antes, `cancelar Norte lun` cancelaba y no dejaba rastro. Ahora hay que dar un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde `cancelada Norte lun (sala ocupada)`, y sin motivo o con uno fuera de la lista responde `motivo no válido: cambio de planes, sala ocupada, otro`. El comando nuevo `canceladas` lista las canceladas con su motivo, pero solo dentro de un mismo proceso (ver «Sin probar»).
+
+Hecho solo con la rama: ningún otro `feature/*` ni `patch/*` abierto. `merge --check` dice que faltan `merge.into` y `merge.noFf` en `sdd-kit.json`; la fusión se presentará y esperará.
+
+**✋ Me salí del plan en…**
+
+- Trabajé en el checkout actual, sin crear otro worktree.
+- Añadí `.temp/` al `.gitignore`, además de `node_modules/`.
+- Corregí la línea «Se prueba en la aplicación» de la Task 2 del plan: no se puede cumplir, porque las reservas viven en memoria.
+- Añadí `npm ci` como paso de instalación en `operations.md`, y una fila en `debt.md` (Por triar) por la persistencia en memoria.
+- Un `git add` mal puesto dejó dos de esos ficheros fuera del commit de la pasada de fix. Lo vi en los pre-checks y los commiteé aparte (`f48b70d`). Se juntan al hacer el squash.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | `ejecución real` | `cancelada Norte lun (sala ocupada)` |
+| un motivo fuera de la lista responde «motivo no válido: …» | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» tras cancelar con «sala ocupada» | `suite` (`el listado de canceladas enseña el motivo`) | no se puede ver en el CLI, ver «Sin probar» |
+| Review Focus: sin `--motivo` y `--motivo` sin valor | `ejecución real` | el mismo `motivo no válido…` en los dos |
+| Review Focus: `canceladas` sin canceladas | `ejecución real` | `sin canceladas` |
+
+**Suites**
+
+- `node --test`: 9/9 sobre `f48b70d`, 0,32 s.
+- `node scripts/lint.mjs`: `lint: sin hallazgos`.
+
+**Sin probar**
+
+- El THEN del listado con datos reales en el CLI. Cada `node src/app.js …` arranca de cero con la reserva de Norte activa, así que `canceladas` nunca enseña un motivo entre invocaciones. Lo dijo el revisor de Spec y lo confirmé: `operations.md` ya decía «las reservas viven en memoria». Solo lo cubre el test. Hay que decidir si se acepta la limitación (ya está en `debt.md`) o se abre una feature de persistencia.
+- `npm ci` en un clon limpio: no lo he ejecutado.
+
+**Revisión final**: Spec «With fixes», Código «Yes», Arquitectura «With fixes», sobre `db596ab`. Una pasada de fix, de documentación. Quedan 5 Minor diferidos, apuntados en `tasks.md`.
+
+Panel: plan B en http://127.0.0.1:56000/ (la página no ve la app: sin consola, red ni captura de un fallo, así que cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · directorio `<run>\repo`
+
+Es una CLI: no hay entorno que arrancar ni parar, y no he dejado nada corriendo salvo el servidor del panel. Cada comando arranca con la reserva de Norte lunes activa.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo válido:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Motivo fuera de la lista:
+
+```
+node src/app.js cancelar Norte lun --motivo aburrimiento
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3. Sin motivo:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Listado en un proceso nuevo:
+
+```
+node src/app.js canceladas
+```
+
+→ `sin canceladas` (a propósito: el motivo solo se ve dentro de un proceso, ver «Sin probar»)
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

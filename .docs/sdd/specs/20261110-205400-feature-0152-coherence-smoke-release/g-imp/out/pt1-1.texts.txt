@@ -1,0 +1,131 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs) y compruebo dependencias. Queda: clasificar el cambio y preguntarte por el carril, ~2 min.
+
+--- [13]
+Ahora: creo la rama con el id reservado y lo reclamo, sin carpeta todavía. Queda: pasar a implementar el patch con su test de regresión, ~5 min.
+
+--- [17]
+La 0015 queda reservada y confirmada (no hay remoto, vale el contador local). Paso a `sdd-implement` con el patch confirmado: clase fallo, sin estimación porque no existe `estimation.md`.
+
+--- [21]
+Ahora: confirmo la causa raíz con evidencia (reproduzco el fallo) antes de tocar nada. Queda: carpeta, `patch.md`, test en RED, arreglo, revisión y cierre, ~8 min.
+
+--- [24]
+Deuda: la única fila por triar (formato de franja horaria) no cubre este fallo. Reproduzco el fallo en la base actual.
+
+--- [26]
+El fallo está en mi script de prueba (ruta de Windows en un `import`), no en el proyecto. Uso la CLI real, que es la que usas tú.
+
+--- [29]
+Reproducido: `cancelada Norte mar`. Compruebo que se llevó la del lunes, en un solo proceso porque el estado vive en memoria.
+
+--- [32]
+Confirmado: el martes cancela la reserva del lunes y luego el lunes dice `sin reserva Norte lun`. Causa: `findBooking` ignora `day`. Ahora creo la carpeta del patch; busco la plantilla.
+
+--- [35]
+No hay `estimation.md` ni `capabilities/`, así que no llevan sección de tiempo ni delta. Creo la carpeta y escribo `patch.md` con el síntoma y la causa antes del arreglo.
+
+--- [38]
+Ahora el test de regresión primero. Cargo `sdd-tdd`.
+
+--- [43]
+RED por la razón correcta: responde `cancelada Norte mar`, y por arrastre el test del lunes ya no encuentra su reserva. Ahora el arreglo mínimo.
+
+--- [47]
+Verde: 5/5, y `anular` también queda arreglado. El diff del test sale de 17/11 líneas para añadir 5: seguramente cambié los finales de línea del fichero. Lo compruebo.
+
+--- [49]
+Efectivamente: el original era CRLF y mi reescritura lo pasó a LF. Lo devuelvo a CRLF para que el diff sea solo el test nuevo.
+
+--- [52]
+Diff final: 1 línea en `src/app.js` y 6 en el test, sin cambios de formato. Completo §3 y §4 de `patch.md` con lo medido y lanzo la revisión del patch (un revisor, sin ejes).
+
+--- [55]
+El escapado del shell lo ha roto. Miro si ha dejado algo y reescribo `patch.md` con la herramienta de escritura.
+
+--- [57]
+Sin daños fuera de `patch.md` (los backticks se evaluaron como comandos y borraron texto). Lo reescribo entero.
+
+--- [61]
+Antes de despachar, el brief de un revisor lleva una sección `## Code constraints`. Busco qué debe decir.
+
+--- [69]
+Ahora: esperando al revisor del patch (lee el diff y ejecuta `node --test`). Queda: responder sus hallazgos, hacer el commit del arreglo y cerrar con `sdd-archive`, ~4 min. Hasta que termine no commiteo, porque el commit debe ir tras su revisión.
+
+--- [73]
+**Sin hallazgos de gravedad media o alta.** Dos observaciones menores al final.
+
+Comprobaciones:
+
+1. **Causa raíz (§2): correcta.** `findBooking(room, day)` en `src/app.js:9-11` en HEAD no usaba `day`. Devolvía la primera reserva activa de la sala. `cancelBooking` (l.13-18) y `voidBooking` (l.20-25) marcan esa reserva y responden con el día pedido, así que el síntoma de §1 encaja. `bookings` (l.3) ya guarda `day`, como dice el patch.
+
+2. **Arreglo mínimo (`src/app.js:10`): correcto.** Añade `b.day === day` a `findBooking`, una sola línea. Cubre `anular` sin tocar `voidBooking`. Con el arreglo, `node src/app.js anular Norte mar` y `cancelar Norte mar` devuelven cada uno `sin reserva Norte mar`.
+
+3. **Test de regresión (`test/cancel.test.js:6-9`): prueba comportamiento real.** Para comprobar que falla sin el arreglo, copié el repo a un directorio temporal y dejé `src/app.js` como en HEAD. Fallan dos tests:
+   - El nuevo, con `actual: 'cancelada Norte mar'` y esperado `'sin reserva Norte mar'`.
+   - `cancelar una reserva activa`, con `actual: 'sin reserva Norte lun'`.
+
+   Con el arreglo ambos pasan. El `libres 10:00-12:00 → Sur` comprueba además que la reserva del lunes sigue activa.
+
+4. **§4 de patch.md: es verdad.** `node --test` da 5 de 5 en verde, 0 fallos. `app.test.js` y `cancel.test.js` corren en procesos distintos, así que no comparten estado. La afirmación de que antes fallaban el test nuevo y el de Norte lun queda confirmada. Los casos 2 y 3 también.
+
+Observaciones menores:
+- **Baja, `test/cancel.test.js:5-9`.** El test depende del orden. Si corriera después de `cancelar una reserva activa`, `libres` devolvería `Norte, Sur` y fallaría. El patch lo reconoce y lo deja anotado en el comentario de la línea 5, y los tests de `node:test` de un fichero corren en orden de declaración, así que es estable. No pide cambios.
+- **Baja, §4 caso 4.** `anular` no tiene test propio. El patch lo declara como "medido en un proceso, sin test propio". Es coherente con lo afirmado. Si se quisiera blindar, bastaría un test de `anular`, pero no es necesario para este patch.
+
+Archivos relevantes:
+- `<run>\repo\src\app.js`
+- `<run>\repo\test\cancel.test.js`
+
+--- [75]
+El revisor no ve hallazgos graves: confirma la causa, el arreglo y que el test falla sin él (lo comprobó en una copia). Dejo la respuesta a sus dos observaciones en §4 y hago el commit del arreglo.
+
+--- [77]
+Ahora: cierro el patch con `sdd-archive`. Queda: validación tuya (es una orden de terminal que usas tú), fusión y roadmap, ~3 min.
+
+--- [80]
+Ahora: pre-comprobaciones del cierre y formato del mensaje de validación. Queda: pedirte que pruebes el arreglo (el cierre espera a tu validación), ~2 min.
+
+--- [84]
+El vigilante de silencio terminó con normalidad (el revisor ya había acabado). Ensayo el guion de validación tal como lo ejecutarías tú, con la CLI real, antes de dártelo.
+
+--- [86]
+El arreglo está hecho y commiteado, pero **todavía no lo he cerrado ni fusionado**: me falta tu validación, y la fusión tiene un bloqueo de configuración.
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes cancelaba la reserva del lunes y respondía `cancelada Norte mar`. La búsqueda de la reserva ignoraba el día y cogía la primera activa de la sala. Ahora compara también el día. Con la reserva de Norte del lunes, `cancelar Norte mar` responde `sin reserva Norte mar` y la del lunes sigue activa.
+
+**✋ Me salí del plan en…** nada.
+
+**Qué he hecho**
+- **Causa:** `findBooking` en `src/app.js:10` recibía `day` y no lo usaba.
+- **Arreglo:** una línea, `b.day === day`. `anular` comparte esa función y tenía el mismo fallo, así que queda arreglado también, sin tocarlo.
+- **Test:** nuevo en `test/cancel.test.js`. Lo vi fallar antes del arreglo (`actual: 'cancelada Norte mar'`). Con el arreglo, `node --test` da 5/5.
+- **Revisión:** un revisor aparte no encontró nada grave. Sus dos observaciones menores las rechacé con motivo en `patch.md`: el test depende del orden de declaración, y `anular` no tiene test propio.
+- **Commit y registro:** el commit es `be87d81` en la rama `feature/0015-cancel-dia`. El registro está en `.docs/sdd/changes/20261111-093139-patch-0015-cancel-dia/patch.md`.
+
+**Para validar, ejecuta en la raíz del repo (ya lo ensayé):**
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`
+2. `node src/app.js cancelar Norte lun` → `cancelada Norte lun`
+3. `node src/app.js anular Norte mar` → `sin reserva Norte mar`
+4. `node src/app.js anular Norte lun` → `anulada Norte lun`
+
+Cada comando arranca con el estado inicial, porque las reservas viven solo en memoria. Por eso no puedo reproducir «cancelo el martes y luego miro el lunes» como secuencia entre comandos. Esa secuencia la cubre el test nuevo.
+
+**Antes de fusionar:** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Con ese bloque incompleto no fusiono sola, te lo presento y espero.
+
+**¿Cómo seguimos?**
+1. **Validado y fusiono en `develop` (Recomendada).** Dime qué probaste y que funciona. Para fusionar necesito que confirmes `merge.into: develop` y si quieres `--no-ff` (`merge.noFf`).
+2. **Cambios.** Dime qué falla.
+3. **Diferir la validación.** Necesito tu frase y un disparador con responsable.
+
+Hay una sola rama abierta: esta.
+
+--- [88]
+El commit del fix ya está hecho: `be87d81` en `feature/0015-cancel-dia`. Me paro ahí, como pedías.
+
+- **Estado:** el árbol está limpio. Solo cambian `src/app.js` (una línea), `test/cancel.test.js` (un test) y `patch.md`. `node --test` da 5/5.
+- **Lo que queda sin hacer:** el cierre con `sdd-archive`. Ese paso necesita tu validación de lo que probaste, y la fusión necesita `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Tu «sí» a seguir como patch no cuenta como validación.
+- **Campos pendientes en `patch.md`:** `commit: <hash>` sigue con el marcador. Se rellena al cerrar, y el cierre también añade la línea de validación.
+
+Cuando quieras cerrarlo, dime qué probaste y que funciona, y si fusiono en `develop` con o sin `--no-ff`.
+

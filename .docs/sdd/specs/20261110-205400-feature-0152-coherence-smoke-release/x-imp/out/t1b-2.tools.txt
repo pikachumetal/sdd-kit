@@ -1,0 +1,143 @@
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/task-1-brief.md; echo ----; cat test/informe.test.js; echo ----; ls; git ls-files; node --test test/informe.test.js 2>&1 | head -40
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> canceladas`; sin `--por`, `
+
+>>> Bash: cd "<run>/repo" && cat -n src/app.js; cat package.json
+<<<      1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+     4	const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+     5	const bookings = [
+     6	  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+     7	  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+     8	  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+     9	  { room:
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+fn='''const groupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    belongs: (b, room) => b.room === room,
+    line: (b) => `  ${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    groups: () => reasons,
+    belongs: (b, reason) => b.reason === reason,
+    line: (b) => `  ${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function byRoomThenWeekday(a, b) {
+  return rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day);
+}
+
+function cancellationReport(by) {
+  const grouping = groupings[by];
+  if (!grouping) return 'uso: informe --por sala|motivo';
+  const cancelled = bookings.filter((b) => b.status === 'cancelled').sort(byRoomThenWeekday);
+  const out = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.belongs(b, group));
+    if (!members.length) continue;
+    out.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.line));
+  }
+  out.push(`Total: ${cancelled.length} canceladas`);
+  return out.join('\\n');
+}
+
+export function run('''
+s=s.replace('export function run(',fn,1)
+s=s.replace("  return 'salas';","  if (cmd === 'informe') return cancellationReport(params[params.indexOf('--por') + 1]);\n  return 'salas';",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"
+<<< ✖ test\informe.test.js (65.4883ms)
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ test\informe.test.js (65.4883ms)
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | head -20
+<<< file:///<run>/repo/src/app.js:41
+  return out.join('
+                  ^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:567:36)
+    at afterResolve (node:internal/modules/esm/load
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+s=s.replace("out.join('\n');\n}\n\nexport","out.join('\\n');\n}\n\nexport",1)
+open(p,'w',encoding='utf-8').write(s)
+E
+node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; git diff --stat
+<<< ✖ test\informe.test.js (67.9587ms)
+ℹ pass 0
+ℹ fail 1
+✖ failing tests:
+✖ test\informe.test.js (67.9587ms)
+ src/app.js | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+>>> Bash: cd "<run>/repo" && sed -n 38,46p src/app.js | cat -A | head
+<<<     out.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.line));$
+  }$
+  out.push(`Total: ${cancelled.length} canceladas`);$
+  return out.join('$
+');$
+}$
+$
+export function run(cmd, params) {$
+  if (cmd === 'libres') {$
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe por sala y por motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 — Comando informe
+
+Implementado `informe --por sala|motivo` en `src/app.js` como función propia (`cancellationReport`) con una tabla `groupings`; `run` solo delega.
+
+## TDD
+- RED: `node --test test/informe.test.js` → 3 fail (run devolvía `'salas'`; esperado: el comando no existía).
+- GREEN: mismo comando → 3 pass.
+
+## Ficheros
+`src/app.js`, `test/informe.test.js` (sin modificar, commiteado).
+
+## Notas
+- Grupos sin canceladas se omiten (la spec no los define).
+- `run` sigue siendo una función larga; no se reestructuró (fuera de la task).
+E
+<<< ℹ pass 3
+ℹ fail 0
+7d72506 feat: comando informe por sala y por motivo
+
+=== RESULTADO (9 turnos, 0.16063139999999998 $)
+- **Status:** DONE
+- **Commit:** 7d72506 feat: comando informe por sala y por motivo
+- **Tests:** `node --test test/informe.test.js` pasa 3/3. Antes de implementar fallaban los 3, porque `run` devolvía `'salas'`. No he ejecutado la suite completa.
+- **Concerns:** ninguna bloqueante.
+  - Los grupos sin canceladas se omiten, porque la spec no dice qué hacer con ellos.
+  - `run` sigue siendo una función larga. No la he reestructurado porque queda fuera de la task.
+- **Report:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

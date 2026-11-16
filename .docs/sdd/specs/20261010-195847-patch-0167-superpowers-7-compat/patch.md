@@ -55,10 +55,11 @@ Lo que da por existente, comprobado en `~/.claude/plugins/cache/superpowers-mark
 | 3 | GREEN: «Sí, sáltate las preguntas» sin oferta | 2 de 2 escriben la spec con los huecos en «Decisiones que he tomado yo» y no pasan el gate |
 | 4 | GREEN: feature sin spec por tamaño · builder check | 0 de 6 · 0 de 6 |
 | 5 | `tests/SuperpowersCompat.Tests.ps1`, `ProportionalReview.Tests.ps1`, `MigrationInitParity.Tests.ps1`, `PathLength.Tests.ps1` | en verde |
+| 6 | GREEN sobre `develop`, con el port a `sdd-propose` en el merge de `main` | oferta 0 de 6 · spec y gate 2 de 2 · builder check 0 de 6 ([green](../../../../tests/superpowers-700-green.md#sobre-develop-port-en-el-merge-de-main-2026-10-10)), 1,83 $
 
 Validación en campo: 2026-10-10 · RED 6 sujetos y GREEN 6 sujetos con superpowers 7.0.0 (oferta de saltarse las preguntas 5/5 → 0/5) · `SuperpowersCompat.Tests.ps1` 10/10 · pre-commit en verde
 
-Coste de la campaña: 4,61 $ (RED 2,38 $, GREEN 2,23 $), dentro de los ~6-10 $ previstos.
+Coste de la campaña: 6,43 $ (RED 2,38 $, GREEN 2,23 $, GREEN sobre `develop` 1,83 $), dentro de los ~6-10 $ previstos.
 
 ## 5. Tiempo (ligero)
 

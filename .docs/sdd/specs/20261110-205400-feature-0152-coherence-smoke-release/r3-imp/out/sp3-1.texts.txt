@@ -1,0 +1,64 @@
+--- [3]
+Ahora: compruebo la spec y el plan de la feature 0032 para decidir el método. Queda: elegir método y arrancar las tasks, ~1 min.
+
+--- [9]
+Hay spec aprobada y plan con `Ejecución: native`, así que sigo con el método Native.
+
+--- [12]
+Ahora: preparo el espacio de trabajo y cargo `sdd-worktrees` y `sdd-tdd`. Queda: medir, escribir `research.md`, commit y revisión final, ~10 min.
+
+--- [18]
+Estoy en una rama `feature/0032…` de un checkout normal; trabajo en el sitio, porque no es `main`. Antes de medir, ejecuto el gate de cierre en un worktree desligado y creo el ledger.
+
+--- [20]
+Línea base en verde (4/4). Ahora: Task 1, medir `libres` con 1.000 reservas. Queda: `research.md`, commit y revisión final.
+
+--- [24]
+La salida lleva un `salas` espurio: `app.js` toma `argv[2]` como comando. Paso la variante por entorno y añado una referencia que aísle el coste del `sort` descartado.
+
+--- [27]
+O1 no se cumple: ~0,061 ms frente a < 0,05 ms. Ahora: `research.md`, para lo que leo la plantilla en `sdd-templates`.
+
+--- [31]
+La plantilla exige §3 Aguante: ≥ 10 repeticiones seguidas con memoria acumulada. Ajusto el script a 12 repeticiones y registro el heap.
+
+--- [34]
+Ahora escribo `research.md`.
+
+--- [37]
+Task 1 hecha. Ahora: revisión final de la rama con `sdd-verify`. Queda: cierre de la revisión y `sdd-archive`.
+
+--- [40]
+Ahora: despacho el eje Spec (único en un spike). Leo primero el encargo, el prompt y el cierre de la revisión.
+
+--- [51]
+Implementé el plan 0032: la Task 1 está hecha y commiteada, pero **O1 no se cumple**. `libres` con 1.000 reservas tarda unos 0,060 ms por llamada y el objetivo era < 0,05 ms.
+
+Dejé el cierre (`sdd-archive`) sin ejecutar. El `merge` de `sdd-kit.json` no está declarado, así que el merge lo confirmas tú. Tampoco he hecho el walkthrough, ni la fila del roadmap, ni el squash.
+
+## Qué se midió
+- **Con la carga de la spec** (1.000 activas en la misma franja, cargadas con `seed`): 0,0591–0,0628 ms por llamada, en 12 repeticiones de 2.000 llamadas. El tiempo no crece y el heap queda plano (4,41 → 4,42 MiB).
+- **Con las reservas en otras salas** (el recorrido completo): 0,0633–0,0824 ms.
+- **Causa:** `freeRooms` hace `bookings.slice().sort(...)` y tira el resultado. Una copia de la consulta sin ese `sort`, dentro del script, tarda 0,0001–0,0002 ms con la carga de la spec y 0,002–0,012 ms con la otra.
+- **Recomendación** (en `research.md`):
+  - No abrir una caché.
+  - Quitar antes ese `sort`.
+  - Repetir la medida sobre el código real en un patch.
+  - Esa referencia es una sola medida por variante y en una máquina, no el código de producción.
+
+El commit es `64a6ca2`. Lleva `research.md`, `medir-libres.mjs` y `medicion-libres.txt` en la carpeta de la spec; `src/` no cambia. El gate de cierre (`node --test`) pasa 4/4, antes y después.
+
+## Revisión
+No había herramienta de subagentes, así que el eje Spec (el único de un spike) lo hice yo mismo. Es una autorrevisión, más débil que una de contexto fresco. No encontré ningún Critical ni Important.
+
+## Decisiones que tomé
+- **Rama en el sitio:** trabajé en la rama `feature/0032-free-rooms-fast` del checkout, sin worktree propio, porque no es `main`. Si falla, no toca ninguna otra rama.
+- **Segunda carga:** añadí la variante «otras salas». Con la carga de la spec el `some` sale pronto, así que la variante recorre todo. No cambia la spec ni el umbral.
+- **Referencia sin `sort`:** es una copia de `freeRooms` dentro del script. La recomendación lo dice y pide repetir la medida con el código real.
+
+## Minor aplazado
+El `id` de `research.md` (`…-110000-…`) sigue el de la spec, no el de la carpeta (`…-120000-…`). La discrepancia ya venía de la spec y el plan abiertos.
+
+## Siguiente paso
+¿Sigo con el cierre? La validación es de agente, porque son medidas; el merge a `develop` te lo presentaría para confirmar.
+

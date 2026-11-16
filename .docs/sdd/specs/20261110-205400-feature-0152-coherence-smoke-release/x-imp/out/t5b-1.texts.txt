@@ -1,0 +1,31 @@
+--- [7]
+Escribí los 3 tests en `test/reactivar.test.js` y fallan los tres, porque `run` todavía no conoce `reactivar`. No toqué `src/` ni hice commit.
+
+**Comando:** `node --test test/reactivar.test.js`
+
+**Salida (recortada):**
+```
+✖ reactivar devuelve la reserva cancelada
+✖ tras reactivar, Norte deja de salir en libres
+✖ reactivar sin cancelada lo dice
+ℹ tests 3 / pass 0 / fail 3
+
+reactivar devuelve la reserva cancelada:
+  + actual:   'salas'
+  - expected: 'reactivada Norte lun'
+tras reactivar, Norte deja de salir en libres:
+  assert.ok(!run('libres', ['10:00-12:00']).includes('Norte'))  → falsy
+reactivar sin cancelada lo dice:
+  + actual:   'salas'   (esperado 'sin cancelada Sur mar')
+```
+El primer y el tercer test reciben `'salas'`, que es lo que devuelve `run` para un comando desconocido. No hay errores de importación ni erratas.
+
+**Tests:**
+1. `reactivar devuelve la reserva cancelada` codifica el THEN: `run('reactivar', ['Norte','lun'])` responde `reactivada Norte lun`.
+2. `tras reactivar, Norte deja de salir en libres` codifica el AND de que Norte ya no sale en `libres 10:00-12:00`.
+3. `reactivar sin cancelada lo dice` codifica el AND de `sin cancelada Sur mar`.
+
+**Estado compartido:** `bookings` no se exporta y el estado vive en el módulo. La reserva de Norte lun arranca ya como `cancelled`, así que el Given no necesita preparación. El test 2 llama a `reactivar` él mismo antes de comprobar `libres`, para no depender del orden de ejecución. Si el test 1 ya reactivó, esa llamada no cambia nada.
+
+**Pendiente de comprobar:** el test 2 comprueba solo que `libres` no contenga `Norte`. Con el código de hoy esa comprobación falla, pero tras implementar `reactivar` pasará solo si la reserva reactivada queda en `active`.
+

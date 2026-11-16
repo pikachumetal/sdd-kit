@@ -1,0 +1,130 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/steering/debt.md; echo ----; cat ROADMAP.md; echo ----; cat .docs/sdd/sdd-kit.json; git branch --all; ls .docs/sdd
+<<< # Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio tem
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; ls; cat "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/skills/sdd-templates/templates/debt-template.md"; cat package.json; ls src test* 2>/dev/null
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+# Deuda técnica — <proyecto>
+
+> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-archive`), que quitan de «Lista» lo q
+
+>>> Bash: cat src/app.js; cat test/app.test.js; cat CHANGELOG.md | head -20; git log --oneline | head; node --test 2>&1 | tail -15
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js exportar | od -c | head -3; node src/app.js libres --planta 2; node src/app.js libres --planta 1
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+Norte (planta 1)
+Norte (planta 1)
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js" id next --project-root . --reserve --count 1
+<<< 0014
+
+>>> Bash: python - <<'E'
+p='.docs/sdd/steering/debt.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("""| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+""","")
+s=s.replace("""| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+""","""| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | sin determinar | `docs/qa/2026-10-12-informe.md` (hallazgo 1) | Medio | reproducirlo | 2026-11-01 |
+""")
+s=s.replace("""| --- | --- | --- | --- | --- | --- | --- | --- |
+""","""| --- | --- | --- | --- | --- | --- | --- | --- |
+| `salas libres --planta 2` lista también salas de la planta 1 | defecto del producto | `docs/qa/2026-10-12-informe.md` (hallazgo 2) | Medio | `node src/app.js libres --planta 2` imprime `Norte (planta 1)`; `roomsOnFloor` filtra con `<=` en `src/app.js` | ninguno | — | 0014 |
+""",1)
+open(p,'w',encoding='utf-8').write(s)
+p='ROADMAP.md'
+s=open(p,encoding='utf-8').read()
+row="""| 0014 | — | **Filtrar salas por planta exacta**<br>*`salas libres --planta N` solo debe listar la planta N*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `docs/qa/2026-10-12-informe.md`, hallazgo 2<br>**Decisiones ya tomadas:** la planta pedida se compara por igualdad, no con `<=`<br>**Salda:** `salas libres --planta 2` lista también salas de la planta 1<br>**Toca:** `src/app.js`</details> | ⏳ | — | S |
+"""
+s=s.replace("\n## Later",row+"\n## Later",1) if False else s.replace("| 0013 |","| 0013 |",1)
+i=s.index("## Later")
+j=s.rindex("\n",0,s.rindex("\n",0,i))  # end of last Next row
+s=s[:j+1]+row+s[j+1:]
+open(p,'w',encoding='utf-8').write(s)
+E
+sed -n 14,22p ROADMAP.md | cut -c1-80
+node "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+| --- | --- | --- | --- | --- | --- |
+| 0013 | — | **Aviso semanal a los responsables**<br>*Cada lunes, las reservas
+| 0014 | — | **Filtrar salas por planta exacta**<br>*`salas libres --planta N`
+
+## Later
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| B1 | — | **Exportar reservas a calendario (.ics)**<br>*Idea propia* | ⏳ | 
+ROADMAP.md: línea 22: el id «B1» no es de la secuencia: resérvale uno con sdd id next --reserve
+debt.md: aviso: línea 12: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js" roadmap publish --project-root . --message "chore(roadmap): tria la deuda del informe QA 2026-10-12 (0014)" ROADMAP.md .docs/sdd/steering/debt.md 2>&1 | tail -5; git status --short
+<<< destino con cambios: ROADMAP.md en <run>\repo
+ M .docs/sdd/steering/debt.md
+ M ROADMAP.md
+
+=== RESULTADO (10 turnos, 0.200724 $)
+He triado las dos filas de «Por triar» de `debt.md` y las he dejado escritas, pero sin commitear: `sdd roadmap publish` se ha negado.
+
+- **`salas libres --planta 2` lista la planta 1:** va a «Lista», con causa `defecto del producto`. Lo reproduje: `node src/app.js libres --planta 2` imprime `Norte (planta 1)`. `roomsOnFloor` filtra con `<=` en vez de igualdad (`src/app.js`). Es un solo caso, pero está reproducido. Le he reservado la fila **0014** en Next, como patch de tamaño S, con `**Salda:**` esa deuda. En «Lista» queda con arreglo `—` y remedio temporal `ninguno`.
+- **El CSV pierde las tildes:** va a «En espera», con «Falta» `reproducirlo`. La salida de `exportar` lleva `día` bien en UTF-8 (bytes `c3 ad`), así que no se reproduce. Además, el changelog llega hasta la 1.4.1 y el informe habla de la 1.4.2. Conviene pedir a QA los pasos y la versión exactas.
+
+**Sin commit.** `publish` no commitea cuando el worktree de destino ya tiene cambios en `ROADMAP.md`, y aquí destino y worktree son el mismo (`develop`). No lo he forzado. Si quieres, lo commiteo a mano.
+
+**Comprobación de forma.** `sdd roadmap check` no marca nada en lo que escribí. Marca dos cosas heredadas, que no he tocado:
+- La fila B1 de Later no tiene id de la secuencia.
+- La fila «reservas de más de 8 h» lleva en espera desde 2026-07-01 y ya caducó. Te propongo pasarla a «Descartadas» con motivo `caducada`. No lo he hecho porque es decisión tuya.
+
+Para empezar por la 0014, el prompt de lanzamiento sería: «Arranca la 0014 (patch): `salas libres --planta N` solo debe listar la planta N». Si prefieres hacerlo en esta sesión, di "arráncalo".

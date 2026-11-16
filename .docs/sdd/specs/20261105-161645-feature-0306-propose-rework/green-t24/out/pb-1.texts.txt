@@ -1,0 +1,74 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, capabilities). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+
+--- [22]
+Estoy en la pasada de coherencia de la spec: ya hay una incoherencia entre la decisión 3 y las tablas, y la corrijo. Después pruebo el delta sobre una copia y lanzo la review.
+
+--- [28]
+La spec 0012 está escrita y el revisor sigue con ella. Espero su resultado antes de presentártela, y no tengo todavía ningún hallazgo.
+
+Cuando llegue, incorporo los hallazgos y la dejo en el gate de aprobación.
+
+--- [33]
+1. Importante · Delta, «Ocupación por sala» y «Franjas más reservadas» (AND) · Los AND «una sala sin reservas sale con 0 (`Sur  0`)», «una reserva cancelada o anulada no cuenta» y «con el mismo número de reservas, la franja más temprana va primero» no tienen datos propios. El ejemplo de las cuatro reservas no tiene ni canceladas, ni anuladas, ni empates. Además, `Sur  0` contradice la regla de relleno: con la columna de ancho 5 sería `Sur    0`. · Añade un scenario por cada uno con su GIVEN concreto: una cancelada y una anulada, y un empate 10:00 contra 14:00. Escribe las salidas con el relleno exacto.
+
+2. Importante · Delta, scenarios 1 a 6 · Ningún GIVEN dice que existen las salas Norte y Sur. La vista 4 (`Sur`), el `ninguna` y `sala desconocida: Oeste` dependen de esa lista, y «salas» sale de un dato existente que la spec no declara. · Añade un GIVEN «salas Norte y Sur, en ese orden» y di en la spec que se lee la lista de salas existente.
+
+3. Importante · Decisión 3 y scenarios (formato) · Es ambiguo si la última columna se rellena. Con «cada columna mide lo que su celda más ancha», `3` en la columna `reservas` (ancho 8) llevaría 7 espacios al final. Los bloques de ejemplo no muestran espacios finales. El test compara texto exacto y puede fallar por eso. · Di expresamente «la última columna no se rellena, sin espacios finales». Di también si la salida termina en salto de línea y cómo se separan las vistas, y con eso fija el texto exacto.
+
+4. Importante · Decisiones 8, 9 y 10, y scenario «Filtrar por sala» · Faltan casos que ya has decidido en el texto sin cubrirlos con escenarios. `--sala Sur` sin reservas de Sur pero con reservas de Norte da `sin reservas` en la vista por sala, aunque la decisión 4 dice «también las de 0». Tampoco consta si `--sala Oeste` da error aunque no haya reservas. Quedan sin definir las mayúsculas (`norte`), `--sala --otra` y los argumentos desconocidos. · Añade a la lista de decisiones la precedencia entre error y `sin reservas` y la sensibilidad a mayúsculas. Añade los scenarios o declara los casos fuera de alcance.
+
+5. Importante · Decisión 2, Scope y Approach · La spec usa sin declararlo un modelo de reservas existente: los estados `cancelled` y `voided`, «día de la semana», la franja `hh:mm-hh:mm` y `--cada-semana`. Dice «sigue creando solo su aviso», pero no aclara si una reserva recurrente cuenta una vez o por semana. Hay también dependencia de código y datos que la spec no nombra: cómo se deriva el día (¿de una fecha?) y de dónde salen los estados. · Declara la dependencia con el modelo de reservas actual. Di cómo se deriva el día y si las recurrentes cuentan una vez, y añade un scenario o un «no entra».
+
+6. Importante · Decisión 12 · Afirma un resultado de verificación («probado… 6 requisitos, ningún rechazo») que ni el lector ni el revisor pueden comprobar en una spec en `draft`. No es una decisión. Además, hay un «Hallazgos de la review» pendiente que depende de ella. · Quita la decisión 12, o márcala como comprobación pendiente hasta que se ejecute `sdd capability merge`.
+
+7. Menor · Decisión 11 vs. cabecera de «Review» (`~60 líneas en 3 ficheros`) y Scope · Se tocará `PRODUCT.md` al cerrar, que no está en los ficheros estimados ni en Scope. El nuevo `reports.md` tampoco aparece en el recuento. · Añade `PRODUCT.md` y `reports.md` al recuento de ficheros y a Scope, o di que es trabajo de cierre.
+
+8. Menor · Decisión 5 vs. decisión 3 · «Sin tildes» (`mie`, `sab`) convive con la cabecera `día` con tilde y los títulos con tilde (`Ocupación`). Es una excepción no justificada. · Aclara que la regla de «sin tildes» solo afecta a los nombres de día, o unifica la cabecera.
+
+9. Menor · Scenario «Salas que nadie ha reservado» · Mezcla un `AND GIVEN` dentro de un solo scenario, con dos datos distintos. Es poco verificable y se confunde con el caso `sin reservas`. · Divide en dos scenarios: uno con `Sur` y otro con `ninguna`.
+
+10. Menor · Cabecera «Validación: dev-lead» y mission.md · La mission dice «no hay más usuarios ni más desarrolladores». La validación por un «dev-lead» y los approvers `TBD` apuntan a un rol que no existe aparte del autor. · Pon como aprobador al autor real, que es quien usa la herramienta, y quita «dev-lead» o defínelo como el mismo autor.
+
+--- [35]
+Hallazgos recibidos. Los incorporo a la spec.
+
+--- [41]
+Ahora: la spec está escrita, revisada y probada sobre una copia. Queda: tu aprobación, después el plan y la implementación en la misma sesión (perfil delegate), ~15 min.
+
+🦆 Hoy no puedes ver qué salas, días y franjas se usan más. Con `informes` sacas cuatro tablas de texto: reservas por sala (`Norte  3`), por día de la semana (`lun  3`), franjas más reservadas (`10:00-12:00  3`) y salas que nadie ha reservado (`Sur`). Con `--sala Norte` las cuatro tablas cuentan solo esa sala. Sin reservas, cada tabla dice «sin reservas». Solo cuentan las reservas activas, no las canceladas ni las anuladas.
+
+La spec está en `.docs/sdd/specs/20261105-171812-feature-0012-informes/spec.md`, en la rama `feature/0012-informes` (id 0012 reservado).
+
+**Enfoque.** Solo veo una forma razonable: una función por vista y un único `run('informes', …)` que las junta. Las otras (subcomandos como `informes sala`) contradicen tu decisión de un solo comando con cuatro vistas.
+
+**✋ Decisiones que he tomado yo (valídalas):**
+1. La capacidad nueva se llama `reports`.
+2. «Ocupación» es el número de reservas activas, sin porcentajes.
+3. Cada tabla lleva un título, una cabecera y una fila por elemento. Las columnas se alinean con dos espacios entre ellas y las cuatro vistas van separadas por una línea en blanco. Los títulos son `Ocupación por sala`, `Ocupación por día de la semana`, `Franjas más reservadas` y `Salas que nadie ha reservado`.
+4. La vista por sala lista todas las salas, también las que tienen 0.
+5. La vista por día lista siete filas, de `lun` a `dom`: `lun mar mie jue vie sab dom`, sin tildes.
+6. Las franjas van de más a menos reservadas. Con empate, va primero la más temprana.
+7. Si todas las salas tienen reservas, «salas que nadie ha reservado» dice `ninguna`.
+8. **Interpretación a confirmar:** sin reservas activas (tras filtrar), las cuatro vistas dicen `sin reservas`, también la de «salas que nadie ha reservado». Así lo entiendo de tu frase.
+9. Con `--sala Sur` sin reservas de Sur pero con reservas de Norte, las cuatro vistas dicen `sin reservas`.
+10. Errores:
+    - Una sala inexistente da `sala desconocida: Oeste`.
+    - `--sala` sin nombre da `falta el nombre de la sala`.
+    - El nombre distingue mayúsculas.
+    - El error va antes que `sin reservas`.
+11. Las reservas semanales (`--cada-semana`) no cuentan, porque hoy no guardan nada.
+12. Al cerrar se añade «Ocupación» a `PRODUCT.md`.
+
+**Review.** La hizo un revisor (sonnet) y dio 10 hallazgos, ninguno Crítico. Acepté 8 y rechacé 2 con su motivo, que está en la spec. Con ellos añadí tres escenarios (solo reservas activas, empate de franjas y todas las salas reservadas), y quedan 9 requisitos que se fusionan sin rechazo. No pasé una segunda ronda de review por el cambio.
+
+**Tamaño.** Prevé 5 tasks, una por vista y otra para `--sala`, como decidiste. No las divido, porque todas tocan el mismo CLI y no hay migración.
+
+**Aviso de versión.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. Las skills que usé vienen de un kit local más reciente, pero conviene que lo revises.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios
+
+Mientras no la apruebes explícitamente, la spec queda en espera y no escribo el plan.
+

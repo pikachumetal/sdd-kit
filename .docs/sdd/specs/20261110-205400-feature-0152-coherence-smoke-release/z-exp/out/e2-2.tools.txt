@@ -1,0 +1,77 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: node|engines|nvmrc|node-version|node_version|FROM node
+<<< test\app.test.js:1:import { test } from 'node:test';
+test\app.test.js:2:import assert from 'node:assert/strict';
+package.json:1:{"type": "module", "engines": {"node": ">=22"}}
+.docs\sdd\steering\operations.md:5:- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+.docs\sdd\steering\operations.md:10:- Tests: `node --test` (carpeta `test/`).
+.docs\sdd\steering\constitution.md:4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+
+>>> Glob: {package.json,.nvmrc,.node-version,.tool-versions,Dockerfile*,.github/workflows/*,azure-pipelines*.yml,.npmrc,package-lock.json,pnpm-lock.yaml,yarn.lock}
+<<< package.json
+
+>>> Bash: node --version
+<<< v26.10.0
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-z-0152\skills\sdd-templates\templates\launch-prompt-template.md
+<<< 1	# Prompt de arranque — plantilla
+2	
+3	> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+4	>
+5	> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+6	>
+7	> - Cuenta lo que no encuentra mirando: cada decisión con su literal y su porqué. La constitution, el stack y el código los lee solo.
+8	> - En positivo: lo que tiene que hacer.
+9	> - Le
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json 2>&1 | head -1
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+ls: cannot access '.docs/sdd/sdd-kit.local.json': No such file or directory
+
+=== RESULTADO (8 turnos, 0.11876570000000002 $)
+No, no rompe nada. Esto es lo que he mirado:
+
+- **`package.json`**: es la única referencia real. Tiene `"engines": {"node": ">=22"}` y no hay dependencias.
+- **Fuera de `package.json`**: no hay `.nvmrc`, `Dockerfile`, CI ni lockfile que fijen una versión de Node.
+- **Tu Node local**: es la v26.10.0, así que cumple `>=22.18`.
+- **Documentación**: `.docs/sdd/steering/operations.md:5` dice «Node 22». Sigue siendo cierto con 22.18, pero puedes precisarlo en el mismo cambio.
+- **Tests**: no he ejecutado `node --test`. Con Node 26 local no te dirá nada sobre 22.18.
+- **`engines`**: npm solo avisa si no se cumple, salvo que haya `engine-strict`, y no hay `.npmrc`.
+
+Es un cambio de configuración sin fila de roadmap, así que va sin id. Aquí tienes el prompt para pegar en otro worktree:
+
+### *⚙️ Subir el mínimo de Node a 22.18*
+***Nombre:*** `feature/bump-node-engine-22-18`  
+***Base:*** `develop`  
+***Carril:*** `config`
+
+***Prompt***
+
+```
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node de 22 a 22.18 en los engines de package.json.
+
+Alcance:
+- package.json: engines.node pasa de ">=22" a ">=22.18"
+- .docs/sdd/steering/operations.md, línea 5: «Node 22» pasa a «Node 22.18 o superior»
+
+Fuera de alcance:
+- Añadir .nvmrc, CI, Dockerfile o .npmrc: no existen hoy y no se piden.
+- Tocar src/ o test/.
+
+Decisiones ya tomadas:
+- El rango es ">=22.18", sin tope superior, porque el entorno local ya usa Node 26 y un tope lo rompería.
+
+Antes de diseñar, lee:
+- Sin lecturas: los requisitos son los de este prompt.
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa en verde y `grep -n "22.18" package.json .docs/sdd/steering/operations.md` muestra las dos líneas cambiadas.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+*si prefieres hacerlo en esta sesión, di "arráncalo"*

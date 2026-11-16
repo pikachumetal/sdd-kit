@@ -1,0 +1,36 @@
+--- [11]
+Estoy reproduciendo el fallo antes de abrir rama y carpeta del patch. Después reservo el id y escribo el test en rojo.
+
+--- [13]
+Reproducido: `cancelar Norte mar` devuelve «cancelada Norte mar» sin que exista esa reserva. Reservo el id y abro la rama.
+
+--- [21]
+RED confirmado (los dos fallan por la causa que investigué). Aplico el fix mínimo.
+
+--- [28]
+Ahora: pido tu validación antes de cerrar. Queda: cerrar `patch.md`, changelog, roadmap y estimation-log, y fusionar, ~5 min.
+
+El fix está en el commit `83a664d`, en la rama `feature/0012-cancelar-dia`. Con `node --test && node scripts/lint.mjs` salen 5 tests en verde y el lint sin hallazgos.
+
+**Antes y después**
+
+| | `cancelar Norte mar` (solo existe Norte lun) |
+| --- | --- |
+| Antes | `cancelada Norte mar`, y se perdía la reserva del lunes |
+| Ahora | `sin reserva Norte mar`, y la del lunes sigue activa |
+
+`anular` tenía el mismo fallo y también queda arreglado.
+
+**Guion de pruebas.** Las reservas viven en memoria y cada `node` arranca de cero, así que el guion usa un solo proceso:
+
+1. Ejecuta `node -e "import('./src/app.js').then(({run})=>{console.log(run('cancelar',['Norte','mar']));console.log(run('anular',['Norte','mar']));console.log(run('cancelar',['Norte','lun']))})"`. Debe imprimir `sin reserva Norte mar`, `sin reserva Norte mar` y `cancelada Norte lun`.
+2. Ejecuta `node src/app.js cancelar Sur mar`. Debe imprimir `sin reserva Sur mar`.
+
+**¿Qué has probado?**
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar, a cargo del dev-lead`
+- `No funciona`
+
+Hasta que respondas, el merge queda PENDIENTE y no toco `patch.md`, changelog ni roadmap.
+

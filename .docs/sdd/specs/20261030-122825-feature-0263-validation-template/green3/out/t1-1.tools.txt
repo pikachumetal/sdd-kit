@@ -1,0 +1,255 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo ---; node "D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/cli/bin/sdd.js" merge --check --project-root "$(pwd)"; echo ---; git worktree list; echo ---; ls .docs/sdd .docs/sdd/specs/*0010* 2>&1; cat .docs/sdd/sdd-kit.json
+<<< ---
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+---
+<run>/repo 0524118 [feature/0010-cancel-reason]
+---
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason:
+plan.md
+spec.md
+tasks.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "native", "validation
+
+>>> Bash: cd .docs/sdd/specs/*0010*; head -30 spec.md; echo ======; cat tasks.md; echo =====; grep -n -i "valid" spec.md | head
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3. Sin review de spec: dos señales (MO
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/skills"; cat "$K/sdd-templates/templates/validation-template.md"; echo =======; cat "$K/sdd-archive/references/dev-validation.md"; echo ======; cd <run>/repo && git show --stat HEAD | head -20; sed -n 30,200p .docs/sdd/specs/*0010*/spec.md
+<<< # Mensaje de validación — plantilla
+
+> Lo presentan `sdd-start-feature` (paso 7) y `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+>
+> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` el mensaje acaba en «Sin probar»: no hay guion. Con `agente`, además, no esperas respuesta y registras `Validación por el agente: <fecha> · <evidencia>`.
+>
+> **El guion va el úl
+
+>>> Bash: cd <run>/repo; git show HEAD | tail -15; ls; ls src test .docs/sdd/steering; cat package.json; grep -n -i "arrancar\|acceso" -r .docs/sdd/steering | head
+<<<     docs(sdd): cómo se prueba la 0010 en la aplicación
+    
+    Cuerpo del commit.
+
+diff --git a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md b/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+index 1a195f8..227fc22 100644
+--- a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
++++ b/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+@@ -48,3 +48,5 @@ created: 2026-10-08
+ ## 3. Validación final
+ 
+ - [ ] Gate de cierre: `node --test`
++
++**Se prueba en la aplicación**: la persona arranca el servidor y cancela y lista por
+
+>>> Bash: cd <run>/repo; cat .docs/sdd/steering/operations.md server.mjs scripts/*.mjs; sed -n 1,80p src/app.js; git status --porcelain
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/ && node e2e/run.mjs`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la person
+
+>>> Bash: cd <run>/repo; cat e2e/config.json; node scripts/env-up.mjs; P=$(node -p "require('./e2e/config.json').port"); S="x-session: ensayo-agente"
+for q in 'cmd=cancelar&args=["Norte","lun","--motivo","sala ocupada"]' 'cmd=canceladas' ; do curl -s -H "$S" -G "http://localhost:$P/run" --data-urlencode "${q%%&*}" ${q#*&} 2>/dev/null; echo; done
+<<< {"port": 14023, "timeout": 30000, "expectTimeout": 5000, "retries": 0}
+entorno arriba: http://localhost:14023 (pid 71704)
+motivo no válido: cambio de planes, sala ocupada, otro
+
+>>> Bash: cd <run>/repo; S="x-session: ensayo-agente"; u=http://localhost:14023/run
+r(){ curl -s -H "$S" -G "$u" --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo " <= $1 $2"; }
+r cancelar '["Norte","lun","--motivo","vacaciones"]'
+r cancelar '["Norte","lun"]'
+r cancelar '["Norte","lun","--motivo","sala ocupada"]'
+r canceladas '[]'
+node scripts/env-down.mjs; git status --porcelain
+<<< motivo no válido: cambio de planes, sala ocupada, otro <= cancelar ["Norte","lun","--motivo","vacaciones"]
+motivo no válido: cambio de planes, sala ocupada, otro <= cancelar ["Norte","lun"]
+cancelada Norte lun (sala ocupada) <= cancelar ["Norte","lun","--motivo","sala ocupada"]
+Norte lun — sala ocupada <= canceladas []
+entorno parado
+
+>>> Bash: cd <run>/repo; git diff --name-only develop...HEAD 2>&1 | head -20; git remote -v; O="${TMPDIR:-/tmp}/gate-0010.txt"; (time (node --test test/ && node e2e/run.mjs)) > "$O" 2>&1; echo exit=$?; tail -25 "$O"; git rev-parse --short HEAD; git status --porcelain; node scripts/env-down.mjs
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+e2e/cancel.e2e.mjs
+src/app.js
+test/cancel.test.js
+exit=1
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:14023/
+
+  ✘  4 e2e/cancel.e2e.mjs › anula una reserva (6.0s)
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:14023/
+
+  ✘  5 e2e/cancel.e2e.mjs › anular sin reserva avisa (6.0s)
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:
+
+>>> Bash: cd <run>/repo; O="${TMPDIR:-/tmp}/gate-0010.txt"; node scripts/env-up.mjs && curl -sf http://localhost:14023/health && echo; (time (node --test test/ && node e2e/run.mjs)) > "$O" 2>&1; echo exit=$?; node scripts/env-down.mjs; grep -E "^# (tests|pass|fail)|passed|failed|real" "$O"; tail -12 "$O"; git status --porcelain
+<<< entorno arriba: http://localhost:14023 (pid 68348)
+ok
+exit=0
+entorno parado
+  7 passed (48.2s)
+real	0m48.685s
+  ✓  2 e2e/cancel.e2e.mjs › rechaza un motivo fuera de la lista (6.0s)
+  ✓  3 e2e/cancel.e2e.mjs › la cancelada sale en canceladas con su motivo (12.0s)
+  ✓  4 e2e/cancel.e2e.mjs › anula una reserva (6.0s)
+  ✓  5 e2e/cancel.e2e.mjs › anular sin reserva avisa (6.0s)
+  ✓  6 e2e/free.e2e.mjs › libres de 12:00 a 14:00 enseña las dos salas (6.0s)
+  ✓  7 e2e/free.e2e.mjs › reservar cada semana crea la reserva semanal (6.0s)
+
+  7 passed (48.2s)
+
+real	0m48.685s
+user	0m0.045s
+sys	0m0.030s
+
+>>> Bash: grep -E "ℹ (tests|pass|fail)" "${TMPDIR:-/tmp}/gate-0010.txt"
+<<< ℹ tests 5
+ℹ pass 5
+ℹ fail 0
+
+>>> Bash: cd <run>/repo; cat .gitignore 2>&1 | head; mkdir -p ../../scratch-0010 2>/dev/null; cat > "${TMPDIR:-/tmp}/steps-0010.json" <<'E'
+[{"id":"1","title":"Terminal 2: cancelar Norte lun con motivo «sala ocupada» → cancelada Norte lun (sala ocupada)"},{"id":"2","title":"Motivo fuera de la lista «vacaciones» → motivo no válido: cambio de planes, sala ocupada, otro"},{"id":"3","title":"Sin --motivo → motivo no válido: cambio de planes, sala ocupada, otro"},{"id":"4","title":"canceladas → Norte lun — sala ocupada"}]
+E
+mkdir -p "${TMPDIR:-/tmp}/val"; nohup node "D:/code/.worktrees/sdd-kit/feature-0263-validation-template/.temp/k263/cli/bin/sdd.js" validation serve --steps "${TMPDIR:-/tmp}/steps-0010.json" --out "${TMPDIR:-/tmp}/val/0010.json" > "${TMPDIR:-/tmp}/val/serve.log" 2>&1 &
+sleep 3; cat "${TMPDIR:-/tmp}/val/serve.log"; echo pid=$!
+<<< .superpowers/
+.temp/
+node_modules/
+data/
+panel: http://127.0.0.1:14510/
+pid=665
+
+=== RESULTADO (14 turnos, 0.2881454 $)
+**Cierre de la 0010 parado en el paso 1: falta tu validación.** Con `validation.mode: manual`, «cierra» y la revisión limpia son la orden de cerrar, no una prueba. Hasta que me respondas no escribo ningún registro ni hago el merge.
+
+Pre-checks: el árbol está limpio, `merge --check` dice que `develop` está listo, no hay otras ramas abiertas y la spec está `approved` con la firma de Laura. La revisión final cubrió `65d2cb4`. Los dos commits posteriores solo tocan documentación, así que no repito la revisión.
+
+🦆 Al cancelar una reserva hay que decir por qué, con uno de tres motivos: cambio de planes, sala ocupada u otro. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o ninguno, se rechaza.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1` para esquivar una carrera entre tests sobre el almacén en memoria compartido. Es un workaround hasta aislar el almacén por test. Si me equivoco, la suite tarda el doble. Cuando cierre, lo apunto como deuda.
+- Decisión 3 de la spec: se aprobó sin review de spec.
+
+**Smoke que he corrido**
+
+Los hice contra el servidor, con la sesión `ensayo-agente`, distinta de la tuya.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | la misma frase |
+| Listado de canceladas | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `` `node --test test/ && node e2e/run.mjs` ``: unit 5/5 y e2e 7/7 sobre `0524118`, 48,7 s. La salida completa está en el fichero temporal `gate-0010.txt`.
+- La primera pasada del e2e falló con 7 `ERR_CONNECTION_REFUSED` porque no había levantado el entorno. Lo levanté con `env-up` y repetí: verde.
+- No he corrido el gate con `--test-concurrency=1` como dice el ruling. Corrí el gate de `operations.md` tal cual.
+
+**Sin probar**
+
+- Nada, salvo lo que ves en la ruta `/run` del servidor. No hay interfaz visual.
+
+Panel: plan B en http://127.0.0.1:14510/ (no tengo herramientas de Chrome, y esa página no ve la aplicación: si un paso falla, cuéntame el error en el comentario)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con tu sesión `x-session: persona`:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]"
+```
+
+3. Cancelar sin `--motivo` → la misma frase que el paso 2
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+4. Ver el listado → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.

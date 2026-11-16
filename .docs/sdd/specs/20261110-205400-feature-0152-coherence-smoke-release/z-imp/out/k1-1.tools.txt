@@ -1,0 +1,286 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git log --oneline; find .docs/sdd -path '*0018*' -type f; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<< 4334178 docs(sdd): abrir la feature 0018 con su spec y su plan
+9ab1cbc feat: base del molde
+.docs/sdd/specs/20261010-100000-feature-0018-help/plan.md
+.docs/sdd/specs/20261010-100000-feature-0018-help/spec.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd .docs/sdd/specs/20261010-100000-feature-0018-help; cat plan.md; echo ======; cat spec.md
+<<< ---
+id: 20261010-100000-feature-0018-help
+feature: 0018
+title: Plan de implementación — Comando de ayuda
+spec: ./spec.md
+status: approved
+created: 2026-10-10
+---
+
+# Plan de implementación — Comando de ayuda
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: Comando `ayuda`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+- Sin comentarios que repitan el código ni que citen documentos.
+
+### De proceso
+
+- Native: implementa la sesión.
+
+## Review Focus
+
+- ninguna: comprobado
+
+##
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && pwd && git branch --show-current && ls -a && cat src/app.js && ls test && cat test/cancel.test.js test/readme.test.js && cat package.json; SDD='node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js'; $SDD workspace .docs/sdd/specs/20261010-100000-feature-0018-help/plan.md
+<<< <run>/repo
+feature/0018-help
+./
+../
+.docs/
+.git/
+.gitignore
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export functi
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo"
+git branch -a; git remote -v; grep -ril "integraci\|develop" .docs/sdd/steering 2>/dev/null | head; 
+git diff $(git merge-base HEAD main) main --stat; cat test/app.test.js; cat README.md; cat .gitignore
+<<<   develop
+* feature/0018-help
+  main
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+
+## Comandos
+
+- `libres <fra
+
+>>> Bash: cd "<run>/repo"
+grep -n -i "develop\|integraci" .docs/sdd/steering/constitution.md | head
+for b in develop main; do echo "== $b"; git diff $(git merge-base HEAD $b) $b --stat; git diff $(git merge-base HEAD $b) $b -- ROADMAP.md | head -5; done
+<<< 5:3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+== develop
+== main
+
+>>> Bash: cd "<run>/repo"
+W=.temp/sdd/plan; mkdir -p $W
+cat > $W/progress.md <<'EOF'
+# SDD ledger — plan: .docs/sdd/specs/20261010-100000-feature-0018-help/plan.md
+
+## Pre-flight scan
+| Par/Task | Qué produce vs consume | Hallazgo |
+| --- | --- | --- |
+| Task 1 (única, sin pares) | Consume `handlers` y `commands`; produce `ayuda` en `handlers` | El plan manda `ayuda` en `handlers` y `commands = Object.keys(handlers)`; `test/readme.test.js` compara `commands` con el README, que está en «No entra» (feature 0020): `ayuda` en `handlers` lo pondría en rojo |
+| Task 1, coherencia interna | Tests: `test/ayuda.test.js`; ficheros: `src/app.js`, `test/ayuda.test.js` | Coincide consigo misma, salvo lo anterior |
+
+Task 1: Ruling: `ayuda` se despacha en `run` fuera de la tabla `handlers`, con las frases en su propia tabla; `commands` sigue siendo `Object.keys(handlers)` y no cambia — la spec manda (README en «No entra», gate `node --test` verde) y el plan lo contradice en «Produce» — si me equivoco, `ayuda` no aparece en `commands` y la 0020 decide si documentarla
+Task 1: Ruling: base sin cambios en `develop` ni `main` (sin diff de ROADMAP ni de ficheros) — sigo
+EOF
+cat > test/ayuda.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('ayuda lista una línea por comando con su frase', () => {
+  const lines = run('ayuda', []).split('\n');
+  const names = lines.map((line) => line.split(': ')[0]);
+  assert.deepEqual(names, ['libres', 'reservar', 'cancelar', 'anular']);
+  for (const line of lines) assert.match(line, /^\w+: \S.*/);
+});
+EOF
+mkdir -p ../red-copy && cp test/ayuda.test.js ../red-copy/ayuda.test.js
+node --test test/ayuda.test.js 2>&1 | tail -25
+<<< test at test\ayuda.test.js:5:1
+✖ ayuda lista una línea por comando con su frase (1.9312ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    [
+  +   'salas'
+  -   'libres',
+  -   'reservar',
+  -   'cancelar',
+  -   'anular'
+    ]
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/ayuda.test.js:8:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_r
+
+>>> Bash: cd "<run>/repo"
+python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"export const commands = Object.keys(handlers);\n\",\"export const commands = Object.keys(handlers);\n\nconst phrases = {\n  libres: 'las salas libres en una franja',\n  reservar: 'reserva una sala cada semana',\n  cancelar: 'cancela tu reserva',\n  anular: 'anula una reserva de sala',\n};\n\nfunction help() {\n  return commands.map((name) => \`\${name}: \${phrases[name]}\`).join('\\\\n');\n}\n\");
+s=s.replace(\"  return handlers[cmd] ?\",\"  if (cmd === 'ayuda') return help();\n  return handlers[cmd] ?\");
+fs.writeFileSync('src/app.js',s)"
+EOF
+git diff src/app.js; node --test 2>&1 | tail -12
+<<<       at TestContext.<anonymous> (file:///<run>/repo/test/ayuda.test.js:8:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 'salas' ],
+    expected: [ 'libres', 'reservar', 'cancelar', 'anular' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo"
+node --test 2>&1 | tail -12; git diff --no-index --stat ../red-copy/ayuda.test.js test/ayuda.test.js && echo RED-copy-identica; git status --short
+<<< ✔ ayuda lista una línea por comando con su frase (1.3168ms)
+✔ cancelar una reserva activa (0.6891ms)
+✔ cancelar sin reserva lo dice (0.1154ms)
+✔ el README documenta cada comando de la app (1.6312ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144.2381
+warning: in the working copy of '../red-copy/ayuda.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/ayuda.test.js', LF will be replaced by CRLF the next time Git touches it
+RED-copy-identica
+ M src/app.js
+?? test/ayuda.test.js
+
+>>> Bash: cd "<run>/repo"
+BASE=$(git rev-parse HEAD)
+git add src/app.js test/ayuda.test.js && git commit -q -m "feat(0018): comando ayuda que lista los comandos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && echo $BASE
+<<< warning: in the working copy of 'test/ayuda.test.js', LF will be replaced by CRLF the next time Git touches it
+fe9d33d feat(0018): comando ayuda que lista los comandos
+4334178 docs(sdd): abrir la feature 0018 con su spec y su plan
+4334178fdeac75e335e2dce9e1252485ed9bb473
+
+>>> Bash: cd "<run>/repo"
+node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js task done .docs/sdd/specs/20261010-100000-feature-0018-help/plan.md 1 4334178 -- node --test 2>&1 | tail -8
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 157.5619
+ledger: Task 1: complete (commits 4334178..fe9d33d, tests: node --test → ℹ duration_ms 157.5619)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-verify/references; wc -l *.md; cat closing-the-review.md; sed -n 1,80p spec-reviewer-prompt.md
+<<<   151 architecture-reviewer-prompt.md
+   33 closing-the-review.md
+  251 code-reviewer-prompt.md
+   80 encargo-revision.md
+  169 spec-reviewer-prompt.md
+  684 total
+# Closing the review
+
+**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. R
+
+>>> Bash: cd "<run>/repo"
+node src/app.js ayuda; echo "exit $?"; node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; git status --short; git diff 4334178 HEAD --stat | tail -4
+cat >> .temp/sdd/plan/progress.md <<'EOF'
+Final: Revisión final: self-review (no subagent tool) — pasadas separadas Spec, Código, Arquitectura sobre fe9d33d
+Final: Spec: THEN cubierto (una línea `<comando>: <frase>` con libres, reservar, cancelar, anular; verificado por CLI y por test/ayuda.test.js); README, cancelar y demás comandos intactos; `commands` sin cambio; Review Focus: ninguno
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (sin módulo nuevo, sin dependencia, sin contrato entre módulos, sin datos) → no sale
+Final: minor (deferred): `phrases` se indexa por `commands`; un comando nuevo sin frase mostraría `undefined` en la ayuda (src/app.js)
+Final: Declined to judge: `ayuda` no se lista a sí misma — la spec nombra los cuatro comandos y el README tampoco la documenta (0020); si se quiere, es decisión de la 0020
+EOF
+<<< libres: las salas libres en una franja
+reservar: reserva una sala cada semana
+cancelar: cancela tu reserva
+anular: anula una reserva de sala
+exit 0
+ℹ tests 6
+ℹ pass 6
+ℹ fail 0
+ src/app.js         | 12 ++++++++++++
+ test/ayuda.test.js | 10 ++++++++++
+ 2 files changed, 22 insertions(+)
+
+=== RESULTADO (22 turnos, 0.3674535 $)
+La Task 1 está implementada y commiteada (`fe9d33d`), y `node --test` pasa 6 de 6. Falta la validación y el cierre con `sdd-archive`, que no he lanzado: incluye el merge y esa decisión es tuya.
+
+`run('ayuda', [])` (y `node src/app.js ayuda`) devuelve una línea `<comando>: <frase>` por cada uno de `libres`, `reservar`, `cancelar` y `anular`. El test RED falló antes por la causa esperada, porque la feature no existía. Después quedó idéntico a la copia que guardé fuera del repo.
+
+## Revisión final
+No tengo herramienta de subagentes, así que hice una autorevisión por pasadas separadas (Spec, Código y Arquitectura). Es más débil que revisores con contexto fresco. Queda en el ledger como `Final review: self-review (no subagent tool)`; dime si te basta antes de mergear.
+- **Spec y Código:** sin hallazgos Critical ni Important.
+- **Arquitectura:** no sale, porque el diff no trae ninguna de las señales.
+
+## Rulings que tomé
+1. **`ayuda` fuera de `handlers`.**
+   - **Por qué:** el plan decía ponerla dentro, pero eso la añadiría a `commands` y `test/readme.test.js` dejaría de pasar, porque exige que el README la documente. El README está en «No entra» (lo reescribe la 0020).
+   - **Qué hice:** `run` la despacha aparte y `commands` queda igual.
+   - **Si me equivoco:** `ayuda` no aparece en `commands`; la 0020 decide si documentarla.
+2. **Base sin cambios** en `develop` ni `main`, así que seguí sin freno de alcance.
+
+## Deferred minors
+- `phrases` se indexa por `commands`. Un comando nuevo sin frase mostraría `undefined` en la ayuda.
+- `ayuda` no se lista a sí misma. La spec nombra solo los cuatro comandos.
+
+El workspace `.temp/sdd/plan` sigue con el ledger, para `sdd-archive`.
+
+¿Sigo con `sdd-archive`?

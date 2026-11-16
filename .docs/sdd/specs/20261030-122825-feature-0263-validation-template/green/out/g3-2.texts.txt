@@ -1,0 +1,92 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [15]
+Los pre-checks del cierre han salido bien. Ahora corro el gate y la suite E2E, que no está marcada como gate, para tener la evidencia de la validación.
+
+--- [20]
+🦆 Al cancelar una reserva ahora hay que decir por qué, con un motivo de la lista cerrada: cambio de planes, sala ocupada u otro. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando nuevo `canceladas` lista cada cancelación con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: añadí `--test-concurrency=1` al gate para esquivar una carrera entre tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si fuera erróneo la suite tardaría el doble. En el cierre lo apunto como fila de deuda.
+- El gate de cierre de `operations.md` es `node --test test/`, sin esa opción. Puede que el workaround no esté recogido ahí. Dime si quieres que lo ajuste.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real, sesión `ensayo-agente` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real (`vacaciones`) | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Listado de canceladas | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `dfb1411`, 0,4 s.
+- `node e2e/run.mjs`: 7/7 sobre `dfb1411`, 48,6 s. Lo corrí con la traza por defecto, sin el `E2E_TRACE=light` del README, que es un truco de la máquina de Laura.
+
+**Sin probar**
+
+- Nada. Todo el ensayo lo hice en mi propia sesión (`ensayo-agente`) y la tuya (`anon`) está intacta.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 5741. La app tiene una sola reserva, la de Norte del lunes de 10:00 a 12:00. Tu sesión empieza vacía, sin cabecera `x-session`.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancela con un motivo fuera de la lista:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]"
+```
+
+→ «motivo no válido: cambio de planes, sala ocupada, otro»
+
+2. Cancela sin motivo:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+→ «motivo no válido: cambio de planes, sala ocupada, otro»
+
+3. Cancela con un motivo válido:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+→ «cancelada Norte lun (sala ocupada)»
+
+4. Mira el listado de canceladas:
+
+```
+curl -G "http://localhost:5741/run" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+→ «Norte lun — sala ocupada»
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+Dos avisos más:
+- **Revisión final:** la hice sobre `cfb9e5d`. `HEAD` solo se movió con un commit de 17 líneas de documentación en `tasks.md`, así que no lanzo otra.
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres, actualízalo con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia.
+
+No toco ningún registro ni hago el merge hasta tu respuesta.
+

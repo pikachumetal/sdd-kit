@@ -1,0 +1,91 @@
+# Veredicto por cita de ticket — skills/ en 8e22a49f
+
+- T1 · `skills/sdd-archive/SKILL.md:31` · sitio de un hallazgo: K11
+- T2 · `skills/sdd-archive/SKILL.md:32` · sitio de un hallazgo: K26
+- T3 · `skills/sdd-archive/SKILL.md:53` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T4 · `skills/sdd-archive/references/aprendizajes-skills.md:7` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T5 · `skills/sdd-archive/references/records.md:6` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T6 · `skills/sdd-archive/references/records.md:7` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T7 · `skills/sdd-end-release/SKILL.md:50` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T8 · `skills/sdd-end-release/SKILL.md:61` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T9 · `skills/sdd-explore/SKILL.md:25` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T10 · `skills/sdd-feedback/SKILL.md:26` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T11 · `skills/sdd-grilling/SKILL.md:39` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+- T12 · `skills/sdd-implement/SKILL.md:40` · hallazgo K3
+- T13 · `skills/sdd-implement/SKILL.md:41` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T14 · `skills/sdd-implement/SKILL.md:52` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T15 · `skills/sdd-implement/SKILL.md:112` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T16 · `skills/sdd-implement/SKILL.md:216` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T17 · `skills/sdd-implement/SKILL.md:263` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T18 · `skills/sdd-implement/SKILL.md:293` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T19 · `skills/sdd-implement/SKILL.md:295` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T20 · `skills/sdd-implement/SKILL.md:297` · sitio de un hallazgo: K11
+- T21 · `skills/sdd-implement/SKILL.md:305` · hallazgo K4
+- T22 · `skills/sdd-implement/SKILL.md:310` · descartado (leída): la cita va sola, tras la frase que sostiene; es la evidencia del Art. I
+- T23 · `skills/sdd-implement/SKILL.md:316` · descartado (leída): la cita va sola, tras la frase que sostiene; es la evidencia del Art. I
+- T24 · `skills/sdd-implement/SKILL.md:318` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T25 · `skills/sdd-implement/SKILL.md:343` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T26 · `skills/sdd-implement/references/commit-milestones.md:29` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T27 · `skills/sdd-implement/references/implementer-prompt.md:124` · descartado (leída): nota de procedencia del encargo, no una regla
+- T28 · `skills/sdd-implement/references/patch-flow.md:14` · hallazgo K19
+- T29 · `skills/sdd-implement/references/patch-flow.md:15` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T30 · `skills/sdd-implement/references/patch-flow.md:18` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T31 · `skills/sdd-implement/references/patch-flow.md:19` · hallazgo K8
+- T32 · `skills/sdd-implement/references/patch-flow.md:37` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T33 · `skills/sdd-propose/SKILL.md:21` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T34 · `skills/sdd-propose/SKILL.md:33` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T35 · `skills/sdd-propose/SKILL.md:42` · sitio de un hallazgo: P1
+- T36 · `skills/sdd-propose/SKILL.md:43` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T37 · `skills/sdd-propose/SKILL.md:46` · hallazgo K17
+- T38 · `skills/sdd-propose/SKILL.md:50` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T39 · `skills/sdd-propose/SKILL.md:52` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T40 · `skills/sdd-propose/SKILL.md:53` · sitio de un hallazgo: K15
+- T41 · `skills/sdd-propose/SKILL.md:54` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T42 · `skills/sdd-propose/SKILL.md:55` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+- T43 · `skills/sdd-propose/SKILL.md:60` · descartado: la frase y su cita nacen juntas en `9e0fc16a` (`sdd-start-feature`), antes K22
+- T44 · `skills/sdd-propose/SKILL.md:65` · sitio de un hallazgo: K20
+- T45 · `skills/sdd-propose/SKILL.md:72` · sitio de un hallazgo: K20
+- T46 · `skills/sdd-propose/SKILL.md:74` · sitio de un hallazgo: P14
+- T47 · `skills/sdd-propose/SKILL.md:104` · sitio de un hallazgo: K16
+- T48 · `skills/sdd-propose/references/control-profiles.md:72` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T49 · `skills/sdd-propose/references/control-profiles.md:79` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T50 · `skills/sdd-propose/references/control-profiles.md:133` · descartado (leída): la frase con cita es la medida que sostiene la regla anterior
+- T51 · `skills/sdd-propose/references/nombrado.md:8` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T52 · `skills/sdd-propose/references/review-spec.md:23` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T53 · `skills/sdd-propose/references/review-spec.md:25` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T54 · `skills/sdd-propose/references/review-spec.md:56` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T55 · `skills/sdd-propose/references/spec-writing.md:24` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+- T56 · `skills/sdd-propose/references/spec-writing.md:26` · descartado (leída): la cita va sola, tras la frase que sostiene; es la evidencia del Art. I
+- T57 · `skills/sdd-propose/references/spec-writing.md:30` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T58 · `skills/sdd-roadmap/SKILL.md:28` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T59 · `skills/sdd-roadmap/SKILL.md:37` · sitio de un hallazgo: P2
+- T60 · `skills/sdd-roadmap/SKILL.md:50` · sitio de un hallazgo: P1
+- T61 · `skills/sdd-roadmap/SKILL.md:54` · sitio de un hallazgo: P3
+- T62 · `skills/sdd-roadmap/SKILL.md:56` · sitio de un hallazgo: P5
+- T63 · `skills/sdd-roadmap/SKILL.md:74` · descartado (leída): la frase con cita precisa su propia regla sin repetir otra
+- T64 · `skills/sdd-roadmap/SKILL.md:76` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T65 · `skills/sdd-roadmap/SKILL.md:121` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T66 · `skills/sdd-roadmap/SKILL.md:145` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T67 · `skills/sdd-verify/SKILL.md:53` · sitio de un hallazgo: P14
+- T68 · `skills/sdd-verify/SKILL.md:190` · sitio de un hallazgo: K13
+- T69 · `skills/sdd-verify/SKILL.md:192` · hallazgo K32
+- T70 · `skills/sdd-verify/references/encargo-revision.md:19` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+- T71 · `skills/sdd-verify/references/encargo-revision.md:21` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T72 · `skills/sdd-verify/references/encargo-revision.md:25` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+- T73 · `skills/sdd-verify/references/encargo-revision.md:35` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+- T74 · `skills/sdd-verify/references/encargo-revision.md:54` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T75 · `skills/sdd-verify/references/encargo-revision.md:64` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T76 · `skills/sdd-verify/references/encargo-revision.md:76` · descartado: nace con su regla, la cita es la evidencia del Art. I
+- T77 · `skills/sdd-worktrees/SKILL.md:126` · descartado (leída): productor/consumidor con `implementer-prompt.md:126` (E30)
+- T78 · `skills/sdd-worktrees/SKILL.md:132` · descartado (leída): la frase con cita, añadida después, precisa su regla sin repetir otra
+
+Total: 78 unidades
+- sitio de un hallazgo: 15
+- descartado: 37
+- descartado (leída): 20
+- hallazgo K3: 1
+- hallazgo K4: 1
+- hallazgo K19: 1
+- hallazgo K8: 1
+- hallazgo K17: 1
+- hallazgo K32: 1

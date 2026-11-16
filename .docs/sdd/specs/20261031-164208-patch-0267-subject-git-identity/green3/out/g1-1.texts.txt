@@ -1,0 +1,74 @@
+--- [20]
+Estoy corrigiendo la spec antes de presentártela. El repaso ha encontrado dos problemas: la prueba del delta la rechaza y, ejecutando el programa, lo cancelado no se conserva entre órdenes.
+
+--- [26]
+Ahora: presentarte la spec de la 0010 para aprobarla. Queda: tu respuesta.
+
+🦆 Al cancelar una reserva, quien cancela dice su nombre y elige un motivo de una lista. Por ejemplo, Ana cancela la sala Norte del lunes con «sala ocupada». Más tarde, el listado de canceladas muestra «Norte lun — sala ocupada — Ana». Una cancelación sin motivo o sin nombre no se hace, y un motivo fuera de la lista recibe un aviso con los válidos. Para que el listado funcione, las reservas se guardan entre una orden y la siguiente, algo que hoy no ocurre.
+
+**He cambiado la spec que estaba repasada.** Tenía dos huecos de fondo y la prueba del delta la rechazaba. Los dos huecos son las decisiones 3 y 4 de abajo, y son las que más debes mirar.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+**Review de spec:** ninguna. Hay tres señales: capacidad nueva, cambio de un comportamiento existente y datos. Se recomienda a partir de cuatro. Tamaño: ~60 líneas en 4 ficheros.
+
+**Prueba del delta sobre una copia:** acepta, con 3 requisitos y 5 reglas añadidos. El `capabilities/` del repo no cambia.
+
+**Política de modelos:**
+- Revisores de la spec: ninguno.
+- Revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan.
+- Otros despachos en paralelo: ninguno previsto.
+- Tope en paralelo: `control.maxParallelAgents` (sin clave: 3).
+
+**Ya estaban en la spec:**
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro (decidido contigo en la entrevista).
+2. El listado enseña sala, día, motivo y quién canceló.
+
+**Nuevas o corregidas en este repaso:**
+
+3. **Las reservas se guardan en un fichero local; la ruta la fija el plan.** Hoy cada orden empieza de cero: cancelé Norte lun dos veces seguidas y las dos respondieron «cancelada Norte lun». Sin esto, `canceladas` saldría siempre vacío en la terminal aunque los tests pasaran.
+   - Una segunda cancelación de la misma reserva responderá «sin reserva Norte lun».
+   - `libres` y `anular` también verán lo guardado.
+   - `operations.md` deja de decir que las reservas viven en memoria.
+4. **Quién canceló se indica con `--quien`, obligatorio.** Hoy la reserva no guarda titular y `cancelar` no recibe ninguna persona, así que «Ana» no podía salir de ningún sitio. Es texto libre: registra lo que se escribe, no prueba la identidad.
+5. Los nombres son `--motivo`, `--quien` y `canceladas`.
+6. Las respuestas son «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada — Ana».
+7. Los avisos son:
+   - «motivo no válido: cambio de planes, sala ocupada, otro»
+   - «falta el motivo: cambio de planes, sala ocupada, otro»
+   - «falta quién cancela: usa --quien y tu nombre»
+
+   En los tres casos la reserva sigue activa. Los dos tests actuales de cancelar pasan a la forma nueva.
+8. Sin canceladas, el listado responde «sin canceladas».
+9. El listado sale en el orden en que se cancelaron, una línea por cancelación.
+10. `canceladas` no incluye las reservas anuladas con `anular`, y `anular` no cambia.
+11. `bookings` se crea como capacidad nueva, no como modificada, porque el proyecto no tiene `capabilities/`. Es lo que hacía rechazar el delta.
+12. Sigue sin review, con el recuento corregido de dos señales a tres.
+
+## Alcance
+
+- **Entra:** `cancelar <sala> <día> --motivo <motivo> --quien <persona>`, el comando `canceladas`, guardar las reservas entre ejecuciones, sus tests y `operations.md`.
+- **No entra:** anulaciones del responsable de sala (0011), guardar el titular al reservar, comprobar la identidad de quien cancela y el plazo de 24 h del glosario, que el código no aplica hoy.
+- **Validación:** la haces tú, porque el listado y los avisos los usa una persona en la terminal. También he añadido a la spec esta línea y un escenario que prueba la conservación con dos ejecuciones separadas.
+
+## Avisos
+
+- **El kit no coincide:** esta sesión carga la 2.3.4 y el proyecto pide la 3.0.0. Puede que estas skills no sean las de la versión que pide el proyecto. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+- **`PRODUCT.md` y `mission.md` se contradicen:** el primero habla de equipos de una oficina y la misión dice que solo hay un usuario. Si de verdad solo lo usas tú, `--quien` sobra y la decisión 4 merece un cambio.
+- **Entrevista:** no tengo tus frases literales, así que la decisión 1 sigue sin moverse a «Decisiones tomadas con el dev-lead».
+
+La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`, sin commitear.
+
+**¿Apruebas la spec?**
+
+1. Apruebo (Recomendada)
+2. Cambios
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media. El proyecto fija Native, así que esta sesión implementaría todas las tasks, y eso va bien con Sonnet y effort medium. Bajar solo el effort de Opus no es gama media. La sesión no puede cambiar su propio modelo y, tras aprobar, no hay otra parada donde puedas hacerlo tú.
+
+--- [27]
+**Aviso del aprobador:** la spec nombra como aprobadora a Laura (rol dev-lead), pero el usuario de git que trae mi contexto de arranque es, literal, `Fixture`. **No coincide con Laura.**
+
+Ese dato solo dice cómo está configurado git en este repo, no quién eres. Por eso no sé si quien responde aquí es Laura.
+
+No he cambiado nada más.
+

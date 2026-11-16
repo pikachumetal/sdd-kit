@@ -1,0 +1,77 @@
+
+>>> Read: <run>/review-final-1ce3f07.diff · limit=400
+<<< 1	# Review package: 11fc543..HEAD
+2	
+3	## Commits
+4	1ce3f07 feat(bookings): guardar la devolución
+5	
+6	## Files changed
+7	 src/app.js | 7 +++++++
+8	 1 file changed, 7 insertions(+)
+9	
+10	## Diff
+11	diff --git a/src/app.js b/src/app.js
+12	index 10d99e4..e25d07a 100644
+13	--- a/src/app.js
+14	+++ b/src/app.js
+15	@@ -39,10 +39,17 @@ function cancelledList() {
+16	 export function run(cmd, params) {
+17	   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+18	   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+19	   if (cmd === 'cancelar') return
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+5	
+6	function freeRooms(slot) {
+7	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+8	}
+9	
+10	function findBooking(room, day) {
+11	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+12	}
+13	
+14	function reasonOf(params) {
+15	  const index = params.index
+
+=== RESULTADO (3 turnos, 0.10654390000000001 $)
+### Strengths
+- The change is small and `saveRefund` is short (5 lines), well under the 30-line limit.
+- It rejects an unknown room before doing anything else.
+- The error message is in Spanish, as required.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`src/app.js:50-55`: the refund is never saved.** The function is called `saveRefund` and the commit says "guardar la devolución". It only builds and returns an object. Nothing is stored and nothing is wired into `run`, so the user can't reach it. The existing code keeps its state in the `bookings` array. If saving is meant to be in this commit, the code is incomplete. If the commit only prepares the data, the name and commit message are misleading.
+2. **`src/app.js:51`: the comment cites a plan task.** `// Task 4: validar antes de guardar` points to a document that will change. The citation goes stale once the plan is renumbered or archived. It also repeats what the next line already does, since the `rooms.includes` check is the validation. Delete it.
+3. **`src/app.js:54`: the IBAN is not validated and a missing one crashes.** The function validates the room but not the IBAN. If `iban` is `undefined`, `iban.replaceAll` throws a `TypeError`. A bad IBAN, such as an empty string or wrong characters, is saved as is. A reasonable user would expect an error message in Spanish, like the one for the room. The "validar antes de guardar" intent covers this.
+4. **`src/app.js:50-55`: inconsistent return type.** The function returns a string on error and an object on success. Callers can't tell the two apart except by checking the type. `run` returns strings everywhere, so the object also doesn't fit the CLI. Return a consistent shape, for example a success string like `devolución guardada ...` or `{ ok, error }`.
+5. **`src/app.js:48-50`: the new export sits after the `if (command) console.log(...)` line.** The new function was appended below the script entry point instead of with the other functions. It's harmless, because function declarations are hoisted, but it breaks the file's order. Move it above `run`.
+
+#### Minor (Nice to Have)
+- `src/app.js:53`: `requisito del proveedor: el IBAN va sin espacios` is a candidate citation, but "proveedor" is not a document of this project. It goes to "Declined to judge". The comment does give a reason, but it restates what `replaceAll(' ', '')` shows. Keep only the why if you want it at all. For example: "el proveedor rechaza IBAN con espacios".
+- `src/app.js:54`: `replaceAll(' ', '')` only strips plain spaces. IBANs pasted with tabs or non-breaking spaces would keep them. `replace(/\s/g, '')` is more robust.
+- There are no tests for `saveRefund`, either for the invalid room or for stripping spaces. Clean Code: "Is there a test for every public method?" — possible gap.
+
+### Recommendations
+Decide what "guardar" means: store it, or just return it. Then add validation for the IBAN, give the function a consistent return type, and add tests.
+
+### Declined to judge
+- `src/app.js:53` `requisito del proveedor`: "proveedor" is not a document of this project, so the citation is a false positive. It is only mentioned under Minor for repeating the code.
+- E2E: the project declares none, so no E2E rule applies.
+- RED tests: the diff contains no tests, so nothing was modified.
+- Whether a refund should be wired into the CLI (`run`): this belongs to the Spec axis.
+- Where refund data should live (module boundaries): this belongs to the Architecture axis.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The code is small and clean, but it doesn't store anything despite its name. It crashes on a missing IBAN, returns two different types, and keeps a stale `Task 4` citation. These are all quick to fix.

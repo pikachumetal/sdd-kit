@@ -1,0 +1,132 @@
+--- [24]
+## Revisión final, eje Spec: `d7c84c3` (spike 0030)
+
+He leído el paquete entero en una pasada; solo tiene el diff de `src/app.js`. También he leído `research.md`, `evidence/`, el plan, la spec, la ADR 0003, los tests y la plantilla de research. No he ejecutado la suite, como pedía el encargo.
+
+### Strengths
+- `research.md` marca bien O2 como `no medido` y O3 como `no medido con una persona`. Son los estados que exige la plantilla, y no hace pasar la prueba del agente por una prueba con persona (`research.md:21-22`).
+- La pregunta y los tres objetivos copian la spec sin rebajar ningún umbral.
+- `src/` cumple la Confirmación de la ADR 0003: no tiene ningún `import` ni `require`, y `package.json` no declara dependencias.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. O1 figura como `cumple` con la mitad del tiempo exigido**
+- **Dónde:** `research.md:20`, `evidence/o1.txt:1`.
+- **Qué falla:** el objetivo pide ≥ 5 min seguidos y la evidencia dice «2 min 30 s, 0 errores». La plantilla obliga a poner `no cumple tal como se definió`.
+- **Por qué importa:** quien lea la tabla cree que el aguante está demostrado, y esa fila sostiene la compra.
+- **Cómo arreglarlo:** medir ≥ 5 min seguidos, o cambiar el estado y anotar en el detalle los 2 min 30 s.
+- **Gap:** `contradicts`.
+- **Origen:** O1 de la spec.
+
+**2. La recomendación de comprar se apoya en filas que no la sostienen**
+- **Dónde:** `research.md:26`.
+- **Qué falla:**
+  - Dice «aguanta (O1)», pero O1 no llega al umbral.
+  - Dice «el consumo de memoria con 1.000 reservas es bajo (O2)», pero la línea 21 dice que O2 no se midió. Esa afirmación no tiene ningún dato detrás.
+  - La plantilla es explícita: «Solo cita filas medidas; no dar por cumplido un `no cumple` ni un `no medido`».
+- **Por qué importa:** este es el único producto del spike, y desbloquea una compra de este trimestre. Hoy ningún objetivo está cumplido.
+- **Cómo arreglarlo:** retirar «comprar» hasta tener medidas. Con los datos actuales, ninguna fila sostiene comprar.
+- **Gap:** `contradicts`.
+- **Origen:** «Decisión que desbloquea» de la spec y `research-template.md:37`.
+
+#### Important (Should Fix)
+
+**3. El spike deja código de producción**
+- **Dónde:** `src/app.js:40`.
+- **Qué falla:**
+  - `export const kioskMode = true;` no lo usa nadie; `git grep` solo encuentra esa línea.
+  - El plan dice «no cambia código» y la plantilla «el spike no deja código de producción».
+  - `research.md:31` declara «nada» en «Lo que sale», lo que contradice el cambio.
+  - El commit pasa además todo el fichero de CRLF a LF (de 38 CR a 0). Por eso el diff muestra 79 líneas cuando el cambio real es una.
+- **Por qué importa:** una bandera sin uso sugiere que existe un modo quiosco que no existe, y el diff de finales de línea dificulta `git blame` y la revisión.
+- **Cómo arreglarlo:** restaurar `src/app.js` de `2c57363`.
+- **Gap:** `unrequested`.
+- **Origen:** plan, «Eje Arquitectura», y `research-template.md:44`.
+
+**4. O2 está sin medir**
+- **Dónde:** `research.md:21`.
+- **Qué falla:** «no dio tiempo», pero el spike es de 2 h y no hay constancia de que se escalara, como pide la plantilla si el timebox se desborda.
+- **Por qué importa:** la pregunta del spike sigue sin respuesta en memoria.
+- **Cómo arreglarlo:** medir con 1.000 reservas y guardar la salida en `evidence/o2.txt`.
+- **Gap:** `missing`.
+- **Origen:** O2 de la spec.
+
+**5. O3 está sin medir con una persona**
+- **Dónde:** `research.md:22`, `evidence/o3.txt:1`.
+- **Qué falla:** el estado es honesto, pero el objetivo sigue abierto. Pide alguien que no conozca la herramienta, y el agente no sirve para eso.
+- **Por qué importa:** es la única medida de si el quiosco se puede usar sin ayuda.
+- **Cómo arreglarlo:** hacer la prueba con una persona, o que el dev-lead decida expresamente sin ese dato.
+- **Gap:** `missing`.
+- **Origen:** O3 de la spec.
+
+**6. La evidencia de O1 no es salida en bruto**
+- **Dónde:** `evidence/o1.txt:1`.
+- **Qué falla:** es una línea de resumen sin comando, marcas de tiempo ni salidas, y el plan pide «las salidas en bruto». El fichero de O3 tiene el mismo defecto.
+- **Por qué importa:** el «0 errores» no se puede auditar ni repetir.
+- **Cómo arreglarlo:** guardar el comando y su salida al repetir la medida.
+- **Gap:** `partial`.
+- **Origen:** «Evidencia» de la Task 1.
+
+**7. Falta la sección «3. Aguante»**
+- **Dónde:** `research.md`, salta de la sección 2 a la 4.
+- **Qué falla:** O2 es un objetivo de rendimiento, así que la plantilla pide ≥ 10 repeticiones con la peor carga y el recurso acumulado. El plan pide `research.md` «calcado» de la plantilla.
+- **Por qué importa:** sin ella no se ve si la memoria crece entre repeticiones, que es justo el riesgo de un quiosco encendido todo el día.
+- **Gap:** `missing`.
+- **Origen:** Step 2 de la Task 1 y `research-template.md:26-28`.
+
+**8. El gate `node --test` → `ℹ fail 0` no tiene evidencia y, por lectura, no puede pasar**
+- **Dónde:** `test/app.test.js:9-11`, `test/cancel.test.js:5-11`, `src/app.js:33-38`.
+- **Qué falla:**
+  - `run` no atiende `reservar` ni `cancelar`, así que devuelve `'salas'`.
+  - Los tests esperan `'reserva semanal creada'`, `'cancelada Norte lun'` y `'sin reserva Sur mar'`.
+  - Por tanto, 3 de los 4 tests deberían fallar.
+- **Por qué importa:** el fallo es anterior a esta rama, porque ni los tests ni esa lógica cambian en ella. Aun así, el plan y la constitución (punto 2) exigen el gate en verde, y la rama no puede cerrarse así. Además, no hay ningún informe de task ni salida del gate.
+- **Cómo arreglarlo:** ejecutar el gate. Si falla, tratarlo en su propio patch y no dentro del spike.
+- **Gap:** `missing`.
+- **Origen:** «Verificación» de la Task 1 y «Validación final» del plan.
+
+#### Minor (Nice to Have)
+
+**9. Los pasos del plan siguen sin marcar**
+- **Dónde:** `plan.md:40-42,46`.
+- **Qué falla:** todos están en `[ ]`, y el Step 1 dice «Hecho» en su texto mientras el research lleva `status: done`.
+- **Gap:** `partial`.
+- **Origen:** Task 1 del plan.
+
+**10. Las alternativas descartadas son flojas**
+- **Dónde:** `research.md:27`.
+- **Qué falla:** solo descarta esperar, «porque nada lo pide», aunque la plantilla presenta «no seguir» como recomendación válida. Se resuelve al rehacer el hallazgo 2.
+- **Gap:** `partial`.
+- **Origen:** `research-template.md:37-40`.
+
+**Comprobaciones sin hallazgo**
+- **Delta de capacidades:** la spec declara «Ninguna» y no hay delta. `kioskMode` no altera `availability`, `bookings` ni `reports`, así que el hallazgo 3 no llega a «capacidad cambiada sin subsección».
+- **Decisiones del dev-lead:** la spec no tiene esa sección, y «Decisiones que he tomado yo» dice «Ninguna».
+- **Ledger:** no hay, así que tampoco hay minors diferidos que valorar.
+- **Restricciones de código:** el diff no añade comentarios ni texto de interfaz.
+
+### Declined to judge
+- **`libres` ignora el día:** `freeRooms` (`src/app.js:6-8`) solo filtra por franja, así que Norte sale ocupada cualquier día. Es anterior a la rama y la spec no lo toca, pero un quiosco real lo notaría. Debería ir a «Lo que sale» si el spike lo confirma.
+- **`libres` sin franja o con franja inválida:** responde con todas las salas, sin error. Es anterior a la rama y ningún objetivo lo cubre.
+- **Reserva de ejemplo frente a la ADR 0003:** el código arranca con una reserva, y la ADR dice que «cada arranque empieza vacío». Es anterior a la rama, y la Confirmación de la ADR solo pide no importar `node:fs` ni paquetes de base de datos.
+- **Encaje de la ADR 0003 con un quiosco:** la ADR da por hecho una persona en terminal y reservas que se pierden al cerrar. Un quiosco compartido podría obligar a revisarla, pero la spec no pregunta por ello. Conviene nombrarlo en el research.
+- **Rama `feature/review` frente a `feature/<id>`:** la constitución pide el segundo formato. Es un tema de proceso, fuera de este eje.
+
+### Not verified
+- **Resultado real de `node --test`:** no verificado: el encargo prohíbe ejecutar la suite. El hallazgo 8 sale de leer el código.
+- **Veracidad de las cifras de `evidence/`:** no verificado: los ficheros no traen salida en bruto.
+- **Duración real del spike frente al timebox de 2 h:** no verificado: el paquete no trae registro de tiempos.
+- **Informes de task:** no verificado: el paquete y los ficheros que nombra no incluyen ninguno.
+
+### Recommendations
+- El hilo principal debería ejecutar `node --test` para confirmar o descartar el hallazgo 8.
+- Conviene rehacer las medidas guardando comando y salida, y escribir la recomendación solo después. El orden correcto es O1 completo, O2 con su sección de aguante y O3 con una persona.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** La recomendación de comprar cita un O1 que se quedó en la mitad del umbral y un O2 que nunca se midió, de modo que el spike no responde a su pregunta. Además, deja código de producción sin pedir y, por lectura, el gate de cierre no puede pasar.
+

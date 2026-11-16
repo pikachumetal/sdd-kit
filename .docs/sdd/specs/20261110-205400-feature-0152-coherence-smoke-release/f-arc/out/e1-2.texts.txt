@@ -1,0 +1,86 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [22]
+La re-revisión está lanzada, junto con su vigilancia. Hasta que vuelva no escribo ningún registro, como pide el cierre. Espero su resultado.
+
+--- [30]
+All four checks pass. Commit ac7a62e only adds tasks.md, the tasks table and the Ruling are accurate, and nothing else changed after 7b744c0.
+
+I was not allowed to read the diff file `D:/code/git/sdd-kit/.temp/rr-0010.diff`. I used `git show ac7a62e` instead, which gives the same diff because the range is that one commit. I did not change the repo or run the suite.
+
+## Finding Verdicts
+
+None. No findings were open on either axis.
+
+## New Breakage in the Fix Diff
+
+None.
+
+1. **Scope:** the diff 7b744c0..ac7a62e touches one file, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, with 17 added lines. HEAD is ac7a62e and the working tree is clean.
+2. **Tasks table:** it matches `git log --oneline`. Task 1 «Cancelar con motivo» is 955566d («feat(bookings): cancelar con un motivo de la lista»). Task 2 «Listado de canceladas» is 7b744c0 («feat(bookings): listado de canceladas con su motivo»). The review line says the review was «sobre 7b744c0», which matches the brief.
+3. **Ruling:** it is accurate.
+   - `bookings` is a module-level array (`src/app.js:4`) with only one booking, Norte lun, which starts as `active`.
+   - The `canceladas` test (`test/cancel.test.js:13-15`) prepares no data and expects `'Norte lun — sala ocupada'`.
+   - That state only exists because the first test (`test/cancel.test.js:5-7`) cancelled Norte lun with «sala ocupada».
+   - If the `canceladas` test runs alone or first, `cancelledList()` returns `''` and the test fails. That is exactly the cost the Ruling states.
+4. **Spec and code unchanged:** `git diff --quiet 7b744c0 HEAD -- src .docs/.../spec.md` reports no difference. No commit after 7b744c0 touches `src`, `spec.md`, `test` or `e2e`. Both `spec.md` and `src/app.js` exist at HEAD.
+
+The text of tasks.md is in Spanish, so the interface-language constraint is not affected.
+
+## Out-of-Scope Observations
+
+- The `canceladas` test depends on the order the tests run in (`test/cancel.test.js:13-15` relies on shared state from `src/app.js:4`). The Ruling records this as an accepted workaround, so it is not new and not part of this diff. The code review that came back clean on 7b744c0 did not raise it as a finding, though. It is worth keeping on the debt list until each test prepares its own data.
+
+## Verdict
+
+Clean. ac7a62e adds no breakage, and the clean result of the final review on 7b744c0 still holds at HEAD.
+
+--- [32]
+La re-revisión salió limpia. Paro su vigilancia y sigo con la validación en campo.
+
+--- [37]
+La vigilancia ya había terminado sola. Ahora el smoke con ejecución real de cada THEN y el gate de cierre completo, con la salida guardada en fichero.
+
+--- [51]
+La salida se corta tras el primer test, con exit 1 y sin resumen. Repito el fichero solo y miro si el servidor sigue vivo.
+
+--- [54]
+Con el entorno desde la rama, el fichero pasa entero (5/5). Falta explicar el corte de la pasada anterior, así que repito el gate completo sin tocar nada más.
+
+--- [62]
+Los registros que me faltan son el walkthrough, la deuda descubierta, el delta de capacidad y el roadmap. Empiezo por el borrador del walkthrough y la línea de re-revisión en `tasks.md`.
+
+--- [65]
+La capacidad `bookings` está fusionada con el CLI. Ahora la retro, que deja su línea `Retro:` en §5.
+
+--- [71]
+Los chequeos de decisiones, capacidades y roadmap dan exit 0. El walkthrough cita `ac7a62e`, que el squash va a absorber, así que reescribo esas citas antes de juntar el cierre en un solo commit.
+
+--- [78]
+🦆 **Lo que cambia, con un ejemplo:** `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». Después, `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…** el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Si corre solo o en otro orden, falla. Es un ruling de la Task 2, y lo dejé como fila en la deuda.
+
+La 0010 está cerrada y fusionada en `develop`. No es una validación mía por defecto: en este proyecto `validation.mode` es `field`, así que la hice yo con mi smoke y la suite, y está registrada como «Validación en campo».
+
+- **Revisión final:** `HEAD` se había movido desde lo revisado (`7b744c0`) con un commit que solo tocaba `tasks.md`. Lancé una re-revisión de ese rango (Opus, effort high) y salió limpia.
+- **Suite:** el gate de cierre pasó 5/5 unitarios y 7/7 e2e. Antes tuve tres rojos en el e2e, con la salida antigua «cancelada Norte lun» sin motivo. Venían de un servidor de otro árbol ocupando el puerto 52083, y con `env-up` desde la rama pasó. Dos cosas sin resolver:
+  - Mi contraste en la base corrió contra ese mismo servidor, así que no valió.
+  - Una pasada intermedia se cortó tras el primer test (exit 1, sin resumen) y no la he podido explicar. La siguiente pasó entera. Está dicho en el walkthrough.
+- **Smoke:** los 4 THEN con ejecución real. Reportado por el usuario: nada.
+- **Records:**
+  - Walkthrough con la validación en campo.
+  - Capacidad `bookings` fusionada con `sdd capability merge`.
+  - Roadmap con la 0010 en ✅.
+  - Una línea en `operations.md` («Entorno de la suite»): el runner usa el servidor que haya en el puerto, así que `env-up` va antes de cada pasada.
+  - Tres filas en «Por triar» de `debt.md`: el test dependiente de orden, el e2e fuera de presupuesto (48 s de 0,5 min) y el runner que no comprueba el servidor.
+  - No hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+- **Retro:** `error que cazaría un chequeo` → la línea de `operations.md`. El chequeo en el runner queda en la deuda, porque es código ajeno a esta feature.
+- **Pendiente:**
+  - Sin push, porque `merge.push` no lo autoriza.
+  - No hay pendientes de la familia (no tiene `parent:` ni `proposal:`).
+  - Para el ticket de mejora del kit con `sdd-feedback`: ninguna línea de la retro es «ticket del kit», así que no lo ofrezco.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (d003c8a) · push: no hecho: `merge.push` no lo autoriza.
+

@@ -1,0 +1,62 @@
+--- [13]
+Sigo revisando: me falta leer la capacidad `bookings` y lo que se borró en bbdfb66.
+
+--- [16]
+### Strengths
+
+- The change is small and stays inside the files the plan names (`src/app.js`, `test/void.test.js`). `anular-todas`, which the spec puts out of scope, is unchanged.
+- The return value «anulada <sala> <día>» is kept, so the agent's own decision 1 holds. `test/void.test.js:5-7` pins it through `run('anular', ['Norte','lun'])`.
+- Removing `formatMail` drops the "(enviado por correo)" suffix and the subject line, and leaves no dead helper behind.
+- The interface text is in Spanish, and the diff adds no comments.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The REMOVED behavior «Avisar por correo» still runs.** `src/app.js:18` and `src/app.js:29`, `36`
+- **What's wrong:** `voidBooking` still pushes `{ to: 'responsable', body: 'anulada Norte lun' }` into `outbox`. `salida` (`pending()`) still prints `responsable: anulada Norte lun`. The removed requirement (dropped from `.docs/sdd/capabilities/bookings.md` in bbdfb66) was: "AND `salida` lista «anulada Norte lun» para el responsable de sala, y la oficina se lo envía por correo". Running `anular Norte lun` then `salida` gives exactly that listing. The commit only changed the shape of the entry (no subject, no "(enviado por correo)" suffix). It did not remove the notice.
+- **Why it matters:** The office still gets the notice in `salida` and still sends the email that "nadie lee". The feature does the opposite of its intent, and the capability doc now describes behavior the code doesn't have.
+- **Fix:** Delete the `outbox.push(...)` in `voidBooking`. `voidBooking` was the only producer, so also decide what to do with `outbox` and `salida` (see «Declined to judge»).
+- **Gap:** `contradicts`
+- **Source:** REMOVED — Avisar por correo (spec delta, `bookings`). This also leaves the dev-lead decision «El aviso por correo al anular desaparece… el correo sobra» uncovered: no rule in the diff implements it.
+
+#### Important (Should Fix)
+
+**2. The test named «sin aviso» doesn't check that there is no notice.** `test/void.test.js:5-7`
+- **What's wrong:** The «Dónde se prueba» line «Anular sin aviso: por el comando `anular`, como `test/void.test.js`» names this test. It only checks the return string, which was the same before the change. Nothing checks `outbox` or `run('salida', [])` after voiding. That is why issue 1 passed. The test passes against the base code too, so it was never red.
+- **Fix:** Add an assertion that after `run('anular', ['Norte','lun'])`, `run('salida', [])` is `''` (or `outbox` has length 0).
+- **Gap:** `partial`
+- **Source:** the THEN of «Anular sin aviso» in «Dónde se prueba».
+
+#### Minor (Nice to Have)
+
+- `bbdfb66` merged the 0024 delta into the capability doc on the base branch, and that removed «Avisar por correo» before this code change existed. It's outside the range under review. I mention it only because it hides issue 1: the doc already reads as if the behavior were gone.
+
+### ADRs
+
+- **0003 (accepted):** Confirmación met. `src/app.js` imports neither `node:fs` nor any database package.
+
+### Ledger
+
+- None. The brief says there is no ledger, so there are no deferred minors to rule on.
+
+### Declined to judge
+
+- **Whether `salida` and the exported `outbox` should be removed** once `anular` stops producing entries. The spec only asks for the notice on `anular` to go. With issue 1 fixed, `salida` would always print an empty string. The executor decides whether to keep it as a dormant hook (ROADMAP 0008 plans email notices) or remove it.
+- **«la reserva deja de contar en `libres`»** in the kept requirement «Anular una reserva». That behavior already existed and the delta doesn't touch it. The diff has no test for it, but it isn't part of this feature.
+
+### Not verified
+
+- **Test result:** no verificado. The brief says not to run the suite, and the package doesn't include the task report with the output of `node --test test/void.test.js`.
+
+### Recommendations
+
+- Make the test for a REMOVED requirement assert that the behavior is gone, and check that it fails against the base code before implementing.
+- After fixing issue 1, run the whole suite on the main thread to make sure no other test reads `outbox`. A grep found no other consumer in `test/`.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The only behavior the spec removes, the notice to the room manager that `salida` lists after `anular`, still happens in `src/app.js:18`. The test named in «Dónde se prueba» doesn't check that the notice is gone, so it passes even though the bug is there.
+

@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1 | head -30; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; git ls-files | head -40; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.
+
+>>> Bash: cat src/app.js PRODUCT.md ROADMAP.md package.json; cat test/app.test.js; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md; cat .docs/sdd/specs/*free/spec.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-g-0152/skills"; cat sdd-propose/references/modo-lite.md; sed -n 1,80p sdd-propose/references/patch-lane.md; grep -n -i "short" -A8 sdd-rubber-duck/SKILL.md | head -50
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cd "<run>/repo"; cat .docs/sdd/steering/estimation.md; git branch --show-current
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+=== RESULTADO (7 turnos, 0.15943260000000004 $)
+Ahora: clasifico el cambio (carril) antes de abrir nada. Queda: tu respuesta a una pregunta de carril, sin ramas ni carpetas todavía, ~1 min.
+
+🦆 Hoy `libres 10:00-12:00` solo mira la franja: no distingue el día, así que una reserva del lunes oculta la sala Norte también el martes a esa hora. Con el cambio, `libres` aceptaría además el día y solo contaría las reservas activas de ese día. Se toca `freeRooms` y la rama `libres` de `run` en `src/app.js`, y el test de `libres`. Falta decidir en qué orden se escriben el día y la franja, y qué hace `libres` sin día.
+
+No es un patch: el pedido no fija el orden de los argumentos ni qué pasa sin día, y eso lo tendría que decidir yo. Es un cambio de comportamiento con dos tests nuevos (con día y sin día). Cumple el predicado de **lite**, que compruebo condición por condición:
+
+- El flujo ya existe y se puede leer: `freeRooms` y `run('libres')`.
+- No cambia contratos públicos: `libres <franja>` sigue funcionando igual.
+- No cambia el esquema de datos: las reservas ya llevan `day`.
+- Cabe en un solo módulo: `src/app.js`.
+- La estimación es ≤ media jornada: unas 0,5 h, confianza alta, más el tiempo del gate de cierre. No hay gate medido en el proyecto, así que no cito ninguno.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+
+1. **Lite (recomendada)**: spec corta sin plan. Propongo `libres <día> <franja>`, con `libres <franja>` sin cambios cuando no hay día.
+2. **Full**: spec y plan completos, por si prefieres decidir el orden y el caso sin día con más ceremonia.
+3. **Lite con otro perfil**, o aprobando la spec por delegación: dime «apruebo la spec por delegación, nos vemos en la validación», o «perfil `<otro>` para este cambio».

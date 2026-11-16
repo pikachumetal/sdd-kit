@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Grep: (?i)norte|libres|cancel
+<<< Found 5 files
+ROADMAP.md
+CHANGELOG.md
+test\app.test.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+src\app.js
+
+>>> Glob: **/*
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+README.md
+src\app.js
+test\app.test.js
+PRODUCT.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\constitution.md
+ROADMAP.md
+.docs\sdd\sdd-kit.json
+package.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<<< 1	# Spec — free
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+13	test('cancelar respeta el día', () => {
+14	  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15	});
+16	
+
+>>> Grep: (?i)cancel|libres|persist
+<<< CHANGELOG.md:10:- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](.docs/sdd/specs/20260917-090000-task-0006-free/)
+CHANGELOG.md:14:- La cancelación ya no borra reservas de otro día con la misma hora. [patch 0007](.docs/sdd/specs/20260918-090000-patch-0007-cancel/)
+CHANGELOG.md:20:- Cancelar una reserva propia.
+ROADMAP.md:8:| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md`<br>**Decisiones ya to
+
+=== RESULTADO (10 turnos, 0.122145 $)
+Porque en el código `cancelar` no cancela nada. Lo he comprobado en `src/app.js`, sin ejecutar nada.
+
+**Lo que hace el código**
+- `src/app.js:3`: la reserva de Norte del lunes de 10:00 a 12:00 está escrita a mano en el array `bookings`. Es un dato fijo en memoria.
+- `src/app.js:12`: `cancelar` solo devuelve el texto `cancelada <día> <hora>`. No toca `bookings`, así que la reserva sigue ahí.
+- `src/app.js:5-7`: `libres` quita las salas que tienen una reserva con esa franja exacta. Mientras la reserva exista, Norte no sale.
+
+**Otros dos problemas que encontré**
+- `libres` solo mira la franja y no el día. Aunque cancelar funcionara, `libres 10:00-12:00` no distingue lunes de martes.
+- Cada ejecución de la CLI arranca con el array original y no guarda nada en disco. Aunque `cancelar` borrara la reserva, en la siguiente ejecución volvería a aparecer.
+
+**Lo que dicen los documentos, frente a lo que hace el código**
+- El CHANGELOG y el ROADMAP anuncian que el patch 0007 corrigió la cancelación para que no borre reservas de otro día con la misma hora. En el CHANGELOG también figura «Cancelar una reserva propia».
+- El `patch.md` dice «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado».
+- El código no coincide con eso. No hay ninguna comparación que corregir, porque `cancelar` no borra.
+- El test «cancelar respeta el día» solo comprueba que el texto devuelto sea `cancelada mar 10:00`. Pasa aunque no se cancele nada, así que da una falsa sensación de cobertura.
+
+**Lo que infiero**
+- Es un fallo propio del código, no un caso de uso mal entendido.
+- El patch 0007 figura como terminado sin que su fix exista en el código.
+
+No he cambiado nada.
+
+Si quieres arreglarlo, lo veo como un patch. El alcance sería: que `cancelar` elimine de verdad la reserva por sala, día y franja, que `libres` reciba el día, y un test que compruebe que Norte vuelve a salir libre. Si además quieres que la reserva persista entre ejecuciones, eso es una feature aparte. Si quieres seguir, lo paso al roadmap como fila de patch y, si prefieres hacerlo en esta sesión, dime «arráncalo».

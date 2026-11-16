@@ -1,0 +1,66 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering y capacidades). Queda: clasificar el cambio y presentarte la nota de comprensión, ~3 min.
+
+--- [16]
+Ahora: reservo el id y creo la rama de la feature. Queda: la nota de comprensión y la primera pregunta de diseño, ~2 min.
+
+--- [19]
+Ahora: te presento lo que he entendido y la primera pregunta. Queda: entrevista de diseño, enfoques, spec (parada de aprobación), plan e implementación, ~25 min hasta tu primera aprobación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He creado la rama `feature/0010-lista-espera` (id 0010 reservado; no había fila en el roadmap).
+
+**Lo que he entendido (corrígeme):**
+
+- Hoy `salas` solo sabe decir qué salas están libres en una franja (`libres`) y crear una reserva; no hay nada que pase cuando la sala que quieres ya está reservada.
+- Quieres que, en ese caso, puedas ponerte en una lista de espera de esa sala (y franja), en lugar de quedarte sin nada.
+- Lo trato como feature completa: añade un estado nuevo (la cola de espera) y comportamiento nuevo en `reservar`, y no cumple las condiciones del modo lite. Prevé 3 tareas o menos, así que no propongo dividirla.
+- Detalle del proyecto: usas la herramienta tú solo, en línea de comandos, y las reservas viven en memoria dentro de `src/app.js`.
+
+❓ **Para qué la quieres**
+
+¿Qué quieres conseguir con la lista de espera, y qué querrías que pasara cuando la sala se libere?
+
+--- [21]
+Entendido: el problema es tener que repetir `libres` a mano. Antes de nada, un hecho del código que condiciona la respuesta: `src/app.js` guarda las reservas en memoria y cada ejecución del comando arranca de cero. Nada sobrevive entre una ejecución y la siguiente, y ningún proceso se queda vigilando la sala. La lista de espera tendrá que guardarse en algún sitio, y eso lo decido más adelante, con su razón, en la spec.
+
+❓ **¿Qué pasa cuando Norte se libera y tú eres el primero de la cola?**
+
+Cuando alguien ejecute `cancelar` sobre la reserva de Norte, la sala queda libre. Tres formas de que te enteres:
+
+1️⃣ **Reserva automática.** La sala pasa a ser tuya sin que hagas nada.
+   - Ejemplo: `cancelar lun 10:00` → `cancelada lun 10:00 · Norte reservada para ti (estabas 1.º en espera)`.
+   - Cuesta que te quedas con una sala que quizá ya no necesitas, y tendrás que cancelarla tú.
+
+2️⃣ **Aviso y confirmas tú.** La sala queda apartada para ti, pero la reserva no se hace hasta que lo digas.
+   - Ejemplo: `libres 10:00-12:00` → `Norte (te toca, confirma con: reservar Norte)`.
+   - Cuesta que te enteras solo cuando vuelves a mirar, y hay que decidir cuánto dura el apartado.
+
+3️⃣ **Solo la consultas.** Tienes un comando `espera` que te dice tu posición, y la sala queda libre para cualquiera.
+   - Ejemplo: `espera Norte` → `en espera: 1.º de 2`.
+   - Cuesta que no evita volver a mirar a mano. Es el más simple, pero apenas resuelve tu problema.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que volver a mirar, y es la única opción en la que no tienes que volver a mirar nada. A cambio, puedes acabar con reservas que no necesitas.
+
+¿Cuál eliges?
+
+--- [23]
+Voy con un caso concreto.
+
+Hoy `Norte` está reservada el lunes de 10:00 a 12:00. Tú quieres esa sala y esa franja, pero está ocupada. Lo que cambia con la lista de espera es que, en vez de irte, le dices a la herramienta «apúntame para Norte, lunes 10:00-12:00». Tú pasas a ser el 1.º de la cola.
+
+Más tarde, la persona que tenía la reserva ejecuta `cancelar lun 10:00` y Norte queda libre. Lo que te pregunto es qué hace la herramienta en ese momento, porque tú no estás delante: lo que hace se ve cuando ejecutas un comando.
+
+- Si la herramienta **reserva por ti**, la próxima vez que mires verás que Norte ya es tuya. No tuviste que hacer nada, pero si ya no la querías, la reserva sigue ahí hasta que la canceles.
+- Si la herramienta **solo te avisa y te guarda el sitio**, verás «Norte es tuya si la confirmas». Tienes que dar un paso más, y hace falta decidir cuánto tiempo te la guarda antes de dársela al siguiente.
+- Si la herramienta **no hace nada**, Norte queda libre como si nadie hubiera esperado, y solo puedes preguntar tu posición en la cola. Si otra persona reserva antes que tú, te quedas sin sala.
+
+La diferencia está en cuánto trabajo te quita y cuánto control conservas: el primer caso te lo quita casi todo, el segundo reparte el trabajo y el tercero apenas te lo quita.
+
+¿Cuál de las tres encaja con lo que quieres que pase cuando Norte se libere?
+

@@ -1,0 +1,49 @@
+--- [2]
+Using sdd-propose to classify this change.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto. Queda: localizar el fallo para clasificarlo y, si es un patch, preguntarte antes de abrirlo.
+
+--- [15]
+Reproducido: `cancelada Norte mar`. Id reservado: 0012.
+
+--- [17]
+Escribo el test rojo primero, y compruebo que falla.
+
+--- [19]
+Rojo por la causa esperada (el `mar` canceló la del `lun`). Ahora el fix mínimo.
+
+--- [22]
+Falla un test. Miro cuál.
+
+--- [32]
+Sin el fix: rojo, con el motivo correcto. Con el fix: 5/5 y lint limpio. Escribo `patch.md` y commiteo.
+
+--- [34]
+Fix commiteado. Paso al cierre.
+
+--- [39]
+El arreglo está commiteado en `feature/0012-cancelar-dia`, pero no lo he cerrado: falta tu validación.
+
+Con tu «patch:» cancelar `Norte mar` ya no toca la reserva del lunes. El fallo era `findBooking` en `src/app.js`: recibía el día pero no lo comparaba. `anular` usaba la misma función y tenía el mismo fallo, así que también queda corregido.
+
+- **Reproducción:** antes del fix, `cancelar Norte mar` devolvía `cancelada Norte mar` y cancelaba la reserva de `lun`.
+- **Test de regresión:** el test nuevo falla sin el fix y pasa con él. El primer intento fallaba por otro motivo, porque los tests comparten el estado en memoria. Lo reescribí y comprobé que ahora falla por la causa correcta.
+- **Gate de cierre:** `node --test && node scripts/lint.mjs` da 5 tests en verde y lint sin hallazgos.
+- **Reserva más allá del lunes:** `Norte mar` no es una reserva, así que responde `sin reserva Norte mar`.
+- **Estimación:** `patch.md` dice que no hay estimación, porque no la escribí antes del fix; no calibra.
+
+**Para validar, ejecuta desde la raíz del repo:**
+1. `node src/app.js cancelar Norte mar`. Debe responder `sin reserva Norte mar`.
+2. `node src/app.js libres 10:00-12:00`. Debe responder `Sur`, porque la reserva de `Norte lun` sigue activa.
+3. `node src/app.js cancelar Norte lun`. Debe responder `cancelada Norte lun`.
+
+Los tres pasos son procesos separados y las reservas viven en memoria, así que solo el primero y el último tienen sentido por sí mismos. El estado intermedio lo cubre el test.
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Hasta que respondas no escribo el cierre (changelog, fila en «Patches» del roadmap, hash en `patch.md`) ni fusiono. Cuando lo haga, `sdd merge --check` no podrá decidir el destino: a `sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Tendré que pedirte a qué rama fusiono (lo normal sería `develop`).
+

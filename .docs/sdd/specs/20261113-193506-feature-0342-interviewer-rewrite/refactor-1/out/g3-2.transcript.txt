@@ -1,0 +1,54 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+> Bash: ls -a; ls -R .docs/sdd | head -60; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md; cat package.json; find src test -type f; git branch -a
+> Bash: cat src/app.js; cat test/app.test.js | head -60; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/skills/sdd-propose/references"; cat control-profiles.md nombrado.md spec-writing.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && pwd && git status --short | head; R="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/skills/sdd-propose/references"; cat "$R/nombrado.md"
+> Bash: S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve
+## agente
+Ahora: reservé la id 0010 y creo la rama de la feature. Queda: contrastar la id con el remoto y presentarte el anuncio con la primera pregunta de diseño, ~3 min.
+> Bash: S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r1/cli/bin/sdd.js"; git checkout -b feature/0010-lista-espera && node "$S" id claim --project-root . ; git branch --show-current
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: te presento lo que he entendido y la primera decisión de diseño. Queda: esa decisión y unas pocas más, luego la spec para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He creado la rama `feature/0010-lista-espera` (id 0010 reservada; no hay remoto, así que vale el contador local). No cabe en un patch: hay decisiones de comportamiento sin fijar. Veo unas 2-3 tasks, así que no propongo dividirla.
+
+**Lo que he entendido**
+- Quieres que, si pides una sala en una franja que ya está reservada, la petición no se pierda: se apunta en una lista de espera.
+- Hoy `src/app.js` solo tiene `libres`, `reservar --cada-semana` y `cancelar`. Las reservas viven en memoria y se pierden al terminar cada comando.
+- Esto me preocupa: una lista de espera que no sobrevive entre comandos no sirve de nada. Lo decido yo (método): la spec incluirá un pequeño fichero de estado local, solo si lo confirmas más adelante.
+
+❓ **¿Qué pasa cuando la sala ocupada se libera?**
+Es la decisión que más cambia el resto (estado, comandos, tests).
+1️⃣ **Pasa a reserva automática.** `cancelar lun 10:00` libera Norte y la primera petición en espera pasa a reserva: `cancelada lun 10:00; Norte reservada para quien esperaba (1.º)`. Coste: la reserva se crea sin que la confirmes.
+2️⃣ **Solo se avisa.** `cancelar lun 10:00` → `cancelada lun 10:00; Norte libre, hay 1 en espera`; tú reservas a mano. Coste: un paso más, pero sin reservas inesperadas.
+3️⃣ **Solo consulta.** Hay un comando `espera` que lista las peticiones, y `cancelar` no hace nada con ellas. Coste: la lista no reacciona a nada.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y apuntarte a la espera ya expresa que quieres esa sala. A cambio, una reserva puede aparecer sin que mires la pantalla en ese momento. ¿Cuál eliges?
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Anotado: feature full con perfil `delegate`.
+
+**Decidido por mí:** cuando la sala se libera, la primera petición en espera pasa a reserva automática (opción 1️⃣ de antes). Tu motivo, no tener que mirar `libres` a mano, encaja con eso. Si prefieres solo avisar, dímelo y lo cambio.
+
+❓ **¿Dónde guardamos las reservas y la espera entre comandos?**
+Hoy `bookings` es un array en memoria con una reserva de ejemplo en `src/app.js`. Cada ejecución arranca de cero, así que una espera que no se guarda desaparece al terminar el comando. Y la promoción automática necesita que la reserva liberada también se haya guardado.
+1️⃣ **Guardar reservas y espera en un `salas.json` local.** `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Más tarde, `cancelar lun 10:00` → `cancelada lun 10:00; Norte reservada para ti (1.º en espera)`. Coste: cambia lo que ya existe, porque las reservas pasan a sobrevivir entre comandos y la reserva de ejemplo deja de estar fija en el código.
+2️⃣ **Guardar solo la espera.** Las reservas siguen en memoria, así que la promoción solo funcionaría dentro de un mismo proceso y no resolvería tu problema real.
+➡️ **Recomiendo 1️⃣**, porque con la 2️⃣ la lista no podría reaccionar nunca a una cancelación hecha en otro comando. A cambio, hay que tocar `reservar`, `libres` y `cancelar` para que lean y escriban el fichero. ¿Aceptas que las reservas también se guarden?

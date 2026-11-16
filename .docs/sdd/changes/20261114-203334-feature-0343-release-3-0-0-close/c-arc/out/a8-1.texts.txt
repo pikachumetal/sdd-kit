@@ -1,0 +1,167 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [9]
+La revisión final cubre `4bbf9cc`, pero `0e7a521` (código, 96 líneas) vino después y no hay `Re-revisión:`. Según la regla toca la re-revisión única, así que leo cómo se despacha.
+
+--- [15]
+El cambio real es una línea (`.trim()`). Preparo el worktree desacoplado y el paquete de `4bbf9cc..HEAD` y despacho la re-revisión única con su vigilancia de silencio.
+
+--- [21]
+Empiezo leyendo el paquete de revisión.
+
+--- [26]
+Todo el fichero aparece cambiado. Compruebo los fines de línea en ambos lados del cambio y la configuración del repositorio.
+
+--- [27]
+Todavía no he cerrado la 0010. Estoy parado en el pre-check 6 (revisión final), a la espera de una re-revisión.
+
+- **Por qué hay re-revisión:** la revisión final de `tasks.md` es «sobre `4bbf9cc`». Después vino `0e7a521` (`fix(bookings): el motivo sin espacios alrededor`), que toca `src/app.js` y no tiene línea `Re-revisión:`. Su diff bruto es de 96 líneas. En sustancia es un único `?.trim()` en `reasonOf`, y el resto parece ruido de fin de línea. Con un commit de código así, la regla del cierre no deja saltarse la re-revisión, aunque la revisión anterior fuera limpia.
+- **Qué he lanzado:** una re-revisión única de `4bbf9cc..092ee82` (`sdd-kit:effort-high` con opus), en un worktree desacoplado. Le he pedido que mire también si ese ruido de fin de línea es un problema. Va con su vigilancia de silencio.
+- **Resultado:** aún no he recibido ningún veredicto. No escribo nada (walkthrough, roadmap, merge) hasta que vuelva.
+
+Los otros pre-checks están bien:
+- El árbol está limpio.
+- `merge --check` da `destino: listo`, con `develop` en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+
+Lo que hará el cierre cuando vuelva la re-revisión:
+- **Validación:** `validation.mode: field`, así que la hago yo con mi smoke y la suite, sin pedirte nada.
+- **Walkthrough:** lo completo con la verificación, el ruling de la Task 2 (el test de `canceladas` depende del primero) y la `Retro:`.
+- **Capacidad `bookings`:** la fusiono con `sdd capability merge`.
+- **Tras eso:** roadmap, historia en un solo commit y `sdd merge` a `develop` sin push. Eso lo permite `delegate` con el bloque `merge` completo.
+
+--- [30]
+El resto del diff es solo fin de línea. Ahora miro qué tocó cada commit del rango y si hay un test que cubra el `.trim()`.
+
+--- [34]
+Ningún test cubre el `.trim()`. Miro el borrador del walkthrough y tasks.md para ver si registran el fix.
+
+--- [37]
+# Re-revisión de la 0010 «Motivo al cancelar» (rango `4bbf9cc..092ee82`)
+
+**Veredicto: necesita arreglos.** El `.trim()` funciona y no rompe la spec. El problema es que el fix entró sin test, y la constitución pide test antes que código.
+
+## Qué cambia de verdad en `0e7a521`
+
+El commit cambia una sola línea. De las 96 líneas del diff, 94 son solo fin de línea. Lo he comprobado sin rehacer el diff de revisión:
+- `git diff --ignore-cr-at-eol` y `git diff -w` sobre `src/app.js` dan 1 inserción y 1 borrado.
+- `od -c` muestra que en `1960156` el fichero estaba guardado en el índice con CRLF (`;\r\n`) y en `0e7a521` pasa a LF (`;\n`).
+- `git ls-files --eol` lo confirma: `src/app.js` está `i/lf` y el resto del código sigue `i/crlf` (`test/*.js`, `package.json`). No hay `.gitattributes` y `core.autocrlf=true`.
+
+La única línea con contenido es la de `reasonOf`:
+```js
+return index === -1 ? undefined : params[index + 1]?.trim();
+```
+
+Los otros dos commits solo tocan documentos de la spec: `1960156` añade 17 líneas a `tasks.md` y `092ee82` crea el borrador de 6 líneas de `walkthrough.md`. No hay nada más tocado sin querer.
+
+## (1) El `.trim()` frente a la spec
+
+Hace lo que dice el commit. `"  sala ocupada  "` pasa a `"sala ocupada"`, se valida contra la lista cerrada y se guarda y muestra recortado. Los tres escenarios de la spec siguen igual: motivo válido, motivo fuera de la lista y sin `--motivo`. La lista cerrada no cambia, porque un motivo con espacios por dentro (`"sala  ocupada"`) sigue siendo inválido.
+
+## (2) Casos límite
+
+| Caso | Resultado |
+| --- | --- |
+| Sin `--motivo` | `undefined`, responde «motivo no válido: …», como pide la spec |
+| `--motivo` al final, sin valor | `params[i+1]` es `undefined`; el `?.` evita el error y responde «motivo no válido: …» |
+| Solo espacios (`"   "`) | `""`, responde «motivo no válido: …» |
+| Valor con espacios alrededor de un motivo de la lista | Se acepta (es el cambio buscado) |
+
+## Hallazgos
+
+### Critical
+- Ninguno.
+
+### Important
+1. **Fix sin test, contra el artículo 2 de la constitución («Tests antes que código»).** `0e7a521` cambia el comportamiento, porque ahora acepta `" sala ocupada "`, pero `test/cancel.test.js` sigue con sus tres tests y ninguno cubre el recorte. Propuesta que no toca la reserva compartida de Norte lun (ver el ruling de la Task 2):
+   - `run('cancelar', ['Sur', 'mar', '--motivo', '  otro  '])` debe responder `'sin reserva Sur mar'`. Sin el fix respondería «motivo no válido: …», así que el test demuestra que la validación pasa.
+   - `run('cancelar', ['Sur', 'mar', '--motivo', '   '])` debe responder «motivo no válido: cambio de planes, sala ocupada, otro».
+
+   Aparte, y fuera de este rango: el escenario «sin `--motivo`» de la spec no tiene test. Esta línea toca justo ese camino, así que valdría añadirlo a la vez.
+
+### Minor
+2. **El cambio de fin de línea es ruido y conviene quitarlo.** No tiene efecto funcional, porque Node acepta los dos formatos. Pero hace que un cambio de 1 línea parezca de 96, deja todo el `git blame` de `src/app.js` apuntando a `0e7a521` y aparta este fichero de la convención del repo (el resto está en CRLF en el índice). La rama aún no se ha mergeado, así que recomiendo rehacer `0e7a521` conservando el CRLF original para que el diff quede en una línea. Si se quiere normalizar los fines de línea (`.gitattributes`), que sea una decisión aparte anotada en `debt.md`, no metida dentro de un fix.
+3. **La traza del fix está incompleta.** `tasks.md` no registra `0e7a521`: no tiene fila ni ruling, y su línea de revisión final dice «sobre 4bbf9cc». La spec tampoco recoge que el motivo se normaliza recortando espacios: las Enmiendas dicen «(ninguna)» y el walkthrough lo menciona como «Arreglo de la validación». Conviene anotarlo en `tasks.md` y, si se considera comportamiento nuevo, en las Enmiendas o en el walkthrough final.
+
+## Verificación recomendada para el hilo principal
+- Tras añadir los tests, ejecutar `node --test` completo (es el gate de cierre). Además, ejecutar `node --test test/cancel.test.js` solo, porque los tests de ese fichero dependen del orden por el ruling de la Task 2.
+- Tras rehacer el commit, comprobar con `git ls-files --eol src/app.js` que vuelve a `i/crlf` y con `git show --stat` que el fix tiene 1 inserción y 1 borrado.
+
+## Ficheros relevantes
+- `<run>/review-0010-092ee82/src/app.js`
+- `<run>/review-0010-092ee82/test/cancel.test.js`
+- `<run>/review-0010-092ee82/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+- `<run>/review-0010-092ee82/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/walkthrough.md`
+- `<run>/review-0010-092ee82/.docs/sdd/steering/constitution.md`
+
+--- [39]
+La re-revisión devuelve «necesita arreglos»: un Important (el fix no tiene test) y dos Minor. Paro la vigilancia, quito el worktree de revisión y leo cómo se cierra la revisión antes de actuar.
+
+--- [45]
+Pasada de fix (una sola): test del recorte con RED→GREEN. Primero lo escribo, lo veo fallar sin el `.trim()` y luego lo restauro. Mantengo CRLF en el fichero de tests.
+
+--- [48]
+El filtro no ha capturado nada; reviso la salida real.
+
+--- [51]
+RED→GREEN confirmado (falla sin `.trim()`, pasa con él) y la suite entera da 8/8. Sigo con el cierre: leo las referencias de validación en campo, suite, registros y capacidades.
+
+--- [56]
+Ahora la capacidad `bookings` (la spec la declara «Nueva» y no existe aún la carpeta `capabilities/`): pruebo `capability merge` y miro qué escribe.
+
+--- [59]
+Validación en campo (`validation.mode: field`): mi smoke, una fila por THEN, con ejecución real. Los pasos que dependen de la memoria del proceso van en una sola ejecución de `node`.
+
+--- [62]
+Smoke y suite en verde. Ahora el walkthrough: leo su plantilla y las reglas de aprendizajes antes de redactarlo, y lanzo la retro.
+
+--- [69]
+Antes de squashear, `0e7a521` cae en el rango y mis registros lo citan, así que lo reescribo sin ese sha. Luego paso los validadores.
+
+--- [72]
+Validadores en verde y sin shas del rango. Squasheo el cierre en un solo commit desde la última task (`4bbf9cc`).
+
+--- [75]
+Base al día: no hay nada que repetir y `--verified-at` lleva el commit de cierre. Leo la receta del merge (CI de la base y flags) antes de ejecutarlo.
+
+--- [79]
+Sin remoto ni CI declarado, y `merge.push` es `false`. Ejecuto el merge a `develop` sin `--push`.
+
+--- [82]
+La 0010 está cerrada y fusionada en `develop` (`ed2113d`).
+
+**Re-revisión.** La revisión final cubría hasta `4bbf9cc`, pero el fix `0e7a521` (el motivo sin espacios) cambia código y no tenía re-revisión. Lancé una única, con opus. Devolvió «necesita arreglos»: un Important y dos Minor.
+- **Important:** el fix no tenía test, y la constitución pide tests antes que código. Lo arreglé con tres tests nuevos. Fallan sin el `.trim()` y pasan con él.
+
+**Validación en campo.**
+- La suite da 8/8 sobre el commit de cierre.
+- Pasé 5 casos de smoke con ejecución real y los cinco dieron lo esperado.
+- La base ya estaba al día, así que no hizo falta repetir nada tras el sync.
+- El `Gate:` es `node --test` → corrió 8/8, sobre `33f121f`.
+
+**Registros.**
+- Dejé el walkthrough completo, con la línea `Retro:`.
+- `tasks.md` lleva el ledger de la revisión final.
+- Creé la capacidad `bookings` con `sdd capability merge`.
+- La fila 0010 del roadmap está en `✅`.
+- Añadí dos filas a «Por triar» en `debt.md`.
+- El cierre quedó en un solo commit (`33f121f`) desde `4bbf9cc`.
+
+**Decisiones tomadas sin el dev-lead**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test. Falla si corre solo o en otro orden (fila en deuda).
+- Recortar los espacios del motivo antes de validarlo. No cambia ningún THEN de la spec.
+
+**Minor diferidos**
+- `0e7a521` volteó `src/app.js` de CRLF a LF: 96 líneas de diff para 1 real. El resto del código sigue en CRLF y no hay `.gitattributes`. Es decisión tuya y quedó como fila en `debt.md`.
+- `0e7a521` no tenía fila en `tasks.md`; lo dejé anotado en el ledger y en el walkthrough.
+
+**Qué falta:**
+- **Push:** no hecho. `merge.push` no lo autoriza y el repo no tiene remoto.
+- **Pendiente:** la 0011 y las demás filas de Now siguen abiertas. La 0010 no tiene `parent:` ni `proposal:`.
+- **Ticket del kit:** ninguna línea de la retro señala un fallo del kit, así que no hay ticket que ofrecer. Si quieres uno del feedback de mejora de la sesión, pídelo con `sdd-feedback`.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (ed2113d) · push: no hecho: `merge.push` no lo autoriza y no hay remoto
+

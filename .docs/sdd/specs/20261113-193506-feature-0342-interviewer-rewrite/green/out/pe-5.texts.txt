@@ -1,0 +1,64 @@
+--- [19]
+Ya tengo la rama `feature/0010-exportar-reservas-csv`, con el id 0010 reservado. Todavía no he creado la carpeta de la spec.
+
+Me falta una cosa que solo sabes tú, para no inventarme el formato del CSV:
+
+Cuéntame un lunes concreto: ¿qué hace el responsable de una sala con ese CSV en su hoja de cálculo, y con qué lo compara para cuadrar las reservas?
+
+--- [21]
+Anoto como pendiente con qué lo compara. No bloquea la spec, así que sigo.
+
+❓ **Separador de columnas del CSV**
+Las reservas de `src/app.js` tienen sala, día y franja. La hoja de cálculo del responsable decide si un CSV con comas se abre bien. En Excel con configuración regional en castellano, la coma no separa columnas y todo queda en una sola.
+
+1️⃣ **Punto y coma (`;`)**: `sala;dia;franja` y `Norte;lun;10:00-12:00`. Se abre en columnas en Excel en castellano y Google Sheets lo detecta. Cuesta que no es el CSV «estándar» con coma: una herramienta que espere comas lo leería mal.
+2️⃣ **Coma (`,`)**: `sala,dia,franja` y `Norte,lun,10:00-12:00`. Es el estándar y lo lee cualquier herramienta. Cuesta que en Excel en castellano sale todo en una columna.
+
+➡️ **Recomiendo 1️⃣**, porque tu caso es una hoja de cálculo que abre una persona cada lunes, no una herramienta. A cambio, si algún día quieres alimentar otro programa con el CSV, habrá que cambiarlo.
+
+¿Cuál prefieres?
+
+--- [23]
+Anoto el punto y coma como decisión tuya, con tu frase.
+
+Lo que falta es cómo llega el CSV al responsable, y eso solo lo sabes tú. El comando imprime por pantalla como los demás, así que alguien tendría que guardarlo en un fichero.
+
+Cuéntame el momento en que el CSV de una sala pasa de `salas` a las manos del responsable: ¿quién ejecuta el comando y cómo le llega el fichero?
+
+--- [25]
+Anoto que redirigir la salida a un fichero es decisión tuya. Cómo llega el fichero al responsable queda fuera de la feature, y lo decido yo. Con eso ya puedo redactar la spec, así que cargo la plantilla y las referencias.
+
+--- [35]
+Ahora: repaso de coherencia, con el delta probado sobre una copia. Queda: review de la spec con dos revisores, el gate de aprobación, plan e implementación, ~25 min.
+
+--- [40]
+La spec está lista en `.docs/sdd/changes/20261113-214037-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`. Falta tu aprobación.
+
+🦆 Hoy `salas` no tiene forma de sacar las reservas a una hoja de cálculo. Con esta feature, `salas exportar Norte > norte.csv` escribe una cabecera y una línea por reserva de esa sala: `Norte;lun;10:00-12:00`. Las columnas van separadas por punto y coma, para que el Excel en castellano del responsable las abra ya en columnas. Si la sala no existe, el CSV queda vacío y el error sale por la salida de errores, con código 1. Por dentro es un comando nuevo en `src/app.js`, sin tocar `libres`, `reservar` ni `cancelar`.
+
+**⚠️ La review de la spec no se ha hecho.** La rúbrica pide dos revisores (sonnet, dominio y técnica), pero esta sesión no puede lanzar subagentes. En su lugar hice una lectura propia con los siete puntos, que no es independiente. Encontré un hueco: faltaba un escenario para los saltos de línea en un valor, y ya está añadido. El delta se probó en una copia con `sdd capability merge` y no dio error. El `capabilities/` del repo no ha cambiado.
+
+**✋ Decisiones que he tomado yo** (están todas numeradas en la spec; estas son las que más se notan):
+1. El comando se llama `exportar <sala>`, con columnas `sala;dia;franja` y cabecera.
+2. Se exportan todas las reservas guardadas de la sala, sin filtro de semana, porque solo guardan el día (`lun`) y no una fecha. Las reservas semanales (`--cada-semana`) no se exportan, porque hoy no se guardan.
+3. Sala desconocida o sin sala: nada por la salida normal, un mensaje por la de errores y código 1, para que el error no acabe dentro del CSV.
+4. Los valores con `;`, comillas o salto de línea se entrecomillan.
+5. UTF-8 sin BOM. Una sala con tilde se vería mal en Excel; si pasa, se añade el BOM.
+6. Cómo llega el fichero al responsable queda fuera de la feature.
+
+**Pendiente de ti:** con qué compara el responsable el CSV para cuadrar las reservas. Si lo compara con otra lista, quizá falten columnas.
+
+Validación: la haces tú. Nadie puede comprobar sin ti cómo lo muestra un Excel en castellano.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué cambiar.
+
+--- [41]
+De acuerdo, lo dejamos aquí. La spec queda en espera y no he escrito plan ni código.
+
+- **Dónde está:** `.docs/sdd/changes/20261113-214037-feature-0010-exportar-reservas-csv/spec.md`, con `status: draft`, en la rama `feature/0010-exportar-reservas-csv`.
+- **Sin commitear:** la carpeta `changes/` aparece como nueva en `git status` y no he hecho ningún commit.
+- **Sin review independiente:** no se ha hecho. Si la quieres, hace falta una sesión que pueda lanzar subagentes.
+- **Para retomar:** di «retoma la feature» y te vuelvo a presentar la spec para aprobarla. También puedes contestar la pregunta pendiente, con qué compara el responsable el CSV, antes de aprobar.
+

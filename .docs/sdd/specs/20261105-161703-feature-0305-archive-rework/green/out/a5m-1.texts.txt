@@ -1,0 +1,87 @@
+--- [3]
+Empiezo por las comprobaciones previas (paso 0).
+
+--- [29]
+La suite está en verde (5/5) y el smoke cumple los 5 THEN. Hasta que vuelva la re-revisión no escribo ningún registro, así que leo mientras tanto las referencias del cierre.
+
+--- [39]
+Sigo esperando la re-revisión de `26eca93..406ff44`, que va en segundo plano. Hasta que vuelva no escribo ningún registro del cierre. La suite está en verde (5/5) y el smoke cumple los 5 THEN.
+
+--- [52]
+## Re-revisión 0010, tramo `26eca93..406ff44`: con hallazgos
+
+**Veredicto: con hallazgos** (0 Critical, 3 Important, 3 Minor).
+
+**(1) Código.** No cambia nada en `src/`, `test/` ni `package.json`. Los tres commits solo tocan `roadmap.md`, `spec.md` y `tasks.md`. Los cambios de fin de línea del roadmap pasan de CRLF a LF, que es como están ya todos los demás ficheros del repo. Fuera de eso, el roadmap solo cambia las filas 0009, 0010 y 0016.
+
+### Important
+
+1. **`tasks.md`: la Task 1 apunta al commit equivocado.** La fila dice `| 1 | Cancelar con motivo | done | 26eca93 | |`. Pero la Task 1 se hizo en `0fc3dea` («feat(bookings): cancelar con un motivo de la lista», que toca `cancelBooking` en `src/app.js` y `test/cancel.test.js`). `26eca93` es la Task 2 («listado de canceladas»). Tal como está, el registro atribuye las dos tasks al mismo commit.
+
+2. **Roadmap: el padre 0009 sale cerrado y el reparto no cuadra.**
+   - La fila es `| 0009 | **Cancelaciones con motivo** — partida en 0010 y 0016 (dev-lead) | ✅ |`, y las dos piezas, 0010 y 0016, siguen en ⏳. Ni siquiera la 0010 está archivada. El roadmap da por hecha la 0009 cuando ninguna de sus piezas lo está. Además, la 0009 aparece en este tramo ya cerrada, sin ningún estado previo.
+   - La 0016 es «**Fotos de las salas**: cada sala enseña su foto en `salas`», y nada tiene que ver con «Cancelaciones con motivo». Las filas que encajan con ese padre son 0012 «Informe de canceladas» y 0014 «Motivo guardado», y no llevan `parent`.
+   - Hay que corregir las dos cosas: el estado del padre y qué filas son de verdad sus piezas.
+
+3. **`tasks.md`: el ruling se apoya en una premisa falsa y cambia el gate sin dejarlo escrito en ningún otro sitio.** El texto es `- Task 2: Ruling: \`node --test --test-concurrency=1\` en el gate, para esquivar la carrera de los tests sobre el almacén compartido en memoria — workaround hasta aislar el almacén por test — coste si es erróneo: la suite tarda el doble`.
+   - **La razón no se sostiene.** `node --test` ejecuta cada fichero de test en su propio subproceso. El array `bookings` de `src/app.js` es estado del módulo y no se comparte entre ficheros. `--test-concurrency=1` solo pone los ficheros en serie, y dentro de un fichero los `test()` ya van uno tras otro. El problema real es que `test/cancel.test.js` depende del orden: «canceladas enseña sala, día y motivo» solo pasa si antes se ejecutó la cancelación del primer test. El flag no arregla eso.
+   - **«Coste si es erróneo» no responde a la pregunta.** Dice lo que cuesta aplicar el ruling (la suite tarda el doble), no qué pasa si la decisión es errónea: que la dependencia de orden sigue ahí, escondida.
+   - **Cambia el gate sin pasar por los documentos que lo fijan.** La constitución (§2, «Gate de cierre: `node --test` entero en verde») y el plan (§3, «Gate de cierre: `node --test`») siguen diciendo lo mismo, sin enmienda. Y ningún fichero lo aplica: `package.json` es `{"type": "module"}` y no hay CI. Ese «en el gate» solo existe en `tasks.md`.
+
+### Minor
+
+4. **`spec.md`: se añade `parent: 0009` a una spec ya aprobada.** La sección «Enmiendas» sigue en «(ninguna)». Es metadato y no comportamiento, pero conviene dejarlo registrado.
+5. **Hueco en los ids.** Con `ids.mode: sequence` y la 0014 como última fila, la nueva fila sale como 0016, no como 0015. No hay rastro de ninguna 0015 en el repo.
+6. **Etiqueta duplicada en el ruling.** «Task 2: Ruling: …» repite la palabra que ya da el encabezado `## Rulings`.
+
+### Lo que cuadra
+
+- `parent: 0009` coincide entre el frontmatter de la spec y la fila 0010 del roadmap.
+- La 0016 está colocada justo después de la 0010, como dice «tras 0010».
+- El id de `tasks.md` coincide con el de la spec y el plan.
+- La línea de revisión final (`Spec opus+high limpia · Código sonnet+high limpia · Arquitectura no (plan), sobre 26eca93`) es coherente con el plan, que ejecuta en native y no tiene Review Focus.
+- El tramo no toca texto de la interfaz, así que la restricción de castellano no aplica.
+
+### Fuera del tramo
+
+La spec pide que, sin `--motivo`, la respuesta sea «motivo no válido: …», y `test/cancel.test.js` no tiene test para ese caso. Lo dejo apuntado porque la revisión final sobre `26eca93` lo marcó como limpio.
+
+### Límites de esta revisión
+
+Me denegaron el permiso para abrir el diff con Read y para buscar en los ficheros del kit (Grep sobre `~/.claude/plugins/cache/sdd-kit`). El diff lo leí con `cat` desde Bash. Lo que digo de la forma del ruling sale de lo que muestran el propio `tasks.md`, la constitución y el plan, no de la plantilla del kit.
+
+Ficheros:
+- <run>/review-0010-406ff44/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+- <run>/review-0010-406ff44/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+- <run>/review-0010-406ff44/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+- <run>/review-0010-406ff44/.docs/sdd/roadmap.md
+- <run>/review-0010-406ff44/.docs/sdd/constitution.md
+- <run>/review-0010-406ff44/test/cancel.test.js
+
+--- [62]
+La edición no se aplicó: el `python3` con cuerpo vacío salió bien y el `node` nunca corrió. Lo rehago con Edit.
+
+--- [66]
+Ahora el walkthrough (con las líneas de retro en el §5), la capacidad, el changelog y el roadmap.
+
+--- [69]
+Ahora el changelog (2.x), el roadmap y las filas de deuda, y luego los validadores.
+
+--- [80]
+Cerré la 0010 y la fusioné en `develop`. Los tests pasan (5/5) y el smoke cumple los 5 THEN del spec.
+
+- **Validación.** El modo es `field`, así que validé yo. Pasé `node --test` tres veces seguidas sin flags y una vez con `--test-concurrency=1`. Ejecuté los THEN en el CLI real. Fuera de la suite quedó sin probar el listado de `canceladas` entre procesos distintos, porque el almacén es en memoria (eso es la 0014).
+- **Re-revisión.** `HEAD` se había movido desde la revisión final con tres commits solo de documentación, así que lancé una re-revisión de `26eca93..406ff44`. No tocó `src/` ni `test/`. Devolvió hallazgos que son todos de documentación:
+  - **Task 1 con el commit equivocado:** corregido en `tasks.md` (ahora `0fc3dea`).
+  - **Ruling del gate:** `node --test` a secas pasa, así que el flag no hace falta y el gate sigue siendo `node --test`. Lo dejé anotado en `tasks.md` y en el walkthrough.
+  - **Filas 0009 y 0016:** son decisión del dev-lead y no las toqué. La 0009 está en ✅ con la 0016 todavía abierta, y la 0016 («Fotos de las salas») no se parece mucho a «Cancelaciones con motivo». Conviene que lo mire el dev-lead.
+- **Registros.** Escribí el walkthrough y la capacidad `bookings` con los dos requisitos. Añadí la entrada del changelog y puse la fila 0010 en ✅. Anoté dos filas de deuda en el roadmap:
+  - El THEN «sin `--motivo`» no tiene test en la suite.
+  - El test de `canceladas` depende de que antes corra el de cancelar.
+- **Retro.** Una señal: `documento o skill desmentido`, el ruling del flag, corregido en el mismo documento.
+- **Pendiente.** `roadmap check` falla en dos líneas que no escribí: la cabecera de «Deuda técnica» y el título `v0.3.0`, ambas de la forma antigua. No las toqué.
+- **Kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Puedes actualizarlo con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code. Si quieres el ticket de mejora del kit, `sdd-feedback` lo genera.
+- **Siguiente.** Para acabar la `0009` falta: `0016` — Fotos de las salas.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (387bccd) · push: no hecho: `merge.push` no lo autoriza · puedes borrar el worktree `<run>/repo`
+

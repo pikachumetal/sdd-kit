@@ -1,0 +1,61 @@
+--- [3]
+Los ejes de la revisión final ya volvieron, así que lo primero es `sdd-verify` y su «Closing the review».
+
+--- [16]
+RED confirmado: falla por el motivo con espacio, que es el síntoma del hallazgo. Ahora el fix.
+
+--- [20]
+Suite en verde, 6 de 6. Commito el fix y dejo constancia en el ledger y en `tasks.md`.
+
+--- [23]
+Ahora toca la re-revisión única sobre `e7198b6..3f51afd`. Leo los dos documentos que la definen.
+
+--- [29]
+Paquete listo, de 2 KB. Despacho la re-revisión en segundo plano y le pongo su vigilancia de silencio en el mismo turno.
+
+--- [34]
+La re-revisión está en marcha en segundo plano, con su vigilancia de silencio. Mientras tanto no toco el código que revisa. Hasta ahora:
+
+- **Revisión final:** Spec dio «lista», con 1 Minor. Código dio «con fixes», con 1 Important.
+- **Important de Código:** `reasonOf` conservaba los espacios del motivo. Lo arreglé en `3f51afd`. El test nuevo falló en RED y la suite quedó en 6 de 6.
+- **Minor de Spec:** el test `canceladas` depende del orden respecto a `cancelar`. Queda diferido, porque `review.minors` no está en `fix`.
+- **Eje Arquitectura:** no sale. No hay señales en el diff.
+
+Cuando llegue el informe de la re-revisión, la registro en `tasks.md`, quito el worktree `review-0010-3f51afd` y sigo con el cierre.
+
+--- [39]
+### Finding Verdicts
+- **[Code, Important] `src/app.js:14-17`: `reasonOf` kept the spaces around the reason, so `--motivo "sala ocupada "` was rejected** — ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`, so the reason is trimmed before `cancelBooking` checks it at `src/app.js:20`. The optional chaining keeps the spec's "sin `--motivo`" case working: with no `--motivo`, or with `--motivo` as the last argument, `reasonOf` returns `undefined`, which still fails validation with «motivo no válido: …». `cancelBooking` saves the same reason it validated (`src/app.js:24`), so `canceladas` will show the trimmed reason too.
+  - The RED/GREEN claim matches the diff. Before the fix, `'sala ocupada '` is not in `reasons`, so the new test at `test/cancel.test.js:17-19` would get «motivo no válido: cambio de planes, sala ocupada, otro» and fail. After the fix, the reason passes validation and the lookup for `Norte mar` finds no booking (`src/app.js:4` only holds `Norte lun`), which returns «sin reserva Norte mar» as expected. I didn't need to run anything to confirm this.
+
+### New Breakage in the Fix Diff
+- **Minor** — `test/cancel.test.js:17-19`: the new test only shows that validation passed, not that the cancellation worked. It asserts «sin reserva Norte mar», which is the "no booking found" message. It doesn't run the reported scenario (`cancelar Norte lun --motivo "sala ocupada "` → «cancelada Norte lun (sala ocupada)»), and it doesn't check that `canceladas` shows the reason without spaces. The behaviour is correct by construction, since the trim happens before both the check and the save. But a test named "acepta" that passes on «sin reserva» is misleading, and it would miss a future regression where the saved reason differs from the checked one. It most likely uses `Norte mar` to avoid the shared state in `Norte lun`, which the earlier test in this file has already cancelled. That ties into the deferred test-order Minor.
+
+### Out-of-Scope Observations
+- `cancelBooking` is exported (`src/app.js:19`) and does not trim the reason itself. Only the CLI path through `run` → `reasonOf` trims. That is enough for the spec, which only covers the `cancelar` command, but code that calls `cancelBooking` directly would still reject `'sala ocupada '`.
+- The deferred test-order dependence in `test/cancel.test.js` (the bookings are module-level state shared across tests) still applies. The new test works around it rather than fixing it.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. The only new issue is one Minor about how much the test proves (`test/cancel.test.js:17-19`).
+
+--- [42]
+La revisión final de la 0010 está cerrada. Hubo un solo fix, y la re-revisión lo da por bueno y no encuentra nada Critical ni Important nuevo. Corrí la suite entera en el commit del fix (`node --test`: 6 de 6 en verde). No la he vuelto a correr tras la re-revisión, que solo leyó.
+
+- **Código, un Important:** `reasonOf` no recortaba el motivo, así que `--motivo "sala ocupada "` se rechazaba como no válido. Lo arreglé en `3f51afd` con `.trim()`. El test nuevo falló antes del fix y pasa después.
+- **Spec, ningún Critical ni Important:** el informe dice «Ready to merge: Yes», con un Minor: el test `canceladas` depende del orden respecto a `cancelar`. Lo difiero, porque `review.minors` no está en `fix`.
+- **Arquitectura:** no salió, porque el diff no trae módulo, dependencia, contrato ni datos nuevos.
+- **Re-revisión (`e7198b6..3f51afd`, opus+high):** da el Important por atendido. Añade un Minor: el test nuevo prueba que la validación pasa, no que la cancelación funcione con el motivo recortado. También anota que `cancelBooking`, si se llama directamente, no recorta. Ambos están en el ledger como `Final: Ruling:`. La re-revisión ya salió, así que no abro otra.
+- **Registro:** `tasks.md` lleva las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`. El worktree de revisión ya no existe.
+
+`tasks.md` sigue sin commitear, como estaba al arrancar. El siguiente paso es el cierre con `sdd-archive`: la validación, el walkthrough y el merge. Dime si lo sigo ya.
+
+--- [43]
+Ese aviso es solo la vigilancia de silencio de la re-revisión, que terminó sin avisar de ningún bloqueo. No cambia nada de lo anterior.
+
+La 0010 queda así:
+
+- **Pendiente de commit:** `tasks.md`, que aún no está commiteado.
+- **Siguiente paso:** el cierre con `sdd-archive` (validación, walkthrough y merge).
+
+Dime si lo sigo.
+

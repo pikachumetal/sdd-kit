@@ -1,0 +1,84 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [32]
+El vigía se lanzó mal (el `&` interno lo dejó huérfano). Lo relanzo como tarea en segundo plano.
+
+--- [35]
+Sigo con el cierre sin esperar y me quedo en el paso 0: la re-revisión del tramo `8d64841..8981e4b` está en marcha (solo documentación) y no escribo ningún registro hasta que vuelva.
+
+**Estado hasta ahora**
+- Árbol limpio. `sdd merge --check` dice `destino: listo` (`develop`, en un worktree temporal). No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, con la aprobación de Laura firmada. El modo es `full`.
+- `validation.mode: field`, así que la validación la hago yo con mi smoke y la suite. No te la pido ni te doy un guion.
+- El proyecto está en la forma 2.x: `roadmap.md` y `changelog.md` viven en `.docs/sdd/`. Hay `estimation.md`, así que el cierre mide el tiempo real.
+- El `Revisión final:` de `tasks.md` cubre `8d64841`. `HEAD` es `8981e4b`, y los dos commits posteriores son solo documentación (`tasks.md` 17 líneas; `plan.md` y `estimation.md` 9). Sin `Re-revisión:` en `tasks.md`, el cierre pide una única re-revisión de ese tramo.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (aviso del hook de inicio). Las skills que estoy siguiendo son las del kit en `k05`, no las de una versión vieja. Si algo se comporta raro, es lo primero que miraría.
+
+**Después de la re-revisión** (esperando su resultado)
+1. Anoto `Re-revisión:` en `tasks.md`.
+2. Corro la suite entera (`node --test --test-concurrency=1`, por el ruling de la Task 2) y mi smoke sobre los THEN de la spec, con ejecución real.
+3. Escribo el `walkthrough.md`, el tiempo real, la capacidad `bookings`, el `changelog` 2.x, el `roadmap` y el `estimation-log`.
+4. Aplasto el cierre en un commit, sincronizo con `develop` y fusiono con `sdd merge`. `merge.push` es `false`, así que no hay push.
+
+--- [43]
+## New Breakage in the Diff
+
+1. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`. El ruling de la Task 2 cambia el gate de cierre a `node --test --test-concurrency=1`. Eso choca con dos cosas que no se han tocado: el plan (`plan.md:50`, «Gate de cierre: `node --test`») y la constitución (art. 2, «Gate de cierre: `node --test` entero en verde»). No hay ninguna enmienda en la spec ni en el plan.
+   - **El motivo que da no se sostiene.** `node --test` ya ejecuta cada fichero de test en su propio proceso. El array `bookings` de `src/app.js` vive en el módulo, así que cada fichero tiene el suyo y dos ficheros no pueden pisarse. `--test-concurrency=1` solo cambia cuántos ficheros corren a la vez, y los tests de un mismo fichero ya corren uno detrás de otro. La flag no arregla ninguna carrera.
+   - **El problema real es otro.** En `test/cancel.test.js`, el test «canceladas enseña sala, día y motivo» depende de que el primer test haya cancelado antes la reserva de Norte. Es una dependencia de orden.
+   - **El «coste si es erróneo» se queda corto.** Si el ruling es erróneo, lo que se pierde es que el gate deja de ser el que pactan el plan y la constitución, y el aislamiento de verdad sigue pendiente. Que la suite tarde el doble es lo de menos.
+   - **La deuda no está apuntada.** El texto dice «workaround hasta aislar el almacén por test», pero esa deuda no aparece en la tabla «Deuda técnica» del roadmap.
+
+2. **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. La Task 1 dice que se hizo en el commit `8d64841`, pero se hizo en `3564c16` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `8d64841` es el commit de la Task 2 (el listado). El encargo esperaba `8d64841` en las dos filas, pero el historial no lo respalda: la columna Commit de la Task 1 apunta a un commit equivocado.
+
+Lo demás del tramo está bien:
+- La línea `Revisión final:` (`tasks.md:14`) cuadra con una revisión limpia sobre `8d64841`. «Arquitectura no (plan)» es coherente con un plan sin Review Focus.
+- La sección «Estimación y esfuerzo» de `plan.md` (líneas 52-56) va al final del documento, sin numerar, igual que otras secciones del plan. Su «Tipo: backend» cuadra con las «Superficies» de las dos tasks.
+- `.docs/sdd/estimation.md` es nuevo, tiene una sola frase y no contradice nada.
+- Los dos commits solo tocan esos tres ficheros de documentación. Ni código ni tests.
+- Todo está en castellano.
+
+## Out-of-Scope Observations
+
+- La spec pide que, sin `--motivo`, se responda «motivo no válido: cambio de planes, sala ocupada, otro» (`spec.md:54`), pero `test/cancel.test.js` no tiene ningún test para ese caso. Es código ya revisado en `8d64841`, fuera del tramo.
+- La fila 0014 del roadmap («el motivo de una cancelación se guarda en el almacén de reservas») parece solaparse con lo que ya hace la 0010: `cancelBooking` guarda `booking.reason`. Conviene mirarlo en el triaje del roadmap.
+
+## Verdict
+
+**Findings remain**
+
+--- [77]
+La 0010 está cerrada y fusionada en `develop`. El hash del merge es `979fccd`.
+
+🦆 `cancelar Norte lun --motivo "sala ocupada"` ahora responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+- Desactivé la bandera del ruling de la Task 2. Usé el gate del plan, `node --test`, que pasa 5/5 (con `--test-concurrency=1` también). `node --test` ya corre cada fichero en su proceso, así que esa bandera no arreglaba ninguna carrera entre ficheros. No reproduje la carrera que motivó el ruling. Dejé la corrección en `tasks.md` y en el walkthrough.
+- Corregí la fila de la Task 1 en `tasks.md`: apuntaba a `8d64841`, que es el commit de la Task 2. El de la Task 1 es `3564c16`.
+- Dejé como deuda, sin tocar código tras la revisión final, el hallazgo de la re-revisión sobre el orden de los tests.
+
+**Validación en campo.** La hice yo, no tú:
+- **Suite:** 5/5.
+- **Smoke:** los 3 THEN de la spec con ejecución real. Para «sin `--motivo`» lo provoqué a mano, porque la suite no lo cubre. Llamé a `run()` en un solo proceso, porque el almacén vive en memoria.
+- **Revisión final:** la de Spec y Código estaba limpia sobre `8d64841`. Faltaba revisar la documentación posterior, y la re-revisión de ese tramo devolvió 1 Important y 1 Minor, que son los dos puntos de arriba.
+- **Sin probar:** nada.
+
+**Deuda nueva en el roadmap** (2 filas):
+- El test «canceladas» de `test/cancel.test.js` depende de que el primero haya cancelado antes la reserva de Norte. Es la fragilidad real.
+- El THEN «sin `--motivo`» no tiene test.
+
+**Retro:** una señal, «documento o skill desmentido» (el ruling de `tasks.md`), corregida en ese mismo documento.
+
+**Tiempo real:** 1,71 h frente a 4 h estimadas, −57 %. El walkthrough cita las esperas descontadas (140 y 60 min) y da como causa una estimación holgada.
+
+**Avisos**
+- `roadmap check` sigue dando 2 fallos en líneas que no escribí: la cabecera de «Deuda técnica» (línea 22) y el formato de la release v0.3.0 (línea 36). La migración v2.3.0 del kit («Roadmap en la forma de la plantilla») los arregla.
+- La fila 0014 («Motivo guardado») parece solaparse con la 0010, porque `cancelBooking` ya guarda `booking.reason`. Queda para triarla contigo.
+- La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+- No hay gate extra tras la sincronización: `develop` ya estaba al día. El merge llevó `--verified-at 7d3d257`.
+
+**Ticket del kit:** no lo he generado. Si quieres uno, lo preparo con `sdd-feedback`. Su contenido sería la línea `Retro: documento o skill desmentido`, que corregí en el propio documento.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`979fccd`) · push: no hecho: `merge.push` no lo autoriza · puedes borrar el worktree `<run>\repo`.
+

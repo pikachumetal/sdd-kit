@@ -1,0 +1,53 @@
+--- [12]
+Sigo con la petición: la clasifico como feature y leo cómo se escribe la spec. Uso rutas absolutas porque el proyecto sigue estando en `...\g6-1\repo`.
+
+--- [16]
+Ahora: te cuento cómo he clasificado el cambio y te hago la primera pregunta. Queda: entrevista corta, spec con su aprobación y plan, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto, `sdd-kit.json` no fija `control.profile`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido:** hoy `reservar` no comprueba si la sala está ocupada. En `src/app.js` solo existen `libres`, `reservar --cada-semana` y `cancelar`, y las reservas están en memoria. Quieres que, cuando la sala que pides esté ocupada en esa franja, puedas quedarte en una lista de espera. Es una feature nueva con varias decisiones de comportamiento. Por eso va por el flujo completo y no como patch. Prevé pocas tasks y no propongo dividirla. Corrígeme si algo de esto no es lo que querías.
+
+Antes de plantear cómo debe comportarse, necesito saber una cosa que solo sabes tú: ¿qué situación te lleva a querer esta lista de espera y qué quieres que pase cuando la sala por fin se libere?
+
+--- [18]
+Entendido: feature full con delegate. Tu motivo es dejar de mirar `libres` a mano cada rato. Eso reduce la decisión a cómo te enteras, o qué pasa, cuando Norte se libera.
+
+Hay un hecho del código que condiciona la respuesta. `src/app.js` es un CLI de ejecución única, con las reservas en un array en memoria. Un `cancelar` y una lista de espera viven en procesos distintos y no se ven entre sí. Además, `reservar` sin `--cada-semana` hoy no reserva nada. Cualquier opción necesita, por tanto, guardar la lista en algún sitio. Eso lo decido yo y lo dejo en ✋.
+
+❓ **Qué pasa cuando la sala se libera**
+1️⃣ **Reserva automática para el primero de la lista.**
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`.
+   - Al ejecutar `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu reserva`.
+   - No tienes que mirar nada. A cambio, te cae una reserva sin que estés delante.
+2️⃣ **Aviso al liberarse, sin reservar.**
+   - Mismo `en espera (1.º)`.
+   - Al cancelar, sale `Norte libre lun 10:00-12:00 para ti` y reservas tú.
+   - Controlas la reserva, pero un CLI no puede avisarte si no lo ejecutas. Habría que mostrar el aviso en el siguiente comando o reutilizar el correo de la 0008.
+3️⃣ **Comando `esperar` que se queda vigilando.**
+   - `esperar Norte lun 10:00-12:00` repasa `libres` cada minuto y termina con `Norte libre` cuando se libera.
+   - No hace falta guardar ninguna lista ni tocar `cancelar`. Es lo más sencillo, pero deja la terminal ocupada y no hay orden de espera.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que volver a mirar, y solo esta opción lo quita del todo. A cambio, la reserva aparece sin que la confirmes. Se puede mitigar dejando el mensaje explícito y permitiendo salir de la lista.
+
+¿Cuál eliges, o prefieres otra variante?
+
+--- [20]
+Te lo explico con un caso concreto.
+
+Hoy, si Norte está ocupada el lunes de 10:00 a 12:00, tú lo ves ejecutando `libres 10:00-12:00`. Solo sale `Sur`. Para saber si Norte se ha liberado tienes que volver a ejecutarlo tú.
+
+Lo que cambia con la lista de espera es lo que pasa en el momento en que alguien cancela esa reserva. La pregunta es qué hace la herramienta en ese instante.
+
+Imagina que pides Norte y está ocupada. La herramienta te apunta en la lista y te responde `Norte ocupada; en espera (1.º)`. Luego otra persona ejecuta `cancelar lun 10:00` y Norte queda libre. En ese momento puede pasar una de estas tres cosas:
+
+- **La herramienta te reserva Norte directamente.** La próxima vez que mires, ya tienes la reserva hecha. No has tenido que hacer nada.
+- **La herramienta solo te avisa de que Norte está libre.** Para que la reserva sea tuya tienes que ejecutar `reservar` otra vez. Sin embargo, un programa de línea de comandos solo puede hablar cuando alguien lo ejecuta. El aviso te llegaría en tu siguiente comando, o por correo si lo conectamos con la tarea 0008.
+- **Tú lanzas un comando que se queda esperando.** Ese comando mira `libres` cada minuto por ti. Cuando Norte se libera, escribe `Norte libre` y termina. No habría lista guardada ni orden de espera. La terminal quedaría ocupada mientras esperas.
+
+La diferencia práctica entre las tres es quién da el último paso. En la primera no lo das tú. En la segunda sí, pero tras un aviso. En la tercera sigues pendiente de la terminal.
+
+Dime qué parte no te ha quedado clara, o con cuál de los tres escenarios te quedarías.
+

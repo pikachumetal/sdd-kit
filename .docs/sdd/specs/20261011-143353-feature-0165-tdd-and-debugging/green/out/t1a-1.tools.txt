@@ -1,0 +1,112 @@
+
+>>> Read: <run>\repo\.superpowers\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Comando `informe`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/informe.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+9	- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> cancelada
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | head -60; git ls-files
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (2.0082ms)
+✖ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (0.3649ms)
+✖ informe sin --por responde con el uso (0.4831ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 271.9382
+
+✖ failing tests:
+
+test at test\informe.test.js:5:1
+✖ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (2.0082ms)
+  AssertionError [ERR_ASSERTION]: Expected valu
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+5	const bookings = [
+6	  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+7	  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+8	  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+9	  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'c
+
+>>> Read: <run>\repo\test\informe.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('informe por sala agrupa las canceladas por sala, en orden de la semana, con el total', () => {
+6	  assert.equal(
+7	    run('informe', ['--por', 'sala']),
+8	    [
+9	      'Norte: 2 canceladas',
+10	      '  mié 12:00-13:00 — otro (Ana)',
+11	      '  vie 10:00-12:00 — sala ocupada (Eva)',
+12	      'Sur: 2 canceladas',
+13	      '  mar 09:00-10:00 — cambio de planes (Luis)',
+14	      '  jue 16:00-17:00 — sala ocupada (Luis)',
+15	      'Total: 4 canceladas',
+16	    ].join(
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && node --test test/informe.test.js 2>&1 | grep -E "^(✔|✖|ℹ (tests|pass|fail))"
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+✔ informe por sala agrupa las canceladas por sala, en orden de la semana, con el total (0.9595ms)
+✔ informe por motivo agrupa las canceladas en el orden de la lista de motivos, con el total (6.6099ms)
+✔ informe sin --por responde con el uso (0.2504ms)
+ℹ tests 3
+ℹ pass 3
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && cat > .superpowers/sdd/plan/task-1-report.md <<'EOF'
+# Task 1 — Comando informe
+
+## Implementado
+Comando `informe --por sala|motivo` en `src/app.js`: tabla `cancelledReport` (grupos, clave de grupo, detalle), `byRoomAndWeekday`, `cancelledReportLines` e `informe`; `run` delega con una línea. Sin `--por` o con valor desconocido: `uso: informe --por sala|motivo`.
+
+## TDD Evidence
+RED (`node --test test/informe.test.js` antes de tocar código): 3 fail; `run('informe', ...)` devolvía `'salas'` (comando inexistente, cae al valor por defecto). Esperado.
+GREEN (mismo comando): tests 3, pass 3, fail 0.
+
+## Ficheros
+`src/app.js`, `test/informe.test.js` (commiteado sin modificar).
+
+## Notas
+- Los grupos sin canceladas no se listan (el brief no lo define; ningún test lo cubre).
+- `src/app.js` sigue siendo un `run` largo con ifs; no lo reestructuré (fuera de la task).
+- No se ejecutó la suite completa (la ejecuta el hilo principal).
+EOF
+git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de canceladas por sala o por motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1; git status --short
+<<< <home>/.bashrc: line 1: oh-my-posh: command not found
+e0b1763 feat: comando informe de canceladas por sala o por motivo
+
+=== RESULTADO (10 turnos, 0.23438099999999998 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** e0b1763 feat: comando informe de canceladas por sala o por motivo
+- **Tests:** `node --test test/informe.test.js` → 3/3 passing, output pristine. RED beforehand: 3 failures, `run` returned `'salas'` because `informe` didn't exist.
+- **Concerns:**
+  - The brief doesn't say whether a group with no cancellations should appear. I omit empty groups and no test covers it.
+  - `run` in `src/app.js` is still one long chain of `if`s. I put the new code in its own functions and left the rest alone.
+  - I did not run the full suite; the main thread runs it at close.
+- **Report:** `<run>\repo\.superpowers\sdd\plan\task-1-report.md`

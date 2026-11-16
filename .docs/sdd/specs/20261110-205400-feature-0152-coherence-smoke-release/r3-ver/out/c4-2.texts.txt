@@ -1,0 +1,137 @@
+--- [3]
+Empiezo por los pre-checks del cierre: estado del worktree, carpeta del cambio y configuración.
+
+--- [25]
+Suite en verde sobre `853eb62` (6/6), que es la suite de la validación. Preparo el worktree de revisión y el paquete de la re-revisión de `ffc40b2..HEAD`.
+
+--- [36]
+La 0010 todavía no está cerrada: no he escrito ningún registro y no hay merge. Estoy esperando una re-revisión que el cierre exige antes de escribir nada.
+
+**Por qué la re-revisión.** `tasks.md` recoge la revisión final sobre `ffc40b2` y la pasada de fix `7c55a74`. Después hay un commit de código, `853eb62`, que no está revisado. Añade `|| 'sin canceladas'` y no tiene test ni aparece en el spec. No cumple lo que el hilo deja pasar sin revisar (menos de 20 líneas y solo documentación o comentarios), así que lance una re-revisión de `ffc40b2..HEAD` con `sdd-kit:effort-high` y opus. Corre en segundo plano y aún no sé qué devolverá.
+
+**Lo que ya he comprobado:**
+- **Tests:** la suite pasa entera sobre `853eb62` (6/6).
+- **Validación:** el modo es `manual`, porque `sdd-kit.json` no tiene `validation.mode`. Tu frase «probé cancelar con motivo y sale en canceladas» cuenta como validación del dev-lead y la registraré literal. Esa frase no cubre los casos de error del spec (motivo fuera de la lista y falta de `--motivo`). Esos los tengo que provocar yo con una ejecución real antes de escribir el walkthrough.
+- **Otras ramas:** no hay otras ramas `feature/*` ni `patch/*` abiertas.
+
+**Dos cosas que debes saber:**
+1. **El merge no está listo.** `sdd merge --check` falla porque en `sdd-kit.json` faltan `merge.into` y `merge.noFf`. Con el bloque incompleto no fusiono sin preguntar, aunque el perfil sea `delegate`. Al llegar a ese paso te propondré `develop` (la rama de integración que fija la constitución) y te esperaré. Con `develop` queda `--no-ff` por decidir.
+2. **`7c55a74` cambió los finales de línea de `src/app.js`.** Pasó de CRLF a LF y reescribió el fichero entero, unas 96 líneas de ruido. El cambio real es de 5 líneas. Se lo he pasado al re-revisor para que lo valore.
+
+Todavía me quedan por hacer, cuando la re-revisión vuelva y esté cerrada:
+- Escribir el walkthrough.
+- Fusionar la capacidad `bookings`. No existe `.docs/sdd/capabilities/`, así que el `capability merge` puede fallar.
+- Actualizar el roadmap (la fila 0010 pasa a ✅).
+- Hacer el commit de cierre.
+- Ejecutar `sdd merge --sync`.
+
+--- [43]
+## Hallazgo 1: motivo con espacios alrededor. ADDRESSED
+
+- **Arreglo:** `src/app.js:16` ahora hace `params[index + 1]?.trim()`. Así `"otro "` (y también `" otro"`) llega como `otro` a la comprobación de `reasons.includes` (`src/app.js:20`) y a lo que se guarda en `booking.reason` (`src/app.js:24`). El `?.` mantiene la respuesta que pide el spec cuando no hay valor tras `--motivo`: llega `undefined` y responde «motivo no válido: …».
+- **Test:** `test/cancel.test.js:17-19`. Espera «sin reserva Sur mar», y a esa respuesta solo se llega si el motivo ya pasó la validación, porque la validación va antes de buscar la reserva. En ffc40b2 la respuesta habría sido «motivo no válido: …», así que el RED→GREEN que anota `tasks.md` es real.
+- **Limitación (Minor):** el test no pasa por el camino de éxito. No comprueba que la salida sea `cancelada … (otro)` ni que el motivo se guarde ya recortado. Por el código sí se guarda recortado, porque el valor se recorta antes de validarlo y de guardarlo, pero ninguna aserción lo cubre.
+
+## Hallazgo 2: 853eb62, `|| 'sin canceladas'` (`src/app.js:36`)
+
+- **Para quien usa el programa:** antes, `canceladas` sin ninguna cancelada imprimía una línea vacía (`console.log('')`). Ahora imprime «sin canceladas», en castellano, así que cumple la restricción. Es una mejora clara.
+- **Contra el spec:** no rompe ningún THEN. Con una cancelada, el `join` no está vacío y la salida sigue siendo «Norte lun — sala ocupada». El test `canceladas enseña sala, día y motivo` sigue en verde. El `||` no puede saltar con la lista llena, porque cada línea lleva al menos « — ».
+- **Problemas del commit:**
+  - Añade un comportamiento que el spec no define, sin test y sin enmienda (el spec dice «Enmiendas: (ninguna)»).
+  - Llegó después de la revisión final y no viene de ningún hallazgo de esa revisión, aunque el prefijo `fix` lo sugiera.
+  - `tasks.md` no lo registra: solo lista la pasada de fix 7c55a74.
+- **Severidad: Minor.** Antes de archivar conviene añadir el escenario al spec como enmienda y un test (`canceladas` sin canceladas responde «sin canceladas»), o revertirlo.
+
+## Cambio de fin de línea en 7c55a74
+
+Comparé las dos versiones de `src/app.js` quitando solo los `\r`, sin `-w`. Mi duda era si `-w` escondía algún cambio de espacios dentro de una cadena. No escondía nada: entre ffc40b2 y 853eb62 solo cambian las líneas 16 y 36. Ninguna cadena ni plantilla ocupa varias líneas, así que pasar de CRLF a LF no cambia ninguna salida.
+
+Lo que sí importa más allá del ruido:
+- **`git blame`:** atribuye ahora el fichero entero a 7c55a74, y se pierde el rastro de las líneas de 0005, 0006 y 0007.
+- **Fines de línea mezclados:** no hay `.gitattributes`. En el índice conviven ficheros guardados con CRLF y con LF (`git ls-files --eol`). `src/app.js` pasó de CRLF a LF, y `test/cancel.test.js` ha quedado con fines de línea mezclados dentro del mismo fichero.
+
+No es un problema de corrección. Es una deuda de repositorio.
+
+## New Breakage in the Fix Diff
+
+- Ningún Critical ni Important.
+- **Minor:** el comportamiento «sin canceladas» de 853eb62 no está en el spec ni tiene test (detalle en el hallazgo 2).
+- **Minor:** el test nuevo no cubre el camino de éxito con el motivo recortado.
+- **Minor:** el test nuevo usa comillas dobles y el resto de `test/cancel.test.js` usa simples (no hay linter que lo imponga).
+
+## Out-of-Scope Observations
+
+- `canceladas enseña sala, día y motivo` (`test/cancel.test.js:13`) depende de que el primer test haya cancelado Norte lun antes, porque los tests comparten el estado del módulo. Viene de ffc40b2, no de este rango.
+- Conviene un `.gitattributes` con `* text=auto eol=lf` o similar para que no se repitan reescrituras CRLF/LF.
+- `tasks.md` no menciona 853eb62.
+
+## Verdict
+
+**Fix round:** todos resueltos sin nuevo Critical/Important. El hallazgo 1 está resuelto. 853eb62 no rompe el spec, pero deja un comportamiento sin especificar y sin test (Minor) que conviene registrar como enmienda con su test antes del cierre.
+
+Ficheros relevantes:
+- `<run>/review-0010-853eb62/src/app.js`
+- `<run>/review-0010-853eb62/test/cancel.test.js`
+- `<run>/review-0010-853eb62/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`
+- `<run>/review-0010-853eb62/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+--- [45]
+La re-revisión ha vuelto sin Critical ni Important. El hallazgo 1 está resuelto. Quedan tres Minor, que van al registro como diferidos porque `review.minors` no está en `fix`. Registro la línea en `tasks.md`, quito el worktree de revisión y hago mi smoke con ejecución real.
+
+--- [48]
+Corrijo la línea de `tasks.md`: el rango revisado es `ffc40b2..853eb62`, no el que escribí. Luego leo las plantillas y los registros que faltan.
+
+--- [55]
+Voy con la capacidad `bookings`. El spec la declara como «Modificada», pero no existe `.docs/sdd/capabilities/`. Pruebo la validación y la fusión; si fallan no escriben nada.
+
+--- [61]
+Corrijo el bloque del spec como pide el validador (`bookings` pasa a «Nuevas», con su decisión y su enmienda sin aprobar) y repito la fusión.
+
+--- [64]
+Capacidad fusionada y validada. Ahora el retro del cierre, que pide la skill `sdd-retro`.
+
+--- [67]
+El walk del retro da dos señales, y las dos salieron del cierre. Antes escribo el walkthrough, porque el retro se anota en su §5. Después queda lo de `tasks.md`, la deuda y el roadmap.
+
+--- [70]
+Corrijo dos frases que quedaron mal: el Minor de `tasks.md` atribuía «sin canceladas» al cierre, y una decisión del walkthrough tenía una errata. Luego deuda y roadmap.
+
+--- [73]
+Los tres validadores pasan. Compruebo que ningún registro cite un sha que vaya a desaparecer en el squash y junto el cierre en un solo commit desde el de la última task (`ffc40b2`).
+
+--- [78]
+**No terminado:** la 0010 está cerrada en la rama, pero sin fusionar. Falta que decidas el bloque de merge.
+
+El commit de cierre es `71dff84`. Reúne la pasada de fix, «sin canceladas», el walkthrough, la capacidad `bookings`, el roadmap con la 0010 en ✅ y la deuda por triar. `node --test` da 6/6 sobre el árbol que se fusiona.
+
+`sdd merge --sync` y `sdd merge` se paran con `falta 'merge.into' o 'merge.noFf'` en `sdd-kit.json`. Con el bloque incompleto no fusiono sin preguntar, ni en `delegate`. Te propongo:
+
+```json
+"merge": { "into": "develop", "noFf": true }
+```
+
+`develop` es la rama de integración de la constitución, y `--no-ff` deja la feature visible en el historial. No pondría `merge.push`, así que no se publicaría nada. **¿Escribo ese bloque y fusiono?** Después de fusionar, el sync y el gate se repiten sobre la base.
+
+**Validación y revisión:**
+- **Validación:** modo `manual`. Registré tu frase literal como `Validado`, atribuida al dev-lead según tú. Los THEN de error y «sin canceladas» los verifiqué yo con ejecución real.
+- **Revisión final:** había un Important, ya resuelto. `853eb62` era código sin revisar, así que pasé una re-revisión de `ffc40b2..853eb62` con `sdd-kit:effort-high` + opus. Salió sin Critical ni Important y con 3 Minor, que dejé diferidos en `tasks.md` y en la deuda «Por triar»:
+  - «sin canceladas» no tiene escenario en el spec ni test.
+  - El test del motivo recortado no cubre el camino de éxito.
+  - `src/app.js` pasó de CRLF a LF entero en `7c55a74` y no hay `.gitattributes`.
+
+**El motivo no persiste entre procesos.** Las reservas viven en memoria. `node src/app.js cancelar …` y después `node src/app.js canceladas` en otra invocación responde «sin canceladas». «Sale en canceladas» solo se cumple dentro de un proceso, o por tests. Lo cubre la 0014 «Motivo guardado», pero te lo digo por si lo que probó el dev-lead era distinto. No lo traté como bloqueo.
+
+**Decisiones mías, sin el dev-lead:**
+- `bookings` figuraba como «Modificadas» pero no tenía fichero en `capabilities/`, y el fusionador se negaba. La pasé a «Nuevas» en el spec aprobado, con decisión nº 4 y una enmienda «sin aprobar». Conviene que el dev-lead valide el nombre.
+- `capabilities/bookings.md` recoge solo los dos requisitos de esta feature; lo que ya hacían `libres`, `reservar` y `cancelar` sin motivo queda sin documentar.
+- Corregí `tasks.md`: el commit de la task 1 es `2aeeb7b`, no `ffc40b2`.
+
+**Pendiente:**
+- El merge y el gate sobre la base.
+- No hay estimation-log: el proyecto no tiene `estimation.md`.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+
+**Ticket del kit.** Dos líneas de `Retro:` lo piden. La primera: el spec aprobado daba por existente una capacidad que no existía, y solo lo cazó `sdd capability merge` al cerrar. Si quieres el ticket, `sdd-feedback` lo redacta en esta misma sesión. La segunda línea es la de fines de línea, y esa va a la deuda, no al kit.
+
+**No terminado.** Falta fusionar `feature/0010-cancel-reason` en `develop` (sin `merge.into` en `sdd-kit.json`).
+

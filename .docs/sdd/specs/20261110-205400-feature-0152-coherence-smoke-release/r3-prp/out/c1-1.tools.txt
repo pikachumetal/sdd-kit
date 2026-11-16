@@ -1,0 +1,124 @@
+
+>>> Bash: ls -a; ls -R .docs/sdd | head -50; cat ROADMAP.md PRODUCT.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Ta
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3; cat package.json; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+ls: cannot access '.docs/sdd/sdd-kit.local.json': No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+{"type": "module", "engines": {"node": ">=20"}}
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verd
+
+>>> Bash: git branch -a; wc -l src/* test/*; grep -n -i "cancel" -r src test | head -40; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md | head -30
+<<<   develop
+* feature/0010-cancel-reason
+  main
+  35 src/app.js
+  11 test/app.test.js
+  11 test/cancel.test.js
+  57 total
+src/app.js:13:export function cancelBooking(room, day) {
+src/app.js:16:  booking.status = 'cancelled';
+src/app.js:17:  return `cancelada ${room} ${day}`;
+src/app.js:30:  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);
+test/cancel.test.js:5:test('cancelar una reserva activa', () => {
+test/cancel.test.js:6:  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+test/cancel.test.js:9:test('cancelar sin reserva lo dice', () => {
+test/cancel.t
+
+>>> Bash: cat src/app.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -40
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references"; cat spec-writing.md; echo ======; cat nombrado.md | head -60
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.18264429999999998 $)
+Ahora: presentar lo que he entendido y hacer la primera pregunta de diseño. Queda: la entrevista (unas pocas preguntas), la spec con su revisión y tu aprobación, y luego el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme si no es así). Es la fila 0010 de tu roadmap, «Motivo al cancelar»:
+
+- Hoy `cancelar Norte lun` dice `cancelada Norte lun` y la reserva queda en estado `cancelled`, sin más datos.
+- Quieres que al cancelar se elija un motivo de una lista cerrada. El listado de canceladas tiene que enseñar ese motivo.
+- Ese listado no existe todavía, así que habría que crear un comando nuevo. Lo cuento como una feature de unas 3 tasks (motivo al cancelar, validación del motivo, listado de canceladas) sobre una sola superficie y sin migración. Por eso no propongo dividirla.
+- La anulación (`anular`, que hace el responsable de sala) es otra cosa y le toca la 0011. Entiendo que esta feature no la toca.
+
+❓ **¿Para qué vas a usar el motivo?**
+Cuando cancelas una reserva, ¿qué vas a hacer después con ese dato? Por ejemplo, ¿mirarlo tú, sacar estadísticas o alguna otra cosa? Cuéntamelo con tus palabras. La respuesta decide qué motivos lleva la lista y si hace falta más que enseñarlo en el listado.

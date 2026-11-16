@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: ls .docs/sdd/specs/ | grep 0010; git log --oneline | head -5; git status --short | head
+<<< 20261008-100000-feature-0010-cancel-reason
+4c5f044 docs(sdd): tasks.md con la re-revisión
+9291424 fix(bookings): canceladas enseña la franja de cada reserva
+88cc805 feat(bookings): listado de canceladas con su motivo
+664ca4d feat(bookings): cancelar con un motivo de la lista
+4256058 docs(sdd): abrir la feature 0010 con su spec y su plan
+
+>>> Bash: P=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md; W=$(node "D:/code/.worktrees/sdd-kit/feature-0246-baseline-detached-worktree/.temp/kit-green/cli/bin/sdd.js" workspace $P); echo "$W"; ls "$W"; echo ---; cat "$W/re-review.md"; echo ---; tail -20 "$W/progress.md"
+<<< <run>\repo\.temp\sdd\plan
+plan-path
+progress.md
+re-review.md
+---
+## Re-review of the fix range
+
+### Findings of the review
+1. `canceladas` prints two cancelled bookings of the same room and day as the same line — ADDRESSED (`src/app.js:35`): each line now carries the slot.
+
+### New breakage in the fix range
+1. **Important · `src/app.js:35`: `canceladas` no longer answers what the approved spec fixes.** The fix pass added the slot to every line: `canceladas` answers «Norte lun 10:00-12:00 — sala ocupada», and the THEN of «El listado de canceladas enseña el motivo» fixes «Norte lun — sala 
+
+>>> Bash: cd .docs/sdd/specs/2026*0010*; grep -n -i -B2 -A6 "canceladas\|Decisiones\|Enmiendas" spec.md | head -90; cat ../../sdd-kit.json; cat ../../sdd-kit.local.json 2>/dev/null; tail -30 tasks.md; cd ../../../..; git show 9291424 --stat | tail -5; sed -n 25,45p src/app.js
+<<< 18-## Capacidades
+19-
+20:- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21-
+22:## Decisiones que he tomado yo — valida estas
+23-
+24-1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+25-3. Sin review de spec: dos señales (MODIFIED, datos).
+26-
+27-## Intent
+28-
+--
+31-## Scope
+32-
+33:- Entra: `cancelar <sala> <día> --motivo <motivo>`; comando `canceladas`.
+34-- No entra: anulaciones del responsable de sala (0011).
+35-
+36-## Approach
+37-
+38:El motivo se guarda con la reserva cancelada; `ca
+
+>>> Bash: cd .docs/sdd/specs/2026*0010*; sed -i 's/^- THEN responde «Norte lun — sala ocupada»/- THEN responde «Norte lun 10:00-12:00 — sala ocupada»/; s/^- (ninguna)/- 2026-10-29 · THEN de «El listado de canceladas enseña el motivo»: añade la franja de la reserva («Norte lun 10:00-12:00 — sala ocupada»), para distinguir reservas de la misma sala y día — sin aprobar, propuesta tras la re-revisión (9291424)/' spec.md; git diff --stat; git diff | grep '^[+-]-\?[^+-]' | head
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+ .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md', LF will be replaced by CRLF the next time Git touches it
+-- THEN responde «Norte lun — sala ocupada»
++- THEN responde «Norte lun 10:00-12:00 — sala ocupada»
+-- (ninguna)
++- 2026-10-29 · THEN de «El listado de canc
+
+=== RESULTADO (7 turnos, 0.22434349999999997 $)
+🦆 **Qué pasa:** la re-revisión dice que el fix de la pasada anterior arregló el hallazgo, pero a costa de otra cosa. `canceladas` ahora responde «Norte lun 10:00-12:00 — sala ocupada». La spec fija «Norte lun — sala ocupada». Quitar la franja devuelve la ambigüedad: dos canceladas de la misma sala y día salen como la misma línea. Dejarla cambia un valor de la spec. Un ruling no puede cambiar un THEN aprobado, así que paro aquí. Con perfil `delegate` esto lo decides tú.
+
+✋ **Necesito tu aprobación:**
+- **Recomendado: enmendar la spec** para que el THEN incluya la franja. Es la salida que ya tiene el código y que ya pasa los tests.
+- La alternativa es revertir `9291424` y aceptar la ambigüedad como menor diferido. Entonces el hallazgo original de la revisión final queda sin arreglar.
+
+**Estado:**
+- La enmienda propuesta está en `spec.md`, **sin commitear**: el THEN con la franja y su línea en «Enmiendas», marcada `sin aprobar`.
+- Hay un cambio sin commit en `spec.md`, con una advertencia de saltos de línea (LF→CRLF) al editarlo.
+- Los commits `9291424` y `4c5f044` ya existen y no los he tocado.
+- No he borrado el workspace del plan ni pasado a la validación: el cierre de la revisión sigue abierto.
+- El ledger solo tiene las Tasks 1–2 completas y ningún ruling.
+- Esta re-revisión ya fue la única que admite el kit. No lanzo otra: el commit de fix (`9291424`) ya pasó por ella.
+
+**Cuando apruebes**, commiteo la enmienda con su línea en «Enmiendas» y sigo con el cierre de la revisión: rulings a `tasks.md`, borrar el workspace y la validación. Si prefieres la alternativa, revierto el fix y lo dejo registrado.
+
+Una nota aparte: `tasks.md` marca la Task 2 con el commit `88cc805`, el mismo que la Task 1, cuando el ledger dice `664ca4d..88cc805` para la 2. No lo he tocado.

@@ -1,0 +1,89 @@
+--- [2]
+Esto es un cambio (un fallo), así que entro por `sdd-propose`.
+
+--- [15]
+Lo reproduje: `node src/app.js cancelar Norte mar` devuelve `cancelada Norte mar`. Los tests actuales no lo detectan porque `Sur mar` no tiene ninguna reserva. Ahora reservo el id y abro la rama.
+
+--- [22]
+Primero escribo la causa en `patch.md`, antes del fix. Después el test en RED.
+
+--- [26]
+El test no se añadió. Lo escribo con Edit.
+
+--- [32]
+RED por el motivo correcto: devuelve `cancelada Norte mar` y `anulada Norte mar`. El aviso sobre `cancel.test.js` es mi propio `git checkout`, que lo dejó como estaba. Ahora el fix.
+
+--- [36]
+6/6 en verde y el síntoma ya no se da. Cierro `patch.md` y hago el commit.
+
+--- [39]
+Falta el cierre, que es `sdd-archive`.
+
+--- [44]
+Cierre en pausa: falta tu validación. Los pre-checks están bien (árbol limpio, sin otras ramas abiertas). El único aviso es que `sdd merge --check` dice que `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, así que la fusión te la preguntaré después.
+
+🦆 Antes, `cancelar Norte mar` te decía `cancelada Norte mar` y anulaba la reserva del lunes. Ahora dice `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también está arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada. Una decisión de formato: puse los tests nuevos en `test/cancel-day.test.js`, no en `cancel.test.js`. Las reservas son estado del módulo y `cancel.test.js` ya cancela la del lunes, así que ahí el test no habría detectado el fallo.
+
+**Smoke que he corrido**
+
+| Caso | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` | ejecución real | `sin reserva Norte mar` |
+| `cancelar Norte lun` tras eso | test | `cancelada Norte lun` |
+| `anular Norte mar`, luego `anular Norte lun` | test | `sin reserva Norte mar`, luego `anulada Norte lun` |
+| Antes del fix | RED | `cancelada Norte mar` y `anulada Norte mar` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `01014ce`.
+
+**Sin probar**
+
+- Nada.
+
+**Guion**
+
+Rama `feature/0015-cancel-day` · worktree `<run>/repo`
+
+Es una CLI, no hay entorno que arrancar. Cada comando arranca con la reserva de Norte del lunes.
+
+Terminal 1:
+
+```
+cd <run>/repo
+node src/app.js cancelar Norte mar
+```
+
+1. Debe salir `sin reserva Norte mar`.
+
+```
+node src/app.js cancelar Norte lun
+```
+
+2. Debe salir `cancelada Norte lun`.
+
+```
+node src/app.js anular Norte mar
+```
+
+3. Debe salir `sin reserva Norte mar`.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [46]
+El commit del fix ya está hecho: `01014ce` en `feature/0015-cancel-day`, con el código, los tests y `patch.md`. `node --test` da 6/6 y `cancelar Norte mar` ahora devuelve `sin reserva Norte mar`.
+
+Me paro aquí. Tu «Sí, como patch» lo tomo como confirmación del carril, no como validación del guion, y tampoco has dicho qué has probado. Sin la validación no cierro, así que no he tocado el roadmap, ni el hash en `patch.md` (sigue en `commit: pendiente`), ni he fusionado nada. Tampoco he hecho el commit de cierre.
+
+Para cerrar necesito una de estas dos cosas:
+- Que ejecutes los 3 pasos del guion y me digas «validado» o cuál falla.
+- Que lo difieras con `Diferir: lo pruebo en <uso>, a cargo de <quién>`.
+
+El cierre también necesita una decisión tuya. `sdd-kit.json` no declara `merge.into` ni `merge.noFf`. Cuando valides te preguntaré si fusiono en `develop`, y si va con `--no-ff`.
+

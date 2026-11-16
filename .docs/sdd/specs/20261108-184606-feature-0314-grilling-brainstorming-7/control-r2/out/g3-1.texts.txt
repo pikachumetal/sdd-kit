@@ -1,0 +1,59 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (documentos, no código). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+
+--- [15]
+Ahora: he leído el contexto y el código que toca el cambio, y lo clasifico como feature. Queda: tres o cuatro preguntas de diseño, la spec para tu aprobación y el plan, con una parada tuya en la spec, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** quieres apuntarte a una lista de espera cuando la sala que pides está ocupada en esa franja.
+
+**Lo que he visto en el código:**
+- `src/app.js` guarda las reservas en un array en memoria con una reserva fija de ejemplo, y no escribe nada en disco.
+- `reservar` solo conoce `--cada-semana` y no comprueba si la sala está ocupada. Hoy no existe el caso «ocupada» como tal.
+- Cada comando es una ejecución aparte, así que una lista en memoria se perdería al terminar. La spec tendrá que decidir dónde vive la lista.
+- Calculo unas 3 tasks, sin migración y en una sola superficie, así que no propongo dividirla.
+- El roadmap ya tiene «Avisos por correo antes de la reserva» como ítem 1. Esa feature no es esta, pero conviene no solaparla.
+
+❓ **¿Qué pasa cuando la sala se libera?**
+Esto condiciona casi todo lo demás: el modelo de datos, si hace falta un comando nuevo y qué toca de `cancelar`.
+
+1️⃣ **Solo queda apuntado, y lo consultas tú.** La lista guarda el orden. Hay un comando para verla, y `cancelar` te dice quién es el siguiente.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Tras `cancelar lun 10:00`: `cancelada lun 10:00; siguiente en espera: Norte (1.º)`
+   Coste: no reserva nada solo, pero es lo más pequeño y no pisa los avisos por correo.
+
+2️⃣ **Pasa a reserva automáticamente.** Al cancelar, el primero de la lista recibe la sala sin que haga nada.
+   `cancelada lun 10:00; Norte pasa a tu reserva (1.º en espera)`
+   Coste: puedes acabar con reservas que ya no quieres, y hay que decidir cómo se renuncia a una.
+
+3️⃣ **Te avisa y tú confirmas.** Al cancelar, la sala queda retenida para el primero de la lista hasta que la confirme.
+   Coste: necesita un estado intermedio «retenida» y una caducidad. Para que te enteres sin consultar hace falta el canal de avisos, que aún no existe.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta es de un solo usuario y no tiene canal de avisos todavía, así que 2️⃣ y 3️⃣ no aportan lo que prometen. A cambio, tienes que mirar la lista a mano. Si luego llega la feature de correos, puede enganchar el aviso a este mismo punto.
+
+--- [17]
+Anoto el carril (feature, modo full) y el perfil (delegate). Antes de seguir tengo que corregir mi recomendación anterior, porque tu motivo la contradice.
+
+Dices que hoy tienes que volver a mirar `libres` cada rato. Con la opción 1️⃣ que te recomendé, la lista solo se queda apuntada. Seguirías mirando a mano, solo que mirarías la lista en vez de `libres`. Eso no resuelve lo que te molesta. Recomendé 1️⃣ por ser lo más pequeño, y con lo que me cuentas no es el criterio bueno.
+
+❓ **¿Qué pasa cuando Norte se libera?** Releo las opciones con tu motivo delante.
+
+1️⃣ **Pasa a reserva automáticamente.** Al cancelar la reserva que ocupa Norte, el primero de la lista la recibe sin hacer nada.
+   `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   Después, al cancelar la ocupante: `cancelada lun 10:00; Norte pasa a tu reserva (1.º en espera)`
+   Coste: puedes acabar con una reserva que ya no quieres. Se deshace con `cancelar`, que ya existe, y habrá que decidir cómo salir de la lista antes de que te toque.
+
+2️⃣ **Queda retenida hasta que la confirmes.** Al cancelar, Norte se reserva para el primero de la lista hasta que la confirme.
+   Coste: añade un estado «retenida» y una caducidad. Seguirías teniendo que acordarte de confirmar, así que reduce el problema pero no lo quita.
+
+3️⃣ **Solo queda apuntado, y lo consultas tú.** Es mi recomendación anterior. Es lo más pequeño, pero no te quita el tener que mirar.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que cumple lo que pides: miras una vez, tarde, y la sala ya es tuya, así que el momento en que mires deja de importar. A cambio, tendrás alguna reserva automática que cancelar.
+
+Queda para después, y lo preguntaré aparte, dónde vive la lista. Hoy las reservas están en memoria y se pierden al terminar cada comando, así que la lista tendrá que guardarse en un fichero para que sirva entre ejecuciones.
+

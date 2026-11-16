@@ -1,0 +1,65 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando para ver qué salas están libres en una franja, que todavía no existe.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering y capacidades). Queda: clasificar y anunciar la feature, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; find src test -type f; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/*0006*/walkthrough.md .docs/sdd/specs/*0005*/spec.md; ls node_modules 2>&1 | head -1; cat README.md
+## agente
+El comando ya existe, así que no he abierto ninguna feature. `salas libres <franja>` está en `src/app.js:4` y `run('libres', …)` lo despacha. Hay un test que lo cubre en `test/app.test.js`: `libres excluye la sala reservada en la franja`. Con la franja `10:00-12:00` devuelve `Sur`. La feature 0006 («free») ya está cerrada como `done` en `.docs/sdd/specs/20260917-090000-task-0006-free/`.
+
+Lo que sí le falta, a la vista del código, es una de estas dos cosas:
+
+- **El día.** Las reservas guardan `day`, pero `libres` solo mira la sala y la franja. Una reserva del lunes a las 10:00-12:00 hace que la sala Norte salga ocupada también el martes a esa hora. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`.
+- **La validación de la franja.** Está apuntada en la deuda técnica, en «Por triar»: «Sin validación del formato de franja horaria». Ahora mismo una franja mal escrita devuelve todas las salas libres.
+
+No quiero adivinar cuál de las dos es la que buscas. ¿Qué querías cambiar?
+
+1. **`libres` con día (recomendada):** `salas libres <día> <franja>`, de modo que una reserva solo ocupe la sala en su propio día. Iría como feature en modo full, porque cambia lo que ve el usuario y el formato del comando. Antes habría que decidir si el día es obligatorio u opcional.
+2. **Validar el formato de la franja:** sería un cambio aparte, y su carril lo decido al abrirlo. Lo habitual es patch o lite, porque la solución queda fijada de antemano.
+3. **Otra cosa que no me estoy imaginando:** cuéntame qué falta, con un ejemplo de lo que escribirías y lo que esperas ver.
+
+Si me dices que sí a la 1, sigo con el anuncio y la entrevista de la spec en carril feature, modo full.
+
+# turno 2
+## usuario
+mantengo lo que dije
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/skills/sdd-propose/references" && sed -n 1,60p control-profiles.md; echo ======; cat nombrado.md | head -80; cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo"; git remote -v; git branch -a; ls .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve; git status --short; git branch --show-current
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r2/cli/bin/sdd.js"; git switch -c feature/0010-salas-libres && node "$S" id claim --project-root "$PWD"; git status --short
+## agente
+Ahora: abro la feature 0010 y te cuento cómo la he entendido. Queda: tu respuesta a una decisión de diseño y luego escribo la spec, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto del kit; sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He reservado el id 0010 y creado la rama `feature/0010-salas-libres` desde `develop`. No hay remoto, así que el id vale con el contador local.
+
+**Lo que he entendido, corrígeme si me equivoco.** Mantienes el encargo tal cual: un comando para ver qué salas están libres en una franja. Ya te avisé de que `salas libres <franja>` existe desde la 0006, y tú lo mantienes. Lo registro como decisión tuya y sigo adelante con lo pedido, aunque repita lo que hay. Dejo la spec con lo que ya hace hoy el comando, y con lo que añadas aquí. Por eso la decisión que sigue es la que más condiciona el resto.
+
+❓ **¿Qué es «una franja» en el comando?**
+Hoy `libres` recibe solo la hora (`10:00-12:00`) e ignora el día. Las reservas sí guardan `day` (`lun`). Con los datos de ejemplo, una reserva de Norte el lunes a las 10:00-12:00 la da por ocupada también el martes.
+
+1️⃣ **Día y hora, con el día obligatorio.**
+`salas libres lun 10:00-12:00` → `Sur`
+`salas libres mar 10:00-12:00` → `Norte, Sur`
+Corrige el fallo del día. Cambia el formato actual: `salas libres 10:00-12:00` pasa a ser un error de uso.
+
+2️⃣ **Día y hora, con el día opcional.**
+`salas libres 10:00-12:00` sigue funcionando como hoy, sin mirar el día.
+`salas libres lun 10:00-12:00` → `Sur`
+No rompe nada, pero deja el fallo vivo para quien omita el día.
+
+3️⃣ **Solo hora, como hoy.**
+No cambia nada de lo que ve el usuario. La feature se reduce a documentarlo y a cubrirlo con más tests (franja libre del todo, ocupada del todo, franja inexistente).
+
+➡️ **Recomiendo 1️⃣**, porque la 0007 arregló el mismo fallo en `cancelar` y las reservas ya llevan `day`. A cambio, rompe el uso actual del comando. Es aceptable, porque solo lo usas tú y no hay más usuarios.
+
+¿Con cuál sigo?

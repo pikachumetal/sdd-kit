@@ -1,0 +1,5 @@
+# SDD ledger — plan: .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/plan.md
+Task 1: complete (commits 3a785c9..8a2a6a5, tests: test -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o1.txt -a -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o3.txt -a -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o4.txt → (sin salida))
+Final: Review: self-review (no subagent tool) — eje Spec solo (spike), sobre 8a2a6a5: O1–O4 presentes y con estado honesto (O1 no cumple tal como se definió; O2 no medido; O3 no medido con una persona; O4 no medido, 100 ≠ 1.000); Aguante sin repeticiones, dicho; recomendación cita solo filas medidas. Sin hallazgos Critical/Important.
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (solo research.md) → no sale
+Final: Ruling: la Task 1 se cerró sin completar las medidas O2/O4/aguante/O3-persona/O1-5min — la spec pide medir y las evidencias recibidas no alcanzan; no las inventé ni las medí yo, el research lo dice — si el dev-lead las daba por hechas, la recomendación «no decidir todavía» es más conservadora de lo necesario

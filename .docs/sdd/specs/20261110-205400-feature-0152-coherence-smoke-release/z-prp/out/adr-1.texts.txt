@@ -1,0 +1,128 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capacidades). Queda: clasificar el cambio y presentarte la spec, ~10 min.
+
+--- [15]
+Sigo con la spec: ya tengo el contexto (el ADR 0003 dice que las reservas viven en memoria, así que este cambio lo revierte). Ahora leo el resto de la plantilla y reservo el id.
+
+--- [28]
+Sigo: la spec ya está escrita y el delta fusiona bien sobre una copia (1 capacidad válida). Añado esa línea al ✋ y lanzo la revisión de la spec.
+
+--- [42]
+Ahora: los dos revisores de la spec (dominio y técnica) están trabajando en paralelo. Queda: integrar sus hallazgos en la spec y presentártela, ~5 min. Espero a que terminen.
+
+--- [47]
+1. Crítico · Delta «ADDED — La ruta del fichero…» · El escenario «sin `SALAS_DATOS` y con la carpeta del usuario `/tmp/h`» es un AND colgado de un GIVEN/WHEN que ya fijó `SALAS_DATOS=/tmp/a.json`, y no dice cómo se simula la carpeta (`HOME` y `USERPROFILE`, que en Windows `os.homedir()` lee de `USERPROFILE`). Además el contenido se compara «a ojo»: el JSON esperado lleva espacios concretos. · Separar en dos escenarios (con `SALAS_DATOS` y por defecto) y decir que el contenido se compara parseado (`JSON.parse` deep equal), no como texto.
+
+2. Crítico · Delta «Un fichero ilegible no se sobrescribe» · Solo cubre JSON inválido (`{rota`). El requisito de la decisión 8 incluye también «sin `version` 1», y el caso de un fichero vacío (0 bytes, que el revisor técnico debe comprobar según «✋») no tiene escenario. Una implementación que solo capture `JSON.parse` pasaría. · Añadir escenarios para `{"bookings": []}` o `version: 2`, y para fichero vacío, con el mismo aviso y sin escribir. Decir también si el fichero ilegible bloquea `libres` (lectura), no solo `cancelar`.
+
+3. Crítico · Delta (falta escenario) / decisión 7 · La escritura atómica (temporal + `rename`) y su motivo (no dejar JSON truncado) no tienen ningún escenario. Una escritura directa con `writeFileSync` pasaría todos los escenarios. · Añadir un escenario observable, por ejemplo que tras escribir no queda ningún fichero temporal en la carpeta, o que un fallo simulado del temporal deja intacto el fichero previo. O bajar la decisión 7 a «no verificable» y decirlo.
+
+4. Importante · Delta «Sin fichero se parte de la reserva inicial» · La parte «`cancelar Sur mar` → `sin reserva Sur mar` no crea fichero» pasa también si la implementación escribe siempre en el caso de «sin cambios» y lo borra, o si solo no escribe con el fichero ausente. Falta el caso «fichero existente + comando que no cambia nada no reescribe» (decisión 5), citado en «Dónde se prueba» pero sin escenario. · Añadir un escenario con fichero existente y `cancelar Sur mar`, comprobando que el contenido y el `mtime` no cambian.
+
+5. Importante · Delta, reglas «Regla ante conflicto» · La regla de «último que escribe gana» no tiene escenario, y por la decisión 6 (leer al inicio de cada `run`, escribir al final) tampoco queda definido qué pasa entre lectura y escritura. Sin escenario, lo que se escribe es una palabra. · Añadir un escenario de dos procesos con cancelaciones distintas sobre el mismo fichero, o declararlo «límite conocido sin prueba» en la spec.
+
+6. Importante · Delta «Un fichero ilegible» y «Cancelación se conserva» · Hay escenarios que solo pasan si la reserva `anulada`/`cancelada` ya existe como estado (`status: "voided"`), pero el formato de la decisión 4 no fija los valores permitidos de `status` (`active`/`cancelled`/`voided`) y el escenario de ruta solo prueba `cancelled`. · Declarar el vocabulario de `status` en la decisión 4 y en el delta, y añadir una comprobación del valor `voided` en el fichero.
+
+7. Importante · Decisiones «✋» · Decisiones tomadas en el cuerpo y ausentes de la lista: la elección de un error tipado de «ilegible» (Approach), «el comando no cambia nada» como criterio de «cambió algo» para escribir, y el código de salida del proceso ante fichero ilegible (¿0 o distinto de 0?, nunca se dice). Tampoco figura «`.salas/` se crea si falta» como regla (solo en la decisión 3). · Añadir a «✋» el código de salida y la salida por stdout o stderr del aviso, y la creación recursiva de `.salas/`; añadir un escenario de ello.
+
+8. Importante · Decisión 3 y Delta · Contrato de plataforma sin decir: en Windows, `<home del usuario>` es `USERPROFILE` y las rutas del ejemplo (`/tmp/...`) no valen; `rename` sobre un destino existente en Windows puede fallar con `EPERM` si otro proceso lo tiene abierto (relevante con dos terminales). No se menciona tampoco el permiso de escritura de la carpeta, ni qué pasa si `SALAS_DATOS` apunta a una carpeta inexistente. · Declarar en «✋» que se usa `os.homedir()`, el comportamiento de `rename` en Windows y qué se hace si falla la escritura; usar `os.tmpdir()` en los escenarios en vez de `/tmp`.
+
+9. Menor · Decisión 4 / Approach · `version: 1` existe «para migrar», pero no se dice si el JSON se escribe con sangría ni con salto de línea final, ni el orden de claves; el escenario de la ruta lo compara con un formato concreto. Tampoco se menciona codificación (UTF-8) ni BOM, relevante en Windows al editar «a mano» el fichero (decisión A: «arreglable a mano»), donde un BOM haría ilegible el fichero. · Fijar UTF-8 sin BOM y la forma de serializar, o decir que se compara parseado; tratar el BOM de lectura.
+
+10. Menor · Approach B / Decisión «✋» 14 · La afirmación «en Node 22 `node:sqlite` es experimental, `engines` dice `>=20`» no va acompañada de que `architecture.md` dice «Node 22» mientras `engines` dice `>=20`: la spec usa `fs.renameSync`/`mkdtemp` etc. y nada propio de 22, pero no lo declara; las dos fuentes difieren. · Anotar la discrepancia Node 22 / `>=20` y confirmar que el código solo usa API disponibles en 20.
+
+--- [49]
+El revisor técnico ya terminó y falta el de dominio. Integro los hallazgos cuando lleguen los dos.
+
+--- [51]
+Es el vigilante del revisor técnico, que ya cerró. Sigo esperando al de dominio.
+
+--- [52]
+1. Importante · Reglas de la capacidad, «Idioma de los nombres» · La regla cita el art. 4 de la constitución, que solo fija el castellano para el texto de la interfaz y de los documentos. No dice nada de nombres de campos, de valores de estado ni de slugs. Además, PRODUCT.md (Terminology) marca «booking» y «room» como términos a evitar. El formato persistente (`bookings`, `room`, `cancelled`, `voided`) y el slug `bookings` quedan en inglés sin que ninguna fuente lo respalde. · Declarar que los nombres del fichero son un identificador técnico heredado del código y que la decisión 10 fija el slug en inglés, sin atribuirlo al art. 4. Declarar también los valores de `status` (`active`/`cancelled`/`voided`) como parte del formato, o justificar por qué no se usan los términos de Terminology.
+
+2. Importante · Reglas de la capacidad, «Avisos» · Solo existe el aviso de fichero ilegible. Faltan los casos de escritura fallida: carpeta `.salas/` que no se puede crear, permisos denegados, disco lleno, o home no resuelto sin `SALAS_DATOS`. Hay además un fichero temporal que puede quedar huérfano. Sin aviso declarado, el comando puede decir `cancelada Norte lun` sin haber persistido nada, que es el fracaso que el Intent quiere evitar. · Añadir el aviso (o «no aplica» con razón) para el fallo de escritura. Añadir un escenario en el que el comando no confirme el cambio si no pudo guardarlo.
+
+3. Importante · Delta, «Un fichero ilegible no se sobrescribe» y decisión 8 · No se declara qué queda prohibido con el fichero ilegible. La decisión 8 dice «el comando no cambia nada», pero el escenario solo cubre `cancelar`. Queda abierto si `libres` y `anular` también responden `reservas ilegibles` o si `libres` sigue funcionando con la reserva inicial. Tampoco se cubren `version` distinta de 1, fichero vacío ni estructura válida con campos inválidos, que la decisión 8 sí menciona. · Escribir el complemento: con fichero ilegible, todo comando (lectura incluida) devuelve el aviso y no escribe. Incluir `version: 2` y fichero vacío en el escenario o en uno aparte.
+
+4. Importante · Intent y título vs Scope · El título y el Intent prometen que «las reservas sobreviven». Como `reservar` no crea nada (decisión 1), solo sobreviven la reserva inicial y sus cancelaciones o anulaciones. Para quien usa la herramienta el valor es casi nulo: nadie puede crear una reserva que luego persista. La promesa de la capacidad `bookings` supera su contenido. · Reformular título e Intent a «las cancelaciones y anulaciones se conservan». Dejar en el Intent, no solo en «✋», que no se puede crear una reserva y que la persistencia es previa a eso.
+
+5. Importante · Regla ante conflicto vs decisión 6 · La decisión 6 justifica leer en cada `run` para que «dos terminales vean lo último que hizo la otra». La regla de conflicto admite que el último que escribe gana, de modo que una cancelación puede perderse en silencio. El Intent ya consideró un fracaso perder datos en silencio. No hay aviso ni escenario para esto. · Declarar en la regla qué se pierde (una cancelación concurrente) y que no se avisa. Redactar la decisión 6 sin prometer más de lo que la regla garantiza.
+
+6. Menor · Reglas de la capacidad, «Límites» · «No aplica» sin motivo. Existe un límite implícito: el fichero crece con cada reserva y el formato solo admite `version: 1`. · Poner «no aplica: el fichero guarda solo las reservas de una sala y un día» o declarar el tamaño máximo asumido.
+
+7. Menor · «✋» (línea de review) vs Reglas · La línea del revisor de dominio habla de «tres reglas» (dónde viven, aviso, conflicto), pero la capacidad declara cinco, y la decisión 14 dice «5 reglas». El revisor puede dejar sin mirar idioma y límites. · Alinear el texto de la review con las cinco reglas.
+
+8. Menor · Scope, «No entra» · «Exportar a `.ics` (0004)» choca con la nueva «ADR 0004». Si 0004 es un id de feature, se lee como el mismo número de dos cosas distintas. · Aclarar «feature 0004» y «ADR 0004».
+
+9. Menor · Delta, escenarios 3-4 · Los ejemplos usan rutas `/tmp/...`, pero el entorno es Windows, donde `/tmp` no es una ruta nativa. No contradice la constitución, pero el escenario de `<home>/.salas/` no es reproducible tal cual. · Escribir rutas neutras (`<dir temporal>/reservas.json`) en el delta.
+
+10. Menor · Decisión 9 vs PRODUCT.md · La decisión 9 usa «un solo usuario» para descartar el bloqueo. PRODUCT.md dice en su primera línea «para los equipos de una oficina» y en Product Purpose «no hay más usuarios». El texto se contradice y apoya el argumento solo en una mitad. · Citar la sección exacta de PRODUCT.md (Product Purpose) y reconocer que la descripción inicial habla de equipos.
+
+--- [59]
+Ahora: hubo Críticos aceptados, así que una segunda ronda con un revisor lee la spec corregida una sola vez. Queda: plegar sus hallazgos y presentártela, ~3 min.
+
+--- [62]
+Segunda ronda lanzada con un solo revisor. Espero su resultado.
+
+--- [67]
+1. Crítico · Delta, escenario «Sin fichero se parte de la reserva inicial» · Falla en cuanto se implemente tal cual: `libres 10:00-12:00` imprime `Sur` (Norte reservada), pero el 🦆 y el Intent dicen que tras cancelar sale `Norte, Sur`. El escenario no comprueba que el sin-fichero no persista entre procesos de forma contradictoria con la decisión 5. Además, la regla «sale 0 como hoy» no se declara en el escenario. · Añadir `AND sale con código 0` y fijar si `cancelar Sur mar` sin fichero es cambio o no. Dejar un único literal de «sin reserva» en decisión 5, escenario y Scope.
+
+2. Crítico · Decisión 8 vs escenario «ilegible» y decisión 5 · El fichero con `version` 1 pero `bookings: []` es legible y deja `libres` devolviendo `Norte, Sur`, de modo que una cancelación desaparece sin aviso. La decisión 8 solo cubre `bookings` ausente, no su forma ni la de cada elemento (campos faltantes, `status` desconocido). · Definir ilegible también para `bookings` no lista, elementos sin los cuatro campos o `status` fuera de `active|cancelled|voided`, y añadir un escenario para uno de esos casos.
+
+3. Crítico · Escenario «ruta del fichero sale de SALAS_DATOS» vs «sin SALAS_DATOS» · Tras `cancelar Norte lun` el fichero esperado contiene solo la reserva cancelada. Eso es coherente con la reserva inicial, pero el segundo escenario (carpeta del usuario) exige crear `.salas/`, y el primero no cubre que el directorio de `SALAS_DATOS` falte. Además, decisión 3 dice que se crea `.salas/` pero no si se crea la carpeta padre de `SALAS_DATOS`. · Declarar qué pasa si el padre de `SALAS_DATOS` no existe (crearlo o fallar con `no se pudo guardar`) y cubrirlo con un escenario.
+
+4. Importante · Decisión 16 y escenario «fallo de guardado» · El texto `no se pudo guardar` se emite con `cancelada` suprimido, pero para `anular` el escenario no existe y la decisión 15 habla de `anulada …`. El código de salida 1 solo se comprueba en `cancelar`. · Añadir variante `anular` o indicar explícitamente que `cancelar` representa a ambos y por qué.
+
+5. Importante · Escenarios «ilegible» y «fallo de guardado» · El escenario de ilegible se prueba con rutas `<dir>/r.json` y el aviso incluye la ruta; en Windows `<dir>/f/r.json` puede salir con barras mezcladas (`\` de `os.tmpdir()`), con lo que la comparación literal falla. La decisión 13 no fija la normalización. · Decidir que la ruta del aviso es la de `SALAS_DATOS` tal cual (sin `path.resolve`) y decir que los tests la comparan así. Fijar el literal para la ruta por defecto también.
+
+6. Importante · Decisión 7 y escenario «sin temporales» · El escenario `<dir>` sin ficheros temporales se comprueba en el fallo de guardado donde el padre es un fichero, de modo que ningún temporal llega a crearse y el escenario pasa sin borrar nada. El caso real (el `rename` falla tras crear el temporal) no tiene escenario. · Forzar un `rename` fallido (p. ej. destino que es un directorio) y comprobar que no queda el temporal.
+
+7. Importante · Decisión 17 y Scope vs `architecture.md` · `architecture.md` dice «Un solo fichero de entrada: `src/app.js`» y «Node 22»; la spec añade `src/store.js` y no actualiza `architecture.md`, que no figura en «Lo que se retira o cambia de forma» ni en Scope. Tampoco figura `package.json`/`engines` ni el `README`. · Añadir `architecture.md` a Scope y a la tabla (aclarar que `src/store.js` no es entrada) y declarar que no se toca `package.json`.
+
+8. Importante · Decisión 9 vs PRODUCT.md · La decisión se apoya en «no hay más usuarios», pero PRODUCT.md lleva la primera línea «para los equipos de una oficina» y Terminology tiene «Cancelación» como acto del cliente y «Anulación» del responsable de sala (dos roles). La spec no dice quién puede ejecutar cada comando ni qué queda prohibido (complemento rol/estado): `cancelar` sobre una `voided`, `anular` sobre una `cancelled`, o repetir `cancelar`. · Añadir regla y escenario para transiciones de estado prohibidas o idempotentes, y declarar que no hay roles. Señalar que la contradicción de PRODUCT.md se deja o se corrige.
+
+9. Menor · Reglas de la capacidad, «Idioma de los nombres» · Cita «constitution, art. 4» pese a que la decisión 10 dice que ya no lo cita; y la constitución pide castellano en la interfaz, pero PRODUCT.md marca «Evitar: booking», «Evitar: room» y la capacidad se llama `bookings`, el fichero `bookings`, `room`. · Quitar la cita o la contradicción: justificar los términos en inglés como identificadores técnicos sin referirse al art. 4, o llamar la capacidad `reservas`.
+
+10. Menor · Regla «Límites» y Sección «Hallazgos de la review» · «Límites: no aplica» no justifica la ausencia de tamaño máximo con un criterio medible, y «Review de spec propuesta … ~100 líneas en ~7 ficheros» contradice el Scope (que enumera más de 7 ficheros: `app.js`, `store.js`, 2 tests, tests nuevos, `operations.md`, ADR 0003, ADR 0004, `architecture.md`). · Corregir el recuento de ficheros y, si se mantiene «no aplica», decir qué pasa con un JSON de tamaño desmesurado (se lee entero).
+
+--- [70]
+Aplico los cambios de la segunda ronda con ediciones puntuales.
+
+--- [86]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+La spec está escrita y revisada, y espera tu aprobación. No he escrito el plan ni he tocado código.
+
+Ruta: `.docs/sdd/changes/20261112-155742-feature-0012-persist-bookings/spec.md`, en la rama `feature/0012-persist-bookings`. El id 0012 no tiene fila en el roadmap; lo reservé con `sdd id next`. No hay dependencias que instalar. Los cambios están sin commitear, porque el commit de apertura va con el plan.
+
+## 🦆 Qué cambia
+Hoy, si cancelas `Norte lun` y cierras la terminal, al volver a abrirla `Norte lun` vuelve a estar reservada. Con el cambio cada comando que modifica una reserva la guarda en un fichero JSON y cada arranque lo lee. Cancelas `Norte lun`, cierras, abres, pides `libres 10:00-12:00` y sale `Norte, Sur`.
+
+Por dentro, `src/app.js` deja de usar el array en memoria y un módulo nuevo, `src/store.js`, lee y escribe el fichero. El ADR 0003 («en memoria») pasa a `superseded by 0004`; el 0004 lo escribe el cierre.
+
+## ✋ Decisiones mías que debes validar
+1. **`reservar` no crea reservas.** Hoy solo devuelve un texto. Por eso lo que sobrevive es la reserva inicial y sus cancelaciones y anulaciones. Es la decisión que más condiciona el valor del cambio: si quieres que `reservar` cree de verdad, es otra feature. Recomiendo no mezclarlas.
+2. **Fichero JSON** frente a SQLite o un log de eventos: no añade dependencias.
+3. **Ruta:** `SALAS_DATOS` si existe; si no, `~/.salas/reservas.json`, creando las carpetas que falten.
+4. **Formato:** `{"version":1,"bookings":[…]}` con `status` en `active`, `cancelled` o `voided`.
+5. **Sin fichero** se parte de la reserva inicial `Norte lun 10:00-12:00`. Leer, o un comando que no cambia nada, no escribe.
+6. **Fichero ilegible** (vacío, JSON roto, otra versión, elementos incompletos): todo comando, `libres` incluido, responde `reservas ilegibles: <ruta>` con código 1 y no lo sobrescribe.
+7. **Fallo de guardado:** responde `no se pudo guardar: <ruta>`, con código 1, en lugar de confirmar `cancelada…`.
+8. **Dos terminales a la vez:** gana el último que escribe, sin bloqueo, y una cancelación concurrente puede perderse sin aviso. Es un límite conocido, sin escenario.
+9. **Escritura atómica** (temporal + `rename`). Su atomicidad no tiene escenario observable y se revisa en el código.
+10. **Capacidad nueva `bookings`**, además de `architecture.md` y `operations.md:14` en el Scope, y tests existentes aislados con `SALAS_DATOS` temporal.
+
+## Revisión
+Dos revisores en paralelo (dominio y técnico, ambos sonnet) dieron 20 hallazgos. Hubo Críticos aceptados, así que pasó una segunda ronda con un revisor, que dio 10 más. Acepté la mayoría y rechacé varios con motivo escrito en la spec, por ejemplo:
+- Que `libres` dé `Sur` sin fichero es correcto, porque `Norte` está reservada.
+- Una lista de reservas vacía es un estado válido, no un fichero ilegible.
+
+El delta fusiona sin errores sobre una copia de `.docs/sdd` (8 requisitos y 5 reglas, 1 capacidad válida).
+
+## Tu respuesta
+1. **Apruebo (Recomendada)**: escribo el plan y paso a `sdd-implement`.
+2. **Cambios**: dime qué ajustar. Si quieres incluir `reservar` real, la spec se amplía y lo revisamos.
+3. **Apruebo; escribe el plan y para antes de la Task 1** para que bajes la sesión a gama media: solo si la sesión va con el modelo más capaz. Prevé unas 3 tasks.
+

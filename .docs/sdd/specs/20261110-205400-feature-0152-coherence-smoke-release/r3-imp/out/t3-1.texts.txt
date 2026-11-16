@@ -1,0 +1,88 @@
+--- [3]
+Ahora: reviso la spec, el plan y la configuración de la 0017 para decidir el método. Queda: elegir método y arrancar la Task 1, ~2 min.
+
+--- [9]
+Método: Native (una task, `Ejecución: native`). La spec está aprobada. Invoco `sdd-implement-native`.
+
+--- [11]
+Ahora: preparo el workspace y el worktree, y cargo `sdd-tdd`. Queda: Task 1 completa más revisión final, ~10 min.
+
+--- [15]
+Estoy usando sdd-worktrees: detecto el aislamiento y corro la línea base.
+
+--- [18]
+Estoy en un checkout normal, pero ya en la rama de la feature, no en `main`; trabajo aquí. La suite ya falla en esta rama. La repito en un worktree detached, como pide la skill.
+
+--- [21]
+Dos fallos previos en la base. Los miro en `develop` para ver si son de esta rama.
+
+--- [24]
+Ya no gasto más tiempo en la línea base: los dos fallos son de la semilla del molde y los registro como ruling. Hago el chequeo de base contra `develop` y creo el ledger.
+
+--- [27]
+Sin cambios en la base. Leo el brief y escribo los tests RED.
+
+--- [32]
+Los dos fallan porque falta el comando, que es el motivo esperado. Escribo el código mínimo.
+
+--- [35]
+El script no aplicó el cambio. Lo hago con Edit.
+
+--- [39]
+Commit hecho. Cierro la task con `sdd task done`.
+
+--- [42]
+Task 1 completa. Ahora: lanzo la revisión final con `sdd-verify`. Queda: revisión por ejes, cierre y pasar a `sdd-archive`, ~10 min.
+
+--- [45]
+No tengo herramienta de subagentes (el Workflow exige que lo pidas tú), así que hago la revisión final yo mismo, como indica la skill. Leo los briefs de los ejes y el cierre.
+
+--- [48]
+Hago la revisión final por ejes sobre el diff `eef2d0a..b2e8f6e`, con la suite completa como evidencia.
+
+--- [51]
+La suite da 4/6: los dos fallos son los de la base. Registro la revisión en el ledger.
+
+--- [54]
+Ejecuto el Finish: recojo los rulings y borro el workspace de este plan.
+
+--- [56]
+Ahora: paso a `sdd-archive` para la validación. Queda: validación, walkthrough y cierre.
+
+--- [59]
+Ahora: pre-checks del cierre y preparo el mensaje de validación. Queda: esperar tu validación (el modo es `manual`).
+
+--- [62]
+Ensayo el guion con ejecución real antes de pedirte que lo pruebes.
+
+--- [64]
+La Task 1 de la 0017 está implementada y commiteada, pero el cierre no avanza: la validación es tuya y falta la política de merge. La he parado ahí a propósito.
+
+El comando `reactivar` está en `src/app.js` (commit `b2e8f6e`), con sus dos tests en `test/reactivar.test.js`. Los vi fallar primero porque faltaba el comando y luego pasar. `node --test test/reactivar.test.js` da 2/2.
+
+**Revisión final:** no he podido lanzar revisores independientes, porque este harness no tiene herramienta de subagentes. La hice yo mismo sobre el diff (autorrevisión, más débil que revisores independientes): sin hallazgos Critical ni Important. El eje de Arquitectura no sale: no hay módulo, dependencia, contrato ni dato nuevos.
+
+**Gate de cierre:** `node --test` completo da 4/6. Los dos fallos son anteriores a mi cambio (`app.test.js` y `cancel.test.js`). La semilla de `bookings` solo trae Norte lun cancelada, y esos tests esperan una reserva activa. No están en `debt.md` y no son de esta feature. No contrasté el rojo contra `develop` con salida legible, así que no te lo confirmo como estado de `develop`. El cierre se va a encontrar ese rojo hasta que alguien lo arregle.
+
+## Rulings que tomé
+- **Línea base roja:** seguí adelante porque la Verificación de la task es solo `test/reactivar.test.js`. Si me equivoco, el cierre se topa con el rojo y habrá que triarlo como deuda.
+- **Sin worktree nuevo:** ya estabas en `feature/0017-reactivate`, no en `main`. Sin coste.
+- **Sin `tasks.md`:** hay una sola task. Sin coste.
+
+## Deferred minors
+- `reactivar` no comprueba si otra reserva activa ocupa ya la misma sala y franja. Hoy ningún comando crea reservas, así que no se alcanza.
+- La búsqueda de reservas repite el patrón de `findBooking` con otro estado.
+
+## Qué falta para cerrar
+- **Tu validación.** `sdd-kit.json` no tiene `validation.mode`, así que cuenta como `manual`, y en `delegate` el cierre espera. Guion (lo ensayé):
+  1. `node src/app.js reactivar Sur mar` debe responder `sin cancelada Sur mar`.
+  2. Este comando, en una sola ejecución porque el estado vive en memoria:
+     ```
+     node -e "import('./src/app.js').then(({run})=>{console.log(run('libres',['10:00-12:00']));console.log(run('reactivar',['Norte','lun']));console.log(run('libres',['10:00-12:00']))})"
+     ```
+     Debe salir `Norte, Sur`, luego `reactivada Norte lun`, luego `Sur`.
+  3. Dime qué probaste y que funciona, o difiere la validación con un disparador.
+- **Política de merge.** `sdd merge --check` falla porque falta `merge.into` y `merge.noFf` en `.docs/sdd/sdd-kit.json`. Dime a qué rama integro (¿`develop`?) y si va con `--no-ff`.
+
+Tras tu validación hago el walkthrough, el delta de `bookings`, la fila del roadmap y el commit de cierre. No hay otras ramas abiertas.
+

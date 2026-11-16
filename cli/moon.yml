@@ -1,0 +1,34 @@
+language: typescript
+# Sin shell: en Windows moon envuelve cada tarea en pwsh o powershell.exe, y el repo no depende de PowerShell.
+taskOptions:
+  shell: false
+# Los tests leen también el resto del repo, y test/kit/path-length mira todas sus rutas: con menos
+# inputs, un commit que solo cambia un fichero fuera de ellos da cli:test por bueno desde la caché.
+fileGroups:
+  testInputs: ['/**/*']
+tasks:
+  # Los tests importan .ts de fuera de cli/ (build/, tests/): con los inputs por defecto, un error ahí salía de la caché en verde.
+  typecheck:
+    command: pnpm
+    args: [exec, tsc, --noEmit]
+    inputs: ['@group(testInputs)']
+  # La mitad de los núcleos: con todos, dos gates a la vez daban tests en el tope de 5 s.
+  test:
+    command: pnpm
+    args: [exec, vitest, run, --exclude, '**/*.slow.test.ts', --maxWorkers, '50%']
+    inputs: ['@group(testInputs)']
+  # 8 workers: con los 32 por defecto, los ficheros lentos arrancan a la vez y con carga el test más lento pasa de 58 s.
+  # test-min con el cerrojo del clon: la suite de otro worktree espera a la que está en marcha (patch 0218).
+  # Las dos fuera del gate de cierre, que no cabrían en su tope de 5 min: corren al cortar una release (0233).
+  test-slow:
+    command: pnpm
+    args: [exec, vitest, run, slow.test, --test-timeout, '120000', --maxWorkers, '8']
+    inputs: ['@group(testInputs)']
+    options:
+      mutex: heavy-tests
+  test-min:
+    command: node
+    args: [bin/sdd.js, lock, run, --, proto, run, node, 22.18.0, --, node_modules/vitest/vitest.mjs, run, --test-timeout, '120000', --maxWorkers, '8']
+    inputs: ['@group(testInputs)']
+    options:
+      mutex: heavy-tests

@@ -1,0 +1,229 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && git branch --all && ls -a && ls .docs/sdd 2>&1 | head -30 && cat .docs/sdd/sdd-kit.json 2>&1 && cat .docs/sdd/roadmap.md 2>&1
+<<< * develop
+  main
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a c
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; cat package.json; find src test .docs/sdd/specs -type f | head -50; cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md; node "$K/cli/bin/sdd.js" capability index --path .docs/sdd; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd; ls $K/skills/sdd-templates
+<<< {"type": "module"}
+src/app.js
+test/app.test.js
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; cat src/app.js; ls -R $K/skills/sdd-templates/templates | head -40; cat $K/skills/sdd-templates/templates/proposal-template.md; cat $K/skills/sdd-templates/templates/roadmap-template.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; node "$K/cli/bin/sdd.js" id next --project-root "$(pwd)" --reserve --count 5; git log --oneline -3; git status --short; date +%Y%m%d-%H%M%S
+<<< 0008
+0009
+0010
+0011
+0012
+918fe16 feat: base del molde
+20261010-135337
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261010-135337-proposal-0008-usuarios-roles-autoria && mkdir -p $D && cat > $D/proposal.md <<'EOF'
+---
+id: 20261010-135337-proposal-0008-usuarios-roles-autoria
+proposal: 0008
+title: Usuarios con login, rol de responsable de sala y autoría de las reservas
+source: interview
+created: 2026-10-10
+---
+
+# Propuesta — Usuarios con login, rol de responsable de sala y autoría de las reservas
+
+## Por qué
+
+Hoy las reservas son anónimas: cualquiera puede reservar y cancelar, y no se sabe quién hizo cada una. El cliente quiere identificar a quien usa la herramienta, que el responsable de sala tenga permisos propios y que cada reserva guarde su autor. Las reservas que ya existen no tienen autor y deben seguir siendo válidas.
+
+El usuario delegó los detalles («decide tú»): las decisiones de abajo las tomó quien planifica y son revisables antes de arrancar la primera feature.
+
+## Reglas de negocio
+
+- Un usuario tiene `nombre` (único, sin distinguir mayúsculas), contraseña y rol: socio Ana se registra con nombre `ana` → existe `ana` con rol `socio`; registrar `Ana` después → rechazado por nombre repetido.
+- Para reservar o cancelar hay que haber iniciado sesión: sin sesión, `reservar Norte lun 10:00-12:00` → error «inicia sesión»; con sesión de `ana` → reserva creada.
+- Roles: `socio` (por defecto) y `responsable`. Un `socio` solo cancela sus reservas: `ana` cancela la suya → cancelada; `ana` cancela la de `luis` → rechazado. Un `responsable` cancela las de cualquiera de su sala: `marta` (responsable de Norte) cancela la de `luis` en Norte → cancelada; en Sur → rechazado.
+- Un responsable lo es de una o varias salas, y solo otro responsable asigna el rol (el primero se crea al desplegar): `marta` nombra responsable de Sur a `pau` → `pau` pasa a poder cancelar en Sur; `ana` (socio) intenta nombrarlo → rechazado.
+- Cada reserva guarda su autor y no cambia: `ana` reserva Norte lun 10:00-12:00 → la reserva queda con `autor: ana`; renombrar o cambiar el rol de `ana` después no cambia la reserva.
+- Las reservas existentes pasan a un usuario genérico `migrado` sin contraseña utilizable (no inicia sesión): la reserva `Norte lun 10:00-12:00` sin autor → `autor: migrado`. Solo un responsable puede cancelarla.
+- La migración se puede repetir sin efecto: segunda ejecución sobre reservas ya migradas → 0 cambios.
+
+## Capacidades que toca
+
+- `users` — nueva: alta, login, sesión y roles.
+- `bookings` — nueva en `capabilities/` (hoy no hay ninguna): reservar y cancelar exigen sesión, la reserva guarda su autor, permisos de cancelación por rol.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0009 | Usuarios con alta y login (sesión) | — |
+| 2 | 0010 | Rol responsable de sala y permisos de cancelación | 0009 |
+| 3 | 0011 | Cada reserva guarda su autor | 0009 |
+| 4 | 0012 | Migrar las reservas existentes al usuario genérico `migrado` | 0011 |
+
+0010 y 0011 son independientes entre sí; 0010 aplica sus permisos sobre el autor, así que los permisos por autor de un socio llegan en 0011 y 0010 se limita a los de responsable. 0012 va después de 0011 y en la misma release: sin él, el autor sería obligatorio para las reservas nuevas y vacío para las antiguas.
+
+## Acta
+
+No aplica: entrevista.
+
+## Enmiendas
+
+Ninguna.
+EOF
+python - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+old="| 1 | Avisos por correo antes de la reserva | ⏳ |\n"
+new=old+"""| 0009 | Usuarios con alta y login (sesión) — `proposal: 0008` | ⏳ |
+| 0010 | Rol responsable de sala y permisos de cancelación — tras 0009 — `proposal: 0008` | ⏳ |
+| 0011 | Cada reserva guarda su autor — tras 0009 — `proposal: 0008` | ⏳ |
+| 0012 | Migrar las reservas existentes al usuario genérico `migrado` — tras 0011 — `proposal: 0008` | ⏳ |
+"""
+assert old in s
+open(p,'w',encoding='utf-8',newline='').write(s.replace(old,new))
+EOF
+K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 33: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 21: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: cd "<run>/repo" && K="<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red"; node "$K/cli/bin/sdd.js" roadmap publish --project-root "$(pwd)" --message "docs(roadmap): usuarios, roles y autoría de reservas (propuesta 0008, filas 0009-0012)
+
+Decisiones delegadas por el usuario: roles socio/responsable, responsable por sala, usuario genérico 'migrado' sin login, migración idempotente.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md .docs/sdd/specs/20261010-135337-proposal-0008-usuarios-roles-autoria/proposal.md; git log --oneline -2; git status --short
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+918fe16 feat: base del molde
+ M .docs/sdd/roadmap.md
+?? .docs/sdd/specs/20261010-135337-proposal-0008-usuarios-roles-autoria/
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red" && node cli/bin/sdd.js roadmap publish --help 2>&1 | head -30; grep -rn "destino con cambios" cli --include=*.js | head
+<<< uso: sdd roadmap publish [--message <valor>] [--into <valor>] [--project-root <valor>] [--lock-timeout <valor>] FILES...
+Publica ficheros de .docs/sdd/ y los documentos de la raíz en la rama de integración, bajo el cerrojo de merge
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red" && grep -rn "destino con cambios" . -l 2>/dev/null | grep -v node_modules | head
+<<< ./cli/src/roadmap/publish.ts
+./cli/test/roadmap/publish.slow.test.ts
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0161-explore-launch-prompt/645fcf5d-38d6-4812-955a-22bd8680513e/scratchpad/kit-red" && grep -n -B25 -A25 "destino con cambios" cli/src/roadmap/publish.ts | head -120
+<<< 19-
+20-function docsRelativePath(projectRoot: string, file: string): string {
+21-  const fromRoot = relative(projectRoot, resolve(projectRoot, file)).split(sep).join('/');
+22-  if (ROOT_DOCUMENTS.includes(fromRoot)) return fromRoot;
+23-  const inside = relative(join(projectRoot, DOCS_DIR), resolve(projectRoot, file)).split(sep);
+24-  if (inside[0] === '..' || inside[0] === '' || /^[a-z]:$/i.test(inside[0])) {
+25-    throw new UsageError(`el fichero '${file}' no está bajo ${DOCS_DIR}/ ni es ${ROOT_DOCUMENTS.join(', ')} de la raíz`);
+26-  }
+27-  return `${DOCS_DIR}/${inside.join('/')}`;
+28-}
+29-
+
+>>> Bash: cd "<run>/repo" && git worktree list && git add .docs/sdd/roadmap.md .docs/sdd/specs/20261010-135337-proposal-0008-usuarios-roles-autoria/proposal.md && git commit -q -m "docs(roadmap): usuarios, roles y autoría de reservas (propuesta 0008, filas 0009-0012)
+
+Decisiones delegadas por el usuario: roles socio/responsable, responsable por sala, usuario genérico 'migrado' sin login, migración idempotente.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< <run>/repo 918fe16 [develop]
+warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261010-135337-proposal-0008-usuarios-roles-autoria/proposal.md', LF will be replaced by CRLF the next time Git touches it
+f9f3c85 docs(roadmap): usuarios, roles y autoría de reservas (propuesta 0008, filas 0009-0012)
+918fe16 feat: base del molde
+
+=== RESULTADO (13 turnos, 0.2765813 $)
+Lo he dejado planificado en el roadmap, sin arrancar nada: ni rama, ni spec, ni código. Está commiteado en `develop` (`f9f3c85`) y no he hecho push.
+
+## Qué queda escrito
+
+Una propuesta (`.docs/sdd/specs/20261010-135337-proposal-0008-usuarios-roles-autoria/proposal.md`) y cuatro filas nuevas en «Próximo»:
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0009 | Usuarios con alta y login (sesión) | — |
+| 2 | 0010 | Rol responsable de sala y permisos de cancelación | 0009 |
+| 3 | 0011 | Cada reserva guarda su autor | 0009 |
+| 4 | 0012 | Migrar las reservas existentes al usuario genérico `migrado` | 0011 |
+
+Los ids 0008 a 0012 salen de una sola reserva con `sdd id next --reserve`.
+
+## Decisiones que tomé por ti
+
+Cada regla lleva su ejemplo con datos en la propuesta.
+
+- **Roles:** `socio` (por defecto) y `responsable`.
+- **Permisos de cancelación:** un socio cancela solo sus reservas. Un responsable cancela cualquiera de su sala.
+- **Responsable por sala:** lo es de una o varias salas, y solo otro responsable asigna el rol. El primero se crea al desplegar.
+- **Login:** reservar y cancelar exigen sesión.
+- **Autor:** la reserva guarda su autor y no cambia aunque el usuario cambie.
+- **Usuario genérico:** `migrado`, sin contraseña utilizable, así que no inicia sesión. Solo un responsable puede cancelar sus reservas.
+- **Migración:** idempotente, la segunda ejecución no cambia nada.
+- **Release:** 0012 debe ir en la misma release que 0011. Si no, las reservas nuevas tendrían autor y las antiguas no.
+
+## Cosas a revisar
+
+- **Misión desactualizada:** `mission.md` dice «la uso yo, no hay más usuarios». Con login deja de ser cierto; no la he tocado porque no es cosa del roadmap.
+- **Capacidades:** no hay `capabilities/`. La propuesta nombra `users` y `bookings` como nuevas; las crearán las features al cerrarse.
+- **Validador del roadmap:** `sdd roadmap check` sigue marcando dos fallos heredados, que no he tocado. Son la cabecera de «Deuda técnica» y el formato de «v0.3.0». Quedan para la migración a v2.3.0.
+- **Publicación:** `sdd roadmap publish` rechazó el destino porque yo estaba escribiendo en el propio worktree de `develop`. Hice el commit solo de esos dos ficheros con git directo. El cerrojo de merge no entró, pero no hay más worktrees ni ramas `feature/*`.
+- **Fila existente:** la fila «1 Avisos por correo» no usa id de secuencia, y no la he tocado.
+
+## Siguiente paso
+
+Arranca 0009 con `sdd-propose` cuando quieras. 0010 y 0011 pueden ir en paralelo una vez cerrada 0009.

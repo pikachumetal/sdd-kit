@@ -1,0 +1,56 @@
+--- [6]
+### Strengths
+- The change stays inside the planned files (`src/app.js`, `test/void.test.js`). `anular-todas` is untouched, which matches the spec's scope («No entra: `anular-todas`»).
+- The user-facing reply of `anular` stays «anulada <sala> <día>», as decision ✋1 requires. `test/void.test.js:5-7` pins that reply.
+- The interface text is still in Spanish, and the diff adds no comments.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The REMOVED notice still runs: `anular` still queues a notice for the responsable**
+- `src/app.js:18`: `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });`
+- **What's wrong:** The diff deletes `formatMail` and the «(enviado por correo)» suffix, but `voidBooking` still pushes a notice addressed to `responsable` into `outbox`. `salida` still delivers it (`src/app.js:28-30, 36`). Running `anular Norte lun` and then `salida` still prints `responsable: anulada Norte lun`. Only the subject line and the "sent by mail" suffix are gone; the notice itself remains.
+- **Why it matters:** The spec's delta is `REMOVED — Avisar por correo`, and the dev-lead's decision says «El aviso por correo al anular desaparece … el correo sobra». The behavior the spec removes still happens, just reworded.
+- **Fix:** Delete the `outbox.push(...)` line in `voidBooking`.
+- **Gap:** `contradicts`. **Source:** the REMOVED requirement «Avisar por correo», and the Approach («`anular` deja de preparar el aviso»).
+
+#### Important (Should Fix)
+
+**2. The dev-lead's decision is only half covered**
+- `src/app.js:18`
+- «decisión del dev-lead cubierta a medias: El aviso por correo al anular desaparece — the rule only removes the "por correo" formatting (subject and suffix). The notice to the responsable is still created and delivered by `salida`.» This disappears once Critical #1 is fixed.
+- **Gap:** `partial`. **Source:** «Decisiones tomadas con el dev-lead».
+
+**3. The test does not check the removal it is named after**
+- `test/void.test.js:5-7`
+- **What's wrong:** The test is called «anular responde sin aviso», but it only asserts the return string, which was already correct before the change. It never checks `outbox` or `run('salida', [])`. It would pass on the old code (`64f9c47`) and it passes on the current code that still queues the notice. The THEN «Anular sin aviso» therefore has no real verification, even though «Dónde se prueba» names `test/void.test.js`.
+- **Fix:** After `anular`, assert that `outbox` gained no entries, or that `run('salida', [])` does not contain «anulada Norte lun». `outbox` is already exported. Compare the length before and after, because other test files share the module state.
+- **Gap:** `missing` (the verification of the THEN). **Source:** «Dónde se prueba — Anular sin aviso».
+
+#### Minor (Nice to Have)
+- `.docs/sdd/capabilities/bookings.md` still lists «### Avisar por correo — Se avisa por correo.» The REMOVED delta has to be applied to the capability before archiving. This is normally done in `sdd-archive`, so it doesn't block this review, but don't forget it.
+
+**ADR 0003 (accepted):** Confirmación met. `src/` imports neither `node:fs` nor any database package; a grep of `src/` came back empty.
+
+**Ledger:** there is none, so there are no deferred minors to weigh.
+
+### Declined to judge
+- `test/app.test.js` («reservar --cada-semana») and `test/cancel.test.js` call the commands `reservar` and `cancelar`, which `run` does not handle (`src/app.js:32-38`). Those tests most likely fail. This predates the diff, and the spec doesn't mention it; the main thread's full test run should confirm it.
+- `anular-todas` never sent a notice and the spec explicitly leaves it out of scope, so I didn't evaluate it.
+- `salida` could become dead code once the notice is removed. That is a design or quality question for the other axes.
+
+### Not verified
+- No verificado: whether `node --test test/void.test.js` actually passes. The brief told me not to run the suite, and the package includes no task report with test evidence.
+- No verificado: the state of the full suite, given the pre-existing failures noted above.
+
+### Recommendations
+- Fix #1 and #3 together. First write the `outbox`/`salida` assertion and watch it fail on the current HEAD, then remove the `push`.
+- Have the main thread run the whole suite. `app.test.js` and `cancel.test.js` look like they fail for reasons unrelated to this feature.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The behavior the spec explicitly removes is still there: `anular` still queues a notice to the responsable, and `salida` delivers it. Only the "por correo" wording was removed, and the new test is too weak to catch that.
+

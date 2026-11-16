@@ -1,0 +1,42 @@
+--- [27]
+Ahora: una segunda pasada de review sobre la spec corregida, porque acepté hallazgos críticos. Queda: incorporar lo que salga y presentártela, ~2 min, ~0,3 $.
+
+--- [42]
+La spec de la 0010 está lista para que la apruebes: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`.
+
+He interpretado tu «sin review» como que aún no estaba revisada, no como que me pedías saltarte la review. Por eso la he pasado por la review. La decisión 3 de la spec quitaba la review sola, y la rúbrica no lo permite: hay un MODIFIED (el comando `cancelar` ya existe) y datos nuevos, así que tocan dos revisores. Si querías saltártela, dímelo y lo dejo apuntado como decisión tuya.
+
+## Motivo al cancelar
+
+🦆 Hoy, al cancelar una reserva, la reserva se queda marcada como cancelada, pero no se sabe por qué. Con este cambio, `cancelar` exige elegir un motivo de una lista cerrada (cambio de planes, sala ocupada, otro) y lo guarda en la reserva. Un comando nuevo, `canceladas`, lista las reservas canceladas con su motivo. Las anulaciones del responsable de sala no se tocan (son la 0011).
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+Review de spec: dos revisores. Hubo cuatro hallazgos críticos aceptados, así que hice una segunda pasada, que no encontró ninguno más.
+
+1. **Lista cerrada de motivos.** Esta la decidiste tú en la entrevista. «otro» no lleva texto y el motivo se compara literal: «Sala ocupada», con mayúscula, no vale.
+2. **El motivo es obligatorio.** `cancelar Norte lun` sin motivo ya no cancela: responde «falta el motivo: …». Por eso cambia el test que ya existe «cancelar una reserva activa».
+3. **El listado ya no enseña quién canceló.** Es el cambio que más te afecta. El ítem 0010 del roadmap no lo pide, y el código no guarda a nombre de quién está la reserva, aunque PRODUCT.md dice que la reserva va «a nombre de quien la pide». Ana salía en el ejemplo, pero la misión dice que solo hay un usuario. Si quieres «quién», hay que guardar primero el titular, y eso sería otro ítem.
+4. **Salidas nuevas:**
+   - `cancelar` responde «cancelada Norte lun (sala ocupada)».
+   - `canceladas` da una línea por reserva, «Norte lun — sala ocupada», en el orden en que se crearon.
+   - Sin canceladas, responde «sin canceladas».
+5. **Las reservas anuladas no salen en `canceladas`.**
+6. **Primero se mira la reserva y después el motivo.** Si no hay reserva activa (no existe, ya está cancelada o está anulada), responde «sin reserva <sala> <día>». Un `--motivo` sin valor cuenta como si faltara el motivo.
+7. **El plazo de 24 h no se toca.** PRODUCT.md dice que solo se puede cancelar antes de 24 h, pero `cancelar` no lo comprueba hoy. Lo dejo como deuda al cerrar la feature.
+8. **`setBookings(lista)` exportada solo para los tests.** Sirve para preparar las reservas de cada escenario, porque hoy no se pueden crear reservas desde la CLI. No cambia nada de lo que ve el usuario.
+
+Rechacé tres hallazgos, con su motivo en la spec:
+- Añadir el plazo de 24 h: sería una regla nueva que el 0010 no pide.
+- Que tú como aprobadora contradices la misión: la misión habla de los usuarios del producto, no de quien desarrolla.
+- Que podría haber más programas leyendo la salida de `cancelar`: solo hay un usuario y la CLI no tiene texto de ayuda.
+
+Hay 9 escenarios, todos se prueban en `test/cancel.test.js` y el cambio son unas 30 líneas en 2 ficheros.
+
+Aparte: al arrancar la sesión, el kit avisó de que tienes cargada la versión 2.3.4 y el proyecto pide la 3.0.0. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+¿Apruebas la spec?
+1. Apruebo (Recomendada)
+2. Cambios
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que bajes la sesión a gama media (prevé 2 tasks). Con Native la sesión implementa todas las tasks, y Sonnet con effort medium basta para eso. Después de aprobar no hay otra parada donde puedas cambiar el modelo.
+

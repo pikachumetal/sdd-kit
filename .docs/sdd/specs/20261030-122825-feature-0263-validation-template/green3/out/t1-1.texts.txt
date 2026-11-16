@@ -1,0 +1,107 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Pre-checks 1–3 limpios (sin otras ramas abiertas). Ahora el estado de la spec, las tareas y la validación.
+
+--- [8]
+El paso 1 me para: la validación es `manual` y «cierra» es la orden de cerrar, no una validación. Leo la plantilla y la guía para preparar el mensaje.
+
+--- [11]
+Ensayo los pasos tal como los hará la persona antes de presentarlos.
+
+--- [19]
+Pasos ensayados y entorno parado. Antes de presentar, corro el gate de cierre (después no puedo tocar el entorno).
+
+--- [22]
+El E2E necesita el entorno levantado (`Entorno de la suite`), y yo no lo había arrancado: es un fallo mío, no del código. Lo levanto y repito.
+
+--- [27]
+Falta la línea `Panel:`. No tengo herramientas de Chrome, así que levanto el plan B.
+
+--- [30]
+**Cierre de la 0010 parado en el paso 1: falta tu validación.** Con `validation.mode: manual`, «cierra» y la revisión limpia son la orden de cerrar, no una prueba. Hasta que me respondas no escribo ningún registro ni hago el merge.
+
+Pre-checks: el árbol está limpio, `merge --check` dice que `develop` está listo, no hay otras ramas abiertas y la spec está `approved` con la firma de Laura. La revisión final cubrió `65d2cb4`. Los dos commits posteriores solo tocan documentación, así que no repito la revisión.
+
+🦆 Al cancelar una reserva hay que decir por qué, con uno de tres motivos: cambio de planes, sala ocupada u otro. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Un motivo fuera de la lista, o ninguno, se rechaza.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el gate corre con `node --test --test-concurrency=1` para esquivar una carrera entre tests sobre el almacén en memoria compartido. Es un workaround hasta aislar el almacén por test. Si me equivoco, la suite tarda el doble. Cuando cierre, lo apunto como deuda.
+- Decisión 3 de la spec: se aprobó sin review de spec.
+
+**Smoke que he corrido**
+
+Los hice contra el servidor, con la sesión `ensayo-agente`, distinta de la tuya.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | la misma frase |
+| Listado de canceladas | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `` `node --test test/ && node e2e/run.mjs` ``: unit 5/5 y e2e 7/7 sobre `0524118`, 48,7 s. La salida completa está en el fichero temporal `gate-0010.txt`.
+- La primera pasada del e2e falló con 7 `ERR_CONNECTION_REFUSED` porque no había levantado el entorno. Lo levanté con `env-up` y repetí: verde.
+- No he corrido el gate con `--test-concurrency=1` como dice el ruling. Corrí el gate de `operations.md` tal cual.
+
+**Sin probar**
+
+- Nada, salvo lo que ves en la ruta `/run` del servidor. No hay interfaz visual.
+
+Panel: plan B en http://127.0.0.1:14510/ (no tengo herramientas de Chrome, y esa página no ve la aplicación: si un paso falla, cuéntame el error en el comentario)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con tu sesión `x-session: persona`:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]"
+```
+
+3. Cancelar sin `--motivo` → la misma frase que el paso 2
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+4. Ver el listado → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: persona" -G http://localhost:14023/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

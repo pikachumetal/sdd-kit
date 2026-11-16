@@ -1,0 +1,64 @@
+--- [3]
+Empiezo por el paso 0: leo la configuración, la spec y el estado de la feature.
+
+--- [25]
+La re-revisión sigue en marcha (la lanzó un subagente en segundo plano, con su vigía de silencio). Hasta que vuelva no escribo el walkthrough, el roadmap ni el changelog, porque su veredicto puede cambiarlos. Hasta ahora:
+
+- **Suite:** 5/5 en verde con `node --test --test-concurrency=1`.
+- **Smoke real por CLI:**
+  - `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - `cancelar` sin `--motivo` responde «motivo no válido: cambio de planes, sala ocupada, otro».
+  - Un motivo fuera de la lista lo cubre un test, no lo ejecuté por CLI.
+  - `canceladas` no lo puedo comprobar por CLI: cada ejecución arranca con el almacén en memoria vacío (ADR 0001), así que solo lo cubre el test en proceso.
+
+Cuando vuelva la re-revisión, continúo con el cierre (walkthrough, capacidad `bookings`, changelog, roadmap, merge).
+
+--- [36]
+## Nuevas roturas en el diff
+
+**Important: `.docs/sdd/decisions/0002-node-test.md:23-25` no tiene `### Confirmación`.**
+
+- **Qué falta.** El ADR acaba en `### Consecuencias` (línea 23), con la viñeta «Sin dependencias.» en la línea 25. No hay sección `### Confirmación`.
+- **Por qué es una rotura y no un detalle de estilo.** La plantilla del kit pide esa sección (`skills/sdd-templates/templates/adr-template.md:30-32`). Además, `sdd decision check` la exige: está en `SECTIONS` de `cli/src/decisions/check.ts:10`, así que el chequeo de la CLI falla con este fichero.
+- **Consecuencia para la revisión.** El ADR está `accepted`, y la regla de la revisión final de Spec dice que hay que aplicar la `### Confirmación` de cada ADR aceptado (`skills/sdd-verify/references/spec-reviewer-prompt.md:87`). Sin esa sección, el ADR no se puede comprobar.
+- **Arreglo.** Añadir `### Confirmación` con cómo se comprueba, por ejemplo «los ficheros de `test/` importan de `node:test`; la revisión».
+
+Los tres puntos del encargo:
+
+1. **Código y tests: sin cambios.** `git diff --name-only bdff451..aee0645 -- src test` sale vacío. Los cuatro ficheros del tramo están en `.docs/sdd/`.
+2. **spec.md: el delta y las decisiones aprobadas siguen igual.** La sección nueva «Términos y ADR» (`spec.md:61-64`) va entre el delta y «Enmiendas», y no toca los ADDED, el Scope, el Approach ni la tabla de aprobaciones. La ADR candidata («el motivo se guarda en la propia reserva») coincide con el Approach (`spec.md:38`) y con el código (`src/app.js:24`, `booking.reason = reason`).
+3. **Los ADR no contradicen la spec ni el código.**
+   - `0001-bookings-in-memory.md` está bien formado (frontmatter válido, las cinco secciones) y cuadra con `src/app.js:4`: el array `bookings` vive en el módulo y se pierde al reiniciar.
+   - En `0002-node-test.md` el contenido es correcto: `test/app.test.js:1` y `test/cancel.test.js:1` importan de `node:test`, y `package.json` no tiene dependencias. Lo único que falla es la forma, lo de arriba.
+
+## Observaciones fuera de alcance
+
+- **La ADR candidata no se ha escrito.** El commit aee0645 se titula «ADR candidata y decisiones del proyecto», pero no hay ningún ADR de «el motivo se guarda en la propia reserva». Los dos ADR nuevos recogen decisiones anteriores del proyecto. Si la candidata se iba a pasar a ADR, sigue pendiente. Si no, el título del commit confunde.
+- **El ruling de tasks.md (línea 132 del diff) se apoya en una premisa dudosa.** Justifica `--test-concurrency=1` con una «carrera de los tests sobre el almacén compartido en memoria». Pero `node --test` lanza cada fichero de test en su propio proceso, y dentro de un fichero los tests van uno detrás de otro por defecto. El almacén de `src/app.js:4` es propio de cada proceso, así que no hay estado compartido entre ficheros. Además, el gate del plan (`plan.md:50`) sigue siendo `node --test` sin el flag. No cambia código, pero conviene revisar el ruling.
+- **Detalles menores de redacción en los ADR.** En 0002, Contexto y Consecuencias dicen lo mismo («Sin dependencias.»). El contexto de 0001 es mínimo («Una demo sin base de datos.»).
+- **Hueco de numeración ya existente.** «Decisiones que he tomado yo» en `spec.md:24-25` salta del 1 al 3. Estaba antes del tramo.
+
+**Veredicto:** hallazgos abiertos (1 Important).
+
+--- [46]
+Ahora el walkthrough, el changelog y el roadmap.
+
+--- [54]
+Cierre de la 0010 hecho: `feature/0010-cancel-reason` está fusionada en `develop`. La suite pasa 5/5, también sobre el resultado del merge. El kit no sigue sin ejecutar nada: la validación fue en campo, con el smoke ejecutado por mí y no probado por una persona.
+
+- **Re-revisión pendiente de adjudicar:** la re-revisión del tramo posterior a la revisión final encontró un Important. El ADR `0002-node-test.md` no tiene `### Confirmación`, así que `sdd decision check` fallará en él. Es un ADR anterior a la feature y ajeno a su código. No lo reescribí sin ti: lo adjudiqué como ruling en `tasks.md` y lo apunté como fila en la deuda técnica del roadmap.
+- **Ruling de la ejecución:** `--test-concurrency=1` en el gate, para esquivar una carrera de tests. La re-revisión dudó de la premisa: `node --test` ya aísla cada fichero en su proceso, y el gate del plan es `node --test` sin el flag. Conviene revisarlo.
+- **Corrección en `tasks.md`:** la task 1 figuraba con el commit `bdff451`, que es el de la task 2. Lo cambié a `c0f56b2`.
+- **Smoke:**
+  - Con ejecución real por CLI: «cancelada Norte lun (sala ocupada)» y «motivo no válido: …» al omitir `--motivo`.
+  - Solo con suite: el motivo fuera de la lista y `canceladas`.
+  - No probado: la persistencia entre ejecuciones. El almacén vive en memoria (ADR 0001), así que `canceladas` por CLI sale vacío en una ejecución nueva. Es la fila 0014 del roadmap.
+- **ADR candidata sin escribir:** «el motivo se guarda en la propia reserva» sigue sin existir como ADR, aunque el commit `aee0645` se titula «ADR candidata…». El proyecto no tiene `architecture.md`, y no inventé un destino.
+- **Documentación de cierre:** walkthrough, capacidad `bookings` (fusionada con `sdd capability merge`; `capability check` pasa), entrada en el changelog y la 0010 en `✅`.
+- **Roadmap:** `roadmap check` da 2 fallos, en el título de la release `v0.3.0` y en la cabecera de «Deuda técnica». Son líneas que no escribí; los arregla la migración a v2.3.0.
+- **Sin aplicar:** el proyecto no tiene `estimation.md`, así que no hay tiempo estimado ni estimation-log. Tampoco tiene `.claude/skills/` ni `environments.md`.
+
+Si quieres, genero el ticket de mejora del kit con `sdd-feedback`.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (8810d83) · push: no hecho: `merge.push` no lo autoriza y el repo no tiene remoto · la rama está en el checkout principal, no hay worktree que borrar.
+

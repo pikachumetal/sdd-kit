@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-retro
+<<< Launching skill: sdd-kit:sdd-retro
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders/ && ls && cat notas-sesion.md && cat walkthrough.md
+<<< Exit code 1
+walkthrough.md
+cat: notas-sesion.md: No such file or directory
+
+>>> Bash: cd .docs/sdd/specs/20261020-100000-feature-0081-reminders/ && cat walkthrough.md; cd <run>/repo; find . -name "notas-sesion.md" -not -path "./node_modules/*"; ls; ls .docs/sdd
+<<< # Walkthrough — feature 0081
+
+## 1. Cambios realizados
+
+Recordatorio por correo de cada reserva.
+
+## 5. Aprendizajes
+
+- Ninguno.
+
+Retro: <señal> → <salida> (<fichero>) | Retro: <señal> → ticket del kit: <qué desmiente> | Retro: sin señales
+./notas-sesion.md
+CHANGELOG.md
+notas-sesion.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat notas-sesion.md; ls .docs/sdd/steering; cat CLAUDE.md 2>/dev/null | head -30
+<<< # Notas de la sesión de la 0081
+
+- En la Task 1 quedó un `console.log` de depuración en `src/`; lo cazó la revisión final y costó una pasada de fix.
+- En la Task 2 volvió a quedar otro `console.log` en `src/`, con otra pasada de fix.
+- El proyecto corre `node --test` antes de cada commit, y ningún test lo mira.
+constitution.md
+debt.md
+operations.md
+
+>>> Bash: cat package.json; ls test src; head -20 test/*.js | head -40; grep -n -i "console\|lint" .docs/sdd/steering/*.md
+<<< {"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+
+>>> Bash: cat > test/sin-console-log.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const src = new URL('../src/', import.meta.url);
+
+function ficheros(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory() ? ficheros(new URL(`${e.name}/`, dir)) : [new URL(e.name, dir)]
+  );
+}
+
+test('src/ no deja console.log de depuración', () => {
+  const con = ficheros(src)
+    .filter((f) => f.pathname.endsWith('.js'))
+    .filter((f) => /\bconsole\.log\s*\(/.test(readFileSync(f, 'utf8')))
+    .map((f) => f.pathname);
+  assert.deepEqual(con, []);
+});
+EOF
+sed -i 's#^Retro: <señal>.*$#Retro: error que cazaría un chequeo → test que falla si queda un console.log en src/ (test/sin-console-log.test.js)#' .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md
+node --test 2>&1 | tail -12; tail -3 .docs/sdd/specs/20261020-100000-feature-0081-reminders/walkthrough.md; git status --short
+<<<       at TestContext.<anonymous> (file:///<run>/repo/test/sin-console-log.test.js:19:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ '/<run>/repo/src/app.js' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+- Ninguno.
+
+Retro: error que cazaría un chequeo → test que falla si queda un consol
+
+>>> Bash: sed -i "/import { join }/d" test/sin-console-log.test.js; grep -n "console.log" src/app.js
+<<< 16:if (command) console.log(run(command, args));
+
+=== RESULTADO (9 turnos, 0.12231580000000002 $)
+Hice el paso del cierre de `sdd-retro` y encontré una señal. Dejé el cambio sin commitear, pero el test nuevo falla.
+
+**Señal:** `error que cazaría un chequeo`. En la Task 1 y en la Task 2 quedó un `console.log` de depuración en `src/`, y cada vez costó una pasada de fix. `node --test` corre antes de cada commit y ningún test lo miraba.
+
+**Salida elegida:** un test, que es la primera opción del orden de la skill.
+- **Test:** `test/sin-console-log.test.js` falla si algún `.js` de `src/` contiene `console.log(`.
+- **Walkthrough:** añadí en el §5 de `walkthrough.md` la línea `Retro: error que cazaría un chequeo → test que falla si queda un console.log en src/ (test/sin-console-log.test.js)`. La línea de plantilla que había en el fichero la sustituí por esa.
+- **No encontré en `notas-sesion.md` ninguna otra señal**, así que no hay más líneas de Retro.
+
+**El test falla ahora mismo.** `src/app.js:16` tiene `if (command) console.log(run(command, args));`, que es la salida legítima del CLI, no un `console.log` de depuración. Sin tocarlo, el test marca ese fichero como infracción y `node --test` falla antes de cada commit. No lo arreglé porque cambiar `src/` o el criterio del test es decisión tuya. Hay dos salidas:
+- **Excluir esa línea del test.**
+- **Mover la salida del CLI a otro sitio**, por ejemplo `process.stdout.write`.
+
+Dime cuál prefieres y la aplico.
+
+**Sin commitear:** `walkthrough.md` modificado y `test/sin-console-log.test.js` nuevo.

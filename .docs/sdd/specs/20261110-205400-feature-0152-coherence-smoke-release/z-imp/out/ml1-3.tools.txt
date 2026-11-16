@@ -1,0 +1,326 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git log --oneline && find . -path ./.git -prune -o -type f -print | head -50 && cat .docs/sdd/sdd-kit.json 2>/dev/null
+<<< ?? test/persist.test.js
+960eb9b docs(sdd): abrir la feature 0036 con su spec y su plan
+f07adc6 feat: base del molde
+./.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+./.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/spec.md
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+./.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+./.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+./.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+./.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.m
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/*0036*; cat $D/plan.md $D/spec.md; cat test/persist.test.js src/app.js package.json; cat .docs/sdd/steering/constitution.md; cat ROADMAP.md
+<<< ---
+id: 20261016-110000-feature-0036-saved-cancellations
+feature: 0036
+title: Plan de implementación — Las cancelaciones se conservan entre ejecuciones
+spec: ./spec.md
+status: approved
+created: 2026-10-16
+---
+
+# Plan de implementación — Las cancelaciones se conservan entre ejecuciones
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native, que toca las dos capas: el almacén y la CLI.
+
+**Goal**: guardar las reservas al cancelar y recargarlas al arrancar.
+
+**Ejecución**: native, porque es una task corta.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && S='D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md; node "$S" workspace $P; git branch -a; git worktree list; cat .gitignore
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+  develop
+* feature/0036-saved-cancellations
+  main
+<run>/repo 960eb9b [feature/0036-saved-cancellations]
+.superpowers/
+.temp/
+node_modules/
+data/
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && S='D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+git diff $(git merge-base HEAD develop) develop --stat -- ROADMAP.md; git diff --name-only $(git merge-base HEAD develop) develop; echo ---base-ok
+W=.temp/sdd/plan; mkdir -p $W; cp test/persist.test.js $W/persist.test.red.js
+node "$S" task start $P 1; echo; node --test test/persist.test.js 2>&1 | tail -25
+<<< ---base-ok
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: 960eb9ba6374dca0262ea9b5e50568af75d90ee2
+
+
+✖ failing tests:
+
+test at test\persist.test.js:20:1
+✖ una cancelación sobrevive a la siguiente ejecución (207.115ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Sur'
+  - 'Norte, Sur'
+  
+      at file:///<run>/repo/test/persist.test.js:23:12
+      at inFreshDirectory (file:///<run>/repo/test/persist.test.js:14:5)
+      at TestContext.<anonymous> (file:///<run>/repo/test/persist.test.js:21:3)
+      at Test.runInAsyncScope (node:asy
+
+>>> Bash: cd "<run>/repo" && cat > src/store.js <<'EOF'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+
+const file = 'data/bookings.json';
+
+export function load(fallback) {
+  if (!existsSync(file)) return fallback;
+  return JSON.parse(readFileSync(file, 'utf8'));
+}
+
+export function save(bookings) {
+  mkdirSync('data', { recursive: true });
+  writeFileSync(file, JSON.stringify(bookings, null, 2));
+}
+EOF
+python - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"const [command\",\"import { load, save } from './store.js';\n\nconst [command\");
+s=s.replace(\"const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];\",\"const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);\");
+s=s.replace(\"  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);\",\"  if (cmd === 'cancelar') {\n    const result = cancelBooking(params[0], params[1]);\n    save(bookings);\n    return result;\n  }\");
+fs.writeFileSync('src/app.js',s)"
+EOF
+git diff src/app.js; node --test 2>&1 | tail -12
+<<<       at TestContext.<anonymous> (file:///<run>/repo/test/persist.test.js:21:3)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'Sur',
+    expected: 'Norte, Sur',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -12; git status --short; git diff --no-index .temp/sdd/plan/persist.test.red.js test/persist.test.js && echo RED-igual
+<<< ✔ cancelar una reserva activa (2.4761ms)
+✔ cancelar sin reserva lo dice (0.6382ms)
+✔ una cancelación sobrevive a la siguiente ejecución (148.4996ms)
+✔ sin cancelaciones guardadas, la reserva sigue activa (66.238ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 349.0993
+ M src/app.js
+?? src/store.js
+?? test/persist.test.js
+warning: in the working copy of '.temp/sdd/plan/persist.test.red.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/persist.test.js', LF will be replaced by CRLF the next time Git touch
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations
+cat > $D/tasks.md <<'EOF'
+# Tasks — Las cancelaciones se conservan entre ejecuciones
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| 1 — Almacén y cancelar | hecha | ver `git log` |
+EOF
+git add src/store.js src/app.js test/persist.test.js $D/tasks.md && git commit -q -m "feat(0036): guardar las reservas al cancelar y recargarlas al arrancar
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of '.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/store.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/persist.test.js', LF will be replaced by CRLF the next time Git touches it
+841f485 feat(0036): guardar las reservas al cancelar y recargarlas al arrancar
+
+>>> Bash: cd "<run>/repo" && S='D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+node "$S" task done $P 1 960eb9ba6374dca0262ea9b5e50568af75d90ee2 -- node --test test/persist.test.js 2>&1 | tail -8; git status --short
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 376.982
+ledger: Task 1: complete (commits 960eb9b..841f485, tests: node --test test/persist.test.js → ℹ duration_ms 376.982)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/skills/sdd-verify/references" && cat closing-the-review.md | head -80; echo =====; head -40 code-reviewer-prompt.md
+<<< # Closing the review
+
+**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ships, n
+
+>>> Bash: cd "<run>/repo" && git diff 960eb9b HEAD --stat && node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"; ls data 2>&1 | head -2; grep -n "Eje Arquitectura" .docs/sdd/changes/*0036*/plan.md || echo "plan sin línea Eje Arquitectura"; cat .temp/sdd/plan/progress.md
+<<<  .../tasks.md                                       |  5 ++++
+ src/app.js                                         | 10 +++++--
+ src/store.js                                       | 13 +++++++++
+ test/persist.test.js                               | 31 ++++++++++++++++++++++
+ 4 files changed, 57 insertions(+), 2 deletions(-)
+ℹ tests 6
+ℹ pass 4
+ℹ fail 2
+bookings.json
+plan sin línea Eje Arquitectura
+# SDD ledger — plan: .docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+Task 1: complete (commits 960eb9b..841f485, tests: node --test test/persist.test.js → ℹ duration_ms 376.9
+
+>>> Bash: cd "<run>/repo" && cat data/bookings.json; node --test 2>&1 | grep -E "^(✖|✔)|expected|actual|test at" | head -20; cat test/cancel.test.js test/app.test.js | head -60
+<<< [
+  {
+    "room": "Norte",
+    "day": "lun",
+    "slot": "10:00-12:00",
+    "status": "cancelled"
+  }
+]✖ libres excluye la sala reservada en la franja (2.2418ms)
+✔ reservar --cada-semana crea la reserva semanal (0.2769ms)
+✖ cancelar una reserva activa (7.8472ms)
+✔ cancelar sin reserva lo dice (0.7842ms)
+✔ una cancelación sobrevive a la siguiente ejecución (139.6291ms)
+✔ sin cancelaciones guardadas, la reserva sigue activa (60.6451ms)
+✖ failing tests:
+test at test\app.test.js:5:1
+✖ libres excluye la sala reservada en la franja (2.2418ms)
+  + actual - expected
+    actual: 'Norte, Sur',
+    expec
+
+>>> Bash: cd "<run>/repo" && git check-ignore data/bookings.json && rm -r data && cat >> test/persist.test.js <<'EOF'
+
+test('usar run desde código no toca el disco', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'salas-'));
+  try {
+    const script = `import { run } from ${JSON.stringify(pathToFileURL(app).href)}; run('cancelar', ['Norte', 'lun']);`;
+    spawnSync(process.execPath, ['--input-type=module', '-e', script], { cwd: dir });
+    assert.deepEqual(readdirSync(dir), []);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+EOF
+sed -i "s#import { mkdtempSync, rmSync } from 'node:fs';#import { mkdtempSync, readdirSync, rmSync } from 'node:fs';#; s#import { join, resolve } from 'node:path';#import { join, resolve } from 'node:path';\nimport { pathToFileURL } from 'node:url';#" test/persist.test.js
+node --test test/persist.test.js 2>&1 | grep -E "^(✖|✔)|actual|expected|Error" | head
+<<< data/bookings.json
+✔ una cancelación sobrevive a la siguiente ejecución (172.5778ms)
+✔ sin cancelaciones guardadas, la reserva sigue activa (64.3087ms)
+✖ usar run desde código no toca el disco (70.5137ms)
+✖ failing tests:
+✖ usar run desde código no toca el disco (70.5137ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+    actual: [ 'data' ],
+    expected: [],
+
+>>> Bash: cd "<run>/repo" && node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"const bookings = load(\",\"let bookings = (\").replace(/let bookings = \(\[(.*)\]\);/,'let bookings = [\$1];');
+s=s.replace(/  if \(cmd === 'cancelar'\) \{[\s\S]*?\n  \}\n/,\"  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);\n\");
+s=s.replace(/if \(command\) console\.log\(run\(command, args\)\);\s*$/,\"if (command) {\n  bookings = load(bookings);\n  console.log(run(command, args));\n  if (command === 'cancelar') save(bookings);\n}\n\");
+fs.writeFileSync('src/app.js',s)"
+git diff 841f485 -- src/app.js; cat src/app.js | head -6; node --test 2>&1 | grep -E "^(✖|ℹ (tests|pass|fail))"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; ls data 2>&1
+<<< diff --git a/src/app.js b/src/app.js
+index 7e9cc87..5d39eb2 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -2,7 +2,7 @@ import { load, save } from './store.js';
+ 
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+-const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);
++let bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+@@ -38,4 +38,8 @
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && rm -r data; for i in 1 2; do node --test 2>&1 | grep -E "^(✖|ℹ (tests|pass|fail))"; ls data 2>&1 | head -1; done
+<<< ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+ls: cannot access 'data': No such file or directory
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+ls: cannot access 'data': No such file or directory
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations
+git add src/app.js test/persist.test.js && git commit -q -m "fix(0036): run no escribe en disco; la CLI carga al arrancar y guarda tras cancelar
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>/dev/null; H=$(git rev-parse --short HEAD); echo $H
+cat >> .temp/sdd/plan/progress.md <<EOF
+Final review: self-review (no subagent tool)
+Final: Eje Arquitectura: sin línea en el plan · señales en el diff: módulo nuevo src/store.js (load/save, sin dependencias nuevas) → no sale (sin subagentes; revisado en el hilo)
+Final: fixed Important — run('cancelar') escribía data/bookings.json en el cwd y la suite pasaba a depender del estado (2 fallos en la 2ª pasada) — usar run desde código no toca el disco RED→GREEN, suite 7/7 dos pasadas seguidas ($H)
+Final: Ruling: load y save pasan de run/módulo al arranque de la CLI (\`if (command)\`) — el plan decía «cancelar llama a save», pero así cancel.test.js y app.test.js, que usan run en el proceso, no tocan el disco; el spec («carga al arrancar y guarda al cancelar») sigue cumplido — si se prefiere guardar dentro de run, los tests existentes necesitan un directorio temporal
+Final: Ruling: añadida una 3ª prueba en test/persist.test.js (las dos del RED intactas) — reproduce el fallo del fix — cuesta tocar un fichero del RED recibido
+Final: minor (deferred): cancelar sin reserva activa también reescribe data/bookings.json
+Final: minor (deferred): un data/bookings.json corrupto tumba la CLI con un SyntaxError sin mensaje
+EOF
+sed -i 's#| 1 — Almacén y cancelar | hecha | ver `git log` |#| 1 — Almacén y cancelar | hecha | 841f485 |#' $D/tasks.md
+cat >> $D/tasks.md <<EOF
+
+Revisión final: self-review por el hilo (sin herramienta de subagentes) · Spec, Código y Arquitectura repasados en un solo pase, sobre 841f485
+Pasada de fix: $H, 1 hallazgo RED→GREEN
+EOF
+git add $D/tasks.md && git commit -q -m "docs(sdd): registrar la revisión final de la 0036
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ; git log --oneline -4; git status --short
+<<< warning: in the working copy of 'test/persist.test.js', LF will be replaced by CRLF the next time Git touches it
+222fa45
+warning: in the working copy of '.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/tasks.md', LF will be replaced by CRLF the next time Git touches it
+d55e16f docs(sdd): registrar la revisión final de la 0036
+222fa45 fix(0036): run no escribe en disco; la CLI carga al arrancar y guarda tras cancelar
+841f485 feat(0036): guardar las reservas al cancelar y recargarlas al arrancar
+960eb9b docs(sdd): abrir la feature 0036 con su spec y su plan
+
+=== RESULTADO (27 turnos, 0.47286569999999994 $)
+La Task 1 de la 0036 está implementada y commiteada, con la suite completa en verde (7/7, dos pasadas seguidas). No he cerrado la feature: falta `sdd-archive` y la revisión final no la hizo un revisor independiente.
+
+- **Qué hace.** `src/store.js` guarda y recarga las reservas en `data/bookings.json`. La CLI las carga al arrancar y las guarda tras `cancelar`. Los dos tests del RED que escribiste pasan sin cambios.
+- **Commits.** `841f485` es la implementación, `222fa45` el fix y `d55e16f` el registro de la revisión en `tasks.md`.
+- **Revisión final.** No tengo herramienta de subagentes en este harness. Repasé los tres ejes yo mismo sobre el diff, así que es una autorrevisión del autor, más débil que revisores nuevos. Decide tú si basta antes de fusionar.
+
+**Un fallo que me salió después de «completar» la task.** Mi primera versión guardaba dentro de `run`. `cancel.test.js` llama a `run('cancelar')` dentro del proceso, y eso escribía `data/bookings.json` en el repo. La siguiente ejecución de la suite fallaba en `app.test.js` y `cancel.test.js` (2 fallos). Lo detecté en la revisión final, no en el `task done`, que solo corría `persist.test.js`. Lo arreglé moviendo la carga y el guardado al arranque de la CLI, con un test que reproduce el fallo (RED→GREEN). Esa carpeta residual la borré yo.
+
+**Rulings**
+1. **Carga y guardado fuera de `run`.** El plan decía «`cancelar` llama a `save`». Lo moví al arranque de la CLI para que los tests existentes no toquen el disco. La spec («carga al arrancar y guarda al cancelar») sigue cumplida. Si se prefiere guardar dentro de `run`, `cancel.test.js` y `app.test.js` necesitarían un directorio temporal.
+2. **Tercer test en `test/persist.test.js`.** Añadí una prueba que reproduce el fallo, sin tocar las dos del RED. Toca un fichero de tu RED, aunque solo añadiendo.
+3. **Eje Arquitectura sin revisor.** El plan no trae línea `Eje Arquitectura`. Hay una señal (módulo nuevo `store.js`, sin dependencias nuevas) y lo revisé en el hilo.
+
+**Deferred minors**
+- `cancelar` sin reserva activa también reescribe `data/bookings.json`.
+- Un `data/bookings.json` corrupto tumba la CLI con un `SyntaxError` sin mensaje.
+
+Dejé el workspace `.temp/sdd/plan` sin borrar para que lo use `sdd-archive`.
+
+¿Sigo con `sdd-archive` para la validación y el cierre?

@@ -1,0 +1,29 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar el cambio y abrir la spec, ~5 min.
+
+--- [16]
+Esto no es un cambio acotado. Voy por la vía pesada: preguntas, spec escrita y plan.
+
+**Lo que entiendo**
+- Hoy `anular <sala> <día>` anula cualquier reserva activa y no comprueba quién lo pide (`src/app.js`, `voidBooking`).
+- Quieres que solo el responsable de cada sala pueda anular reservas de otras personas. Es la fila 0011 del roadmap, y `PRODUCT.md` ya define «anulación» como lo que hace el responsable de sala.
+- Es una suposición mía que cada sala tiene un único responsable, y que quien pide la reserva sigue pudiendo cancelar la suya con `cancelar`.
+
+**Lo que no existe**
+- No hay ninguna noción de persona: ni quién ejecuta el comando, ni quién es el responsable de cada sala.
+- Las reservas tampoco guardan a nombre de quién están (`{ room, day, slot, status }`), aunque `PRODUCT.md` dice «a nombre de quien la pide».
+- `Acceso a la aplicación` es `sin login` y la misión dice que la usas solo tú.
+
+❓ **¿Cómo sabe el programa quién anula?**
+1️⃣ **Nombre declarado con `--como <nombre>`.** Las salas tienen su responsable en una tabla del código.
+   - `anular Norte lun --como Marta` → `anulada Norte lun`
+   - `anular Norte lun --como Pedro` → `solo Marta, responsable de Norte, puede anular`
+   - `anular Norte lun` → `indica quién anula con --como`
+   - Cuesta poco y es fácil de probar. No autentica: cualquiera puede escribir el nombre de otro.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Es el mismo control, pero el nombre se fija una vez por sesión en vez de ir en cada comando. El cambio llega a `cancelar` y `reservar`, que hoy no lo usan.
+3️⃣ **Login con contraseña o token.** Es seguridad real, pero choca con `sin login` y con una herramienta de una sola persona. Es mucho más trabajo para una sola fila del roadmap.
+
+➡️ **Recomiendo 1️⃣**, porque la misión dice que la usas solo tú y no hay a quién proteger de suplantaciones. A cambio, no impide que alguien se haga pasar por el responsable.
+
+Después me falta decidir a nombre de quién se guarda cada reserva, y qué hace `anular` con una reserva propia.
+

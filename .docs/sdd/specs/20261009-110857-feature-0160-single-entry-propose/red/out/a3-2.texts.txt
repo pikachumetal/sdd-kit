@@ -1,0 +1,38 @@
+--- [4]
+Using sdd-start-patch. Primero la causa raíz: miro el código.
+
+--- [12]
+Causa probable: `findBooking` ignora `day` (`src/app.js:10`). Lo reproduzco y miro el contexto del proyecto.
+
+--- [16]
+Reproducido: `cancelada Norte mar` con la reserva del lunes. Curioso: el patch 0007 dice haber arreglado esto. Compruebo la plantilla, el historial y el siguiente id.
+
+--- [19]
+Causa confirmada: `findBooking` recibe `day` pero nunca lo compara. Reservo id, rama y escribo el test en RED.
+
+--- [24]
+Los tests comparten estado del módulo (el primero ya cancela la reserva del lunes), así que mis casos dependen del orden. Los muevo a su propio fichero (proceso aparte, estado limpio).
+
+--- [26]
+RED en ambos. Fix mínimo:
+
+--- [31]
+Arreglado y commiteado en `feature/0012-cancel-day` (`18b4849`). Ya no se cancela la reserva equivocada.
+
+**Causa:** `findBooking(room, day)` en `src/app.js:10` recibía el día pero no lo comparaba. Cogía la primera reserva activa de la sala, y el mensaje se componía con el día que pediste, no con el de la reserva. Por eso decía "cancelada Norte mar" mientras quitaba la del lunes.
+
+**Arreglo:** `findBooking` ahora exige `b.day === day`. `anular` usaba la misma función, así que tenía el mismo fallo y también queda arreglado. Cancelar o anular un día sin reserva devuelve `sin reserva Norte mar`.
+
+**Verificación:**
+- **Tests nuevos:** dos de regresión, uno para cancelar y otro para anular, en `test/cancel-day.test.js` y `test/void-day.test.js`. Fallaban antes del arreglo y ahora pasan los 6 con `node --test test/`.
+- **A mano:** `cancelar Norte mar` da `sin reserva Norte mar`, y `cancelar Norte lun` da `cancelada Norte lun`.
+- **Lint:** `scripts/lint.mjs` sin hallazgos.
+- **Ficheros de test:** los tests existentes comparten estado entre sí, y el primero ya cancela la reserva del lunes. Por eso los puse en ficheros aparte.
+- **Sin `npm test`:** `package.json` no tiene script `test`.
+
+**Patch 0007:** el patch 0007 del roadmap y el changelog dice haber arreglado este mismo fallo, pero en esta base no hay rastro de ese arreglo. El historial tiene un solo commit, así que no puedo saber si se perdió o nunca llegó.
+
+**Documentación:** el patch está documentado en `.docs/sdd/specs/20261009-114310-patch-0012-cancel-day/patch.md`, con el id 0012 reservado. El `commit:` del `patch.md` queda en "pendiente", y el changelog y la fila del roadmap están sin tocar. Eso se completa al cerrar con `sdd-end-patch`.
+
+¿Lo cierro ahora, o quieres probarlo tú antes?
+

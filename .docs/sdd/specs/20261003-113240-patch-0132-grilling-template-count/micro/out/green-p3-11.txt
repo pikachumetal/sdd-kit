@@ -1,0 +1,30 @@
+❓ **¿En qué formato exporta `salas` las reservas?**
+
+Lo que he encontrado en `tech-stack.md`:
+- Cada reserva tiene tres datos, en este orden: sala, día y franja.
+- El proyecto no tiene dependencias externas, así que cualquier formato hay que escribirlo a mano con Node 22.
+- Las reservas solo existen en memoria y se pierden al salir. Exportarlas es la única forma de sacarlas de `salas`.
+
+Un formato de calendario necesita una fecha y una hora de inicio concretas para cada evento (RFC 5545 §3.6.1, `DTSTART`). `salas` solo tiene un «día» y una «franja», sin horas.
+
+En los ejemplos uso `reservar Norte lunes mañana` y `reservar Sur martes tarde`. No sé cómo son de verdad los días y las franjas; solo sirven para ilustrar.
+
+1️⃣ **CSV** (`sala,dia,franja`). `salas exportar` → `reservas.csv`:
+```
+sala,dia,franja
+Norte,lunes,mañana
+Sur,martes,tarde
+```
+Se abre directamente en una hoja de cálculo, un script lo lee línea a línea y se entiende a simple vista. Un calendario no lo importa.
+
+2️⃣ **JSON**. `salas exportar` → `reservas.json`:
+```
+[{"sala":"Norte","dia":"lunes","franja":"mañana"}, …]
+```
+Es lo más cómodo para scripts y Node ya lo trae (`JSON.stringify`). Una hoja de cálculo no lo abre tal cual, y a simple vista se lee peor que el CSV.
+
+3️⃣ **iCalendar (.ics)**. `salas exportar` → `reservas.ics`, y en tu calendario aparece «Sala Norte» el lunes 5 de octubre de 9:00 a 14:00. Para eso `salas` tendría que traducir «lunes» y «mañana» a una fecha y unas horas, y hoy no tiene esos datos. Además, las hojas de cálculo y los scripts lo aprovechan mal.
+
+🔀 **CSV y .ics**, elegibles con `salas exportar --formato csv|ics`. Cubre los cuatro usos, pero arrastra el mismo coste que la 3️⃣.
+
+➡️ **Te recomiendo 1️⃣**, porque cubre tres de tus cuatro usos (hojas de cálculo, scripts y leerlas sin más) sin ninguna dependencia ni dato nuevo. A cambio, no llegan a tu calendario. Si eso es imprescindible, la opción es 🔀, y antes habrá que decidir cómo se convierte cada franja en horas.

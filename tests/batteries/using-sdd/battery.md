@@ -1,8 +1,8 @@
 # Batería de regresión — `using-sdd`
 
-Puerta de entrada del kit: una frase de dev, vaga y en castellano, en un proyecto con `.docs/sdd/` y superpowers. Cada escenario mide la primera skill que invoca el sujeto (la primera línea `>>> Skill:` de su `tools.txt`), o que no invoca ninguna. El **paso** es la fila de la tabla de puertas de `skills/using-sdd/SKILL.md` que decide la frase: una edición de esa fila lanza el tramo de su paso (`STEPS=<paso>`) más un escenario del fallo que la motiva.
+Puerta de entrada del kit: una frase de dev, vaga y en castellano, en un proyecto con `.docs/sdd/`. Va sin superpowers; `f2` y `f3`, que miden la competencia con `brainstorming`, también con `SUPERPOWERS_DIR` antes de cortar release. Cada escenario mide la primera skill que invoca el sujeto (la primera línea `>>> Skill:` de su `tools.txt`), o que no invoca ninguna. El **paso** es la fila de la tabla de puertas de `skills/using-sdd/SKILL.md` que decide la frase: una edición de esa fila lanza el tramo de su paso (`STEPS=<paso>`) más un escenario del fallo que la motiva.
 
-Se lanza con `tests/headless/battery.sh` (`BATTERY=using-sdd`); el método, en `.docs/sdd/tech-stack.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`) y con 8 turnos como máximo. Dos moldes: `salas` (`mold-salas/`, la app de reservas de la 0014) y `ventas` (`mold-ventas/`, las fichas estáticas de la 0098). Los dos llevan el marcador con la versión del kit que se prueba (`put_kit_marker`).
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=using-sdd`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado y con 8 turnos como máximo. Tres moldes: `salas` (`mold-salas/`, la app de reservas de la 0014) y `ventas` (`mold-ventas/`, las fichas estáticas de la 0098), los dos en la forma de la 3.0.0 (`PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md` en la raíz, `steering/` en `.docs/sdd/`), y `salas-2x` (`mold-salas-2x/`, `salas` en la forma de la 2.x: `mission.md`, `tech-stack.md`, `roadmap.md`…), que solo usa `u1`, cuyo marcador en 2.3.3 pide un proyecto 2.x. Los que no son `salas-2x` llevan el marcador con la versión del kit que se prueba (`putKitMarker`).
 
 `d1` pasa con «ninguna», pero la conducta completa es una sola pregunta sobre qué es y cuánto abarca, con la recomendación primero: se lee en su `texts.txt`.
 
@@ -10,26 +10,35 @@ Se lanza con `tests/headless/battery.sh` (`BATTERY=using-sdd`); el método, en `
 
 | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| i1 | sdd-init | Quiero empezar a trabajar con SDD en este proyecto. | salas | `sdd-kit:sdd-init-brownfield` | 1 | 1/1 | sonnet | 0074, control |
-| c1 | sdd-consult | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | 0074, control |
-| r1 | sdd-roadmap | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Ponte con ello. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
+| i1 | sdd-init | Quiero empezar a trabajar con SDD en este proyecto. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | 0074, control; desde la 0156, una sola init |
+| i2 | sdd-init | Sigue con la init, se cortó ayer. | salas | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | 0156: una init en curso (`sdd-kit.json` con la clave `init`) entra por `sdd-init` |
+| u1 | sdd-upgrade | Actualízame al kit. | salas-2x | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0157: la migración entraba por `sdd-init`, una skill de onboarding (fila 0122); el molde, con migraciones pendientes |
+| c1 | sdd-explore | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | 0074, control; desde la 0161, `sdd-explore` |
+| r1 | sdd-propose | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Ponte con ello. | salas | `sdd-kit:sdd-propose` | 4 | 2/4 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2; patch 0275: acierta ~70 % con cualquier texto (`english-using-templates-green.md`: 11/14 y 9/14), umbral 2/4; desde la 0152, algo grande que hay que hacer entra por `sdd-propose`, que lo parte (`sdd-propose:x1`): 4 de 4, y 3 proponen partir en filas del roadmap |
 | r2 | sdd-roadmap | Te paso las notas de la reunión de hoy con el cliente: quieren reservas recurrentes, ver las salas libres por la tarde y quitar lo del correo. A ver qué hacemos. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
 | r3 | sdd-roadmap | Me han asignado en Azure el 412 (exportar reservas a .ics) y el 415 (máximo 2 reservas por persona). | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
 | r4 | sdd-roadmap | Lo de exportar a calendario tiene que ir antes que los avisos por correo. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | 0074, control |
 | r5 | sdd-roadmap | Apunta en el roadmap lo del filtro por sala, no lo arranques todavía. | salas | `sdd-kit:sdd-roadmap` | 1 | 1/1 | sonnet | `using-sdd-green.md`, control tras la revisión final |
-| f1 | sdd-start-feature | Mete un filtro por sala en el comando libres. | salas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | 0074, control |
-| f2 | sdd-start-feature | Let's build a waitlist for when a room is full. | salas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 1 de 3 |
-| f3 | sdd-start-feature | Es una tontería: que al reservar se pueda poner una nota. Hazlo rápido. | salas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 2 de 3 |
-| p1 | sdd-start-patch | Si cancelo una reserva que no existe me dice «cancelada» igual. | salas | `sdd-kit:sdd-start-patch` | 1 | 1/1 | sonnet | 0074, control |
-| v1 | sdd-start-patch | Pon Guardar y Cancelar de la cabecera en una columna a la derecha, en las dos fichas (pages/pedido-detalle.html y pages/albaran-detalle.html); es solo maquetación. | ventas | `sdd-kit:sdd-start-patch` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2 |
-| c1w | sdd-start-patch | Oculta Borrar si el pedido está facturado y pásalo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-start-feature` | 1 | 1/1 | sonnet | `visual-patch-red.md` (`c1`), control |
-| pc1 | sdd-start-patch | Ticket VEN-31, cambio pedido por producto: Cancelar tiene que llevar al listado de pedidos. Solución fijada en el ticket: en app.js, un listener de click en [data-accion="cancelar"] que haga location.assign('../index.html'), en las dos fichas. | ventas | `sdd-kit:sdd-start-patch` | 2 | 2/2 | sonnet | `patch-lane-red.md` (`p1`): `sdd-start-feature` 4 de 4 |
-| bt1 | sdd-start-feature | Métele un patch rápido: en las dos fichas, avisa al usuario cuando el total del pedido pase de 1.000 €. | ventas | `sdd-kit:sdd-start-feature` | 2 | 2/2 | sonnet | `patch-lane-red.md` (`b2`): control de la puerta trasera |
+| r6 | sdd-roadmap | Dame el prompt de la 0013. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0161: «dame el prompt de la <id>» entraba por `sdd-consult` (`tests/sdd-explore-0161-red.md`, m1) |
+| r7 | sdd-roadmap | Tria lo que hay por triar en la deuda. | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0150: triar entra por sdd-roadmap |
+| r8 | sdd-roadmap | qué sigue | salas | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0194: «qué sigue» entraba por `sdd-explore`, 5 de 5 en su RED |
+| f1 | sdd-propose | Mete un filtro por sala en el comando libres. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control |
+| f2 | sdd-propose | Let's build a waitlist for when a room is full. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 1 de 3 |
+| f3 | sdd-propose | Es una tontería: que al reservar se pueda poner una nota. Hazlo rápido. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | task 0014: `brainstorming` primero 2 de 3 |
+| p1 | sdd-propose | Si cancelo una reserva que no existe me dice «cancelada» igual. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control |
+| v1 | sdd-propose | Pon Guardar y Cancelar de la cabecera en una columna a la derecha, en las dos fichas (pages/pedido-detalle.html y pages/albaran-detalle.html); es solo maquetación. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2 |
+| c1w | sdd-propose | Oculta Borrar si el pedido está facturado y pásalo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | `visual-patch-red.md` (`c1`), control |
+| pc1 | sdd-propose | Ticket VEN-31, cambio pedido por producto: Cancelar tiene que llevar al listado de pedidos. Solución fijada en el ticket: en app.js, un listener de click en [data-accion="cancelar"] que haga location.assign('../index.html'), en las dos fichas. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `patch-lane-red.md` (`p1`): `sdd-start-feature` 4 de 4 |
+| bt1 | sdd-propose | Métele un patch rápido: en las dos fichas, avisa al usuario cuando el total del pedido pase de 1.000 €. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `patch-lane-red.md` (`b2`): control de la puerta trasera |
 | e1 | sdd-end-release | Ya está todo lo de esta versión: hay que cerrar la entrega y mandarle el correo al cliente. | salas | `sdd-kit:sdd-end-release` | 1 | 1/1 | sonnet | 0074, control |
 | s1 | sdd-config | No me gusta que me pares tanto, quiero trabajar con menos preguntas. | salas | `sdd-kit:sdd-config` | 2 | 2/2 | sonnet | `using-sdd-red.md`: a la memoria, 2 de 2 |
 | d1 | duda | Hay que mejorar las reservas, que se quejan los usuarios. | salas | ninguna | 2 | 2/2 | sonnet | `using-sdd-red.md`: `sdd-start-feature` 2 de 2 |
-| t1 | directa | Corrige el typo «recervas» del README. | salas | ninguna | 1 | 1/1 | sonnet | 0074, control |
-| c2 | sdd-start-patch | Cambia «Guardar» por «Guardar y cerrar» y ponlo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-start-patch` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2; desde la 0117, un texto dado literal es petición cerrada |
+| t1 | sdd-propose | Corrige el typo «recervas» del README. | salas | `sdd-kit:sdd-propose` | 1 | 1/1 | sonnet | 0074, control; desde la 0160, carril config |
+| c2 | sdd-propose | Cambia «Guardar» por «Guardar y cerrar» y ponlo a la derecha, en las dos fichas. | ventas | `sdd-kit:sdd-propose` | 2 | 2/2 | sonnet | `visual-patch-red.md`: edición directa 2 de 2; desde la 0117, un texto dado literal es petición cerrada |
+| rf1 | retomar | Retoma la feature. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | ticket de la feature 0010b del template §2: retomó a mano, sin skill; molde en la rama `feature/0020-room-filter` con la Task 1 hecha |
+| rf2 | retomar | Sigue con la Task 2. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: la frase perdió su puerta; mismo molde que `rf1` |
+| rp1 | retomar-patch | Retoma el patch, lo dejé ayer a medias. | salas | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0206: `sdd-start-patch` lo recogía; molde en `patch/0021-cancel-missing` con `patch.md` sin commitear y sin fix |
+| rf3 | retomar-sin-spec | Retoma la feature. | salas | cualquiera | 2 | 2/2 | sonnet | revisión final de la 0116: sin spec ni `patch.md` en la rama, no toca nada y remite a `sdd-propose`; se lee a mano |
 
 ## Procedencia de las reglas
 
@@ -38,16 +47,17 @@ Cada regla de `skills/using-sdd/SKILL.md`, de dónde viene y qué escenario la c
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
 | Overview: prevalece sobre `brainstorming` | task 0014 (GH #1: con «Let's build» y «hazlo rápido», `brainstorming` primero 3 de 6) | f2, f3 |
-| Puerta: sin `.docs/sdd/`, init greenfield o brownfield | router de la 0014 | i1 (brownfield); greenfield sin escenario |
-| Puerta: una pregunta o una duda → `sdd-consult` | router de la 0014 | c1 |
-| Puerta: planificar sin hacerlo todavía, algo grande, notas de reunión, items del gestor (también asignados), reordenar, preparar la release → `sdd-roadmap` | `using-sdd-red.md` (r1, r3: 2 de 2 a `sdd-start-feature`); router de la 0014 | r1, r2, r3, r4, r5; «preparar la release» sin escenario |
-| Puerta: funcionalidad concreta o cambio en el que hay que decidir cómo es, aunque sea pequeño → `sdd-start-feature`, antes que `brainstorming` | task 0014; `patch-lane-red.md` (b1, b2: control de la puerta trasera) | f1, f2, f3, bt1 |
-| Puerta: cambio pequeño con la solución ya fijada (fallo, ajuste o retirada de presentación, petición cerrada) → `sdd-start-patch` | router de la 0014; `visual-patch-red.md` (v1: edición directa 2 de 2); `patch-lane-red.md` (p1: feature 4 de 4) | p1, v1, c1w, pc1, c2 |
+| Puerta: sin `.docs/sdd/`, o con una init en curso, `sdd-init` | router de la 0014; feature 0156 | i1, i2 |
+| Puerta: un proyecto inicializado que quiere ponerse al día con el kit, o acepta la oferta del aviso → `sdd-upgrade` | fila 0122; feature 0157 | u1 |
+| Puerta: una pregunta o una duda → `sdd-explore` | router de la 0014 | c1 |
+| Puerta: planificar sin hacerlo todavía, varias features a la vez, notas de reunión, items del gestor (también asignados), reordenar, preparar la release → `sdd-roadmap` | `using-sdd-red.md` (r3: 2 de 2 a `sdd-start-feature`); router de la 0014 | r2, r3, r4, r5; «preparar la release» sin escenario |
+| Puerta: un cambio de cualquier tamaño —funcionalidad, fallo, ajuste o retirada de presentación, dependencias, CI o configuración, typo o renombrado, investigación que deja medidas— → `sdd-propose`, antes que `brainstorming` (feature 0160: una sola puerta; las filas de feature, patch y edición directa se funden; feature 0152: también algo grande que hay que hacer, que `sdd-propose` parte) | task 0014; `patch-lane-red.md` (b1, b2: control de la puerta trasera); `visual-patch-red.md` (v1 y c2: edición directa 2 de 2); `tests/sdd-propose-0160-red.md` (k1: un cambio de configuración, directo y sin gate, 2 de 2); `using-sdd-red.md` (r1: 2 de 2 a `sdd-start-feature`) | f1, f2, f3, p1, v1, c1w, pc1, bt1, t1, c2, r1 |
 | Puerta: cerrar la entrega → `sdd-end-release` | router de la 0014 | e1 |
 | Puerta: cómo quiere trabajar cada uno → `sdd-config`, nunca la memoria | `using-sdd-red.md` (s1: memoria 2 de 2) | s1 |
-| Puerta: edición sin comportamiento → directa; mover lo que se ve, o cambiar un texto visible por otro dado literal, es patch | router de la 0014; `visual-patch-red.md` (c2: edición directa 2 de 2) | t1, c2 |
-| Regla de duda: una sola pregunta, con la recomendación primero | `using-sdd-red.md` (d1: `sdd-start-feature` 2 de 2) | d1 |
-| Racionalización «Quiere que se haga, así que es una feature» | `using-sdd-red.md` (d1) | d1 |
-| Racionalización «Lo guardo en memoria para próximas sesiones» | `using-sdd-red.md` (s1) | s1 |
-| Racionalización «Solo toco la plantilla: edición directa» | `visual-patch-red.md` (v1, c2) | v1, c2 |
-| Racionalización «Me los han asignado: los hago uno detrás de otro» | `using-sdd-red.md` (r3) | r3 |
+| `Doubt rule`: una sola pregunta, con la recomendación primero | `using-sdd-red.md` (d1: `sdd-start-feature` 2 de 2) | d1 |
+| Racionalización «They want it done, so it's a feature» | `using-sdd-red.md` (d1) | d1 |
+| Racionalización «I'll save it to memory for future sessions» | `using-sdd-red.md` (s1) | s1 |
+| Racionalización «It's a typo or a version bump: a direct edit» | `visual-patch-red.md` (v1, c2); `tests/sdd-propose-0160-red.md` (k1) | t1, c2 |
+| Racionalización «They've been assigned to me: I'll do them one after another» | `using-sdd-red.md` (r3) | r3 |
+| Puerta: «dame el prompt de la <id>» → `sdd-roadmap` | `tests/sdd-explore-0161-red.md`, m1: 2 de 2 entraron por `sdd-consult`; GREEN r6 2/2 | r6 |
+| Puerta: retomar una feature o un patch en pausa → `sdd-implement` | feature 0116: rodeo por `sdd-propose` 4 de 4 con «retoma» | rf1, rf2, rp1 |

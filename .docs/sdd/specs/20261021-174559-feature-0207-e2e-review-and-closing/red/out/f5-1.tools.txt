@@ -1,0 +1,97 @@
+
+>>> Read: <run>/review-final-4b8a6b7.diff
+<<< 0	# Review package: 3e0eac1..HEAD
+1	
+2	## Commits
+3	4b8a6b7 test(invoices): e2e de recordar el filtro
+4	c587396 feat(invoices): la lista recuerda el último estado elegido
+5	
+6	## Files changed
+7	 e2e/0024-remember-filter.spec.ts | 16 +++++++++++++
+8	 e2e/helpers.ts                   |  5 ++++
+9	 playwright.config.ts             |  2 ++
+10	 server/api.js                    | 40 +++++++++++++++++--------------
+11	 src/invoices/InvoiceList.tsx     | 52 +++++++++++++++++++++++-----------------
+12	 5 files changed, 75 insertions(+), 40 deletions(-)
+13	
+14	## Diff
+15	diff --git a/e2e/0024-remember-f
+
+>>> Bash: cd "<run>/repo" && git diff --stat -w --ignore-cr-at-eol 3e0eac1 HEAD -- server/api.js src/invoices/InvoiceList.tsx; git show 3e0eac1:server/api.js | file - ; git show HEAD:server/api.js | file -; git show 3e0eac1:e2e/helpers.ts | file -
+<<<  server/api.js                |  4 ++++
+ src/invoices/InvoiceList.tsx | 14 +++++++++++---
+ 2 files changed, 15 insertions(+), 3 deletions(-)
+/dev/stdin: JavaScript source, Unicode text, UTF-8 text, with CRLF line terminators
+/dev/stdin: JavaScript source, Unicode text, UTF-8 text
+/dev/stdin: JavaScript source, ASCII text, with CRLF line terminators
+
+=== RESULTADO (3 turnos, 0.1930582 $)
+### Strengths
+- The change is small and does what the commit says: the preference is saved on the server, restored on mount, and covered by an e2e test of the full round trip.
+- `Status` is extracted as a type and the component stays a function with hooks, as required.
+- The new `/api/prefs/:key` endpoints reuse the structure and style of the existing ones in `api.js`.
+- UI text is in Spanish.
+- The e2e test waits with `expect.poll` for the server to hold the value before navigating, so it does not depend on the order of the PUT and the navigation.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+
+1. **`server/api.js:112-114`, `src/invoices/InvoiceList.tsx:153,157`: the preference is global, not per user.**
+   - `prefs` is keyed only by the preference name. The clipboard right above it is keyed by `x-user`, and that header is the existing convention.
+   - The component sends no `x-user` in either call.
+   - One user's filter is therefore restored for every other user, and the last writer wins.
+   - A person who opens the invoice list would reasonably expect to see their own filter, not someone else's.
+   - Fix: key the map by `${user}:${key}` and send `x-user` from the client the way the rest of the app does. Then `savedStatus` in `e2e/helpers.ts:53` needs the header too.
+
+2. **`server/api.js` and `src/invoices/InvoiceList.tsx`: whole-file diffs from a line-ending change.**
+   - `api.js` was CRLF and is now LF, which `file` confirms on both revisions.
+   - With `--ignore-cr-at-eol` the real change is 4 lines in `api.js` and about 14 in `InvoiceList.tsx`, but the diff shows 40 and 52.
+   - Besides the noise, it hides the real change from review and from `git blame`.
+   - Fix: restore CRLF in both files (or normalise the repo in its own commit).
+
+3. **`src/invoices/InvoiceList.tsx:152-154`: no error handling, no validation, and a race on load.**
+   - The GET has no `.catch`. If the server is down or returns a 404 with an empty body, `r.json()` rejects and the promise goes unhandled.
+   - `saved.value` is trusted without checking it against `STATUSES`. A stale or invalid value puts the `<select>` on an option that does not exist, and `shown` is then empty.
+   - If the user changes the filter before the GET returns, the late response overwrites their choice.
+   - The PUT in `choose` (line 157) also has no `.catch`.
+   - Fix: check that the value is in `STATUSES` before calling `setStatus`, add `.catch`, and ignore the response if the user has already chosen (a flag, or an `AbortController` in the cleanup).
+
+4. **`playwright.config.ts:7-8`: timeouts raised without a stated reason.**
+   - The test timeout goes to 90 s and the `expect` timeout to 20 s, for every spec in the project.
+   - This looks like it hides slowness or flakiness, and it makes real failures take longer to appear.
+   - It is not tied to the feature.
+   - Fix: revert it. If a specific test needs more time, set it on that test.
+
+#### Minor (Nice to Have)
+
+1. **`e2e/0024-remember-filter.spec.ts:24-31`: server state is not reset.**
+   - The first test leaves `cobrada` saved on the server. With `workers: 3`, other specs that open `/facturas` can inherit it.
+   - Reset the preference in a `beforeEach` or `afterEach`.
+
+2. **`e2e/0024-remember-filter.spec.ts:33-36`: the "cuatro opciones" test.**
+   - It checks existing behaviour, not the new feature, and it hard-codes a count.
+   - Its name also does not describe a behaviour.
+   - Remove it, or rename it to say what it protects.
+
+3. **`src/invoices/InvoiceList.tsx:153,157`: the URL `/api/prefs/invoice-status` is repeated.**
+   - It appears twice here and a third time in the helper. Two occurrences are tolerable; name a constant if a third appears in the component.
+
+### Declined to judge
+- Whether remembering the filter is the right scope (per user, per device, or in the session): that belongs to the Spec axis. I only flag that the clipboard sets a per-user precedent.
+- Whether the server-side preference storage belongs in `api.js`, which also holds clipboard and cells: that is the Architecture axis.
+- Whether the e2e test was written first and is a RED test that must not be edited: I cannot tell from the package. I did not judge the test content on that basis.
+- The in-memory `Map`, which loses its data when the server restarts: this matches the existing storage in the file.
+
+### Recommendations
+- Run the full e2e suite after fixing issues 1 and 3. That is the main change in behaviour, and the heavy checks are for the main thread.
+- Check line endings with a `.gitattributes` or an editorconfig so the CRLF change does not come back.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works for a single user. The shared preference across users, the unhandled fetch with its load race, the unrelated CRLF rewrite and the global timeout increase should be fixed before merging.

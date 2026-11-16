@@ -1,0 +1,48 @@
+--- [3]
+### Strengths
+- The change is small and does one thing. `saveRefund` is 3 lines, well under the 30-line limit.
+- It uses `Math.trunc` to drop the cents, and the comment states a reason (the bank rejects cents) instead of repeating the code.
+- Nothing in it breaks the "interface text in Spanish" constraint, because it adds no UI text.
+
+### Issues
+
+#### Critical (Must Fix)
+- **`src/app.js:29`: the `iban` parameter goes through `Math.trunc`.**
+  - **What's wrong:** an IBAN is a string such as `"ES91…"`, so `Math.trunc("ES91…")` returns `NaN`. The comment says the value can't have cents, so the parameter is almost certainly an amount that was named `iban`. Either the name is wrong or the wrong field is being truncated.
+  - **Failure scenario:** `saveRefund('A1', 'ES9121000418450200051332')` returns `{ room: 'A1', iban: NaN }`.
+  - **Fix:** take both values, for example `saveRefund(room, iban, amount)` returning `{ room, iban, amount: Math.trunc(amount) }`. If only the amount was meant, rename the parameter and field to `amount`.
+
+#### Important (Should Fix)
+- **`src/app.js:28`: the comment cites `capabilities/refunds.md`.**
+  - **What's wrong:** "Code constraints" forbids comments that cite documents, whatever the reason given. The path also goes stale if the document moves.
+  - **Fix:** keep the reason and drop the citation: `// El banco rechaza las devoluciones con céntimos`.
+  - **Related:** the comment sits above a line that truncates, but it doesn't say why truncating is right rather than rounding. That choice matters for money.
+- **`src/app.js:27`: `saveRefund` has no test.**
+  - **What's wrong:** it is a new public function, and the task reports show none. A test would have caught the `NaN` above.
+  - **Judgement:** Clean Code, "a test for every public method" (possible).
+  - **Fix:** add a test for a decimal amount, an integer amount and a negative amount.
+  - **Related:** the function validates nothing. A non-number, a negative amount or a missing value passes straight through and can produce `NaN`.
+- **`src/app.js:27`: despite its name, `saveRefund` stores nothing.**
+  - **What's wrong:** it returns an object and has no side effect, and nothing in the diff calls it. The commit message says "guardar la devolución" (save the refund).
+  - **Judgement:** Clean Code, "names reveal intent" (possible).
+  - **Fix:** either wire it to storage or rename it, for example `buildRefund`.
+
+#### Minor (Nice to Have)
+- **`src/app.js:25-27`: the export is placed after the top-level `if (command) console.log(...)`.**
+  - **What's wrong:** the function is hoisted, so it works. It is still declared after the module's side-effect entry point, and the rest of the file keeps functions above that line.
+  - **Fix:** move `saveRefund` above `run`.
+
+### Recommendations
+Say whether `iban` is an input or an output, and make the function signature reflect that. Run the unit suite after adding the tests. I didn't run it, as instructed.
+
+### Declined to judge
+- Whether truncating (rather than rounding or rejecting) matches what `capabilities/refunds.md` requires: that is the Spec axis, and the document is not in the package.
+- Whether `saveRefund` should be reachable from `run` through a new command: that is the Spec axis and the Architecture axis.
+- Whether the `NaN` result is caught somewhere outside the package: no caller appears in the package.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** `Math.trunc` is applied to a field named `iban`, which yields `NaN` for any real IBAN, and the function has no tests. The comment also cites a document, which "Code constraints" forbids.
+

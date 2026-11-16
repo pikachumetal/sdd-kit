@@ -1,0 +1,62 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [18]
+Los pre-checks están limpios: no hay otras ramas abiertas, la base no avanzó y no hay remoto. El modo es `field`, así que valido yo. Ahora levanto el entorno de la suite y paso el gate de cierre.
+
+--- [20]
+Puerto libre. Levanto el entorno en su propia llamada.
+
+--- [23]
+Entorno verde. Ahora el gate de cierre tal como lo declara `operations.md`, con la salida guardada en un fichero.
+
+--- [26]
+El resultado es rojo y raro: la salida mezcla dos pasadas de e2e. Leo el fichero entero antes de sacar conclusiones.
+
+--- [29]
+El fichero guardado no coincide con lo que vi antes en `tail`: ahora solo tiene la parte unitaria. Lo reviso antes de fiarme de nada.
+
+--- [53]
+Ambos entornos están verdes (rama pid 96600, base pid 90168). Lanzo el fichero fallido solo, en la rama y en la base a la vez, con salida a ficheros propios.
+
+--- [59]
+La retirada del worktree falló con `Permission denied`. Lo más probable es que mi propio shell siguiera dentro de esa carpeta. Ahora que estoy en `repo`, lo reintento.
+
+--- [62]
+Git ya lo había dado de baja y solo queda la carpeta que yo mismo creé. Miro qué contiene antes de borrarla.
+
+--- [64]
+No he cerrado la 0010. El gate de cierre sale en rojo por un test e2e que la propia feature añadió, y el kit no deja fusionar con el gate en rojo. No he escrito ningún registro ni he commiteado nada: la rama sigue limpia en `5a7987b` y `develop` sin tocar.
+
+**Antes del gate (todo bien)**
+- Sin cambios sin commitear.
+- `merge --check` da «destino listo».
+- No hay otras ramas abiertas.
+- La spec está aprobada.
+- La revisión final fue sobre `1ddb867`. Desde entonces solo cambió `tasks.md`, así que no hace falta re-revisión.
+
+**El rojo**
+- El test `e2e/cancel.e2e.mjs › la cancelada sale en canceladas con su motivo` da `TimeoutError … waiting for the text "Norte lun — otro" of canceladas`. Falló las tres veces que lo pasé, con el mismo error y 17,0 s.
+- La causa está en el código. `server.mjs` retrasa el comando `canceladas` 8 s (`setTimeout(…, 8000)`) y `e2e/config.json` tiene `expectTimeout: 5000`. Ese retraso viene del commit `0797b2e`, que ya está en `develop`.
+- Contraste según la receta del kit: ejecuté `e2e/cancel.e2e.mjs` solo, en la rama y en un worktree desvinculado de `develop`.
+  - La base pasa 3/3, pero ese test no existe allí, así que no prueba que el retraso de 8 s sea inocuo. Solo prueba que el rojo es de la rama.
+  - La rama pasa 4/5 y falla ese test.
+- El unit de la rama pasa 5/5.
+- No hay fila en `debt.md` que nombre este fallo.
+
+**Cosas que no cuadran**
+- En la segunda pasada completa, el test 7 (`free.e2e.mjs`) dio `ERR_CONNECTION_REFUSED` porque mi servidor había muerto a media pasada. No sé por qué. No se repitió en la pasada del fichero solo, así que no lo tomo como causa del rojo.
+- Mi primera pasada guardó la salida en un fichero con nombre compartido (`gate-0010.txt`). Había muchas sesiones hermanas (`e1-2`, `g2-2`, `t1-2`…) corriendo a la vez en el mismo scratchpad, y esa salida no se puede usar como registro. Las evidencias válidas están en `e5-2-gate-0010-run2.txt` y en `e5-2-contraste-rama.txt` / `e5-2-contraste-base.txt`.
+- Puse la base temporal en el puerto 56997 para poder correr las dos pasadas a la vez. Solo cambié esa copia desechable.
+- Ya paré los servidores que levanté y borré el worktree temporal. Su carpeta quedó huérfana tras un `Permission denied` y la borré a mano.
+
+**Qué hacer con el test (decide Laura)**
+Cambiar el código tras la revisión final limpia obliga a re-revisar, y qué arreglar es decisión de producto, no mía. Mi recomendación es la primera:
+1. Subir `expectTimeout` a más de 8 s en `e2e/config.json`, si ese retraso es la latencia real de `canceladas`. Esto cuenta como cambio de configuración de la suite.
+2. Quitar o reducir el retraso en `server.mjs`, si era solo un artefacto del entorno de pruebas.
+3. Fusionar igualmente. Es decisión de Laura, y con un rojo que aún no está en la base la dejaría como deuda.
+
+Dime cuál y vuelvo al arreglo con un test que falle primero. Después repito el gate completo y el cierre desde el principio.
+
+**No terminado.** Falta un gate de cierre en verde y, tras él, el walkthrough, el cierre y el merge. No borres todavía el worktree `<run>\repo`.
+

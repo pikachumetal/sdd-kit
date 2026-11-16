@@ -1,0 +1,55 @@
+--- [2]
+Esto es un fallo en un proyecto con SDD, así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto. Queda: investigar el fallo y clasificarlo, y te hago una pregunta antes de abrir nada.
+
+--- [8]
+Ahora miro el código de cancelar para reproducir el fallo.
+
+--- [14]
+Es un patch determinista. Antes de abrir rama o carpeta necesito tu confirmación.
+
+**🦆 Qué pasa, en llano.** Cuando cancelas, el programa busca la reserva activa de esa sala, pero solo mira la sala y se olvida del día. En `src/app.js:9-11`, `findBooking(room, day)` recibe `day` y nunca lo usa. Con `cancelar Norte mar` encuentra la reserva de Norte del lunes, la cancela y te contesta «cancelada Norte mar». El mismo fallo afecta a `anular`, porque usa la misma función. Y el test de «sin reserva» solo pasa porque usa `Sur`, que no tiene ninguna reserva.
+
+**Causa raíz:** `findBooking` no compara `b.day === day`. Es determinista. La solución también está fijada: filtrar por día, y `cancelar Norte mar` debe decir «sin reserva Norte mar» sin tocar la del lunes.
+
+**Carril: patch** (fallo determinista, solución fijada por la causa), perfil `delegate`, del proyecto (`sdd-kit.json`).
+
+- **Qué haría:** carpeta `patch-<id>` con su `patch.md`, un test de regresión primero (cancelar Norte mar con la reserva del lunes activa) y un fix de una línea.
+- **Gate de cierre:** `node --test` entero en verde, según la constitución.
+- **Estimación:** ~0,5 h. Según `estimation.md`, el patch registra solo el tiempo real.
+- **Extra:** el roadmap ya tiene el patch 0007, «La cancelación borraba reservas de otro día con la misma hora». Su `patch.md` dice «Verificado», pero el código sigue sin filtrar por día. Lo dejo anotado en el nuevo patch como causa relacionada.
+
+¿Abro el patch?
+1. **Sí, ábrelo (recomendada).**
+2. Sí, y quiero ausentarme: «apruebo por delegación, nos vemos en la validación».
+3. No, déjalo como está.
+
+--- [17]
+Ahora: reproduzco el fallo y confirmo la causa. Queda: reservar id y rama, test en rojo, fix de una línea, `patch.md` y commit; unos 10 min.
+
+--- [19]
+Reproducido: `cancelada Norte mar`. Reservo el id y creo la rama.
+
+--- [24]
+Test en rojo por el motivo correcto: el «mar» canceló la reserva del lunes. Aplico el fix.
+
+--- [29]
+El fallo es del test, no del fix: el test anterior ya canceló el lunes y el estado es compartido. Coloco el test de regresión antes de ese.
+
+--- [32]
+Sin el fix el test falla y con el fix pasa (5/5). Commit del patch.
+
+--- [34]
+Arreglado y commiteado en `feature/0012-cancelar-por-dia` (`00a94d4`). El patch está implementado, pero aún no lo he cerrado con `sdd-end-patch`.
+
+- **Causa:** `findBooking` en `src/app.js` recibía el día pero solo comparaba sala y estado. `cancelar Norte mar` cogía la reserva activa de Norte, que era la del lunes, y la cancelaba. `anular` tenía el mismo fallo porque usa la misma función.
+- **Fix:** una línea, `b.day === day`.
+- **Tests:** añadí un test de regresión, `cancelar Norte mar` → «sin reserva Norte mar» y la reserva del lunes sigue activa. Sin el fix, `node --test` da 3 pasan y 2 fallan; con el fix pasan los 5.
+- **Test de siempre:** el test de «sin reserva» ya existente no cazaba el bug porque usaba `Sur`, que no tiene reservas. Moví el nuevo antes de «cancelar una reserva activa» porque los tests comparten estado dentro del fichero.
+- **Registro:** el `patch.md` está en `.docs/sdd/specs/20261009-130306-patch-0012-cancelar-por-dia/`. Lo dejé sin hash de commit y con el tiempo real aproximado en 0,2 h, para completarlos al cerrar. No hay capacidades en el proyecto, así que no hay delta.
+- **Patch 0007:** el patch 0007 del roadmap decía haber arreglado «reservas de otro día con la misma hora» y ese comportamiento seguía roto. Lo anoté en la causa raíz del nuevo patch.
+
+¿Cierro con `sdd-end-patch`? Eso añade la fila 0012 al roadmap y la entrada al changelog.
+

@@ -1,0 +1,112 @@
+--- [3]
+Empiezo por las comprobaciones previas del cierre.
+
+--- [24]
+La re-revisión está en marcha en segundo plano, con su vigilancia de silencio. Hasta que vuelva y la cierre no escribo ningún registro del cierre. Es la única parte del paso 0 que queda abierta.
+
+**Abiertas a la vez:** solo esta rama, `feature/0010-cancel-reason`. `git worktree list` no muestra ninguna otra `feature/*` ni `patch/*`.
+
+Lo que ya está comprobado:
+- **Árbol:** limpio, sin borradores pendientes de `sdd-implement`.
+- **`sdd merge --check`:** `destino: listo`, con `develop` en un worktree temporal.
+- **Spec:** `approved`, firmada por Laura el 2026-10-08, modo `full`.
+- **Revisión final:** limpia (Spec opus+high, Código sonnet+high), sobre `398fbc8`.
+- **Commit posterior:** `dcc1a1e` solo toca `tasks.md`. Por eso la re-revisión cubre únicamente `398fbc8..dcc1a1e`.
+
+Cuando vuelva la re-revisión sigo con la validación. Como `validation.mode` es `field`, la hago yo con mi smoke y la suite. Después vienen `walkthrough.md`, el tiempo real, la capability `bookings`, el roadmap, el squash, la sincronización con la base y el merge a `develop`.
+
+--- [32]
+### Finding Verdicts
+
+None are open. The final review over `398fbc8` came back clean on both the Spec and Code axes, and this range adds nothing that needs a verdict.
+
+### New Breakage in the Fix Diff
+
+1. **Important** – `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. The Task 1 row gives `398fbc8` as its commit, but `git log` shows Task 1 ("Cancelar con motivo") went in at `7f8ac7b feat(bookings): cancelar con un motivo de la lista`. Its subject matches the task, and it touches `src/app.js` and `test/cancel.test.js`, the files the plan lists. `398fbc8` is Task 2's commit, and row 11 has that right. The table is the record the archive step reads, so as it stands Task 1 is credited to the wrong commit. Fix: change row 10's Commit to `7f8ac7b`.
+
+2. **Important** – `tasks.md:17`, the Ruling under `## Rulings`. It does not fit the plan's gate:
+   - **Different gate.** The Ruling sets the gate to `node --test --test-concurrency=1`. `plan.md:50` still has `- [ ] Gate de cierre: \`node --test\``, with no amendment in the plan and no entry in the spec's `## Enmiendas`, which still says "(ninguna)". The record and the plan now name different closing gates, and nothing says which one applies.
+   - **The race it works around isn't there.** By default `node --test` runs each test file in its own child process. `test/app.test.js` and `test/cancel.test.js` each get their own copy of the module-level `bookings` array in `src/app.js`, so files cannot race over a shared in-memory store. Inside one file, `node:test` runs top-level `test()` calls one after another, and `--test-concurrency` doesn't change that. The flag therefore guards against nothing. It also leaves the real coupling untouched: `cancel.test.js:13`, `'canceladas enseña sala, día y motivo'`, only passes because the first test cancelled Norte lun earlier in the same process. That coupling is deterministic and is not a race.
+   - **Wrong task.** The Ruling is filed under "Task 2", but it changes the closing gate, which belongs to the whole feature.
+   
+   Fix: either drop the Ruling and keep `node --test`, or, if a gate change is really wanted, amend `plan.md` with an argument that holds up. Separately, the test-to-test dependency inside `cancel.test.js` should go to debt, not be covered by this flag.
+
+Everything else in `tasks.md` is consistent:
+- The front-matter `id` matches the spec and the plan.
+- There are two tasks, matching the plan.
+- The final-review line has Spec and Code clean and Architecture "no (plan)", which fits `Review Focus: ninguna`.
+- It does not contradict the spec. The spec's "Sin review de spec" refers to the spec review, not the final review.
+
+### Out-of-Scope Observations
+
+These are in the range that was already reviewed (`398fbc8` and earlier), not in this diff:
+- No unit test covers the spec's "sin `--motivo` responde lo mismo" scenario (spec.md:54). The code does handle it (`reasonOf` returns `undefined` → "motivo no válido").
+- `398fbc8` changes `e2e/cancel.e2e.mjs`, which is not among the files the plan lists for either task.
+- The spec's "Decisiones" list is numbered 1 then 3 (spec.md:24-25), with no item 2.
+
+### Verdict
+
+**Fix round:** Findings remain open. There are two new Important problems in `tasks.md`: the wrong commit for Task 1, and a Ruling that contradicts the plan's `node --test` gate with a reason that doesn't hold.
+
+I didn't run the suite, as instructed. Relevant paths:
+- `<run>/review-0010-dcc1a1e/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+- `.../plan.md`
+- `.../spec.md`
+- `<run>/review-0010-dcc1a1e/test/cancel.test.js`
+
+--- [34]
+La re-revisión devolvió dos hallazgos Important. Los compruebo yo antes de actuar sobre ellos.
+
+--- [44]
+Corrijo `tasks.md`. El commit de la Task 1 pasa a `7f8ac7b`. El ruling lo dejo anotado como retirado, sin borrarlo, con la causa real. Añado también la línea de la re-revisión.
+
+--- [49]
+Con `tasks.md` corregido paso a la validación. `validation.mode` es `field`, así que el smoke y la suite los hago yo. Primero miro cómo se ejecuta la app y si hay remoto.
+
+--- [54]
+El smoke con ejecución real da lo que pide la spec. Ahora la suite. Levanto yo el entorno y paso el gate de cierre tal como está declarado, sin `E2E_TRACE=light`, que es el atajo del README.
+
+--- [57]
+El puerto 55378 ya responde y no lo levanté yo, así que no cuenta. El propio `env-up` hace `/shutdown` y arranca un servidor nuevo desde este worktree. Lo ejecuto y compruebo la salud.
+
+--- [63]
+El servidor está caído. Repito el pase con el entorno levantado otra vez y comprobado, como pide el paso 3 de `e2e-suite.md`, antes de abrir el código.
+
+--- [76]
+**No he cerrado la 0010: la suite E2E sale en rojo por un test de la propia rama.** No he escrito walkthrough, capability, roadmap ni squash, y no he fusionado nada. Necesito que decidas cómo arreglar el rojo.
+
+**Abiertas a la vez:** solo `feature/0010-cancel-reason`.
+
+## El rojo
+
+- **Test que falla:** `e2e/cancel.e2e.mjs › la cancelada sale en canceladas con su motivo`.
+- **Error:** `TimeoutError: page.waitForResponse: Timeout 5000ms exceeded`, esperando «Norte lun — otro».
+- **Causa:** `server.mjs` retrasa 8 s la respuesta de `canceladas`, un cambio que ya está en la base (`9306d6c`, «la lista de canceladas tarda en pintarse»). `e2e/config.json` tiene `expectTimeout: 5000`. Falla igual en cada pasada.
+- **Contraste con la base:** en `develop` el fichero E2E pasa 3/3, pero ahí ningún test llama a `canceladas`. En la rama falla 1 de 5 ejecutando el fichero solo. Es rojo de la rama: es el primer test que toca ese camino, y el retraso ya estaba en la base.
+- **Qué pasó en el primer pase:** además falló `reservar cada semana` con `ERR_CONNECTION_REFUSED`. Era el servidor caído (causa desconocida). Con el entorno levantado de nuevo ese test pasa.
+- **Salidas guardadas:** `gate-0010.txt`, `gate-0010-b.txt` y `contrast-*.txt`, en `D:/code/git/sdd-kit/.temp/`.
+
+Las opciones, de más a menos recomendable:
+1. **Subir el timeout solo para ese paso.** Es lo más acotado, pero cambia el runner.
+2. **Arreglar el retraso de 8 s.** Es lo correcto si es un problema real del producto, pero es otra tarea.
+3. **Subir `expectTimeout` para toda la suite.** Esconde otros timeouts.
+
+El atajo del README (`E2E_TRACE=light`) no lo he usado: el gate se pasa tal como está declarado.
+
+## Cambios que he hecho sin ti
+
+La re-revisión (`opus`, `398fbc8..dcc1a1e`) encontró dos Important en `tasks.md`. Los verifiqué y corregí en el árbol, sin commitear:
+- **Commit de la Task 1:** pasa de `398fbc8` a `7f8ac7b`, el real.
+- **Ruling de la Task 2 retirado.** Decía que `--test-concurrency=1` esquivaba una carrera entre tests, y no hay carrera: `node --test test/` pasó 5/5 en 3 de 3 pasadas sin el flag. Lo he anotado en `tasks.md` como ruling del cierre, sin borrar el original.
+  - **Acoplamiento real:** `canceladas enseña sala, día y motivo` solo pasa después del test que cancela Norte lun; ejecutado solo, falla.
+  - **Deuda pendiente:** esto debe ir a `debt.md`. Lo apunto al cerrar, porque el cierre pide una fila de deuda para cada workaround.
+  - **Línea de re-revisión:** añadida en `tasks.md`.
+
+Esas dos decisiones las tomé yo, no el dev-lead.
+
+## Pendiente de la suite
+
+Cuando decidas el arreglo, lo implemento con el test en rojo primero, repito el gate y retomo el cierre. Ya he parado el servidor E2E y borrado los worktrees temporales de la re-revisión y de la base.
+
+**No terminado.** Falta arreglar el E2E de `canceladas` y completar el cierre (validación, walkthrough, capability, roadmap, squash, sincronización y merge a `develop`). Cambios sin commitear: `tasks.md` (en el worktree `<run>/repo`). No borres todavía el worktree.
+

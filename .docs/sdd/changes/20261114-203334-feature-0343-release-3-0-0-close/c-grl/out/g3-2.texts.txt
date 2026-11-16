@@ -1,0 +1,47 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar el cambio y hacerte la primera pregunta de diseño, ~2 min.
+
+--- [17]
+Ahora: he leído el contexto, reservado la id 0010 y creado la rama `feature/0010-lista-espera`. Falta el diseño. Queda: la entrevista (una pregunta por turno), la spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme si algo no cuadra):
+- `salas` es una CLI tuya, de un solo usuario, para reservar salas del coworking. Hoy hay dos salas (Norte y Sur), `libres <franja>` lista las libres y `reservar` solo tiene la variante `--cada-semana`.
+- Quieres que, cuando intentes reservar una sala y esté ocupada en esa franja, la herramienta te apunte en una lista de espera para esa sala.
+- La 0008 (avisos por correo) toca `src/correo.js` y está pendiente. No sé si quieres que la lista de espera avise por ese canal. No lo doy por hecho.
+- No he encontrado capabilities ni specs previas sobre una lista de espera. Prevo unas 2 o 3 tasks, así que no propongo dividirla.
+
+❓ **¿Qué debe pasar cuando se libera la sala?**
+
+Es la decisión que más condiciona el resto: de ella depende si hace falta guardar datos, avisar a alguien y cómo se muestra la cola.
+
+1️⃣ **Solo se apunta y se consulta.** `reservar Norte` con Norte ocupada devuelve `Norte ocupada; en espera (1.º)`. Con `espera Norte` ves tu posición. Al cancelar la reserva no pasa nada automático: miras la cola y reservas tú.
+2️⃣ **Se apunta y se promociona sola.** Al cancelar la reserva que ocupaba la sala, la primera persona de la cola obtiene la reserva y la salida lo dice: `cancelada lun 10:00; Norte pasa a <quien esperaba>`. Cuesta más: hay que decidir el orden y qué pasa con las franjas semanales.
+3️⃣ **Se apunta y se avisa por correo.** Igual que la 1️⃣, pero al liberarse la sala se manda un correo. Depende de la 0008, que aún no existe.
+
+➡️ **Recomiendo 1️⃣**, porque eres la única persona que usa la herramienta y la cola sirve para saber cuándo reintentar. En la 2️⃣ no hay a quién promocionar más que a ti mismo, y la 3️⃣ depende de una feature sin hacer. A cambio, tienes que consultar tú la lista.
+
+Antes de decidir, una duda abierta: ¿para qué quieres la lista de espera, qué harás con ella cuando la sala esté ocupada?
+
+--- [19]
+Perfil y carril confirmados: feature en modo full, con `delegate` del proyecto.
+
+Tu motivo cambia mi recomendación anterior. Con la 1️⃣ de antes (apuntarte y consultar la posición) seguirías mirando a mano cada rato, justo lo que quieres evitar. La descarto.
+
+Dato que condiciona el diseño: `src/app.js` guarda las reservas en memoria y cada ejecución de la CLI empieza de cero. Una cola solo sobrevive entre comandos si se guarda en algún sitio. Eso lo decidiremos después, cuando sepa qué debe hacer la cola.
+
+❓ **¿Cómo quieres enterarte de que Norte se ha liberado?**
+
+1️⃣ **Esperar en el terminal.** `esperar Norte 10:00-12:00` se queda comprobando y termina con `Norte libre: 10:00-12:00` cuando se libera. No reserva nada por ti. Sustituye tus consultas a mano, pero te ocupa un terminal.
+2️⃣ **Reserva automática.** Te apuntas con `reservar Norte 10:00-12:00` y, cuando se libera, la herramienta la reserva por ti. La próxima vez que ejecutes algo ves `Norte reservada para ti: lun 10:00-12:00`. No tienes que vigilar nada, pero puedes acabar con una reserva que ya no quieres.
+3️⃣ **Correo.** Te llega un correo al liberarse. Depende de la 0008, que aún no existe.
+
+➡️ **Recomiendo 1️⃣**, porque quita el sondeo manual sin reservar nada en tu nombre y no depende de ninguna otra feature. A cambio, tienes un terminal abierto mientras esperas.
+
+¿Cuál eliges?
+

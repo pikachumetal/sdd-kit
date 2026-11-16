@@ -1,0 +1,48 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [21]
+Lancé la re-revisión del tramo d157c75..2931179 en segundo plano. Hasta que vuelva y quede cerrada, no escribo ningún registro del cierre.
+
+Lo que he comprobado hasta ahora:
+- **Árbol limpio y destino listo.** `git status` sale vacío y `merge --check` termina con exit 0. Fusionará en `develop`.
+- **Sin otras ramas abiertas.** `git worktree list` solo muestra esta.
+- **Spec aprobada.** La firma es de Laura, 2026-10-08, y el modo es `full`.
+- **Dos cosas a corregir en el cierre.** En `tasks.md`, la Task 1 cita d157c75 y debería citar 708c0da. Además, la spec numera sus decisiones «1» y «3», sin «2».
+- **Versión del kit.** El proyecto pide el kit 3.0.0 y esta sesión cargó el 2.3.4, según el aviso de inicio. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code. De momento sigo con la skill cargada.
+
+Cuando llegue el veredicto, anoto la `Re-revisión:` en `tasks.md`. Después sigo con la validación, el walkthrough, el roadmap y el merge.
+
+--- [29]
+### Hallazgos del tramo
+- Important, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: la columna Commit de la Task 1 («Cancelar con motivo») pone `d157c75`, pero esa task está en `708c0da` («feat(bookings): cancelar con un motivo de la lista»). Ese commit añade `reasons`, `reasonOf`, el nuevo `cancelBooking(room, day, reason)` y los dos tests de `test/cancel.test.js`. `d157c75` es el commit de la Task 2 (listado `canceladas`). Tal como está, el registro no dice en qué commit está la Task 1. Debe poner `708c0da`.
+- Important, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:17`: el Ruling de la Task 2 dice que el gate usa `node --test --test-concurrency=1`, pero el commit que cubre (`d157c75`) no cambia ningún gate. Solo toca `e2e/cancel.e2e.mjs`, `src/app.js` y `test/cancel.test.js`. El flag `--test-concurrency` no aparece en ningún sitio del repo salvo en esta línea. Los gates siguen así: `package.json` tiene `"test": "node --test test/"`, `.docs/sdd/steering/operations.md:14-15` tiene `node --test test/ && node e2e/run.mjs` y `node --test test/`, y `plan.md:50` tiene `node --test`. El Ruling describe un arreglo que no existe en el código. Hay que quitarlo, o aplicar el cambio de gate en un commit propio y citarlo.
+
+El resto cuadra:
+- La línea `Revisión final:` (`tasks.md:13`) dice que la revisión fue sobre `d157c75`, que es lo que pasó.
+- `2931179` solo crea `tasks.md` (17 líneas) y no toca código ni tests.
+
+### Veredicto
+**Re-revisión:** con hallazgos abiertos. Quedan dos:
+1. `tasks.md:10`: el commit de la Task 1 debe ser `708c0da`, no `d157c75`.
+2. `tasks.md:17`: el Ruling dice que el gate tiene `--test-concurrency=1`, pero ni `d157c75` ni ningún otro sitio del repo lo tiene.
+
+--- [34]
+No he cerrado la 0010: la re-revisión del último commit encontró dos fallos en `tasks.md`, y uno necesita tu decisión. Todavía no he escrito ningún registro ni he commiteado nada. El árbol sigue limpio.
+
+El commit 2931179 se añadió después de la revisión final, que era sobre d157c75. Es solo `tasks.md` (17 líneas) y no tenía `Re-revisión:`, así que el cierre exigía revisarlo. Los dos hallazgos son de nivel Important:
+
+1. **Commit de la Task 1 equivocado.** `tasks.md:10` cita d157c75, pero la Task 1 («cancelar con motivo») está en 708c0da. d157c75 es la Task 2. Lo corrijo yo, porque es mecánico.
+2. **Un Ruling describe algo que no existe.** `tasks.md:17` dice que el gate usa `node --test --test-concurrency=1` para esquivar una carrera de tests sobre el almacén compartido.
+   - **Dónde aparece.** Ese flag no está en ningún otro sitio del repo. `package.json`, `operations.md` y el plan usan `node --test test/`, y d157c75 no toca ningún gate.
+   - **Qué pasa sin él.** Acabo de correr `node --test test/` sin el flag y salen 5 de 5 en verde.
+   - **Qué pide el cierre.** Ese Ruling pasaría al walkthrough como «decisión tomada sin el dev-lead». No quiero copiar al registro algo que el código no hace.
+
+Me falta saber qué hago con el punto 2. Mi recomendación es la primera:
+- **A (recomendado):** quito el Ruling de `tasks.md`. La suite pasa sin el workaround y el cierre usa el gate documentado. La carrera nunca se reprodujo en este repo, así que no abro fila de deuda.
+- **B:** el workaround era real y se perdió al commitear. Lo aplico en un commit propio, con el flag en `operations.md` y en `package.json`, y lo cito en el Ruling.
+
+Con tu respuesta sigo con el cierre. Antes de cerrar necesito además que me digas qué probaste a mano y que funciona. En `validation.mode: field` la validación la hago yo con el smoke y la suite. Tras el merge sin conflictos, hago la fusión en `develop` sin push, porque `merge.push` es `false`.
+
+El aviso del kit sigue en pie: el proyecto pide el 3.0.0 y esta sesión cargó el 2.3.4.
+

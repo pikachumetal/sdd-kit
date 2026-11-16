@@ -1,0 +1,110 @@
+--- [4]
+Let me look at what exists in the project.
+
+--- [10]
+Hay una migración pendiente, la v3.0.0 (el proyecto está en la 2.3.4). Todavía no he tocado nada. Los tres pasos de esa migración llevan un gate cada uno, así que necesito tu «sí» a cada tabla. El punto de partida es `42dd0c2` y el árbol está limpio.
+
+## Gate 1 — Traslados
+
+| Lo que hay | Destino |
+| --- | --- |
+| `changelog.md` | `git mv` a `CHANGELOG.md` en la raíz, que hoy no existe |
+| `constitution.md` | `git mv` a `steering/constitution.md`. Su enlace `decisions/0001-…` pasa a `../decisions/0001-…` |
+| `architecture.md`, `estimation.md` | `git mv` a `steering/`, sin cambios |
+| `estimation-log.md` (con `estimation.md`) | `git mv` a `steering/` y luego `sdd estimation log`, que lo regenera. El log solo tiene la cabecera, así que no pisa filas escritas a mano |
+
+## Gate 2 — Producto y operaciones
+
+**`mission.md` → `PRODUCT.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Por qué existe» | `## Product Purpose` |
+| «Usuarios y roles» | `## Users` |
+| «Qué es y qué no es» | `## Capabilities and Constraints` |
+| «Dominio» | `## Terminology`: `**Franja**: una hora reservable, de en punto a en punto.` No hay `_Evitar_`, porque el original no nombra ningún sinónimo |
+
+**`tech-stack.md` y `environments.md` → `steering/operations.md`**
+
+| Sección 2.x | Destino |
+| --- | --- |
+| «Comandos», «Testing», «Frontend» | La sección del mismo nombre, tal cual |
+| `environments.md` | `## Entornos`, condensado al marcador `.sdd-env.json`, las tres entradas `env:setup`, `env:clean` y `env:status`, y el runner. El original no nombra ningún runner, así que lo dejo sin escribir salvo que me indiques otro |
+| «Tecnologías» (Node 22, Vitest 3) | Sale de la tabla si `package.json` ya lo dice. Lo reviso al aplicar y, si algo no está en el manifest, va a `steering/architecture.md` |
+| «Decisiones abiertas» («¿Avisos por correo al reservar?») | Pasa a Later en el gate 3, como `B4` |
+
+Después hago `git rm` de `mission.md`, `tech-stack.md` y `environments.md`. Quedan recuperables con `git show 42dd0c2:.docs/sdd/<doc>`.
+
+## Gate 3 — `ROADMAP.md` y `steering/debt.md`
+
+No hay ninguna release en preparación. El roadmap solo trae la v1.2.0, que ya está cerrada.
+
+**`ROADMAP.md`**
+
+| Lo que hay | Destino |
+| --- | --- |
+| «Próximo» 0021, 0022 y 0024 | A **Now**, porque no hay release en preparación. El título es `## Now`, sin versión ni perfil |
+| 0021 | Externo `SAL-41`. Toca: `src/app.js`. Carril: `feature` |
+| 0022 | Requisitos: `0019`. Tras: `0021`. Toca: `src/app.js`, `src/notify.js`. Salda: `0022` en la fila de deuda de `cancel`, que la apunta con `**Actuar**` |
+| 0024 | Tras: `0015`. Ese id no está en `ROADMAP.md` ni en `CHANGELOG.md`, así que pasa a `—` (aviso). Toca: `src/report.js`. Carril: `feature` |
+| Backlog `B3` | A Later, Estado `⏳`, con «Origen» (`Recepción, reunión del 2026-09-18`) al final del one-liner |
+| «Decisiones abiertas» | A Later como `B4`: «¿Avisos por correo al reservar?», Estado `⏳` |
+| Patch 0023 (2026-09-25), posterior a la v1.2.0 | A Now con `✅`. Carril: `patch`. Requisitos: su `patch.md`. Fecha en el one-liner |
+| «Releases cerradas» v1.2.0 | Sale, porque ya vive en `CHANGELOG.md`. Su validación pendiente, la **0016**, sigue en `specs/20260915-090000-feature-0016-weekly/walkthrough.md` |
+| **Tamaño** de todas las filas, incluida la del patch `✅` | **Lo decide el dev-lead (`S`, `M` o `L`)**. No lo deduzco y el gate no se cierra sin ello |
+
+**`steering/debt.md`**
+
+| Fila 2.x | Sección | Celdas |
+| --- | --- | --- |
+| Patch 0023 «saldada» (posterior a la última release) | Lista | Prefijo intacto. Evidencia: el enlace al `patch.md`. Destino: `0023` |
+| `cancel` no comprueba el dueño (ticket SAL-45) | Lista | Destino: `0022`. Evidencia: SAL-45. Impacto: `Alto` |
+| Pasar `src/app.js` a TypeScript | Por triar | Fecha 2026-09-15. Impacto `Bajo`: se pierde, porque no hay columna |
+| Mensajes de error mezclados | Por triar | Fecha 2026-09-01. Se pierde `Bajo — confunde`. Aunque dice `**Actuar**: sin fila`, no trae evidencia, así que va a Por triar |
+| Test de franjas intermitente | En espera | Falta: `un segundo fallo con su log`. Impacto `Medio — rojo intermitente`. Fecha 2026-09-01 |
+| Validar formato en la API | Descartadas | Motivo: `duplica la 0018`. Fecha 2026-09-01. Se pierde el impacto `Bajo` |
+
+Origen de cada fila: el enlace al ticket o al `patch.md` si lo hay, y `roadmap 2.x` si no. Las fechas salen de `git log -S`. Las de las filas de Por triar y Descartadas me salen todas el mismo día de la base del molde, así que revísalas.
+
+Después hago `git rm .docs/sdd/roadmap.md`. Se recupera con `git show 42dd0c2:.docs/sdd/roadmap.md`.
+
+## Paso 4 — Enlaces (sin gate, tras los anteriores)
+
+Se corrigen a `steering/constitution.md`, `PRODUCT.md` y `ROADMAP.md`:
+- el `CLAUDE.md` (tres enlaces)
+- el `README.md` (el de la constitution)
+
+`capabilities/` y `decisions/` no tienen enlaces a rutas viejas.
+
+## Qué necesito de ti
+
+1. Tu «sí» a cada tabla, o los cambios que quieras en ellas.
+2. El **Tamaño** (`S`, `M` o `L`) de 0021, 0022, 0024, `B3`, `B4` y el patch 0023.
+3. Si el runner de `## Entornos` debe ser algo concreto.
+
+Hasta entonces los gates quedan pendientes. No hay commit ni marcador de la 3.0.0. Cuando respondas, pídeme la migración otra vez y la reanudo.
+
+--- [15]
+Ahora PRODUCT, operations, ROADMAP y debt.
+
+--- [17]
+Verification passes; the only broken link left is in an immutable ADR. Marking and committing.
+
+--- [19]
+El proyecto ya está en el kit 3.0.0. La migración va en el commit `93dab27`, con el árbol limpio. `sdd roadmap check` da «Roadmap válido» y `sdd capability check` da «Capacidades válidas: 1».
+
+**Qué ha cambiado**
+- **Traslados:** `changelog.md` pasó a `CHANGELOG.md` en la raíz. `constitution.md`, `architecture.md`, `estimation.md` y `estimation-log.md` pasaron a `.docs/sdd/steering/`. El enlace de la constitution a la ADR 0001 pasó a `../decisions/…`. `estimation-log.md` se regeneró con 0 filas, porque solo tenía la cabecera.
+- **Producto y operaciones:** `mission.md` pasó a `PRODUCT.md`. `tech-stack.md` y `environments.md` pasaron a `steering/operations.md`. La tabla de Tecnologías (Node, Vitest) salió porque `package.json` ya las dice.
+- **Roadmap y deuda:** `roadmap.md` se repartió en `ROADMAP.md` y `steering/debt.md`. Las filas 0021, 0022, 0024 y el patch 0023 están en Now con tamaño M, y `B3` y `B4` en Later.
+- **Enlaces:** `CLAUDE.md` y `README.md` apuntan ahora a las rutas nuevas.
+
+Los documentos viejos se recuperan con `git show 42dd0c2:.docs/sdd/<doc>`.
+
+**Pendiente de ti**
+- **Runner de `## Entornos`:** como no lo sabes, no lo he escrito. Además, `package.json` no tiene scripts `env:setup`, `env:clean` ni `env:status`. `environments.md` ya los daba por existentes, así que esa sección describe algo que no está en el repo. Añade el Runner cuando lo tengas, o borra la sección si el proyecto no usa entornos por worktree.
+- **ADR 0001:** sigue enlazando a `../mission.md`, que ya no existe. Las ADR son inmutables, así que no la he tocado.
+- **Fechas de la deuda:** las fechas de «Por triar», «En espera» y «Descartadas» salen de `git log -S` y, salvo la de TypeScript (2026-09-15), caen todas en el commit de la base del molde (2026-09-01). Revísalas.
+- **Validación de la 0016:** `0016` sigue pendiente de validar en `specs/20260915-090000-feature-0016-weekly/walkthrough.md`. No tiene fila en el roadmap nuevo porque su release está cerrada.
+- **Fila 0024:** su dependencia «tras 0015» pasó a `—`, porque 0015 no está en `ROADMAP.md` ni en `CHANGELOG.md`.
+

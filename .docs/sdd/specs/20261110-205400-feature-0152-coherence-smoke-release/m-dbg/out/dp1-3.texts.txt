@@ -1,0 +1,50 @@
+--- [4]
+Voy a leer el contexto del proyecto y reproducir el fallo para clasificarlo.
+
+--- [13]
+Ya tengo la causa y no he tocado nada todavía. Antes de abrir rama o carpeta, te pregunto por el carril, como pide el kit para un patch.
+
+🦆 **En llano:** `toHours` convierte `"09:30"` en el número `9.30`, que es 9,3 horas y no 9 h 30 min. Así, `12:00-09:30` sale como 2,7 h (12 − 9,3) y supera el máximo de 2,5. No es el límite lo que falla: es la conversión de la hora. Hay un test que ya lo reproduce y falla hoy: `reservar justo el máximo de horas se acepta`, en `test/reservar.test.js:5`. El arreglo es convertir los minutos a fracción de hora, `h + m/60`. Es una causa determinista y la solución está fijada, así que es un **patch**, no una feature.
+
+Ojo, `slotHours` también se usa en `precio`. Hoy cobra mal cualquier franja con minutos: `09:30-12:00` en Sur da 40,5 € y debería dar 37,5 €. El mismo arreglo lo corrige, y añadiré un test de regresión para eso.
+
+**¿Lo abro como patch?** No hay `estimation.md` en el proyecto, así que no incluyo estimación.
+
+1. **Sí, patch (recomendada).** Abro `patch-0010`, escribo el test de regresión en rojo, arreglo `toHours`, pongo `node --test` en verde y cierro. Perfil `delegate`, el del proyecto, si no dices otro.
+2. **Patch, y que `precio` quede fuera.** Solo arreglo `reservar`. No lo recomiendo, porque el defecto está en la función compartida.
+3. **Cambiar de carril.** Dime cuál prefieres.
+
+Responde con el número y sigo de inmediato.
+
+--- [19]
+Rama creada, id 0010 confirmado. Sigo con la implementación del patch.
+
+--- [28]
+Causa confirmada (`toHours` en `src/app.js:6`). Escribo primero el test de regresión de `precio` y veo que falla.
+
+--- [30]
+Dos tests en rojo por la causa esperada. Ahora el fix mínimo y `patch.md`.
+
+--- [34]
+Falta el revisor único que exige el patch, antes del commit.
+
+--- [43]
+El fallo está arreglado y commiteado en la rama `feature/0010` (commit `2a1b087`), pero el patch no está cerrado ni fusionado.
+
+`node src/app.js reservar Sur 09:30-12:00` ya responde `reservada Sur 09:30-12:00`. `node --test` pasa 8 de 8.
+
+**Causa:** `toHours` convertía `"09:30"` en `9.30`, que son 9,3 horas y no 9,5. La franja salía de 2,7 horas y superaba el máximo de 2,5. El fix es `h + m/60`, en `src/app.js`.
+
+**Efecto en el precio:** `precio` usa la misma función, así que cobraba mal cualquier franja con minutos. Para `precio Sur 09:30-12:00` daba `40.499999999999986 €`, y ahora da `37.5 €`.
+
+**Tests:** vi en rojo, antes del fix, el test existente de `reservar` y uno nuevo de `precio`. Añadí un tercero para `09:30-12:01`, que sigue rechazándose. El revisor del patch no encontró nada grave. Dejó una observación menor, que ya corregí.
+
+**Por qué no he cerrado:**
+- **Validación tuya:** el kit deja la validación en ti, porque lo usa una persona. Prueba `node src/app.js reservar Sur 09:30-12:00`. Debe responder `reservada Sur 09:30-12:00`. Prueba también `reservar Sur 09:30-12:01`, que debe responder `excede el máximo de horas`. Con tu «validado» sigo con el cierre.
+- **Config de fusión:** a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`, y sin ellos `sdd merge --check` se niega a seguir. Dime si fusiono en `develop` y si va con `--no-ff`. Yo recomiendo `develop` con `--no-ff`.
+
+**Cosas a tener en cuenta:**
+- **Formato del precio:** sigue saliendo como número tal cual, `37.5 €` y no `37,5 €`. No lo he tocado, porque cambiar lo que ve el usuario es una decisión tuya.
+- **Rama:** la rama es `feature/0010`, porque la constitución del proyecto fija `feature/<id>`.
+- **Artefacto del patch:** está en `.docs/sdd/changes/20261111-155817-patch-0010-franja-minutos/patch.md`. Quedan pendientes el hash del commit en ese fichero y la fila del roadmap.
+

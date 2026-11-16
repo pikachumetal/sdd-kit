@@ -1,0 +1,98 @@
+--- [3]
+Primero leo la spec, el plan y tasks.md de la 0010 para ver qué dice exactamente la Task 2.
+
+--- [12]
+Ahora: paso el revisor de spec sobre la enmienda. Queda: parar en ✋ con sus hallazgos, ~2 min, ~$0,10.
+
+--- [14]
+Lo que sigue depende de lo que devuelva el revisor. Espero su resultado antes de presentar el ✋.
+
+--- [17]
+Paro aquí hasta que el revisor de spec devuelva sus hallazgos. Entonces te presento el ✋ con la enmienda y esos hallazgos.
+
+Hasta ahora:
+- **Task 2 en pausa.** Su THEN pide «Norte lun — sala ocupada — Ana» y la aplicación no tiene usuarios ni dato de quién ejecuta el comando. No he escrito código ni tests de la Task 2.
+- **Es un desvío, no un ruling.** Cambia un THEN aprobado y la decisión 2 de la spec.
+- **Enmienda sin commitear en `spec.md`.** La línea de «Enmiendas» está marcada `sin aprobar`.
+  - Se quita «quién canceló».
+  - El THEN pasa a «Norte lun — sala ocupada».
+  - La decisión 2 y el GIVEN se ajustan a eso.
+  - La Task 1 no se ve afectada.
+- **Revisor de spec lanzado.** Es uno solo, de nivel `sonnet`, con los siete puntos, porque la enmienda es pequeña. La vigilancia de silencio corre en segundo plano.
+
+Mi recomendación es quitar «quién canceló». La alternativa sería añadir `--por <nombre>` al comando `cancelar`, pero eso cambia el comando y el Scope, y la petición no lo pide.
+
+--- [18]
+1. Crítico · Enmiendas / Aprobaciones / status · La enmienda cambia el THEN y la decisión 2, que son lo que Laura aprobó el 2026-10-08. La enmienda está «sin aprobar», pero la tabla sigue en «aprobada» y `status: approved` no cambia. El gate podría tomar el spec como aprobado con un comportamiento que nadie ha validado. · Marcar la tabla como pendiente de reaprobación de Laura (o poner `status` en otro valor) hasta que apruebe. Registrar su aprobación en Aprobaciones y quitar «sin aprobar» de la enmienda.
+2. Crítico · Intent / Scope / Delta · El Intent dice «nadie sabe por qué se liberó una sala», y el Approach y el Scope no mencionan a quién. La petición original sigue hablando de «saber quién y por qué». Quitar «quién» sin avisar deja sin cumplir una parte de lo pedido, y el spec no dice que esa parte queda fuera de la feature. · Añadir en «No entra» que «quién canceló» queda fuera y por qué. Ajustar el Intent para que prometa solo el motivo. Avisar al solicitante de que lo pedido se recorta y apuntar su aceptación, o abrir una feature aparte para el dato.
+3. Importante · Decisión 2 · La decisión 2 sigue siendo una decisión del agente (cambia lo que el solicitante pidió) y ahora lleva incrustada la enmienda en el cuerpo. El «quién» pedido queda decidido de forma unilateral como «fuera». · Reescribir la decisión 2 como una decisión explícita que Laura valide, con la alternativa (añadir un actor, por ejemplo con `--por <nombre>`) y la razón del recorte.
+4. Importante · Delta de comportamiento · El delta pasa a ser coherente con la misión, que dice que no hay más usuarios. Pero el spec ya no cubre la parte de «quién» de la petición ni dice qué pasa si el usuario intenta indicarla (por ejemplo con un flag `--por`). · Decidir si se ignora o se rechaza un argumento desconocido y escribirlo como escenario GIVEN/WHEN/THEN. Si no hace falta, decir en «No entra» que no se contempla.
+5. Importante · Delta, listado vacío y orden · El listado no tiene un escenario para cuando no hay canceladas, ni para el orden o el caso de varias canceladas. Eso es casi todo el comportamiento de `canceladas`, y quedará a criterio de quien implemente. Además, la salida «Norte lun — sala ocupada» no dice qué ocurre con una reserva cancelada antes de existir el motivo. · Añadir escenarios verificables: sin canceladas, varias canceladas con su orden, y cancelada sin motivo guardado.
+6. Importante · Capacidades / Dónde se prueba · No existe `capabilities/`. `bookings` figura como «Modificada» pero no hay verdad viva con la que contrastar el delta, así que no se pueden detectar contradicciones. Además, el delta solo tiene ADDED y la capacidad está como Modificada, y no hay ningún MODIFIED del comportamiento actual de `cancelar` (hoy se cancela sin `--motivo`). Esa regla cambia y no queda registrada. · Decir que `capabilities/` no existe y qué se toma como verdad viva (probablemente el código y `test/`). Añadir un MODIFIED para `cancelar` sin motivo, que antes funcionaba y ahora responde «motivo no válido». Avisar de que hay que actualizar los tests existentes.
+7. Importante · Datos (5 bis) · El spec guarda un dato nuevo (el motivo con la reserva cancelada) y no dice dónde se guarda ni cómo afecta a los datos existentes: formato, migración de las canceladas anteriores, valor por defecto. Esto lo señalaba la decisión 3 («datos»), pero el cuerpo no lo desarrolla. · Añadir una sección o regla de datos: dónde se persiste el campo `motivo`, qué valor toman las canceladas previas y si hace falta migrar. Decir si hay contrato nuevo (los comandos `cancelar` y `canceladas`) y si cambia la salida existente de `cancelar`.
+8. Menor · Decisión 3 / Dónde se prueba · «Sin review de spec: dos señales (MODIFIED, datos)» queda desactualizada. El delta solo tiene ADDED, así que la señal MODIFIED no se ve en el cuerpo. La amendment tampoco dice si se repite la comprobación. · Aclarar qué señales aplican de verdad. Una vez corregido el delta con MODIFIED (punto 6), recalcular si hace falta review. Indicar que la enmienda no la necesita, o pasarla por revisión.
+9. Menor · Enmiendas · La enmienda dice «Task 2» y «Task 1 no se ve afectada», pero este spec no define tareas. Están en `tasks.md`, que no tengo permiso de leer en esta revisión. Si `tasks.md` mantiene «— Ana» en algún test, el gate de `node --test` fallará. · Comprobar que `tasks.md` y `test/cancel.test.js` ya usan «Norte lun — sala ocupada». Citar el archivo en la enmienda.
+10. Menor · Ejemplos (7) · «Ana» desaparece del ejemplo, lo cual es correcto, y «Laura» aparece como aprobadora. Es un nombre de persona real en un documento que la misión describe como de uso individual. No contradice la constitución, que no lo prohíbe, pero la misión dice que no hay más usuarios. · Revisar si «Laura» y «dev-lead» son un rol real del proyecto. Si no, que no figure como aprobadora.
+
+--- [20]
+🦆 Task 2 pide mostrar quién canceló, pero la aplicación no guarda quién ejecuta un comando. No hay usuarios, ni argumento, ni sesión de donde sacar «Ana». Cualquier código que escribiera tendría que inventar ese nombre.
+
+✋ **Desvío de la spec 0010, pendiente de tu decisión (Laura).** No he escrito código ni tests de la Task 2, y la enmienda sigue sin commitear en `spec.md`.
+
+**Enmienda propuesta** (recomendada):
+- El THEN del listado pasa de «Norte lun — sala ocupada — Ana» a «Norte lun — sala ocupada».
+- Se ajustan el GIVEN y la decisión 2.
+- La línea de «Enmiendas» queda como `sin aprobar`.
+- La Task 1 no cambia.
+
+**Alternativa:** añadir `--por <nombre>` a `cancelar` y guardarlo. Eso cambia el comando y el Scope, y la petición no lo pide. Si lo prefieres, lo escribo en su lugar.
+
+**Hallazgos del revisor** (uno, `sonnet`, con los siete puntos):
+- **Aceptados, los arreglo en la enmienda si apruebas:**
+  1. Marcar la tabla de Aprobaciones como pendiente de reaprobación hasta que decidas. Ahora sigue en «aprobada».
+  2. Añadir a «No entra» que «quién canceló» queda fuera y por qué, y ajustar el Intent para que prometa solo el motivo.
+  3. Reescribir la decisión 2 como decisión explícita para que la valides, con la alternativa `--por`.
+- **Para que decidas tú:**
+  4. Si un argumento desconocido como `--por` se ignora o se rechaza. Propongo no contemplarlo y decirlo en «No entra».
+- **No los acepto en esta enmienda:** 5, 6, 7 y 8 piden escenarios nuevos (listado vacío, orden), un MODIFIED y reglas de datos. Son huecos de la spec original, no de la enmienda, y ampliarla sería otro desvío. Los dejo como deuda anotada.
+- **Menores:** el 9 es parcialmente falso. `tasks.md` no lleva textos de test, y el test de la Task 2 aún no existe. El 10 no aplica: Laura es la aprobadora real de la spec.
+
+Dime si apruebas la enmienda tal cual, con los hallazgos 1 a 3 incluidos, o si prefieres `--por`. Hasta entonces la Task 2 sigue `in_progress`.
+
+--- [21]
+Ese aviso solo dice que terminó la vigilancia de silencio del revisor. El revisor ya había devuelto sus hallazgos y te los presenté en el ✋ anterior. No es una respuesta tuya.
+
+La enmienda sigue sin aprobar y la Task 2 sigue parada. Necesito que decidas una de estas dos cosas:
+1. **Aprobar la enmienda recomendada.** Quita «quién canceló» e incluye los hallazgos 1 a 3 del revisor.
+2. **Cambiar a `--por <nombre>`.** Eso amplía el comando y el Scope.
+
+--- [23]
+Aprobada. Aplico los hallazgos 1 a 3 en la spec, la commiteo y sigo con la Task 2, que no estaba cerrada y por eso no necesita task nueva.
+
+--- [25]
+Test primero, en RED, y la copia fuera del repo.
+
+--- [28]
+RED por fallo, el esperado. Ahora el código.
+
+--- [35]
+The `\n` of my script was written as a real line break. I'm fixing that line.
+
+--- [39]
+Los 5 tests pasan y el test es idéntico a la copia RED. Commiteo la Task 2 y actualizo `tasks.md`.
+
+--- [41]
+La Task 2 está hecha y commiteada. Ya no quedan tasks pendientes en `tasks.md`, pero la review final no la he hecho todavía.
+
+**Qué se hizo:**
+- **Enmienda aprobada:** la commiteé en `5b19ec8`. El listado enseña sala, día y motivo, sin «quién canceló». Incluí los hallazgos 1 a 3 del revisor y dejé fuera `--por` y los argumentos desconocidos en «No entra».
+- **Task 2 (`ae19693`):** añadí el comando `canceladas`, que lista las reservas canceladas como «Norte lun — sala ocupada». El test se escribió antes, falló primero y es idéntico a la copia RED guardada fuera del repo.
+- **Registro (`9ae243d`):** puse `tasks.md` con las dos tasks en `done` y los hashes de sus commits.
+- **Tests:** `node --test` pasa con los 5 tests. No he lanzado la verificación de cierre completa.
+
+**Pendiente:**
+- **Review final y cierre.** Como la ejecución es Native, falta la review final de la rama, y después cerrar con `sdd-archive`. No las he lanzado.
+- **Deuda anotada, sin hacer:** los hallazgos 5 a 8 del revisor. Piden escenarios para listado vacío y orden, un MODIFIED de `cancelar` sin motivo, reglas de datos y recalcular las señales de review. Son huecos de la spec original y ampliarla sería otro desvío. Dime si quieres abrirlos como feature aparte.
+
+Durante la implementación escribí mal un `\n` en el `.join` y la sintaxis falló. Lo corregí antes de commitear.
+

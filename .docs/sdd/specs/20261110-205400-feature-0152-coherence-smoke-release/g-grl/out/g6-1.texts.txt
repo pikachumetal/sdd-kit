@@ -1,0 +1,74 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y presentarte el anuncio, ~2 min.
+
+--- [17]
+Ahora: abro la feature de la lista de espera. Ya reservé el id 0010 y creé la rama `feature/0010-lista-espera`. Queda: entrevistarte sobre el diseño, escribir la spec y pasarla a tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** cuando haces `reservar <sala>` y esa sala ya está ocupada en la franja, en vez de fallar quedas apuntado en una lista de espera de esa sala y franja. Sobre el código actual:
+
+- `src/app.js` guarda las reservas solo en memoria y `reservar` aún no comprueba si la sala está ocupada.
+- Solo hay un usuario, tú.
+- No hay ningún canal de aviso (el aviso por correo, 0008, está pendiente en el roadmap).
+
+Corrígeme si algo de esto no es así.
+
+❓ **¿Qué debe pasar cuando la sala en espera queda libre?**
+Hoy `cancelar` solo devuelve un texto. Lo que decidas cambia qué hay que construir.
+
+1️⃣ **Promoción automática.** Al cancelar la reserva, la primera de la lista pasa a ser reserva firme.
+   - `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu reserva (1.ª en espera)`
+   - Coste: reservas sin que lo confirmes en ese momento.
+2️⃣ **Solo aviso.** Al cancelar, se muestra que la sala se liberó y sigues en la lista hasta que reserves tú.
+   - `cancelar lun 10:00` → `cancelada lun 10:00; Norte libre, tienes espera en lun 10:00-12:00`
+   - Coste: otra persona podría reservarla antes, aunque hoy solo hay un usuario.
+3️⃣ **Lista consultable sin acción al liberarse.** Solo `espera` para ver la lista, y tú vuelves a mirar con `libres`.
+   - Coste: no te ahorra volver a comprobar a mano, que es lo que quieres evitar.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no hay con quién competir por la sala, así que la confirmación extra no aporta nada. A cambio, una espera olvidada se convierte en una reserva que quizá ya no quieras. Lo mitigaría con un comando para salir de la lista.
+
+--- [19]
+Ahora: tomo tu «sí» como elegir la promoción automática (1️⃣) y leo cómo se escribe la spec. Queda: una o dos preguntas de diseño más, la spec y su aprobación, ~8 min.
+
+--- [27]
+Ahora: antes de escribir la spec, necesito cerrar una decisión que cambia el alcance. Queda: tu respuesta, luego la spec, su revisión y tu aprobación, ~8 min.
+
+He tomado 1️⃣ (promoción automática) por tu «sí» y entiendo tu motivo: no volver a mirar `libres` a mano. Al mirar `src/app.js` he encontrado un problema que afecta a ese motivo:
+
+- **Todo vive en memoria.** `bookings` es un array que se reinicia en cada ejecución del comando.
+- **`reservar` y `cancelar` no cambian nada hoy.** Solo devuelven un texto.
+- **Consecuencia:** con el CLI tal cual, `reservar Norte …` apuntaría a alguien a la lista y el proceso terminaría. Cuando después hicieras `cancelar …`, esa espera ya no existiría.
+
+❓ **¿Dónde guarda el estado la lista de espera para que sobreviva entre comandos?**
+
+1️⃣ **Un fichero `salas.json` con todo: reservas y lista de espera.**
+   - `reservar Norte lun 10:00-12:00` (ocupada) → `Norte ocupada; en espera (1.ª)`. Más tarde, en otro comando, `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu reserva (1.ª en espera)`.
+   - Coste: `reservar` y `cancelar` pasan a modificar de verdad las reservas, y la reserva de ejemplo de Norte pasa a ser el estado inicial cuando el fichero no existe.
+2️⃣ **Solo la lista de espera en el fichero; las reservas siguen en memoria.**
+   - Coste: al reiniciar, la sala vuelve a figurar libre y la espera apunta a una reserva que ya no existe. No sirve para tu caso.
+3️⃣ **Todo en memoria, sin fichero.**
+   - Coste: la lista solo existiría dentro de una misma ejecución. Se puede probar con tests, pero no te quita el mirar `libres` a mano.
+
+➡️ **Recomiendo 1️⃣**, porque es la única que cumple lo que me has dicho que quieres: que la espera siga ahí cuando alguien cancele. A cambio, hace real el estado del CLI, que hoy es un prototipo. Me encargo yo del resto de detalles (nombres de los comandos, dónde queda el fichero) y los dejo en la spec para que los valides.
+
+--- [29]
+Te lo cuento con un caso concreto, sin opciones.
+
+Hoy el programa funciona así: cada vez que escribes un comando en la terminal, arranca, responde y se apaga. Al apagarse olvida todo. La reserva de Norte el lunes de 10:00 a 12:00 no está guardada en ningún sitio. Es una línea fija del código que se vuelve a cargar en cada ejecución. Además, `reservar` y `cancelar` no cambian nada: solo escriben un texto en pantalla.
+
+Imagina que añado la lista de espera sin guardar nada en disco. Pasaría esto:
+
+1. Escribes `reservar Norte lun 10:00-12:00`. Norte está ocupada, así que el programa te apunta en la lista de espera y te responde «en espera (1.ª)». Luego se apaga y olvida que estás apuntado.
+2. Más tarde, otra reserva de Norte se cancela con `cancelar lun 10:00`. El programa arranca de cero y no sabe que estabas esperando. No te promueve.
+
+Para que la lista sirva de verdad, el programa tiene que escribir su estado en un fichero al apagarse y leerlo al arrancar. Ese estado incluye las reservas, no solo la lista. La razón es que la lista de espera depende de que la sala figure ocupada, y esa ocupación también se perdería. Eso implica que `reservar` y `cancelar` pasen a modificar las reservas de verdad. Sin eso no habría nada que liberar ni nadie a quien promover.
+
+Entonces la decisión es esta: si quieres que ese fichero exista (y que `reservar` y `cancelar` pasen a funcionar de verdad), o prefieres no tocar eso en esta feature. En el segundo caso la lista solo funcionaría dentro de una misma ejecución y no te ahorraría mirar `libres` a mano.
+
+¿Quieres que la lista de espera guarde su estado en un fichero para que funcione entre comandos?
+

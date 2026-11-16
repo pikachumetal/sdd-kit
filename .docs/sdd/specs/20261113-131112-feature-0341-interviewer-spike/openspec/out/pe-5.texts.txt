@@ -1,0 +1,66 @@
+--- [4]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar, anunciar y arrancar la entrevista de diseño, ~3 min.
+
+--- [16]
+Ahora: entrevista de diseño, con la primera pregunta. Queda: 2 o 3 preguntas más, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** quieres un comando nuevo, por ejemplo `exportar <sala>`, que saque las reservas de esa sala en CSV. El responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrar las reservas.
+
+He mirado `src/app.js`. Hoy cada reserva tiene solo `room`, `day` y `slot`, y la lista vive en memoria. `reservar --cada-semana` no guarda nada, solo imprime un texto. Por eso la exportación sacaría las reservas que existen en esa lista, una fila por reserva con las columnas `sala, día, franja`. Una semanal no aparecería como tal, porque no se registra.
+
+Calculo 2 o 3 tasks, todas en el mismo sitio (`src/app.js` y su test). No propongo dividirla.
+
+❓ **¿Qué CSV abre bien en tu hoja de cálculo?**
+La decisión es el separador y la codificación. Una hoja de cálculo en castellano (Excel, LibreOffice) suele esperar `;` como separador. Excel además necesita un BOM UTF-8 para mostrar bien las tildes, como en «Sur» o «día». Con `,` y sin BOM, es habitual que todo caiga en una sola columna o que las tildes salgan rotas.
+
+1️⃣ **`;` con BOM UTF-8.** Se abre con doble clic en una hoja en castellano. Para importarlo en otra herramienta que espere `,` habría que cambiarlo.
+2️⃣ **`,` sin BOM.** Es el CSV estándar. En una hoja en castellano hay que importarlo con el asistente, indicando separador y codificación.
+3️⃣ **Elegible con una opción**, por ejemplo `--sep`, con 1️⃣ por defecto. Cubre los dos casos, pero añade una opción que mantener.
+
+➡️ **Recomiendo 1️⃣**, porque el objetivo es abrirlo cada lunes sin pasos extra y solo lo usas tú. A cambio, el CSV queda atado a la configuración regional en castellano.
+
+Para ti, ¿cuál de las tres es?
+
+--- [18]
+Decidido: separador `;`, y lo apunto como decisión tuya. El BOM lo decido yo: sí, BOM UTF-8. Sin él, Excel en castellano muestra mal las tildes de «día» y de los nombres de sala. Va a mi lista de «✋ Decisiones que he tomado yo», para que puedas rechazarlo.
+
+❓ **¿Adónde va el CSV?**
+Hoy `run()` devuelve un texto y `app.js` lo imprime con `console.log`. Los tests comprueban ese texto devuelto. La decisión es cómo llega el CSV a tu hoja de cálculo.
+
+1️⃣ **Solo por pantalla.** `salas exportar Norte > norte.csv` y listo. Es lo más simple y encaja con el resto de comandos. Pero el BOM se imprimiría también en la terminal, y la redirección `>` depende de la shell: Windows PowerShell 5 reescribe el fichero en UTF-16 y Excel lo abre mal.
+2️⃣ **Siempre a un fichero**, como `reservas-Norte.csv` en la carpeta actual. El responsable no depende de la shell. En cambio, el comando ya no imprime nada y se rompe la costumbre de los otros comandos.
+3️⃣ **Por pantalla, y a fichero si se pasa `--salida <fichero>`.** Cubre los dos usos y deja el CSV con la codificación correcta sin pasar por la redirección. A cambio, hay una opción más que mantener y probar.
+
+➡️ **Recomiendo 3️⃣**, porque tu flujo del lunes acaba en un fichero que se abre en Excel, y `--salida` evita el problema del UTF-16. Además mantiene lo que devuelve `run()` como texto, que es lo que prueban los tests de hoy.
+
+¿Cuál eliges?
+
+--- [19]
+Sin problema, lo dejamos aquí. No he creado nada: ni rama, ni carpeta, ni spec, ni fila en el roadmap.
+
+**Decidido por ti**
+- El separador es `;`, porque el Excel del responsable está en castellano.
+
+**Decidido por mí** (irá a «✋ Decisiones que he tomado yo»)
+- El CSV lleva BOM UTF-8, para que las tildes se vean bien en Excel.
+- El comando se llamaría `exportar <sala>`, con las columnas `sala, día, franja`.
+- La exportación cubre las reservas que existen en la lista. Las semanales no aparecen como tales, porque `reservar --cada-semana` no las guarda.
+- Calculo 2 o 3 tasks en el mismo sitio, así que no propongo dividir la feature.
+
+**Pendiente**
+- ¿Adónde va el CSV? Mi recomendación es la opción 3: por pantalla, y a fichero con `--salida <fichero>`.
+- Habrá que decidir qué hace el comando con una sala que no existe o que no tiene reservas.
+
+Cuando quieras retomar, dime «sigue con lo de exportar» y empiezo por la pregunta del destino. Como todavía no hay rama ni fila, volvería a arrancar desde `sdd-propose`.
+
+--- [20]
+De acuerdo. Todo sigue como te lo dejé en el mensaje anterior: no hay nada creado y la pregunta del destino del CSV sigue abierta.
+
+Cuando quieras seguir, escribe «sigue con lo de exportar».
+

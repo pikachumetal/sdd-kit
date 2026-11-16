@@ -1,0 +1,59 @@
+--- [2]
+Using sdd-start-feature para arrancar esta funcionalidad, que es la puerta del kit SDD para un cambio con comportamiento.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto (docs, no código). Queda: la pregunta de enrutado, ~2 min.
+
+--- [19]
+Ahora: confirmar carril, modo y perfil antes de abrir rama y spec. Queda: tu respuesta a esta pregunta y después la rama y la spec con decisiones a validar, ~10 min.
+
+He leído constitution, mission, tech-stack, roadmap y `sdd-kit.json`. No hay `capabilities/`, ni `architecture.md`, ni `sdd-kit.local.json`. Estás en `develop`, sin rama `feature/<id>` ni fila en el roadmap, así que el enunciado es el que me has dado.
+
+**Carril:** feature, no patch. Qué pasa al liberarse la sala, a quién se avisa y cómo se sale de la lista son decisiones que tendría que fijar yo.
+
+**Modo:** recomiendo **full**. Lite exige cumplir todas las condiciones, y aquí fallan dos:
+- *El flujo ya existe y se puede leer:* se cumple a medias. `cancelar` existe, pero `reservar` en `src/app.js` es un stub que solo reconoce `--cada-semana`.
+- *No cambia contratos públicos:* **no se cumple.** Hace falta un comando nuevo de la CLI (apuntarse a la espera) y probablemente otro para consultarla o salir.
+- *No cambia el schema de datos:* **no se cumple.** Hay una estructura nueva, la lista de espera, y hoy `bookings` es un array en memoria.
+- *Cabe en un solo módulo:* sí, es `src/app.js`.
+- *Estimación:* no hay `estimation.md`, no aplica.
+
+**Tamaño:** prevé unas 3 tasks (apuntarse, promover al cancelar, consultar o salir), todas en la misma superficie, sin migración. No propongo partirla.
+
+**Perfil:** `delegate`, que sale del proyecto (`sdd-kit.json` no fija `control.profile`, así que rige el default). Puedes cambiarlo solo para esta feature.
+
+**Id:** modo `sequence` y sin fila en el roadmap, así que lo saco de `Get-NextSddId.ps1` y creo la rama antes de la carpeta.
+
+¿Sigo así: feature en modo full, perfil `delegate`, 3 tasks sin partir? También puedes elegir una de estas:
+- **Lite:** lo apruebas tú aunque falle lo del contrato y el schema.
+- **Otro perfil:** `pair` o `unattended`.
+- **Aprobar la spec por delegación:** «apruebo la spec por delegación, nos vemos en la validación». Te quita la parada de la spec si te vas a ausentar; la validación final no se quita.
+
+--- [21]
+Ahora: crear la rama con el id de la secuencia y arrancar la spec. Queda: el brainstorming y la spec con decisiones a validar, ~8 min.
+
+--- [27]
+Ahora: invocar el brainstorming para la spec. Queda: spec con decisiones a validar, ~6 min.
+
+--- [30]
+Esto lo clasifico como **arquitectónico**, el camino pesado: añade comandos nuevos a la CLI y una estructura de datos nueva. Si lo ves más pequeño, dímelo y lo cambio. Antes de proponer enfoques, esto es lo que he entendido y lo que me falta.
+
+**Lo que has dicho**
+- Quieres una lista de espera para cuando la sala que quieres está ocupada.
+
+**Lo que he sacado de los docs y del código**
+- Solo tú usas la herramienta, y todo es en memoria (`bookings` es un array).
+- `cancelar` ya existe, y es lo único que libera una sala.
+- El aviso por correo es el ítem 1 del roadmap y todavía no existe.
+- Node 22 sin dependencias, un solo fichero (`src/app.js`) y tests con `node --test`.
+
+**Lo que supongo, por si me equivoco**
+- «Ocupada» significa que ya hay una reserva en esa sala, día y franja.
+- La lista es de salas, días y franjas que tú quieres y no pudiste reservar.
+
+**Una pregunta, la que decide el diseño: ¿qué quieres que pase cuando la sala se libera?** Mi recomendación es la **a**:
+
+- **a) Se te avisa.** Al hacer `cancelar` sobre esa franja, la CLI imprime que la sala X está libre y que estabas en espera. Tú reservas a mano. Es lo más pequeño, y el correo del ítem 1 podría enchufarse después.
+- **b) Se reserva sola.** La reserva se crea automáticamente a tu nombre al liberarse. Es más cómodo, pero actúa sin que lo pidas.
+- **c) Solo se consulta.** Un comando te dice qué esperas y qué se ha liberado, sin que `cancelar` haga nada.
+

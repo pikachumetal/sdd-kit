@@ -1,0 +1,23 @@
+Esta es la pregunta que le haría ahora:
+
+---
+
+❓ **¿Dónde guardamos las reservas para que no se pierdan al cerrar `salas`?**
+
+Lo que he encontrado:
+- `tech-stack.md` fija Node 22 y prohíbe dependencias externas. Por eso solo hay dos opciones: lo que trae el propio Node o un archivo que escribamos nosotros.
+- Node 22 trae `node:sqlite`. Se puede usar sin flag desde la v22.13.0, pero sigue marcado como «Stability: 1.1 – Active development» ([docs v22](https://nodejs.org/docs/latest-v22.x/api/sqlite.html)). No he podido comprobar si en la 22 muestra un aviso de «experimental» cada vez que se ejecuta. Esta máquina tiene Node 26 y probarlo ahí no sirve como prueba.
+- Cada comando (`reservar`, `cancelar`, `libres`) arranca y termina por separado. Dos personas pueden lanzar uno a la vez.
+
+🅰️ **Un archivo JSON** (`reservas.json`). Se lee al arrancar, se escribe en un archivo temporal y luego se renombra encima del original, para que un corte a medias no lo deje roto. Es lo más simple de leer y de testear con `node --test`. A cambio, no protege frente a dos comandos lanzados a la vez:
+`reservar Norte lunes 10-11` en dos terminales al mismo tiempo → las dos dicen `Norte reservada`, pero en el archivo solo queda una de las dos.
+
+🅱️ **SQLite integrado** (`node:sqlite`, archivo `reservas.db`). Cada reserva es una transacción con una restricción de unicidad en (sala, día, franja):
+`reservar Norte lunes 10-11` en dos terminales al mismo tiempo → una dice `Norte reservada` y la otra `Norte ocupada`.
+A cambio, exige Node ≥ 22.13 y usa una API que Node todavía puede cambiar. Además, es posible que salga un aviso de «experimental» en la terminal (sin comprobar).
+
+➡️ **Te recomiendo 🅰️**, porque `salas` es una CLI sin dependencias en la que cada comando hace una sola lectura y una sola escritura. Así nos ahorramos depender de un módulo que Node todavía considera en desarrollo. A cambio, si dos personas reservan la misma sala en el mismo instante, una de las dos reservas puede perderse sin avisar. Si en vuestro caso pueden reservar varias personas a la vez, elige 🅱️.
+
+---
+
+Para preparar esta pregunta no he ejecutado nada en la Node 22 del proyecto. Lo del aviso «experimental» sigue sin comprobar, y también si el renombrado en Windows puede fallar cuando otro programa tiene el archivo abierto. La consulta en la web se cortó porque se denegaron los permisos. Por eso solo cito como comprobado lo que dice la página de documentación de la v22.

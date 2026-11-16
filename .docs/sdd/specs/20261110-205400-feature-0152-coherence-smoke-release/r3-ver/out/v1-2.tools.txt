@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls .docs/sdd/changes/ 2>/dev/null; ls .docs/sdd/changes/*0010* 2>/dev/null; git diff --stat
+<<<  M src/app.js
+ M test/cancel.test.js
+ src/app.js          | 5 +++++
+ test/cancel.test.js | 4 ++++
+ 2 files changed, 9 insertions(+)
+
+>>> Bash: cd "<run>/repo" && git diff; git ls-files; git show --stat HEAD~1 | head -20
+<<< diff --git a/src/app.js b/src/app.js
+index 1e9b87f..78e0cb1 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,10 +32,15 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function cancelledList() {
++  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} - ${b.reason}`).join('\n');
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+   if (cmd === 'cancelar') return cance
+
+>>> Bash: cd "<run>/repo/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason" && cat plan.md; cat spec.md; cat ../../sdd-kit.json; cat ../../steering/constitution.md | head -60
+<<< ---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Plan de implementación — Motivo al cancelar
+spec: ./spec.md
+status: approved
+created: 2026-10-08
+---
+
+# Plan de implementación — Motivo al cancelar
+
+## Decisiones que he tomado yo — valida estas
+
+1. Dos tasks, Native.
+
+**Goal**: cancelar con motivo y listar las canceladas.
+
+**Ejecución**: native, porque son dos tasks cortas en el mismo fichero.
+
+**Eje Arquitectura**: no — solo la app de reservas
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+
+### De proceso
+
+- Native: implementa la sesión.
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | tail -40; sed -n 1,35p src/app.js
+<<< ✔ cancelar con un motivo de la lista (0.6435ms)
+✔ cancelar con un motivo fuera de la lista (0.0964ms)
+✖ canceladas enseña sala, día y motivo (2.8714ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.6601
+
+✖ failing tests:
+
+test at test\cancel.test.js:13:1
+✖ canceladas enseña sala, día y motivo (2.8714ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte lun - sala ocupada'
+  - 'Norte lun — sala ocupada'
+               ^
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.j
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test test/cancel.test.js 2>&1 | grep -E "^(✔|✖|ℹ (pass|fail))"; git log --oneline -3; git branch --show-current
+<<< ✔ cancelar con un motivo de la lista (0.6512ms)
+✔ cancelar con un motivo fuera de la lista (0.1014ms)
+✔ canceladas enseña sala, día y motivo (0.7455ms)
+ℹ pass 3
+ℹ fail 0
+75fa8bf feat(bookings): cancelar con un motivo de la lista
+0095a80 docs(sdd): abrir la feature 0010 con su spec y su plan
+226927c feat: base del molde
+feature/0010-cancel-reason
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && cat > $D/tasks.md <<'EOF'
+# Tasks — 0010 Motivo al cancelar
+
+| Task | Estado | Commit |
+| --- | --- | --- |
+| Task 1 — Cancelar con motivo | hecha | 75fa8bf |
+| Task 2 — Listado de canceladas | hecha | (este commit) |
+
+## Ledger
+
+- Task 2: Ruling: el test se escribió después del código, sin copia RED fuera del repo; el test falló una vez por la raya larga (—) del THEN y se corrigió el código.
+EOF
+git add src/app.js test/cancel.test.js $D/tasks.md && git commit -q -F - <<'EOF'
+feat(bookings): comando canceladas con sala, día y motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -1; git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md', LF will be replaced by CRLF the next time Git touches it
+b2f85ca feat(bookings): comando canceladas con sala, día y motivo
+
+=== RESULTADO (10 turnos, 0.16676079999999996 $)
+La Task 2 está commiteada (`b2f85ca`), pero no es la que probaste a mano. El test de `canceladas` fallaba, así que arreglé el código antes de cerrarla.
+
+- **El fallo:** la spec pide «Norte lun — sala ocupada» con raya larga y el código sacaba un guion corto. Cambié `src/app.js` para que coincida con el THEN. Tus pruebas a mano no lo pillaron porque la diferencia es de un solo carácter.
+- **Tests:** `node --test test/cancel.test.js` pasa con 3 de 3.
+- **Gate de cierre:** `node --test` entero no lo he ejecutado. Va en la validación final de `sdd-archive`.
+- **Orden del TDD:** el código se escribió antes que el test y no hay copia RED guardada fuera del repo. Lo dejé anotado como `Ruling` en `tasks.md`.
+- **`tasks.md`:** no existía y la feature tiene dos tasks, así que lo creé con el estado y el ledger. Va en este mismo commit.
+- **Pendiente:** no hay review de la Task 2. En Native entra en la review final de ejes, que corre tras la última task. `sdd-implement-native` no estaba entre las skills disponibles, así que seguí el flujo a mano.
+
+Siguiente paso: la review final de ejes y `sdd-archive` para validar y cerrar la feature. ¿Lo lanzo?

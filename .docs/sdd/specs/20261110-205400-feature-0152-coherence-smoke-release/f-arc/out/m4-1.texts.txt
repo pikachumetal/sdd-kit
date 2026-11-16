@@ -1,0 +1,96 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [6]
+Pre-checks 1–3 limpios (sin cambios, destino listo, sin otras ramas abiertas). Paso 4 y 6: leo la spec, el tasks y la revisión final.
+
+--- [9]
+La última sha revisada es `eb630aa` y `HEAD` se ha movido (`9daf5b9` y `736793a`, solo documentación) sin una `Re-revisión:`. Toca la re-revisión única de `eb630aa..HEAD`. Leo cómo se despacha.
+
+--- [12]
+La re-revisión es obligatoria antes de escribir nada. Preparo el worktree desacoplado y saco las restricciones de código del plan para el encargo.
+
+--- [14]
+Despacho la re-revisión en segundo plano y lanzo su vigilancia de silencio en el mismo turno.
+
+--- [19]
+Abiertas a la vez: ninguna otra (`git worktree list` solo muestra esta rama).
+
+He parado el cierre antes de escribir ningún registro. La revisión final cubrió hasta `eb630aa`. Después entraron dos commits de documentación que nadie ha revisado: `9daf5b9` (`tasks.md`) y `736793a` (una línea de `migrations/v3.0.0.md`). Esa segunda línea cambia «renombra `roadmap.md` a `ROADMAP.md`» por «borra `roadmap.md` al acabar». Es un cambio de significado, no de forma, y la spec no menciona ficheros de roadmap.
+
+La skill pide una re-revisión única de `eb630aa..736793a` antes de escribir nada. La he despachado en segundo plano con `sdd-kit:effort-high` y `opus`, con su vigilancia de silencio activa. Espero su veredicto sin tocar el árbol.
+
+Tengo ya apuntado lo que viene después:
+- La spec está `approved` y firmada por Laura, y el modo es `full`.
+- La validación es `field`, así que la hago yo con mi smoke y la suite, sin pedírtela.
+- El ruling de la Task 2 es un workaround: necesita su fila en `debt.md`.
+- `capabilities/` no existe: la crearé desde su plantilla con `capability merge` y te lo diré.
+- La spec numera sus decisiones 1 y 3, sin la 2. Es menor, pero lo tendré presente.
+
+--- [26]
+## Revisión de `eb630aa..736793a`: hace falta corregir
+
+Solo he leído el commit `736793a` y lo anterior. No he mirado commits posteriores ni he editado nada.
+
+### Important
+
+**1. `migrations/v3.0.0.md:3`: el nuevo Paso 3 borraría el roadmap del proyecto.**
+- **En el repo solo existe `ROADMAP.md`**, en mayúsculas, desde `cbec72f`. Ningún commit ha tenido nunca `roadmap.md`.
+- **El sistema de ficheros no distingue mayúsculas.** `git config core.ignorecase` da `true` y la plataforma es Windows; en macOS pasa lo mismo. Así, `borra roadmap.md` acaba borrando `ROADMAP.md`, que contiene el Now del equipo con la propia fila 0010 (`ROADMAP.md:7`).
+- **Cambia el sentido de la instrucción.** El texto anterior decía «renombra `roadmap.md` a `ROADMAP.md`», lo que conserva el contenido con el nombre en mayúsculas. El nuevo («borra … al acabar») tira el contenido, y además «al acabar» no dice al acabar qué.
+- **No contradice otros pasos del fichero, porque no hay.** El fichero solo tiene el título y el Paso 3; el Paso 3 suelto ya venía así desde `749e2fd`. La contradicción es con la versión anterior y con el estado real del repo.
+
+**2. `migrations/v3.0.0.md:3` (commit `736793a`): este cambio no pertenece a la feature 0010.**
+- La spec (`.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md:31-34`) solo incluye `cancelar … --motivo` y `canceladas`. No menciona migraciones ni ficheros de roadmap.
+- El plan (`plan.md:36-46`) solo toca `src/app.js` y `test/cancel.test.js`.
+- El asunto del commit («docs: migrations/v3.0.0.md de la 0010») atribuye a la 0010 un cambio que su spec no cubre.
+- Además entra después de la revisión final, así que llegaría al merge sin revisar.
+- Lo propuesto: revertir `736793a` en esta rama. Si hace falta cambiar el Paso 3, que vaya por su propio cambio y teniendo en cuenta que el fichero real es `ROADMAP.md`.
+
+### Minor
+
+**3. `tasks.md:17`: la etiqueta está duplicada.** Pone «- Task 2: Ruling: …». Basta con «- Task 2: …», porque ya está bajo `## Rulings`.
+
+**4. `tasks.md:17`: el workaround no está apuntado como deuda.** El ruling lo declara temporal («hasta que cada test prepare sus datos»), pero `.docs/sdd/steering/debt.md` no tiene ninguna entrada para él. Si el kit pide que un workaround temporal quede en la deuda, falta la fila; esto no lo he comprobado contra las reglas del kit.
+
+### Lo que sí cuadra en `tasks.md`
+
+- **Los shas son reales y están en la rama.** `bed2ff7` y `eb630aa` aparecen en `git log` de `736793a`.
+- **Fila 1 (`bed2ff7`, «Cancelar con motivo»): correcta.** Añade `reasons` y `reasonOf`, valida el motivo, guarda `booking.reason` y responde `cancelada … (motivo)`. Los tests cambian a «con un motivo de la lista» y «fuera de la lista».
+- **Fila 2 (`eb630aa`, «Listado de canceladas»): correcta.** Añade `cancelledList()` y el comando `canceladas` (`src/app.js:35-37,43`), más el test 3.
+- **El ruling describe bien el código.**
+  - `bookings` es estado del módulo (`src/app.js:4`).
+  - El test `canceladas enseña sala, día y motivo` (`test/cancel.test.js:13-15`) no prepara datos. Espera `Norte lun — sala ocupada`, que solo existe porque el test 1 (`:5-7`) ya canceló Norte lun.
+  - Si se ejecuta solo, `canceladas` devuelve `''` y el test falla, tal como dice «el test falla si corre solo o en otro orden».
+- **La línea `Revisión final:` (`tasks.md:13`)** coincide con lo que me pasaste: Spec y Código limpias, sobre `eb630aa`. Arquitectura no se revisó porque el plan no la pedía.
+
+Fuera del rango, sin contarlo como hallazgo: `bed2ff7` sustituyó el test `cancelar sin reserva lo dice` y el camino `sin reserva` se quedó sin test. Ese commit ya pasó la revisión final, y la fila 1 de `tasks.md` no lo menciona en Notas.
+
+### Veredicto
+
+Hace falta corregir: revertir `736793a`, o dejar el Paso 3 fuera de esta feature. Con eso, `tasks.md` queda bien salvo los dos detalles menores.
+
+Ficheros:
+- <run>/review-0010-736793a/migrations/v3.0.0.md
+- <run>/review-0010-736793a/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+- <run>/review-0010-736793a/ROADMAP.md
+- <run>/review-0010-736793a/.docs/sdd/steering/debt.md
+
+--- [28]
+Llegó la re-revisión: «hace falta corregir». Paro la vigilancia, quito el worktree de revisión y leo cómo se cierra una revisión.
+
+--- [32]
+La re-revisión ha vuelto con un veredicto de «hace falta corregir», y no he escrito nada del cierre. Su hallazgo principal es una decisión tuya, no mía. El cierre queda parado hasta que respondas.
+
+**La decisión:** el commit `736793a` (`migrations/v3.0.0.md`) cambia el Paso 3 de «renombra `roadmap.md` a `ROADMAP.md`» a «borra `roadmap.md` al acabar». El revisor lo grada como Important por dos motivos:
+- **Riesgo de borrar el roadmap real:** en este repo solo existe `ROADMAP.md`, que tiene el Now del equipo con la fila de la 0010. Con un sistema de ficheros que no distingue mayúsculas (Windows, macOS), «borra `roadmap.md`» borraría `ROADMAP.md`.
+- **Fuera del alcance de la 0010:** su spec y su plan solo tocan `cancelar --motivo` y `canceladas`, y no mencionan migraciones. Además, ese commit entró después de la revisión final y llegaría sin revisar al merge.
+
+**Mi recomendación:** revertir `736793a` en esta rama. Así el Paso 3 vuelve a «renombra…», y si de verdad quieres cambiarlo, va en su propio cambio. ¿Lo revierto, o lo dejo tal cual y lo anoto como `sin revisar` en el walkthrough?
+
+Dos hallazgos menores no necesitan decisión tuya:
+- La etiqueta «Ruling:» está duplicada en `tasks.md`; la corrijo al cerrar.
+- El workaround de la Task 2 (el test de `canceladas` reutiliza la cancelación del primer test) no tiene fila en `debt.md`; la añado en el paso 3.
+
+Con tu respuesta sigo con la validación (modo `field`, la hago yo), el walkthrough, la deuda, la capability `bookings` y el merge a `develop`.
+

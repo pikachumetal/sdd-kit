@@ -1,0 +1,98 @@
+--- [4]
+Ahora: leo el contexto del proyecto y el código del fallo para clasificarlo. Queda: confirmarte el carril, ~2 min.
+
+--- [18]
+Ahora: reservé el id 0012, creo la rama del patch y reclamo el id. Queda: abrir el patch y pasarlo a implementar, ~5 min.
+
+--- [36]
+Los dos tests fallan por la causa esperada. Escribo `patch.md` con la causa raíz antes del fix.
+
+--- [44]
+Rojo sin el fix y verde con él (6/6). Relleno la verificación en `patch.md` y lanzo el revisor único del patch.
+
+--- [47]
+El revisor está trabajando; el fix y los tests ya están listos y el gate pasa 6/6. Espero su informe antes de hacer el commit, que no he hecho todavía.
+
+--- [50]
+Un hallazgo menor, el resto sin hallazgos. `node --test` da 6/6 en verde. No he ejecutado los tests sin el fix: lo deduzco leyendo el código.
+
+1. **Causa raíz (§2):** correcta. `findBooking` en `src/app.js:9-11` recibía `day` y no lo usaba, y `cancelBooking` y `voidBooking` comparten ese helper. La explicación del mensaje engañoso también cuadra: marca como cancelada la reserva del lunes y responde con el `day` pedido.
+
+2. **Fix:** mínimo y correcto, un solo predicado añadido en `src/app.js:10`. `freeRooms` no usa `findBooking` y filtra por franja, así que no se ve afectada. `cancelBooking` y `voidBooking` solo cambian en el caso en que antes fallaban. Los dos únicos llamadores pasan `day` desde `run` (líneas 30-31).
+
+3. **Tests de regresión:** prueban el comportamiento real a través de `run` y fallarían sin el fix. La primera aserción de cada fichero, con `mar`, devolvería `cancelada Norte mar` o `anulada Norte mar` en lugar de `sin reserva Norte mar`. Cada fichero se ejecuta en su propio proceso, así que el estado de `bookings` no se contamina entre ficheros.
+
+Hallazgo:
+- **Bajo, `.docs/sdd/changes/*patch-0012*/patch.md`, §4 caso 2 (y la frase «ese resultado exacto» de §2):** el patch dice que `anular` sin el fix da `sin reserva Norte lun`. Eso no es posible. La primera aserción fallaría antes, con `anulada Norte mar`, y la segunda nunca llegaría a evaluarse. Conviene corregir el texto. No afecta al fix ni a los tests.
+
+--- [52]
+El hallazgo es correcto. Con los tests separados, sin el fix `anular Norte mar` devuelve `anulada Norte mar`, no `sin reserva Norte lun`. Corrijo el texto, que no afecta al fix ni a los tests.
+
+--- [54]
+Ahora: cierro con `sdd-archive` (validación, tiempo real, roadmap y merge). Queda: pedirte validar, ~5 min.
+
+--- [69]
+Todo está listo para que valides, y no sigo con el cierre hasta que lo hagas. Hasta entonces no he fusionado, no he tocado el roadmap y no he cerrado el `patch.md`.
+
+🦆 Antes, `cancelar` y `anular` miraban solo la sala y no el día. Con `Norte lun` reservada, `cancelar Norte mar` cancelaba la del lunes y respondía «cancelada Norte mar». Ahora responde `sin reserva Norte mar` y la del lunes sigue activa. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva ese día | `ejecución real` | `sin reserva Norte mar` |
+| Después, la del lunes sigue ahí | `ejecución real` | `cancelada Norte lun` |
+| `anular Norte mar`, luego `anular Norte lun` | `ejecución real` | `sin reserva Norte mar`, `anulada Norte lun` |
+| Los tests de regresión fallan sin el fix | `suite` | rojos sin el fix, verdes con él |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos, sobre `f853a44`, ~0,2 s.
+- Revisor del patch: un hallazgo bajo, un texto de `patch.md` que daba mal el resultado rojo de `anular`. Ya está corregido.
+
+**Sin probar**
+
+- Nada.
+
+**Avisos del cierre**
+
+- `merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Cuando valides te presento el merge a `develop` y espero tu OK antes de hacerlo. Si quieres, dime también si `noFf` va a true o a false.
+- La carpeta del patch está en `.docs/sdd/changes/`, como pide el kit. Los patches anteriores de este proyecto están en `specs/`.
+
+Panel: plan B en http://127.0.0.1:54275/
+Esa página no ve la app, así que no tiene consola ni red. Si algo falla, cuéntamelo en el comentario del paso.
+
+**Guion**
+
+Rama `feature/0012-cancelar-otro-dia` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Las reservas viven en memoria, así que el paso 1 y el paso 2 son un solo comando cada uno, para que ambas llamadas compartan estado. Empiezas desde cero: solo existe `Norte lun`.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar el martes (no reservado) y luego el lunes → debe salir `sin reserva Norte mar` y después `cancelada Norte lun`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar'])); console.log(run('cancelar',['Norte','lun']))"
+```
+
+2. Lo mismo con `anular` → debe salir `sin reserva Norte mar` y después `anulada Norte lun`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('anular',['Norte','mar'])); console.log(run('anular',['Norte','lun']))"
+```
+
+Para parar el panel: `kill 130525`. Lo paro yo cuando contestes.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

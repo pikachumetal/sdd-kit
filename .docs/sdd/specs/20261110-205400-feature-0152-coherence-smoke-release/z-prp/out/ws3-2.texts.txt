@@ -1,0 +1,56 @@
+--- [11]
+Ahora: confirmo el carril patch y reservo el id 0012 con `sdd id claim` (ya estoy en `feature/0012-slot-format`). Queda: abrir `patch.md` y pasar a `sdd-implement`, ~5 min.
+
+--- [22]
+Ahora: el test RED falla como se esperaba (`Norte, Sur`); aplico el fix mínimo en `libres`. Queda: pasar el reviewer, el commit del fix y el cierre, ~10 min.
+
+--- [27]
+Verde. Dispatch the single patch reviewer with `patch.md` and the diff.
+
+--- [29]
+Mientras tanto, completo `patch.md` (solución, verificación, tiempo, inicio) con lo medido.
+
+--- [33]
+Espero el veredicto del revisor antes del commit del fix.
+
+--- [34]
+Hallazgos:
+
+1. **Alcance (severidad media).** El patch declara fuera de alcance, sin decidir, "`libres` sin argumento". El fix lo decide en silencio: `validSlot(undefined)` devuelve false, así que `libres` sin argumento responde ahora `franja no válida: …`. Antes devolvía `Norte, Sur`. Es un cambio de comportamiento no pedido, y ni el patch ni ningún test lo recogen. Hay que moverlo a "dentro de alcance" en el patch y añadir un test, o dejar ese caso como estaba. Esto coincide con la salvedad que pedías comprobar.
+
+2. **Causa raíz (baja).** Es correcta en lo esencial: `freeRooms` no valida y compara como texto. Hay un matiz. El patch dice que "no coincide con ninguna reserva y devuelve todas las salas", y eso es cierto, pero la causa real es la falta de validación en `run`/`freeRooms`. El fix valida en `run`, no en `freeRooms`. Es coherente, pero `freeRooms` sigue sin validar si alguien lo llama directamente. Hoy no se exporta, así que no es un problema.
+
+3. **Fix (OK).** La regex `^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$` cumple horas 00-23 y minutos 00-59 con formato HH:MM-HH:MM. No hay hallazgos de corrección. Fin anterior al inicio, como `18:00-09:00`, sigue pasando por validar, lo cual es correcto porque quedó fuera de alcance. El cambio es mínimo. La línea de `run` queda larga, pero es aceptable.
+
+4. **Test (baja).** Cubre el caso pedido (`25:00-26:00`) y falla antes del fix. No hay caso positivo: una franja válida, como `10:00-12:00` o `09:00-10:00`, que siga listando salas. Tampoco hay límites como `23:59-00:00` o `24:00-...`, ni un minuto 60. No es bloqueante, pero un test de no regresión daría seguridad a la regex.
+
+5. **Menor.** `src/app.js` tiene un aviso de fin de línea (LF a CRLF). No es del fix. El diff se ve limpio.
+
+Resumen: no hay fallos de corrección. El único hallazgo relevante es el punto 1, el cambio silencioso en `libres` sin argumento. Conviene documentarlo en el patch y cubrirlo con un test.
+
+--- [36]
+Acepto el hallazgo 1: decidir lo de `libres` sin argumento sería una decisión mía sobre lo que ve el usuario, así que lo dejo como estaba. Añado también el test positivo (hallazgo 4).
+
+--- [46]
+El fix de la 0012 está hecho y commiteado (`4b41f8f`), pero el cierre queda parado: necesito tu validación y falta configuración de merge.
+
+`libres 25:00-26:00` ya responde «franja no válida: usa HH:MM-HH:MM». `node --test` da 7 de 7 en verde y `scripts/lint.mjs` sin hallazgos.
+
+**Qué hice**
+- **Carril:** patch, de petición cerrada: la fila 0012 fija el texto y el comando.
+- **Archivos:** `patch.md` está en `.docs/sdd/changes/20261112-163005-patch-0012-slot-format/`, el test nuevo en `test/slot.test.js` y el fix en `src/app.js`.
+- **Qué cuenta como franja válida:** `HH:MM-HH:MM`, con horas 00-23 y minutos 00-59. Lo deduje del ejemplo `25:00`; no me lo fijaste tú.
+- **Fuera de alcance:** una franja con fin anterior al inicio (`12:00-10:00`) sigue pasando. `libres` sin argumento sigue listando todas las salas.
+- **Revisión:** el revisor señaló que yo había cambiado en silencio el caso sin argumento. Lo revertí y añadí tests de franja válida y de los límites (minuto 60, hora 24).
+
+**Qué falta para cerrar**
+1. **Validación.** `sdd-kit.json` no declara `validation.mode`, así que la validación es tuya aunque el perfil sea `delegate`. Prueba esto y dime qué probaste y que funciona:
+   - `node src/app.js libres 25:00-26:00` debe imprimir `franja no válida: usa HH:MM-HH:MM`.
+   - `node src/app.js libres 10:00-12:00` debe imprimir `Sur`.
+   - `node src/app.js libres` debe imprimir `Norte, Sur`, como antes.
+2. **Merge.** `sdd merge --check` falla porque `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Dime a qué rama se fusiona (supongo `develop`) y si con `--no-ff`, y lo añado.
+
+No he tocado el roadmap, el estado de la fila 0012 ni el estimation-log. Tampoco he hecho el merge.
+
+**No terminado.** Falta tu validación y la configuración de `merge`. No borres todavía el worktree `<run>/repo`.
+

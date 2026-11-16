@@ -1,0 +1,55 @@
+--- [2]
+Es una funcionalidad nueva y pides modo full, así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap, capacidades). Queda: clasificar y anunciar el carril, y la primera pregunta de diseño sobre el flujo.
+
+--- [16]
+Ahora: te presento lo que he entendido y la primera decisión sobre el flujo. Queda: unas 2 o 3 preguntas más, la spec para tu aprobación y el plan, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Id reservado `0008`, rama `feature/0008-estados-reserva` creada desde `develop`. Prevé 3 tasks o menos, así que no propongo partirla.
+
+## Lo que he entendido (corrígeme)
+
+Una reserva tiene un estado: **pendiente**, **confirmada** o **cancelada**.
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente
+    pendiente --> confirmada: confirmar
+    pendiente --> cancelada: cancelar
+    confirmada --> cancelada: cancelar
+    cancelada --> pendiente: reabrir
+```
+
+**Lo que he visto en el código:**
+- Hoy una reserva no tiene estado: `{ room, day, slot }`.
+- `cancelar` solo devuelve un texto.
+- `libres` mira solo sala y franja, no el día.
+
+**Sobre tu duda de si el flujo está bien:** las tres primeras transiciones son coherentes. La que tiene un hueco es **cancelada → pendiente**. Mientras la reserva está cancelada, la sala queda libre y otra reserva puede ocupar esa misma sala y franja. Al reabrirla habría dos reservas vivas en el mismo sitio.
+
+❓ **¿Qué pasa al reabrir una cancelada cuya sala y franja ya ha ocupado otra reserva?**
+
+1️⃣ **Se rechaza la reapertura.**
+   - `reabrir Norte lun 10:00-12:00` → `No se puede: Norte lun 10:00-12:00 ya tiene otra reserva (pendiente)`.
+   - La cancelada se queda cancelada.
+   - Mantiene tu flujo tal cual y no permite dobles reservas.
+   - Cuesta una regla más: al reabrir hay que comprobar el hueco.
+
+2️⃣ **Se permite y quedan dos reservas en la misma sala y franja.**
+   - `reabrir Norte lun 10:00-12:00` → `reabierta (pendiente)`.
+   - Es lo más simple, pero `libres` y el resto de reglas dejan de ser fiables.
+
+3️⃣ **Se quita la transición cancelada → pendiente.**
+   - Una cancelada es final y para volver a reservar se crea una reserva nueva con `reservar`.
+   - El flujo queda sin hueco, pero cambia lo que me pediste.
+
+➡️ **Recomiendo 1️⃣**, porque conserva tu flujo y evita el doble reservado, que es lo que rompería `libres`, y sin validación habría que arreglarlo después con un patch. A cambio, `reabrir` puede fallar y hay que decir por qué.
+

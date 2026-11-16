@@ -1,0 +1,139 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; echo ---; ls .docs/sdd .docs/sdd/steering 2>&1; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -30; echo ---; ls -d node_modules .venv 2>&1
+
+>>> Grep: bookings
+<<< src\app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+src\app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+src\app.js:10:  return bookings.find((b) => b.room === room && b.status === 'active');
+<<< Exit code 2
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+---
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+ls: cannot access 'node_modules': No such file or directory
+ls: cannot access '.venv': No such file or directory
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reserva ${room} ${day}
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cat package.json; ls test scripts; cat .docs/sdd/sdd-kit.json; cat PRODUCT.md ROADMAP.md | head -60
+<<< {"type": "module", "engines": {"node": ">=20"}}
+scripts:
+lint.mjs
+
+test:
+app.test.js
+cancel.test.js
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarroll
+
+>>> Bash: cat test/cancel.test.js; ls -R .docs/sdd/specs | head -30; cat .docs/sdd/steering/estimation.md | head -30; git log --oneline | head
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-00
+
+>>> Bash: cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md; grep -rn "Gate de cierre" .docs | head
+<<< # Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+.docs/sdd/steering/constitution.md:4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+.docs/sdd/steering/operations.md:11:- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+
+=== RESULTADO (10 turnos, 0.1643777 $)
+Ahora: clasifico el cambio y te pido confirmar el carril. Queda: tu respuesta, y luego rama, test en rojo, fix y gate, ~30 min.
+
+**No es el orden del array.** Buscar desde el final no lo arregla. La causa está en `findBooking` (`src/app.js:9-11`): recibe `day` y nunca lo compara. Solo filtra por sala y estado `active`. Hoy la única reserva activa es Norte lunes, así que cancelar Norte martes encuentra esa aunque la busques desde el final. Con más reservas de Norte en otros días, invertir el orden solo cambiaría cuál se cancela por error.
+
+`voidBooking` (anular) usa la misma función, así que tiene el mismo fallo.
+
+🦆 Un cambio de una línea en `findBooking`, añadir `b.day === day`, arregla cancelar y anular. Antes escribo un test que hoy falla: con Norte lunes activa, `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar la del lunes intacta. Ese texto ya existe, así que no decido nada visible. Luego corro `node --test && node scripts/lint.mjs`. No hay dependencias que instalar.
+
+**Carril: patch (fallo determinista, causa raíz confirmada).**
+**Estimación:** 0,5 h, como el patch 0007, que fue casi idéntico y costó 0,5 h reales. No hay un gate de cierre medido en el proyecto, así que no puedo darte su duración.
+**Perfil actual:** `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+
+1. **Patch con la causa real (Recomendada):** rama, test en rojo, fix en `findBooking`, gate y cierre.
+2. **Hacerlo como pides (buscar desde el final):** no lo recomiendo. No arregla el fallo y dejaría la producción igual de rota.
+3. **Otro perfil para este cambio:** dime cuál (`pair` o `unattended`).

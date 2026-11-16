@@ -1,0 +1,100 @@
+--- [3]
+Ahora: retomo tras la revisión final de la 0010. Queda: leer los informes, el cierre de la revisión, los rulings y la validación.
+
+--- [12]
+RED por la razón correcta. Ahora el fix.
+
+--- [24]
+Estoy lanzando la única re-revisión del fix (Important de `reasonOf`) sobre el rango `69048f8..02989a5`, antes de la validación.
+
+--- [27]
+Mientras revisa, dejo `tasks.md` al día.
+
+--- [32]
+La revisión final está casi cerrada. Falta el veredicto de la re-revisión del fix (en segundo plano, Opus con effort alto, sobre `69048f8..02989a5`). Cuando llegue, la anoto en `tasks.md` y paso a los rulings y a la validación.
+
+- **Eje Spec:** sin Critical ni Important. Un Minor, que dejo diferido: el test de `canceladas` depende de que `cancelar` haya corrido antes (`test/cancel.test.js:13`).
+- **Eje Código:** un Important, `reasonOf` conservaba los espacios del motivo. `cancelar Norte lun --motivo "sala ocupada "` respondía «motivo no válido».
+  - **Reproducción:** escribí un test que falló por esa razón (RED).
+  - **Fix:** `.trim()` en `src/app.js`; el test pasa y la suite da 6/6 en verde.
+  - **Commit:** `02989a5`.
+- **Eje Arquitectura:** no sale. El diff no trae módulo, dependencia, contrato ni datos nuevos.
+
+`tasks.md` ya lleva las líneas `Revisión final:` y `Pasada de fix:`. El ledger tiene el fix, el Minor y el ruling de Arquitectura. El worktree de revisión `review-0010-02989a5` sigue abierto hasta que vuelva la re-revisión; lo retiro entonces.
+
+--- [34]
+## Veredicto: el hallazgo está resuelto y el fix no rompe nada nuevo de nivel Critical o Important.
+
+### Finding Verdicts
+
+- **[Code, Important] `src/app.js:14-17`, `reasonOf` conserva los espacios alrededor del motivo: ADDRESSED.**
+  - `src/app.js:16` ahora devuelve `params[index + 1]?.trim()`. Así, `"sala ocupada "` llega a `cancelBooking` como `"sala ocupada"` y pasa el `reasons.includes(reason)` de `src/app.js:20`.
+  - Como el motivo se recorta antes de entrar en `cancelBooking`, el valor guardado en `booking.reason` (`src/app.js:24`) y el eco «cancelada … (motivo)» salen limpios, y `canceladas` (`src/app.js:36`) lista el motivo sin espacios.
+  - El test `cancelar ignora los espacios alrededor del motivo` (`test/cancel.test.js:16-18`) cubre el caso. Antes del fix fallaba con «motivo no válido…» y ahora pasa. Coincide con lo que se reportó.
+
+### New Breakage in the Fix Diff
+
+None. Revisé los casos límite en el código y siguen como antes del fix:
+- **Sin `--motivo`:** `index === -1` devuelve `undefined`. Sigue respondiendo «motivo no válido: …», como pide la spec (`spec.md:54`).
+- **`--motivo` como último argumento:** `params[index + 1]` es `undefined` y el `?.` evita el TypeError. Devuelve `undefined` y responde «motivo no válido».
+- **Motivo solo con espacios (`"   "`):** se queda en `""`, que no está en la lista, y responde «motivo no válido». Es correcto.
+- **Motivo válido sin espacios:** se comporta igual que antes.
+
+### Out-of-Scope Observations
+
+- **Minor, aserción indirecta en `test/cancel.test.js:17`.** El test usa `Norte mar`, que no tiene reserva, y espera «sin reserva Norte mar». Prueba que el motivo pasa la validación, pero no recorre el camino de éxito. Tampoco comprueba que el motivo guardado y el que se muestra salgan recortados: por ejemplo, «cancelada … (sala ocupada)» sin espacio final, o la línea de `canceladas`. Por el código, ese comportamiento es correcto ahora mismo, pero ningún test lo fija. Un caso sobre una reserva activa que compruebe el eco exacto cerraría el hueco. No bloquea.
+- El texto de la interfaz sigue en castellano, así que la restricción se cumple.
+
+### Verdict
+
+All findings addressed, no new Critical/Important breakage
+
+Archivos:
+- `<run>/review-0010-02989a5/src/app.js`
+- `<run>/review-0010-02989a5/test/cancel.test.js`
+
+--- [44]
+**Ahora:** presento la validación de la feature 0010. Queda: tu validación y, con ella, `sdd-archive`.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista (`cambio de planes`, `sala ocupada`, `otro`). `canceladas` lista cada cancelada con su motivo.
+
+✋ **Me salí del plan en:** un fix tras la revisión final, `02989a5`. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` se rechazaba.
+- Reproduje el fallo con un test en RED antes de arreglarlo.
+- La re-revisión (`sdd-kit:effort-high` + Opus, rango `69048f8..02989a5`) lo da por resuelto y no encontró roturas nuevas.
+- Esa re-revisión ya salió, así que no habrá otra. Lo único sin revisar es lo que traiga tu validación.
+
+**Revisión final**
+
+| Eje | Resultado |
+| --- | --- |
+| Spec | Listo para merge, 1 Minor diferido |
+| Código | 1 Important (el del fix de arriba) |
+| Arquitectura | No sale: el diff no trae módulo, dependencia, contrato ni datos nuevos |
+
+**Dos Minor diferidos** (no entraron en el fix):
+- El test de `canceladas` depende de que `cancelar` haya corrido antes (`test/cancel.test.js:13`).
+- El test del trim no recorre el camino de éxito ni fija el eco recortado (`test/cancel.test.js:17`).
+
+`.docs/sdd/sdd-kit.json` tiene `review.minors: "fix"`, pero el `sdd-verify` cargado dice que los Minor van al ledger y no lo lee. Los dejé diferidos. Si quieres que se arreglen, lo hago antes del cierre. El aviso de arranque ya decía que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0.
+
+**Smoke, una fila por THEN**
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | ejecución real |
+| Motivo fuera de la lista (`me aburro`) → «motivo no válido: cambio de planes, sala ocupada, otro» | ejecución real |
+| Sin `--motivo` → el mismo mensaje | ejecución real |
+| `canceladas` → «Norte lun — sala ocupada» | ejecución real, en un solo proceso tras cancelar |
+
+La suite completa da 6/6 en verde y tarda 0,34 s.
+
+**Guion de pruebas.** No hay nada que arrancar: es una CLI y el estado vive en memoria, así que cada comando por separado empieza de cero.
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)».
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro».
+3. `node src/app.js cancelar Norte lun` → el mismo mensaje.
+4. `node src/app.js canceladas` → sale vacío, porque es otro proceso. Para ver el listado, cancela y lista en el mismo proceso: `node -e "import('./src/app.js').then(({run})=>{run('cancelar',['Norte','lun','--motivo','sala ocupada']);console.log(run('canceladas',[]))})"` → «Norte lun — sala ocupada».
+
+El workspace del plan está borrado y los rulings van en `tasks.md`. No hubo rulings de plan, solo los dos Minor de arriba. `tasks.md` sigue sin commitear.
+
+**¿Qué has probado tú y funciona?** Sin tu validación no invoco `sdd-archive`.
+

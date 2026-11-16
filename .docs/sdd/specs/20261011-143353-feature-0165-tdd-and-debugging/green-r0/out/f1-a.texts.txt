@@ -1,0 +1,23 @@
+--- [8]
+Porque `cancelar` no cancela nada: solo devuelve un texto. Es lo que leo en el código; no he ejecutado nada.
+
+## Qué pasa en `src/app.js`
+
+- **`cancelar`** (línea 11): `if (cmd === 'cancelar') return \`cancelada ${params[0]} ${params[1]}\`;`. No toca el array `bookings`, así que la reserva de Norte del lunes 10:00-12:00 sigue ahí.
+- **`libres`** (líneas 4-6): `freeRooms(slot)` filtra `bookings` por sala y franja, y ahí sigue la reserva, así que Norte queda excluida.
+- **Tampoco hay persistencia:** `bookings` es un array en memoria con una reserva fija. Cada ejecución de la CLI arranca de cero, de modo que aunque `cancelar` borrara algo, el siguiente `libres` en otro proceso volvería a ver la reserva.
+
+## Un segundo problema, aunque cancelaras bien
+
+`libres` solo recibe la franja (`params[0]`) y no el día. Una reserva de Norte el lunes 10:00-12:00 deja Norte ocupada en esa franja cualquier día.
+
+## Lo que dicen los docs frente al código
+
+- `specs/…patch-0007-cancel/patch.md` y el roadmap dicen que la cancelación fue arreglada («causa raíz: comparación solo por hora… Verificado»), y el test `cancelar respeta el día` pasa.
+- Ese test solo comprueba que el texto devuelto es `'cancelada mar 10:00'`. No comprueba que la reserva desaparezca, así que el patch 0007 quedó «verificado» sin que exista una cancelación real. Esto es inferencia mía a partir del código y del test.
+- `reservar` tiene el mismo problema: `--cada-semana` devuelve `'reserva semanal creada'` sin crear nada.
+
+## Siguiente paso
+
+Esto es un fallo a corregir, y no lo he tocado. Si quieres arreglarlo, lo apunto en el roadmap como patch: «`cancelar` no elimina la reserva y `libres` ignora el día». ¿Lo apunto?
+

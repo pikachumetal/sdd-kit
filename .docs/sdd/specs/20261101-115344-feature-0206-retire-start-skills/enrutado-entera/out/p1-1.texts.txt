@@ -1,0 +1,26 @@
+--- [2]
+Esto es un fallo en un proyecto con SDD, así que entro por `sdd-propose`.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto. Queda: localizar el fallo y clasificarlo, y luego te hago una pregunta con mi recomendación.
+
+--- [15]
+Ahora: te cuento cómo lo he clasificado y te hago la primera pregunta de diseño. Queda: entrevista corta, spec para tu aprobación, plan e implementación, ~30–40 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Qué he entendido, corrígeme.** `cancelar mar 10:00` responde «cancelada mar 10:00» sin mirar si hay reserva. En `src/app.js:12` el comando no consulta `bookings`: devuelve la frase con lo que le pasas. Por eso el test «cancelar respeta el día» pasa aunque no exista ninguna reserva el martes.
+
+La causa es clara. Pero no lo abro como patch, porque el arreglo exige decidir cosas que nadie ha fijado: el texto del error y qué cuenta como «la misma reserva». El comando recibe día y hora de inicio (`10:00`), y la reserva guarda la franja entera (`10:00-12:00`). Eso son reglas de producto, así que va como feature.
+
+❓ **¿Qué ve quien cancela una reserva que no existe?**
+1️⃣ **Un mensaje que dice que no hay reserva y qué se buscó.** `cancelar mar 10:00` → `no hay ninguna reserva el mar a las 10:00`. Se entiende sin ir al código. Cuesta un texto nuevo en la interfaz.
+2️⃣ **Un mensaje corto y genérico.** `cancelar mar 10:00` → `reserva no encontrada`. Es más corto, pero no confirma qué día y hora se buscó, y un error al teclear no se nota.
+3️⃣ **Lo mismo que 1️⃣, y además el comando termina con código de salida distinto de 0.** Sirve si algo lo usa desde un script. Cuesta tocar el punto de entrada, y hoy nada indica que lo necesites.
+
+➡️ **Recomiendo 1️⃣**, porque repetir el día y la hora buscados te deja ver al instante si tecleaste mal. A cambio, el texto es más largo.
+

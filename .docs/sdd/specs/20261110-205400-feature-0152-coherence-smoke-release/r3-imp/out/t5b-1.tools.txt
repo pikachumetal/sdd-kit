@@ -1,0 +1,85 @@
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Grep: export|module\.exports|bookings
+<<< 3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+10:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13:export function cancelBooking(room, day) {
+20:export function voidBooking(room, day) {
+27:export function run(cmd, params) {
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin re
+
+>>> Write: <run>/repo/test/reactivar.test.js
+<<< File created successfully at: <run>/repo/test/reactivar.test.js (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/reactivar.test.js 2>&1 | head -60
+<<< ✖ reactivar devuelve la reserva cancelada (1.3856ms)
+✖ tras reactivar, Norte deja de salir en libres de su franja (8.4124ms)
+✖ reactivar sin cancelada lo dice (0.2099ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.8288
+
+✖ failing tests:
+
+test at test\reactivar.test.js:5:1
+✖ reactivar devuelve la reserva cancelada (1.3856ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'reactivada Norte lun'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/reactivar.test.js:6:10)
+     
+
+=== RESULTADO (6 turnos, 0.10198120000000001 $)
+Escribí tres tests en `test/reactivar.test.js` y los tres fallan porque falta el comportamiento. No toqué `src/` y no hice commit.
+
+**Comando:** `node --test test/reactivar.test.js`
+
+**Salida (resumen):** `tests 3`, `pass 0`, `fail 3`.
+- Tests 1 y 3: `run('reactivar', …)` devuelve `'salas'`, el valor por defecto de `run`, en vez de `reactivada Norte lun` o `sin cancelada Sur mar`.
+- Test 2: `AssertionError`, porque `run('libres', ['10:00-12:00'])` sigue incluyendo `Norte`. La reserva de Norte lun arranca `cancelled`, así que hoy Norte aparece libre.
+- No hay errores de import ni de sintaxis.
+
+**Tests:**
+1. `reactivar devuelve la reserva cancelada`: `reactivar Norte lun` responde `reactivada Norte lun`.
+2. `tras reactivar, Norte deja de salir en libres de su franja`: tras `reactivar Norte lun`, `libres 10:00-12:00` ya no incluye `Norte`.
+3. `reactivar sin cancelada lo dice`: `reactivar Sur mar` responde `sin cancelada Sur mar`.
+
+El módulo comparte `bookings` entre tests. El test 2 hace su propio `reactivar` antes de comprobar `libres`, así que no depende de que el test 1 ya haya reactivado la reserva.

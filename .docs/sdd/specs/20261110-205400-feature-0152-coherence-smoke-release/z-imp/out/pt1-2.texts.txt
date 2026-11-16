@@ -1,0 +1,136 @@
+--- [8]
+Ahora investigo el código, solo lo justo para clasificar.
+
+--- [26]
+Estoy abriendo el patch: la causa raíz está confirmada y ahora escribo `patch.md` y el test en rojo antes de tocar el código.
+
+--- [35]
+Rojo por la razón correcta: devuelve `cancelada Norte mar` y después la del lunes ya no existe. Ahora el arreglo mínimo.
+
+--- [40]
+Falta el revisor único del patch, antes del commit.
+
+--- [43]
+Ya está el arreglo y pasan los 5 tests, pero todavía no he hecho el commit ni el cierre. Falta la respuesta del revisor, que sigue trabajando. Cuando llegue, respondo sus hallazgos en `patch.md`, hago el commit del arreglo y sigo con `sdd-archive`.
+
+- **Causa:** `findBooking` en `src/app.js` recibía el día pero no lo comparaba. `cancelar Norte mar` encontraba la reserva del lunes, la cancelaba y respondía con el día que pediste. `anular` usa la misma función y tenía el mismo fallo.
+- **Arreglo:** `findBooking` compara ahora también el día. Sin reserva ese día, `cancelar` y `anular` responden `sin reserva <sala> <día>`.
+- **Test:** `test/cancel.test.js` tiene un test nuevo que primero falló por la razón esperada: `cancelada Norte mar` y, después, la del lunes ya no existía.
+- **Pruebas:** `node --test` da 5/5.
+- **Ramas y archivos:** la rama es `feature/0015` y el registro está en `.docs/sdd/changes/20261112-190447-patch-0015-cancelar-dia/patch.md`.
+- **Orden del test nuevo:** va antes que el resto del fichero. El test siguiente (`cancelar Norte lun`) comprueba que la reserva del lunes sigue activa.
+
+--- [44]
+Sin hallazgos bloqueantes. `node --test` pasa 5/5.
+
+1. **Causa raíz: correcta.** `findBooking` recibía `day` y no lo usaba. Con la única reserva de Norte en `lun`, `cancelar Norte mar` cancelaba la del lunes y respondía con el día pedido. Coincide con el patch.
+
+2. **Fix: mínimo y correcto, incluido `anular`.** Solo añade `b.day === day` en `findBooking`. `cancelBooking` y `voidBooking` comparten esa función, así que ambos quedan arreglados. Sin coincidencia devuelven `sin reserva <sala> <día>`, el texto que ya existía.
+
+3. **Test (severidad baja/media): reproduce el fallo, pero depende del orden.** Con el código antiguo, el test nuevo falla porque devuelve `cancelada Norte mar`. El de `cancelar Norte lun` también falla, porque ya no queda la reserva del lunes. Son los «2 fallos» que cita el patch. El orden importa por dos motivos:
+   - El estado `bookings` es de módulo y se comparte dentro del fichero.
+   - Los tests existentes consumen la reserva del lunes.
+
+   El comentario del test avisa de esa dependencia, así que es una fragilidad reconocida. Si alguien reordena los tests, el test nuevo seguirá pasando con el código correcto. Con el código antiguo puede fallar por una razón distinta, o dejar de detectar la regresión.
+
+   Lo robusto sería comprobar en el mismo test que `cancelar Norte lun` sigue dando `cancelada Norte lun` tras el intento del martes. Así el test no depende del siguiente. Otra opción es reiniciar el estado por test. Ese reinicio requeriría exportar o reiniciar `bookings`.
+
+4. **Cobertura (severidad baja): `anular` no tiene test.** El patch dice que arregla `anular`, pero ningún test lo ejercita. El arreglo es compartido, así que el riesgo es bajo.
+
+5. **Metadatos del patch (severidad informativa).** `commit: pendiente`, que es esperable antes del commit. El Gate dice «5/5», y eso coincide con la ejecución.
+
+--- [50]
+El shell se comió los backticks. Lo reescribo bien.
+
+--- [52]
+Commit del arreglo hecho. Ahora cierro con `sdd-archive`.
+
+--- [62]
+Los pasos corren como los verá quien valide. Lanzo el panel plan B (no hay herramientas de Chrome).
+
+--- [65]
+El arreglo está hecho y commiteado, pero el cierre está parado: necesito que lo pruebes tú. En este proyecto valida el dev-lead y no lo he dado por validado.
+
+🦆 Antes, `cancelar Norte mar` sin reserva el martes respondía `cancelada Norte mar` y te quitaba la del lunes. Ahora responde `sin reserva Norte mar` y la del lunes sigue. `anular` tenía el mismo fallo y también queda arreglado.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` sin reserva el martes no toca la del lunes | `ejecución real` + `suite` | `sin reserva Norte mar` |
+| `anular Norte mar` igual | `ejecución real` + `suite` | `sin reserva Norte mar` |
+| La del lunes sigue activa | `ejecución real` + `suite` | `cancelada Norte lun` |
+
+**Suites**
+
+- `node --test`: 5/5 sobre a7e8c56.
+
+**Sin probar**
+
+- Las reservas viven en memoria y no se guardan entre ejecuciones. Por eso desde la terminal no se ve "cancelo el martes y luego el lunes sigue ahí" en un solo proceso. Lo cubre el test (`test/cancel.test.js`), no el guion.
+
+Panel: plan B en http://127.0.0.1:49230/ (no hay herramientas de Chrome). Esa página no ve la app: si algo falla, cuéntalo en el comentario del paso.
+
+**Guion**
+
+Rama `feature/0015` · worktree `<run>\repo`
+
+No hay entorno que arrancar: es una CLI y no hay comando de arranque declarado. Un comando por bloque, desde el worktree:
+
+```
+node src/app.js cancelar Norte mar
+```
+
+1. Debe imprimir `sin reserva Norte mar`.
+
+```
+node src/app.js anular Norte mar
+```
+
+2. Debe imprimir `sin reserva Norte mar`.
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Debe imprimir `cancelada Norte lun`.
+
+Para parar el panel (PID 227852):
+
+```
+kill 227852
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Aparte, `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Sin ese bloque, el merge te lo presento y espero tu visto bueno, aunque el perfil sea `delegate`. Dime también a qué rama fusionar (por defecto `develop`).
+
+Dime "validado" o qué paso falla.
+
+--- [70]
+Esa notificación solo avisa de que terminó el comando que lanzó el panel. No es tu validación y no cambia nada del cierre.
+
+El panel sigue activo en http://127.0.0.1:49230/ y responde. El `kill 227852` que te di funciona en esta terminal, porque `227852` es el PID de MSYS (la capa Unix de Git Bash).
+
+El cierre sigue parado en la validación. Sigo sin tener tu "validado", ni qué paso falla, ni un `Diferir:`. El merge tampoco está decidido, porque falta el bloque `merge` en `.docs/sdd/sdd-kit.json`.
+
+Cuando respondas, hago lo siguiente:
+- **"Validado":** registro `Validado` en `patch.md` con tus palabras y el hash real del arreglo, y continúo con el cierre.
+- **Un paso falla:** vuelvo al arreglo.
+
+--- [73]
+El commit del fix ya estaba hecho, así que me paro ahí: `a7e8c56` en `feature/0015`, con el código, el test y `patch.md`. Es un patch, con la causa raíz como solución fijada.
+
+Lo que sigue **no** lo he hecho:
+
+- **Validación:** tu respuesta confirma el carril, pero no me dice qué probaste ni que funcione. No he escrito `Validado` en `patch.md`, que sigue con `commit: pendiente`.
+- **Cierre y merge:** no he cerrado ni fusionado. Para cerrar necesito tu «validado» o un `Diferir:`. Para fusionar, el bloque `merge` en `.docs/sdd/sdd-kit.json`, que ahora no tiene `merge.into` ni `merge.noFf`.
+
+He parado el panel de validación (puerto 49230, ya no responde). El árbol de trabajo está limpio.
+
+Cuando pruebes los tres comandos del guion, dime «validado» o qué paso falla, y a qué rama fusionar (por defecto `develop`). Con eso cierro: hash real en `patch.md`, registro de la validación, gate y merge.
+

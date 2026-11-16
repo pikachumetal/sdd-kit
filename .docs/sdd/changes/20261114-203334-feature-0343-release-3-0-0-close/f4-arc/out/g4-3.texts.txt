@@ -1,0 +1,99 @@
+--- [3]
+Empiezo por los pre-checks y leo las referencias de validación y de la suite.
+
+--- [28]
+Todo ensayado. El cierre se detiene aquí porque `validation.mode` es `manual`: tienes que validar tú antes de que escriba ningún registro.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` lista lo cancelado con su motivo («Norte lun — sala ocupada»).
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si corre solo o en otro orden, falla. Lo apunto como deuda al cerrar.
+
+Abiertas a la vez: ninguna. `merge --check` da listo (`develop`), el árbol está limpio y la revisión final está limpia sobre `dff51c5`. `HEAD` solo añadió `tasks.md`, así que no hace falta re-revisión.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` (servidor, sesión `agente`) + `suite` | «cancelada Norte lun (sala ocupada)» |
+| Listado de canceladas | `ejecución real` (mismo proceso) + `suite` | «Norte lun — sala ocupada» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | el mismo literal |
+
+`canceladas` desde otro proceso (`node src/app.js canceladas`) sale vacío. Es lo que dice la spec (las reservas viven en memoria hasta la 0014), por eso el guion lo hace contra el servidor.
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `3e26c8b`, 0,1 s.
+- `node e2e/run.mjs` y la tanda: pendientes. Corren después de tu respuesta (motivo abajo).
+
+**Sin probar**
+
+- La suite E2E y la tanda, por lo mismo.
+
+**Sobre la tanda ×3, que has pedido en segundo plano**
+
+No la lanzo mientras pruebas. Usa el mismo servidor del puerto 12094 y lo reinicia (`env-up` lo para y lo vuelve a levantar), así que te cortaría el guion. Corre en cuanto contestes. Lo que he calculado:
+
+```text
+# Tanda: e2e/cancel.e2e.mjs (único spec E2E cambiado frente a develop) ×3 → 15 ejecuciones, los otros tests de ese fichero ×1 → ~7,5 min
+```
+
+- `free.e2e.mjs` no entra: la rama no lo toca.
+- Mi cuenta es de 6 s por paso. Con la suite entera son 12 pasos, unos 72 s. Eso supera el presupuesto E2E de 0,5 min y abriré una fila de deuda.
+- No usaré `E2E_TRACE=light`, el truco del README. El gate no lo declara y esconde carreras.
+
+Panel: plan B en http://127.0.0.1:5272/ (sin herramientas de Chrome; la página no ve la app)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar Norte lun con motivo → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:12094/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+2. Listado de canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:12094/run?cmd=canceladas&args=%5B%5D"
+```
+
+3. Motivo fuera de la lista («me aburro») → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:12094/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+4. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: validacion" "http://localhost:12094/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

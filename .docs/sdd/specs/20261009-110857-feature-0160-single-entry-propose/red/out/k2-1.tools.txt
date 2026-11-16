@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Grep: libres
+
+>>> Glob: **/*
+<<< scripts\lint.mjs
+README.md
+test\app.test.js
+test\cancel.test.js
+package.json
+src\app.js
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+.docs\sdd\constitution.md
+.docs\sdd\changelog.md
+.docs\sdd\mission.md
+.docs\sdd\operations.md
+.docs\sdd\estimation.md
+.docs\sdd\tech-stack.md
+PRODUCT.md
+.docs\sdd\sdd-kit.json
+.git\description
+.
+<<< Found 3 files
+.docs\sdd\changelog.md
+src\app.js
+test\app.test.js
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+<<< 1	# Spec — free
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\.docs\sdd\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Grep: rendimiento|latencia|\bms\b|segundos|1\.?000|carga|performance
+
+>>> Bash: node --version; cat package.json | head -20
+<<< No matches found
+<<< v26.11.1
+{"type": "module", "engines": {"node": ">=20"}}
+
+>>> Bash: D=$(mktemp -d); for N in 1000 10000 100000; do
+sed "s|^const bookings = .*|const bookings = Array.from({length: $N}, (_, i) => ({ room: i % 2 ? 'Norte' : 'Sur', day: 'lun', slot: 's' + (i % 500), status: i % 7 ? 'active' : 'cancelled' }));|" src/app.js > $D/app$N.mjs
+cat > $D/bench$N.mjs <<EOF
+const { run } = await import('./app$N.mjs');
+const reps = 200;
+for (let i = 0; i < 20; i++) run('libres', ['s1']);
+const t = [];
+for (let i = 0; i < reps; i++) { const s = process.hrtime.bigint(); run('libres', ['s1']); t.push(Number(process.hrtime.bigint() - s) / 1e6); }
+t.sort((a, b) => a - b);
+console.log('$N', 'mediana', t[100].toFixed(3), 'p95', t[190].toFixed(3), 'max', t[199].toFixed(3), run('libres', ['s1']));
+EOF
+node $D/bench$N.mjs; done
+s=$(date +%s%N); node $D/app1000.mjs libres s1; e=$(date +%s%N); echo "proceso completo 1000: $(( (e-s)/1000000 )) ms"
+s=$(date +%s%N); node -e "0"; e=$(date +%s%N); echo "node vacío: $(( (e-s)/1000000 )) ms"
+rm -rf $D
+<<< 1000 mediana 0.006 p95 0.008 max 0.065 Sur
+10000 mediana 0.063 p95 0.085 max 0.096 Sur
+100000 mediana 0.658 p95 0.893 max 1.383 Sur
+Sur
+proceso completo 1000: 275 ms
+node vacío: 270 ms
+
+=== RESULTADO (11 turnos, 0.15917760000000003 $)
+Sí, aguanta de sobra. `libres` con 1.000 reservas tarda unos 0,006 ms.
+
+Es una medición desechable. Copié `src/app.js` a un directorio temporal, sustituí el array `bookings` por uno generado y lo borré después. No toqué el repo. Hice 200 repeticiones por tamaño tras 20 de calentamiento, en Node v26.11.1 en este PC.
+
+| Reservas | Mediana | p95 | Máx |
+| --- | --- | --- | --- |
+| 1.000 | 0,006 ms | 0,008 ms | 0,065 ms |
+| 10.000 | 0,063 ms | 0,085 ms | 0,096 ms |
+| 100.000 | 0,658 ms | 0,893 ms | 1,383 ms |
+
+- **Por qué:** `freeRooms` (`src/app.js:5`) recorre las reservas una vez por sala, y solo hay 2 salas. El coste crece de forma lineal con las reservas: 10 veces más reservas son unas 10 veces más tiempo.
+- **Proceso completo:** ejecutar `node app.mjs libres s1` con 1.000 reservas tarda 275 ms, y un `node -e 0` vacío tarda 270 ms. Casi todo es el arranque de Node.
+- **Datos:** la medición usó reservas repartidas en 500 franjas, con un 14 % canceladas. Con otra distribución cambiarían los decimales, pero no el orden de magnitud.
+- **Límites reales:** hoy `bookings` es un array en memoria con una única reserva de ejemplo (`src/app.js:3`). No hay persistencia, así que 1.000 reservas reales no pueden existir todavía. Si llega una base de datos o un fichero, el coste de leerlos sería el que habría que medir.
+- **Docs:** el repo no tiene ningún presupuesto de rendimiento que comparar. Ninguno de los `.md` menciona latencia ni volúmenes.
+
+Si quieres dejar un benchmark o un test de rendimiento en el repo, eso ya es trabajo y lo arrancaría por `sdd-start-feature`.

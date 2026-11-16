@@ -1,0 +1,28 @@
+--- [2]
+Using sdd-kit:sdd-propose to take this change in.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y abrir la entrevista de la spec.
+
+--- [17]
+Ahora: te cuento cómo clasifico esto y empiezo la entrevista para la spec. Queda: unas pocas preguntas de diseño, luego la spec para tu aprobación (~10 min, sin coste extra).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json no fija control.profile; es el default)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+Prevé unas 3 tasks sobre `src/app.js`, así que no propongo partirla.
+
+**Lo que he entendido (corrígeme):** hoy `reservar` solo crea la reserva semanal y `libres <franja>` excluye las salas con reserva en esa franja. Una sala está «llena» cuando alguien pide una sala y franja que ya tienen reserva. En ese caso, en vez de rechazar, quieres que la petición quede en una lista de espera de esa sala y franja.
+
+Dos hechos del código que condicionan el diseño: las reservas son un array en memoria (no hay persistencia) y el roadmap tiene los avisos por correo como ítem 1 aún sin hacer, así que no hay canal de notificación.
+
+❓ **¿Qué pasa cuando la reserva ocupada se cancela?**
+1️⃣ **Promoción automática**: `cancelar` da la plaza al primero de la cola y la reserva queda creada. Ej.: `cancelar Norte lun 10:00-12:00` → `cancelada; Norte lun 10:00-12:00 pasa a <quien esperaba>`.
+2️⃣ **Solo avisa en pantalla**: `cancelar` indica que hay alguien en espera y esa persona tiene que volver a pedir `reservar`. Es menos código, pero la plaza puede quedarse libre sin que nadie la tome.
+3️⃣ **Solo apunta y consulta**: la cola se ve con un comando, pero cancelar no la toca. Solo registra el interés.
+
+➡️ **Recomiendo 1️⃣**, porque es lo único que hace que la lista de espera sirva de algo sin canal de avisos. A cambio, `cancelar` pasa a tener un efecto más (crear una reserva) y habrá que decidir qué pasa si la persona promovida ya tiene otra reserva en esa franja.
+

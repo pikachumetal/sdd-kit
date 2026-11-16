@@ -1,0 +1,71 @@
+--- [3]
+Retomo tras la última task: miro el workspace del plan y los informes de la revisión final.
+
+--- [9]
+Finding confirmed by reading: Important, enters the fix pass. Write the RED test first.
+
+--- [12]
+RED confirmed. Now the fix.
+
+--- [16]
+`sed -i` convirtió los finales de línea; los restauro para que el diff sea solo la línea.
+
+--- [24]
+La re-revisión única del fix está en marcha en segundo plano; espero su resultado antes de cerrar.
+
+Estado hasta ahora:
+- **Eje Spec:** listo, 1 menor diferido (el test de `canceladas` depende del orden respecto al de `cancelar`).
+- **Eje Código:** 1 Important (`reasonOf` conservaba los espacios del motivo), arreglado en `67b02d7` con su test en RED→GREEN. La suite pasa (6/6).
+- **Eje Arquitectura:** no sale; el diff no cruza ninguna señal.
+- **Pendiente:** el veredicto de la re-revisión, y después `ledger rulings`, borrar el workspace y la validación (paso 7).
+
+--- [29]
+### Veredictos de los hallazgos
+
+- **`src/app.js` `reasonOf` conserva los espacios alrededor del motivo, así que `cancelar Norte lun --motivo "sala ocupada "` responde «motivo no válido…» (Important, Código)**: **ADDRESSED**. En `src/app.js:16`, `reasonOf` devuelve ahora `params[index + 1]?.trim()`. El recorte se hace antes de la comparación `reasons.includes(reason)` de `src/app.js:20`, porque `run` pasa `reasonOf(params)` a `cancelBooking` (`src/app.js:42`). `"sala ocupada "` llega como `"sala ocupada"`, pasa la validación y se guarda recortado en `booking.reason` (`src/app.js:24`). El `?.` mantiene `undefined` cuando falta el valor tras `--motivo`, y ese caso sigue cayendo en «motivo no válido».
+
+### Roturas nuevas en el diff del fix
+
+- **Minor**, `test/cancel.test.js:16-18`: el test nuevo afirma `'sin reserva Norte lun'`, no un `cancelada Norte lun (otro)`. Funciona como prueba del fix: sin `trim`, `' otro '` daría «motivo no válido…» y el test fallaría. Pero tiene dos puntos débiles:
+  - Depende del orden de ejecución y del estado compartido del módulo. Solo da «sin reserva» porque el primer test ya canceló Norte lun.
+  - No cubre el camino feliz con el motivo recortado. No comprueba que la salida ni el motivo guardado salgan sin espacios.
+
+  Propuesta: usar una reserva propia y afirmar `cancelada … (otro)`. No bloquea.
+
+No hay más roturas. El cambio en `src/app.js` es de una sola línea y no afecta a otros comandos.
+
+### Observaciones fuera de alcance
+
+- No recibí el informe del implementador con la salida de los tests que cubren el fix, así que no he podido contrastar sus afirmaciones de ejecución. No he ejecutado tests: leyendo el código no surgió ninguna duda concreta.
+
+### Veredicto
+
+**Ronda de fix:** el hallazgo está resuelto y el fix no introduce roturas Critical ni Important. Solo queda abierto el Minor del test.
+
+--- [32]
+La revisión final de la 0010 está cerrada y el workspace del plan, borrado. Falta la validación (paso 7 de `sdd-start-feature`).
+
+## Resultado
+
+- **Spec** (opus+high): listo, sin hallazgos Critical ni Important.
+- **Código** (sonnet+high): 1 Important, arreglado en `67b02d7`. `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` respondía «motivo no válido». Ahora hace `trim()`.
+  - Escribí el test del caso primero y lo vi fallar; con el fix, 6/6 en verde.
+  - La re-revisión única (opus+high) da el hallazgo como ADDRESSED y no ve roturas nuevas.
+- **Arquitectura:** no sale; el diff no toca ningún módulo ni dependencia nuevos.
+- **`tasks.md`:** con `Revisión final`, `Pasada de fix`, `Re-revisión` y `## Rulings`. Sigue sin versionar (`??`); entrará en el siguiente commit de hito.
+
+## Rulings I made
+
+Ninguno. No hubo conflictos con el plan ni «Declined to judge».
+
+## Deferred minors
+
+- El test de `canceladas` solo pasa si antes corrió el de `cancelar`: depende del orden (`test/cancel.test.js:13`). Coste si se deja: un test frágil si alguien reordena o ejecuta uno suelto.
+- El test nuevo de espacios afirma `sin reserva Norte lun` por el estado compartido, no `cancelada … (otro)` (`test/cancel.test.js:16-18`). Prueba el fix, pero no el camino feliz con el motivo recortado.
+
+Dos cosas más que debes saber:
+- Hay una nota de la re-revisión: no le pasé el informe de ejecución del fix y no corrió tests; los 6/6 son los míos, de esta sesión.
+- `sed -i` convirtió `src/app.js` de CRLF a LF y lo restauré antes de commitear, así que el commit es solo la línea del `trim`.
+
+Sigo con la validación.
+

@@ -1,0 +1,131 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; node "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g3/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; ls node_modules 2>&1 | head -2; git ls-files | head -50
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0314-grilling-brainstorming-7\.temp\k0314g3\skills\sdd-propose\references\spec-writing.md
+<<< ./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-0900
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+
+>>> Bash: cat .docs/sdd/roadmap.md .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md; cat src/app.js package.json; cat test/app.test.js | head -60; git branch -a
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0314-grilling-brainstorming-7/.temp/k0314g3/skills/sdd-propose/references"; grep -n -i "default\|por defecto" control-profiles.md | head -15; sed -n 1,40p nombrado.md
+<<< 8:- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+18:4. `control.profile` in `sdd-kit.json` — the project. Default `"delegate"`.
+30:- `validation.startEnvironment`: boolean, default `false`. With `true`, the person wants the environment started before the validation's test script.
+218:| Key | Type | Default |
+236:`merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied.
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.1611973 $)
+Ahora: he leído el proyecto (constitución, misión, roadmap, `src/app.js` y los tests) y clasifico tu petición. Queda: unas pocas preguntas, una por turno. Después la spec, que te presento para aprobar, y el plan, ~20 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** hoy `reservar` no comprueba si la sala está ocupada. Quieres que, cuando la sala que pides ya esté reservada en esa franja, tu petición quede apuntada en una lista de espera. No he mirado cómo se resolvería ni cómo se avisa. Eso va en las siguientes preguntas.
+
+Es una feature y no un patch: añade comportamiento nuevo, con varias decisiones que hoy nadie ha fijado. Calculo menos de 4 tareas, así que no propongo dividirla.
+
+**Primera pregunta:** cuando la sala que quieres está ocupada, ¿qué quieres hacer después con la lista de espera? Cuéntamelo con un caso real, como lo viviste la última vez que te pasó.
+
+=== RESULTADO (1 turnos, 0.1811552 $)
+Entendido: el problema es tener que repetir `libres` a mano hasta que Norte se libere. Lo que importa, entonces, es qué pasa en el momento en que se libera.
+
+Dos hechos del código, con su fuente:
+- `src/app.js` guarda las reservas en un array en memoria, así que cada ejecución empieza de cero y la lista de espera necesitará guardarse en algún sitio. Eso lo decido yo, lo anoto en ✋ y no te pregunto.
+- `cancelar` hoy solo devuelve un texto y no borra nada. La lista no puede reaccionar a una cancelación que todavía no ocurre.
+
+❓ **¿Qué pasa cuando Norte se libera?**
+1️⃣ **Se te reserva sola.** Al cancelar la reserva de Norte, el primero de la lista se queda con ella.
+   - `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+   - Más tarde, `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a quien esperaba`
+   - Ya no tienes que mirar nada. A cambio, la sala se reserva sin que lo confirmes, y puede que ya no la quieras.
+2️⃣ **Se te avisa y confirmas tú.** Al cancelar, la lista marca que Norte está libre para ti. La reservas con un comando.
+   - `cancelar lun 10:00` → `cancelada lun 10:00; Norte libre para el 1.º de la espera`
+   - `espera` → `Norte lun 10:00-12:00: libre, confírmala con reservar`
+   - Mantienes el control. A cambio, sigues teniendo que ejecutar algo, aunque ya no `libres` a ciegas.
+3️⃣ **Solo un listado.** `espera` enseña quién espera qué y si la sala ya está libre. Reservar sigue siendo manual.
+   - `espera` → `Norte lun 10:00-12:00: ocupada (1 en espera)`
+   - Es lo más simple. A cambio, casi no quita el problema que cuentas.
+
+➡️ **Recomiendo 1️⃣**, porque tu queja es tener que volver a mirar y 1️⃣ es la única que lo elimina. En la misión eres el único usuario, así que nadie más compite por esa franja. A cambio, tendrás una reserva que no confirmaste. Se puede deshacer con `cancelar`.
+
+=== RESULTADO (1 turnos, 0.19806829999999997 $)
+Perdona, me enredé. Va con un ejemplo, sin opciones.
+
+**Situación de hoy.** Quieres Norte el lunes de 10:00 a 12:00 y está ocupada. Ahora ejecutas `libres 10:00-12:00` una y otra vez hasta que Norte aparece. Eso es lo que te molesta.
+
+**Qué añadiría la lista de espera.** Al hacer `reservar Norte lun 10:00-12:00` con Norte ocupada, la herramienta no se limita a decirte que no. Te apunta en una lista y responde algo como `Norte ocupada; en espera (1.º)`. A partir de ahí, la pregunta es qué debe pasar cuando alguien cancele esa reserva. Solo hay una decisión, y es esta:
+
+- **Opción A: que la herramienta te reserve la sala sola.** Alguien cancela Norte el lunes a las 10:00 y la sala pasa a ser tuya en ese momento. No tienes que hacer nada. El riesgo es que te quedes con una reserva que ya no quieres. Si pasa, la deshaces con `cancelar`.
+- **Opción B: que te avise y confirmes tú.** Al cancelarse, la herramienta te dice que Norte está libre para ti. La reservas tú con un comando. No te quedas con nada que no hayas aceptado, pero tienes que acordarte de mirar.
+
+El punto clave es que quieres dejar de vigilar. Con A ya no vigilas. Con B vigilas menos, porque ya no pruebas `libres` a ciegas, pero sigues pendiente.
+
+Una cosa del código que conviene saber: hoy `cancelar` solo imprime un texto y no libera nada de verdad. Por eso esta feature tendrá que hacer que cancelar libere la sala, porque sin eso la lista de espera no tiene nada a lo que reaccionar.
+
+Dime cuál prefieres, A o B. Si no lo tienes claro, dime qué parte no se entiende y la explico de otra forma.

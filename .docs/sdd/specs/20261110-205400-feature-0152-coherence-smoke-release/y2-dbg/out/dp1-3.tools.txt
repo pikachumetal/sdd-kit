@@ -1,0 +1,335 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md 2>&1 | head -60; ls -a .docs/sdd .docs/sdd/steering .docs/sdd/capabilities; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json 2>&1 | head -40; ls node_modules 2>&1 | head -3; git ls-files
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Bash: cat .docs/sdd/steering/*.md; cat src/limits.js package.json; grep -n "reservar\|horas\|limits" src/app.js | head -30; cat .docs/sdd/specs/*0007*/patch.md
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+
+## En es
+
+>>> Bash: cat src/app.js; cat .docs/sdd/steering/../../../skills 2>/dev/null; node src/app.js reservar Sur 09:30-12:00; node --test 2>&1 | tail -8
+<<< import { MAX_HOURS } from './limits.js';
+
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const rates = { Norte: 20, Sur: 15 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+const toHours = (time) => Number(time.replace(':', '.'));
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map(toHours);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function book(room, slot) {
+  if (slotHours(slot) > MAX_HOURS) return 'ex
+
+>>> Bash: cat "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills/sdd-propose/references/patch-lane.md"; git branch --show-current; cat test/reservar.test.js | head -30
+<<< ## Is it really a patch?
+
+```dot
+digraph decision {
+    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+    failure [label="Is it a failure?" shape=diamond];
+    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+    appendix [label="'Post-release fixes' appendix in that feature's walkthrough" s
+
+=== RESULTADO (7 turnos, 0.1486615 $)
+Ahora: he investigado el fallo y falta que confirmes el carril. Queda: abrir el patch, corregir y cerrar, ~15 min.
+
+🦆 **Qué pasa:** `toHours` en `src/app.js` convierte `"09:30"` en `9.30` (reemplaza los `:` por `.`), no en `9,5`. Por eso `09:30-12:00` da `12 − 9,30 = 2,7` h y supera el máximo de 2,5. El límite está bien y la causa es la conversión de minutos a horas. Ya hay un test en `test/reservar.test.js` («reservar justo el máximo…») que hoy falla y que el arreglo pondría en verde. El mismo `toHours` alimenta a `precio`, así que ese comando también calcula mal con medias horas.
+
+Es un fallo determinista con la causa confirmada en el código, así que lo trataría como **patch**. La solución queda fijada por la causa: convertir horas y minutos a decimal. No hay `estimation.md`, así que no doy estimación en horas.
+
+¿Cómo seguimos?
+
+1. **Patch (recomendada):** abro `feature`-less `patch-0010`, dejo el test que ya falla como regresión, corrijo `toHours` y, si `precio` tampoco tiene test con medias horas, añado uno. Perfil del proyecto, sin paradas intermedias.
+2. **Feature completa:** solo si quieres tocar también la validación del formato de franja, que está en la deuda por triar. No la recomiendo para esto.
+
+Dime «1» y arranco.
+
+>>> Bash: R="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills"; cat $R/sdd-propose/references/nombrado.md | head -60; ls $R/sdd-implement $R/sdd-implement/references
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: SDD="node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/cli/bin/sdd.js"; $SDD id next --project-root . --reserve; git branch --show-current
+
+>>> Bash: R="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills/sdd-implement"; cat $R/references/patch-flow.md
+<<< 0010
+develop
+<<< # The patch flow
+
+A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/references/patch-lane.md)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+
+One todo per step. Resuming, start at the first step whose output `patch.md` or the branch lacks, never with a second `patch.md`.
+
+1. **Root cause, MANDATORY in a failure** (the intent, in a visual adjus
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: node -e "
+import('./src/app.js').then(m=>{console.log(m.slotHours('09:30-12:00'), m.slotHours('09:00-12:30'), m.slotHours('09:30-10:00'))})"; cat test/precio.test.js; git log --oneline -5 -- src/app.js; git status --short
+SDD="node D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/cli/bin/sdd.js"; git checkout -b feature/0010-horas-media 2>&1; $SDD id claim --project-root . 2>&1; git status --short; cat D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills/sdd-templates/references/patch-template.md 2>&1 | head -60; ls D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills/sdd-templates/
+<<< 2.6999999999999993 3.3000000000000007 0.6999999999999993
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('precio de dos horas en Norte', () => {
+  assert.equal(run('precio', ['Norte', '10:00-12:00']), '40 €');
+});
+498925e feat: base del molde
+Switched to a new branch 'feature/0010-horas-media'
+sin remoto: la 0010 vale (contador local)
+cat: 'D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills/sdd-templates/references/patch-template.md': No such file or directory
+
+>>> Bash: cat D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152/skills/sdd-templates/templates/patch-template.md; ls .docs/sdd/changes 2>&1; date -u +%Y%m%d-%H%M%S
+<<< ---
+id: <yyyyMMdd-HHmmss>-patch-<id>-<slug>
+task: <id>            # id del gestor de tickets (0000 si no hay) · id de la secuencia del proyecto (ids.mode en sdd-kit.json)
+parent: <id>          # solo si este patch nace de partir otro; la relación no va en el id (nunca sufijos 0006a)
+title: Patch — <título corto>
+type: patch
+solution: <causa raíz | ticket | dev-lead>   # quién fijó la solución; si la fijarías tú, no es patch
+status: done
+created: <YYYY-MM-DD>
+branch: <feature|hotfix>/<id>   # el tipo de rama lo fija el git-flow del proyecto, no el carril
+commit: <hash>        # hash d
+
+>>> Bash: D=.docs/sdd/changes/20261112-194526-patch-0010-horas-media; mkdir -p $D; cat > $D/patch.md <<'EOF'
+---
+id: 20261112-194526-patch-0010-horas-media
+task: 0010
+title: Patch — las medias horas se calculaban como décimas
+type: patch
+solution: causa raíz
+status: done
+created: 2026-11-12
+branch: feature/0010
+commit: pendiente
+---
+
+# Patch 0010 — las medias horas se calculaban como décimas
+
+Validación: dev-lead — es lo que usa una persona al reservar.
+
+## Capacidades
+
+- Ninguna, porque ninguna capacidad describe `slotHours` y el fix devuelve `reservar` a lo que ya dice la constante `MAX_HOURS` (2,5 h).
+
+## 1. Síntoma
+
+`node src/app.js reservar Sur 09:30-12:00` responde «excede el máximo de horas»; son exactamente 2,5 h, el máximo permitido.
+
+## 2. Causa raíz
+
+`toHours` (`src/app.js`) hace `Number(time.replace(':', '.'))`: `"09:30"` pasa a `9.30`, no a `9,5`. Los minutos se leen como décimas de hora. Evidencia: `slotHours('09:30-12:00')` = 2,7 (debería ser 2,5), `slotHours('09:00-12:30')` = 3,3 (debería ser 3,5) y `slotHours('09:30-10:00')` = 0,7 (debería ser 0,5). Con horas en punto el error no aparece. Afecta también a `precio`. El test «reservar justo el máximo de horas se acepta» ya fallaba en `develop`.
+
+## 3. Fix
+
+- **Fichero(s)**: `src/app.js`, `test/precio.test.js`
+- **Cambio**: `toHours` separa horas y minutos y devuelve `h + m / 60`.
+
+## 4. Verificación
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `reservar Sur 09:30-12:00` → `reservada Sur 09:30-12:00` | pendiente |
+| 2 | `precio Sur 09:30-12:00` → `37.5 €` (test nuevo) | pendiente |
+EOF
+cat >> test/precio.test.js <<'EOF'
+
+test('precio con media hora en Sur', () => {
+  assert.equal(run('precio', ['Sur', '09:30-12:00']), '37.5 €');
+});
+EOF
+node --test 2>&1 | grep -E "^# (pass|fail)"
+<<< (Bash completed with no output)
+
+>>> Bash: node --test 2>&1 | grep -E "^ℹ (pass|fail)|not ok"
+<<< ℹ pass 5
+ℹ fail 2
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: node --test 2>&1 | grep -E "^ℹ (pass|fail)|not ok"; node src/app.js reservar Sur 09:30-12:00; node src/app.js precio Sur 09:30-12:00; git diff --numstat
+<<< ℹ pass 7
+ℹ fail 0
+reservada Sur 09:30-12:00
+37.5 €
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/precio.test.js', LF will be replaced by CRLF the next time Git touches it
+4	1	src/app.js
+4	0	test/precio.test.js
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisar patch 0010
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a55c3bc8018cc5142 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\changes\20261112-194526-patch-0010-horas-media\patch.md
+<<< 1	---
+2	id: 20261112-194526-patch-0010-horas-media
+3	task: 0010
+4	title: Patch — las medias horas se calculaban como décimas
+5	type: patch
+6	solution: causa raíz
+7	status: done
+8	created: 2026-11-12
+9	branch: feature/0010
+10	commit: pendiente
+11	---
+12	
+13	# Patch 0010 — las medias horas se calculaban como décimas
+14	
+15	Validación: dev-lead — es lo que usa una persona al reservar.
+16	
+17	## Capacidades
+18	
+19	- Ninguna, porque ninguna capacidad describe `slotHours` y el fix devuelve `reservar` a lo que ya dice la constante `MAX_HOURS` (2,5 h).
+20	
+21	## 1. Síntoma
+22	
+23	`node src/app.js rese
+
+>>> Bash: cd "<run>/repo" && git diff && ls test src && node --test 2>&1 | tail -30
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/precio.test.js', LF will be replaced by CRLF the next time Git touches it
+diff --git a/src/app.js b/src/app.js
+index 9bc2aea..6b83870 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -5,7 +5,10 @@ const rooms = ['Norte', 'Sur'];
+ const rates = { Norte: 20, Sur: 15 };
+ const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+ 
+-const toHours = (time) => Number(time.replace(':', '.'));
++const toHours = (time) => {
++  const [hours, minutes] = time.s
+
+>>> Bash: cd "<run>/repo" && cat src/app.js src/limits.js test/reservar.test.js; git log --oneline --all; git stash list
+<<< import { MAX_HOURS } from './limits.js';
+
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const rates = { Norte: 20, Sur: 15 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+const toHours = (time) => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours + minutes / 60;
+};
+
+export function slotHours(slot) {
+  const [start, end] = slot.split('-').map(toHours);
+  return end - start;
+}
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function book
+
+>>> Bash: D=.docs/sdd/changes/20261112-194526-patch-0010-horas-media; sed -i 's#^branch: .*#branch: feature/0010-horas-media#; s#ya fallaba en `develop`#ya fallaba antes del fix#; s#| pendiente |$#| ✅ |#' $D/patch.md
+cat >> $D/patch.md <<'EOF'
+
+Revisión (1 revisor): sin hallazgos medios ni altos. Corregidos: metadatos de rama y estado de §4. Aceptado sin cambio: no hay test directo de `slotHours`; los dos casos del síntoma están cubiertos por `reservar` y `precio`.
+
+Gate: `node --test` → corrió 7/7, 0 fallos (antes del fix: 5 pasan, 2 fallan).
+EOF
+git add -A && git commit -q -m "fix: las medias horas se calculaban como décimas en slotHours
+
+Patch 0010. toHours leía 09:30 como 9.30; ahora h + m/60.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+
+>>> Skill: sdd-kit:sdd-archive
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/precio.test.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/changes/20261112-194526-patch-0010-horas-media/patch.md', LF will be replaced by CRLF the next time Git touches it
+92cad15 fix: las medias horas se calculaban como décimas en slotHours
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: R="D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-y2-0152"; git status --porcelain; node $R/cli/bin/sdd.js merge --check --project-root . 2>&1 | tail -8; git worktree list; sed -n 1,60p $R/skills/sdd-archive/references/validation-modes.md
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo 92cad15 [feature/0010-horas-media]
+# Validation by mode
+
+Step 1 of `sdd-archive`.
+
+## With `validation.mode: field`
+
+You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.m
+
+=== RESULTADO (13 turnos, 0.4682341 $)
+El arreglo ya está hecho y verificado en local: `node src/app.js reservar Sur 09:30-12:00` responde ahora `reservada Sur 09:30-12:00`. Todavía no he hecho el commit ni el cierre del patch, y por eso `patch.md` pone `commit: pendiente` y la verificación «pendiente». Estoy esperando la revisión del patch, que sigue en marcha. Cuando llegue, la incorporo, hago el commit y cierro con `sdd-archive`.
+
+- **Causa:** `toHours` en `src/app.js` leía `"09:30"` como `9.30` en lugar de `9,5`, así que 09:30-12:00 salía como 2,7 h y superaba el máximo. El límite de 2,5 h estaba bien.
+- **Arreglo:** `toHours` separa horas y minutos y devuelve `h + m/60`.
+- **Efecto en `precio`:** el mismo error afectaba al cálculo de precios con medias horas. He añadido un test (`precio Sur 09:30-12:00` da `37.5 €`).
+- **Tests:** `node --test` pasa 7 de 7. Antes del arreglo fallaban 2, el de `reservar` que ya estaba en el repo y el nuevo de `precio`.
+- **Rama y papeles:** `feature/0010-horas-media`, con `.docs/sdd/changes/20261112-194526-patch-0010-horas-media/patch.md`.
+
+Aún no está desplegado en tu servidor. Esperaré a la revisión antes de decir que está cerrado.
+
+=== RESULTADO (5 turnos, 0.4682341 $)
+Estoy en el cierre del patch (`sdd-archive`) y me paro antes de escribir ningún registro. Hay dos cosas que decides tú.
+
+🦆 **Qué cambia:** `reservar` y `precio` calculaban mal las franjas con minutos, porque leían `09:30` como `9,30` h. Ahora leen `9,5` h. Con `reservar Sur 09:30-12:00`, que antes daba «excede el máximo», ahora responde `reservada Sur 09:30-12:00`.
+
+**Estado:** el arreglo está en el commit `92cad15` de `feature/0010-horas-media`. Pasan los 7 tests de `node --test`, y el revisor no encontró nada de severidad media o alta.
+
+**1. Validación.** Este proyecto no tiene `validation.mode: field` y `patch.md` dice `Validación: dev-lead`, así que no puedo darla por buena yo. Pruébalo tú:
+
+```
+node src/app.js reservar Sur 09:30-12:00      → reservada Sur 09:30-12:00
+node src/app.js reservar Sur 09:00-12:30      → excede el máximo de horas
+node src/app.js precio Sur 09:30-12:00        → 37.5 €
+```
+
+Dime qué has probado y que funciona. Si prefieres dejarlo para después, dime cuándo y en qué momento lo pruebas.
+
+**2. Fusión.** `sdd merge --check` se detiene porque `.docs/sdd/sdd-kit.json` no declara `merge.into` ni `merge.noFf`. Propongo fusionar en `develop` con `--no-ff`. Confírmalo, o dime otro destino. Si me lo confirmas, también añado esas dos claves a `sdd-kit.json` para que no vuelva a preguntar. Con tu validación y esa confirmación cierro el patch (`patch.md`, roadmap, fusión).

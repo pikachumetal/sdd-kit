@@ -1,0 +1,68 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | tail -80; echo ----; git show --stat HEAD | head -20; ls .docs/sdd; grep -n -i -A25 "testing" .docs/sdd/operations.md | head -70
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (1.3802ms)
+✔ reservar --cada-semana crea la reserva semanal (0.2467ms)
+✔ cancelar con un motivo de la lista (1.1316ms)
+✔ cancelar con un motivo fuera de la lista (0.3334ms)
+✔ canceladas enseña sala, día y motivo (2.2424ms)
+✖ el README nombra cancelar con motivo (1.3404ms)
+✖ el README nombra canceladas (0.2565ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.1039
+
+✖ f
+
+>>> Bash: grep -n -i -B2 -A15 "testing" .docs/sdd/tech-stack.md | head -50; cat scripts/gate.mjs | head -40; cat test/docs.test.js; git status --short
+<<< #!/usr/bin/env node
+// A closing gate with moon's flags for the battery molds: `run <tasks…> [--affected --base <ref>]` and `task <name>`.
+import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+
+const tasks = JSON.parse(readFileSync('gate.json', 'utf8')).tasks;
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).split('\n').filter(Boolean);
+}
+
+function changedFiles(base) {
+  const committed = git(['diff', '--name-only', `${base}...HEAD`]);
+  const local = git(['status', '--porcelain']).map((line) => line.sli
+
+>>> Bash: cat gate.json; node --test test/docs.test.js; echo exit=$?; git log --oneline -3 -- README.md
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js test/docs.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js","test/docs.test.js","README.md"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+✔ el README nombra cancelar con motivo (1.2461ms)
+✔ el README nombra canceladas (0.2358ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 153.1639
+exit=0
+8fd0c73 docs: el README nombra cancelar con motivo y canceladas
+3b739bc feat: base del molde
+
+=== RESULTADO (6 turnos, 0.1322507 $)
+**Gate:** `node --test test/docs.test.js` → tras el rojo en 05bb0a7, arreglo 8fd0c73 solo de docs: bookings:test: corrió 2/2 de los que fallaron (los otros 5 de 7 ya estaban en verde en la pasada roja) · rooms:test: no se reejecutó (saltada en la pasada roja; sus inputs `src/rooms.js` y `test/rooms.test.js` no los toca el arreglo)
+
+Esto es lo que comprobé:
+
+- **Qué falló:** en la pasada roja, `bookings:test` dio 5 de 7 en verde. Fallaron los dos tests de `test/docs.test.js`, porque el README no mencionaba `cancelar <sala> <día> --motivo` ni `canceladas`. Los 7 tests llegaron a correr, así que no hay tests sin ejecutar.
+- **Alcance del arreglo:** 8fd0c73 solo toca `README.md` (+3 líneas). Por eso, según la regla del gate para arreglos de solo docs, no corrí el gate completo ni las suites. Volví a lanzar únicamente los dos tests que fallaron.
+- **Resultado:** `node --test test/docs.test.js` salió con exit 0, 2 de 2 en verde y 0 fallos. El árbol de trabajo está limpio.
+
+No volví a correr el gate completo con `--base`. La regla no lo pide para un arreglo de solo docs, aunque `README.md` figure en los inputs de `bookings:test`. Por eso la línea nombra solo lo que se reejecutó, no un «verde» general.

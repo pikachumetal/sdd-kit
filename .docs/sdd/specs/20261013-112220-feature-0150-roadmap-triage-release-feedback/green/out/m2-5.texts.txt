@@ -1,0 +1,59 @@
+--- [2]
+Uso `sdd-kit:sdd-roadmap`: son varias funcionalidades a la vez (ocupación por sala, exportación a Excel y aviso semanal), así que primero hay que apuntarlas y partirlas en el roadmap.
+
+--- [5]
+Empiezo por el estado real: roadmap, deuda, ramas y configuración.
+
+--- [12]
+Es la forma 2.x (`roadmap.md`), sin ramas abiertas ni nada en curso. Es algo grande (3 funcionalidades), y con «decide tú» registro las decisiones en la propuesta. Reservo los ids.
+
+--- [18]
+The roadmap edit didn't apply (the heredoc fallback swallowed it). I'll edit it directly.
+
+--- [27]
+He dejado el módulo de informes planificado en el roadmap y no he empezado a implementarlo. La propuesta y las tres filas están en `develop` (commit `0f79fc9`).
+
+## Qué ha quedado
+
+La propuesta es `.docs/sdd/specs/20261013-120000-proposal-0008-occupancy-reports/proposal.md`. Las filas nuevas están en «Próximo», tras la fila 1, que no he tocado:
+
+| Id | Feature | Tras |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala (`informe`, semana en curso o `--semana`) | — |
+| 0010 | Exportar a Excel (`informe --xlsx`) | 0009 |
+| 0011 | Aviso semanal a responsables (`aviso-semanal`) | 0009 |
+
+## Decisiones que he tomado por ti
+
+Están en la propuesta, con un ejemplo con datos cada una, para que el cliente las corrija con una enmienda:
+
+- **Ocupación**: horas reservadas entre horas disponibles, de lunes a viernes de 08:00 a 20:00 (60 h por sala y semana). El código no define horario, así que lo he supuesto y queda como constante configurable.
+- **Excel**: un `.xlsx` real, sin dependencias externas, porque el tech-stack es Node sin librerías.
+- **Aviso**: la herramienta es CLI y no tiene proceso residente, así que `aviso-semanal` lo lanza un cron y cubre la semana anterior. Los responsables van en `responsables.json`, cada uno recibe solo sus salas, y una sala sin responsable lo indica en la salida.
+
+## Lo que conviene que sepas
+
+- **Preguntas para el cliente** (no bloquean): si el horario 08:00–20:00 es el real, y quiénes son los responsables y sus correos.
+- **Fila 1**: el aviso por correo comparte el envío con «Avisos por correo antes de la reserva». Quien llegue segundo reutiliza el envío del primero.
+- **Reservas en memoria**: viven hoy en memoria (`src/app.js`), así que el informe mide solo lo que haya cargado. Si el cliente espera históricos, hace falta una feature de persistencia, que no he apuntado.
+- **Misión**: `mission.md` dice que la usas solo tú, y «responsables» implica más gente. No lo he cambiado, pero quizá haya que actualizarla.
+- **Validación del roadmap**: `sdd roadmap check` da dos fallos en líneas que no he tocado: la cabecera de «Deuda técnica» y el formato de `v0.3.0` en «Releases cerradas». Es forma heredada, pendiente de la migración a la 2.3.0.
+- **Commit**: `sdd roadmap publish` rechazó el commit porque estoy en `develop`, que es su propio destino. Hice el mismo commit a mano, solo con `roadmap.md` y `proposal.md`.
+
+## Lo primero a hacer: 0009
+
+Rama `feature/0009-occupancy-report`, base `develop`, carril feature:
+
+```text
+Arranca la 0009 con sdd-propose, carril feature: el comando `informe` que calcula la ocupación por sala de la semana en curso (o de `--semana AAAA-Www`).
+Requisitos en .docs/sdd/specs/20261013-120000-proposal-0008-occupancy-reports/proposal.md, §Reglas de negocio, y en la fila 0009 del roadmap.
+Decisiones ya tomadas:
+- Horas disponibles: lunes a viernes de 08:00 a 20:00 (60 h por sala), constante configurable.
+- Las reservas semanales (`--cada-semana`) cuentan en cada semana; las canceladas no cuentan.
+- Una sala sin reservas sale con 0,0 %; formato de línea `Sala · X h de 60 h · Y,Y %`.
+Nada que saldar.
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di «arráncalo».
+

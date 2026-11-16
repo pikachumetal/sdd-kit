@@ -1,0 +1,42 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [15]
+Estoy en el paso 1 (validación en modo `field`): levanto el entorno y paso la suite, y después hago el smoke de cada THEN.
+
+--- [23]
+La 0010 no está cerrada: el puerto 64979 lo tiene ocupado un proceso que no arranqué yo, así que no puedo pasar el gate de cierre. No he escrito ningún registro ni he tocado nada de la rama.
+
+**Pre-checks**
+- El árbol está limpio.
+- `sdd merge --check` da «destino: listo» para `develop`.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura.
+- `HEAD` (`b0f1419`) solo añade `tasks.md` sobre `4d3643f`, el commit que revisó la revisión final. Es solo documentación, así que no hace falta re-revisión.
+
+**El bloqueo**
+- `node scripts/env-up.mjs` falla con «el entorno no responde en `/health`».
+- `GET http://localhost:64979/health` devuelve 404 con el texto «otra aplicación: no es el entorno de la suite». No es el servidor de este repo.
+- Mi `server.mjs` tampoco puede arrancar: da `EADDRINUSE` en ese puerto.
+- No he podido identificar el PID del proceso: `Get-NetTCPConnection` y `netstat` no lo muestran.
+- `env-up` ya intentó `/shutdown`, y no liberó el puerto.
+
+La regla del cierre dice que, si el puerto lo tiene un proceso ajeno, no hay que cambiar de puerto ni matarlo a ciegas. Otro puerto comprobaría el servidor equivocado.
+
+**Qué necesito de ti**
+Una de estas dos cosas:
+1. Que liberes el puerto 64979, o me digas de quién es y si puedo pararlo.
+2. Que autorices otro puerto en `e2e/config.json`. Es un cambio de configuración que habría que registrar en el walkthrough.
+
+Con el entorno levantado hago lo que queda:
+- Gate de cierre completo: `node --test test/ && node e2e/run.mjs`.
+- Smoke de los 5 THEN, con ejecución real.
+- Walkthrough, `tasks.md`, fusión de la capacidad `bookings`, fila `✅` en el ROADMAP y retro.
+- Un único commit de cierre y `sdd merge` a `develop`.
+
+**Avisos para el cierre**
+- El ruling de la Task 2 es un workaround. El test `canceladas` depende del estado que deja el primer test. `operations.md` §Datos dice que un test que depende de otro es un defecto. Al cerrar abriré una fila de deuda con ese workaround.
+- No existe `.docs/sdd/steering/estimation.md`, así que no hay tiempo real que registrar ni estimation-log.
+
+**No terminado.** Falta pasar el gate y el smoke, que dependen de liberar el puerto 64979, y el commit de cierre y la fusión a `develop`. No borres todavía el worktree `<run>/repo`.
+

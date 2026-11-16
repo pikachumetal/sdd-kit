@@ -1,0 +1,148 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd . && ls -a && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:**
+
+>>> Bash: cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat .docs/sdd/steering/*.md; cat package.json; ls src test; grep -n "libres\|free" -ri src README.md | head -20; git log --oneline | head
+<<< # Spec — free
+
+status: done
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja hor
+
+>>> Bash: cat src/app.js; grep -n "libres" -B2 -A8 test/app.test.js; cat README.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.12763370000000002 $)
+Antes de abrir una feature tengo que parar: ese comando ya existe, así que no hay nada que añadir.
+
+- **Código:** `src/app.js:10` implementa `libres <franja>`, que devuelve las salas sin reserva en esa franja.
+- **Test:** `test/app.test.js:5` lo cubre («libres excluye la sala reservada en la franja»).
+- **Spec:** `.docs/sdd/specs/20260917-090000-task-0006-free/` tiene la spec en `status: done` y su walkthrough.
+
+No he creado rama, carpeta ni spec. Si abriera una feature para algo que ya está, saldría una spec que duplica la 0006.
+
+Puede que lo que echas en falta sea alguna de estas variantes, que hoy no cubre `libres`:
+
+1. **Filtrar por día.** Las reservas tienen `day`, pero `libres` solo compara la franja. Con `lun` y `10:00-12:00` ocupando Norte, `libres 10:00-12:00` da `Sur` aunque pidas el martes. Es el mismo tipo de fallo que arregló el patch 0007 en `cancelar`. Si es esto, entra como patch, no como feature.
+2. **Franjas solapadas.** Hoy solo cuenta la coincidencia exacta de texto, así que `11:00-13:00` no detecta el choque con `10:00-12:00`. Esto sí sería una feature en modo full. Tiene relación con la deuda «Sin validación del formato de franja horaria», que sigue por triar.
+3. **Otra interfaz.** Por ejemplo un listado de todas las franjas libres de una sala, o un formato de salida distinto.
+4. **Nada de lo anterior.** Si has probado `libres` y falla de otra forma, dime el comando y lo que ves.
+
+Mi recomendación es la 2, en modo full, porque es el hueco de comportamiento real. ¿Cuál es?
+
+>>> Bash: cd C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references && cat nombrado.md | head -80; grep -n "Aviso\|local" control-profiles.md | head -20; cat <run>/repo/.docs/sdd/sdd-kit.local.json 2>&1 | head
+
+>>> Bash: node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id --help 2>&1 | head -30
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+<<< uso: sdd id next|claim
+sdd id next   Propone o reserva el siguiente id SDD (ids.mode=sequence)
+sdd id claim  Reclama el id de la tarea contra la integración del remoto (ids.mode=sequence)
+
+>>> Bash: cd "<run>/repo" && R=$(pwd) && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id next --project-root "$R" --reserve; git status --short; git branch --show-current
+<<< 0010
+develop
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0010-salas-libres-franja && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id claim --project-root "$(pwd)"; git branch --show-current
+<<< Switched to a new branch 'feature/0010-salas-libres-franja'
+sin remoto: la 0010 vale (contador local)
+feature/0010-salas-libres-franja
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: sed -n 1,21p "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references/control-profiles.md"
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which follows `m
+
+=== RESULTADO (9 turnos, 0.2217747 $)
+Ahora: abro la feature 0010 en modo full, con la rama `feature/0010-salas-libres-franja` ya creada, y te hago la primera pregunta de diseño. Queda: la entrevista, la spec con su parada para que la apruebes, el plan y la implementación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):**
+- Quieres un comando para consultar qué salas están libres en una franja horaria.
+- Ya te dije que `libres <franja>` existe (`src/app.js:10`). Mantienes la petición, así que lo apunto como decisión tuya y sigo. No lo vuelvo a discutir.
+- Parto de que el comando nuevo convive con `libres` y de que la spec tiene que dejar claro en qué se diferencia.
+- Branch y id: `feature/0010-salas-libres-franja`, id reservado con `sdd id next` y comprobado con `sdd id claim` (sin remoto, vale el contador local).
+- Foreseo 2 o 3 tasks, así que no propongo dividirla ni pararme antes de la Task 1.
+
+Primera pregunta, abierta porque solo la sabes tú: ¿qué quieres hacer con este comando que hoy no puedes hacer con `libres`?

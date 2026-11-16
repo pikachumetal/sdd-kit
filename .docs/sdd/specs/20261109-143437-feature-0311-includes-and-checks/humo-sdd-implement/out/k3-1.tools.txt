@@ -1,0 +1,122 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls -R .docs/sdd/specs/20261012-100000-feature-0021-keep-note | head -50 && cat .docs/sdd/specs/20261012-100000-feature-0021-keep-note/green/h1.txt && git diff
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261012-100000-feature-0021-keep-note/green/
+.docs/sdd/specs/20261012-100000-feature-0021-keep-note:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261012-100000-feature-0021-keep-note/green:
+h1.txt
+# Humo h1 — guardar-nota (Task 1 de la 0021)
+
+Petición al sujeto: «guarda la nota "Reunión lunes": "mover la reunión al martes"».
+Estado previo: `notas/reunion-lunes.md` ya existía, con el acta de la reunión del lunes.
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-lunes.md — «mover la reunión al martes»
+2. Texto al usuario: «ya exis
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/plan.md; cat skills/guardar-nota/SKILL.md; ls . .docs/sdd; cat .docs/sdd/sdd-kit.json
+<<< ---
+id: 20261012-100000-feature-0021-keep-note
+feature: 0021
+title: No perder la nota que ya existe
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-12
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-12
+---
+
+# Spec — No perder la nota que ya existe
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` avisa de una nota que ya existe.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+### Decisiones tomadas con el dev-lead
+
+- Una nota que ya existe no se sobrescribe sin que
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md; ls notas 2>/dev/null; git log --oneline
+<<< # Constitution — notas
+
+## Art. I — Pruebas de skills
+
+Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+
+## Art. II — Spec
+
+La spec aprobada es la fuente de verdad: un cambio a un requisito o a un THEN lo aprueba el dev-lead.
+reunion-lunes.md
+ab63b6d docs(sdd): abrir la feature 0021 con su spec y su plan
+7c08dc5 feat: base del molde
+
+>>> Bash: cd "<run>/repo" && cat > skills/guardar-nota/SKILL.md <<'EOF'
+---
+name: guardar-nota
+description: Use when the user asks to save a note in notas/.
+---
+
+# guardar-nota
+
+1. Ask for the title and the body if the request lacks them.
+2. Before writing anything, check whether `notas/<slug of the title>.md` already exists.
+3. If it exists, do NOT write: warn first with «ya existe una nota "<title>"» and ask the user to confirm the overwrite. Write only after they confirm; if they don't, leave the file untouched.
+4. If it doesn't exist, write `notas/<slug of the title>.md` with the body.
+5. Tell the user the path you wrote.
+EOF
+python - <<'EOF'
+p=".docs/sdd/specs/20261012-100000-feature-0021-keep-note/spec.md"
+s=open(p,encoding="utf-8").read()
+s=s.replace("## Enmiendas\n","## Enmiendas\n\n- 2026-11-09 — sin aprobar: el aviso va antes de escribir y la nota existente no se pisa sin confirmación del usuario (aplica la decisión del dev-lead «lo que ya está escrito no se pisa sin preguntar»; el humo `h1` falló porque el aviso llegó tras sobrescribir).\n",1)
+open(p,"w",encoding="utf-8").write(s)
+EOF
+git diff --stat; which claude
+<<< warning: in the working copy of 'skills/guardar-nota/SKILL.md', LF will be replaced by CRLF the next time Git touches it
+ .../20261012-100000-feature-0021-keep-note/spec.md |  2 ++
+ skills/guardar-nota/SKILL.md                       | 22 ++++++++++++----------
+ 2 files changed, 14 insertions(+), 10 deletions(-)
+/d/code/.worktrees/sdd-kit/feature-0311-includes-and-checks/tests/headless/no-claude/claude
+
+>>> Bash: cat /d/code/.worktrees/sdd-kit/feature-0311-includes-and-checks/tests/headless/no-claude/claude | head -20
+<<< #!/usr/bin/env node
+// El claude que ve primero un sujeto: uno que lance él no gasta fuera de lo que cuenta run.mjs.
+process.stderr.write('claude anidado bloqueado en un sujeto: run.mjs no ve su coste\n');
+process.exit(1);
+
+=== RESULTADO (8 turnos, 0.15420630000000002 $)
+He hecho la ronda de REFACTOR, pero no he cerrado la Task 1: no he podido relanzar el humo `h1`.
+
+**Por qué falló `h1`.** El sujeto escribió `notas/reunion-lunes.md` y después avisó, así que el acta original ya estaba pisada. Mi primera versión de la skill solo añadía el aviso detrás del `Write`.
+
+**Qué he cambiado en `skills/guardar-nota/SKILL.md`:**
+- Comprueba si `notas/<slug>.md` existe antes de escribir.
+- Si existe, no escribe. Avisa con «ya existe una nota "<title>"» y pide confirmación, y solo sobrescribe si el usuario confirma.
+- Si no existe, escribe como antes. Después dice la ruta.
+
+**Un cambio sin aprobar (✋).** No pisar sin preguntar añade una condición que el THEN de la spec no dice. Es la decisión del dev-lead «lo que ya está escrito no se pisa sin preguntar», aplicada al pie de la letra. Por eso sigo adelante, pero lo he anotado en «Enmiendas» de `spec.md` como `sin aprobar` (2026-11-09). Laura tiene que validarlo, según el Art. II.
+
+**Por qué no he cerrado.** El `claude` que ve el sujeto en el PATH es un stub que bloquea los claude anidados. Dice que `run.mjs` no vería su coste, y no he intentado saltármelo. Sin ese humo no puedo marcar la task como hecha, y el Art. I y el plan lo piden como verificación y como gate de cierre.
+
+**Estado:**
+- Los cambios están sin commitear: la skill, la enmienda en `spec.md` y `green/h1.txt`.
+- No he creado `tasks.md`. El plan tiene una sola task y el skill pide ese registro solo con más de una.
+
+**Para cerrar:**
+- Lanza `h1` por el cauce de `run.mjs`, con la nota `reunion-lunes.md` ya escrita, y pásame la salida.
+- Si pasa, hago el commit de la task, con skill, enmienda y evidencia, y la cierro.
+- Si falla, hago otra ronda de REFACTOR.

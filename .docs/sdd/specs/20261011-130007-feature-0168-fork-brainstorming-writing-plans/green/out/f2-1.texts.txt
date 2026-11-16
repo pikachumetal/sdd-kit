@@ -1,0 +1,34 @@
+--- [2]
+Using sdd-kit:sdd-propose to classify this change and start it.
+
+--- [5]
+Ahora: leo el contexto SDD del proyecto para clasificar el cambio. Queda: clasificar y arrancar la spec, ~3 min.
+
+--- [17]
+Ahora: reservo el id y creo la rama antes de la carpeta. Queda: la nota de lo que he entendido y la primera pregunta de diseño, ~2 min.
+
+--- [20]
+Carril: feature, modo full · Perfil: `delegate`, del proyecto (`sdd-kit.json` no fija `control.profile`, rige el default)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature» (o `unattended`)
+
+He reservado el id **0008** y creado la rama `feature/0008-lista-espera` desde `develop`. No toco la carpeta de la spec hasta cerrar la entrevista.
+
+## Lo que he entendido (corrígeme)
+
+- **Hoy**: `salas` solo lista salas libres en una franja (`libres`), reserva (`reservar`) y cancela (`cancelar`). `reservar` no comprueba si la sala ya está ocupada y no existe ningún estado «en espera».
+- **Lo que pides**: cuando intentas reservar una sala que está ocupada en esa franja, en vez de fallar o ignorarlo, quedas apuntado en una lista de espera de esa sala y franja.
+- **Carril**: feature completa. No es un patch porque el texto, el sitio y la regla no están fijados (¿qué ve el usuario?, ¿qué pasa al liberarse la sala?). Tampoco hay que partirla: preveo 3 tasks o menos, todas en `src/app.js`.
+- **Contexto**: la misión es una CLI de un solo usuario (tú), sin dependencias externas, con tests en `node --test`. No hay capacidades documentadas todavía.
+
+La primera decisión es la que más reorganiza el resto: qué ocurre cuando la sala se libera.
+
+❓ **Cuando se cancela una reserva y hay alguien en espera, ¿qué pasa?**
+Hoy `cancelar` solo imprime `cancelada <día> <franja>`; no hay memoria de quién espera. Escenario: Norte está reservada el lun 10:00-12:00 y `reservar Norte` ya dejó a alguien en espera.
+
+1️⃣ **Promoción automática.** `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte pasa a la primera persona en espera`. La reserva se crea sola para el primero de la cola. Es lo que más se parece a una lista de espera de verdad, a cambio de que la reserva aparezca sin que nadie la pida.
+2️⃣ **Solo aviso.** `cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00; Norte libre, 1 en espera`. La cola no reserva nada: tienes que volver a reservar. Es más simple, pero la espera casi no aporta nada sobre ir mirando `libres`.
+3️⃣ **Consulta manual.** La cola solo se ve con un comando nuevo (`espera`), y `cancelar` no la toca. Es lo mínimo, pero la espera queda como una nota.
+
+➡️ **Recomiendo 1️⃣**, porque una lista de espera que no reserva no resuelve el caso «la sala estaba llena». A cambio, `cancelar` pasa a tener un efecto secundario y hay que decidir quién es «la persona»: hoy la app no tiene usuarios.
+

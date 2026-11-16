@@ -8,8 +8,7 @@ created: <YYYY-MM-DD>
 
 > Audiencia: el CLIENTE. Se destilan del changelog sellado, no se copian: cada novedad se cuenta
 > como **outcome para quien la usa**, no como entregable de ingeniería. **Prohibido**: IDs de feature,
-> scopes de commit, jerga técnica, promesas de fechas no confirmadas. El email de entrega se deriva
-> de este documento y vive como borrador en la misma carpeta — el envío es del usuario.
+> scopes de commit, jerga técnica, promesas de fechas no confirmadas. El envío es del usuario.
 > Borra los bloques de ayuda (`>`) al redactar.
 
 *<fecha de entrega>*

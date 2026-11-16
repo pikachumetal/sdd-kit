@@ -1,0 +1,95 @@
+--- [3]
+Empiezo por las comprobaciones previas del paso 0.
+
+--- [26]
+Suite verde: 5/5 unitarios y 7/7 E2E sobre `d3ba327` (49 s, el presupuesto es 0,5 min). Ensayo ahora el guion con una sesión propia y luego paro el entorno.
+
+--- [32]
+El cierre de la 0010 está parado en la validación y todavía no he escrito ningún registro. En este proyecto `validation.mode` es `manual`, y «ciérrala» es la orden de cerrar, no la validación. Eso sí, no hay otras ramas abiertas, la spec está aprobada y `HEAD` solo movió documentación desde la revisión final, así que no hace falta re-revisión.
+
+**Abiertas a la vez:** ninguna. `git worktree list` solo muestra este worktree.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` enseña «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos, y falla si corre solo o en otro orden.
+
+**Smoke que he corrido** (sesión `ensayo`, por el servidor)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| `canceladas` | ejecución real | `Norte lun — sala ocupada` |
+| motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+
+**Suites**
+
+- `node --test test/ && node e2e/run.mjs`: 5/5 unitarios y 7/7 E2E sobre `d3ba327`, 49 s. El E2E tardó 48 s frente al presupuesto de 0,5 min, así que abriré una fila en `debt.md` al cerrar.
+- Config del gate: la declarada, sin añadidos. Entorno levantado por mí y ya parado.
+
+**Sin probar**
+
+- Nada.
+
+Panel: plan B en http://127.0.0.1:57680/ (esa página no ve la app, así que si un paso falla, cuéntamelo en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno (servidor en el puerto 55245):
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+El servidor es la aplicación que usa la persona. Estos pasos van con la misma sesión (`x-session: validacion`), que empieza con la reserva de Norte del lunes sin cancelar.
+
+1. Cancelar con motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:55245/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Ver el listado → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:55245/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+3. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:55245/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+4. Sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validacion" -G http://localhost:55245/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [33]
+Esto es un aviso automático, no una respuesta tuya: el servidor del panel (plan B) se ha parado por llegar a su límite de tiempo en segundo plano. La URL `http://127.0.0.1:57680/` ya no responde. No lo reinicio, porque ese comando ya tenía el tiempo máximo permitido.
+
+La validación sigue sin hacerse y el cierre de la 0010 sigue parado, sin ningún registro escrito. El guion en texto de mi mensaje anterior sigue valiendo tal cual. Para validar, ejecuta sus cuatro pasos con `curl` y dime «validado» o qué paso falla. Si no puedes ahora, usa la línea `Diferir:` con tu disparador. En cuanto me contestes, sigo con el cierre.
+

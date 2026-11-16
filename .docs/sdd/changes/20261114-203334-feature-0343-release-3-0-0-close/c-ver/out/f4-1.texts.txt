@@ -1,0 +1,34 @@
+--- [4]
+### Strengths
+- The change is small and sits in one place. It follows the existing `run` dispatch and the same style as `cancelledList`.
+- The UI text is in Spanish, with singular/plural handled (`reserva`/`reservas`).
+- `occupancyReport` is 26 lines, within the 30-line limit.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+- **`src/app.js:35`: `// incrementa count` restates `count++`.** The comment adds nothing, and the review rules make that Important. Delete it.
+- **No test for `occupancyReport` or the `ocupacion` command.** The diff touches only `src/app.js`, while `test/` holds tests for the other commands. A new public function with several branches (a plural label, canceled lines, an empty total) has no safety net. This is a possible Clean Code miss ("a test for every public method"). Add tests for no bookings, one booking and canceled bookings.
+
+#### Minor
+- **`src/app.js:29,46`: `const now = 'hoy'` is a constant pretending to be a variable.** It prints a fixed "(hoy)" suffix that gives no information. Inline it or drop it; the name `now` also misleads, since it is not a date.
+- **`src/app.js:30-38`: the nested loop with `continue` can be a single `filter(...).length`.** `cancelled` a few lines below already counts that way, so the two are inconsistent. A small helper such as `countBy(status, room)` would make both counts consistent and shorten the function. This is a possible Fowler "Long Method / Extract Method" case. The 30-line repo limit suppresses the length complaint, so only the readability point stands.
+- **`src/app.js:47-49`: a total of 0 produces both `Sala: 0 reservas` lines and a "sin reservas activas" line.** This is redundant but harmless; confirm it is intended.
+
+### Declined to judge
+- Whether `ocupacion` and its output format match the spec: that belongs to the Spec axis.
+- Whether the report belongs in `app.js` rather than its own module: that belongs to the Architecture axis.
+- Comments citing documents: none were listed, and I saw none.
+- E2E: none are declared, so no E2E rules apply.
+
+### Recommendations
+Remove the comment and the `now` constant. Add tests for the report. Use a single counting helper for both the per-room and the canceled counts.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the length limit. The redundant comment is an Important finding and has to go. The new function should also get tests before merge.
+

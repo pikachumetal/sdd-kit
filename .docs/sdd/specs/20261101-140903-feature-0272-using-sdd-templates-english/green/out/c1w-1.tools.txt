@@ -1,0 +1,86 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3; git branch --show-current
+
+>>> Grep: Borrar
+<<< pages\pedido-detalle.html:11:        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+pages\albaran-detalle.html:11:        <button type="button" class="btn btn-peligro" data-accion="borrar">Borrar</button>
+<<< ./
+../
+capabilities/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate", "maxParallelAgents": 3}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "execution": "auto"}
+develop
+
+>>> Bash: cat .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/mission.md | head -120; ls .docs/sdd/capabilities; node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/cli/bin/sdd.js" capability index --path .docs/sdd; ls; cat pages/pedido-detalle.html pages/albaran-detalle.html
+<<< # Constitution — ventas
+
+- Páginas estáticas sin build: HTML, CSS y un `app.js` sin dependencias.
+- Textos de la interfaz en castellano.
+- Commits: tipo/scope en inglés, cuerpo en castellano.
+# Tech stack — ventas
+
+- HTML + CSS en `pages/` y `styles/`; lógica en `app.js`.
+- Sin tests automáticos: la verificación es abrir la página en el navegador. 
+# Misión — ventas
+
+Fichas de pedido y de albarán para el equipo comercial: ver las líneas, su total con IVA y guardar, cancelar o borrar la ficha.
+order-sheets.md
+- `order-sheets` — Las fichas de pedido y de albarán: qué acciones ofrecen
+
+>>> Bash: cat app.js styles/ficha.css .docs/sdd/capabilities/order-sheets.md; grep -ri factur . --include=* -l --exclude-dir=.git
+<<< function lineTotal(quantity, price, vat) {
+  return Math.round(quantity * price * (1 + vat) * 100) / 100;
+}
+
+document.querySelectorAll('.lineas tbody tr').forEach((row) => {
+  const total = lineTotal(Number(row.dataset.cantidad), Number(row.dataset.precio), Number(row.dataset.iva));
+  row.querySelector('.total').textContent = total.toFixed(2).replace('.', ',') + ' €';
+});
+.ficha { font-family: system-ui, sans-serif; max-width: 960px; margin: 24px auto; }
+.ficha-cabecera { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ccc; padding-bottom:
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/skills/sdd-propose/references"; cat spec-writing.md modo-lite.md; cat <run>/repo/.docs/sdd/roadmap.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Writing the spec
+
+Adapted from superpowers 7.0.0 `brainstorming` (MIT, see NOTICE).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec cover
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.1965129 $)
+Ahora: dejo clasificado el cambio y te hago la primera pregunta de diseño. Queda: tu respuesta, la spec para aprobar y el plan, ~15 min. (Mi último comando se quedó en la carpeta del kit, no en tu repo. Sigo trabajando solo sobre el repo `ventas`.)
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hay `sdd-kit.local.json`, así que no ignoro ninguna clave. Veo unas 2 tasks, así que no propongo dividirla.
+
+**Lo que he entendido, corrígeme:**
+- **Dónde:** en `pages/pedido-detalle.html` y `pages/albaran-detalle.html` el botón Borrar aparece siempre, junto a Guardar y Cancelar.
+- **Qué quieres:** que Borrar no se vea cuando el pedido está facturado, y que cuando se vea quede más a la derecha. Esto cambia lo que el usuario ve y puede hacer, así que no es un patch. Tampoco lo es porque nadie ha fijado la condición.
+- **Lo que no existe todavía:** nada en el repo sabe si un pedido está facturado (no aparece la palabra «factur» en el código ni en la documentación). Hay que decidir de dónde sale ese dato.
+- **El orden de la regla:** la capability `order-sheets` dice hoy que la ficha «ofrece Guardar, Cancelar y Borrar» siempre, y la spec la modificará.
+
+❓ **¿De dónde sale que el pedido está facturado?**
+Las fichas son HTML estático sin build ni datos reales: cada ficha lleva sus datos en atributos, por ejemplo `data-cantidad="3"` en la línea.
+1️⃣ **Un atributo `data-facturado="true"` en la ficha (`<main class="ficha">`).** `app.js` quita el botón Borrar cuando lo ve. Hoy lo pones a mano, y cuando haya datos reales lo escribirá quien genere la página. Ejemplo: el pedido `PV-2026-0142` con `data-facturado="true"` muestra `Guardar · Cancelar`, sin Borrar.
+2️⃣ **Una marca visible en la ficha, como un texto «Facturado» en la cabecera.** `app.js` lo lee de ahí. Enseña el estado, pero amarra la lógica a un texto.
+3️⃣ **Otra fuente que ya tengas en mente (API, otro fichero).** Dime cuál.
+➡️ **Recomiendo 1️⃣**, porque es el patrón que ya usa la ficha para sus datos y no obliga a inventar un fichero ni una API. A cambio, el dato se pone a mano en cada página hasta que haya un origen real.
+
+Después te preguntaré qué significa «a la derecha». Hoy las tres acciones ya están agrupadas a la derecha de la cabecera.

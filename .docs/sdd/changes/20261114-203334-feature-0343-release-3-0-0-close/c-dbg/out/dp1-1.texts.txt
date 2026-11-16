@@ -1,0 +1,101 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs) y reproduzco el fallo para clasificarlo. Queda: preguntarte por el carril (un parche), ~2 min.
+
+--- [11]
+Ahora: tengo la causa y el carril. Queda: tu confirmación, y luego abro el parche y lo arreglo (~5 min).
+
+🦆 **En llano:** la función que convierte la hora a número hace `Number("09:30".replace(':', '.'))`, que da 9,30. Eso trata «:30» como 0,30 horas, y en realidad son 0,5. Por eso 09:30-12:00 sale como 12,00 − 9,30 = **2,7 h** y no 2,5, y supera `MAX_HOURS = 2.5`. Es determinista y está en `toHours` (`src/app.js:8`).
+
+**Alcance.** El error afecta a todo lo que pasa por `slotHours`. `precio Sur 09:30-12:00` cobra 40,5 € en vez de 37,5 €. Con el arreglo en `toHours` se corrigen los dos comandos. No he tocado nada todavía.
+
+Es un fallo determinista con solución fija, así que es un **patch** (carril ligero: un test que hoy falla, la corrección y `node --test` en verde). No hay `estimation.md`, así que no hay estimación en horas.
+
+1. **Abrir como patch y arreglar `toHours` (Recomendada).** Convierte minutos a fracción de hora (`h + m/60`). El test de regresión cubre `09:30-12:00` (permitido) y `precio`. El perfil es el del proyecto (`sdd-kit.json`).
+2. **Arreglar solo el límite, dejando `precio` como está.** No lo recomiendo: dejaría mal el cobro.
+3. **Tratarlo como feature completa.** Es más ceremonia y no aporta nada a un fallo determinista.
+
+Si te vas a ausentar, puedes responder «1, y apruebo por delegación». ¿Cuál eliges?
+
+--- [13]
+Ahora: reservo el id y la rama del patch. Queda: abrir el patch, el test rojo, la corrección y la verificación (~5 min).
+
+--- [17]
+Id 0010 reservado y rama creada. Ahora: paso al flujo de implementación del patch.
+
+--- [21]
+Ahora: confirmo la causa raíz con `sdd-debugging`, antes de tocar código. Queda: carpeta del patch, test rojo, corrección, revisión y commit (~4 min).
+
+--- [23]
+Phase 1: leo la deuda, los tests existentes y confirmo la hipótesis con una medición, sin cambiar código.
+
+--- [31]
+Ahora: escribo §1–§3 de `patch.md` antes del fix (la causa va antes que la corrección).
+
+--- [34]
+Ahora: añado el test de `precio` (misma causa) y compruebo que falla en rojo antes de tocar el código.
+
+--- [37]
+Hay dos tests en rojo y los dos fallan por la causa esperada: el de `reservar` y el nuevo de `precio`. Ahora: aplico la corrección mínima.
+
+--- [43]
+Ahora: la suite está en verde, 7/7. Queda: la revisión obligatoria del patch con un revisor, `patch.md` y el commit (~3 min).
+
+--- [48]
+El aviso es del vigilante de silencio, no del revisor. El revisor sigue trabajando y no sé todavía qué ha encontrado. Espero su resultado antes de completar §4 de `patch.md` y hacer el commit.
+
+--- [53]
+Hallazgos:
+
+1. **Importante: el fix deja un fallo de coma flotante en la comparación con `MAX_HOURS`.**
+   - `toHours` ahora devuelve `hours + minutes / 60`, y `slotHours` resta dos flotantes. `book` compara el resultado con `> MAX_HOURS`, sin tolerancia.
+   - Hay franjas de exactamente 2,5 h con minutos que se rechazan. Pasa en 54 de las franjas de 2,5 h con inicio entre 07:00 y 21:59. Ejemplos: `07:01-09:31`, `07:03-09:33` y `07:16-09:46`.
+   - La misma causa afecta al texto de `precio`. `10:00-10:20` a 15 €/h da `5.000000000000009 €`, y habría que redondear. Con las franjas del patch (`:30`, `:15`, `:45`) los valores son exactos y por eso los tests pasan. Con minutos como `:10`, `:20` o `:50` en `precio` no se ha probado.
+   - El patch declara que el problema es «solo» la lectura de los minutos como centésimas. Su alcance («sin cambiar nada más») es defendible, pero entonces conviene dejar constancia del riesgo residual o trabajar con minutos enteros: `(endMin - startMin) / 60`, o comparar en minutos con `MAX_HOURS * 60`.
+
+2. **Menor: la afirmación de que los tests fallaban antes no está demostrada.**
+   - No he podido reproducir el estado previo sin modificar el repo, pero lo he calculado con la fórmula antigua (`Number(time.replace(':', '.'))`).
+   - Con ella `09:30-12:00` da 2,6999999999999993 y `precio` da 40,5 €. Por tanto el test de `reservar` y el nuevo de `precio` fallaban antes, y por la causa indicada.
+   - Con el código nuevo, `node --test` da 7 de 7 en verde.
+   - Los tests prueban comportamiento real a través de `run`, y los dos de `reservar` ya existían. El de «más del máximo» (`09:00-12:30`, 3,5 h) sigue rechazándose, como debe.
+   - No hay ningún test con minutos que no sean múltiplos de 15, así que el punto 1 no está cubierto.
+
+3. **Sin hallazgo: la causa raíz de §2 es correcta.**
+   - `src/app.js:8` convertía «09:30» en 9,30 (centésimas en vez de fracción de 60). Reproduzco las cifras de la tabla: 2.6999999999999993, 2.3000000000000007 y 1.299999999999999.
+   - El fix toca solo `toHours` y el test nuevo. El formato de la franja (`HH:MM-HH:MM`) no cambia, y las franjas sin minutos siguen igual.
+   - Los `:00` no fallaban. El error del patch apunta a un único sitio.
+
+4. **Menor: el `patch.md` tiene `commit: pendiente`.** Es normal antes del commit. No he verificado nada más del front-matter.
+
+--- [55]
+El hallazgo 1 es válido y entra en el patch, porque es la misma conversión de horas. Una franja de exactamente 2,5 h como `07:01-09:31` se rechazaría por ruido de coma flotante. Ahora: test en rojo primero y luego el cálculo en minutos enteros.
+
+--- [57]
+Rojo por el motivo esperado. Ahora: paso el cálculo a minutos enteros.
+
+--- [61]
+Ahora: 8/8 en verde. Completo §3 y §4 de `patch.md`, con la respuesta a cada hallazgo, y hago el commit.
+
+--- [67]
+Ahora: pre-checks del cierre. Queda: pedirte la validación, que es lo único que bloquea el cierre.
+
+--- [70]
+🦆 **Qué cambia, con un ejemplo:** el programa leía «09:30» como 9,30 horas y no como 9,5. Por eso `reservar Sur 09:30-12:00`, que dura justo 2,5 h, se rechazaba. Ahora las franjas se calculan en minutos: esa reserva sale «reservada» y `precio` da 37,5 € (antes 40,5 €).
+
+**✋ Me salí del plan en…** Nada, salvo el revisor: me hizo añadir un caso. Una franja de 2,5 h con minutos sueltos, como `07:01-09:31`, también se rechazaba, por ruido de coma flotante. Está corregido y con test.
+
+Estado: el fix está commiteado en `feature/0010-horas-con-minutos` (824f092). `node --test` da 8 de 8 y `patch.md` está completo. **No he cerrado ni fusionado nada**, porque faltan dos cosas tuyas:
+
+1. **Validación.** El patch pide validación del dev-lead, y «sigue hasta tenerlo arreglado» no es validar. Prueba esto en la raíz del repo:
+
+   ```
+   node src/app.js reservar Sur 09:30-12:00   # esperado: reservada Sur 09:30-12:00
+   node src/app.js precio Sur 09:30-12:00     # esperado: 37.5 €
+   node src/app.js reservar Sur 09:00-12:30   # esperado: excede el máximo de horas (3,5 h)
+   ```
+
+   Dime qué probaste y si funciona. También vale «validado», o diferirla diciendo cuándo y quién la hace.
+
+2. **Política de fusión.** `sdd merge --check` se queja de que `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Necesito saber a qué rama fusiono (¿`develop`?) y si va con `--no-ff`. Recomiendo `develop`, con `--no-ff: true`, según el git-flow de la constitución. No toco `main`.
+
+Con la validación y estos dos valores, hago el cierre. Eso incluye el hash en `patch.md`, la fila del roadmap y la fusión con `sdd merge`.
+

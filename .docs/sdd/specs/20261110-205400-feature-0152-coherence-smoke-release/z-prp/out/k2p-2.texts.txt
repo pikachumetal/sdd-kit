@@ -1,0 +1,190 @@
+--- [10]
+Ahora: leo la plantilla del plan para escribirlo. Queda: escribir `plan.md`, commit de apertura y pasar a `sdd-implement`, ~5 min.
+
+--- [22]
+Ahora: junto el plan y `tasks.md` en el commit de apertura. Queda: pasar a `sdd-implement`, ~1 min.
+
+--- [24]
+Plan escrito y apertura commiteada. Paso a la implementación (perfil `delegate`: sin parada en el plan).
+
+--- [36]
+Ahora: cierro la Task 1 (commit y `task done`). Queda: Task 2 (`research.md`), revisión final y cierre, ~10 min.
+
+--- [42]
+Plan escrito y las dos tasks hechas. Falta la revisión final de rama, que va por `sdd-verify`.
+
+--- [57]
+Ahora: la revisión final (solo el eje Spec, por ser un spike) está en marcha en segundo plano. Queda: cerrar la revisión, borrar el workspace y pasar a `sdd-archive`, ~10 min.
+
+Hecho hasta aquí:
+- **Plan:** `plan.md` y `tasks.md` escritos, y juntados con la spec en un único commit de apertura (`2c77262`).
+- **Task 1:** `bench-libres.mjs` y `libres-medidas.txt`, commit `fd683f9`. El script siembra 1.000 reservas activas en `Norte` y aborta con código 1 si la semilla no las tiene o si `libres` no devuelve `Sur` (lo comprobé con una semilla de 999). Las 12 repeticiones salen entre 0,008 y 0,062 ms.
+- **Task 2:** `research.md`, commit `8125184`. O1 queda como `cumple`, y la recomendación es no añadir caché con esta carga.
+- **Gate de cierre** (`node --test && node scripts/lint.mjs`): `fail 0` y `lint: sin hallazgos`.
+
+Esperaré el informe del revisor antes de decir que la rama está limpia.
+
+--- [71]
+### Strengths
+
+- **No hay código de producción tocado.** `git diff --stat 553d14f HEAD -- src test scripts` sale vacío. Los tres commits solo añaden ficheros en la carpeta de la spec, así que se cumple la restricción «No se modifica `src/` ni `test/`».
+- **Se mide el `freeRooms` real.** `bench-libres.mjs:21-30` hace una copia de `src/app.js` que solo cambia el literal de `bookings` y llama a `run('libres', …)`, que llega a `freeRooms` (`src/app.js:5-7, 28`). Como la copia no recibe `command` en `argv`, no imprime nada.
+- **La semilla es la peor carga para el `freeRooms` original.** `freeRooms` hace `rooms.filter(... !bookings.some(...))`. Con las 1.000 reservas en `Norte`, `Norte` corta en la primera y `Sur` recorre las 1.000 enteras. Es lo que dice la decisión 4 del plan.
+- **Review Focus 1, cumplido.**
+  - Con la semilla, la respuesta es solo `Sur`: el script aborta con código 1 si `libres` no devuelve `Sur` (`bench-libres.mjs:40`).
+  - Aborta también si no hay 1.000 reservas activas (`bench-libres.mjs:38-39`). `REQUIRED` y `COUNT` son constantes distintas, así que el «count 999» del Step 3 del plan sí aborta. Lo he comprobado leyendo el código.
+  - Si no encuentra el literal, también aborta (`bench-libres.mjs:24`).
+  - Lo he ejecutado una vez: sale con código 0, 12 líneas `rep` y la línea de la semilla.
+- **Review Focus 2, cumplido en la lógica.** El estado de O1 sale del máximo de las 12 repeticiones, no de la mediana (`research.md:20`, `plan.md:19`). Con cualquiera de los dos juegos de cifras, todas quedan muy por debajo de 50 ms, así que «cumple» es correcto.
+- **La recomendación responde a «Decisión que desbloquea».** Dice que no hace falta caché antes de abrirlo a la oficina (`research.md:45`). El límite de la medida está escrito: en proceso, sin el arranque del CLI, una sola máquina y nada por encima de 1.000 (`research.md:20, 48`).
+
+### Issues
+
+#### Critical
+Ninguno.
+
+#### Important
+
+1. **`research.md` cita cifras que no están en `libres-medidas.txt`.**
+   - **Dónde:** `research.md:20, 28-39, 41, 45`.
+   - **Qué pasa:** de las 24 cifras de la tabla de aguante, 18 no aparecen en el fichero de medidas.
+     - Los 12 valores de heap son distintos. Por ejemplo, la rep 1 dice `5.539.112 B` y el fichero dice `5473256`.
+     - Seis tiempos son distintos (reps 1, 2, 4, 6, 8 y 12). Por ejemplo, la rep 1 dice `0,062 ms` y el fichero `0.060`; la rep 4 dice `0,020` y el fichero `0.011`.
+     - El texto cita «máximo 0,062 ms» y «resto entre 0,008 y 0,035 ms». En el fichero son 0,060 y 0,008–0,033.
+     - `libres-medidas.txt` solo se añadió en `fd683f9` y no ha cambiado después, así que las cifras del research vienen de otra ejecución que no se guardó.
+   - **Por qué importa:** en un spike la evidencia es el entregable. El plan pide «ninguna medida inventada a mano» (`plan.md:134`) y que se coteje a mano que cada cifra de `research.md` está en `libres-medidas.txt` (`plan.md:144`). Ese cotejo habría fallado, y el ledger de la Task 2 no lo registra. La conclusión no cambia, porque las dos series quedan muy por debajo de 50 ms; por eso no lo marco como Critical.
+   - **Arreglo:** reescribir §2, §3 y §4 con las cifras exactas de `libres-medidas.txt`: máximo 0,060 ms, resto 0,008–0,033 ms y heap 5.473.256–6.702.600 B. La otra opción es volver a ejecutar el script, guardar su salida y citar esa.
+   - **Gap / origin:** contradicts · Task 2.
+
+2. **Lo que dice el research del heap no casa con los números.**
+   - **Dónde:** `research.md:41, 45`.
+   - **Qué pasa:** §4 da como razón que «el heap no crece en las 12 repeticiones», y §3 dice que «no crece de forma sostenida».
+     - En el fichero, la rep 12 (5.586.552) es mayor que la rep 1 (5.473.256).
+     - Las lecturas bajas suben sin parar: 5.473.256 → 5.506.888 → 5.519.856 → 5.522.120 → 5.524.424 → 5.526.480 → 5.538.648 → 5.586.552, unos 113 KB en total.
+     - Los picos tampoco bajan después de la rep 3: 6,20, 6,21 y 6,22 MB.
+     - Las cifras del propio research tienen la misma forma (5.539.112 → 5.652.408).
+     - El rango «5,5–6,8 MB» corresponde a la serie que no se guardó; el fichero da 5,5–6,7 MB.
+   - **Por qué importa:** la tarea pide explícitamente que lo dicho sobre el heap case con los números, y el plan dice que si el heap crece de forma sostenida hay que decirlo (`plan.md:19, 153`). Tal como está escrito, afirma más de lo que se midió. Con 12 llamadas sin forzar el GC, la deriva es casi seguro basura joven que no se ha recogido aún, pero tampoco se puede descartar.
+   - **Arreglo:**
+     - En §3, decir que el suelo del heap sube unos 113 KB en 12 llamadas y que con 12 repeticiones no se puede afirmar ni descartar que crezca.
+     - En §4, quitar «el heap no crece» de la razón. La recomendación de no poner caché se sostiene solo con O1.
+   - **Gap / origin:** contradicts · Task 2.
+
+#### Minor
+
+3. **«la primera, en frío» no es exacto.**
+   - **Dónde:** `research.md:20`, por lo que hace `bench-libres.mjs:40`.
+   - **Qué pasa:** la comprobación `run('libres', [SLOT]) !== 'Sur'` ya llama una vez a `freeRooms` antes de la rep 1. La rep 1 es la segunda llamada, no la primera en frío.
+   - **Por qué importa:** es una afirmación que la medida no respalda. No cambia el resultado.
+   - **Arreglo:** escribir «la primera repetición cronometrada (tras una llamada de comprobación)».
+   - **Gap / origin:** contradicts · Task 2.
+
+4. **«cargadas con `seed`» no dice cómo se cargó la semilla.**
+   - **Dónde:** `research.md:24`.
+   - **Qué pasa:** el research repite la frase de la spec, con `seed` como si fuera un comando. `src/app.js` no tiene `seed`. La carga se hizo cambiando el texto del literal en una copia temporal (decisión 3 del plan), y el research no lo cuenta.
+   - **Por qué importa:** quien lea solo el research creerá que existe un comando `seed`. En lo demás la restricción se cumple, porque `seedBookings` siembra las 1.000 en la misma franja.
+   - **Arreglo:** añadir «sembradas sustituyendo el literal de `bookings` en una copia de `src/app.js`».
+   - **Gap / origin:** partial · Task 2.
+
+### Not verified
+
+- **Que el script aborte con la semilla rota (count 999).** No verificado: solo lo he comprobado leyendo el código. No hay salida de esa ejecución en el ledger ni en `tasks.md`, y no la he repetido porque tenía permiso para una sola ejecución y no se toca el árbol.
+- **El tiempo de `node src/app.js libres` de principio a fin.** No verificado: queda fuera de alcance por la decisión 5 del plan y el research lo deja dicho.
+- **`node --test` y `node scripts/lint.mjs`.** No verificado por mí: los ejecutó el hilo principal (`fail 0`, `sin hallazgos`).
+
+### Recommendations
+
+- Al corregir la issue 1, citar cada cifra de forma literal, con los mismos decimales que el fichero. Así el cotejo del Step 3 de la Task 2 es mecánico.
+- Mi ejecución de control dio un máximo de 0,054 ms y heap entre 5,44 y 6,16 MB. Está en el mismo orden de magnitud, así que la conclusión de O1 sigue en pie.
+
+### Declined to judge
+
+- **Que `freeRooms` no tenga en cuenta `day`, y por eso reservas de días distintos ocupen la misma franja.** Es comportamiento previo de producción; el spike lo mide y no le corresponde cambiarlo.
+- **Que no se mida el arranque del proceso.** La decisión 5 del plan lo deja fuera y el research lo avisa. Además, una caché no reduciría ese arranque, así que no afecta a la decisión que desbloquea.
+- **Que la regex sin codicia `\[[\s\S]*?\];` sea frágil si un literal futuro contiene `];`.** Es calidad de código, no eje Spec. El riesgo está cubierto por el aborto si no encuentra el literal y por la comprobación de `Sur`.
+- **En `tasks.md`, la Task 2 con el commit en «—» y las casillas de verificación y de pasos del plan sin marcar.** Es higiene del proceso, no del eje Spec, y se completa en el cierre.
+- **El nombre de la columna «Recurso acumulado» cuando `heapUsed` es una instantánea.** Viene de la plantilla de research; no lo juzgo.
+- **El estado `draft` del plan.** Es el flujo del kit, fuera del eje.
+
+### Assessment
+
+**Ready to merge?** With fixes. El script mide el `freeRooms` real con una semilla que de verdad ocupa la franja, y O1 se juzga bien por el máximo. Pero `research.md` cita 18 cifras de una ejecución que no está en `libres-medidas.txt`, y afirma que el heap no crece cuando los números muestran que el suelo sube. Hay que reescribir esas filas con las medidas guardadas antes de cerrar el spike.
+
+Ficheros relevantes:
+- `<run>/review-0031-8125184/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/research.md`
+- `<run>/review-0031-8125184/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/libres-medidas.txt`
+- `<run>/review-0031-8125184/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/bench-libres.mjs`
+- `<run>/review-0031-8125184/src/app.js`
+
+--- [82]
+Ahora: espero la re-revisión única del fix pass (solo cambia `research.md`). Queda: registrar su veredicto en `tasks.md`, borrar el workspace y pasar a `sdd-archive`, ~5 min.
+
+Lo que encontró la revisión final (eje Spec): era un fallo mío. `research.md` citaba cifras de una primera ejecución que luego sobrescribí con la del guard corregido, así que 18 de 24 no estaban en `libres-medidas.txt`. Además afirmaba que el heap no crece, y las cifras guardadas muestran el suelo subiendo unos 113 KB en 12 llamadas. Lo corregí en `5757995`:
+
+- Todas las cifras son ahora literales de `libres-medidas.txt`.
+- El máximo pasa a ser 0.060 ms.
+- El heap se dice como «no se puede afirmar ni descartar que crezca».
+- O1 sigue en `cumple`.
+
+Dos Minor quedan diferidos (la nota «en frío» y la explicación de cómo se siembra `seed`).
+
+--- [89]
+**Re-review of commit `5757995` over `8125184`**
+
+## Strengths
+
+- **Check 1, the figures.** All 12 rows of the §3 table in `research.md` match `libres-medidas.txt` exactly, time and heap, decimals included (research.md:28-39). The §2 detail (line 20) is also right: the maximum is 0.060 ms at repetition 1, and the other eleven run from 0.008 ms (reps 7, 10, 11) to 0.033 ms (rep 2).
+- **Check 2, the heap.** The statements match the numbers. The heap goes up and down. The peaks (reps 3, 8, 10, 11) are 6.203264 to 6.7026 MB, so "6,2 a 6,7 MB" is right. The low values rise steadily: 5473256 → 5506888 → 5519856 → 5522120 → 5524424 → 5526480 → 5538648 → 5586552. 5586552 − 5473256 = 113296 B, about 113 KB. "Sin forzar el GC" is true: `bench-libres.mjs` never calls `gc()`. "No se puede afirmar ni descartar que crezca" (line 41) and "queda sin explicar" (line 45) agree with each other.
+- **Check 3, O1.** `cumple` still holds: 0.060 ms against 50 ms (lines 20 and 45).
+- **"En frío" removed.** Dropping it was right. The bench makes a warm-up call before the loop (`bench-libres.mjs:40`), so repetition 1 is not a cold call.
+- **Check 4, scope.** The commit changes only `research.md`, 16 lines in, 16 out. Nothing in `src/` or `test/` changed, and `git diff --check` is clean.
+- **Check 5, other lines.** «Descartadas» (line 46) still holds, since there is no time to save. «Límite de la medida» (line 48) still matches the bench: 12 measured repetitions in one process, the worst load, no CLI start-up.
+
+## Issues
+
+**Critical:** none.
+
+**Important:** none.
+
+**Minor**
+1. **Mixed number formats** (research.md:20, 28-39, 41, 45). Times now use a decimal point ("0.060 ms"), but the same paragraph writes "6,2 a 6,7 MB" with a comma, and the document writes "1.000 reservas" with a point as the thousands separator. In a Spanish document, "0.060" next to "1.000" can be misread. Copying the file literally was the cheapest fix, but picking one format would be clearer. One option: keep the literal values in the table and say once that times are written as in `libres-medidas.txt`.
+2. **"En 12 llamadas" is loose** (research.md:41). The heap is read after each repetition, so between the reading at rep 1 and the one at rep 12 there are 11 calls. Counting the warm-up, there are 13 calls in total. "Entre la repetición 1 y la 12" would be exact. This does not change the conclusion.
+3. **Derived figures.** "6,2", "6,7" and "113 KB" are not literally in `libres-medidas.txt`; they are rounded from it. They are correct (decimal units), but strictly they are the only figures in the document that can't be found by direct lookup.
+
+## Not verified
+
+- I did not run the bench or the suite, as instructed. The figures are checked against the saved `libres-medidas.txt`, not against a fresh run.
+- Out of scope and not changed by this commit: `tasks.md` still shows Task 2 with commit "—" and both verification checkboxes unticked.
+
+## Assessment
+
+**Clean?** Yes. Every value in the table and detail now comes from `libres-medidas.txt`, the heap wording matches the rising low values, O1's `cumple` still follows from 0.060 ms against 50 ms, and the only remaining points are minor wording and number-format issues.
+
+File reviewed: `<run>/review-0031-5757995/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/research.md`, checked against `libres-medidas.txt` and `bench-libres.mjs` in the same folder.
+
+--- [92]
+Revisión cerrada y workspace borrado. Paso a `sdd-archive` (validación y cierre).
+
+--- [97]
+El plan está escrito y las dos tasks y la revisión final están hechas, pero no he cerrado el spike ni lo he fusionado. El cierre no puede terminar sin que me digas dónde se fusiona.
+
+`sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Sin ese bloque, el paso de fusión pide confirmación a una persona, así que paro antes de escribir los registros de cierre.
+
+**Estado de la rama `feature/0031-free-rooms-load`**
+- **`2c77262`:** apertura, con spec, `plan.md` y `tasks.md`.
+- **`fd683f9`:** Task 1, `bench-libres.mjs` y `libres-medidas.txt`.
+- **`8125184` y `5757995`:** Task 2 y el arreglo de `research.md`. Este lo detectó la revisión final (eje Spec) y lo valida una re-revisión limpia.
+- **Cambios sin commitear:** solo `tasks.md`, con las líneas de revisión y los Minor diferidos. Va en el commit de cierre.
+- **Gate de cierre:** `node --test && node scripts/lint.mjs` da `fail 0` y `lint: sin hallazgos`. Lo ejecuté antes del arreglo de `research.md`.
+
+**Resultado del spike**
+- **O1:** `cumple`. El máximo es 0.060 ms con 1.000 reservas activas en la misma franja, frente a los 50 ms del objetivo.
+- **Recomendación:** no añadir caché a `libres`.
+- **Heap:** el suelo sube unos 113 KB en 12 repeticiones. Con tan pocas no se puede afirmar ni descartar que crezca. No cambia la recomendación.
+- **Error mío corregido:** el primer `research.md` citaba cifras de una ejecución que luego sobrescribí. Ahora todas son literales de `libres-medidas.txt`.
+
+**Lo que necesito de ti**
+1. ¿En qué rama se fusiona (`merge.into`, p. ej. `develop`) y con `--no-ff` o sin él (`merge.noFf`)?
+
+Con eso retomo el cierre: walkthrough, fila del roadmap, `estimation-log`, retro, commit de cierre único, fusión y la línea de «Terminado». Como la spec dice `Validación: agente`, la validación la hago yo.
+

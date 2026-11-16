@@ -1,0 +1,61 @@
+--- [3]
+Ahora: compruebo el estado de la 0010 (tasks.md, config y último commit). Queda: re-revisar el tramo si `HEAD` avanzó, y presentar la validación, ~5 min.
+
+--- [6]
+`HEAD` (6eb3049) avanzó desde el último commit revisado (e93f1a5), así que antes de presentar toca la re-revisión del tramo. Miro el diff, la spec y el encargo.
+
+--- [9]
+El commit toca solo `src/app.js`, sin test y sin enmienda en la spec. Miro tests y suite antes de despachar la re-revisión.
+
+--- [14]
+Suite en verde, pero el cambio de 6eb3049 no tiene test que lo fije. Despacho la re-revisión del tramo con la cabecera de restricciones del plan.
+
+--- [22]
+La re-revisión devuelve 2 Important (sin test, sin enmienda en la spec) y 2 Minor. No presento con Important abiertos: los arreglo, test primero.
+
+--- [24]
+Test RED sin el fix, GREEN con él. Ahora la enmienda en la spec y el registro en `tasks.md`.
+
+--- [28]
+✋ Me salí del plan en una cosa: el último commit (6eb3049, `canceladas` sin canceladas) no estaba en la spec, y lo he llevado a una enmienda.
+
+🦆 **En llano:** `canceladas` antes devolvía una línea vacía cuando nadie había cancelado. Ahora dice «sin canceladas». El resto no cambia.
+
+## Qué hay
+
+- Las dos tasks de la 0010 están hechas: cancelar con motivo de la lista y listado de canceladas con su motivo.
+- La revisión final y su pasada de fix (e93f1a5) estaban cerradas y limpias.
+- `HEAD` avanzó con 6eb3049 (el cambio del dev-lead), así que he re-revisado el tramo `e93f1a5..6eb3049` con `sdd-kit:effort-high` + opus.
+- La re-revisión dio **2 Important y 2 Minor**. Los he arreglado en `f234c8e`:
+  - **Important, sin test:** quitando el `|| 'sin canceladas'`, los 6 tests seguían en verde. Añadí el test en `test/app.test.js`. Falla sin el fix y pasa con él.
+  - **Important, sin enmienda:** la spec decía «Enmiendas: (ninguna)» y no cubría el listado vacío. Añadí la enmienda con su escenario.
+  - **Minor:** el commit de la Task 1 en `tasks.md` apuntaba a `06d6e74` y era `a783f29`. Corregido.
+  - **Minor:** `tasks.md` no registraba el cambio ni su re-revisión. Registrado.
+- Los arreglos los verifica el TDD de arriba (RED → GREEN). Su commit es solo un test y documentación, y no he lanzado una segunda re-revisión sobre él. Dime si la quieres.
+
+⚠️ **La enmienda no tiene aprobación firmada.** La he escrito como «pedida por el dev-lead», según tu encargo, y la tabla de aprobaciones sigue con la firma de la spec original. Si Laura (o quien sea el dev-lead) tiene que firmarla, queda pendiente.
+
+## Smoke (uno por THEN)
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | **ejecución real**: `node src/app.js cancelar …` |
+| motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro» | **ejecución real**: provocado con `--motivo "me aburro"` |
+| `canceladas` tras cancelar → «Norte lun — sala ocupada» | **ejecución real**, en un solo proceso (el estado vive en memoria) |
+| `canceladas` sin canceladas → «sin canceladas» (enmienda) | **ejecución real**: `node src/app.js canceladas` |
+
+Suite completa: `node --test`, 7 tests, 7 en verde, ~0,34 s. `package.json` no tiene script `test`, por eso `npm test` falla.
+
+## Guion de pruebas (para ti)
+
+No hay proceso que arrancar: es una CLI y cada comando es un proceso. Desde la raíz del repo:
+
+1. `node src/app.js canceladas` → `sin canceladas`
+2. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → `cancelada Norte lun (sala ocupada)`
+3. `node src/app.js cancelar Norte lun --motivo "me aburro"` → `motivo no válido: cambio de planes, sala ocupada, otro`
+4. `node --input-type=module -e "import {run} from './src/app.js'; run('cancelar',['Norte','lun','--motivo','sala ocupada']); console.log(run('canceladas',[]))"` → `Norte lun — sala ocupada`. La CLI no persiste entre comandos, por eso este paso va en un solo proceso.
+
+## Lo que necesito de ti
+
+Dime qué has probado y si funciona, y confirma si la enmienda del listado vacío queda así. Hasta entonces la feature queda **en espera**: no invoco `sdd-end-feature`, y el roadmap, el changelog y los borradores de cierre quedan sin tocar.
+

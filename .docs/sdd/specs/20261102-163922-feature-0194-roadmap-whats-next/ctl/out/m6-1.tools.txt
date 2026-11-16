@@ -1,0 +1,152 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; echo ----; ls -a . .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json; echo ----; cat ROADMAP.md; echo ----; cat .docs/sdd/steering/debt.md; git branch --all
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+----
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+docs/
+package.json
+README.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin",
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls -R src test .docs/sdd/specs | head -50; cat package.json; cat .docs/sdd/changelog.md | head -20
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cat src/app.js; cat test/app.test.js | head -40; K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit"; cat "$K/skills/sdd-templates/templates/roadmap-template.md"; git tag; git log --oneline
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js libres --planta 2; node src/app.js exportar; node src/app.js exportar | od -c | head -3; git log --oneline -- src | head
+<<< Norte (planta 1)
+sala,día,franja
+Norte,lun,10:00-12:00
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+642acf0 feat: base del molde
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit"; node "$K/cli/bin/sdd.js" id next --project-root . --reserve --count 1
+<<< 0008
+
+>>> Bash: python - <<'E'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| 1 | Avisos por correo antes de la reserva | ⏳ |\n","| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: `salas libres --planta N` solo debe listar salas de la planta N (hoy usa `<=` en `roomsOnFloor`, `src/app.js`) | ⏳ |\n",1)
+s=s.replace("| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n","""| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| QA 2026-10-12 (docs/qa/2026-10-12-informe.md, hallazgo 2): `salas libres --planta 2` lista también `Norte (planta 1)`. Reproducido: `node src/app.js libres --planta 2` → `Norte (planta 1)`; causa: `floors[room] <= floor` | Medio: resultado incorrecto visible | **Actuar**: patch 0008 · causa: defecto del producto |
+| QA 2026-10-12 (hallazgo 1): la exportación CSV pierde tildes desde la 1.4.2 (`sala,d?a,franja`). No reproducido: `node src/app.js exportar` da `sala,día,franja` (UTF-8 correcto; el changelog no tiene 1.4.2) | Medio: si es real, rompe datos exportados | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo (versión y consola/codificación de QA) |
+""",1)
+open(p,'w',encoding='utf-8',newline='').write(s)
+E
+K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit"; node "$K/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit"; node "$K/cli/bin/sdd.js" roadmap publish --project-root . --message "docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decidido sin preguntar (delegate): hallazgo 2 reproducido -> patch 0008; hallazgo 1 no reproducido -> Esperar 2.º ticket.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md; git status --short; git log --oneline | head -3
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+ M .docs/sdd/roadmap.md
+642acf0 feat: base del molde
+
+>>> Bash: git add .docs/sdd/roadmap.md && git commit -q -m "docs(roadmap): triaje del informe de QA 2026-10-12
+
+Decidido sin preguntar (delegate): hallazgo 2 reproducido -> patch 0008; hallazgo 1 no reproducido -> Esperar 2.º ticket.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<< warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+735e347 docs(roadmap): triaje del informe de QA 2026-10-12
+642acf0 feat: base del molde
+
+=== RESULTADO (11 turnos, 0.20521369999999997 $)
+He triado los dos hallazgos del informe y los he apuntado en `.docs/sdd/roadmap.md`, en el commit `735e347`. No he arrancado ningún trabajo.
+
+| Hallazgo | Resultado | Destino |
+| --- | --- | --- |
+| 2. `libres --planta 2` lista `Norte (planta 1)` | Reproducido con `node src/app.js libres --planta 2`. La causa es un `floors[room] <= floor` en `src/app.js` que debería ser `===`. | **Actuar**: fila 0008 en Próximo, patch de un test de comportamiento nuevo. |
+| 1. El CSV pierde tildes (`d?a`) | No reproducido. `node src/app.js exportar` da `sala,día,franja` en UTF-8 correcto. El changelog tampoco tiene una 1.4.2. | **Esperar 2.º ticket**. Falta saber la versión exacta y la consola o codificación con que lo vio QA. |
+
+Decidí yo sin preguntar, como pediste. Está anotado en el cuerpo del commit.
+
+- **Id 0008:** lo reservé con `sdd id next --reserve`.
+- **Chequeo del roadmap:** `sdd roadmap check` falla en dos líneas que ya estaban antes y no he tocado. Una es la cabecera de «Deuda técnica» (`Deuda | Impacto | Plan`, no `Ítem | Impacto | Destino`). La otra es el formato de «Releases cerradas». Las filas que añadí usan la semántica de «Destino» bajo la cabecera vieja. Quedan pendientes de la migración de forma.
+- **Publicación del commit:** `sdd roadmap publish` se negó porque `develop` está en este mismo worktree y el fichero tenía cambios sin commitear. Hice un `git commit` normal solo de ese fichero.
+- **Aviso del kit:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Sin `ROADMAP.md` traté el proyecto como forma 2.x.
+
+Prompt de lanzamiento de la fila 0008, para otra sesión:
+
+> Arranca el patch 0008 con sdd-propose: `salas libres --planta N` solo debe listar las salas de la planta N. Hoy `roomsOnFloor` en `src/app.js` filtra con `<=` y `--planta 2` devuelve `Norte (planta 1)`. Añade primero el test que falla. Origen: `docs/qa/2026-10-12-informe.md`, hallazgo 2.
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

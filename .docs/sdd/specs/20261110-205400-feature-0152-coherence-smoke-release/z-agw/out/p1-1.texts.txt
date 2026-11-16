@@ -1,0 +1,33 @@
+--- [14]
+No he podido escribir la skill: el permiso de escritura en `.claude/skills/migraciones/` se ha denegado, así que no hay ningún fichero nuevo. No lo he reintentado por otra vía, como Bash, para no saltarme esa decisión. Si me das permiso de escritura en esa carpeta, lo escribo tal cual está abajo.
+
+**`.claude/skills/migraciones/SKILL.md`** (propuesto)
+
+```markdown
+---
+name: migraciones
+description: Use when a SQL migration in db/migrations/ is created, edited or about to be applied or committed.
+---
+
+# migraciones
+
+Una migración no está lista hasta que su rollback existe y `up`, `down`, `up` han corrido limpios sobre una copia de `salas.db`.
+
+1. Lee `db/migrate.js`: de dónde saca `down` el rollback de cada migración y cómo elige el fichero de base de datos. Escribe el rollback de la migración donde `down` lo espera.
+2. Copia `salas.db` a un fichero temporal fuera del repo. Si `db/migrate.js` no se puede apuntar a la copia, para y pregunta al dev-lead: `up` sobre `salas.db` no es una prueba.
+3. Vuelca el esquema de la copia (`.schema`) y guárdalo como *antes*.
+4. Sobre la copia, ejecuta `node db/migrate.js up`, luego `node db/migrate.js down`, luego `node db/migrate.js up`.
+5. Vuelca el esquema tras el `down` y compáralo con *antes*.
+
+Hecho cuando los tres comandos terminan con código 0 y el esquema tras `down` es idéntico a *antes*. Si no, la migración está rota: corrígela y repite desde el paso 3.
+
+Informa al usuario del esquema comparado y de los tres códigos de salida.
+```
+
+También escribiría `scenario.md` junto a la skill, como pide el kit. Es una prueba de presión (prisa, autoridad y «ya haremos el rollback»). Con ella se comprobaría que el agente escribe el rollback y prueba `up`, `down`, `up` solo sobre la copia.
+
+**Dudas para después**
+- **`db/migrate.js` y `salas.db` no están en el repo.** Solo existe `db/migrations/0001-rooms.sql`, que no trae rollback. No sé dónde espera `down` encontrarlo: ¿un `0001-rooms.down.sql`, una sección dentro del mismo fichero u otra convención? Por eso el paso 1 manda leer `migrate.js` en vez de fijar una convención.
+- **No sé si `migrate.js` acepta otra ruta de base de datos.** Si no la acepta, la copia no sirve y hay que añadirle algo como una variable de entorno `DB_FILE`. Ahora el paso 2 para y pregunta.
+- **Sin RED/GREEN.** No he corrido los escenarios con subagentes, y el kit pide RED y GREEN con n = 2 para dar la skill por terminada. Está escrita pero sin verificar.
+

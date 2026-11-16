@@ -1,0 +1,78 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cat package.json; ls -a; cat .nvmrc .node-version .tool-versions 2>/dev/null; ls .github/workflows 2>/dev/null; grep -rniE "node(-version|:|@)|FROM node|engines" --include=*.yml --include=*.yaml --include=Dockerfile* --include=*.md . 2>/dev/null | grep -v node_modules | head -40; node -v
+
+>>> Bash: ls .docs/sdd 2>/dev/null; cat .docs/sdd/tech-stack.md 2>/dev/null | head -60
+<<< changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+# Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+<<< {"type": "module", "engines": {"node": ">=22"}}
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+v26.11.1
+
+>>> Bash: cat README.md; ls -R src test; grep -rnE "import |require\(|process\.|node:" src test | head -30; cat .docs/sdd/constitution.md | head -40; cd . && node --test 2>&1 | tail -8
+<<< # salas
+
+Reservas de salas de reuniones desde la terminal.
+src:
+app.js
+
+test:
+app.test.js
+src/app.js:1:const [command, ...args] = process.argv.slice(2);
+test/app.test.js:1:import { test } from 'node:test';
+test/app.test.js:2:import assert from 'node:assert/strict';
+test/app.test.js:3:import { run } from '../src/app.js';
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` 
+
+=== RESULTADO (6 turnos, 0.10271269999999999 $)
+No rompe nada.
+
+**Qué he comprobado**
+- `package.json` solo tiene `type: module` y `engines.node: ">=22"`. No hay dependencias, así que no hay ningún `engines` de terceros que choque.
+- No hay `.nvmrc`, `.node-version`, `.tool-versions`, Dockerfile ni workflows de CI que fijen versión de Node.
+- El código usa solo `process.argv` y `node:test`/`node:assert`, que están en cualquier 22.x.
+- `node --test` pasa 3/3. Ojo: lo he corrido con el Node local (v26.11.1), no con 22.18. No he podido verificarlo en 22.18 exacto; con tan poca superficie no veo riesgo.
+
+**Matiz:** `>=22` ya admite 22.18, así que el cambio solo endurece el mínimo (22.0–22.17 pasarían a avisar). Con `>=22.18` no hace falta tocar nada más.
+
+**Doc a la par:** `.docs/sdd/tech-stack.md` dice "Node 22". Sigue siendo cierto, pero convendría decir "Node ≥ 22.18" para que no quede desfasado.
+
+**Prompt para el otro worktree**
+
+```
+Sube el mínimo de Node a 22.18 en este proyecto.
+
+Alcance:
+- package.json: engines.node de ">=22" a ">=22.18".
+- .docs/sdd/tech-stack.md: "Node 22" → "Node ≥ 22.18".
+- No hay CI, .nvmrc ni Dockerfile que tocar (ya comprobado); no añadas ninguno.
+
+Contexto: es un cambio de configuración/dependencias, trátalo con sdd-propose (clasifícalo tú; probablemente patch). Ya se verificó que no hay dependencias ni APIs que dependan de la versión, y `node --test` pasa 3/3.
+
+Antes del commit: `node --test` en verde (constitución, punto 2). Rama desde develop según git-flow.
+```
+
+Si quieres que lo arranque yo en este worktree en vez de en otro, dímelo y paso por `sdd-propose`.

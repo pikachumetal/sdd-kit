@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; echo ---; find . -path ./.git -prune -o -path ./node_modules -prune -o -type f -print | head -80
+<<< {"init": {"approved": ["PRODUCT.md", ".docs/sdd/steering/constitution.md"], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}
+---
+./.docs/sdd/sdd-kit.json
+./.docs/sdd/steering/constitution.md
+./.github/workflows/ci.yml
+./CLAUDE.md
+./e2e/booking.spec.ts
+./e2e/cancel.spec.ts
+./package.json
+./playwright.config.ts
+./PRODUCT.md
+./README.md
+./src/app.ts
+
+>>> Bash: cd "<run>/repo" && for f in package.json playwright.config.ts .github/workflows/ci.yml CLAUDE.md README.md src/app.ts e2e/booking.spec.ts e2e/cancel.spec.ts .docs/sdd/steering/constitution.md; do echo "=== $f"; cat $f; done; git branch -a; git remote -v; ls "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-green/skills/sdd-init/references"
+<<< === package.json
+{
+  "name": "reservas",
+  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test" },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0" }
+}
+=== playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  retries: process.env.CI ? 2 : 0,
+  timeout: 60_000,
+});
+=== .github/workflows/ci.yml
+name: ci
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npm test
+=== CLAUDE.md
+# Reservas
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/0209-worktree-temp/.temp/kit-green/skills/sdd-init/references" && cat generation.md structure.md; cat ../../sdd-templates/SKILL.md | head -60; ls ../../sdd-templates ../../sdd-templates/*
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md
+<<< # Generating the anchor documents — detail
+
+## Order and gate
+
+One document per turn, each presented before it is written and recorded with `sdd init --approved <path>` after its «sí»:
+
+1. `PRODUCT.md` — who uses it and with which roles, what problem it solves (with code: what the system does TODAY), what it is and what it leaves out, and the glossary in `## Terminology`.
+2. `.docs/sdd/steering/constitution.md` — what is non-negotiable; with code, the observed conventions AS PROPOSALS plus the golden rules below; «Reglas de producto» with the five rules by name, each answered, `pendient
+<<< # Product — Reservas
+
+## Users
+
+El equipo de oficina reserva salas.
+
+## Product Purpose
+
+Reservar salas por franja.
+
+>>> Read: D:\code\.worktrees\sdd-kit\0209-worktree-temp\.temp\kit-green\skills\sdd-templates\templates\operations-template.md
+<<< 1	# Operations — <proyecto>
+2	
+3	> Cómo se ejecuta y se verifica el proyecto. Sin versiones (están en los manifests: `package.json`, `*.csproj`…) ni decisiones pendientes (van al roadmap); el README enlaza este documento, no lo duplica. Los valores de comportamiento (tiempos, límites, cuotas) viven en `capabilities/`. Es un documento de estado: se reescribe, no se le añade. Borra los bloques de ayuda (`>`) al redactar.
+4	
+5	## Comandos
+6	
+7	- **Build**: `<comando>`
+8	- **Arrancar**: `<comando>`
+9	
+10	## Testing
+11	
+12	> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay t
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.19302370000000002 $)
+Retomo la init. Según `init.approved`, **`PRODUCT.md` y la constitución están aprobados** y no vuelvo a presentarlos. La configuración del kit (ids, perfil, ejecución, validación) ya está registrada y tampoco la repito. Lo siguiente es `operations.md`.
+
+Modo: con código. Si es un template recién instanciado, dímelo y sigo sin código.
+
+Lo que he leído del repo, para que lo confirmes:
+
+- **Comandos**: `npm run dev` (vite) arranca la app. No hay script de build. El `CLAUDE.md` anterior dice puerto 3000, pero `package.json` y vite no lo fijan, así que lo trato como discrepancia sin verificar.
+- **Suites**:
+  - `npm test` (vitest). No hay ningún fichero de test unitario, solo `src/app.ts`. Es la única suite que corre en CI.
+  - `npm run e2e` (Playwright, 2 tests: `e2e/booking.spec.ts` y `e2e/cancel.spec.ts`). CI no la corre.
+- **Config de Playwright**: retries `0` en local y `2` en CI. Timeout de 60 s por test, sin motivo escrito. No declara `baseURL`, `webServer` ni `outputDir`, así que los temporales quedan como `no declarado`. Los tests hacen `page.goto('/')` y `/mis-reservas`, que sin `baseURL` fallarían. Esto queda anotado como discrepancia.
+- Las duraciones y el presupuesto E2E quedan `pendiente` hasta que me los des.
+
+❓ **Flujos core del E2E**
+Un E2E nuevo tendrá que nombrar uno de estos flujos. Lo demás se prueba en una capa más baja. Hay dos candidatos:
+1️⃣ **Reservar una sala** · `e2e/booking.spec.ts` › reserva Norte a las 10:00
+2️⃣ **Cancelar una reserva** · `e2e/cancel.spec.ts` › cancela una reserva
+3️⃣ **Ambos** son core.
+➡️ **Recomiendo 3️⃣**: la reserva es el propósito del producto en `PRODUCT.md`, y la cancelación es su otra mitad y hoy el único otro E2E. A cambio, cualquier E2E que añadas después a otro flujo tendrá que justificarse como nuevo core.
+
+¿Cuál son core?

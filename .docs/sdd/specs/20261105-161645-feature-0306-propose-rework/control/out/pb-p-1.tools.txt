@@ -1,0 +1,165 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3; node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && for f in constitution.md mission.md tech-stack.md roadmap.md architecture.md; do echo "=== $f"; cat $f 2>/dev/null; done
+<<< ./
+../
+.docs/
+.git/
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+<<< Exit code 1
+=== constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde traba
+
+>>> Bash: cd "<run>/repo" && cat package.json; ls -R src test scripts .docs/sdd/specs | head -40; wc -l src/*.js; cat src/app.js | head -120; git branch -a
+<<< {"type": "module", "engines": {"node": ">=20"}}
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+scripts:
+lint.mjs
+
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+35 src/app.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/skills/sdd-propose/references" && cat spec-writing.md nombrado.md; ls; cat control-profiles.md | head -60
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+The interview covers g
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; node $S id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js"; git checkout -b feature/0012-informes && node $S id claim --project-root . ; git status --short; git branch --show-current
+<<< Switched to a new branch 'feature/0012-informes'
+sin remoto: la 0012 vale (contador local)
+feature/0012-informes
+
+=== RESULTADO (9 turnos, 0.18906660000000003 $)
+Ahora: te presento lo que he entendido y las formas de construirlo. Queda: elegir el enfoque, validar el diseño por secciones, escribir la spec, pasar la revisión y llegar a tu aprobación (~15 min, más el coste de los revisores si salen).
+
+```text
+Carril: feature, modo full · Perfil: pair, de esta feature (el proyecto tiene delegate en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Reservé el id **0012** y creé la rama `feature/0012-informes` desde `develop`. No hay remoto, así que la reserva queda en local. Las dependencias no hacen falta: el proyecto no tiene ninguna.
+
+El kit cargado en esta sesión es el 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Conviene ejecutar `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar cuando cierres esta parte.
+
+**Lo que he entendido**
+- Un comando nuevo, `informes`, que imprime una tabla de texto con cuatro vistas:
+  - ocupación por sala,
+  - ocupación por día de la semana,
+  - franjas más reservadas,
+  - salas que nadie ha reservado.
+- `--sala <nombre>` filtra las cuatro vistas.
+- Si no hay reservas, cada vista dice «sin reservas».
+- El plan tiene 5 tasks: una por vista y otra para `--sala`.
+- **No propongo dividir.** Son 5 tasks, todas en la misma superficie (la línea de comandos), sin migración.
+
+Dos puntos que he visto en `src/app.js` y que decido yo, para que los corrijas:
+- Solo cuentan las reservas con estado `active`. Las canceladas y las anuladas no cuentan como ocupación.
+- La vista «salas que nadie ha reservado» con `--sala` se queda en una sola fila, esa sala si no tiene reservas. Si la sala tiene reservas, dice «sin reservas».
+
+**Enfoques**
+
+La decisión ya cubre el qué. Queda el cómo construir las vistas:
+
+1. **Funciones puras por vista y un renderizador de tabla común (recomendado).** Cada vista recibe la lista de reservas (ya filtrada por sala) y devuelve filas. Un único `renderTabla` las imprime y pone «sin reservas» cuando no hay filas.
+   - A favor: casa con el plan de una task por vista, el filtro `--sala` se aplica en un solo sitio y cada vista se prueba por separado.
+   - En contra: añade un par de funciones auxiliares en un fichero pequeño.
+2. **Un solo `informes()` que recorre las reservas una vez y calcula todo.**
+   - A favor: menos código.
+   - En contra: las cuatro vistas quedan acopladas, las tasks por vista dejan de ser independientes y cada test arrastra todo el cálculo.
+3. **Una función por vista que imprime su propia tabla.**
+   - A favor: lo más simple de leer.
+   - En contra: repite el formato de tabla y el «sin reservas» cuatro veces, y `--sala` habría que repetirlo en cada una.
+
+¿Con cuál vamos? Recomiendo la 1.
+
+=== RESULTADO (1 turnos, 0.20659420000000003 $)
+Elegido el enfoque 1: funciones puras por vista y un renderizador de tabla común.
+
+Con 5 tasks previstas, te presento el diseño en secciones, una por mensaje. Esta es la primera: cómo se ve el comando y la primera vista.
+
+**Sección 1 · `informes` y ocupación por sala**
+
+`node src/app.js informes` imprime las cuatro vistas una detrás de otra, cada una con su título y su tabla de texto. Con los datos de hoy (una reserva activa de Norte, lunes 10:00-12:00), la primera vista sale así:
+
+```text
+Ocupación por sala
+sala    reservas
+Norte   1
+Sur     0
+```
+
+- **Qué cuenta como ocupación (propuesta mía):** el número de reservas activas de cada sala. No mido horas. Las canceladas y las anuladas no cuentan.
+- **Orden (propuesta mía):** el de la lista de salas, Norte y luego Sur, no de mayor a menor. Así la tabla no cambia de orden entre ejecuciones.
+- **Una sala sin reservas sale con 0.** «sin reservas» se reserva para cuando no hay ninguna reserva en toda la vista.
+- **Sin ninguna reserva activa**, la vista no imprime la tabla y dice solo:
+
+```text
+Ocupación por sala
+sin reservas
+```
+
+- **Por dentro:** una función pura que recibe las reservas y devuelve las filas, y un `renderTabla` común que alinea columnas y pone «sin reservas» si no hay filas. Esta task deja ese `renderTabla` hecho y las siguientes lo reutilizan.
+
+¿Va bien así?

@@ -1,0 +1,25 @@
+--- [7]
+I wrote the three tests in `test/reactivar.test.js`. All three fail because `reactivar` isn't implemented yet. I didn't touch `src/` and didn't commit.
+
+**Command:** `node --test test/reactivar.test.js`
+
+**Output (trimmed):**
+```
+✖ reactivar devuelve la reserva cancelada
+✖ tras reactivar, Norte deja de salir en libres 10:00-12:00
+✖ reactivar sin cancelada lo dice
+ℹ tests 3 | pass 0 | fail 3
+
+1: AssertionError: actual 'salas'  expected 'reactivada Norte lun'
+2: assert.ok(!run('libres', ['10:00-12:00']).split(', ').includes('Norte')) → falsy
+3: AssertionError: actual 'salas'  expected 'sin cancelada Sur mar'
+```
+There is no import error or typo: `run` falls through to its default `'salas'` for the unknown command `reactivar`. Test 2 fails because Norte is still listed as free, since the Norte booking stays `cancelled`.
+
+**Tests:**
+- `reactivar devuelve la reserva cancelada` covers the THEN's first half: `run('reactivar', ['Norte','lun'])` returns `reactivada Norte lun`.
+- `tras reactivar, Norte deja de salir en libres 10:00-12:00` covers the THEN's second half: after reactivating, `libres 10:00-12:00` no longer lists Norte.
+- `reactivar sin cancelada lo dice` covers the AND: `run('reactivar', ['Sur','mar'])` returns `sin cancelada Sur mar`.
+
+**Shared state:** `bookings` isn't exported and Norte/lun starts out `cancelled` in `src/app.js`. The tests therefore share module state and rely on file order, and the first test reactivates Norte. Test 2 calls `reactivar` again as setup, so it still passes if run alone. The implementer's `reactivar` must reactivate only `cancelled` bookings, and a repeat call must return `sin cancelada`, not an error.
+

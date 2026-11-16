@@ -1,0 +1,74 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities), sin tocar código. Queda: clasificar y preguntarte por el patch, ~2 min.
+
+--- [19]
+Ahora: reproduzco el síntoma y leo la plantilla del patch y la guía de TDD. Queda: test en rojo, fix, revisor, commit y cierre, ~0,5 h.
+
+--- [24]
+Ahora: escribo el test en rojo y compruebo que falla por el motivo correcto. Queda: `patch.md`, fix, revisor, commit y cierre, ~0,4 h.
+
+--- [27]
+RED confirmado: falla porque devuelve `Norte, Sur`. Abro la carpeta del patch con la estimación y la hora de inicio antes del fix.
+
+--- [32]
+El escape de `\d` se perdió al insertar la expresión regular. Lo corrijo.
+
+--- [36]
+Ahora: el revisor del patch (uno, `sonnet`) lee `patch.md` y el diff. Queda: contestar sus hallazgos, commit y cierre, ~0,15 h.
+
+--- [39]
+El revisor del patch está en marcha. Mientras tanto, el estado es este:
+
+- **Test en rojo:** `libres 25:00-26:00` devolvía `Norte, Sur`, y el test nuevo falló por eso.
+- **Fix:** `src/app.js` valida la franja con `HH:MM-HH:MM` (horas 00–23, minutos 00–59) y responde «franja no válida: usa HH:MM-HH:MM». `libres` sin franja y `libres 10:00-12:00` se comportan como antes.
+- **Verde:** `node --test` pasa 5/5 y `node scripts/lint.mjs` no da hallazgos.
+- **Pendiente:** la respuesta a los hallazgos del revisor, el commit del fix con `patch.md` y el cierre con `sdd-archive`.
+
+Hay una decisión que quiero que veas. La fila 0012 solo fija el texto y el ejemplo `25:00-26:00`. La regla de validez (00–23 y 00–59, formato exacto) la he deducido de ahí, y la he anotado en `patch.md` §3 como «ticket (la fila)». Si prefieres otra regla, dímelo antes del cierre. Dejé sin tocar `libres` sin franja y las franjas con fin ≤ inicio, porque la fila no los menciona.
+
+Espero el informe del revisor antes de seguir.
+
+--- [43]
+Hay 2 hallazgos Importantes y 3 Menores. `node --test` pasa con 5/5, y el fix y el test cubren el caso pedido.
+
+1. **Importante: la regla de validez decide cosas visibles que la fila no fija, y patch.md §3 las presenta como si no hubiera alternativa.**
+   - La decisión atribuye «00–23 / 00–59» a «definición de hora de reloj, sin alternativa de producto — ticket (la fila)». Eso es cierto para los rangos de HH y MM.
+   - No lo es para el formato exacto de la regex, que no aparece en esa justificación. Con `SLOT`, `libres 9:00-10:00` pasa de listar salas a responder «franja no válida». Lo mismo ocurre con `libres abc`, o con cualquier texto que no sea `HH:MM-HH:MM` con dos dígitos.
+   - La fila solo ejemplifica `25:00-26:00`. Rechazar las horas sin cero inicial, o aceptar `24:00`, es una decisión de producto que ve el usuario.
+   - Cómo corregirlo: o se acota el fix a lo que la fila fija (horas o minutos fuera de rango), o se registra el formato estricto como decisión propia. En ese caso debería ir confirmada por dev-lead, o anotada como supuesto con su alternativa («9:00 se acepta» frente a «se rechaza»).
+
+2. **Importante: «usa HH:MM-HH:MM» sí apoya el formato de dos dígitos, pero §3 no lo dice.**
+   - El texto del mensaje es un argumento razonable a favor del formato estricto. Sin embargo, §3 solo menciona el texto y el ejemplo de forma genérica.
+   - El efecto del comportamiento nuevo (`9:00-10:00`, `abc`) debería nombrarse en «Sin tocar» o en las decisiones. Hoy §3 lista solo `libres` sin franja y los casos con fin ≤ inicio. Falta lo que sí cambia.
+
+3. **Menor: el comportamiento no pedido que sí se conserva se comprueba bien.** Lo ejecuté.
+   - `libres` sin franja devuelve «Norte, Sur».
+   - `libres 10:00-12:00` devuelve «Sur».
+   - `libres 10:00-09:00` devuelve «Norte, Sur». Se queda como hoy, tal como declara §3.
+   - El cambio es mínimo: una constante y un `if` previo. `params[0] !== undefined` protege el caso sin franja.
+
+4. **Menor: el test no está ajustado al código, pero es escaso.**
+   - Sin el fix, `run('libres', ['25:00-26:00'])` devolvía «Norte, Sur», así que el test fallaría. Lo deduzco por lectura y por el síntoma documentado, sin haber quitado el fix.
+   - Solo cubre el caso literal de la fila. No hay un test de no regresión para `libres 10:00-12:00` ni para `libres` sin franja. El primero ya existe en parte con «libres excluye la sala reservada», pero la franja vacía no tiene ninguno.
+
+5. **Menor: documentación.**
+   - La tabla de §4 sigue en «pendiente», pese a `status: done`. Tampoco hay `commit` ni esfuerzo real rellenados.
+   - No encontré la fila 0012 en `.docs` fuera de `changes/`, así que no pude contrastar el texto literal citado. El mensaje del código coincide con el que cita patch.md.
+
+--- [45]
+Dos hallazgos del revisor son ciertos y no los voy a esconder. Los respondo y actualizo `patch.md`.
+
+--- [47]
+El patch 0012 está implementado y en verde, pero no lo he commiteado ni cerrado. Falta una decisión tuya, y lo digo en vez de darlo por hecho.
+
+`libres 25:00-26:00` ya responde «franja no válida: usa HH:MM-HH:MM». El test nuevo falló antes del fix porque devolvía `Norte, Sur`. Con el fix, `node --test` pasa 5/5 y el lint no da hallazgos. `libres` sin franja y `libres 10:00-12:00` no cambian.
+
+El revisor señaló que mi fix también rechaza otras entradas que la fila no menciona. Con el formato estricto de dos dígitos, `libres 9:00-10:00` y `libres abc` pasan de listar salas a dar «franja no válida». El texto «usa HH:MM-HH:MM» lo apoya, pero eso lo decidí yo y la fila no lo dice. Según el flujo de patch, una decisión visible tomada sin ti saca el cambio del carril patch, así que no sigo por mi cuenta.
+
+**¿Qué hacemos con las entradas como `9:00-10:00` o `abc`?**
+1. **Rechazarlas (recomendada).** Es coherente con el mensaje «usa HH:MM-HH:MM». El fix queda como está: lo dejo documentado en `patch.md` como decisión tuya, commiteo y cierro con `sdd-archive`.
+2. **Aceptar `9:00-10:00`.** Cambio la expresión regular para admitir horas de una cifra y añado un test que lo cubra, y luego commiteo y cierro igual.
+3. **Que sea una feature.** Si quieres decidir con más calma qué es una franja válida, subo el cambio a feature con su spec.
+
+El fix está en `src/app.js` y el test al final de `test/app.test.js`. La carpeta `.docs/sdd/changes/20261111-192103-patch-0012-slot-format/` tiene el `patch.md` con la estimación (0,5 h) y la decisión pendiente anotada.
+

@@ -1,0 +1,93 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd .docs/sdd/capabilities 2>&1; git branch --show-current; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd; cat .docs/sdd/sdd-kit.local.json
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap architecture; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1; done; git ls-files | head -50
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+tech-stack.md
+develop
+Sin capacidades
+{"merge": {"push": true}}
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-feature` → spec → plan → `sdd-end-feature`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La u
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/operations.md PRODUCT.md; cat src/app.js; cat test/cancel.test.js; cat .docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+<<< {"version": "2.3.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en mem
+
+>>> Bash: cd "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0160-single-entry-propose/5ddb54f8-9a77-4279-b3e7-30d014b485e9/scratchpad/kit-green/skills/sdd-start-feature/references" && cat nombrado.md | head -80; cd - >/dev/null; cd "<run>/repo" && git checkout -b feature/0011 && git branch --show-current
+<<< ## Nombrado de carpetas de spec
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, todo en UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` o `proposal` según el carril. Una carpeta `-task-` de antes de la 2.0.0 es legado: los scripts la leen y el cierre escribe en ella sin renombrarla, pero ninguna carpeta nueva se prefija `task-`. Una carpeta que contiene `patch.md` SIEMPRE va prefijada `patch-`; una que contiene `proposal.md`, `proposal-` (la crea `sdd-roadmap`).
+- `<id>`: depende del modo declarado en `.docs/sdd/sdd-kit.json` (
+
+>>> Skill: superpowers:brainstorming
+<<< Launching skill: superpowers:brainstorming
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.251571 $)
+Esto no es un cambio acotado. Voy por la vía pesada: preguntas, spec escrita y plan.
+
+**Lo que entiendo**
+- Hoy `anular <sala> <día>` anula cualquier reserva activa y no comprueba quién lo pide (`src/app.js`, `voidBooking`).
+- Quieres que solo el responsable de cada sala pueda anular reservas de otras personas. Es la fila 0011 del roadmap, y `PRODUCT.md` ya define «anulación» como lo que hace el responsable de sala.
+- Es una suposición mía que cada sala tiene un único responsable, y que quien pide la reserva sigue pudiendo cancelar la suya con `cancelar`.
+
+**Lo que no existe**
+- No hay ninguna noción de persona: ni quién ejecuta el comando, ni quién es el responsable de cada sala.
+- Las reservas tampoco guardan a nombre de quién están (`{ room, day, slot, status }`), aunque `PRODUCT.md` dice «a nombre de quien la pide».
+- `Acceso a la aplicación` es `sin login` y la misión dice que la usas solo tú.
+
+❓ **¿Cómo sabe el programa quién anula?**
+1️⃣ **Nombre declarado con `--como <nombre>`.** Las salas tienen su responsable en una tabla del código.
+   - `anular Norte lun --como Marta` → `anulada Norte lun`
+   - `anular Norte lun --como Pedro` → `solo Marta, responsable de Norte, puede anular`
+   - `anular Norte lun` → `indica quién anula con --como`
+   - Cuesta poco y es fácil de probar. No autentica: cualquiera puede escribir el nombre de otro.
+2️⃣ **Variable de entorno `SALAS_USUARIO`.** Es el mismo control, pero el nombre se fija una vez por sesión en vez de ir en cada comando. El cambio llega a `cancelar` y `reservar`, que hoy no lo usan.
+3️⃣ **Login con contraseña o token.** Es seguridad real, pero choca con `sin login` y con una herramienta de una sola persona. Es mucho más trabajo para una sola fila del roadmap.
+
+➡️ **Recomiendo 1️⃣**, porque la misión dice que la usas solo tú y no hay a quién proteger de suplantaciones. A cambio, no impide que alguien se haga pasar por el responsable.
+
+Después me falta decidir a nombre de quién se guarda cada reserva, y qué hace `anular` con una reserva propia.

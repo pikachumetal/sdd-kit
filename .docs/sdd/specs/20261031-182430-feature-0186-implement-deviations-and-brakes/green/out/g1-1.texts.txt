@@ -1,0 +1,62 @@
+--- [10]
+Ahora: compruebo la spec contra el roadmap, el código y el merge del delta, porque esos datos deben ir en la parada. Queda: presentártela para aprobar, ~2 min.
+
+--- [29]
+Corrijo el formato de la spec y vuelvo a probar el delta sobre una copia temporal; después te la presento.
+
+--- [34]
+# Spec 0010 — Motivo al cancelar
+
+🦆 Quien cancela una reserva elige un motivo de una lista cerrada, y un listado nuevo enseña las cancelaciones. Por ejemplo, al cancelar la sala Norte del lunes con «sala ocupada», el programa responde «cancelada Norte lun (sala ocupada)» y el listado enseña «Norte lun — sala ocupada — Ana». Un motivo fuera de la lista recibe un aviso con los motivos válidos. El motivo se guarda con la reserva cancelada. Falta decidir cómo sabe el programa quién cancela, qué pasa al cancelar sin motivo y cómo sobrevive el dato entre dos ejecuciones.
+
+**No te recomiendo aprobarla todavía:** tal como está, no se puede cumplir, por los tres puntos de abajo.
+
+## Tres puntos sin resolver
+
+| Punto | Qué falla | Mi recomendación |
+| --- | --- | --- |
+| **Quién canceló** | `cancelar` no recibe ninguna persona y la reserva no guarda a nombre de quién está, así que «Ana» no sale de ningún dato. | Añadir `--por <persona>` obligatorio: `cancelar Norte lun --motivo "sala ocupada" --por Ana`. |
+| **Cancelar sin motivo** | Ningún escenario lo cubre, y hoy `cancelar Norte lun` funciona sin motivo. | No cancela y responde «motivo no válido: cambio de planes, sala ocupada, otro». |
+| **El dato entre ejecuciones** | Las reservas viven en memoria y cada comando es un proceso nuevo. `canceladas` saldría vacío en la terminal aunque pasara los tests, y cancelar seguiría sin dejar rastro. | Guardar las reservas en un fichero local, lo que amplía el Scope. |
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Sin review de spec:** hay dos señales (capacidad nueva y datos), y hacen falta cuatro para proponerla.
+2. **Capacidad `bookings`:** es nueva, porque `capabilities/` no existe.
+3. **Motivos:** lista cerrada con cambio de planes, sala ocupada y otro. La spec dice que lo decidisteis en la entrevista; no tengo la frase literal.
+4. **El listado:** enseña sala, día, motivo y quién canceló. La spec lo atribuye a la petición («saber quién y por qué»), pero la fila 0010 del roadmap solo pide el motivo.
+5. **Nombres:** `--motivo` y `canceladas` no vienen del roadmap.
+6. **Textos de respuesta:**
+   - «cancelada Norte lun (sala ocupada)»
+   - «motivo no válido: cambio de planes, sala ocupada, otro»
+   - «Norte lun — sala ocupada — Ana»
+
+**Política de modelos:** ningún revisor de spec · revisión final con Spec opus+high, Código sonnet+high y Arquitectura según el plan · sin otros despachos en paralelo · en paralelo hasta `control.maxParallelAgents`.
+
+**Validación:** dev-lead, porque lo usa una persona desde la terminal.
+
+## Scope y comportamiento
+
+- **Entra:** `cancelar <sala> <día> --motivo <motivo>` y el comando `canceladas`.
+- **No entra:** anulaciones del responsable de sala (0011).
+- **Cancelar:** con la reserva de Norte del lunes, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista recibe el aviso.
+- **Listado:** con esa reserva cancelada por Ana, `canceladas` responde «Norte lun — sala ocupada — Ana».
+- **Dónde se prueba:** los dos comportamientos, por su comando en `test/cancel.test.js`.
+
+## Qué he cambiado en la spec
+
+Aunque venía repasada, le faltaban cosas que la parada exige. No he tocado ningún escenario ni el Scope.
+
+- **`bookings`:** pasa de «Modificadas» a «Nuevas», porque `sdd capability merge` la rechazaba. Ahora sobre una copia añade los dos requisitos sin error, pero eso solo comprueba el formato del delta, no los tres puntos de arriba.
+- **Señales de la review:** cambio MODIFIED por capacidad nueva, porque no hay requisito vigente. Sigue sin review.
+- **Decisiones:** añado los nombres y los textos de respuesta que faltaban.
+- **Secciones nuevas:** el 🦆, la línea de validación, la política de modelos, «Sin resolver», «Lo que se retira o cambia de forma» y «Términos y ADR». La primera recoge que cambia la respuesta de `cancelar` y su test actual.
+
+**Aviso del kit:** esta sesión carga la 2.3.4 y el proyecto pide la 3.0.0, así que las skills pueden estar desfasadas. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+## ¿Apruebas la spec?
+
+1. **Apruebo:** la spec tal como está, con los tres puntos abiertos. Pararé en cuanto bloqueen la implementación.
+2. **Cambios (Recomendada):** aplico mis tres recomendaciones, o las que me corrijas, y te la presento de nuevo. Basta con que digas «cambios, con tus tres recomendaciones».
+3. **Apruebo; escribe el plan y para antes de la Task 1:** así puedes bajar la sesión a gama media (`/model`, Sonnet con effort medium), y sigo cuando digas «sigue». Se prevén 2 tasks, y en Native la sesión las implementa todas y no puede cambiar de modelo sola. También deja abiertos los tres puntos.
+

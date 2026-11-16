@@ -1,0 +1,109 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls; cat ROADMAP.md 2>/dev/null; cat .docs/sdd/steering/debt.md 2>/dev/null; git branch --all
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** `.doc
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; ls -R docs src test | head -50; cat package.json; cat CHANGELOG.md | head -20; cat "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/skills/sdd-templates/templates/debt-template.md"
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+docs:
+qa/
+
+docs/qa:
+2026-10-12-informe.md
+
+src:
+app.js
+
+test:
+app.test.js
+{"type": "module"}
+# Changelog
+
+Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), versionado SemVer.
+
+## [1.4.1] - 2026-10-05
+
+### Fixed
+
+- Las reservas semanales respetan el dí
+
+>>> Bash: cat src/app.js; cat test/app.test.js; git log --oneline | head; node --version
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: cd . && node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; node src/app.js exportar > /tmp/o.csv; file /tmp/o.csv; head -1 /tmp/o.csv
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+/tmp/o.csv: CSV Unicode text, UTF-8 text
+sala,día,franja
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0276-triage-by-cause/.temp/kitg/cli/bin/sdd.js" roadmap check --path .docs/sdd; git branch --all | grep feature; grep -n '^## \[' CHANGELOG.md
+<<< ROADMAP.md: línea 21: el id «B1» no es de la secuencia: resérvale uno con sdd id next --reserve
+debt.md: aviso: línea 14: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+5:## [1.4.1] - 2026-10-05
+11:## [1.4.0] - 2026-09-01
+17:## [1.3.0] - 2026-07-20
+
+=== RESULTADO (8 turnos, 0.17308590000000004 $)
+Reproduje los dos hallazgos de «Por triar» y propongo dónde va cada uno. No he escrito nada todavía: con perfil `delegate` espero tu decisión.
+
+**1. Pérdida de tildes en el CSV → «En espera», falta `reproducirlo`**
+- No se reproduce. Ejecuté `node src/app.js exportar`: la cabecera sale como `sala,día,franja`, con los bytes UTF-8 correctos (`d 303 255 a`).
+- El informe cita la 1.4.2, y el changelog llega solo hasta la 1.4.1. Puede ser una versión que no está aquí, o el programa donde se abre el CSV (Excel sin BOM, consola de Windows).
+- Causa: `sin determinar`. Impacto: medio.
+- Fecha: 2026-10-12. La conservo, que es cuando entra en el estado.
+
+**2. `libres --planta 2` lista salas de la planta 1 → «Lista», con fila nueva en Now**
+- Se reproduce: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- El defecto está en `src/app.js:11`: filtra con `floors[room] <= floor` y debería comparar con `===`.
+- Causa: `defecto del producto`. Arreglo: `—`. Remedio temporal: `—`, porque hay un solo caso.
+- Destino: una fila nueva `**Carril:** patch`, tamaño S, con un test de comportamiento nuevo. Su id lo reservaría con `sdd id next --reserve`.
+- Evidencia: el comando y su salida, más el informe de QA.
+
+**Dos cosas más que ha dado el chequeo y no toco sin tu permiso**
+- La fila de «En espera» «Las reservas de más de 8 h no avisan al responsable» lleva en espera desde 2026-07-01. Ya han salido dos releases `X.Y.0` (1.3.0 y 1.4.0) sin segundo caso, así que `sdd roadmap check` avisa de que caduca. Propongo pasarla a «Descartadas», con motivo `caducada`, causa `sin determinar` y fecha de hoy, 2026-11-01. Se podría reabrir si llega un segundo caso.
+- `B1` en Later no es un id de la secuencia, y `roadmap check` falla por eso. Es forma heredada, no la he escrito yo y no la corrijo aquí. Si quieres, le reservo un id aparte.
+
+¿Te parece bien este reparto, incluido descartar la fila caducada? Con tu visto bueno reservo el id, escribo la fila y `debt.md`, paso el chequeo y publico. Aviso también de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que conviene actualizarlo y reiniciar antes de escribir.

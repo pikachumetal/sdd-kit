@@ -1,0 +1,78 @@
+--- [2]
+Now the spec, plan, ADR.
+
+--- [9]
+I read the whole package (96 lines) in one pass, along with the spec, the plan, ADR 0003 and the three test files in `test/`.
+
+### Strengths
+- The Review Focus behaviour is in the code: `voidBooking` checks for a missing reason first, so `anular Norte lun` with no `--motivo` returns «falta el motivo» before it even looks for the booking (`src/app.js:30`). `anular Norte lun --motivo` with no value after the flag gives the same answer, because `reasonOf` returns `undefined` (`src/app.js:22`).
+- The THEN with a reason («anulada Norte lun (avería)») is pinned by a real end-to-end test through `run` (`test/void.test.js:8-9`), with no mocks.
+- The reason travels with the voided booking (`booking.reason`, `src/app.js:34`), as the Approach asks. The interface text is in Spanish and the diff adds no comments.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The REMOVED requirement still runs: voiding still sends the email** — `src/app.js:35`, `src/app.js:16-18`, `src/app.js:6`
+- What's wrong: `voidBooking` still calls `notifyByMail(\`anulada ${room} ${day}\`)`, and `notifyByMail` and the exported `outbox` are still there.
+- Why it matters: the spec deletes this behaviour («El correo de anulación desaparece»), and it is a decision taken with the dev-lead.
+- How to fix: remove the call. If nothing else uses `notifyByMail` and `outbox`, remove them too. Add a test that checks `outbox` stays empty after `anular … --motivo …`.
+- Gap: `contradicts`. Source: «REMOVED — Las anulaciones se avisan por correo» and the dev-lead's decision «El correo de anulación desaparece».
+
+#### Important (Should Fix)
+
+**2. ADR 0003 is broken: `src/` now imports `node:fs` and writes voided bookings to disk** — `src/app.js:1`, `src/app.js:25-27`, `src/app.js:36`
+- What's wrong: `saveVoided()` writes `data/anuladas.json` on every void.
+- Why it matters:
+  - It fails ADR 0003's Confirmación: «`src/` no importa `node:fs` ni ningún paquete de base de datos».
+  - The spec's Scope says «No entra: guardar las anulaciones».
+  - It also has a practical effect: `data/` isn't in the repo, so `anular Norte lun --motivo avería` from the terminal throws ENOENT and prints a stack trace instead of the reply. The test only passes because it runs `mkdirSync('data')` first (`test/void.test.js:6`).
+- How to fix: remove `saveVoided`, the `node:fs` import, and the `mkdirSync` in the test.
+- Gap: `contradicts` (it goes against the ADR and the scope).
+
+**3. The dev-lead's decision is only half covered: `anular-todas` doesn't ask for a reason** — `src/app.js:40-44`, `src/app.js:52`
+- What's wrong: `voidAll()` takes no reason, never says «falta el motivo», and voids every active booking with no `reason`.
+- Why it matters: decisión del dev-lead cubierta a medias: «Anular pide motivo en las dos vías, `anular` y `anular-todas`» — the rule only covers `anular`, so `anular-todas` with no reason still gets through. The Scope also includes `anular-todas --motivo <texto>`.
+- How to fix: pass `reasonOf(params)` to `voidAll`, return «falta el motivo» when it's missing, and store `reason` on each booking. Add tests for both cases.
+- Gap: `partial`. Source: the dev-lead's decision and the Scope.
+
+**4. The Review Focus line has no test: `pide motivo al anular` doesn't exist** — `test/void.test.js`
+- What's wrong: the only test is `anular con motivo`. The plan names `pide motivo al anular` for the THEN «`anular Norte lun` sin `--motivo` responde «falta el motivo»», and no test checks it.
+- Why it matters: the behaviour is right today (finding: none in the code), but nothing pins it, so a regression would slip through. «Dónde se prueba» asks for both cases («con motivo y sin él») in `test/void.test.js`.
+- How to fix: add `test('pide motivo al anular', () => assert.equal(run('anular', ['Norte', 'lun']), 'falta el motivo'))`.
+- Gap: `missing`. Source: the THEN «AND `anular Norte lun` sin `--motivo` responde «falta el motivo»» and the plan's Review Focus.
+
+**5. Unrequested change to `availability`, and it breaks an existing test** — `src/app.js:47-50`
+- What's wrong: `libres` now returns `"1 libres: Sur"` instead of `"Sur"`. The spec's delta has no `availability` subsection.
+- Why it matters: `test/app.test.js:6` (`libres excluye la sala reservada en la franja`) expects `'Sur'` and will fail with this commit.
+- How to fix: revert the `libres` change. If it's wanted, it needs its own delta and approval, and `«1 libres»` is also poor Spanish.
+- Gap: `unrequested`. Source: the list of capabilities (`availability`).
+
+#### Minor (Nice to Have)
+
+**6. A multi-word reason without quotes is cut short** — `src/app.js:22`
+- What's wrong: `--motivo fuga de agua` keeps only «fuga».
+- Why it matters: someone using the tool would expect the whole reason to be kept.
+- How to fix: take everything after `--motivo`, or document that the reason must be quoted.
+- Gap: `partial`. Source: reasonable-user expectation (the spec says nothing on this).
+
+### Declined to judge
+- `cancelar` and `reservar` aren't handled in `run` (they return `'salas'`), so `test/cancel.test.js` and the second test in `test/app.test.js` already fail before this branch. That code isn't touched by the diff or covered by the spec.
+- The «✋» decision «El texto sin motivo es «falta el motivo»»: the code follows it. It is still waiting for the dev-lead to confirm it, which isn't for this review to settle.
+- `--motivo` written before the room and day (`anular --motivo x Norte lun`) would be read as the room. The spec gives the argument order and doesn't cover this.
+- The CRLF line endings in `src/app.js` are a formatter matter, not a Spec matter.
+
+### Not verified
+- The outcome of `node --test test/void.test.js` and of the whole suite: not verified, because the brief says not to run them and the package has no task report with test evidence. The failure of `test/app.test.js:6` is inferred from reading the code.
+- The ledger: not verified because there is no ledger, so there are no rulings or deferred minors to weigh.
+
+### Recommendations
+- Have the main thread run the whole suite (`node --test`). I expect `app.test.js` to fail because of the `libres` change.
+- Run `anular Norte lun --motivo avería` from the terminal without a `data/` folder. That shows the ENOENT crash from finding 2.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The «falta el motivo» behaviour from the Review Focus is right but has no test. The branch still sends the email the spec removes, writes voided bookings to disk against ADR 0003 and the spec's scope, leaves `anular-todas` without a reason, and breaks an existing `libres` test with a change nobody asked for.
+

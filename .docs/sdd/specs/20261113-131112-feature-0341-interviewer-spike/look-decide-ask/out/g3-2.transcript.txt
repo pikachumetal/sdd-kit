@@ -1,0 +1,44 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && ls -a && ls -R .docs | head -50 && cat PRODUCT.md ROADM
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat .docs/sdd/steering/*.md; ls src test; cat package.j
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat src/app.js; cat test/app.test.js | head -40; cat .d
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/.temp/i/kit-look-decide-ask/skills/sdd-propose/references" && cat spec-writing.md; cat control-pro
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: te presento cómo he entendido el cambio y te hago la primera pregunta. Queda: la entrevista, la spec y su aprobación, el plan y la implementación, ~5 min hasta la spec.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile y no hay sdd-kit.local.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** cuando pides una sala y ya está reservada en esa franja, hoy no ocurre nada útil. Quieres poder apuntarte a una lista de espera para esa sala. Es una funcionalidad nueva, con decisiones de comportamiento que nadie ha fijado, así que va por el carril feature y no por patch.
+
+**Lo que he visto en el código:**
+- `src/app.js` es un único fichero. `reservar` solo reconoce `--cada-semana` y devuelve un texto fijo, sin comprobar si la sala está ocupada.
+- Las reservas son un array en memoria (`bookings`), sin persistencia.
+- `cancelar` es el único punto donde una sala puede quedar libre.
+- Es una CLI de un solo usuario, tú. No hay más personas a las que avisar.
+
+❓ **¿Qué esperas que pase cuando la sala por la que esperas se libere, y qué haces hoy cuando te la encuentras ocupada?**
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Entendido: el problema es el sondeo manual de `libres`, así que la lista de espera tiene que quitarte ese paso, no solo apuntarte.
+
+La decisión que más condiciona el resto es qué pasa cuando la sala se libera. Hoy solo `cancelar` libera una sala.
+
+❓ **Al liberarse Norte, ¿qué ocurre con quien está en espera?**
+1️⃣ **Reserva automática.** `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Luego `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a tu reserva (1.º en espera)`. Ya no vuelves a mirar nada. Coste: la reserva se crea sin que la confirmes en ese momento.
+2️⃣ **Solo aviso.** Al cancelar imprime `Norte libre lun 10:00-12:00; hay espera`, y tú ejecutas `reservar` otra vez. Coste: sigue habiendo un paso manual, y alguien podría reservarla antes que tú.
+3️⃣ **Comando de consulta.** `espera` → `Norte: libre ya`. Coste: es el mismo sondeo que hoy, con otro nombre.
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que volver a mirar a mano y es la única opción que lo elimina del todo. A cambio, tienes que poder quitarte de la lista (`cancelar` sobre una espera), para no acabar con reservas que ya no quieres.
+
+Después tocará decidir si la lista debe sobrevivir entre ejecuciones. Hoy las reservas viven en memoria y cada ejecución de la CLI parte de cero.

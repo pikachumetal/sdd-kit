@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/capabilities 2>&1 | head -60; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -20; node "D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && for f in constitution mission tech-stack roadmap; do echo "=== $f"; cat .docs/sdd/$f.md 2>&1 | head -80; done
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+.
+..
+.docs
+.git
+package.json
+README.md
+src
+test
+
+.docs/sdd:
+.
+..
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd "<run>/repo" && cat package.json; cat src/app.js; ls test; grep -n -i "cancel" test/* | head -30
+<<< {"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit/skills" && cat sdd-propose/references/modo-lite.md | head -60; grep -n -i "corto\|short" sdd-rubber-duck/SKILL.md | head
+<<< ## Modo lite — predicado observable, activación del usuario
+
+Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+
+- El flujo a modificar ya existe en el repo y se puede leer.
+- No cambia contratos públicos (API, interfaces que consume otro módulo).
+- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+- Cabe en un solo módulo o área.
+- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+
+Cumplirlas **habilita** el modo; NO 
+
+=== RESULTADO (7 turnos, 0.1717676 $)
+Ahora: clasificar el cambio. Queda: tu respuesta sobre el carril, y luego la spec corta (~10 min). Todavía no he creado rama, carpeta ni id.
+
+🦆 `cancelar` no mira las reservas. En `src/app.js` devuelve siempre `cancelada <día> <hora>` y nunca borra nada. El test `cancelar respeta el día` da por bueno ese comportamiento: cancela `mar 10:00`, que no existe, y espera «cancelada».
+
+Esto es un fallo, pero no encaja en patch. Un patch necesita que el texto del cambio ya esté fijado, y aquí nadie ha dicho qué debe responder cuando la reserva no existe. Ese mensaje lo tendría que inventar yo. Hay otra duda: las reservas llevan sala y `cancelar` solo recibe día y hora. Qué hacer con dos salas a la misma hora también hay que decidirlo.
+
+¿Cómo lo llevamos?
+
+1. **Lite (recomendada).** Cumple las condiciones del modo:
+   - El flujo ya existe y se lee en `src/app.js`.
+   - No cambia contratos públicos ni datos. Es un CLI sin API que consuma otro módulo.
+   - Cabe en un solo módulo, `src/app.js` con su test.
+   - No hay `estimation.md`, así que esa condición no se aplica.
+
+   Habría una spec corta, con el mensaje y el caso de las dos salas como decisiones que validas tú, y sin plan.
+2. **Feature completa.** Spec y plan completos. Es más ceremonia de la que pide este cambio.
+3. **Patch.** Solo si me dictas ya el texto exacto, por ejemplo `no existe la reserva mar 10:00`, y qué pasa cuando hay dos salas a esa hora.
+
+En lite puedes elegir perfil (`pair` o `delegate`). Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación».
+
+¿Cuál eliges?

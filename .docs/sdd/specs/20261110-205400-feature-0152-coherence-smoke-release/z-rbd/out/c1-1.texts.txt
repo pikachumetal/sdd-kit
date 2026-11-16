@@ -1,0 +1,34 @@
+--- [11]
+Lo de cancelar es muy poco: es un solo `if` en `src/app.js:12`, y casi no hace nada de verdad.
+
+**Qué hace el código**
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Se usa como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`.
+- **No toca el array `bookings`.** No busca ninguna reserva y no borra nada.
+- No valida nada. Si la reserva no existe, también responde «cancelada».
+
+**Lo que dicen los documentos**
+
+- El `CHANGELOG.md` lista «Cancelar una reserva propia» como funcionalidad.
+- Además, el patch 0007 está cerrado (✅ en `ROADMAP.md`, S). Se titula «La cancelación borraba reservas de otro día con la misma hora».
+- El `patch.md` dice: «Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.»
+- El test `cancelar respeta el día` (`test/app.test.js:13`) solo comprueba que el texto de salida lleve el día. No comprueba que se borre la reserva correcta.
+
+**Por qué no lo pillas**
+
+Creo que es porque los documentos y el código no cuadran. Esto es inferencia mía a partir de lo que he leído, no algo que diga ningún documento.
+
+- El patch habla de una comparación por hora que borraba reservas. En `src/app.js` no hay ninguna comparación ni borrado de reservas.
+- Solo `freeRooms` mira `bookings`, y lo hace con `room` y `slot`. Ignora `day`.
+- Lo más probable es que el código sea un esqueleto de prueba y que el patch describa un fix que ahí no existe.
+- Otra posibilidad es que el fix se perdiera en algún commit. Solo hay uno en el historial (`feat: base del molde`), así que no puedo comprobarlo.
+
+Hay otro hueco de código que conviene saber. `libres` también compara solo por `slot` e ignora el día, así que cualquier reserva de ese tramo bloquea la sala todos los días.
+
+No he cambiado nada. Si quieres dejarlo bien, sería una fila de patch en el roadmap: implementar la cancelación real, por día y hora, con un test que compruebe el borrado. Dime si te la apunto. Y si prefieres hacerlo en esta sesión, di «arráncalo».
+

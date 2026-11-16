@@ -1,0 +1,72 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [23]
+La re-revisión de `303fb57..9e5ab8a` está en marcha, con su vigía. No escribo ningún registro hasta que vuelva.
+
+Avisos mientras tanto:
+- **Re-revisión:** `9e5ab8a` cambia `package.json` (añade el script `cancelar`), así que no entra en la excepción de «solo documentación o comentarios». Por eso no basta con la revisión final que ya estaba limpia.
+- **Abiertas a la vez:** no hay otras ramas `feature/*` ni `patch/*`.
+- **Kit:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Estoy usando el CLI y las skills del 3.0.0 (`.temp/k-g3`), pero conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+- **Validación:** `validation.mode: field`, así que no te pregunto. Haré mi propio smoke y lo registraré como `Validación en campo`.
+
+Cuando vuelva la re-revisión sigo con el cierre: smoke, walkthrough, capability, changelog, roadmap, historia y merge a `develop`.
+
+--- [25]
+### Nuevos fallos en el tramo
+Ninguno.
+
+- **Spec:** el script `"cancelar": "node src/app.js cancelar"` (package.json:1) no hace nada nuevo. Es un atajo que llama a la misma orden `cancelar` que la spec ya define en el Scope y en el escenario ADDED «Cancelar pide un motivo de la lista». No cambia los motivos, los mensajes ni el comportamiento cuando falta `--motivo`. Tampoco choca con nada de lo que la spec deja fuera (las anulaciones de la 0011).
+- **Código, `"type": "module"`:** se conserva. El cambio solo añade la clave `scripts` al mismo objeto, y el JSON sigue siendo válido.
+- **Código, arranque:** `node src/app.js cancelar` deja `command = 'cancelar'` en src/app.js:1. Con eso `run` entra por la rama de src/app.js:42 y src/app.js:48 imprime el resultado. Sin argumentos, `cancelBooking(undefined, undefined, undefined)` responde «motivo no válido: …», que es lo que la spec pide cuando falta `--motivo`.
+- **Código, argumentos:** con `npm run cancelar -- Norte lun --motivo "sala ocupada"`, npm añade todo lo que va detrás de `--` al final del script. Llegan `args = ['Norte', 'lun', '--motivo', 'sala ocupada']`, y `reasonOf` (src/app.js:14-17) encuentra el motivo. npm entrecomilla él mismo los argumentos con espacios.
+- **Castellano:** el nombre del script es `cancelar` y el tramo no añade texto de interfaz nuevo.
+
+### Observaciones fuera de alcance
+Ninguna.
+
+### Veredicto
+**Tramo:** limpio. 458edfd solo toca `.docs/`, que queda fuera del diff revisado, y 9e5ab8a no trae hallazgos. Trabajé en el worktree indicado con HEAD en 9e5ab8a y el árbol limpio, sin modificar nada.
+
+--- [27]
+La re-revisión salió limpia. Paro el vigía, retiro el worktree de revisión y registro la línea.
+
+--- [31]
+El vigía ya había terminado. Ahora la validación en campo: mi smoke, una fila por THEN, y la suite con la salida guardada en un fichero.
+
+--- [34]
+El smoke cumple los THEN de la spec. Ahora la suite: el gate de cierre filtrado por lo que toca la rama contra `develop`. Guardo la salida entera.
+
+--- [43]
+Sigo con la capability: fusiono el delta con el CLI, no a mano. El proyecto no tiene `capabilities/`, así que veo qué hace.
+
+--- [62]
+Commit de cierre `064b8dd`. Ahora la base integrada y el merge.
+
+--- [68]
+La feature 0010 queda cerrada y fusionada en `develop`.
+
+**Decisiones tomadas sin el dev-lead**
+- Un ruling de la Task 2: usar `node --test --test-concurrency=1` en el gate, para esquivar la carrera de los tests sobre el almacén en memoria compartido. El `gate.json` que se integra no lleva ese flag y el gate salió verde sin él, así que el workaround solo existe como ruling. Lo apunté como fila de deuda técnica en el roadmap.
+- El script `cancelar` de `package.json` no estaba en la spec ni en el plan. Está en el walkthrough como añadido fuera del plan.
+
+**Qué hice**
+- **Re-revisión:** el commit `9e5ab8a` (script `cancelar` en `package.json`) llegó después de la revisión final y no es solo documentación. Lancé una re-revisión de ese tramo con `general-purpose` + `opus`, porque `sdd-kit:effort-high` no estaba disponible en esta sesión. Salió limpia.
+- **Validación:** `validation.mode` es `field`, así que no te pregunté nada. Ejecuté el smoke de los 4 THEN de la spec y todos coinciden. En el gate, `bookings:test` pasa 5/5 y `rooms:test` se salta porque la rama no toca sus ficheros. La base no iba por delante de la rama, así que no repetí la suite al integrar. En el walkthrough consta como `Validación en campo`.
+- **Registros:**
+  - Walkthrough nuevo.
+  - `tasks.md` con la línea de re-revisión.
+  - Capability `bookings`, creada al fusionar el delta con `sdd capability merge`.
+  - Changelog.
+  - Roadmap con la 0010 en ✅.
+- **Historia:** el cierre quedó en un solo commit, `064b8dd`, desde la última task. La fusión con `--no-ff` en `develop` es `560c254`.
+
+**Pendiente**
+- `roadmap check` da 2 fallos en líneas que no toqué: la cabecera de «Deuda técnica» (`Plan` en vez de `Destino`) y el título «v0.3.0 (2026-09-01)». Los arregla el paso «Roadmap en la forma de la plantilla» de la migración v2.3.0.
+- La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Usé el CLI y las skills del 3.0.0, pero conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+- `canceladas` en un proceso nuevo sale vacío, porque el almacén es en memoria. Lo cubre la 0014 «Motivo guardado», que ya está en el roadmap, y consta como no probado en el walkthrough.
+
+¿Quieres el ticket de mejora del kit con `sdd-feedback`? No es obligatorio y el cierre no depende de ello.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (560c254) · push: no hecho: `merge.push` no lo autoriza
+

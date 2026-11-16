@@ -1,0 +1,63 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -80; echo ----; grep -n -A40 -i "testing" .docs/sdd/operations.md | head -80; git log --oneline -8; git diff --stat 8f328b3 6d26f02
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (0.7247ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1165ms)
+✔ cancelar con un motivo de la lista (0.7415ms)
+✔ cancelar con un motivo fuera de la lista (0.1232ms)
+✔ canceladas enseña sala, día y motivo (6.3736ms)
+✖ el README nombra cancelar con motivo (1.3328ms)
+✖ el README nombra canceladas (0.3935ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 125.8012
+
+✖ f
+
+>>> Bash: ls; cat package.json 2>/dev/null; cat test/docs.test.js; ls .docs/sdd 2>/dev/null; node --test test/docs.test.js 2>&1 | tail -20; echo exit=$?
+<<< gate.json
+package.json
+PRODUCT.md
+README.md
+scripts/
+src/
+test/
+{"type": "module"}
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const readme = readFileSync('README.md', 'utf8');
+
+test('el README nombra cancelar con motivo', () => assert.match(readme, /cancelar <sala> <día> --motivo/));
+test('el README nombra canceladas', () => assert.match(readme, /canceladas/));
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+✔ el README nombra cancelar con motivo (0.677ms)
+✔ el README nombra cancelada
+
+=== RESULTADO (5 turnos, 0.1367205 $)
+La línea para el walkthrough:
+
+``Gate: `node --test test/docs.test.js` → tras el rojo en 8f328b3, arreglo 6d26f02 solo de docs: bookings:test: corrió 2/2 (los dos tests que fallaron: «el README nombra cancelar con motivo» y «el README nombra canceladas»)``
+
+- **Por qué no repetí el gate entero:** 6d26f02 solo toca `README.md`. Por el punto 3 de «Running a gate», un arreglo solo de docs repite únicamente los tests que fallaron, sin gate ni suites.
+- **Qué vi:** `node --test test/docs.test.js` dio 2 pass, 0 fail. El `exit=0` que se imprimió era el de `tail`, así que no lo cuento como prueba.
+- **Lo que no corrí:** los otros 5 tests de `bookings:test` pasaron en la pasada roja de 8f328b3. `rooms:test` quedó saltada por el filtro `--affected` en esa pasada y no la he vuelto a lanzar.
+- **Lo que no pude comprobar:** `.docs/sdd/operations.md` no existe en este repo y no leí `tech-stack.md` §Testing. Si ahí hay suites `unitario` o `pendiente`, o una lista «Sin filtro», habría que mirarlas antes de dar el cierre por bueno.
+- **Aviso del kit:** la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las reglas que apliqué vienen de la skill cargada y pueden no coincidir con las de 3.0.0.

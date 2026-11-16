@@ -1,0 +1,59 @@
+--- [2]
+Using sdd-propose para clasificar este fallo antes de tocar nada.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto y localizar el código de cancelación para clasificar el fallo. Queda: confirmar el carril contigo, ~3 min.
+
+--- [9]
+Ahora: clasificar. Queda: que confirmes el carril, y luego el patch (test rojo, arreglo, verificación), ~15 min.
+
+**Causa raíz, en `src/app.js:10-12`.** `findBooking(room, day)` recibe `day` pero no lo usa. Solo filtra por sala y estado `active`. Al cancelar `Norte mar`, la búsqueda devuelve la reserva activa de `Norte lun`, la marca como cancelada y responde `cancelada Norte mar`. `voidBooking` (`anular`) usa la misma función, así que tiene el mismo fallo. Es la misma familia que el patch 0007, que arregló la comparación en `freeRooms` pero dejó esta sin tocar.
+
+Es un fallo determinista y no hay que decidir nada de producto: con día sin reserva, el mensaje existente `sin reserva Norte mar` ya es el comportamiento correcto. Por eso lo clasifico como **patch**, no feature.
+
+🦆 Ahora mismo "cancelar" encuentra la reserva de la sala sin mirar el día, como si buscaras en un archivador solo por la etiqueta "Norte" y sacaras la primera ficha. El arreglo es hacer que también compare el día. Se añade un test que hoy falla (`cancelar Norte mar` no debe tocar la del lunes) y la corrección sale en verde. `anular` queda arreglado a la vez, con un test también.
+
+Propuesta:
+
+- **Carril:** patch (fallo determinista), perfil `delegate` del proyecto.
+- **Alcance:** `findBooking` compara `day`. Test de regresión para `cancelar` y otro para `anular`. Gate de cierre: `node --test && node scripts/lint.mjs`.
+- **Estimación:** ~0,5 h, como el 0007.
+- **Fuera de alcance:** el listado `libres`, que ya compara por franja. La deuda del formato de franja no se toca.
+
+¿Abro el patch así? Si prefieres tratarlo como feature, dímelo. No he creado rama ni carpeta todavía.
+
+--- [12]
+Ahora: reproducir el fallo y reservar id y rama. Queda: test rojo, arreglo, `patch.md`, commit y cierre, ~15 min.
+
+--- [16]
+Reproducido: `cancelada Norte mar`. Reservo el id y creo la rama antes que la carpeta.
+
+--- [24]
+RED por la causa correcta. Aplico el arreglo mínimo.
+
+--- [29]
+Commit hecho. Ahora: cierre con `sdd-archive`.
+
+--- [32]
+Ahora: pre-checks del cierre. Queda: validación tuya (parada obligatoria), luego registros, commit de cierre y merge, ~5 min.
+
+--- [35]
+Pre-checks: árbol limpio y sin otras ramas abiertas. En `sdd-kit.json` no hay bloque `merge` (`merge.into` y `merge.noFf`), así que el merge lo decides tú al final. El cierre se para aquí, porque la validación es tuya (modo `manual`).
+
+**Mi smoke (verificado por mí)**
+- Antes del fix: `cancelar Norte mar` → `cancelada Norte mar`, y la reserva de `Norte lun` quedaba cancelada. `anular` igual. Los dos tests nuevos salían en rojo por esa causa.
+- Después del fix: `cancelar Norte mar` → `sin reserva Norte mar`.
+- Gate de cierre `node --test && node scripts/lint.mjs`: 6/6 en verde, lint sin hallazgos.
+
+**Guion para que lo pruebes** (desde la raíz del repo; las reservas viven en memoria, así que cada orden es una ejecución nueva)
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+3. `node src/app.js anular Norte mar` → debe decir `sin reserva Norte mar`.
+4. `node src/app.js anular Norte lun` → debe decir `anulada Norte lun`.
+5. `node src/app.js cancelar Sur mar` → debe seguir diciendo `sin reserva Sur mar`.
+
+¿Qué has probado? Elige una:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+

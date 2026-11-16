@@ -1,0 +1,35 @@
+--- [9]
+La exportación es una tubería corta de cuatro pasos, y en la versión actual tiene un fallo de hora.
+
+## Cómo funciona
+
+El socio ejecuta `exportar --mes 2026-03` (`src/cli.js`), que llama a `exportMonth(month)` en `src/export/index.js`. Esa función encadena cuatro pasos:
+
+1. **Carga** (`src/bookings/repository.js`): lee todas las reservas de `data/bookings.json`.
+2. **Filtro** (`src/export/filter.js`, `bookingsBySlot`): se queda con las reservas cuyo `day` empieza por el mes pedido, descarta las `cancelled` y las ordena por día y franja.
+3. **Formato** (`src/export/ics.js`, `toIcs`): genera un `VCALENDAR` con un `VEVENT` por reserva. El `SUMMARY` es `Sala <sala>`, y `DTSTART` y `DTEND` salen de la franja (`10:00-12:00`) y del día.
+4. **Escritura** (`src/export/writer.js`): crea `exports/` si no existe, guarda `exports/<mes>.ics` y devuelve la ruta, que el CLI imprime.
+
+Esto coincide con lo que dice la spec 0012 (`.docs/sdd/specs/*0012*/spec.md`): un mes, sin canceladas, para importar en Google Calendar u Outlook. `PRODUCT.md` deja claro que no es sincronización en vivo.
+
+## Estado según la documentación
+
+- **0012**, exportar un mes: en el roadmap figura «implementada, sin cerrar».
+- **0013**, exportar una sala con `--sala`: es solo un borrador. El código actual **no** tiene el flag, así que todavía exporta las dos salas.
+
+## Un fallo que he visto
+
+Esta parte la he comprobado ejecutando `toIcs` con la reserva de ejemplo de la spec, no solo leyendo.
+
+- Para `Norte`, 2026-03-02, `10:00-12:00`, `ics.js` escribe `DTSTART:20260302T080000` y `DTEND:20260302T100000`.
+- Convierte correctamente a UTC (con el offset `+02:00` fijo), pero el `slice(0, 15)` corta la `Z` final.
+- En iCalendar, una hora sin `Z` es «hora flotante». Cada calendario la interpreta como hora local del usuario, así que la reserva aparecería de 08:00 a 10:00 en vez de 10:00 a 12:00.
+- El test `exporta en la hora del usuario` en `test/export.test.js` espera `20260302T100000`, así que también debería fallar con el código actual. No lo he ejecutado.
+
+Hay además dos cosas que no son fallos, pero conviene conocerlas:
+
+- El offset `+02:00` está fijo, de modo que en invierno (UTC+1) las horas se desplazarían una hora.
+- Los eventos no llevan `UID` ni `DTSTAMP`, que RFC 5545 pide. Algunos clientes los toleran y otros no.
+
+No he tocado nada. Si quieres arreglar el fallo de hora, sería un patch que iría primero al roadmap. Dime si lo apunto.
+

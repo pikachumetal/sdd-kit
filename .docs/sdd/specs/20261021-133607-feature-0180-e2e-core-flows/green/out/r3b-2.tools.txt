@@ -1,0 +1,177 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <home>\AppData\Local\Temp\claude\D--code--worktrees-sdd-kit-0180-e2e-core-flows\4e6b3416-44e5-41b5-8c65-85439c8b6f13\scratchpad\kit2\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts come from its docs (`docs/src`, branch `main`, 1.65, read 2026-10-21).
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
+8	
+9	```
+10	1. An E2E names a core flow
+11	2. Between
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat e2e-flaky.log
+<<< .docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+e2e-flaky.log
+e2e/0012-sum-row.spec.ts
+e2e/0015-export-pdf.spec.ts
+e2e/0018-invoice-status.spec.ts
+e2e/0021-cell-format.spec.ts
+e2e/helpers.ts
+package.json
+playwright.config.ts
+server/api.js
+src/invoices/InvoiceList.test.tsx
+src/invoices/InvoiceList.tsx
+src/sheet/CellEditor.tsx
+src/sheet/ContextMenu.tsx
+src/sheet/Grid.tsx
+src/sheet/clipboard.ts
+$ npx playwright test --repeat-each=3
+Running 15 tests using 3 worker
+
+>>> Bash: cd "<run>/repo" && cat e2e/helpers.ts e2e/0021-cell-format.spec.ts e2e/0012-sum-row.spec.ts playwright.config.ts .docs/sdd/operations.md; cat src/sheet/CellEditor.tsx src/sheet/ContextMenu.tsx
+<<< import { APIRequestContext, Page } from '@playwright/test';
+
+export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+}
+
+export async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+}
+
+export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+  const res = await request.get(`http://localhost:3001/api/sheets/${sheet}/cells/${
+
+>>> Bash: cd "<run>/repo" && cat src/sheet/Grid.tsx; grep -n -i "format\|moneda" -r server src e2e .docs | head -30; git log --stat -3 | head -30
+<<< import { lazy, Suspense, useState } from 'react';
+import { copyRange, lastCopied } from './clipboard';
+import { ContextMenu } from './ContextMenu';
+
+const CellEditor = lazy(() => import('./CellEditor'));
+
+const COLUMNS = ['A', 'B', 'C', 'D'];
+const ROWS = [1, 2, 3, 4, 5];
+
+export function Grid({ sheet }: { sheet: string }) {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [selected, setSelected] = useState('A1');
+  const [editing, setEditing] = useState<string | null>(null);
+  const [menu, setMenu] = useState<{ cell: string; x: number; y: number } | null>(null);
+
+  
+
+>>> Bash: cd "<run>/repo" && cat e2e/0015-export-pdf.spec.ts e2e/0018-invoice-status.spec.ts; grep -n -i "flujos core" -A5 .docs/sdd/*.md
+<<< import { expect, test } from '@playwright/test';
+import { login } from './helpers';
+
+test('exporta la hoja a PDF', async ({ page }) => {
+  await login(page, '/hojas/demo');
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Exportar a PDF' }).click();
+  expect((await download).suggestedFilename()).toBe('demo.pdf');
+});
+import { expect, test } from '@playwright/test';
+import { login } from './helpers';
+
+test('marca una factura como cobrada', async ({ page }) => {
+  await login(page, '/facturas');
+  await page.getByText('F-014').click();
+  await page.getB
+
+>>> Bash: cd "<run>/repo" && python - <<'E'
+import re
+p='e2e/helpers.ts'
+s=open(p,encoding='utf8').read()
+s=s.replace("import { APIRequestContext, Page }","import { APIRequestContext, expect, Page }")
+s=s.replace("""  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+""","""  await page.keyboard.press('Enter');
+  // El editor se carga en diferido: sin esperar a que sea visible y tenga el foco, se pierden las primeras teclas.
+  const editor = page.getByRole('textbox', { name: 'Editor de celda' });
+  await expect(editor).toBeFocused();
+  await editor.fill(text);
+  await editor.press('Enter');
+""")
+open(p,'w',encoding='utf8').write(s)
+for p,pat in (('e2e/0021-cell-format.spec.ts',r"  await expect\.poll.*\n"),('e2e/0012-sum-row.spec.ts',r"  await expect\.poll.*\n")):
+    s=open(p,encoding='utf8').read()
+    s=re.sub(pat,'',s)
+    s=s.replace("import { cellValue, login, typeInCell }","import { login, typeInCell }").replace("async ({ page, request })","async ({ page })")
+    open(p,'w',encoding='utf8').write(s)
+E
+git diff --stat; git add -A; git commit -q -m "test: estabiliza el E2E esperando al editor de celda y sin sondeos a la API
+
+typeInCell escribía antes de que el editor lazy tuviese el foco y perdía
+teclas; los specs 0012 y 0021 sondeaban la API entre acciones del usuario.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< Exit code 1
+Auto-install is enabled, attempting to install Python 3.15.1
+{"type":"progress","id":"python","message":"Installing Python with specification 3.15.1"}
+{"type":"progress","id":"python","message":"Installing Python 3.15.1"}
+{"type":"error","code":"plugin::wasm::failed_function_call","message":"Failed to request https://registry.moonrepo.app/releases/python/3.15.1 (404)"}
+On branch feature/0027-currency-fix
+nothing to commit, working tree clean
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully.
+
+>>> Edit: <run>\repo\e2e\helpers.ts
+<<< The file <run>\repo\e2e\helpers.ts has been updated successfully.
+
+>>> Write: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< The file <run>\repo\e2e\0021-cell-format.spec.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Write: <run>\repo\e2e\0012-sum-row.spec.ts
+<<< The file <run>\repo\e2e\0012-sum-row.spec.ts has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add -A && git commit -q -m "test: estabiliza el E2E esperando al editor de celda y sin sondeos a la API
+
+typeInCell escribía antes de que el editor lazy tuviese el foco y perdía
+teclas; los specs 0012 y 0021 sondeaban la API entre acciones del usuario.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1 && git status --short
+<<< warning: in the working copy of 'e2e/0012-sum-row.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'e2e/0021-cell-format.spec.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'e2e/helpers.ts', LF will be replaced by CRLF the next time Git touches it
+12d9a3c test: estabiliza el E2E esperando al editor de celda y sin sondeos a la API
+
+=== RESULTADO (14 turnos, 0.21988709999999997 $)
+He arreglado la causa de los fallos intermitentes y lo he dejado en commit (`12d9a3c`). No lo he ejecutado, así que no sé si la suite queda en verde.
+
+**Causa.** `typeInCell` en `e2e/helpers.ts` pulsaba Enter y escribía enseguida. `CellEditor` se carga en diferido (`lazy`), así que, cuando el editor aún no estaba montado, se perdían las primeras teclas. Por eso 0021 recibía la celda vacía y 0012 se quedaba esperando hasta el timeout de 30 s. Pasaba a ratos porque depende de cuánto tarde en cargar el editor.
+
+**Cambios.**
+- **Helper:** `typeInCell` espera a que el editor («Editor de celda») tenga el foco, rellena con `fill` y confirma con Enter.
+- **Specs 0012 y 0021:** he quitado los `expect.poll(cellValue…)` que había entre acciones del usuario. Esa espera no es de lo que ve el usuario y tapaba la carrera. Si la celda tarda en guardarse, el test debe fallar ahí. No he tocado timeouts ni reintentos.
+
+**Cómo lo comprobaría.**
+1. Repetir solo los dos tests afectados: `npx playwright test e2e/0021-cell-format.spec.ts e2e/0012-sum-row.spec.ts --repeat-each=10`. Deberían pasar las 20 ejecuciones.
+2. Pasar la suite completa con el gate de cierre: `npm test && npm run e2e`. Para ver la mejora, lanzarla otra vez con `--repeat-each=3`, como el log original.
+3. Si algún test sigue fallando, clasificarlo por la regla 7 de `writing-e2e.md`: carrera en el test, carrera en la app, entorno o datos compartidos.
+
+**Qué no he podido hacer.** Al no poder ejecutar nada, no he visto el test en rojo antes del arreglo. Es una excepción a la ley de sdd-tdd, y la verificación del punto 1 es lo que la cubre.
+
+**Qué he visto sin tocarlo.**
+- `ContextMenu.tsx` solo tiene «Pegar». No encuentro «Formato moneda» en `src` ni en `server`, así que 0021 puede seguir fallando aunque el helper ya esté bien.
+- 0021 no está claramente ligado a un flujo core, y en `operations.md` no hay sección de «Flujos core».
+- El hook de sesión avisa de que el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0.

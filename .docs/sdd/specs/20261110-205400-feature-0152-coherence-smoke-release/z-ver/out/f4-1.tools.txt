@@ -1,0 +1,82 @@
+
+>>> Read: <run>/review-final-9fd682b.diff
+<<< 0	# Review package: c031a27..HEAD
+1	
+2	## Commits
+3	9fd682b feat(bookings): informe de ocupación
+4	
+5	## Files changed
+6	 src/app.js | 28 ++++++++++++++++++++++++++++
+7	 1 file changed, 28 insertions(+)
+8	
+9	## Diff
+10	diff --git a/src/app.js b/src/app.js
+11	index 10d99e4..5bb4288 100644
+12	--- a/src/app.js
+13	+++ b/src/app.js
+14	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+15	   const booking = findBooking(room, day);
+16	   if (!booking) return `sin reserva ${room} ${day}`;
+17	   booking.status = 'voided';
+18	   return `anulada ${room} ${day}`;
+19	 }
+20	 
+21	 function cancelle
+
+>>> Bash: cd "<run>/repo" && git show HEAD:src/app.js | head -28; git ls-tree -r HEAD --name-only
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+function reasonOf(params) {
+  const index = params.indexOf('--motivo');
+  ret
+
+>>> ReportFindings: {"findings":[{"file":"src/app.js","line":34,"summary":"Comment `// incrementa count` repeats what `count++` says.","failure_scenario":"The comment adds noise and will rot; the brief classes comments that repeat the code as Important.","category":"comments","short_summary":"Comentario redundante `// incrementa count`"},{"file":"src/app.js","line":28,"summary":"`const now = 'hoy'` is a hard-coded literal, not a date, and is printed as `(hoy)` in the total line.","failure_scenario":"The report shows `total: 1 (hoy)` forever. The variable name promises a timestamp it doesn't hold, and the output carries no information.","category":"correctness","short_summary":"`now = 'hoy'` es un literal falso, sin información"},{"file":"src/app.js","line":25,"summary":"No test was added for `occupancyReport` or the `ocupacion` command. The commit touches only src/app.js, while test/app.test.js and test/cancel.test.js already exist.","failure_scenario":"Singular/plural, the cancelled line, the zero-total branch and the dispatcher entry are all unverified, and a regression would go unnoticed.","category":"test-coverage","short_summary":"Sin tests para el informe de ocupación"},{"file":"src/app.js","line":29,"summary":"The nested loop with two `continue`s counts active bookings per room by hand. It also does a different full scan of `bookings` for cancelled. `bookings.filter(b => b.room===room && b.status==='active').length` would be shorter and would match the style of the file. Possible Refactoring smell: Long Method / Clean Code «one thing». The function is 26 lines and under the 30-line limit, so only the structure is in question.","failure_scenario":"The function mixes counting, formatting and the layout of the report. The logic is harder to read and extend than necessary.","category":"simplification","short_summary":"Conteo manual en bucle anidado; extraer helper"}]}
+<<< 4 findings reported.
+
+=== RESULTADO (4 turnos, 0.17365249999999996 $)
+### Strengths
+- The change is small and contained. It adds one export and one dispatcher line (`ocupacion`) that follow the file's existing pattern.
+- The UI text is in castellano, with correct singular/plural handling ("reserva"/"reservas").
+- `occupancyReport` is 26 lines, under the 30-line limit.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+- **`src/app.js:34`**: the comment `// incrementa count` repeats `count++`. The brief treats a comment that repeats the code as Important. Delete it.
+- **`src/app.js:28,45`**: `const now = 'hoy'` is a hard-coded literal, not a date, and it is printed as `(hoy)` in the total line. The output carries no information, and the name `now` promises a timestamp it doesn't hold. Remove it, or use a real date if the report needs one.
+- **`src/app.js:25`**: there are no tests for `occupancyReport` or the `ocupacion` command. The commit touches only `src/app.js`. These cases are unverified:
+  - the singular/plural label;
+  - the `canceladas` line;
+  - the zero-total branch;
+  - the dispatcher entry.
+
+#### Minor
+- **`src/app.js:29-37`**: the per-room count is a nested loop with two `continue`s. `bookings.filter(b => b.room === room && b.status === 'active').length` would be shorter and would match the style of the rest of the file. A helper that does the counting would also separate it from the formatting. This is a possible Refactoring "Long Method" smell, but the length constraint is met, so I'm not reporting length.
+
+### Recommendations
+- Add tests in `test/` for the report's branches.
+- Extract a small counting helper, then simplify the function.
+
+### Declined to judge
+- There is no spec or plan in the package, so I did not check whether the report format matches a requirement. That belongs to the Spec axis.
+- `ocupacion` is not added to the README or capabilities docs (`.docs/sdd/capabilities/reports.md` exists). Documentation coverage is a Spec/Architecture matter.
+- The `rooms` and `bookings` globals are shared in-memory state, which ADR 0003 records. That is an Architecture decision, so I did not judge it.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the size limit. The redundant comment, the placeholder `now = 'hoy'` and the missing tests should be fixed first.

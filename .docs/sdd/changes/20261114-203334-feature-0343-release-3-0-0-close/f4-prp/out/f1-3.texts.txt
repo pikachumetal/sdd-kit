@@ -1,0 +1,76 @@
+--- [24]
+Ahora: pasada de coherencia (delta sobre una copia) y revisión de la spec con un revisor.
+
+--- [28]
+Ahora: revisión de la spec con un revisor (sonnet), con su vigilancia de silencio.
+
+--- [35]
+Revisor de la spec lanzado en segundo plano. Espero su resultado antes de integrar hallazgos, escribir el plan y arrancar la Task 1.
+
+--- [40]
+1. Crítico · Intent / Scope / Decisión 8 · El estado vive en un array en memoria del proceso (`src/app.js:3`) y la CLI arranca un proceso por comando. `cancelar Norte lun otro` y luego `canceladas`, en dos invocaciones, devuelve siempre `sin canceladas`. El Intent promete «que se pueda ver después», pero «persistencia fuera de memoria» está en No entra. · Declarar la limitación de forma explícita (el listado solo ve lo cancelado en el mismo proceso) y rebajar el Intent, o meter la persistencia en Scope. Que lo valide el dev-lead.
+
+2. Crítico · Decisión 5 / Approach A / Delta «listado» · La decisión pide «en el orden en que se cancelaron». El enfoque A filtra `bookings` por `status === 'cancelled'`, lo que da el orden de creación del array, no el de cancelación. Ningún escenario lo cubre, y un filtro simple pasa todos los escenarios actuales. · Añadir un escenario con dos cancelaciones en orden inverso al del array, y guardar un orden de cancelación en la reserva. Si no, retirar la promesa de orden.
+
+3. Importante · Delta «Cancelar exige un motivo» · Una sola precondición (una reserva activa) y tres motivos encadenados con AND. Tras la primera cancelación la reserva deja de estar activa, así que `sala-ocupada` y `otro` no pueden ejecutarse en el mismo GIVEN. Además, ningún escenario comprueba que el motivo se guarda en `reason`. · Separar en un escenario por motivo, o usar Scenario Outline con un GIVEN por caso.
+
+4. Importante · Delta «listado» · Mezcla tres comportamientos en un escenario: listar, vacío y anuladas. La parte de `anular` no tiene GIVEN propio (qué reserva se anula) y pasaría con cualquier listado vacío. · Dividir en tres escenarios. El de anulada debe anular Norte lun y esperar `sin canceladas`. Añadir uno de dos canceladas.
+
+5. Importante · Sección «Lo que se retira o cambia de forma» / Approach · `cancelBooking(room, day)` está exportada y pasa a `cancelBooking(room, day, reason)`. Cualquier llamada con dos argumentos pasa a devolver el error de motivo, y eso es un cambio de contrato de la API exportada que la spec no declara. El Scope dice «ajustar los dos tests», pero `cancelar` sin motivo ya no devuelve `sin reserva` (`test/cancel.test.js:10`), y los tests nuevos de `canceladas` y `libres` no están en Entra. · Declarar el cambio de firma como contrato tocado. Reescribir Scope como «ajustar los dos tests y añadir los de los escenarios».
+
+6. Importante · Decisión 3 / Delta «El motivo se comprueba antes» · El orden «motivo antes que reserva» está tomado, pero no se declara qué hace `cancelar` con argumentos que faltan (`cancelar` sin sala), con argumentos de más (`cancelar Norte lun otro x`), ni con mayúsculas (`Otro`). Un motivo en mayúsculas, ¿es inválido? · Añadir a Decisiones o a Límites: coincidencia exacta y sensible a mayúsculas, argumentos sobrantes ignorados o rechazados, y qué pasa con sala o día ausentes.
+
+7. Importante · PRODUCT.md vs Decisión 6 / Intent · PRODUCT.md define Cancelación como la que hace el propio cliente antes de 24 h. La spec no menciona esa condición, ni que el comando no la comprueba hoy, y no hay propietario ni identidad. Además, `sala-ocupada` encaja mal con una cancelación del cliente. · Declarar que la regla de 24 h queda fuera de Scope y fuera de este delta, o resolver el término. Revisar si `sala-ocupada` contradice la definición.
+
+8. Menor · Reglas de la capacidad / «Regla ante conflicto» · Pone «no aplica» sin justificar. Cancelar dos veces la misma reserva sí es un conflicto: la segunda da `sin reserva` y el motivo original se conserva, sin escenario que lo diga. La regla de idioma habla de «motivos en castellano» pero el campo es `reason`; la constitución solo fija texto de interfaz en castellano. · Sustituir «no aplica» por la regla real (la segunda cancelación no sobrescribe el motivo) con un escenario. Acotar el idioma a la interfaz.
+
+9. Menor · «Decisiones tomadas con el dev-lead» / frontmatter · Dice «Spec aprobada por delegación» mientras `status: draft`, `approved_at: null` y la tabla de Aprobaciones está vacía. La cita incluye una parada tras la Task 1, que es de proceso y no de la spec. · Alinear el estado y la aprobación con esa delegación, o quitar la línea. Mover la parada al plan.
+
+10. Menor · Decisión 1 · Presenta los tres motivos como «los del encargo», pero el dev-lead dijo «cambio de planes, sala ocupada, otro». Las formas con guiones y de una sola palabra son una decisión del agente, aunque está listada. El texto del error (`usa cambio-de-planes, sala-ocupada u otro`) no se ha confirmado con el dev-lead. · Marcar la forma con guiones como propuesta del agente para que el dev-lead la valide, y no atribuirla al encargo.
+
+--- [57]
+Sigo con la spec de «motivo al cancelar»: ya integré los hallazgos de la primera revisión y estoy esperando la segunda ronda (un revisor más). Después: aprobar la spec por tu delegación, escribir el plan, implementar la Task 1 y parar en su commit.
+
+--- [68]
+1. Crítico · Delta (escenarios «Cada motivo», «Varias canceladas», «Listado») y Dónde se prueba · El GIVEN necesita un estado que no se puede construir. `src/app.js` solo siembra `Norte lun 10:00-12:00`, y `reservar` es un stub que no crea nada (`'reserva semanal creada'`). Ni «una reserva nueva activa» ni `Sur mar 14:00-16:00` existen. Además, los tests de un fichero comparten el estado del módulo, y cada cancelación consume `Norte lun`. · Declarar un mecanismo de siembra o reinicio de `bookings` (export de test o `reset()`/`seed()`), añadirlo a Scope y a Dónde se prueba, y reescribir los GIVEN en esos términos.
+
+2. Importante · Cabecera (`status: draft`), Aprobaciones y Hallazgos · Los hallazgos dicen «Aceptado → fila de Aprobaciones y estado `approved`», pero el frontmatter sigue en `draft` y la fila está «pendiente». Las decisiones con el dev-lead dicen «Spec aprobada por delegación». La aprobación declarada contradice el documento, y el gate o la parada tras la Task 1 puede no arrancar. · Poner `status: approved`, rellenar la fila con nombre, fecha y «por delegación», y rellenar `approvers`, o retirar el «Aceptado».
+
+3. Importante · Delta, escenario «Cada motivo de la lista se acepta» · El segundo AND (`otro` sobre «una reserva nueva activa») es un segundo WHEN disfrazado, y sin la reserva (hallazgo 1) es imposible. Cubre `otro` solo en una segunda ejecución, y el escenario puede pasar con un test que solo compruebe `sala-ocupada`. · Dividir en un escenario por motivo, con su GIVEN propio, o usar un esquema con tabla de los tres motivos.
+
+4. Importante · Delta, escenario «Motivo ausente o fuera de lista» · Hay dos WHEN con `o` en un solo escenario. Un test que solo pruebe `cancelar Norte lun` lo daría por cumplido sin tocar la lista, y viceversa. Tampoco cubre mayúsculas (`Otro`), que la decisión 11 declara. · Separar «ausente» de «fuera de lista» y añadir un escenario con `Otro` es no válido.
+
+5. Importante · Reglas de la capacidad · El orden «motivo antes que reserva» (decisión 3) es una regla ante conflicto y no está en las cinco reglas, donde la «Regla ante conflicto» solo recoge la doble cancelación. «Idioma de los nombres» describe el texto de la interfaz y no los nombres (`reason`, `booking-cancellation`, `cancelledBookings`). · Añadir la precedencia a «Regla ante conflicto» y reformular «Idioma» para cubrir los identificadores (código en inglés, interfaz en castellano).
+
+6. Menor · Decisiones, nombres en código · `cancelledBookings()` y `bookings` usan «booking», que PRODUCT.md marca como «Evitar» (Reserva). Hoy ya se usa en el código, pero la spec añade nombres nuevos sin decir que el término solo vale para identificadores internos. · Añadir una línea en las decisiones: «booking» se mantiene en el código interno y en la interfaz se dice «reserva».
+
+7. Menor · Decisiones, cabecera de review · «~35 líneas en 3 ficheros» infravalora el trabajo. Hay nueve escenarios más un mecanismo de siembra (hallazgo 1) más tests, y Scope pide reescribir dos tests y añadir uno por escenario. Además, el «Mínimo razonable: ninguna review» convive con una review real, y esa frase se contradice con «Review de spec propuesta: un revisor». · Corregir el tamaño estimado y retirar o aclarar la línea del «Mínimo razonable».
+
+8. Menor · Lo que se retira o cambia de forma · El comportamiento previo de `cancelar` (cancelar sin motivo) se clasifica como ADDED de una capacidad «nueva». En realidad es un cambio de comportamiento observable de un comando que ya existe, y la tabla solo lo menciona de pasada. · Declarar explícitamente en la tabla que es un cambio incompatible del contrato de la CLI (BREAKING) y citarlo para el CHANGELOG del cierre.
+
+--- [76]
+Ahora: implementar la Task 1 en Native. Queda: tests RED, código, commit y parar, ~10 min.
+
+--- [86]
+RED por import faltante (el símbolo que crea la task). Implemento el mínimo.
+
+--- [91]
+La Task 1 está hecha y commiteada, y paro aquí como pediste. No he empezado la Task 2.
+
+**Commit de la Task 1:** `d9aa8d5` — «feat: cancelar exige un motivo de la lista (0010)», en la rama `feature/0010-cancel-reason`.
+
+- `cancelar <sala> <día> <motivo>` acepta `cambio-de-planes`, `sala-ocupada` y `otro`, y responde por ejemplo `cancelada Norte lun (motivo: sala ocupada)`.
+- Sin motivo, o con uno fuera de la lista, responde `motivo no válido: usa cambio-de-planes, sala-ocupada u otro` y no cancela. `Otro` con mayúscula también es no válido.
+- El motivo se comprueba antes que la existencia de la reserva.
+- `src/app.js` exporta `seedBookings(list)`, solo para que los tests siembren reservas.
+- Los 8 tests de `test/cancel.test.js` pasan, `node --test` entero da 10/10 y `scripts/lint.mjs` no encuentra nada. Antes del código el test falló por el import de `seedBookings`, que aún no existía.
+
+**Spec y plan** están commiteados en `bb28cc8`, en `.docs/sdd/changes/20261116-140702-feature-0010-cancel-reason/`. Dos revisores de sonnet las revisaron y integré todos sus hallazgos. Los dos más importantes:
+
+- **`canceladas` no verá nada desde la terminal.** Las reservas viven en memoria y cada comando es un proceso nuevo, así que desde la terminal siempre dirá `sin canceladas`. Persistir queda fuera de esta feature; si lo quieres, es otra.
+- **Cambio incompatible.** `cancelar` sin motivo deja de funcionar a propósito, y debe constar en el CHANGELOG del cierre.
+
+Decisiones mías: los motivos con guiones y el texto del error, el comando `canceladas`, y que las anuladas no llevan motivo ni salen en ese listado. Están en el apartado «✋ Decisiones que he tomado yo» de la spec, por si quieres cambiar alguna antes de la Task 2.
+
+**Pendiente:** la Task 2 (el comando `canceladas`), la revisión final y el cierre. Dime «sigue» para continuar.
+

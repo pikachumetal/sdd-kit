@@ -1,0 +1,64 @@
+--- [3]
+Retomo la 0010: las dos tasks están hechas y la revisión final ya volvió. Localizo el workspace del plan y leo el ledger y los informes.
+
+--- [19]
+Estoy en el cierre de la revisión final: ya corregí en TDD el hallazgo Important del eje Código (commit `bf42c48`). Ahora lanzo la única re-revisión del fix.
+
+--- [24]
+Mientras revisa, dejo escritas en `tasks.md` las líneas de la revisión final y la pasada de fix.
+
+--- [26]
+La re-revisión del fix de `reasonOf` (`bf42c48`) sigue en marcha. Espero a su aviso para escribir la línea `Re-revisión:` en `tasks.md`. Después paso los rulings al `tasks.md`, borro el workspace y sigo con la validación.
+
+Estado hasta ahora:
+- **Revisión final:** el eje Spec salió sin Critical ni Important. El eje Código dio un Important: `reasonOf` no recortaba los espacios del motivo.
+- **Arreglo:** lo reproduje con un test en RED y lo corregí con `.trim()` en `src/app.js`. Los 6 tests pasan.
+- **Diferido:** un Minor del eje Spec. El test de `canceladas` depende de que `cancelar` haya corrido antes (`test/cancel.test.js:13`).
+- **Rulings:** hasta ahora no hay ninguno en el ledger.
+- **`tasks.md`:** sigue sin commitear.
+
+--- [28]
+### Finding Verdicts
+
+- **Important · src/app.js reasonOf: a trailing space in `--motivo "sala ocupada "` was rejected as «motivo no válido…»**: ADDRESSED. `src/app.js:80` now returns `params[index + 1]?.trim()`, so the reason is trimmed before `reasons.includes(reason)` at `src/app.js:84`. The trimmed value is also the one stored and printed (`:88`, `:89`). The new test at `test/cancel.test.js:129-131` passes `' sala ocupada '`. Without the trim that input would get «motivo no válido…», so the test does tell the fix apart from the old code.
+
+### New Breakage in the Fix Diff
+
+- No Critical or Important problems.
+- **`--motivo` with no value:** still handled. `params[index + 1]` is `undefined`, `?.trim()` keeps it `undefined`, and the command answers «motivo no válido…» as before.
+- **Reason made only of spaces:** trims to `''`, which is rejected as invalid. That is correct.
+- **Minor · `test/cancel.test.js:130`:** the test depends on test order and shared state. It expects `'sin reserva Norte lun'` only because an earlier test already cancelled Norte lun. It proves the reason got past validation, but not that a padded reason cancels a booking or is stored trimmed. A test against an active booking that asserts `'cancelada … (sala ocupada)'` would cover that.
+- **Minor · `src/app.js:1-48`:** the diff deletes and re-adds all 48 lines with the same visible text, but the only real change is line 80. This is most likely a line-ending or whitespace change across the whole file, which adds noise to blame and history.
+
+### Out-of-Scope Observations
+
+None.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [43]
+Ya está: el commit del fix cambia solo una línea, con los finales CRLF del repo intactos. Actualizo el hash en el ledger y en `tasks.md`, y vuelvo a pasar los tests.
+
+--- [45]
+Añado la sección `## Rulings` a `tasks.md` y borro el workspace del plan.
+
+--- [47]
+La revisión final de la 0010 está cerrada. Los 6 tests pasan y el workspace del plan está borrado. Sigo con el paso 7 de `sdd-start-feature` (validación).
+
+**Qué pasó:**
+- **Revisión final:** el eje Spec no encontró ni Critical ni Important. El eje Código encontró un Important: `reasonOf` no recortaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+- **Arreglo:** reproduje el fallo con un test en RED y lo corregí con `.trim()`. Quedó en el commit `926a8fe`, de una sola línea.
+- **Re-revisión:** la única re-revisión (opus, effort high) dio el hallazgo por resuelto y sin roturas nuevas.
+- **`tasks.md`:** sigue sin commitear. Lleva las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`, y las secciones de rulings y minors.
+
+**Rulings I made:**
+- **Reescritura del commit del fix.** Mi `sed` había pasado `src/app.js` de CRLF a LF y el diff reescribía las 48 líneas. Reescribí mi commit local, sin push, para que el diff real sea de una línea. Si falla, el costo es un historial local reescrito. Lo verifiqué comparando el diff sin finales de línea.
+
+**Deferred minors:**
+- El test de `canceladas` depende de que `cancelar` haya corrido antes (`test/cancel.test.js:13`).
+- El test de espacios alrededor del motivo comparte estado con los anteriores. Prueba que el motivo pasa la validación, no que se guarde recortado.
+
+**Sin revisar:** nada. El único commit posterior a la revisión final es el del fix, que cubre la re-revisión.
+

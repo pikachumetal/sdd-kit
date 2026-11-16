@@ -1,0 +1,28 @@
+--- [10]
+Lo de cancelar es muy poco y no es lo que cabría esperar, por eso no se entiende. Esto es lo que dicen los documentos y lo que muestra el código.
+
+**El código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- Se invoca como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`.
+- Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**, no comprueba que la reserva exista y no mira de quién es.
+- `bookings` es un array en memoria, con una reserva fija de ejemplo (`Norte`, `lun`, `10:00-12:00`). No hay persistencia.
+- Los slots se guardan como rango (`10:00-12:00`), pero `cancelar` recibe una hora suelta (`10:00`). Nada en el código las relaciona.
+
+**El test** (`test/app.test.js:13`) se llama «cancelar respeta el día». Solo comprueba que la cadena de salida es `cancelada mar 10:00`. No comprueba que se borre nada, así que no puede detectar si cancela la reserva equivocada.
+
+**Lo que dicen los documentos**
+- `changelog.md`: el patch 0007 dice «La cancelación ya no borra reservas de otro día con la misma hora». La capacidad listada es «Cancelar una reserva propia».
+- `roadmap.md:25`: el patch 0007 corrige que la cancelación borraba reservas de otro día con la misma hora.
+- `patch.md` del 0007: la causa raíz era una «comparación solo por hora». Dice «Fix y test de regresión. Verificado».
+
+**Lo que infiero**
+- El código actual no coincide con lo que cuentan los documentos. No hay ninguna comparación por hora ni por día, ni borrado. Puede que la lógica real nunca se haya llevado a este repo, que este `app.js` sea una versión simplificada, o que el fix y el test sean solo cosméticos.
+- «Cancelar una reserva propia» tampoco se refleja en el código: no hay concepto de usuario o propietario en `bookings`.
+- No he ejecutado nada ni modificado nada. Solo he leído.
+
+Si quieres, puedo mirar el historial de git para ver si la lógica de verdad existió y se perdió. Si lo que quieres es que `cancelar` haga lo que dice el changelog, eso ya es trabajo. Se apuntaría en el roadmap como patch o feature, y no lo he arrancado.
+

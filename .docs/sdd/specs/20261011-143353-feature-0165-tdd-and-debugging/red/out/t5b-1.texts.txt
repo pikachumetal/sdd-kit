@@ -1,0 +1,27 @@
+--- [7]
+The three tests are written and all fail because `reactivar` doesn't exist yet. `src/` is untouched and nothing is committed.
+
+**File:** `test/reactivar.test.js`
+
+**Command:** `node --test test/reactivar.test.js` (run from the repo root)
+
+**Failing output** (3 tests, 0 pass, 3 fail; stack traces trimmed):
+```
+✖ reactivar devuelve la reserva cancelada
+  + actual:   'salas'
+  - expected: 'reactivada Norte lun'
+✖ tras reactivar, la sala deja de salir en libres
+  + actual:   'Norte, Sur'
+  - expected: 'Sur'
+✖ reactivar sin cancelada lo dice
+  (output truncated at 60 lines; its failure is the same fall-through to 'salas')
+```
+Each failure is an assertion mismatch, not an import or syntax error. The unknown command falls through to `'salas'`, and Norte still shows as free because nothing reactivates its booking.
+
+**Tests:**
+- **`reactivar devuelve la reserva cancelada`**: THEN `run('reactivar', ['Norte','lun'])` responds `reactivada Norte lun`.
+- **`tras reactivar, la sala deja de salir en libres`**: AND Norte no longer appears in `run('libres', ['10:00-12:00'])`, which is exactly `Sur`.
+- **`reactivar sin cancelada lo dice`**: AND `run('reactivar', ['Sur','mar'])` responds `sin cancelada Sur mar`.
+
+The `bookings` state is shared at module level, so the second test calls `reactivar Norte lun` itself before asserting `libres`. That way it passes whether or not the first test already ran.
+

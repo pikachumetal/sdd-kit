@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: ls .docs/sdd .docs/sdd/capabilities 2>/dev/null; node "<home>/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-feature-0143-node-cli/a16a875e-c276-471d-9b9b-3203b660ee0a/scratchpad/eval/kit/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -50
+
+>>> Grep: cancel|anula
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+Sin capacidades
+<<< Found 5 files
+test\app.test.js
+src\app.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+
+>>> Grep: cancel|anula
+<<< 6-  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7-}
+8-
+9-export function run(cmd, params) {
+10-  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11-  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12:  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13-  return 'salas';
+14-}
+15-
+16-if (command) console.log(run(command, args));
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< 25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Grep: cancel
+<<< 10-  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11-});
+12-
+13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+15-});
+
+=== RESULTADO (10 turnos, 0.19270320000000002 $)
+No hay mucho montado, y lo poco que hay engaña un poco.
+
+**El código** (`src/app.js:12`): cancelar es una sola línea en `run()`:
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+Se invoca como `cancelar <día> <hora>`, por ejemplo `cancelar mar 10:00`. Solo devuelve el texto `cancelada mar 10:00`. **No toca el array `bookings`**, así que no borra ninguna reserva y no comprueba que exista. Tampoco comprueba de quién es.
+
+**Lo que dicen los docs:**
+- El roadmap (línea 31) define la funcionalidad como «Cancelar una reserva propia». El código no tiene ninguna noción de «propia», porque las reservas ni siquiera guardan un usuario (`{ room, day, slot }`).
+- El patch 0007 y el changelog dicen que se arregló un bug: «La cancelación borraba reservas de otro día con la misma hora». La causa raíz era comparar solo por hora, y el patch dice «Fix y test de regresión. Verificado».
+- El código actual no contiene esa lógica de borrado. Lo único que queda del fix es el test `cancelar respeta el día` (`test/app.test.js:13`), que solo comprueba que el texto de salida incluye el día.
+
+**Lo que infiero yo:** la cancelación real no existe en este repo, o se perdió. Hoy es un stub, y el test pasa sin demostrar nada. Que el patch 0007 figure como verificado no coincide con lo que hay en `src/app.js`. Puede que ese código viviera en otra rama o que el fix nunca llegara a `develop`. Tampoco hay `capabilities/` ni `architecture.md` que lo aclaren.
+
+Si quieres, miro el historial de git (`git log -S cancelar`) para ver si el fix existió y dónde se perdió. Si lo que quieres es implementar la cancelación de verdad, sería una feature nueva y lo llevaríamos por `sdd-start-feature`.

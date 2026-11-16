@@ -1,0 +1,41 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && git ls-files | head -80 && cat .docs/sdd/PRODUCT.md 2>/
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0341-interviewer-spike/<run>/repo" && cat PRODUCT.md ROADMAP.md README.md src/app.js package.
+## agente
+Antes de proponer nada he leído `PRODUCT.md`, el código y la deuda. Esto es lo que dicen:
+
+- **Hoy las franjas son texto libre.** `src/app.js` guarda `slot: '10:00-12:00'` y `freeRooms` compara por igualdad exacta de cadena. No hay una unidad de tiempo ni un tamaño de franja. En el código, "media hora" sería simplemente `'10:00-10:30'`.
+- **El solapamiento no se detecta.** Una reserva `10:00-12:00` no bloquea `10:30-11:00`, porque las cadenas son distintas. Con franjas largas se nota poco. Con medias horas pasaría constantemente.
+- **La deuda ya lo recoge.** Falta la validación del formato de franja (`steering/debt.md`, "Por triar").
+- **Es una herramienta de uso personal.** `PRODUCT.md` dice que solo la usas tú.
+- **Las reservas viven en memoria.** El array `bookings` se reinicia en cada ejecución. Las specs `weekly` y `free` ya están hechas, y cualquier enfoque tendría que convivir con `--cada-semana`.
+
+Lo que yo infiero es que reservar medias horas no es solo aceptar `10:00-10:30`. Obliga a decidir si una franja es un tramo con inicio y fin, o un múltiplo de 30 minutos. Eso condiciona el solapamiento y la validación. Aún no sé cuál de las dos vale para ti, porque ni el proyecto ni tú habéis dicho para qué las quieres.
+
+**¿Para qué quieres poder reservar medias horas: qué pasa hoy en tu día a día que no puedes resolver con las franjas actuales?**
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido: reservas de 30 minutos que hoy tienes que colocar en una franja de dos horas. Con eso hay una parte que decido yo, porque es método, y una que es tuya.
+
+**Lo que decido yo.** Una reserva pasa a ser un tramo con inicio y fin, y dos reservas chocan si sus tramos se solapan. Sin eso, la reserva `Norte lun 10:00-12:00` no bloquearía `10:30-11:00`, y el problema pasaría de bloquear de más a reservar dos veces. Las franjas largas que ya usas (`10:00-12:00`) siguen siendo válidas. Esto además cubre en buena parte la deuda de validar el formato de franja.
+
+❓ **¿Qué tramos se pueden pedir?**
+Lo que falta es si el inicio y el fin pueden ser cualquier minuto o solo múltiplos de media hora.
+1️⃣ **Solo en la rejilla de 30 min** (`:00` y `:30`)
+   - Ejemplo: `reservar Norte lun 10:30-11:00` se acepta. `reservar Norte lun 10:10-10:40` da error: `La franja debe empezar y acabar en :00 o :30`.
+   - Coste: una reunión de 45 min no cabe, tienes que pedir 1 h.
+2️⃣ **Cualquier minuto** (`HH:MM-HH:MM` válido)
+   - Ejemplo: `10:10-10:40` se acepta y `libres 10:30-11:00` en esa sala devuelve `Sur`, porque se solapa.
+   - Coste: las salas se fragmentan con huecos de 10 o 15 minutos que nadie puede aprovechar.
+
+➡️ **Recomiendo 1️⃣**, porque tu necesidad son reuniones de media hora y la rejilla la cubre entera. Además la validación queda más simple y evita los huecos sueltos. A cambio, las reuniones que no encajan en múltiplos de 30 minutos tienen que redondear hacia arriba.
+
+¿Con cuál te quedas?

@@ -1,0 +1,148 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls; git branch --all; cat ROADMAP.md; cat .docs/sdd/steering/debt.md; git show develop:ROADMAP.md | head -5
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+* develop
+  main
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Re
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat docs/ayuda.md; ls src test; cat src/*.js | head -150; cat package.json; cat .docs/sdd/steering/debt.md >/dev/null; ls .docs/sdd .docs/sdd/steering; cat CHANGELOG.md | head -20
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`. Arreglo propuesto: en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`.
+3. `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres. Arreglo propuesto: cambiar «`libres --planta <n>` lista las salas de la planta <n>» por «`libres --planta <n>` lista las salas libres
+
+>>> Bash: node src/app.js libres --planta 2; node src/app.js libres --planta 1; node src/app.js exportar | od -c | head -3; cat test/app.test.js | head -40; git log --oneline -3; grep -rn "1.4.2\|tilde\|utf" -i src test CHANGELOG.md | head
+<<< Norte (planta 1)
+Norte (planta 1)
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal cr
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" id next --project-root . --reserve --count 1; sed -n 1,200p "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/skills/sdd-templates/templates/debt-template.md" | head -60
+<<< 0014
+# Deuda técnica — <proyecto>
+
+> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-archive`), que quitan de «Lista» lo que saldan; lo leen `sdd-roadmap`, `sdd-debugging`, los cierres y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar. Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.
+>
+> **Las cuatro secciones y sus cabeceras van literales**, en este orden. Una celda vacía se escribe `—`. Un `|` dentro de una celda se escribe `\|`.
+>
+> **Fecha**: `AAAA-MM-DD
+
+>>> Bash: python - <<'E'
+p='.docs/sdd/steering/debt.md'
+s=open(p,encoding='utf8').read()
+import re
+s=re.sub(r"(## Por triar\n\n\| Ítem \| Origen \| Fecha \|\n\| --- \| --- \| --- \|\n)(\|.*\n)+", r"\1", s)
+s=s.replace("| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |\n",
+"| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |\n| La exportación a CSV pierde las tildes desde la 1.4.2 | sin determinar | `docs/qa/2026-10-12-informe.md` §1 | Medio | reproducirlo | 2026-11-08 |\n")
+s=s.replace("| --- | --- | --- | --- | --- | --- | --- | --- |\n","| --- | --- | --- | --- | --- | --- | --- | --- |\n| `salas libres --planta 2` lista también salas de la planta 1 | defecto del producto | `docs/qa/2026-10-12-informe.md` §2 | Medio | `node src/app.js libres --planta 2` → `Norte (planta 1)` | ninguno | — | 0014 |\n",1)
+s=s.rstrip("\n")+"\n| `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres | sin determinar | `docs/qa/2026-10-12-informe.md` §3 | La ayuda describe lo que hace el comando (lista las salas de la planta); `libres --planta` no filtra por libres, así que el cambio propuesto dejaría la ayuda falsa. Si se quiere ese filtro, es funcionalidad nueva | 2026-11-08 |\n"
+open(p,'w',encoding='utf8').write(s)
+p='ROADMAP.md'
+s=open(p,encoding='utf8').read()
+row="| 0014 | — | **Corregir `libres --planta`**<br>*Pedir la planta 2 devuelve también salas de la planta 1*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `docs/qa/2026-10-12-informe.md` §2<br>**Decisiones ya tomadas:** en `roomsOnFloor` solo salas de esa planta (`<=` → `===`; el informe propone `<`, que no devolvería la propia planta)<br>**Salda:** `salas libres --planta 2` lista también salas de la planta 1<br>**Toca:** `src/app.js`</details> | ⏳ | — | S |\n"
+s=s.replace("\n## Later",row+"\n## Later",1) if False else s.replace("| 0013 |","| 0013 |",1)
+i=s.index("## Later")
+s=s[:i].rstrip("\n")+"\n"+row+"\n"+s[i:]
+open(p,'w',encoding='utf8').write(s)
+E
+node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap check --path .docs/sdd; git diff --stat
+<<< ROADMAP.md: línea 22: el id «B1» no es de la secuencia: resérvale uno con sdd id next --reserve
+ROADMAP.md: aviso: línea 16: la 0014 y la 0013 (línea 15) tocan `src/app.js` sin «tras» entre ellas
+debt.md: aviso: línea 12: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+ .docs/sdd/steering/debt.md | 6 +++---
+ ROADMAP.md                 | 1 +
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+>>> Bash: python - <<'E'
+p='.docs/sdd/steering/debt.md'
+s=open(p,encoding='utf8').read()
+r="| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | Bajo | 2.º caso | 2026-07-01 |\n"
+s=s.replace(r,"")
+s=s.rstrip("\n")+"\n| Las reservas de más de 8 h no avisan al responsable | sin determinar | un responsable de planta | caducada | 2026-11-08 |\n"
+open(p,'w',encoding='utf8').write(s)
+E
+node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap check --path .docs/sdd; cat .docs/sdd/steering/debt.md | tail -22
+<<< ROADMAP.md: línea 22: el id «B1» no es de la secuencia: resérvale uno con sdd id next --reserve
+ROADMAP.md: aviso: línea 16: la 0014 y la 0013 (línea 15) tocan `src/app.js` sin «tras» entre ellas
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | sin determinar | `docs/qa/2026-10-12-informe.md` §1 | Medio | reproducirlo | 2026-11-08 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Dest
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap publish --project-root . --message "chore(roadmap): triaje de la deuda
+
+Decidido por delegación: CSV sin reproducir (la salida es UTF-8 correcta) a En espera; libres --planta reproducido a Lista con fila 0014 (patch); ayuda.md descartada (el comando no filtra por libres, el cambio propuesto la dejaría falsa); la fila de reservas >8 h caducada a Descartadas.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ROADMAP.md .docs/sdd/steering/debt.md 2>&1 | tail -5
+<<< destino con cambios: ROADMAP.md en <run>\repo
+
+>>> Bash: git add ROADMAP.md .docs/sdd/steering/debt.md && git commit -q -m "chore(roadmap): triaje de la deuda
+
+Decidido por delegación: CSV sin reproducir (la salida es UTF-8 correcta) a En espera; libres --planta reproducido a Lista con fila 0014 (patch); ayuda.md descartada (el comando no filtra por libres, el cambio propuesto la dejaría falsa); la fila de reservas >8 h caducada a Descartadas.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< 9ccc484 chore(roadmap): triaje de la deuda
+24943d5 feat: base del molde
+
+=== RESULTADO (11 turnos, 0.22209839999999997 $)
+He triado las tres filas de «Por triar» y la de «En espera» que había caducado, y lo he commiteado en `develop` (`9ccc484`). `sdd roadmap check` sigue dando un error que ya estaba antes: el id `B1` de Later no es de la secuencia. No lo he tocado.
+
+| Ítem | Estado | Por qué |
+| --- | --- | --- |
+| `libres --planta 2` lista salas de la planta 1 | **Lista** → fila **0014** (patch, tamaño S, en Next) | Lo reproduje: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. Es un defecto del producto. |
+| El CSV pierde las tildes | **En espera**, falta «reproducirlo» | `exportar` devuelve bien la `í` (UTF-8). El changelog no tiene ninguna 1.4.2. |
+| `ayuda.md` no dice que `libres --planta` lista solo las libres | **Descartada** | El comando no filtra por libres, así que el cambio propuesto dejaría la ayuda falsa. Si se quiere ese filtro, es funcionalidad nueva. |
+| Reservas de más de 8 h sin aviso (ya estaba en «En espera») | **Descartada**, motivo «caducada» | Llevaba dos releases `X.Y.0` sin un 2.º caso. |
+
+- **Arreglo de la 0014:** el informe propone cambiar `<=` por `<` en `roomsOnFloor`, pero con `<` la planta 2 no devolvería sus propias salas. En el brief de la 0014 dejé `===`.
+- **Solape con la 0013:** la 0014 y la 0013 tocan `src/app.js` y no hay «Tras» entre ellas. Es un aviso del check, no un error, y no lo he resuelto.
+- **Publicación:** `sdd roadmap publish` se negó porque `develop` está en este mismo worktree con cambios sin commitear. Hice el commit a mano.
+
+Siguiente: la 0014. Prompt de lanzamiento:
+
+> Arranca la fila 0014 — **Corregir `libres --planta`** (patch). Brief en `ROADMAP.md`; requisitos en `docs/qa/2026-10-12-informe.md` §2.
+
+Si prefieres hacerlo en esta sesión, di «arráncalo».

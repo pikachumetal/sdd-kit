@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.local.json; echo; cat .docs/sdd/sdd-kit.json 2>&1 | head -40; node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"merge": {"push": true}}
+
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md; ls -R src test .docs/sdd/specs | head -60
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; grep -n "describe\|test(" test/*.js | head -30; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011 develop 2>&1 && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" id claim --project-root "$(pwd)" 2>&1; git status --short
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0011'
+sin remoto: la 0011 vale (contador local)
+?? .docs/sdd/sdd-kit.local.json
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.16057890000000002 $)
+Ahora: leo el contexto, clasifico y abro la entrevista de la feature 0011 (ya estoy en la rama `feature/0011`). Queda: unas pocas preguntas, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `anular <sala> <día>` en `src/app.js` anula la reserva activa de cualquiera, sin comprobar quién lo pide. Quieres que solo el responsable de la sala pueda anular reservas de otras personas, y que el resto no. Uso «anulación» en el sentido de `PRODUCT.md`: la que hace el responsable, por cualquier motivo. No es la cancelación del propio cliente.
+
+La app no tiene login ni noción de usuario, y las reservas no guardan a nombre de quién están. Antes de diseñar nada necesito saber cómo se sabe quién es el responsable.
+
+❓ **¿Cómo se identifica quién pide la anulación?**
+1️⃣ **Un parámetro explícito**, por ejemplo `anular Norte lun --como ana`, con una tabla fija de responsables por sala. `anular Norte lun --como ana` anula la reserva. Con `--como luis` da `solo el responsable de Norte puede anular`. Es lo único que cabe sin login, y se puede probar con `node --test`. Cuesta que cualquiera puede escribir el nombre de otro, así que es un control de coherencia y no de seguridad.
+2️⃣ **Una variable de entorno** (`SALAS_USUARIO=ana`). Es el mismo control que 1️⃣, pero la identidad no se teclea en cada comando. Cuesta que el comando depende de un estado oculto.
+3️⃣ **Introducir un login o sesión.** Es una feature mucho mayor y cambia todos los comandos.
+
+➡️ **Recomiendo 1️⃣**, porque el producto no tiene usuarios ni sesión y lo usas solo tú, así que una identidad explícita es lo mínimo que hace comprobable la regla. A cambio, no impide suplantar a nadie. ¿Cuál eliges?

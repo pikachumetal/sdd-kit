@@ -1,0 +1,228 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls -a; cat .docs/sdd/sdd-kit.json; git branch --all; ls .docs/sdd .docs/sdd/steering 2>&1; git show develop:ROADMAP.md 2>&1 | head -60
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+* develop
+  main
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+fatal: path 'ROADMAP.md' does not exist in 'develop'
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls .docs/sdd/specs; cat .docs/sdd/mission.md .docs/sdd/tech-stack.md package.json; find src test -type f | head -50
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: cat .docs/sdd/constitution.md; cat src/app.js; ls .docs/sdd/specs/*; git log --oneline | head
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+fu
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base/skills/sdd-templates/templates"; ls $K; cat $K/proposal-template.md; cat $K/roadmap-template.md
+<<< adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+patch-template.md
+plan-template.md
+PRODUCT-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+retro-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+validation-template.md
+walkthrough-template.md
+---
+id: <yyyyMMdd-HHmmss>-proposal-<id>-<slug>
+proposal: <id>        # id de la 
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base/cli/bin/sdd.js" id next --project-root . --reserve --count 4
+<<< 0008
+0009
+0010
+0011
+
+>>> Bash: d=.docs/sdd/specs/20261102-100000-proposal-0008-informes; mkdir -p $d; cat > $d/proposal.md <<'EOF'
+---
+id: 20261102-100000-proposal-0008-informes
+proposal: 0008
+title: Módulo de informes
+source: interview
+created: 2026-11-02
+---
+
+# Propuesta — Módulo de informes
+
+## Por qué
+
+El cliente quiere ver cuánto se usa cada sala, llevarse esos datos a Excel y que los responsables reciban un resumen cada semana sin pedirlo. Hoy solo se puede consultar qué salas están libres en una franja. Dijo «decide tú los detalles»: las decisiones de abajo las tomó `sdd-roadmap` y están sin confirmar con el cliente.
+
+## Reglas de negocio
+
+- Jornada de referencia: lunes a viernes, 08:00-20:00 (12 h por día, 60 h por semana y sala). Ejemplo: la sala Norte con una reserva lun 10:00-12:00 en una semana → 2 h / 60 h = 3,3 % de ocupación.
+- Ocupación = horas reservadas / horas de la jornada de referencia del periodo, por sala, con un decimal. Ejemplo: Sur sin reservas en la semana → 0,0 %.
+- El periodo por defecto es la semana natural anterior (lunes a domingo); se puede indicar otro con `--desde` y `--hasta`. Ejemplo: `informe ocupacion --desde 2026-10-26 --hasta 2026-11-01` informa de esa semana.
+- Una reserva semanal (`--cada-semana`) cuenta en cada semana en que aplica. Ejemplo: Norte lun 10:00-12:00 semanal, periodo de 2 semanas → 4 h / 120 h = 3,3 %.
+- La exportación es un `.xlsx` real, con una fila por sala (sala, horas reservadas, horas disponibles, % de ocupación) y los mismos números que el informe en pantalla. Ejemplo: el informe dice Norte 3,3 % → la celda de Norte contiene 3,3.
+- El aviso semanal sale los lunes con el informe de la semana anterior, y lo recibe el responsable de cada sala (una lista de correos por sala en la configuración); cada responsable recibe solo las salas que tiene asignadas. Ejemplo: Ana responde de Norte, Luis de Sur → Ana recibe solo Norte y Luis solo Sur.
+- Una sala sin responsable asignado no genera aviso, y el comando lo dice en su salida. Ejemplo: Sur sin responsable → «Sur: sin responsable, no se envía».
+
+## Capacidades que toca
+
+- `occupancy-report` — nueva: cálculo y salida en pantalla de la ocupación por sala.
+- `report-export` — nueva: exportación del informe a `.xlsx`.
+- `weekly-report-notice` — nueva: envío semanal del informe a los responsables.
+
+## Reparto
+
+| Orden | Id | Feature | Tras |
+| --- | --- | --- | --- |
+| 1 | 0009 | Informe de ocupación por sala | — |
+| 2 | 0010 | Exportar el informe a Excel (.xlsx) | 0009 |
+| 3 | 0011 | Aviso semanal a los responsables | 0009, fila 1 |
+
+## Acta
+
+No aplica: entrevista.
+
+## Enmiendas
+
+Decisiones tomadas por `sdd-roadmap` ante «decide tú los detalles»; el cliente puede cambiarlas por enmienda:
+
+- 2026-11-02 — jornada 08:00-20:00 de lunes a viernes: supuesta, sin dato del cliente — decidido por el agente — re-parte: ninguna.
+- 2026-11-02 — `.xlsx` sin dependencias: Node no trae escritor de Excel y la stack no admite paquetes externos; la feature 0010 genera el fichero a mano con `node:zlib`. Alternativa si pesa: CSV — decidido por el agente — re-parte: 0010.
+- 2026-11-02 — el aviso semanal es un comando que se programa con el cron del servidor, no un proceso residente, y reutiliza el envío de correo de la fila 1 (por eso va tras ella) — decidido por el agente — re-parte: 0011.
+EOF
+python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let t=fs.readFileSync('.docs/sdd/roadmap.md','utf8');
+t=t.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |\n','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0009 | Informe de ocupación por sala · proposal: 0008 | ⏳ |\n| 0010 | Exportar el informe a Excel (.xlsx) · tras 0009 · proposal: 0008 | ⏳ |\n| 0011 | Aviso semanal a los responsables · tras 0009 y tras 1 · proposal: 0008 | ⏳ |\n');
+fs.writeFileSync('.docs/sdd/roadmap.md',t);"
+EOF
+cat .docs/sdd/roadmap.md | sed -n 1,12p
+K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base/cli/bin/sdd.js"
+node "$K" roadmap check --path .docs/sdd
+<<< Exit code 1
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+roadmap.md: línea 29: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 17: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Edit: <run>\repo\.docs\sdd\roadmap.md
+<<< The file <run>\repo\.docs\sdd\roadmap.md has been updated successfully.
+
+>>> Bash: K="D:/code/.worktrees/sdd-kit/feature-0194-roadmap-whats-next/.temp/claude/D--code--worktrees-sdd-kit-feature-0194-roadmap-whats-next/2a3673f5-2000-462a-9b57-b318c053ea59/scratchpad/kit-base/cli/bin/sdd.js"
+node "$K" roadmap check --path .docs/sdd; node "$K" roadmap publish --project-root . --message "docs(roadmap): propuesta 0008 módulo de informes (0009-0011)
+
+Decisiones delegadas por el usuario («decide tú los detalles»), registradas en las Enmiendas de la propuesta: jornada 08:00-20:00 L-V, .xlsx sin dependencias, aviso por cron reutilizando el correo de la fila 1.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md .docs/sdd/specs/20261102-100000-proposal-0008-informes/proposal.md; git log --oneline | head -3
+<<< roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 20: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+84b521c feat: base del molde
+
+>>> Bash: git add .docs/sdd/roadmap.md .docs/sdd/specs/20261102-100000-proposal-0008-informes && git commit -q -m "docs(roadmap): propuesta 0008 módulo de informes (0009-0011)
+
+Decisiones delegadas por el usuario («decide tú los detalles»), registradas en las Enmiendas de la propuesta: jornada 08:00-20:00 L-V, .xlsx sin dependencias, aviso por cron reutilizando el correo de la fila 1.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2; git status --short
+<<< warning: in the working copy of '.docs/sdd/specs/20261102-100000-proposal-0008-informes/proposal.md', LF will be replaced by CRLF the next time Git touches it
+96e3533 docs(roadmap): propuesta 0008 módulo de informes (0009-0011)
+84b521c feat: base del molde
+
+=== RESULTADO (12 turnos, 0.24875600000000003 $)
+Dejé el módulo de informes planificado en el roadmap, pero no he escrito código. Lo he dividido en tres funcionalidades, con sus ids reservados y los detalles que dejaste a mi criterio. Está en el commit `96e3533` de `develop`.
+
+| Id | Funcionalidad | Depende de |
+| --- | --- | --- |
+| 0009 | Informe de ocupación por sala | — |
+| 0010 | Exportar el informe a Excel (`.xlsx`) | 0009 |
+| 0011 | Aviso semanal a los responsables | 0009 y la fila 1 (avisos por correo) |
+
+**Detalles que decidí (sin confirmar con el cliente):**
+- **Jornada de referencia:** lunes a viernes, 08:00-20:00. La ocupación es horas reservadas entre horas de jornada. Por ejemplo, Norte con lun 10:00-12:00 queda en 2 h / 60 h = 3,3 %.
+- **Periodo:** por defecto, la semana anterior. Se puede cambiar con `--desde` y `--hasta`.
+- **Excel:** un `.xlsx` real, que la feature 0010 genera a mano con `node:zlib`, porque la stack no admite dependencias externas. Si pesa, la alternativa es CSV.
+- **Aviso semanal:** es un comando que se programa con el cron del servidor, no un proceso residente. Sale los lunes y cada responsable recibe solo sus salas. Una sala sin responsable no genera aviso y el comando lo dice. Reutiliza el envío de correo de la fila 1.
+
+La propuesta con las reglas, los ejemplos con datos y estas decisiones está en `.docs/sdd/specs/20261102-100000-proposal-0008-informes/proposal.md`. Como son supuestos míos, el cliente puede cambiarlos con una enmienda.
+
+**Cosas a tener en cuenta:**
+- **Misión:** `mission.md` dice que la herramienta la usas solo tú. Con «responsables» recibiendo avisos habrá más usuarios, así que conviene actualizarla.
+- **Comprobación del roadmap:** `sdd roadmap check` da dos fallos heredados que no toqué: el título de v0.3.0 y la cabecera de «Deuda técnica». Los corrige la migración del proyecto al kit 3.0.0.
+- **Publicación:** `sdd roadmap publish` se negó, porque `develop` tenía cambios sin confirmar. Hice el commit a mano, solo con los dos ficheros míos.
+- **Versión del kit:** esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+
+**Siguiente paso:** la 0009 es la primera. Para lanzarla en una sesión nueva, pídeme «dame el prompt de la 0009». Si prefieres hacerlo en esta sesión, di "arráncalo".

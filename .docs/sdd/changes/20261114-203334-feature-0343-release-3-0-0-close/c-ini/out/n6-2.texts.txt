@@ -1,0 +1,129 @@
+--- [3]
+Voy a ver en qué estado quedó la init: primero `sdd-kit.json` y los archivos del proyecto.
+
+--- [11]
+Retomo la init desde donde se cortó. Ya están aprobados `PRODUCT.md` y la constitución, y la config del kit ya está guardada (ids `sequence`, perfil `delegate`, ejecución `auto`, validación `manual`). No te la vuelvo a preguntar. Falta `operations.md`, que es el siguiente documento. Todavía no se ha escrito ningún fichero.
+
+**Modo: con código.** Lo que sigue sale del código, no de suposiciones.
+
+## Lo que encontré
+- Hay dos scripts de test: `test` (`vitest run`) y `e2e` (`playwright test`). No hay config de vitest ni ningún `*.test.ts`. En `src/` solo está `app.ts`.
+- Hay dos specs E2E: `e2e/booking.spec.ts` ("reserva Norte a las 10:00") y `e2e/cancel.spec.ts` ("cancela una reserva").
+- `playwright.config.ts` fija `retries` en 2 solo en CI y `timeout: 60_000`. No tiene `baseURL` ni `webServer`, y los specs hacen `page.goto('/')`.
+- `ci.yml` corre en cada push y solo ejecuta `npm ci` y `npm test`. No corre los E2E.
+- No hay lockfile, ni lint, ni hooks de pre-commit.
+- Hay una sola rama, `main`.
+- **Discrepancia** con el `CLAUDE.md` anterior: dice que `npm run dev` arranca en el puerto 3000. No lo puedo verificar. Vite usa 5173 por defecto y no hay config que lo cambie.
+
+## Borrador de `operations.md`
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+- **Build**: no declarado
+- **Arrancar**: `npm run dev`
+
+## Testing
+- **Suites**:
+  - `unit` · `npm test` · duración pendiente · pendiente (no hay tests todavía)
+  - `e2e` · `npm run e2e` · duración pendiente · E2E
+- **Lo afectado**: `npx vitest run --changed` (unit); E2E sin filtro
+- **Gate de cierre**: `npm run e2e` (suite entera, sin forma de filtrar)
+- **Gate de merge**: pendiente
+- **Sin filtro**: `package.json`, `playwright.config.*`, `vitest.config.*`, `e2e/**/helpers/**`
+- **Lint**: ninguno
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: sin login
+- **Motor de producción**: no aplica (los datos viven en memoria)
+- **Temporales**: `e2e` · `test-results/` (por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`
+- **Flujos core**: pendiente (candidatos: reservar · `e2e/booking.spec.ts`, cancelar · `e2e/cancel.spec.ts`)
+  - **Títulos heredados**: (se rellena al escribir el test de títulos)
+- **Presupuesto E2E**: pendiente
+- **Retries**: `0` en local, `2` en CI
+- **Timeouts**: 60 s por test, sin motivo escrito
+- **Entorno de la suite**: pendiente
+- **Datos**: pendiente
+
+## Frontend
+- **URL**: pendiente
+- **Detector**: ninguno
+- **Viewports**: pendiente
+- **Runner E2E**: Playwright
+- **Acceso**: sin login
+- **Temas**: no declarado
+- **Pantalla de referencia**: pendiente
+- **Skills de apoyo**: ninguna
+```
+
+## Lo que necesito de ti
+1. **¿Cuáles son los flujos core?** ¿Son reservar y cancelar, o solo uno de los dos?
+2. **¿Qué pongo en "Gate de merge"?** Propongo `npm test && npm run e2e`, pero la plantilla pide una sola orden sin encadenar. ¿Prefieres un script nuevo o algo distinto?
+3. **¿Cómo se levanta la app para los E2E?** Ahora mismo la config no lo declara. ¿Sabes en qué puerto responde de verdad (3000 o 5173)?
+4. **Temporales:** ¿quieres mover los de Playwright a `.temp/playwright`? Es solo una propuesta y no tocaría la config.
+5. **¿Quieres el test de títulos?** Comprueba que cada título E2E esté en "Flujos core" o en "Títulos heredados". Si dices que sí, lo escribo en verde después de aprobar este documento.
+6. **¿Quieres un detector de frontend?** Recomiendo impeccable. Si no, queda `Detector: ninguno`.
+7. **¿Tienes duraciones de las suites y presupuesto E2E?** Si no, quedan en `pendiente`.
+
+Cuando me contestes ajusto el borrador y te lo vuelvo a presentar. Solo escribo `operations.md` y lo registro como aprobado cuando me des el «sí».
+
+--- [13]
+Entiendo que con «la que recomiendas» aceptas mis recomendaciones en las preguntas que planteé. Las apliqué y dejo abajo el borrador actualizado. Todavía no escribo nada, porque falta tu «sí» a este documento.
+
+## Cómo resolví cada pregunta
+1. **Flujos core:** reservar y cancelar, los dos candidatos.
+2. **Gate de merge:** `npm run e2e`. Cambié mi propuesta anterior. `npm test && npm run e2e` encadena comandos, y la plantilla pide una sola orden. Crear un script nuevo en `package.json` sería tocar el proyecto durante la init. Con `npm run e2e` el gate de merge coincide con el de cierre. La suite `unit` no va en ninguno de los dos, porque el cierre la corre entera con su propia orden.
+3. **Arranque para los E2E:** el puerto sigue sin verificar y no edito la config. Dejo `URL` y `Entorno de la suite` en `pendiente`. Hay un riesgo: sin `baseURL` ni `webServer`, `page.goto('/')` probablemente falla tal como está la config.
+4. **Temporales:** dejo la propuesta de `outputDir: '.temp/playwright'`.
+5. **Test de títulos:** sí. Lo escribo en verde después de aprobar este documento.
+6. **Detector:** impeccable, con viewports `1280x800` y `390x844`. Dejo la versión como `pendiente`, porque no sé cuál tienes instalada.
+7. **Duraciones y presupuesto E2E:** siguen en `pendiente`.
+
+## Borrador de `operations.md`
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+- **Build**: no declarado
+- **Arrancar**: `npm run dev`
+
+## Testing
+- **Suites**:
+  - `unit` · `npm test` · duración pendiente · pendiente (no hay tests todavía)
+  - `e2e` · `npm run e2e` · duración pendiente · E2E
+- **Lo afectado**: `npx vitest run --changed` (unit); E2E sin filtro
+- **Gate de cierre**: `npm run e2e` (suite entera, sin forma de filtrar)
+- **Gate de merge**: `npm run e2e`
+- **Sin filtro**: `package.json`, `playwright.config.*`, `vitest.config.*`, `e2e/**/helpers/**`
+- **Lint**: ninguno
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha` (hoy solo corre `npm test`, no los E2E)
+- **Acceso a la aplicación**: sin login
+- **Motor de producción**: no aplica (los datos viven en memoria)
+- **Temporales**: `e2e` · `test-results/` (por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`
+- **Flujos core**:
+  - reservar una sala · `e2e/booking.spec.ts` · reserva Norte a las 10:00
+  - cancelar una reserva · `e2e/cancel.spec.ts` · cancela una reserva
+  - **Títulos heredados**: (vacío; el test de títulos nace con los dos flujos ya como core)
+- **Presupuesto E2E**: pendiente
+- **Retries**: `0` en local, `2` en CI
+- **Timeouts**: 60 s por test, sin motivo escrito
+- **Entorno de la suite**: pendiente
+- **Datos**: pendiente
+
+## Frontend
+- **URL**: pendiente
+- **Detector**: `npx impeccable@<versión> detect {url} --viewport {viewport}`, fallo con código de salida 2 (versión pendiente)
+- **Viewports**: `1280x800` y `390x844`
+- **Runner E2E**: Playwright
+- **Acceso**: sin login
+- **Temas**: no declarado
+- **Pantalla de referencia**: pendiente
+- **Skills de apoyo**: ninguna
+```
+
+Dime «sí» para aprobarlo tal cual, o corrígeme lo que quieras. Con el «sí» hago tres cosas:
+- Escribo el fichero y lo registro como aprobado.
+- Escribo y corro el test de títulos.
+- Sigo con `architecture.md`.
+

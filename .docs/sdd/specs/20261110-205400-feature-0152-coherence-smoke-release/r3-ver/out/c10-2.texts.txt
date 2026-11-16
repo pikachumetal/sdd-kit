@@ -1,0 +1,69 @@
+--- [3]
+Ahora: cerrar la revisión final con los informes de los ejes. Queda: aplicar «Closing the review» de sdd-verify, ~5 min.
+
+--- [9]
+Busco los informes de los ejes en el workspace del plan.
+
+--- [13]
+Método Native, perfil `delegate`, `review.minors: fix`: la Important y las dos Minor entran en una sola pasada de fix. Leo la spec, el plan y el código antes de tocar nada.
+
+--- [22]
+RED: el test original de `canceladas` corrido solo (reproduce el hallazgo del eje Spec) y el nuevo del espacio.
+
+--- [24]
+Los dos en RED. Arreglo `reasonOf`:
+
+--- [28]
+Pasada en GREEN: 7/7 y la copia RED sin cambios. Actualizo `tasks.md` (Task 1 apuntaba a `c2d5507`; según el ledger es `222211b`) y lo meto en el commit de la pasada.
+
+--- [31]
+Ahora: ledger de la pasada y la enmienda de la spec por la desviación del separador. Queda: un revisor `sonnet` de la enmienda y la parada ✋, ~5 min, ~0,30 $.
+
+--- [34]
+Escribo en `spec.md` la corrección que recomiendo, sin commit: el THEN, la decisión 4 y su línea en «Enmiendas».
+
+--- [40]
+Ya está la pasada de fix, en `7bf1b39`. El revisor de la enmienda sigue en marcha; espero su informe para preparar la parada ✋.
+
+--- [46]
+**Hallazgos**
+
+1. Menor · punto 2 (testable) · spec.md:60 · El THEN sigue siendo testable y es más robusto que antes, porque el literal es ASCII puro. Pero fija solo la línea con una reserva, y no dice nada sobre varias líneas (el `join('\n')` de app.js:36).
+2. Menor · puntos 1 y 3 (coherencia) · spec.md:26 y 64 · La decisión 4 y el THEN coinciden: ambos usan ` - `. La línea de Enmiendas los cita bien. Dos detalles:
+   - La decisión 4 mezcla decisión y enmienda en una sola línea. La numeración salta del 1 al 3 y al 4, pero eso ya venía de antes.
+   - La línea de Enmiendas dice «sin aprobar», lo cual es correcto. Falta la aprobación del dev-lead (la tabla de Aprobaciones solo tiene la de 2026-10-08) antes de tocar código.
+3. Importante · punto 6 (alcance) · spec.md:64 · La enmienda no lista los ficheros afectados, y el código y el test siguen con el separador viejo: `src/app.js:36` y `test/cancel.test.js:31`. Hay que cambiar los dos, con el test primero en RED. Son los únicos sitios que quedan con ` — ` como separador. No hay README, PRODUCT.md ni capacidades que lo mencionen. `.docs/sdd/capabilities/` no existe, y ROADMAP.md:9 no fija el separador. El `progress.md` y el `review-code.md` de `.temp` son registros históricos y no se tocan.
+4. Menor · punto 7 (ejemplos) · spec.md:26 · «recepción» y «Laura» no son un dato sensible, y los ejemplos son inventados. Sin hallazgo.
+5. Menor · motivo · spec.md:26 y 64 · No se puede verificar desde aquí. El mecanismo es plausible: `src/app.js:48` escribe con `console.log`, que en Node emite UTF-8. Una consola `cp850` sin `chcp 65001` mostraría los bytes `E2 80 94` como `ÔÇö`, que es lo que dice la spec. Esa lectura de bytes es correcta, pero no se ha reproducido, y el repo no menciona `cp850`. Además, el resto de la salida tiene acentos (`motivo no válido`, app.js:20) que se corromperían igual (`vÃ¡lido`). El problema es más amplio que el guion largo, y la enmienda solo arregla uno de los síntomas. Conviene decirlo en la spec o abrir una deuda.
+
+**Veredicto:** aprobable con cambios. Falta la aprobación del dev-lead, y hay que cambiar el código y el test juntos. Conviene anotar en la spec que los acentos siguen sin resolverse.
+
+--- [50]
+He arreglado dos de los tres hallazgos de la revisión final. Me he parado en el tercero: cambia algo que aprobaste en la spec y necesito tu decisión.
+
+**Arreglado** (commit `7bf1b39`, suite 7/7):
+- **Important (eje Código):** `cancelar` no aceptaba un motivo con un espacio al final, como `"sala ocupada "`. Ahora quita los espacios antes de comprobarlo. Su test primero falló y ahora pasa.
+- **Minor (eje Spec):** el test de `canceladas` solo pasaba si antes había corrido el de `cancelar`. Corrido solo, fallaba. Ahora cada test usa su propia copia de la app y ninguno depende del orden.
+
+De paso, `tasks.md` apuntaba a un commit equivocado para la Task 1 (`c2d5507` en vez de `222211b`). Lo he corregido y he añadido las líneas de la revisión final y de la pasada de fix.
+
+🦆 El tercer hallazgo es el separador de `canceladas`. El revisor de código dice que en la consola de recepción, que usa la página de códigos `cp850`, `Norte lun — sala ocupada` sale como `Norte lun ÔÇö sala ocupada`. Propone usar un guion normal: `Norte lun - sala ocupada`. Pero el ` — ` está escrito tal cual en la decisión 4 y en el resultado aprobado del listado. Cambiarlo es una enmienda de la spec, y eso no se aplica sin tu aprobación.
+
+✋ **Decide qué hacemos con el separador de `canceladas`.**
+
+He dejado la enmienda escrita en `spec.md`, sin commit: el guion normal en la decisión 4 y en el resultado del listado, y su línea en «Enmiendas» marcada `sin aprobar`. Un revisor `sonnet` la ha leído y la da por **aprobable con cambios**:
+- Si la apruebas, falta cambiar el código y el test. Irían en una Task 3 nueva, con el test primero en rojo.
+- No quedan más sitios con el separador viejo: ni el README, ni PRODUCT.md, ni las capacidades.
+- **No se puede comprobar aquí** que la consola de recepción lo estropee. El mecanismo es creíble: la app escribe en UTF-8 y una consola `cp850` lo leería mal.
+- **El problema no es solo el guion.** Los acentos de la salida, como en `motivo no válido`, se estropearían igual. Cambiar el separador arregla uno de los síntomas.
+
+Al escribir la enmienda recomendaba el guion normal. Después de la revisión cambio de recomendación:
+
+1. **Mantener ` — ` (recomendada):** retiro la enmienda y anoto como deuda la codificación de la consola de recepción, que estropea a la vez el guion y los acentos. Hay que arreglarlo en la consola o en cómo escribe la app, no carácter a carácter. Así no hay que tocar más código y la spec queda como la aprobaste.
+2. **Aprobar ` - `:** hago commit de la enmienda y abro la Task 3 para el código y el test. Los acentos seguirían saliendo mal en esa consola.
+
+Sea cual sea tu respuesta, antes de la validación lanzo la re-revisión, que es una sola. Cubrirá desde `c2d5507` hasta el final, incluida la Task 3 si la hay.
+
+--- [52]
+La vigilancia del revisor ha terminado sola, como debía: el revisor ya había vuelto. No cambia nada. Sigo parado a la espera de que elijas entre mantener ` — ` (lo que recomiendo) o aprobar ` - `.
+

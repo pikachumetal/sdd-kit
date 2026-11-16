@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls; ls .docs/sdd .docs/sdd/steering; git branch --all; cat .docs/sdd/steering/debt.md; git show develop:ROADMAP.md | head -60
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+CHANGELOG.md
+docs/
+package.json
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+changes/
+constitution.md
+mission.md
+sdd-kit.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/steering:
+debt.md
+* develop
+  main
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` 
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; ls docs docs/qa src test; cat package.json; git log --oneline | head; cat src/*.js | head -150
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+docs:
+qa/
+
+docs/qa:
+2026-10-12-informe.md
+
+src:
+app.js
+
+test:
+app.test.js
+{"type": "module"}
+e807896 feat: base del molde
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte',
+
+>>> Bash: cd . && node src/app.js libres --planta 2; echo ---; node src/app.js exportar | head -1 | xxd | head -2; cat test/app.test.js | head -30; git log --all --oneline | wc -l
+<<< Norte (planta 1)
+---
+00000000: 7361 6c61 2c64 c3ad 612c 6672 616e 6a61  sala,d..a,franja
+00000010: 0a                                       .
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(
+
+=== RESULTADO (6 turnos, 0.1386075 $)
+Esto es lo que propongo para las dos filas de «Por triar». No he escrito nada todavía: el perfil es `delegate`, así que espero tu decisión.
+
+**1. La exportación a CSV pierde las tildes desde la 1.4.2 → «En espera»**
+- No lo he podido reproducir. `node src/app.js exportar` devuelve la cabecera `sala,día,franja`, y los bytes son UTF-8 correctos (`c3 ad`). El código tampoco tiene nada que la rompa.
+- Propongo causa `sin determinar`, impacto Medio y «Falta» `reproducirlo`. El informe no dice en qué entorno se vio (el CSV abierto en Excel, una redirección en Windows…), y eso es lo que habría que pedir a QA.
+- Para «Lista» necesitaría reproducirlo o un 2.º caso. Con la fecha 2026-10-12 caduca en la siguiente release `X.Y.0`.
+
+**2. `salas libres --planta 2` lista salas de la planta 1 → «Lista»**
+- Lo he reproducido. `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- La causa es `floors[room] <= floor` en `roomsOnFloor`, en `src/app.js`. Debería ser `===`.
+- Propongo causa `defecto del producto`, arreglo `—` e impacto Medio. No tiene remedio temporal (`ninguno`, lo he mirado).
+- Evidencia: el comando anterior con su salida.
+- Destino: una fila nueva en Next, tamaño S, `**Carril:** patch`, con `**Salda:**` apuntando a esta fila de «Lista».
+- Hay una sola prueba de comportamiento nuevo, así que es un patch.
+- El id sale de una reserva con `sdd id next --reserve`.
+
+Los otros dos puntos no cambian:
+- La fila de «En espera» de las reservas de más de 8 h (2026-07-01) sigue igual: no caduca, porque no ha habido una release `X.Y.0` desde entonces.
+- No hay ramas `feature/*` abiertas con las que pueda chocar.
+
+¿Lo escribo así? Si me dices «decide tú», lo escribo tal cual y dejo las decisiones en el cuerpo del commit. Cuando termine te diré qué fila va primero y te daré su prompt de lanzamiento.

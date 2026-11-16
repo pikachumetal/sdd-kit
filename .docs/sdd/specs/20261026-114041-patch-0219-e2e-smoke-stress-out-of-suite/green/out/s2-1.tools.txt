@@ -1,0 +1,218 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261026-090000-feature-0027-concurrent-edit\plan.md
+<<< 1	# Plan — Edición a la vez
+2	
+3	**Ejecución**: Native.
+4	
+5	## §3 Gate de cierre
+6	
+7	`npm test && npm run e2e`
+8	
+9	## Task 1: el API guarda cada celda por separado — hecha
+10	
+11	`PUT /api/sheets/<hoja>/cells/<celda>` guarda solo esa celda (`server/api.js`).
+12	
+13	## Task 2: prueba de estrés de la edición a la vez
+14	
+15	- **Qué**: cinco sesiones del navegador con la hoja `cierre` abierta, cada una edita 10 celdas distintas a la vez; al acabar, las 50 celdas tienen su valor.
+16	- **Verificación**: la prueba pasa contra la app arrancada con `npm run api` y `npm run dev`.
+17	
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0219-e2e-smoke-stress-out-of-suite\.temp\p0219\kitg\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts: its 1.65 docs.
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
+8	
+9	```
+10	1. An E2E names a core flow
+11	2. Between two user actions, wait only for what the user can see
+
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0219-e2e-smoke-stress-out-of-suite\.temp\p0219\kitg\skills\sdd-tdd\references\writing-good-tests.md
+<<< 1	# Writing Good Tests
+2	
+3	**Load this reference when:** writing or changing tests, adding mocks, or
+4	adding cleanup/helper methods for tests.
+5	
+6	## Overview
+7	
+8	A test exists to catch a specific break. Two principles govern everything
+9	here:
+10	
+11	```
+12	1. Every test names the break it catches
+13	2. Every test exercises the real thing
+14	```
+15	
+16	Strict TDD produces both naturally: a test written first and watched
+17	failing against real code has already proven it can fail, and only earns
+18	a mock when the real dependency proves slow or external.
+19	
+20	## Principle 1: Name the Bre
+
+>>> Bash: cd <run>/repo && git ls-files | grep -v node_modules && cat package.json playwright.config.* && cat .docs/sdd/operations.md 2>/dev/null | head -80 && cat .docs/sdd/specs/*0027*/spec.md
+<<< .docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/plan.md
+.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/spec.md
+.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/tasks.md
+.docs/sdd/tech-stack.md
+.gitignore
+PRODUCT.md
+README.md
+e2e/0012-sum-row.spec.ts
+e2e/0015-export-pdf.spec.ts
+e2e/0018-invoice-status.spec.ts
+e2e/0021-cell-format.spec.ts
+e2e/helpers.ts
+index.html
+package.json
+playwright.config.ts
+server/api.js
+src/invoi
+
+>>> Bash: cd <run>/repo && cat e2e/helpers.ts e2e/0012-sum-row.spec.ts server/api.js .docs/sdd/specs/*0027*/tasks.md; cat .gitignore; grep -n "data-testid\|aria" src/sheet/*.tsx | head -20
+<<< import { APIRequestContext, Page } from '@playwright/test';
+
+export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+}
+
+export async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+}
+
+export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+  const res = await request.get(`http://localhost:3001/api/sheets/${s
+
+>>> Bash: cd <run>/repo && cat src/sheet/CellEditor.tsx; sed -n 1,33p src/sheet/Grid.tsx
+<<< import { useState } from 'react';
+
+export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <input
+      aria-label="Editor de celda"
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+    />
+  );
+}
+import { lazy, Suspense, useState } from 'react';
+import { copyRange, lastCopied } from './clipboard';
+import { ContextMenu } from './ContextMenu';
+
+const CellEditor =
+
+>>> Bash: cd <run>/repo && mkdir -p stress && cat > playwright.stress.config.ts <<'EOF'
+import { defineConfig } from '@playwright/test';
+
+// Suite de estrés: fuera de `npm run e2e` (no es un flujo core) y fuera del gate de cierre.
+export default defineConfig({
+  testDir: './stress',
+  use: { baseURL: 'http://localhost:5173' },
+});
+EOF
+cat > stress/0027-concurrent-edit.spec.ts <<'EOF'
+import { expect, test } from '@playwright/test';
+
+const SHEET = 'cierre';
+const SESSIONS = 5;
+const CELLS_PER_SESSION = 10;
+const API = 'http://localhost:3001';
+const AGENT = 'agente@hojas.test';
+
+// Cada sesión escribe en su propia columna (S1..S5) y en filas 1..10: 50 celdas distintas.
+const cellOf = (session: number, i: number) => `S${session}R${i}`;
+const valueOf = (session: number, i: number) => `v${session}-${i}`;
+
+test('cinco sesiones editan 10 celdas distintas de cierre a la vez y las 50 guardan su valor', async ({ browser, request }) => {
+  const contexts = await Promise.all(Array.from({ length: SESSIONS }, () => browser.newContext()));
+  const pages = await Promise.all(contexts.map(async (ctx) => {
+    const page = await ctx.newPage();
+    await page.goto(`/dev/login?user=${AGENT}&next=/hojas/${SHEET}`);
+    await expect(page.getByRole('grid', { name: 'Hoja' })).toBeVisible();
+    return page;
+  }));
+
+  try {
+    // Todas las sesiones lanzan sus escrituras a la vez, con la misma llamada que hace la Grid al guardar.
+    await Promise.all(pages.map((page, s) =>
+      page.evaluate(async ({ sheet, session, count }) => {
+        await Promise.all(Array.from({ length: count }, (_, i) =>
+          fetch(`/api/sheets/${sheet}/cells/S${session + 1}R${i + 1}`, {
+            method: 'PUT',
+            body: JSON.stringify({ value: `v${session + 1}-${i + 1}` }),
+          }).then((r) => { if (!r.ok) throw new Error(`PUT ${r.status}`); })));
+      }, { sheet: SHEET, session: s, count: CELLS_PER_SESSION })));
+
+    // Checking the server after the last action: las 50 celdas tienen su valor.
+    for (let s = 1; s <= SESSIONS; s++) {
+      for (let i = 1; i <= CELLS_PER_SESSION; i++) {
+        const res = await request.get(`${API}/api/sheets/${SHEET}/cells/${cellOf(s, i)}`, { headers: { 'x-user': AGENT } });
+        expect((await res.json()).value, cellOf(s, i)).toBe(valueOf(s, i));
+      }
+    }
+  } finally {
+    // La hoja `cierre` es de este test: se vacían las 50 celdas.
+    for (let s = 1; s <= SESSIONS; s++) {
+      for (let i = 1; i <= CELLS_PER_SESSION; i++) {
+        await request.put(`${API}/api/sheets/${SHEET}/cells/${cellOf(s, i)}`, { headers: { 'x-user': AGENT }, data: { value: '' } });
+      }
+    }
+    await Promise.all(contexts.map((c) => c.close()));
+  }
+});
+EOF
+sed -i 's|"e2e": "playwright test"|"e2e": "playwright test",\n    "stress": "playwright test -c playwright.stress.config.ts"|' package.json
+npx tsc --noEmit --skipLibCheck --module esnext --moduleResolution bundler --target es2022 stress/*.ts playwright.stress.config.ts 2>&1 | head; git status --short
+<<< npm notice run npx
+npm notice run tsc --noEmit --skipLibCheck --module esnext --moduleResolution bundler --target es2022 stress/0027-concurrent-edit.spec.ts playwright.stress.config.ts
+
+[41m                                                                               [0m
+[41m[37m                This is not the tsc command you are looking for                [0m
+[41m                                                                               [0m
+
+To get access to the TypeScript compiler, [34mtsc[0m, from the command line either:
+
+- Use [1mnpm install typescript[0m to first add Type
+
+>>> Bash: cd <run>/repo && git add package.json playwright.stress.config.ts stress && git commit -q -m "test(sheet): prueba de estrés de la edición a la vez (0027 Task 2)
+
+Suite aparte (npm run stress), fuera del gate de cierre. Escrita, no ejecutada:
+sin navegadores de Playwright en esta máquina.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'playwright.stress.config.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'stress/0027-concurrent-edit.spec.ts', LF will be replaced by CRLF the next time Git touches it
+3a5e1a2 test(sheet): prueba de estrés de la edición a la vez (0027 Task 2)
+
+=== RESULTADO (11 turnos, 0.22250000000000003 $)
+He escrito la prueba de la Task 2 y la he commiteado (`3a5e1a2`). No la he ejecutado, porque aquí no hay navegadores de Playwright. Tampoco he podido comprobar que compila: `npx tsc` no existe en el proyecto. Como no la he visto fallar, no hay RED verificado.
+
+- **Dónde está:** la prueba va en `stress/0027-concurrent-edit.spec.ts`, con su propia config (`playwright.stress.config.ts`) y un script nuevo, `npm run stress`. No la he metido en `e2e/` porque el kit dice que una prueba de carga o estrés no es un E2E, y esa carpeta la ejecuta el gate de cierre (`npm test && npm run e2e`). El gate queda como estaba.
+- **Qué hace:** abre cinco contextos de navegador con `agente@hojas.test` sobre la hoja `cierre`. Cada uno lanza a la vez 10 `PUT` a celdas propias (`S1R1`…`S5R10`). Después comprueba en el API que las 50 celdas tienen su valor y vacía la hoja al acabar.
+
+**Dos puntos que conviene que mires:**
+
+1. **La `Grid` solo tiene 20 celdas** (A–D × 1–5), así que 50 celdas distintas no se pueden teclear en la interfaz. Por eso cada sesión escribe con un `fetch` desde la página, que es la misma llamada que hace `Grid.save`. Eso comprueba la concurrencia del API con sesiones reales, pero no lo que ve la persona usuaria. Si quieres teclear de verdad, hay que ampliar la `Grid` primero.
+2. **Puede no ser RED.** La Task 1 ya hace que cada celda se guarde por separado, y el servidor corre en un solo hilo con el mapa en memoria, así que lo normal es que la prueba pase a la primera. Eso significa que no prueba que pueda detectar el fallo original. Para comprobarlo habría que ejecutarla contra el guardado de hoja entera (antes de `c560c42`).
+
+Cuando haya navegadores, el comando es `npm run stress`, con `npm run api` y `npm run dev` arrancados.

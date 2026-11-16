@@ -1,0 +1,79 @@
+--- [3]
+Ahora: abro `sdd-verify` para cerrar la revisión final con los informes de los dos ejes. Queda: leer los informes y dejar el resultado listo para el cierre, ~5 min.
+
+--- [17]
+RED por compilación (falta el export). Hago solo el export para ver el RED por comportamiento.
+
+--- [19]
+Los dos fallan por la razón esperada. Ahora el código.
+
+--- [21]
+El script no aplicó el cambio. Lo hago con Edit.
+
+--- [31]
+Ahora: lanzo la única re-revisión del rango `11b3de9..d3d2bc3` (opus+high), que cubre la pasada de fix. Queda: leer el encargo, montar el worktree y despachar, ~10 min, ~1–2 $.
+
+--- [43]
+La re-revisión está en marcha. Mientras tanto no toco nada más del rango. Espero su informe.
+
+--- [53]
+**Hallazgo 1, [Código · Important] trim del motivo: ADDRESSED.** `src/app.js:103` (en la numeración del paquete, que coincide con el fichero) pasa a `params[index + 1]?.trim()`. El motivo se recorta antes de comprobarlo contra la lista en `cancelBooking` (`src/app.js:107`), y lo que se guarda en `booking.reason` (`:111`) es el motivo ya recortado. Si `--motivo` va al final sin valor, `?.` devuelve `undefined` y la respuesta sigue siendo «motivo no válido: …», como pide el spec. Lo cubre el test nuevo `test/cancel.test.js:17-20` con `' sala ocupada '`, que espera «cancelada Sur mie (sala ocupada)».
+
+**Hallazgo 2, [Spec · Minor → Important] límite de 20 en `canceladas`: ADDRESSED, con una salvedad que va como rotura nueva.** `src/app.js:122-129` añade `LIST_LIMIT = 20`, `slice(-LIST_LIMIT)` y la línea `… y ${cancelled.length - LIST_LIMIT} más` solo cuando hay más de 20. Hice el cálculo para el test: llegan 25 canceladas (Norte lun, Sur mie y d0..d22). Se enseñan d3..d22, que son 20 líneas, y la cuenta da «… y 5 más» (25 − 20). Es correcto. Con 20 o menos no se añade la línea, y el caso del spec («Norte lun — sala ocupada») sigue verde.
+
+### Finding Verdicts
+- Trim del motivo (`src/app.js:14-17` en 11b3de9): **ADDRESSED** en `src/app.js:101-104`, con test en `test/cancel.test.js:17-20`.
+- Límite de 20 y «… y N más» (`src/app.js:35-37` en 11b3de9): **ADDRESSED** en `src/app.js:122-129`, con test en `test/cancel.test.js:22-29`. Ver la salvedad sobre el orden en el punto 1 de abajo.
+
+### New Breakage in the Fix Diff
+1. **Important. `src/app.js:125-126`: «las 20 últimas» se cuentan por la posición de la reserva en el array, no por el momento en que se canceló.** `cancelBooking` cambia el estado en su sitio (`:110`), así que `bookings.filter(...).slice(-20)` se queda con las 20 reservas canceladas *creadas* más tarde, no con las 20 *cancelaciones* más recientes. Un caso concreto: hay 22 reservas activas, se cancelan primero las 21 últimas y después la primera. `canceladas` esconde justo la cancelación más reciente (la de la primera reserva, en el índice 0) y la mete en «… y 2 más». La decisión 4 dice «las 20 últimas cancelaciones», así que el comportamiento la incumple. Los modelos de datos no guardan ni un orden ni una marca de tiempo de la cancelación.
+   - El test no lo detecta: `test/cancel.test.js:23` mete con `push` reservas que ya vienen con `status: 'cancelled'`. Así el orden de cancelación coincide siempre con el del array, y el test fija la implementación, no la decisión 4.
+   - Arreglo propuesto: guardar un orden de cancelación (un contador o un registro aparte que se rellene en `cancelBooking`) y ordenar por él. En RED, un test que cancele con `run('cancelar', …)` en un orden distinto al de creación.
+   - Por qué Important y no más: en modo CLI el estado vive en memoria y se reinicia en cada ejecución, así que hoy no se llega a 20. Aun así es la regla que pide el spec.
+2. **Minor. `test/cancel.test.js:22-29`: el test depende del orden y del estado que dejan los demás.** El «5 más» solo sale porque los tests anteriores ya cancelaron Norte lun y Sur mie. Si se ejecuta aislado (`--test-name-pattern`), salen 23 canceladas y «… y 3 más», y falla. Lo mismo pasa con el test de `:13-15`, que depende del de `:5-7`, pero eso ya venía de antes. Lo más robusto es calcular lo esperado a partir del estado inicial o reiniciar `bookings` en cada test.
+3. **Minor. `src/app.js:91`: `export const bookings` expone el estado interno, que se puede modificar, solo para los tests.** En la CLI no tiene efecto: un `export` no cambia nada en ejecución, y el único efecto de módulo, `if (command) console.log(...)` (`:140`), ya existía. Es superficie de API pensada solo para test; un `resetBookings()` o recibir el estado desde fuera sería más limpio.
+4. **Minor. Saltos de línea en `src/app.js` y `test/cancel.test.js`:** pasan de CRLF a LF (en 11b3de9 tenían 48 y 15 CR; en cf1d7c4, 0). Por eso el diff reescribe ambos ficheros enteros y esconde las líneas que de verdad cambian. Además, `test/app.test.js` sigue en CRLF y el repo queda con finales de línea mezclados (no hay `.gitattributes`). Las líneas de los tests que ya estaban no cambian su contenido, así que no cuenta como modificar tests en RED.
+5. **Texto de interfaz:** en castellano («… y N más», «cancelada …», «motivo no válido: …»). Sin rotura.
+
+### Out-of-Scope Observations
+- `spec.md:24-26`: la numeración de decisiones salta del 1 al 3.
+- `spec.md:55`: el escenario «sin `--motivo` responde lo mismo» no tiene test en `test/cancel.test.js`. Ya era así antes del fix.
+- `tasks.md:29-30`: el registro no anota el commit del fix (d3d2bc3) en ninguna fila; solo aparece en la línea suelta «Pasada de fix». Las dos tasks apuntan a 11b3de9, cuando la Task 1 se commiteó en f6171eb según el log.
+- Verificación recomendada: un test de comportamiento para la decisión 4 que cancele por el comando en un orden distinto al de creación (punto 1). Y ejecutar `node --test test/cancel.test.js --test-name-pattern "20 últimas"` aislado para confirmar el punto 2.
+
+### Verdict
+**Fix round:** Quedan hallazgos abiertos. Los dos hallazgos revisados están arreglados, pero el fix introduce una rotura Important: el corte de «20 últimas» va por el orden de creación de la reserva, no por el de cancelación (`src/app.js:125-126`), y el test añadido no lo detecta.
+
+--- [55]
+Re-revisión: los dos hallazgos quedan ADDRESSED, pero trae una rotura Important del propio fix: «las 20 últimas» se cortan por el orden de creación de la reserva, no por el de cancelación. Una Important que trae la pasada de fix no se adjudica: la arreglo yo, con el test en RED primero. No hay segunda re-revisión. De paso fijo el Minor 2: el test dependía del estado de los anteriores.
+
+--- [58]
+El shell se comió las interpolaciones. Reescribo ese test con Edit.
+
+--- [61]
+Me equivoqué en la ruta (había duplicado un tramo). La repito bien.
+
+--- [65]
+RED por la razón buena: el orden sale por la posición en el array. Implemento el orden de cancelación.
+
+--- [72]
+Ya está implementada la 0010: las dos tasks más la pasada de fix de la revisión final. Queda pendiente `sdd-archive`, que valida y cierra. La suite da 7/7 (`node --test`, ejecutada tras el último fix) y la rama está limpia.
+
+## Revisión final
+
+- **Código, Important:** `reasonOf` no recortaba los espacios del motivo. Arreglado en `d3d2bc3`.
+- **Spec, Minor subido a Important:** `canceladas` no tenía tope. La decisión 4 de la spec fija las 20 últimas más la línea «… y N más», así que apliqué eso y no los 10 que sugería el informe. Arreglado en `d3d2bc3`.
+- **Re-revisión (opus+high):** confirmó los dos arreglos, pero encontró un fallo nuevo. El corte de las 20 últimas iba por el orden de creación de la reserva y no por el de cancelación. Lo arreglé en `63ad25f` con el test en RED primero, que falló por esa razón. El mismo commit corrige que el test del tope dependiera del estado de los anteriores.
+
+## Para ti
+
+- **Sin revisar:** `63ad25f` (corte por orden de cancelación) no tiene revisión independiente. La re-revisión es única y no se abre otra. Entra en el ✋ de la validación como `sin revisar`.
+- **Minors aplazados** (ya en el ledger):
+  - `bookings` se exporta solo para los tests.
+  - `src/app.js` y `test/cancel.test.js` pasaron de CRLF a LF y el diff los reescribe enteros.
+  - Falta un test para «sin `--motivo`».
+  - `tasks.md` apunta la Task 1 a `11b3de9` y no a `f6171eb`.
+- **Registro y limpieza:** `tasks.md`, el ledger y los commits están al día. Quité el worktree de la re-revisión.
+
+Siguiente paso: `sdd-archive`.
+

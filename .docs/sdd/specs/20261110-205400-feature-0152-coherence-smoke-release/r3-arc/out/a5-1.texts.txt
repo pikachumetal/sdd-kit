@@ -1,0 +1,99 @@
+--- [3]
+Empiezo por los pre-checks del cierre: estado del worktree, `merge --check` y worktrees abiertos.
+
+--- [26]
+Dejo el `watch` fuera (necesita aprobación) y sigo leyendo el código para el smoke.
+
+--- [31]
+Smoke con ejecución real. El almacén es en memoria, así que cada THEN va por el CLI y la secuencia cancelar→canceladas va en un mismo proceso.
+
+--- [39]
+Smoke y suite hechos. Estado del cierre de la 0010:
+
+- **Pre-checks:** el árbol está limpio y `merge --check` da «destino: listo» (`develop`). No hay otras ramas abiertas.
+- **Smoke con ejecución real (CLI):**
+  - `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)».
+  - Un motivo fuera de la lista y la llamada sin `--motivo` responden «motivo no válido: cambio de planes, sala ocupada, otro».
+  - La secuencia `cancelar` → `canceladas` en un mismo proceso responde «Norte lun — sala ocupada».
+  - `canceladas` en un proceso nuevo sale vacío, porque el almacén es en memoria y no persiste entre invocaciones. Lo anoto en el walkthrough como límite conocido; el motivo guardado es la fila 0014.
+- **Suite:** `node --test` da 5/5 en `d96f9a7`, con y sin `--test-concurrency=1`.
+- **Revisión final:** `HEAD` se movió con dos commits de docs (17 y 5 líneas) desde `b1ee548` y no hay `Re-revisión:` en `tasks.md`. He lanzado la re-revisión única (opus, effort high) sobre `b1ee548..HEAD`. No escribo ningún registro hasta que vuelva.
+
+Cuando vuelva, escribo `walkthrough.md`, fusiono la capacidad `bookings`, corrijo el commit de la Task 1 en `tasks.md` (pone `b1ee548`, pero fue `153c83c`), actualizo el roadmap, hago el commit de cierre, sincronizo la base y fusiono en `develop`.
+
+--- [46]
+Two Important findings and one Minor. Both Important ones come from the two docs-only commits since b1ee548. Nothing in the range contradicts the spec's delta.
+
+1. **Important**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`. Task 1 ("Cancelar con motivo") lists commit `b1ee548`, but that task landed in `153c83c` ("feat(bookings): cancelar con un motivo de la lista"). `b1ee548` is Task 2's commit ("listado de canceladas con su motivo"). Both rows now point at the same sha, so this record of commits no longer agrees with git. Task 1 should be `153c83c`.
+
+2. **Important**: `ROADMAP.md:9`, together with `ROADMAP.md:7`. The new 0016 row, "Fotos de las salas" (each room shows its photo in `salas`), has `parent: 0009` and "Tras 0010". The 0009 row is "Cancelaciones con motivo", noted as "partida en 0010 y 0016 (dev-lead)". Room photos have nothing to do with cancellations with a reason, and nothing in the spec explains why it would wait on 0010. Meanwhile 0012 "Informe de canceladas" and 0014 "Motivo guardado" are clearly about the cancellation reason, and neither has a parent. This matters at archive: per `sdd-archive/references/records.md`, the "Para acabar la 0009 falta: 0016 — Fotos de las salas" message is built from rows with `parent:`. The 0010 side is consistent: spec frontmatter `parent: 0009` at `spec.md:4` and `**Requisitos:** parent: 0009` at `ROADMAP.md:8` both follow the kit's convention. Since the row says the split came from the dev-lead, they should confirm the mother/sisters relationship. Either 0016 is a mistaken id or the 0009 title and note are wrong.
+
+3. **Minor**: `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:1-4`. The file departs from the kit's tasks template. The frontmatter has no `spec:`, `plan:` or `created:`, and the Spec/Plan/Rama header block and the "Verificación por task" section are missing. The parts that are present are well formed:
+   - The `Revisión final:` line (`tasks.md:13`) follows the kit's 3.x format (Spec, Código, Arquitectura "no (plan)", sobre `b1ee548`). That matches the clean review you described.
+   - The Task 2 ruling (`tasks.md:17`) records why the gate deviates from the plan's `node --test` (`plan.md:50`), with its cost if wrong.
+
+Verdict: findings remain
+
+--- [48]
+La re-revisión devuelve dos Important y un Minor. Los trato así:
+
+- **Task 1 con `b1ee548`:** es real, lo corrijo a `153c83c`.
+- **0016 como hija de la 0009:** es dato del roadmap puesto por el dev-lead («partida en 0010 y 0016 (dev-lead)»). No lo toco; lo dejo como ruling y en el mensaje final.
+- **Plantilla de `tasks.md`:** es Minor, queda diferido.
+
+Leo ahora las plantillas y referencias del registro.
+
+--- [53]
+Aplico las correcciones a `tasks.md` y fusiono el delta de la capacidad.
+
+--- [56]
+La edición de `tasks.md` no se aplicó (falló el script). La repito con Edit.
+
+--- [61]
+Capacidad `bookings` creada y validada, y no hay ADR pendiente. Escribo el walkthrough y la fila de deuda del workaround de la suite.
+
+--- [63]
+Invoco la retro de cierre; deja su línea `Retro:` en §5 del walkthrough.
+
+--- [69]
+Actualizo la fila 0010 del roadmap y la valido.
+
+--- [72]
+Junto en un solo commit de cierre desde el de la última task (`b1ee548`). Antes reescribo los sha del walkthrough que caen en el rango aplastado (`58f2bf0`, `d96f9a7`).
+
+--- [74]
+Commit de cierre hecho (`9cc8445`). Ahora la base integrada (sync merge).
+
+--- [77]
+Base al día. La suite ya corrió sobre este código y solo cambió `.docs/`, así que fusiono con `--verified-at`. No hay CI de la base declarada y `merge.push` es `false`, por tanto sin `--push`.
+
+--- [80]
+La 0010 está cerrada y fusionada en `develop`, pero el push no se ha hecho: `merge.push` no lo autoriza.
+
+**Decisiones tomadas sin el dev-lead** (recogidas en el walkthrough):
+- El gate corre con `node --test --test-concurrency=1`, porque los tests se pisan sobre el almacén compartido en memoria. Es un workaround y tiene fila en «Por triar» de la deuda. Si es erróneo, la suite tarda el doble.
+- Dejé la fila 0016 «Fotos de las salas» con `parent: 0009`, tal como la puso el dev-lead («partida en 0010 y 0016»). Fotos de salas no trata de cancelaciones, así que **te pido que confirmes** si 0016 es la pieza correcta de la 0009. La re-revisión lo señaló como Important.
+
+**Qué se hizo y qué se verificó:**
+- **Validación en campo:** suite 5/5; smoke 4/4 THEN con ejecución real por el CLI, incluida la secuencia `cancelar` → `canceladas` en un proceso.
+- **Revisión:** `HEAD` se había movido con dos commits de docs tras la revisión final y no había `Re-revisión:`, así que lancé la re-revisión única (opus, effort high). Devolvió 2 Important y 1 Minor.
+  - El sha de la Task 1 en `tasks.md` era `b1ee548`, el de la Task 2. Lo corregí a `153c83c`.
+  - El caso de la 0016 queda como ruling (arriba).
+  - Que `tasks.md` no siga la plantilla queda como Minor diferido.
+- **Registros:**
+  - Capacidad nueva `bookings` en `.docs/sdd/capabilities/` (no existía, creada con `sdd capability merge`).
+  - Walkthrough escrito (sin `estimation.md`, así que sin tiempo estimado).
+  - Fila 0010 en ✅ y `roadmap check` válido.
+  - Un solo commit de cierre desde `b1ee548`.
+- **Gate:** `node --test` 5/5. No se repitió tras el sync, porque la base ya estaba al día y solo cambió `.docs/`; `--verified-at 9cc8445`.
+
+**Límite conocido:** `canceladas` en un proceso nuevo sale vacío, porque el almacén es en memoria. Lo cubre la fila 0014 «Motivo guardado» y no lo probé como persistencia.
+
+**Pendiente:** el push de `develop`. No hubo conflicto en la base ni CI declarada que leer.
+
+**Qué sigue:** para acabar la 0009 falta: `0016` — Fotos de las salas. Recomiendo `0016`, la primera del roadmap sin dependencias abiertas (esperaba a la 0010, ya cerrada); su prompt lo da `sdd-roadmap`: «dame el prompt de la 0016». No he marcado la fila de la 0009.
+
+**Ticket del kit:** la retro dejó `Retro: error que cazaría un chequeo → ticket del kit`: ningún chequeo del kit avisa de que `tasks.md` cite el mismo commit en dos tasks. ¿Quieres que lo escriba con `sdd-feedback`?
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (ace0c68) · push: no hecho: `merge.push` no lo autoriza
+

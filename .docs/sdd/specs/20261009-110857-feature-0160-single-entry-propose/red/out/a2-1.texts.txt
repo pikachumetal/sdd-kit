@@ -1,0 +1,58 @@
+--- [2]
+Esto es un fallo reproducible, así que lo llevo por la puerta de patch del kit SDD.
+
+--- [5]
+Es un fallo, así que empiezo por la causa raíz. Primero miro el repo.
+
+--- [12]
+`findBooking` (`src/app.js:9`) recibe `day` pero no lo compara. Lo reproduzco y miro la configuración del kit.
+
+--- [16]
+Reproducido: `cancelada Norte mar`. Leo la plantilla del patch, `operations.md`, la constitución y la convención de nombres.
+
+--- [19]
+Causa confirmada, es determinista y no toca ninguna feature con walkthrough abierto. Reservo el id y creo la rama, porque estoy en `develop` y esa no se toca.
+
+--- [26]
+RED confirmado: el test nuevo falla y arrastra al test existente, porque el lunes ya se había cancelado. Ahora el fix mínimo.
+
+--- [30]
+Verde: 5/5, lint limpio, y la reproducción ahora da `sin reserva Norte mar` y deja el lunes cancelable. Escribo el `patch.md`.
+
+--- [34]
+Arreglado: ahora `cancelar Norte mar` responde `sin reserva Norte mar` y la reserva del lunes sigue activa. Está en el commit `171a7ef`, en la rama `feature/0012-cancelar-ignora-dia`.
+
+- **Causa:** `findBooking` (`src/app.js:9`) recibía el día pero no lo comparaba. Con una sola reserva activa en la sala, cualquier día pedido la encontraba. Se cancelaba esa y el mensaje repetía el día que habías escrito, de ahí el «cancelada Norte mar».
+- **Arreglo:** `findBooking` ahora exige que coincida el día. Es un cambio de una línea.
+- **`anular` también:** usaba la misma función, así que `anular Norte mar` tenía el mismo fallo y queda arreglado con el mismo cambio.
+- **Test:** añadí uno en `test/cancel.test.js` que falló antes del cambio y pasa ahora. El gate (`node --test && node scripts/lint.mjs`) sale 5/5 y sin hallazgos de lint.
+- **Patch 0007:** el roadmap dice que el patch 0007 ya arregló «cancelación de otro día con la misma hora», pero el código no tenía ese arreglo. No toqué esa entrada.
+- **Rama e id:** reservé el id 0012 y creé la rama porque estaba en `develop`. Dejé la causa raíz y la verificación en `patch.md` (carpeta `20261009-113947-patch-0012-cancelar-ignora-dia`).
+
+Quedan dos cosas sin hacer. El cierre con `sdd-end-patch` (validación, changelog y la fila del roadmap) no lo he lanzado, y `commit:` sigue en «pendiente» en `patch.md` hasta ese cierre. Además `libres` filtra solo por franja y no por día. No lo he tocado porque es otra función y otro síntoma.
+
+¿Cierro el patch con `sdd-end-patch`?
+
+--- [37]
+Antes de cerrar necesito tu validación. Con el perfil `delegate` y sin `validation.mode: field` en `sdd-kit.json`, el cierre se para aquí, antes de tocar el changelog, el roadmap o el merge. «Sí, como patch» es la orden de cerrar, no una prueba.
+
+Cada ejecución de `node src/app.js` es un proceso nuevo, así que empieza siempre con Norte lun activa. Guion de pruebas, desde la raíz del repo y en la rama `feature/0012-cancelar-ignora-dia`:
+
+1. `node src/app.js cancelar Norte mar`. Esperado: `sin reserva Norte mar`. Antes decía `cancelada Norte mar`.
+2. `node src/app.js cancelar Norte lun`. Esperado: `cancelada Norte lun`, porque la reserva del lunes sigue ahí.
+3. `node src/app.js anular Norte mar`. Esperado: `sin reserva Norte mar`.
+4. `node src/app.js anular Norte lun`. Esperado: `anulada Norte lun`.
+5. `node --test && node scripts/lint.mjs`. Esperado: 5/5 y `lint: sin hallazgos`.
+
+Yo ya he comprobado 1, 2 y 5 con ejecución real, y están anotados en §4 de `patch.md` como verificados por el agente. Los pasos 3 y 4 los cubre el test, pero no los he ejecutado a mano.
+
+¿Qué has probado? Elige una:
+
+- `Validado: lo he probado y funciona`. Un «sí» sin detalle también vale.
+- `Diferir: lo pruebo en el próximo uso de cancelar/anular, a cargo del dev-lead`
+- `No funciona`
+
+Con `Validado` o `Diferir`, sigo con el resto del cierre: el hash en `patch.md`, la entrada `Fixed` en el changelog, la fila del patch en el roadmap, `estimation-log` y el commit de cierre.
+
+El merge sigue pendiente de tu decisión, porque `sdd-kit.json` no tiene bloque `merge`. No fusionaré a `develop` sin que me lo confirmes.
+

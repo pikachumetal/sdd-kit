@@ -1,0 +1,64 @@
+--- [9]
+Reproducido. La causa raíz está en `src/app.js:6`: `toHours` convierte `09:30` en `9.30`, es decir, trata los minutos como decimales. Por eso `09:30-12:00` da 2,7 h en vez de 2,5 h y supera `MAX_HOURS = 2.5`. `precio` usa la misma función, así que también calcula mal con medias horas. Tampoco hay ningún test con minutos distintos de `:00`.
+
+🦆 En llano: la función que pasa «09:30» a horas lo lee como 9,30 y no como 9,5. Es un fallo determinista con una sola causa. Lo arreglaría convirtiendo los minutos a fracción de hora (`h + m/60`). Para que quede cubierto, añadiría un test que falla hoy (`reservar Sur 09:30-12:00` debe devolver `reservada Sur 09:30-12:00`) y se pone verde con el arreglo. El resto del código no se toca y los tests de `node --test` deben seguir en verde.
+
+Lo clasifico como **patch**: es un fallo determinista, la causa raíz fija la solución y la reproduce un solo test. No hay `estimation.md`, así que no hay estimación en horas.
+
+¿Lo abro como patch?
+
+1. **Sí, patch (Recomendada)**: test rojo, arreglo en `toHours`, `node --test` en verde y cierre. Perfil: el del proyecto.
+2. **Patch, y apruebo por delegación**: igual, pero sin paradas intermedias hasta la validación.
+3. **No**: prefieres otro carril.
+
+--- [23]
+Id 0010 confirmado. Ahora escribo `patch.md`, con la causa raíz antes del arreglo.
+
+--- [31]
+Los 6 tests pasan, también el que estaba en rojo. El flujo del patch pide un revisor antes del commit del arreglo, así que lo lanzo.
+
+--- [37]
+El arreglo está aplicado y `patch.md` actualizado. Falta el informe del revisor, y espero a que termine antes de hacer el commit.
+
+--- [40]
+Hallazgos:
+
+1. **Causa raíz correcta.** `toHours` hacía `Number('09:30'.replace(':','.'))`, que da 9.30 en lugar de 9.5, así que `09:30-12:00` daba 2.7. Las horas en punto no se ven afectadas. El diagnóstico de patch.md coincide con el código.
+
+2. **El fix tiene un fallo de coma flotante frente a `MAX_HOURS`.** `h + m/60` con minutos que no son múltiplos de 30 deja errores de redondeo. La comparación `slotHours(slot) > MAX_HOURS` (`src/app.js:book`) rechaza entonces franjas de exactamente 2,5 h. Lo comprobé barriendo franjas de 150 min en pasos de 10 min: 15 casos fallan, por ejemplo `01:40-04:10`, `02:10-04:40`, `05:50-08:20` y `06:50-09:20`. Con `09:30-12:00`, que es el caso del test, funciona porque 9.5 se representa exactamente. Es el mismo síntoma que el patch dice resolver, pero con otros minutos.
+   - Alternativa mínima: devolver minutos enteros (`h*60 + m`) y comparar con `MAX_HOURS*60`. También vale redondear la diferencia.
+   - `precio` sufre lo mismo: `slotHours * rate` puede dar decimales largos.
+
+3. **El test cubre solo un caso.** `reservar justo el máximo de horas se acepta` solo prueba `09:30-12:00`, que es el caso exacto en coma flotante. Pasa 6/6 con `node --test`, pero no detectaría el hallazgo 2. Convendría añadir un caso como `01:40-04:10`.
+
+4. **patch.md afirma sin evidencia.** La fila 2 de verificación marca ✅ para `precio Sur 09:30-12:00 → 37.5 €` y para `09:00-12:30` rechazado. Ningún test cubre `precio` con minutos. `09:00-12:30` sí está en el test de rechazo.
+
+5. **Menor.** `toHours` no valida el formato. Una hora sin `:` daría `NaN`. Ya está recogido en la deuda «Sin validación del formato», así que no es del patch.
+
+--- [42]
+Verifico el hallazgo 2 (coma flotante) antes de tocar nada.
+
+--- [44]
+Confirmado: `01:40-04:10` también son 2,5 h exactas y se rechaza. Es el mismo síntoma con otros minutos. Cambio a minutos enteros y añado un test para ese caso.
+
+--- [52]
+Commit del arreglo hecho. Falta el cierre, que lleva la validación contigo.
+
+--- [57]
+Ya lo tienes arreglado y commiteado (`103793c`, rama `feature/0010-horas-medias`). No lo he fusionado: el cierre necesita tu validación, y la fusión necesita que me digas a qué rama va.
+
+🦆 Antes, `09:30` se leía como 9,30 horas y no como 9,5. Por eso `09:30-12:00` salía como 2,7 h y se rechazaba. Ahora las franjas se calculan en minutos enteros. `09:30-12:00` (2,5 h) se acepta, y `09:00-12:30` (3,5 h) se sigue rechazando. `precio` también dejaba de acertar con medias horas.
+
+**Qué he verificado yo:** `node --test` pasa 8/8. Son los 6 de antes, de los que uno estaba en rojo, más 2 nuevos, uno de `reservar` con `01:40-04:10` y otro de `precio`. Un revisor externo encontró un fallo de coma flotante en mi primer arreglo: `01:40-04:10`, que también son 2,5 h, se rechazaba. Lo reproduje y lo corregí antes de commitear.
+
+**Pruébalo tú** (es lo que ve el cliente):
+
+1. `node src/app.js reservar Sur 09:30-12:00` → debe responder `reservada Sur 09:30-12:00`.
+2. `node src/app.js reservar Sur 09:00-12:30` → debe responder `excede el máximo de horas`.
+3. `node src/app.js precio Sur 09:30-12:00` → debe responder `37.5 €`.
+
+**Para cerrar necesito dos cosas:**
+
+- **Validación:** dime qué has probado y que funciona. Si prefieres diferirla, dime también cuándo y quién la hace.
+- **Fusión:** `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y `sdd merge --check` se queja de eso. Dime si fusiono en `develop` y si con `--no-ff`. Recomiendo `develop`, que es tu rama de integración según la constitución.
+

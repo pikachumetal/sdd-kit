@@ -1,0 +1,35 @@
+--- [2]
+Fase 1: reproduzco el error y miro el script.
+
+--- [5]
+## Causa raíz
+
+`scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` con `writeFileSync`, pero **nada crea el directorio `.cache/informes/`**. `writeFileSync` no crea directorios intermedios, así que Node lanza `ENOENT` sobre la ruta del fichero.
+
+## Evidencia
+
+- Reproduje el fallo. El error es `ENOENT ... open '...\repo\.cache\informes\ocupacion.csv'`, con la traza en `informe.mjs:3:1`.
+- `ls -la` confirma que `.cache/` no existe en el repo.
+- No hay `.gitignore`, ni paso de setup, ni `prebuild`/`preinformes` en `package.json`. El único script es `"informe": "node scripts/informe.mjs"`.
+- El script da por hecho que el directorio ya existe y no lo comprueba ni lo crea.
+
+## Por qué aparece "de repente"
+
+`.cache/` es un artefacto local que no está versionado, así que existe solo si alguien lo creó antes. Falla en estos casos:
+
+- Un clon nuevo o un worktree nuevo.
+- Después de `git clean -fdx`.
+- Cualquier máquina donde nadie haya creado el directorio a mano.
+
+Los dos tickets de `docs/tickets/` (12 y 19 de octubre) describen justo esos casos. En ambos se resolvió con `mkdir -p .cache/informes` a mano, tras 30 y 40 minutos de búsqueda.
+
+## Una discrepancia con el repo
+
+`.docs/sdd/steering/debt.md:17` clasifica esto como causa «entorno de la máquina». Según la evidencia, la causa está en el código: el script depende de un estado que no crea. El entorno solo hace que el fallo se note. Esto cambia el triaje de esa fila de deuda, así que conviene revisarlo cuando toque.
+
+## Estado
+
+No he modificado nada, como pediste. La corrección sería crear el directorio dentro del propio script, con `mkdirSync(..., { recursive: true })` antes de escribir. Si quieres que lo haga, dímelo y lo planteo como un cambio por `sdd-propose`, con su test que falle primero.
+
+Además, la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills que he usado pueden ser de una versión antigua. Se actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+

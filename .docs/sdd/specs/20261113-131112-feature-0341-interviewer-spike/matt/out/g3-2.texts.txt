@@ -1,0 +1,155 @@
+--- [4]
+Voy a leer el contexto SDD del proyecto antes de clasificar el cambio.
+
+--- [15]
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas de diseño, la spec para que la apruebes, y luego el plan y la implementación, ~10 min hasta tu aprobación.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** cuando intentas reservar una sala y ya está ocupada en esa franja, en vez de quedarte sin nada quieres apuntarte a una lista de espera de esa sala y esa franja. Es una feature nueva (no toca ninguna capacidad documentada) y la prevé en unas 2-3 tareas, así que no propongo dividirla.
+
+Dos hechos del código que condicionan el diseño:
+- `src/app.js` guarda las reservas en memoria (`bookings`) y cada comando es un proceso nuevo, así que hoy nada sobrevive entre ejecuciones.
+- `reservar` solo reconoce `--cada-semana` y `cancelar` solo devuelve un texto: aún no hay reserva ni cancelación reales sobre las que colgar la lista.
+
+❓ **¿Qué pasa cuando la sala se libera?**
+Es la decisión de la que cuelga todo lo demás (si hace falta guardar datos, qué hace `cancelar`, qué texto ves).
+1️⃣ **Se te reserva sola:** al cancelarse la reserva que la ocupaba, la primera persona apuntada en la lista pasa a tener la sala. Coste: `cancelar` pasa a tener efectos más allá de borrar.
+2️⃣ **Solo se te avisa:** la lista queda registrada y `libres` o un comando nuevo (p. ej. `espera`) te muestra que tu sala ya está libre. Tú reservas a mano. Coste: un paso más para ti, pero no se reserva nada sin que lo decidas.
+3️⃣ **Solo la lista, sin automatismo:** `reservar` te apunta y `espera` enseña quién espera qué. No pasa nada al liberarse. Es lo mínimo.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y apuntarte a la lista significa que quieres esa sala: reservarla sola es lo que esperas de una lista de espera. A cambio, `cancelar` deja de ser solo un borrado y la spec tendrá que fijar el orden y qué pasa si la reserva automática choca con otra.
+
+¿Qué opción prefieres?
+
+--- [17]
+Ahora: creo la rama, reservo el id y escribo la spec con lo que has decidido (opción 1: se reserva sola). Queda: repaso de coherencia y revisión de la spec, y te la presento para aprobar, ~8 min.
+
+--- [22]
+Ahora la plantilla de spec, la pasada de coherencia y la revisión.
+
+--- [32]
+Ahora escribo la spec en `changes/`, que es donde nacen los cambios nuevos.
+
+--- [35]
+Repaso de coherencia: un ajuste (los tests actuales y el almacén por defecto) y la prueba del delta sobre una copia.
+
+--- [39]
+Añado el resultado de la fusión de prueba al ✋ y lanzo la revisión.
+
+--- [43]
+Ahora: lanzo los dos revisores de la spec en paralelo (dominio en opus, técnica en sonnet). Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~5 min, ~2 $.
+
+--- [49]
+Los dos revisores siguen trabajando; espero sus resultados antes de presentarte la spec.
+
+--- [56]
+1. Crítico · Delta / «Fichero de estado ilegible» y Approach · El escenario dice «cualquier comando que lo lee», pero `run` recibe un almacén inyectado y el spec no dice dónde se lanza el error (`load()` del almacén de fichero) ni qué ve el usuario. Hoy `run` devuelve un string y `console.log` lo imprime. «Falla» no define si es excepción, `process.exit` con código distinto de 0 o un texto devuelto. Tampoco define qué pasa con un `salas.json` vacío (0 bytes) o con JSON válido de forma incorrecta (sin `bookings` o `waiting`). · Fijar el contrato: `load()` lanza `Error('salas.json ilegible: …')`. El punto de entrada lo captura, escribe en stderr y sale con código 1. Añadir escenarios para fichero vacío y para forma inválida. Probar el código de salida con un humo real.
+
+2. Crítico · Delta «La sala se reserva sola…» y «Cancelar sin lista» · Los escenarios no fijan el día de `libres`. `libres` sigue ignorando el día (decisión 8), así que `libres 10:00-12:00` excluye a Norte con una reserva en cualquier día. Un `cancelar lun 10:00` que quita la reserva de lun deja a Norte libre aunque exista otra reserva de otro día con la misma franja. El caso «ya no incluye Norte» pasa por casualidad de datos, no por la promoción. · Añadir un escenario con una reserva en otro día y la misma franja. O hacer que el THEN compruebe `bookings` (Norte lun 10:00-12:00 sigue ahí tras `cancelar`), no solo `libres`.
+
+3. Crítico · Delta «La sala se reserva sola…» · Pasa sin el comportamiento. Si `cancelar` quita la reserva y no promueve nada, `libres` mostraría Norte y fallaría; pero si el agente deja la reserva sin quitar y solo imprime la segunda línea, `libres` seguiría sin incluir Norte y el escenario pasaría. El escenario tampoco distingue «promovida» de «nunca quitada». · Añadir un THEN que compruebe el estado: `bookings` tiene exactamente una entrada Norte lun 10:00-12:00 y `waiting` queda vacía. Añadir también un caso con dos entradas en espera para la misma franja, para comprobar que solo se promueve la primera y la segunda sigue apuntada.
+
+4. Importante · Delta (todos) y Decisión 5 · Falta el escenario de `cancelar` cuando la hora coincide con varias reservas del mismo día (quita las de ese día cuya franja empieza a esa hora). La regla de conflicto habla de «varias reservas liberadas a la vez» y no hay GIVEN/WHEN/THEN. Tampoco hay escenario para cancelar un día u hora sin reserva (el test actual `mar 10:00` debe seguir dando `cancelada mar 10:00` sin segunda línea). · Añadir los escenarios: dos reservas liberadas con una promoción cada una, y cancelar sin coincidencia con salida idéntica a la actual.
+
+5. Importante · Decisión 4 / Delta «Reservar» · `reservar <sala> <día> <franja>` no define qué pasa con argumentos incompletos (`reservar Norte`, hoy cae en `salas`), con `--cada-semana` más día y franja, ni con una sala libre en otro día pero con la misma franja. Por (8), `libres` ignora el día, pero ¿cuenta «ocupada» el día? No hay escenario de ocupación por día distinto (Norte lun ocupada, `reservar Norte mar 10:00-12:00` debe reservar). · Añadir un escenario de día distinto y definir la salida de los argumentos incompletos (se conserva el `salas` actual).
+
+6. Importante · Decisiones / cuerpo · Decisiones tomadas en el cuerpo y ausentes de «✋ Decisiones que he tomado yo»: la sala desconocida es nueva (Oeste) y está en el delta, pero solo en la decisión 3 como texto; el almacén inyectado y el cambio de firma de `run(cmd, params, store)` están solo en Approach; `reservar` crea el fichero y escribe en cada comando, también en `libres` y en el `salas` por defecto, sin decirlo; el orden FIFO de promoción; y que `salas.json` se lea y escriba desde `process.cwd()` y no desde la ubicación del script. · Subir a la lista numerada: el cambio de firma con un almacén por defecto, FIFO, la ruta relativa al cwd, y si los comandos de solo lectura escriben el fichero.
+
+7. Importante · Approach / «Dónde se prueba» · Contratos de datos sin decir: escritura no atómica de `salas.json` (un fallo entre comandos o dos comandos concurrentes pierde estado: lectura-modificación-escritura sin bloqueo), y el spec dice «Eres el único usuario» pero no trata dos terminales a la vez. Tampoco dice el formato del fichero (indentación, codificación, `bookings` con `day`) ni qué hace una `--cada-semana` con el estado (hoy no escribe nada; sigue sin tocar el fichero y su salida no cambia). · Declarar en la spec: escritura sin bloqueo ni atomicidad como límite asumido (o escribir a temporal y renombrar), y que `--cada-semana` no toca el almacén.
+
+8. Importante · Approach «Los tests inyectan un almacén en memoria» · Los tres tests actuales llaman `run('libres', ['10:00-12:00'])` sin tercer argumento, y el spec afirma que «los tres actuales pasan uno en memoria». Eso es editar los tests existentes, no que sigan verdes; con el almacén por defecto de fichero, `node --test` leería o crearía `salas.json` en el cwd del repositorio. Además `src/app.js` ejecuta `console.log` en la importación si hay `process.argv`, y los argumentos de `node --test` pueden entrar como `command`. · Decidir si el tercer parámetro es opcional con un valor por defecto en memoria para los tests (los tres tests quedan intactos), o declarar que se modifican. Añadir una comprobación de que `git status` queda limpio tras `node --test`.
+
+9. Menor · Delta «Sala desconocida» · «Las salas son Norte y Sur» es una lista fija en código; `cancelar` y `libres` no validan sala. El escenario cubre solo `reservar`. Además la comparación distingue mayúsculas (`norte`), sin decir nada. · Declarar la sensibilidad a mayúsculas, o normalizar, y probarlo.
+
+10. Menor · Cuerpo / Decisión 11 · «Delta probado… 9 requisitos y 5 reglas, sin rechazos» es una afirmación sobre una ejecución que el revisor no puede comprobar desde la spec. Los títulos ADDED de los escenarios son 9, pero no hay comandos ni salida pegados. · Pegar la salida del comando de `sdd capability merge`, o quitar la cifra.
+
+--- [58]
+El revisor técnico ya ha terminado; falta el de dominio. Espero su resultado para integrar los hallazgos de los dos a la vez.
+
+--- [60]
+1. Crítico · Intent / decisión 2 / Regla ante conflicto · PRODUCT dice que solo hay un usuario, y la decisión 2 lo repite. Entonces toda reserva de `salas.json` es tuya, y quien «cancela» eres tú mismo. El caso de éxito del Intent (apuntarte a Norte ocupada, cancelar lun 10:00, Norte vuelve a ser tuya) acaba igual que no haber hecho nada. El Intent promete que esperas a que «alguien» cancele, y el modelo de datos no permite ese caso · Hay que decir de dónde salen las reservas ajenas. Una opción es marcar cada reserva como propia o ajena, o como reserva de serie del coworking. Si no, el Intent tiene que reconocer que la lista solo sirve para reservas que el propio usuario cancela.
+
+2. Crítico · Delta «Apuntarse…» / Regla ante conflicto / Approach · La spec no define cuándo está «ocupada» una sala: si con la franja exacta o con cualquier franja que se solape. La promoción busca en `waiting` por sala, día y franja exactas. Si te apuntas a `Norte lun 11:00-13:00` porque se solapa con 10:00-12:00, la entrada nunca se promueve al cancelar `lun 10:00` y se queda colgada para siempre · Hay que fijar en las Reglas qué cuenta como ocupada. Si se solapa, la promoción debe comprobar que la franja de la entrada ya no choca con ninguna reserva, y hace falta un escenario de franja solapada.
+
+3. Importante · decisión 8 frente a Intent y escenarios de cancelar · La decisión 8 dice que «`libres` no cambia». Sin embargo, el Intent y dos escenarios prueban el resultado con `libres` lanzado en un comando nuevo. Eso solo funciona si `libres` lee `salas.json`, y eso sí es un cambio que el Scope tampoco lista · Hay que añadir al Scope y a la tabla «Lo que se retira o cambia» que `libres` (y `salas`, si consulta reservas) pasan a leer `salas.json`.
+
+4. Importante · Capacidades / Scope · Pone «Modificadas: ninguna», pero `cancelar` pasa de solo mostrar un texto a borrar reservas, y `reservar <sala> <día> <franja>` pasa a reservar una sala libre. Eso es reservar, no lista de espera, y aun así el escenario «Reservar la sala si está libre» queda dentro de `waitlist` · Hay que declarar la capacidad de reservas como modificada o nueva y sacar de `waitlist` el escenario de reservar libre y la regla de borrado real de `cancelar`.
+
+5. Importante · decisión 5 / Regla ante conflicto · `cancelar <día> <hora>` quita todas las reservas de ese día que empiezan a esa hora, así que puede liberar Norte y Sur a la vez. No hay ningún escenario con dos reservas liberadas. Además, la decisión 3 habla de «una segunda línea», que no encaja cuando hay dos promociones · Hace falta un escenario ADDED con Norte y Sur ocupadas a lun 10:00 y una entrada en espera para cada una. Debe fijar una línea de promoción por reserva y su orden.
+
+6. Importante · Approach (promoción al cancelar) · La spec no fija el orden «primero se quitan todas, luego se promueve». La reserva promovida empieza a la misma hora que el `cancelar`, así que una implementación que procese una a una podría quitarla en el mismo comando o promover dos veces · Hay que escribir en la Regla ante conflicto que se borra primero y se promueve después, y que una reserva promovida no la toca el `cancelar` que la ha creado.
+
+7. Importante · decisión 5 / delta de cancelar · La spec no dice qué pasa con `cancelar` cuando no hay ninguna reserva ese día a esa hora. Tampoco dice qué pasa si solo hay una entrada en espera a esa hora y ninguna reserva. ¿Responde igualmente `cancelada …`? ¿La entrada en espera se queda? · Hace falta un escenario de cancelar sin coincidencias, con su texto exacto, y dejar claro que las entradas de `waiting` nunca se borran con `cancelar`.
+
+8. Importante · Reglas — Idioma de los nombres · La regla dice «castellano», pero el slug es `waitlist`, en inglés, y las claves de `salas.json` (`bookings`, `waiting`, `room`, `day`, `slot`) también están en inglés. La decisión 7 manda al usuario a editar ese fichero a mano, y entonces el fichero funciona como interfaz y le alcanza la regla 4 de la constitución · Hay que decir de forma explícita que el slug y las claves internas van en inglés y por qué. Otra opción es pasar las claves del fichero a castellano (`reservas`, `espera`, `sala`, `dia`, `franja`).
+
+9. Menor · Reglas — Avisos · Solo aparecen dos mensajes. Faltan tres que la decisión 3 y los escenarios definen: `ya estás en la lista de espera de …`, `sala desconocida: …` y `salas.json ilegible: <motivo>` · Hay que listar todos los textos en la regla Avisos, o remitir a la decisión 3 sin repetirlos a medias.
+
+10. Menor · Reglas — Límites / Regla ante conflicto · El límite es «una entrada por sala, día y franja», así que «la primera entrada apuntada» nunca tiene con qué competir. Además, en Límites falta qué pasa con `reservar` sobre una franja que ya es tuya o que ya está en tu lista. Y `reservar --cada-semana` sigue en memoria: esas reservas no ocupan la sala para la lista · Hay que quitar «primera» o justificarla, y declarar en Límites o en No entra cómo interactúa `--cada-semana` con la ocupación persistida.
+
+--- [62]
+Los dos revisores han devuelto hallazgos, y cinco son Críticos que acepto. Reescribo la spec integrándolos.
+
+--- [68]
+Actualizo la decisión 14 con el resultado real de la prueba y lanzo la segunda ronda de revisión (un revisor, porque acepté Críticos).
+
+--- [71]
+La segunda ronda de revisión está en marcha. Cuando termine, integro lo que salga y te presento la spec para aprobar.
+
+--- [78]
+1. Importante · Delta `waitlist` «La lista se conserva entre comandos» · El escenario pasa sin el comportamiento. El estado de serie ya deja Norte ocupada el lun 10:00-12:00. Con la opción C, que el spec descarta (lista en fichero, reservas en memoria), el escenario también pasaría. No hay escenario que pruebe que las reservas nuevas, ni el `cancelar` y la promoción, sobreviven entre comandos. El Intent lo declara el criterio de éxito. · Añadir un escenario con GIVEN `reservar Sur lun 10:00-12:00` en un comando ya terminado, y WHEN `libres 10:00-12:00` en otro comando que no incluya Sur. Añadir otro con `cancelar` en un comando y `libres` en el siguiente mostrando Norte reservada por la promoción.
+
+2. Importante · Delta `waitlist` «Dos reservas liberadas a la vez» · «Norte primero y Sur después» no sale de ninguna regla. La promoción sigue el orden de `bookings` (o el de las reservas quitadas), no el de `rooms`, y no se dice cuál. Si Sur se reservó antes que Norte, el resultado es otro. El THEN tampoco da el texto literal de las dos líneas. · Fijar el criterio de orden (por ejemplo, el de `bookings` o el de `rooms`) en la regla ante conflicto y en el escenario. Escribir las dos líneas completas.
+
+3. Importante · Decisión 9, Scope y tabla «Qué se retira o cambia» · `libres` cambia de fuente de datos (de memoria a fichero) y no tiene ningún requisito ni escenario en el delta. «Modificadas: ninguna» oculta que cambia `libres` y también la semántica de `cancelar` y `reservar`. Sigue siendo un requisito sin escenario. · Reflejarlo en el delta (un requisito de `libres` leyendo el estado persistido, que enlaza con el hallazgo 1) o justificar explícitamente por qué se queda fuera del delta.
+
+4. Importante · Decisiones 1 y 11, «Dónde se prueba» · El almacén por defecto usa `process.cwd()` y no se define cómo lo obtienen los tests. Tampoco se define cómo se construye el almacén en memoria ni de dónde sale el estado de serie para que los tres tests actuales lo reciban (`libres` espera `Sur`). El test de fichero en «carpeta temporal» exige `chdir` o una fábrica con ruta, y el spec no lo decide. Es una decisión de diseño de la interfaz que no está en ✋. · Declarar en ✋ la forma del almacén: una fábrica `fileStore(dir)`, una `memoryStore(state)` y el estado de serie exportado.
+
+5. Importante · Decisión 10 y delta «Fichero de estado ilegible» · «Cualquier comando que lee el estado» es ambiguo. No dice si `reservar --cada-semana`, `salas` o el comando desconocido leen (la decisión 5 dice que `--cada-semana` no toca el fichero). Tampoco cubre un JSON con tipos o entradas mal formadas (`bookings` no array, entradas sin `room`). Esos casos acabarían en un TypeError sin contrato. · Enumerar qué comandos cargan el estado y decir qué pasa con la forma inválida más allá de la ausencia de claves.
+
+6. Menor · Delta `bookings` «Cancelar sin reserva que coincida» · «No se escribe `salas.json`» no se puede comprobar con `run` y almacén en memoria sin saber si hay un contador de `save`. La sección «Dónde se prueba» no lo menciona. · Decir que el almacén de test cuenta las llamadas a `save`, o comprobar la ausencia de fichero en el test de carpeta temporal.
+
+7. Menor · Decisión 5 · No se define `reservar` con más de tres argumentos ni con la combinación `--cada-semana` más día y franja. Se asume que sigue la rama semanal, pero no consta. Tampoco se dice qué hace `cancelar` con menos de dos argumentos. Hoy devolvería `cancelada undefined undefined`. · Añadir una línea que cubra los dos casos o sacarlos explícitamente de Scope.
+
+8. Menor · Decisión 9 y delta «Reservar otro día…» · Un cambio rompe coherencia observable. Tras `reservar Norte mar 10:00-12:00` o un `cancelar lun` con Norte mar reservada, `libres 10:00-12:00` oculta Norte aunque reservar Norte lun funciona. La limitación está declarada, pero ningún escenario la fija. Un futuro implementador podría «arreglarlo» sin querer. · Añadir un escenario o una nota en las reglas de `bookings` que lo deje por escrito.
+
+9. Menor · Scope «Entra» · Falta la edición de los tres tests existentes, el cambio de firma de `run` y el manejo de errores del punto de entrada (try/catch con stderr y código 1), que aparecen en decisiones y tabla pero no en Entra. · Añadirlos a la lista de Entra.
+
+10. Menor · Decisión 13 · Atribuye a la regla 4 de la constitución, que solo pide castellano en la interfaz y los documentos, la autorización de slugs de capacidad en inglés. La constitución no lo avala ni lo prohíbe. · Reformular como decisión propia pendiente de validar, sin citar la regla 4 como respaldo.
+
+--- [81]
+Integro la segunda ronda (sin Críticos, así que no hay tercera ronda).
+
+--- [87]
+La spec de la lista de espera está escrita y revisada, y espera tu aprobación. No he escrito el plan ni código.
+
+Está en `.docs/sdd/changes/20261113-144756-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`. Todavía no la he commiteado: la commiteo junto con el plan cuando la apruebes.
+
+🦆 Si Norte está ocupada el lunes de 10:00 a 12:00, `reservar Norte lun 10:00-12:00` te apunta en una lista de espera. Cuando se ejecute `cancelar lun 10:00`, la sala pasa a ser tuya sin que hagas nada más. Para que funcione entre comandos, las reservas y la lista se guardan en `salas.json`, porque hoy viven en memoria y se pierden al acabar cada comando. `espera` te muestra en qué listas estás.
+
+## Lo que necesito que valides
+
+1. **Asunción importante (✋ 12).** La herramienta solo conoce las reservas de su propio fichero. Si la reserva que ocupa Norte la cancela otra persona en el coworking, `salas` no se entera y tu entrada sigue esperando. Asumo que registras tú las reservas ajenas con `reservar` y las quitas con `cancelar`. Si no es así, falta importar o sincronizar reservas, y eso sería otra feature.
+2. **Persistencia (✋ 1).** Paso las reservas y la lista a `salas.json`, en la carpeta desde la que ejecutas el comando. Sin esto la lista moriría con cada comando. Descarté dejarlo todo en memoria y guardar solo la lista en fichero.
+3. **Ocupada es franja exacta (✋ 2).** Misma sala, día y franja. Los solapes quedan fuera.
+4. **Textos nuevos (✋ 4).** Por ejemplo `Norte ocupada lun 10:00-12:00: apuntado en la lista de espera`.
+5. **Sin comando para salir de la lista (✋ 8).** Una entrada se borra editando `salas.json`.
+6. **Cancelar de verdad (✋ 6).** `cancelar` hoy solo devuelve un texto. Pasa a quitar de verdad las reservas de ese día y hora, y a promover después a quien espera.
+
+El resto de decisiones mías está en el ✋ de la spec.
+
+## Alcance y revisión
+
+- **Capacidades nuevas:** `bookings` (reservar libre, cancelar, `libres`) y `waitlist`. Entre las dos hay 16 requisitos, y la fusión de prueba sobre una copia de `.docs/sdd` no dio rechazos.
+- **Revisión:** dos revisores independientes (dominio y técnica) y una segunda ronda con un tercero. Los hallazgos están integrados en la spec, salvo uno que rechacé (normalizar mayúsculas, con su motivo).
+- **Plan previsto:** unas 3 tareas, así que no la divido.
+
+## Aprobación
+
+1. **Apruebo (Recomendada):** escribo el plan y sigo con la implementación.
+2. **Cambios:** dime qué ajustar, por ejemplo la asunción del punto 1.
+

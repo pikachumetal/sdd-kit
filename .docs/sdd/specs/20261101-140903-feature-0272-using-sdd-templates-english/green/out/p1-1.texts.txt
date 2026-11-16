@@ -1,0 +1,32 @@
+--- [2]
+Esto es un fallo en un proyecto con `.docs/sdd/`, así que entra por `sdd-propose`.
+
+--- [5]
+Hay enunciado, así que leo el contexto SDD (los docs, no el código).
+
+--- [14]
+Sin dependencias externas, no hace falta instalar nada. Ahora leo solo el código de la cancelación para clasificar.
+
+--- [25]
+Ahora: clasificar el cambio y abrir la entrevista de la spec. Queda: una o dos preguntas, la spec para tu aprobación, y luego plan e implementación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Por qué feature y no patch:** el fallo es determinista (`cancelar` imprime «cancelada» sin mirar si la reserva existe, en `src/app.js`). Pero lo que debe decir cuando no existe es texto visible que nadie ha fijado, y eso lo decidirías tú, no la causa raíz. Es una feature pequeña, de una sola task, así que no propongo partirla.
+
+**Lo que he entendido, corrígeme:**
+- Hoy `cancelar <día> <franja>` responde «cancelada …» con cualquier datos. El test «cancelar respeta el día» lo da por bueno: cancela `mar 10:00`, y la única reserva que existe es `lun 10:00`. Ese test fija el fallo y habrá que cambiarlo.
+- Esperado: si no hay reserva en ese día y franja, no se dice «cancelada».
+- No he mirado si `cancelar` borra algo de verdad. En el código solo imprime, y lo tendré en cuenta en la spec.
+
+❓ **¿Qué dice `cancelar` cuando la reserva no existe?**
+1️⃣ **Aviso claro con los datos pedidos.** `cancelar mar 10:00` → `no hay ninguna reserva el mar a las 10:00`. Con una reserva real, `cancelar lun 10:00` → `cancelada lun 10:00`, como ahora.
+2️⃣ **Aviso corto y genérico.** `cancelar mar 10:00` → `reserva no encontrada`. No repite lo que escribió quien cancela.
+3️⃣ **Aviso con ayuda.** `cancelar mar 10:00` → `no hay ninguna reserva el mar a las 10:00; reservas ese día: ninguna`. Es más largo y necesita un listado que hoy no existe.
+
+➡️ **Recomiendo 1️⃣**, porque quien se equiere de día o de hora ve al instante qué escribió mal. A cambio, el mensaje es un poco más largo que el 2️⃣.
+

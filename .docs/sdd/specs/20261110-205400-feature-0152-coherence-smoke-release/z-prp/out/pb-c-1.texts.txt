@@ -1,0 +1,71 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs, no código) para clasificar. Queda: anuncio, spec y la parada de aprobación, ~10 min.
+
+--- [22]
+Estoy escribiendo la spec de la feature 0012. El heredoc del shell falló, así que la escribo con la herramienta de ficheros y compruebo si se llegó a crear algo.
+
+--- [24]
+Nada se creó. Escribo la spec con Write.
+
+--- [26]
+Ahora: pase de coherencia (delta sobre una copia) y revisor de la spec. Queda: integrar hallazgos y presentar la spec en el gate, ~5 min.
+
+--- [32]
+El revisor de la spec está en marcha. Espero su resultado antes de seguir; no puedo presentar el gate sin los hallazgos.
+
+--- [37]
+1. Importante · Delta «Filtro de libres por planta» · El escenario de `--planta 3` y `--planta` sin valor pasa también si el agente devuelve salida vacía siempre. Solo el caso `--planta 1/2` distingue el filtro, y no hay escenario con una planta inexistente no numérica, como `abc` (decisión 5), ni con valor repetido. · Añadir un escenario `--planta abc` → vacía. Añadir otro con la planta y la franja ocupada a la vez, para probar el filtro combinado con las reservas.
+
+2. Importante · Delta «Listado de salas libres de una franja» · El requisito documenta la conducta actual, pero no hay `capabilities/` que lo verifique, y la spec afirma «lo que `libres` ya hace (feature 0006)» sin evidencia. Un escenario escrito «a ojo» puede contradecir lo que hace el código, por ejemplo el estado `active`, la franja exacta o el solapamiento parcial. El propio spec reconoce que el revisor debe comprobarlo. · Añadir escenarios de solapamiento parcial (franja 11:00-13:00 contra 10:00-12:00) y de reserva cancelada o anulada. Si no se pueden afirmar, declarar en la spec que la franja se compara por igualdad exacta.
+
+3. Importante · Delta «Listado de salas libres de una franja» · El escenario menciona «una reserva activa de Norte el lun 10:00-12:00», pero `libres` no recibe día (Scope: «el día en `libres` (hoy solo mira la franja)»). Si solo mira la franja, la reserva del lunes afecta a cualquier día. Eso es un comportamiento observable que el requisito no declara. · Declarar en el requisito que `libres` ignora el día y que una reserva de cualquier día bloquea la franja. Añadir un escenario con reserva de otro día en la misma franja.
+
+4. Importante · Reglas de la capacidad (5 bis) · El delta introduce datos nuevos (planta por sala), un límite (qué es una planta válida: texto literal, sin validar) y un mensaje. No existe la sección «Reglas de la capacidad» con las cinco reglas, ni el «no aplica» de cada una: dónde vive el dato, idioma de los nombres, límites, avisos, regla en conflicto. · Añadir la sección con las cinco reglas. Dónde vive: `rooms` en el código. Idioma: castellano, `planta`. Límites: sin validación, comparación literal. Avisos: solo el mensaje de falta de valor. Conflicto: no aplica.
+
+5. Importante · Decisiones 5 y Approach · El texto dice «comparar como texto literal», pero la planta se guarda como número (`planta: 1`, `plantaPorSala = { Norte: 1 }`). Comparar el texto `'2'` con el número `2` falla con `===`. Es una decisión técnica con un fallo probable, y los tests de `1` y `2` solo pasan si el agente la resuelve bien. · Fijar en la decisión 5 el tipo guardado (texto o número) y cómo se compara. Añadir `--planta 02` o `--planta 2.0` para fijar la regla.
+
+6. Importante · Decisiones vs. cuerpo · Hay decisiones tomadas en el cuerpo que no están en «✋»: `--planta` en cualquier otra posición, o repetida (`--planta 1 --planta 2`), cae en un comportamiento no definido. Tampoco se dice qué pasa con parámetros extra, ni con `--planta` seguido de otra opción, y `params[2]` queda ambiguo. · Añadir una decisión y un escenario sobre argumentos sobrantes, o sobre un valor que empieza por `--`. Si no se admite, decir cómo responde.
+
+7. Menor · Decisión 4 y Delta · El mensaje `falta la planta: usa --planta <n>` aparece en el Intent como «error de uso», pero no hay regla de código de salida ni de si va a stdout o stderr. «Fracaso: planta inexistente confundida con error de uso» no se verifica con un escenario que distinga ambos canales. · Declarar el canal de salida y el código de salida del mensaje. Añadir al escenario esa condición.
+
+8. Menor · Intro 🦆 y Capacidades · «Nuevas: `free-rooms`» con el requisito 1 documentando lo existente es en la práctica un ADDED que describe comportamiento previo. Si más adelante existiera `capabilities/` con ese requisito, sería un conflicto. Ahora no contradice nada. · Dejar explícito en el requisito 1 «documenta conducta existente, sin cambio» y no contarlo como cambio de comportamiento en el Scope.
+
+9. Menor · Scope y «Lo que se retira o cambia de forma» · El Scope no lista el cambio de forma de `rooms` ni de la firma de `freeRooms`, aunque está en la tabla. Tampoco lista el alta de la capacidad `free-rooms` ni los tests. Además, el Scope «Entra» omite que una planta sin salas devuelve vacío (decisión 3). · Añadir a «Entra»: forma de `rooms`, firma de `freeRooms`, capacidad `free-rooms` y el caso de planta sin salas.
+
+10. Menor · Decisiones, delta de la política de modelos · «Review de spec propuesta» menciona «Mínimo razonable: sin revisión» como alternativa, pero el perfil delegate no deja claro quién valida una decisión técnica de bajo riesgo. Además, «dev-lead» valida el filtro «que ella ve en pantalla», mientras PRODUCT.md dice que no hay más usuarios ni desarrolladores: hay una contradicción de roles. · Alinear la validación con PRODUCT.md, donde el único usuario es el propietario, y quitar la referencia a un dev-lead distinto.
+
+--- [39]
+Ahora: integro los hallazgos del revisor en la spec (no hay ninguno Crítico, así que no hay segunda ronda). Queda: presentar la spec en el gate, ~3 min.
+
+--- [49]
+Ahora: gate de aprobación de la spec. Queda: tu respuesta; después el plan y el paso a implementación, ~15 min.
+
+**🦆 Spec 0012 — Filtrar las salas libres por planta**
+
+Hoy `libres 14:00-16:00` lista todas las salas libres: `Norte, Sur`. Con esta feature, `libres 14:00-16:00 --planta 2` lista solo las de la planta 2: `Sur`. Sin `--planta` todo sigue igual. Para poder filtrar, cada sala pasa a tener una planta: Norte la 1 y Sur la 2. Por dentro, `rooms` pasa de nombres sueltos a `{ name, planta }`.
+
+Está en `.docs/sdd/changes/20261112-155723-feature-0012-libres-por-planta/spec.md`, en la rama `feature/0012-libres-por-planta`. El delta se probó en una copia de `.docs/sdd` y se fusiona sin rechazos.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Norte está en la planta 1 y Sur en la 2. La entrevista no fijó los datos.
+2. La sintaxis es `libres <franja> --planta <n>`, con la opción después de la franja.
+3. Una planta sin salas libres (o `--planta 3`) da salida vacía, como hoy cuando no queda ninguna.
+4. `--planta` sin valor responde `falta la planta: usa --planta <n>`.
+5. La planta se guarda como texto y se compara con `===`. `--planta 02` y `--planta abc` dan salida vacía.
+6. Capacidad nueva `free-rooms`, porque el proyecto no tiene `capabilities/`. Documenta lo que `libres` ya hace, sin cambio de conducta.
+7. Enfoque A (objetos `{ name, planta }`), frente a B (mapa aparte) y C (deducir la planta del nombre).
+8. Solo se interpreta `--planta` si es el segundo argumento. Los argumentos sobrantes se ignoran, como hoy.
+9. El mensaje de la decisión 4 sale por la salida normal, con código de salida 0.
+
+**Review:** un revisor en sonnet, con 10 hallazgos y ninguno Crítico. Acepté 9 y rechacé 1. Rechacé el #10: PRODUCT.md dice que el dev-lead y el único usuario son la misma persona, así que «Validación: dev-lead» es coherente. El detalle está en `### Hallazgos de la review`.
+
+**Validación:** dev-lead, porque lo usa una persona desde la terminal.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+3. **Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 2–3 tasks)**. Esta opción te sirve solo si esta sesión corre en el modelo más capaz.
+
+La spec queda en espera hasta tu respuesta. Aunque el perfil sea `delegate`, no la apruebo yo.
+

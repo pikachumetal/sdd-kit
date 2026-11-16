@@ -1,0 +1,198 @@
+--- [2]
+Ahora: invoco `sdd-implement` para ejecutar el plan de la 0010. Queda: implementar las tasks y la revisión final, hasta la validación.
+
+--- [5]
+Ahora: preparo el workspace y leo el plan de la 0010. Queda: implementar las tasks, la revisión final y la validación, ~15-30 min.
+
+--- [9]
+Workspace del plan: `.superpowers/sdd/plan` — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+
+--- [21]
+Estoy en la Task 1 de la 0010: tengo los tests RED escritos (fallan) y la base limpia. Ahora escribo el ledger con el pre-flight y despacho al implementador.
+
+--- [28]
+El implementador de la Task 1 está trabajando en segundo plano (con su vigía de silencio activo); espero su informe antes de revisar.
+
+--- [34]
+That shell hack was messy; only the call line changed. I'll use Edit for the function.
+
+--- [37]
+Green. Write the report and commit.
+
+--- [39]
+Status: DONE
+Commits: 899dcc7 feat(cancelar): motivo de la lista al cancelar
+Tests: `node --test test/cancel.test.js` -> 4 passed, 0 failed (RED before: 2 failed, as expected).
+Concerns: none. `cancelar` without `--motivo` is unchanged; `voidBooking` and `canceladas` untouched. `booking.reason` is stored for Task 2. The report file `.superpowers/sdd/plan/task-1-report.md` was not added to the commit.
+Report: <run>\repo\.superpowers\sdd\plan\task-1-report.md
+
+--- [43]
+Task 1 implementada (commit 899dcc7, 4/4 en verde, tests RED sin cambios). Registro la task y despacho su revisión.
+
+--- [51]
+Revisión de la Task 1 en curso; espero su veredicto antes de empezar la Task 2.
+
+--- [54]
+### Spec Compliance
+- ✅ Spec compliant for the first scenario («Cancelar pide un motivo de la lista»), within the controller rulings.
+  - Valid motivo returns `cancelada Norte lun (sala ocupada)` and stores `booking.reason` (src/app.js:44-48).
+  - Invalid motivo returns the exact text `motivo no válido: cambio de planes, sala ocupada, otro` and does not cancel (src/app.js:44).
+  - Lookup comes before validation (src/app.js:38-39), so an unknown booking returns `sin reserva`.
+  - `cancelar` without `--motivo` keeps the same output (src/app.js:40-43).
+  - `canceladas` is not implemented, which is correct because it belongs to Task 2.
+- ⚠️ Cannot verify from the diff that `booking.reason` is persisted. It only exists in the in-memory array, so it is consistent with the existing design. Task 2 will exercise it.
+
+### Strengths
+- The change is small and focused. The reason list is a single constant that feeds both the validation and the error message, so the two cannot drift apart.
+- `reasonFrom` distinguishes "flag absent" (`undefined`) from "flag without value" (`''`). The valueless `--motivo` case is therefore rejected rather than silently cancelling.
+- The invalid-motivo test checks that nothing was cancelled by cancelling successfully afterwards (test/cancel.test.js:98). The fresh module instance isolates state between tests.
+- All UI text is in Spanish. The existing tests were not modified.
+
+### Issues
+#### Critical (Must Fix)
+- None.
+
+#### Important (Should Fix)
+- None.
+
+#### Minor (Nice to Have)
+- src/app.js:40-48. The `cancelBooking` branches repeat `booking.status = 'cancelled'`. The two paths could be merged by validating first and then writing once, for example `if (reason !== undefined && !CANCEL_REASONS.includes(reason)) return ...;`, then set the status, and set the reason only if defined. The report says the duplication is deliberate, but the merged version is just as clear and has no duplicated mutation.
+- src/app.js:32-34. `--motivo` followed by another flag takes that flag as the value. It is rejected as invalid, so the behavior is safe, and the report already notes it.
+- test/cancel.test.js. The branches "valueless `--motivo`" and "unknown booking with an invalid motivo" (lookup before validation, a controller ruling) have no tests. Both are implemented correctly but unguarded.
+- src/app.js:30. Comments in the file use Spanish, which is consistent. The `'--motivo'` literal is also repeated nowhere else, so no action is needed.
+
+### Assessment
+**Task quality:** Approved
+**Reasoning:** The implementation matches the scenario and the three controller rulings, and the tests check real behavior, including that an invalid motivo does not cancel. The remaining points are small cleanups and coverage gaps.
+
+--- [56]
+Task 1 aprobada, sin Critical ni Important. Apunto los minors y paso a la Task 2 con sus tests RED.
+
+--- [63]
+La Task 2 está en manos del implementador; espero su informe.
+
+--- [73]
+Status: DONE_WITH_CONCERNS
+Commits: dbb5277 feat(canceladas): listado con el motivo
+Tests: `node --test test/cancel.test.js` → 6 pass, 0 fail.
+Concerns:
+- No captured RED run. My first run's output was lost in a grep filter. Before the change, `canceladas` fell through to `'salas'`, so both new tests would fail. That is from reading the code, not from a failure I saw.
+- Decision: a booking cancelled without `--motivo` is listed as `<sala> <día>`, with no dash and no "undefined".
+- Empty list returns `''`. `voided` bookings are not listed.
+- `cancelar` and `anular` are untouched. `test/cancel.test.js` was committed unmodified.
+Report: <run>\repo\.superpowers\sdd\plan\task-2-report.md
+
+--- [80]
+Task 2 implementada (dbb5277, 6/6 en verde, tests RED sin cambios) y su revisión está en curso.
+
+--- [86]
+### Spec Compliance
+
+Compliant with the scenario «El listado de canceladas enseña el motivo» and the three controller rulings. I read the diff and `src/app.js`; I did not run the suite.
+
+- **Scenario:** `canceladas` after `cancelar Norte lun --motivo "sala ocupada"` returns `Norte lun — sala ocupada`, using an em dash exactly as in the spec (`src/app.js:42-49`, `test/cancel.test.js:62-66`).
+- **Empty list returns `''`:** `filter().map().join('\n')` on an empty result gives `''` (`src/app.js:48`). Test at `test/cancel.test.js:68-72`.
+- **`voided` not listed:** the filter is `status === 'cancelled'` (`src/app.js:48`). The test voids a booking and expects `''`.
+- **Cancelled without `--motivo`:** `cancelBooking` leaves `reason` unset (`src/app.js:25-28`), so `cancelledLine` returns `<sala> <día>` (`src/app.js:44`). The behaviour is correct, but no test covers it (see Minor).
+- **Scope:** only `src/app.js` and `test/cancel.test.js` are touched, as the brief lists. The `run` wiring is minimal.
+- **Constraints:**
+  - The `canceladas` output is in Spanish.
+  - No existing RED test was modified: the diff only appends tests, with no changed assertions.
+  - No numeric threshold is at stake.
+
+⚠️ Not verifiable from the diff: the "fails before, passes after" claim. The controller states it observed this.
+
+### Strengths
+- Small, well-separated change: `cancelledLine` formats a line and `listCancelled` selects and joins.
+- `reason === undefined` is checked explicitly instead of a falsy test, consistent with the `reasonFrom` convention.
+- Ordering follows insertion order of `bookings`, which is deterministic.
+- Tests assert exact output strings rather than loose matches.
+- The voided test is non-trivial: `anular` really changes the status, and `''` is not the default of anything else.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+#### Minor (Nice to Have)
+1. `test/cancel.test.js` — the ruling "cancelled without `--motivo` is listed as `<sala> <día>`" has no test. The `undefined` branch at `src/app.js:44` is therefore uncovered. Add `run('cancelar', ['Norte','lun'])` followed by `run('canceladas', [])`, expecting `'Norte lun'`.
+2. `src/app.js:47` — `listCancelled` is exported without need. `run` is the only caller and the tests go through `run`. It matches the file's existing style (`cancelBooking` and `voidBooking` are also exported), so this is polish, not a defect.
+3. Only a single cancelled booking is tested, so the `'\n'` join across several lines is not exercised. This is low risk, since the data only holds one active booking, which makes it hard to test without changing the fixtures.
+
+### Assessment
+**Task quality:** Approved
+
+**Reasoning:** The implementation matches the scenario and all three controller rulings. The code is minimal and clear, and the new tests assert real behaviour and are not trivially passing. The only gaps are one untested ruling branch and an unnecessary export, both Minor.
+
+--- [96]
+Las dos tasks están hechas y aprobadas por su revisión. Queda la revisión final de la rama, que corre en segundo plano en un worktree aparte; en cuanto vuelva, paso a la validación.
+
+--- [109]
+### Strengths
+- Los dos escenarios de la spec se cumplen al pie de la letra. `cancelar Norte lun --motivo "sala ocupada"` devuelve `cancelada Norte lun (sala ocupada)` (src/app.js:32). Un motivo fuera de la lista devuelve `motivo no válido: cambio de planes, sala ocupada, otro` (src/app.js:29). `canceladas` devuelve `Norte lun — sala ocupada` con la raya que pide la spec (src/app.js:44).
+- El motivo no válido no cancela. Lo prueba de verdad test/cancel.test.js:106-113: tras el rechazo, la misma reserva se cancela con `otro`. Si el rechazo hubiera cancelado, la segunda aserción daría `sin reserva`.
+- `--motivo` sin valor devuelve `''` (src/app.js:19), que se rechaza con el mensaje de la lista. Lo he comprobado por la CLI.
+- `canceladas no lista las reservas anuladas` (test/cancel.test.js:121-125) no pasa por casualidad. Antes, `canceladas` caía a `'salas'`, y un filtro que incluyera `voided` devolvería `Norte lun`.
+- Lo que no entra en el scope sigue igual: `voidBooking` (src/app.js:35-40) y la rama `anular` (src/app.js:55) son contexto sin cambios en el diff, y test/app.test.js no se ha tocado.
+- Los tests nuevos cargan el módulo de cero en cada test (`?instancia=N`, test/cancel.test.js:98-99), así que no comparten estado con los dos tests anteriores. Esos dos tests siguen como estaban.
+- Todo el texto de la interfaz está en castellano.
+
+### Issues
+
+#### Critical (Must Fix)
+- Ninguno.
+
+#### Important (Should Fix)
+1. **Ruling (a): `cancelar` sin `--motivo` cancela sin dejar rastro, y eso va contra el objetivo de la spec** (src/app.js:25-28).
+   - La spec dice «cancelar **pide** un motivo» (spec.md:20, título del escenario en spec.md:49). Su objetivo es «Se quiere el motivo de **cada** cancelación», porque «hoy cancelar no deja rastro» (spec.md:29).
+   - Con el ruling, el camino más corto, `cancelar Norte lun`, sigue funcionando como antes: lo he comprobado y devuelve `cancelada Norte lun` sin guardar motivo.
+   - Quien lo usa recibe una feature que se esquiva sin querer, con solo olvidar el flag. El problema que la motiva sigue tal cual en ese camino.
+   - La spec declara la capacidad como *Modificadas*, así que cambiar la salida de `cancelar` sin motivo y el test antiguo test/cancel.test.js:5-7 entra en lo que la spec autoriza. No es un cambio fuera de la spec.
+   - Arreglo: rechazar `cancelar` sin `--motivo` con el mismo mensaje de la lista, o con uno equivalente en castellano, y actualizar ese test. Si se quiere mantener el comportamiento actual, tiene que entrar como enmienda aprobada por la dev-lead (Laura) y no quedarse en un ruling del controlador.
+   - Si se cierra (a), el ruling (c) pasa a ser solo el respaldo para canceladas antiguas sin motivo. Para eso es razonable.
+
+#### Minor (Nice to Have)
+1. **Motivo de varias palabras sin comillas.** `cancelar Norte lun --motivo sala ocupada` toma solo `sala` como motivo (src/app.js:19). El usuario recibe un rechazo que enumera justo el motivo que acaba de escribir (comprobado por la CLI). Falla del lado seguro, pero confunde: dos de los tres motivos tienen dos palabras. Se puede arreglar uniendo los argumentos que siguen a `--motivo`, o diciendo en el mensaje que hacen falta comillas.
+2. **`--motivo` antes de la sala o del día.** `cancelar --motivo "sala ocupada" Norte lun` devuelve `sin reserva --motivo sala ocupada` (comprobado). Se lee como si no existiera la reserva, cuando el problema es el orden de los argumentos. Pasa lo mismo con `cancelar Norte --motivo otro`. La spec fija la sintaxis por posición, así que no incumple nada, pero el mensaje engaña. Arreglo: quitar `--motivo <valor>` de los argumentos antes de leer la sala y el día.
+3. **Ruling (b).** `canceladas` sin canceladas imprime una línea en blanco (src/app.js:48 y `console.log('')` en src/app.js:60). El usuario no sabe si el comando ha funcionado. Un texto como `no hay canceladas` lo aclararía. No incumple la spec.
+4. **Cobertura de tests:**
+   - No hay test para `cambio de planes`, el único motivo de la lista que no se prueba.
+   - No hay test para `--motivo` sin valor.
+   - No hay test para sala sin reserva más motivo no válido, que hoy devuelve `sin reserva` primero. Me parece bien así.
+   - No hay test para una cancelada sin motivo listada como `<sala> <día>` (ruling c).
+   - No hay test del salto de línea `\n` entre varias canceladas.
+   
+   Todos estos estaban ya diferidos en progress.md:15,18,20.
+5. **Asignación repetida.** `booking.status = 'cancelled'` aparece dos veces (src/app.js:26 y :30). Desaparece sola si se arregla el Important 1.
+6. **Proceso.** El informe de la Task 2 no captura la evidencia RED (task-2-report.md:10). Leyendo el código se ve que los dos tests no podían pasar antes (`'salas'`), así que no cambia la conclusión, pero queda sin prueba registrada.
+
+### Declined to judge
+- **Persistencia.** El estado vive en memoria dentro del proceso (src/app.js:3). Por la CLI, cada llamada es un proceso nuevo, así que `node src/app.js canceladas` siempre sale vacío aunque antes se haya cancelado. Comprobado: devuelve `[]`. Viene de la base del proyecto y la spec no habla de persistencia. Lo menciono para que quien lo pruebe a mano no lo tome por un fallo de esta feature.
+- **Suite completa.** No la he ejecutado; me fío de los informes, que dan 6 de 6 en test/cancel.test.js. Recomiendo que el hilo principal pase la suite completa, sobre todo test/app.test.js, para confirmar que la rama `anular` y lo demás no cambian.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** Los THEN/AND de los dos escenarios se cumplen, los tests prueban comportamiento real y `anular` (0011) no se ha tocado. Pero el ruling (a) deja un camino por defecto, `cancelar` sin `--motivo`, que vuelve a cancelar sin rastro. Eso es justo lo que la spec quiere eliminar («pide un motivo», «el motivo de cada cancelación»). Hay que hacer el motivo obligatorio, ajustando el test antiguo como permite la spec, o que Laura lo apruebe expresamente como enmienda. Lo demás son mejoras menores de uso y de cobertura.
+
+--- [112]
+Ahora: la revisión final ha vuelto con una decisión que es tuya. Queda: aplicar tu respuesta en una pasada de fix, la suite completa y presentarte la validación, ~10 min.
+
+La implementación de la 0010 está hecha y revisada (2 tasks, 6/6 en `test/cancel.test.js`), y la revisión final encontró **un único hallazgo Important**, que es una decisión de producto:
+
+**¿`cancelar` sin `--motivo` debe seguir cancelando, o debe rechazarse?**
+
+- **Hoy (mi ruling, la spec no lo dice):** `cancelar Norte lun` sigue respondiendo `cancelada Norte lun` y cancela sin guardar motivo. Es lo que esperan los tests existentes, así que no cambia nada fuera de lo que la spec describe.
+- **Lo que señala el revisor:** la spec habla de que cancelar «pide un motivo» y de «el motivo de cada cancelación»; con mi ruling basta olvidar el flag para que la cancelación vuelva a no dejar rastro.
+- **Si se rechaza:** `cancelar Norte lun` pasaría a responder `motivo no válido: cambio de planes, sala ocupada, otro` sin cancelar, y habría que cambiar el test existente `cancelar una reserva activa` (su aserción actual deja de ser cierta). Cambia salida observable existente, por eso no lo decido yo.
+
+**Mi recomendación: rechazarla** (motivo obligatorio), porque es la lectura que cumple el Intent de la spec. Dime «rechazar» o «mantener»; con «mantener» queda como decisión tuya registrada y no toco el código.
+
+Los otros hallazgos son Minor (motivo de varias palabras sin comillas, orden de `--motivo`, salida en blanco de `canceladas` vacío, cobertura de tests) y quedan anotados en el ledger como diferidos.
+
+--- [113]
+Esa notificación es solo el vigía de silencio de la revisión final, que ya ha terminado; no cambia nada. Sigo esperando tu respuesta sobre `cancelar` sin `--motivo`: **«rechazar»** (mi recomendación) o **«mantener»**.
+

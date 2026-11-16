@@ -1,0 +1,49 @@
+--- [3]
+Ahora: leer el plan y el estado de la rama para decidir el método (Native o SDD). Queda: invocar la skill del método y la Task 1, ~10 min.
+
+--- [11]
+Workspace del plan: `.temp\sdd\plan` — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia.
+
+--- [15]
+RED confirmado por fallo (`Sur` en vez de `Norte, Sur`). Ahora implemento.
+
+--- [19]
+The `app.js` edit didn't apply; I'll make it with Edit.
+
+--- [27]
+Task 1 completa. Ahora: la revisión final de la rama con `sdd-verify`. Queda: su cierre y `sdd-archive`.
+
+--- [30]
+No tengo herramienta de subagentes en este harness, así que hago la revisión final yo mismo, por ejes. Lo registro en el ledger y lo digo en el mensaje final.
+
+--- [33]
+El gate completo tiene 2 fallos. Miro cuáles son.
+
+--- [40]
+El gate pasa 6/6 dos veces seguidas y no deja `data/` en el repo. Lo commiteo, anoto el ledger y cierro la revisión por ejes.
+
+--- [45]
+La Task 1 de la 0036 está implementada y commiteada, y el gate `node --test` pasa 6/6. No he cerrado la feature: falta `sdd-archive` y la revisión final no la hizo un revisor independiente.
+
+**Commits**
+- `20f63e7` es la Task 1. Crea `src/store.js` con `load(fallback)` y `save(bookings)`, que escriben en `data/bookings.json` del directorio actual. En `src/app.js`, `bookings` se carga al arrancar y `cancelBooking` guarda tras cancelar. Incluye tu `test/persist.test.js`.
+- `017381c` aísla `test/cancel.test.js` en un directorio temporal (ver el ruling de abajo).
+
+**Verificación**
+- El RED falló como debía antes de implementar: `Sur` en lugar de `Norte, Sur`. El test commiteado es idéntico a la copia que guardé antes de implementar.
+- `node --test test/persist.test.js` pasa y `sdd task done` registró la Task 1 como completa en el ledger.
+- Tras el aislamiento, `node --test` completo pasó 6/6 dos veces seguidas y no deja `data/` en el repo.
+
+**Revisión final**
+Mi harness no tiene herramienta de subagentes, así que la hice yo mismo como self-review y la dejé registrada en el ledger. Es más débil que revisores con contexto limpio, y tú decides si basta antes del merge. Tampoco lancé la re-revisión del cierre por lo mismo. Dejé sin borrar el workspace `.temp/sdd/plan`, que es git-ignored.
+
+**Rulings I made**
+1. Toqué `test/cancel.test.js`, que no estaba en los «Ficheros» del plan. Con la persistencia, `run('cancelar')` en proceso escribía `data/bookings.json` en el repo. La segunda ejecución del gate fallaba en `app.test.js` y en `cancel.test.js`, mientras que en el baseline pasaban 4/4. Ahora ese test hace `chdir` a un directorio temporal. Si me equivoco, ese test ya no cubre el directorio del repo. El commit `017381c` no lo ha revisado nadie más que yo.
+2. Eje Arquitectura: no sale. El diff trae un módulo nuevo de 15 líneas, sin dependencias nuevas ni contratos más allá de `load` y `save`.
+
+**Deferred minors**
+- `load` lanza si `data/bookings.json` está corrupto (`JSON.parse`).
+- `anular` no guarda. Queda fuera del Scope, que solo habla de `cancelar`.
+
+Si quieres que siga, el paso siguiente es `sdd-archive`.
+

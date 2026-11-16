@@ -1,0 +1,46 @@
+--- [16]
+Sigo: reviso dos cosas que han salido raras, el diff de 96 líneas en `src/app.js` y si la enmienda quedó entera en la spec.
+
+--- [21]
+**Pasada de fix hecha, pero el cierre está parado: el último Minor contradice la spec aprobada y necesito que decidas.** La suite da 6/6 en verde con `node --test`, y no he tocado el separador en el código.
+
+🦆 La revisión pide cambiar `Norte lun — sala ocupada` por `Norte lun - sala ocupada`, porque en una consola `cp850` la raya sale como `ÔÇö`. La spec fija esa raya en su THEN y en la decisión 4, así que `review.minors: fix` no basta para cambiarla: es un desvío y tiene que aprobarse.
+
+## Lo que necesito que decidas
+**¿Apruebas la enmienda que cambia ` — ` por ` - ` en `canceladas`?**
+
+Recomiendo aprobarla si la recepción usa de verdad `cp850`. Es un cambio de un carácter y arregla la línea que esa gente lee. El informe lo afirma, pero en el repo no hay nada que lo confirme; los bytes de la raya sí cuadran con `ÔÇö`.
+
+Ten en cuenta que no arregla del todo esa consola: `motivo no válido` también lleva un carácter no ASCII (`á`) y se verá mal igual. Esto lo deduzco de los bytes, no lo he probado en una consola real.
+
+- **Si apruebas:** commiteo la spec y hago `Task 3 — enmienda 2026-11-02`, con su test primero. La Task 2 queda marcada como afectada, sin reabrirla.
+- **Si no apruebas:** revierto la enmienda, la raya se queda y lo registro como ruling.
+
+La enmienda ya está escrita sin commitear en `spec.md`: decisión 4, THEN y su línea en «Enmiendas».
+
+## Hallazgos de la revisión
+Ambos están en el commit `9e4dab3`:
+
+| Eje | Grado | Hallazgo | Estado |
+| --- | --- | --- | --- |
+| Código | Important | `reasonOf` conservaba los espacios del motivo | Arreglado con `.trim()`, RED→GREEN |
+| Spec | Minor | El test de `canceladas` dependía del orden | Arreglado: cada test carga su propio estado, RED→GREEN |
+| Código | Minor | La raya ` — ` se rompe en `cp850` | **Parado, es el desvío** |
+
+## ✋ Me salí del plan en…
+- **Espacios en el motivo:** lo he tratado como ruling y no como freno de salida observable. `"sala ocupada "` ahora da la respuesta que la spec ya define, sin texto nuevo. Si te parece mal, basta quitar `.trim()` y su test.
+- **Eje Arquitectura:** no sale. La única señal es el campo en memoria `booking.reason`, que la spec ya preveía.
+- **`tasks.md`:** he corregido el commit de la Task 1, que ponía `953149a` y es `f8d58e0`. También he añadido las líneas de revisión final y pasada de fix.
+- **Commit rehecho:** enmendé mi propio commit de fix, sin publicar, porque había convertido los finales de línea de `src/app.js` y `test/cancel.test.js`. Ahora el cambio en `src/app.js` es de una sola línea.
+
+## Pendiente
+- **Re-revisión:** no ha salido, y `9e4dab3` sigue sin revisar. Es única y debe cubrir también la Task 3 si la apruebas, así que sale después de tu respuesta.
+- **Sin commitear:** `spec.md` y la línea con el sha en `tasks.md`.
+- **Validación, cierre y workspace:** siguen pendientes, y el workspace no se ha borrado.
+- **Rulings:** están en el ledger y pasarán a `tasks.md` al terminar la revisión.
+
+## Otros avisos
+- **`canceladas` entre procesos:** las reservas viven en memoria, así que `canceladas` lanzado aparte tras un `cancelar` debería salir vacío; lo deduzco del código, no lo he ejecutado. Los tests pasan porque corren todo en un mismo proceso, y la spec pide guardar el motivo con la reserva, así que conviene mirarlo en la validación.
+- **Test que falta:** el AND de «sin `--motivo`» no tiene test. El código responde bien según lo leído, pero ningún test lo cubre.
+- **Versión del kit:** esta sesión carga la 2.3.4 y el proyecto pide la 3.0.0, así que estas reglas pueden ser de la versión vieja. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+

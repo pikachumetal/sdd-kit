@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -60 && grep -ril "espera\|waitlist\|waiting" . --include=*.md 2>/dev/null | head
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/mission.md .docs/sdd/roadmap.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/specs/*/patch.md; cat .docs/sdd/specs/*0006*/spec.md; find src test -type f | head -30
+<<< # Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat .docs/sdd/specs/*0005*/spec.md .docs/sdd/changelog.md README.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.125781 $)
+Antes de proponer nada, esto es lo que hay en el proyecto y lo que me falta saber.
+
+**Lo que dice la documentación**
+- La lista de espera no aparece en `roadmap.md`, `changelog.md` ni en ninguna spec. Es idea nueva; el backlog solo tiene el exportado a `.ics` y el próximo ítem son los avisos por correo.
+- `mission.md`: la herramienta la usas solo tú, «no hay más usuarios ni más desarrolladores».
+- `tech-stack.md`: Node 22, sin dependencias, un solo fichero `src/app.js`.
+
+**Lo que veo en el código (deducido, no documentado)**
+- Las reservas son un array en memoria (`bookings`) con una sola reserva fija. No hay persistencia entre ejecuciones.
+- `reservar` solo hace algo con `--cada-semana` y devuelve un texto fijo; no inserta nada. `cancelar` también devuelve un texto sin tocar `bookings`.
+- `libres <franja>` calcula salas libres por franja, sin tener en cuenta el día.
+
+**Por qué esto reordena todo lo demás**
+
+Una lista de espera es una cola de personas que compiten por la misma sala. Con un único usuario, esa cola no tiene sentido salvo que haya otra fuente de ocupación o que «espera» signifique otra cosa. Según la respuesta, cambian por completo:
+- quién se pone en la cola,
+- qué dispara el paso de espera a reserva,
+- dónde viven los datos,
+- si la lista de espera es antes o después de los avisos por correo del roadmap.
+
+❓ **¿Qué problema concreto te encuentras hoy que la lista de espera debería resolver?**
+
+Cuéntamelo con tus palabras: qué intentas hacer, qué pasa ahora y qué querrías que pasara. Si tienes un caso real reciente (una sala ocupada que querías, un día concreto), dámelo tal cual.

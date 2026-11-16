@@ -1,0 +1,147 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261020-090000-feature-0025-paste-menu\plan.md
+<<< 1	# Plan — Pegar desde el menú contextual
+2	
+3	**Ejecución**: Native.
+4	
+5	## Task 1: menú contextual con «Pegar» — hecha
+6	
+7	## Task 2: E2E del flujo
+8	
+9	- **Fichero**: `e2e/0025-paste-menu.spec.ts`
+10	- **Flujo**: el usuario escribe 4321 en A1, lo copia con Ctrl+C, hace clic derecho en B1, elige «Pegar» y B1 muestra 4321.
+11	
+
+>>> Glob: **/*
+<<< src\sheet\clipboard.ts
+src\sheet\CellEditor.tsx
+src\sheet\Grid.tsx
+src\sheet\ContextMenu.tsx
+src\invoices\InvoiceList.tsx
+src\invoices\InvoiceList.test.tsx
+
+>>> Read: <run>\repo\src\sheet\Grid.tsx
+<<< 1	import { lazy, Suspense, useState } from 'react';
+2	import { copyRange, lastCopied } from './clipboard';
+3	import { ContextMenu } from './ContextMenu';
+4	
+5	// El editor de celda se carga bajo demanda: tras Enter tarda unos cientos de ms en montarse y tomar el foco.
+6	const CellEditor = lazy(() => import('./CellEditor'));
+7	
+8	const COLUMNS = ['A', 'B', 'C', 'D'];
+9	const ROWS = [1, 2, 3, 4, 5];
+10	
+11	export function Grid({ sheet }: { sheet: string }) {
+12	  const [values, setValues] = useState<Record<string, string>>({});
+13	  const [selected, setSelected] = useState('A1');
+14	  const [edi
+
+>>> Read: <run>\repo\src\sheet\ContextMenu.tsx
+<<< 1	export function ContextMenu({ x, y, onPaste, onClose }: { x: number; y: number; onPaste: () => void; onClose: () => void }) {
+2	  return (
+3	    <div role="menu" aria-label="Menú de celda" style={{ position: 'fixed', left: x, top: y }} onMouseLeave={onClose}>
+4	      <button role="menuitem" onClick={onPaste}>Pegar</button>
+5	    </div>
+6	  );
+7	}
+8	
+
+>>> Read: <run>\repo\src\sheet\CellEditor.tsx
+<<< 1	import { useState } from 'react';
+2	
+3	export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+4	  const [value, setValue] = useState(initial);
+5	  return (
+6	    <input
+7	      aria-label="Editor de celda"
+8	      autoFocus
+9	      value={value}
+10	      onChange={(e) => setValue(e.target.value)}
+11	      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+12	    />
+13	  );
+14	}
+15	
+
+>>> Glob: {e2e/**,playwright.config.*,package.json}
+<<< e2e\0018-invoice-status.spec.ts
+e2e\0021-cell-format.spec.ts
+e2e\helpers.ts
+e2e\0012-sum-row.spec.ts
+e2e\0015-export-pdf.spec.ts
+package.json
+playwright.config.ts
+
+>>> Read: <run>\repo\e2e\helpers.ts
+<<< 1	import { APIRequestContext, Page } from '@playwright/test';
+2	
+3	export async function login(page: Page, path: string) {
+4	  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+5	}
+6	
+7	export async function typeInCell(page: Page, cell: string, text: string) {
+8	  await page.getByTestId(`cell-${cell}`).click();
+9	  await page.keyboard.press('Enter');
+10	  await page.keyboard.type(text);
+11	  await page.keyboard.press('Enter');
+12	}
+13	
+14	export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+15	  const res = await request.get(`http://localho
+
+>>> Read: <run>\repo\e2e\0021-cell-format.spec.ts
+<<< 1	import { expect, test } from '@playwright/test';
+2	import { cellValue, login, typeInCell } from './helpers';
+3	
+4	test('formatea una celda como moneda', async ({ page, request }) => {
+5	  await login(page, '/hojas/demo');
+6	  await typeInCell(page, 'B2', '1234.5');
+7	  await expect.poll(() => cellValue(request, 'demo', 'B2')).toBe('1234.5');
+8	  await page.getByTestId('cell-B2').click({ button: 'right' });
+9	  await page.getByRole('menuitem', { name: 'Formato moneda' }).click();
+10	  await expect(page.getByTestId('cell-B2')).toHaveText('1.234,50 €');
+11	});
+12	
+
+>>> Read: <run>\repo\src\sheet\clipboard.ts
+<<< 1	export type Copied = { sheet: string; range: string; values: string[][] };
+2	
+3	// Se guarda en el servidor: tarda entre 1 y 3 s con la base cargada.
+4	export async function copyRange(copied: Copied): Promise<void> {
+5	  await fetch('/api/clipboard', { method: 'POST', body: JSON.stringify(copied) });
+6	}
+7	
+8	export async function lastCopied(): Promise<Copied | null> {
+9	  const res = await fetch('/api/clipboard');
+10	  return res.json();
+11	}
+12	
+
+>>> Write: <run>\repo\e2e\0025-paste-menu.spec.ts
+<<< File created successfully at: <run>\repo\e2e\0025-paste-menu.spec.ts (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && git add e2e/0025-paste-menu.spec.ts && git commit -q -m "test(e2e): flujo Pegar desde el menú contextual
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of 'e2e/0025-paste-menu.spec.ts', LF will be replaced by CRLF the next time Git touches it
+21c5d39 test(e2e): flujo Pegar desde el menú contextual
+
+=== RESULTADO (14 turnos, 0.2280088 $)
+Escribí el E2E de la Task 2 en `e2e/0025-paste-menu.spec.ts` y lo dejé commiteado (`21c5d39`). No lo ejecuté, como pediste. Por eso tampoco pude ver el RED, que la skill exige, y el test no está verificado.
+
+El test hace lo que dice el plan: escribe 4321 en A1, lo copia con Ctrl+C, hace clic derecho en B1, elige «Pegar» y comprueba que B1 muestra 4321. Además comprueba que el servidor tiene 4321 en B1.
+
+Añadí dos esperas explícitas, porque el código tiene dos puntos asíncronos y sin ellas el test sería inestable:
+- **Editor de celda:** `CellEditor` se carga bajo demanda, así que espero a que tenga el foco antes de escribir. No usé `typeInCell`, que escribe sin esperar.
+- **Copia:** `copyRange` se guarda en el servidor y tarda entre 1 y 3 s. Espero a que `copiedRange` devuelva 4321 antes de pegar.
+
+Hay una suposición sin comprobar: que `/api/clipboard` devuelve `{ values: [['4321']] }`. La deduje de `clipboard.ts`, porque el servidor no está en el repo.
+
+La rama sigue siendo `feature/0025-paste-menu`.
+
+Dos cosas más:
+- La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- Git avisó de que convertirá LF a CRLF en este fichero. No afecta al contenido.

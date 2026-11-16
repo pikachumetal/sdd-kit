@@ -1,0 +1,40 @@
+--- [2]
+Using sdd-explore para responder a esta pregunta de enfoque sin tocar nada.
+
+--- [10]
+Todavía no toco nada. Esto es lo que he encontrado y la única decisión que necesito de ti antes de proponer un enfoque.
+
+## Qué dicen los documentos y qué infiero
+
+**Documentado**
+- La misión es un CLI personal para reservar salas del coworking, con un solo usuario.
+- El stack es Node 22 sin dependencias, con todo en `src/app.js`.
+- En el roadmap hay una deuda técnica: «Sin validación del formato de franja horaria», con impacto bajo y un patch «cuando moleste».
+- El patch 0007 fue un bug de comparar solo por hora.
+
+**Visto en el código** (`src/app.js`)
+- Una franja es un texto libre, como `'10:00-12:00'`.
+- La disponibilidad se decide por **igualdad de texto**: `b.slot === slot`.
+- `reservar` no guarda nada todavía y `cancelar` solo devuelve un mensaje.
+- No hay validación de formato ni de granularidad.
+
+**Inferencia mía** (no está escrita en ningún sitio)
+- Hoy nada impide escribir `10:00-10:30`. Lo que falla es que no se detecta el solapamiento.
+- Con la comparación por igualdad, `10:30-11:00` se vería «libre» aunque esté ocupada por `10:00-12:00`.
+- Por eso, si reservas en medias horas, la comparación tiene que pasar de «mismo texto» a «intervalos que se solapan».
+- La deuda de validación del formato pasaría a ser un requisito, no algo que pueda esperar.
+
+## El enfoque en grueso, sin decidir
+
+1. **Modelo.** Convertir la franja a un intervalo (inicio y fin en minutos) y validar que cae en :00 o :30.
+2. **Disponibilidad.** `libres` y `reservar` usarían solapamiento de intervalos en vez de igualdad de texto.
+3. **Tests primero.** Casos de borde: media hora dentro de una reserva grande, medias horas contiguas, y el caso de 0007 (mismo intervalo, distinto día).
+
+Todo esto es un cambio de comportamiento, así que cuando lo quieras hacer pasaría por `sdd-propose`.
+
+## ❓ La decisión que reordena todo lo demás
+
+Lo que solo sabes tú es **qué quieres poder hacer que hoy no puedes**. Dime en tus palabras qué situación real del coworking te lleva a querer reservar medias horas.
+
+Por ejemplo: ¿reservas reuniones cortas que ahora te obligan a bloquear una hora entera? ¿O es otra cosa?
+

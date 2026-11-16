@@ -1,0 +1,86 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto. Queda: clasificar, escribir la spec y presentártela para aprobar.
+
+--- [20]
+Estoy escribiendo la spec en su carpeta. El heredoc de la shell falló, así que la escribo con Write.
+
+--- [29]
+Ahora: reviso la spec con dos revisores en paralelo (dominio con Opus, técnica con Sonnet). Queda: integrar los hallazgos y presentártela, ~10 min, ~2–3 $.
+
+--- [44]
+Los dos revisores están en marcha, cada uno con su vigilancia de silencio. Espero a que terminen y no avanzo hasta tener sus hallazgos.
+
+--- [46]
+1. Importante · Delta de comportamiento / decisión 2 · El cambio observable (`anular Norte lun` responde `salas` y la reserva sigue activa) no tiene ningún GIVEN/WHEN/THEN. Solo aparece en el `motivo` de un REMOVED, que desaparece al fusionar, y en la prueba. Tras archivar, la capacidad no dice nada de ese comportamiento. · Añadir un escenario verificable, por ejemplo un requisito ADDED «Comandos desconocidos». Si no, justificar en la decisión 2 por qué basta la prueba y reflejarlo en el test con nombre trazable.
+
+2. Importante · Delta, REMOVED «Cancelar una reserva propia» + ADDED · El renombrado funciona solo si el fusionador casa por título exacto. La spec lo comprobó una vez en una copia, pero el orden del delta y la fusión no están fijados en un paso del plan o del gate. Además, el AND del ADDED se queda sin su WHEN propio («sin reserva ese día») y no es verificable de forma independiente. · Convertir el AND en un segundo escenario con GIVEN «sin reserva» y su propio THEN. Añadir `sdd capability merge` al gate de cierre.
+
+3. Importante · Decisión 4 / Scope · El Propósito se edita a mano en `capabilities/bookings.md`, fuera del delta. Nada del gate lo verifica, y el archive puede dejar el Propósito viejo («cancelar y anular») sin que nada falle. · Añadir un chequeo explícito, por ejemplo `git grep -n -i anul .docs/sdd/capabilities`. Decir en qué paso se edita, si en implementación o en archive.
+
+4. Importante · Dónde se prueba / Intent · Hay decisiones tomadas en el cuerpo y no listadas en «✋ Decisiones»: (a) README, `PRODUCT.md` y capacidad se verifican con `git grep` manual y sin test, aunque la constitución pide tests antes que código; (b) el `git grep` excluye a mano `changelog.md`, «Releases cerradas» y la fila 0011; (c) no se dice si la prueba va en `test/cancel.test.js` o en un fichero nuevo, y la frase «como `test/cancel.test.js`» es ambigua con «los dos tests actuales… no se tocan». · Mover (a) y (b) a «✋ Decisiones» y fijar el fichero de la prueba nueva.
+
+5. Importante · Intent / Dónde se prueba · El criterio de éxito exige «el lint en verde», pero la constitución solo fija `node --test` como gate. No se dice si existe un lint ni cómo se ejecuta. · Quitar el lint del criterio, o nombrar el comando y declararlo parte del gate.
+
+6. Importante · Lo que se retira / Dónde se prueba (contrato CLI) · Se retira un comando de la superficie del CLI, un cambio incompatible, y la respuesta por defecto `salas` se da por «actual» sin evidencia en la spec. Tampoco dice si `salas` por defecto depende de `voided`: por ejemplo, si un listado o `cancelar` filtran por ese estado. Los datos son en memoria, así que no hay migración, pero no se dice. · Declarar que los datos están en memoria y no hay datos `voided` persistidos. Añadir un test que fije la respuesta por defecto con un comando desconocido distinto (por ejemplo `foo`), para no depender del comportamiento de `anular`.
+
+7. Menor · Topes de palabras / decisión 6 · El tope de 60 palabras de `docs/guia.md` usa «~29» como estimación. No se ha medido el texto final ni el método de conteo de `test/words.test.js` (si cuenta la línea «lo retira la 0012» o los comentarios). · Medir el texto propuesto y escribir la cifra exacta, con el método de `test/words.test.js`.
+
+8. Menor · Decisión 7 / Scope · Borrar «Anulación» de `PRODUCT.md` toca el vocabulario del proyecto. La spec deja abierta la decisión («si prefieres conservar… dilo») sin resolverla y sin figurar entre las decisiones tomadas con el dev-lead. · Marcarla como pendiente de confirmación explícita, o conservar el término hasta que se resuelva la 0011.
+
+9. Menor · Scope / Términos · No se menciona ni el changelog ni el versionado de esta retirada (cambio incompatible del CLI). `changelog.md` queda como historial intacto, pero no se dice si `sdd-archive` añade una entrada o sube versión por retirar un comando. · Declarar en Scope que la entrada de changelog y la versión se resuelven en archive o release.
+
+10. Menor · Decisión 8 / Scope · La fila 0011 queda en el roadmap como trabajo planificado sobre un comando inexistente, y la spec solo avisa. Se puede aprobar y archivar la 0012 con la 0011 contradictoria, sin ningún gate que lo pare. · Convertir el aviso en un paso concreto del plan, o en una condición de archive: reordenar o descartar la 0011 con `sdd-roadmap` antes de cerrar.
+
+--- [48]
+Falta el revisor de dominio. Espero su resultado antes de integrar nada.
+
+--- [50]
+La vigilancia del revisor técnico ha terminado porque el revisor ya acabó. El de dominio sigue en marcha, así que espero.
+
+--- [51]
+1. Importante · Delta de comportamiento / decisión 3 · El paso de «Cancelar una reserva propia» a «Cancelar una reserva» se declara como `REMOVED` + `ADDED` con el cuerpo copiado y sin cambio de comportamiento. Pero en la verdad viva el título sí acotaba la regla a la reserva propia, y quitar «propia» la amplía a cualquier reserva. En la práctica es un `MODIFIED` de alcance que no se declara, y choca con el criterio de fracaso del Intent («que `cancelar` cambie de comportamiento»). · Declararlo como cambio de alcance en el Intent y en la decisión 3, y decir de forma explícita que la regla pasa de «propia» a «cualquiera».
+2. Importante · Intent / decisión 3 (complemento de rol) · Al quitar «propia» y también el `anular` del responsable, desaparece cualquier límite sobre de quién es la reserva que se cancela. La spec no dice qué queda prohibido: ¿cualquier persona cancela cualquier reserva? ¿Sigue existiendo el concepto de dueño? «Queda como está» deja abierto lo que antes cerraban dos requisitos. · Añadir una línea al requisito o a las Reglas de la capacidad, por ejemplo «no hay dueño ni roles; quien ejecuta `cancelar` cancela cualquier reserva activa (misión: un único usuario)», o mantener la restricción con un THEN que la pruebe.
+3. Importante · Intent («solo para el responsable de sala») / Delta · El rol «responsable» sale por completo de `bookings` y la spec no lo dice. Lo nombra como hecho en el Intent y luego lo deja huérfano: ningún requisito lo usa, y tampoco se decide qué pasa con ese término en `PRODUCT.md` (si existe), aunque sí se retira «Anulación». · Decir de forma explícita que el rol «responsable» desaparece de la capacidad, y retirar o conservar su término con una decisión, igual que con «Anulación».
+4. Importante · Intent (criterio de éxito) frente a Scope «No entra» / decisión 8 · El éxito exige que «ningún documento nombre ya `anular` como comando vigente», pero la fila 0011 del roadmap, que se queda fuera, sigue prometiendo «solo el responsable de cada sala anula…». Ese comando y ese rol ya no existirán. El criterio no se cumple tal como está escrito, y el conflicto se aplaza sin dueño ni momento. · Acotar el criterio de éxito excluyendo de forma explícita el roadmap pendiente, o meter en Scope una marca en la fila 0011 que remita a la 0012 (o bloquear la aprobación hasta que el dev-lead reordene o descarte la 0011).
+5. Importante · Decisión 7 frente a Scope · El Scope da por hecho que se borra «Anulación» de `PRODUCT.md`, pero la decisión 7 la deja abierta («si prefieres conservarla para la 0011, dilo»). Ese término depende de la 0011, que no está resuelta (punto 4). Scope e Intent prometen algo que todavía está pendiente de decidir. · Hacer que la decisión 7 dependa de la decisión 8, o cerrarla antes de aprobar y reflejar en Scope lo que se decida.
+6. Menor · Decisión 4 / Scope (Propósito editado a mano) · El cambio del Propósito de `bookings` toca la verdad viva fuera del delta. Ninguna sección de «Delta de comportamiento» lo recoge, así que el archivo de la capacidad cambia sin quedar trazado en el delta. · Añadir al delta una nota «Propósito: … → …», o una tarea explícita de verificación del Propósito tras el merge.
+7. Menor · Delta / Reglas de la capacidad (cinco reglas) · El delta introduce un nombre nuevo de requisito y retira el estado `voided`, pero no repasa las cinco reglas por nombre. No confirma que «Dónde viven los datos» (en memoria: no hay reservas `voided` persistidas que migrar), «Idioma de los nombres», «Límites», «Avisos» y «Regla ante conflicto» siguen igual. · Añadir una línea que diga que las cinco reglas no cambian, con un motivo de una frase para «Dónde viven los datos» (al estar en memoria, retirar `voided` no exige migración).
+8. Menor · Delta, `REMOVED — Anular una reserva` (motivo) · El motivo afirma un comportamiento: «`anular Norte lun` responde `salas`, como cualquier comando desconocido». La decisión 2 dice que eso no es requisito, y el Intent lo pone como criterio de éxito. Queda una regla de comportamiento metida en un motivo, sin GIVEN/WHEN/THEN, y que tras el merge no vivirá en ninguna capacidad. · Dejar el motivo solo en «se retira el comando `anular` (0012)» y llevar la respuesta `salas` únicamente a «Dónde se prueba», o crear el requisito de comando desconocido si se quiere garantizar.
+
+--- [53]
+Ahora: integro los hallazgos en la spec (ninguno es Crítico, así que no hay segunda ronda). Queda: coherencia final y presentártela.
+
+--- [64]
+Ahora: la spec está escrita y revisada. Queda: tu aprobación. Después escribo el plan y paso a la implementación sin parar.
+
+**Carril:** feature, modo full · **Perfil:** delegate, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`, así que no hay avisos.
+
+Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».
+
+La spec está en `.docs/sdd/specs/20261106-093404-feature-0012-retire-void/spec.md`. Está sin commitear y la rama es `feature/0012-retire-void`. `sdd id claim` confirmó la 0012 (no hay remoto).
+
+## 🦆 Qué cambia
+Hoy `salas anular Norte lun` anula la reserva y responde `anulada Norte lun`. Después, `anular` responde `salas`, como cualquier comando desconocido, y la reserva sigue activa. `cancelar Norte lun` funciona igual. Por dentro se borran `voidBooking`, la rama `anular` de `run` y el estado `voided`. En `bookings`, «Anular una reserva» se retira y «Cancelar una reserva propia» pasa a «Cancelar una reserva», con el cuerpo idéntico. README, guía y `PRODUCT.md` dejan de nombrar `anular`.
+
+## ✋ Decisiones que he tomado yo
+1. **Enfoque:** borrar el comando y su código. Descarté un aviso «anular está retirado» y dejar el código sin cablear.
+2. **Respuesta tras retirarlo:** `salas`, la respuesta por defecto actual. Va a un test y no a un requisito nuevo.
+3. **Renombrado:** el cuerpo no cambia, así que quitar «propia» no amplía nada. `cancelBooking` nunca comprobó de quién era la reserva.
+4. **Propósito de `bookings`:** el merge del delta no lo toca, así que lo edito a mano a «Reservar y cancelar salas…».
+5. **README:** `Comandos: cancelar`.
+6. **Guía:** borro la línea de `anular` y cambio «cancela tu reserva» por «cancela una reserva». Pasa de 42 a 28 palabras, con tope de 60.
+7. **`PRODUCT.md`:** borro la entrada «Anulación». Si quieres conservarla para la 0011, dímelo.
+8. **Conflicto con el roadmap:** la fila 0011 (anular reservas de otros) presupone el comando que esta feature borra. No la toco y no bloquea esta feature, pero tendrás que reordenarla o descartarla con `sdd-roadmap`.
+9. **Sin tocar:** `changelog.md`, «Releases cerradas» y el patch 0007.
+10. **Resto:** las cinco reglas de `bookings` no cambian. El test nuevo va en `test/retired.test.js`.
+
+**Cómo se comprueba cada parte:** el comando retirado, con un test. README, `PRODUCT.md` y la capacidad, con `git grep`.
+
+**Revisión:** dos revisores, dominio con Opus y técnica con Sonnet. Aceptados 10 hallazgos y rechazados 4, con su motivo en la spec. Ninguno fue Crítico, así que no hubo segunda ronda. El delta se fusiona bien sobre una copia.
+
+**Validación:** la haces tú, porque es un comando de terminal que usa una persona.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

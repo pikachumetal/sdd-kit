@@ -1,0 +1,75 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50 && git ls-files | head -50
+<<< .docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/s
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/mission.md .docs/sdd/constitution.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md src/app.js .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/patch.md; do echo "=== $f"; cat "$f"; done
+<<< === .docs/sdd/mission.md
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+=== .docs/sdd/constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integració
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.130522 $)
+Antes de nada, esto es lo que he encontrado (sin tocar nada):
+
+- **Hoy no hay concepto de duración.** En `src/app.js:5` una franja es un texto (`'10:00-12:00'`) y `freeRooms` la compara por igualdad exacta. Por eso `reservar` con `10:00-10:30` ya "funciona" en el sentido literal, pero no detecta solapes: `libres 11:30-12:30` te devolvería `Norte, Sur` aunque Norte esté ocupada de 10:00 a 12:00.
+- **`freeRooms` ignora el día** (`bookings` tiene `day`, pero `libres` solo recibe la franja).
+- El roadmap ya tiene como deuda técnica «Sin validación del formato de franja horaria» (impacto bajo). Con medias horas deja de ser opcional.
+- El patch 0007 fue justo una comparación demasiado laxa en `cancelar`, así que el mismo tipo de error puede aparecer aquí.
+
+La decisión que condiciona todo lo demás es cómo se modela una reserva:
+
+❓ **¿Qué es una reserva: un intervalo o un conjunto de bloques?**
+
+1️⃣ **Intervalo con detección de solape.** La franja sigue siendo `HH:MM-HH:MM`, pero se convierte a minutos y hay conflicto si dos intervalos se pisan. Se exige que empiece y acabe en :00 o :30.
+   - Escena: Norte ocupada lun 10:00-12:00. `libres 11:30-12:30` → `Sur`. `reservar Norte 11:30-12:00` → rechazada por solape.
+   - Coste: hay que escribir el parseo y la validación de formato. Cancelar sigue siendo por intervalo exacto.
+
+2️⃣ **Bloques fijos de 30 min.** Una reserva de 10:00-12:00 se guarda como 4 bloques (`10:00`, `10:30`, `11:00`, `11:30`) y el conflicto es "comparte algún bloque".
+   - Escena: igual de cara al usuario, pero `cancelar Norte lun 10:00-12:00` tiene que borrar 4 entradas.
+   - Coste: cambia la forma de guardar las reservas y la de cancelar (es justo el código que rompió el patch 0007).
+
+➡️ **Recomiendo 1️⃣**, porque `bookings` ya guarda la franja como intervalo y `cancelar` ya la trata como una unidad, así que no cambia la forma de guardar nada. A cambio, el solape y el formato son lógica nueva que hay que cubrir con tests.
+
+Cuando lo decidas iremos con lo siguiente (qué hace `libres` con el día, qué pasa con las reservas semanales y qué hacemos con las reservas de más de 30 min que ya existen). Todo esto queda en la conversación: no he creado ni modificado ningún fichero.

@@ -1,0 +1,167 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; cat test/persist.test.js; ls src lib 2>/dev/null; cat package.json
+<<< feature/0036-saved-cancellations
+./
+../
+.docs/
+.git/
+.gitignore
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/spec.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/changes/*0036*; cat $D/plan.md $D/spec.md; cat src/app.js; cat .docs/sdd/steering/constitution.md; git log --oneline; node --test 2>&1 | tail -30
+<<< ---
+id: 20261016-110000-feature-0036-saved-cancellations
+feature: 0036
+title: Plan de implementación — Las cancelaciones se conservan entre ejecuciones
+spec: ./spec.md
+status: approved
+created: 2026-10-16
+---
+
+# Plan de implementación — Las cancelaciones se conservan entre ejecuciones
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native, que toca las dos capas: el almacén y la CLI.
+
+**Goal**: guardar las reservas al cancelar y recargarlas al arrancar.
+
+**Ejecución**: native, porque es una task corta.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && S='D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md; node "$S" workspace $P; git worktree list; git remote -v; git branch -a; cat .gitignore
+<<< <run>\repo\.temp\sdd\plan
+Workspace del plan: <run>\repo\.temp\sdd\plan — ledger, briefs, informes y paquetes de revisión; no se versiona y se borra cuando la revisión final queda limpia
+<run>/repo f89eb2a [feature/0036-saved-cancellations]
+  develop
+* feature/0036-saved-cancellations
+  main
+.superpowers/
+.temp/
+node_modules/
+data/
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cd "<run>/repo" && S='D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js'; P=.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md; W=.temp/sdd/plan
+cp test/persist.test.js "$W/persist.test.red.js"
+echo "--- base"; git diff $(git merge-base HEAD develop) develop --stat
+node "$S" task start $P 1
+printf '# SDD ledger — plan: %s\n' "$P" > "$W/progress.md" 2>/dev/null; ls $W; cat $W/progress.md
+<<< --- base
+brief: <run>\repo\.temp\sdd\plan\task-1-brief.md
+base: f89eb2ad7740cad01f1708e735f20d6be385ed47
+persist.test.red.js
+plan-path
+progress.md
+task-1-brief.md
+# SDD ledger — plan: .docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/task-1-brief.md | head -60
+<<< ### Task 1 — Almacén y cancelar
+
+**Tras**: —
+**Tests RED**: ya escrito por el dev-lead en el árbol, sin commitear · `test/persist.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/persist.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status }`) y `cancelBooking(room, day)`.
+- Produce: `load(fallback)` y `save(bookings)` en `src/store.js` (`data/bookings.json` del directorio actual; `load` devuelve `fallback` si el fichero no existe), y `cancelar` que llama a `save` tras cancelar.
+**Ficheros**: `src/store.js` (crear), `src/app.j
+
+>>> Bash: cd "<run>/repo" && cat > src/store.js <<'EOF'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+const dir = () => join(process.cwd(), 'data');
+const file = () => join(dir(), 'bookings.json');
+
+export function load(fallback) {
+  if (!existsSync(file())) return fallback;
+  return JSON.parse(readFileSync(file(), 'utf8'));
+}
+
+export function save(bookings) {
+  mkdirSync(dir(), { recursive: true });
+  writeFileSync(file(), JSON.stringify(bookings, null, 2));
+}
+EOF
+node - <<'EOF'
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace("const [command","import { load, save } from './store.js';\n\nconst [command");
+s=s.replace("const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];","const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);");
+s=s.replace("  if (cmd === 'cancelar') return cancelBooking(params[0], params[1]);","  if (cmd === 'cancelar') {\n    const result = cancelBooking(params[0], params[1]);\n    save(bookings);\n    return result;\n  }");
+fs.writeFileSync('src/app.js',s);
+EOF
+git diff; node --test test/persist.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --no-index --stat .temp/sdd/plan/persist.test.red.js test/persist.test.js && echo RED-igual
+<<< diff --git a/src/app.js b/src/app.js
+index fd6d964..03a884d 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,6 +1,8 @@
++import { load, save } from './store.js';
++
+ const [command, ...args] = process.argv.slice(2);
+ const rooms = ['Norte', 'Sur'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
++const bookings = load([{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }]);
+ 
+ function freeRooms(slot) {
+   return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+@@ -27,7 +29,1
+
+>>> Bash: cd "<run>/repo" && git add src/store.js src/app.js test/persist.test.js && git commit -q -m "feat: las cancelaciones se guardan en disco y se recargan al arrancar
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2 && git status --short
+<<< warning: in the working copy of 'src/store.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'test/persist.test.js', LF will be replaced by CRLF the next time Git touches it
+7229cc8 feat: las cancelaciones se guardan en disco y se recargan al arrancar
+f89eb2a docs(sdd): abrir la feature 0036 con su spec y su plan
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-z-0152/cli/bin/sdd.js" task done .docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations/plan.md 1 f89eb2ad7740cad01f1708e735f20d6be385ed47 -- node --test test/persist.test.js 2>&1 | tail -8
+<<< ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 471.6836
+ledger: Task 1: complete (commits f89eb2a..7229cc8, tests: node --test test/persist.test.js → ℹ duration_ms 471.6836)
+
+=== RESULTADO (15 turnos, 0.2443247 $)
+La Task 1 está implementada y commiteada, y su verificación pasa. La revisión final de la rama no la he hecho.
+
+- **RED:** antes de tocar código, `una cancelación sobrevive a la siguiente ejecución` fallaba con `Sur` en lugar de `Norte, Sur`. El otro test ya pasaba, porque describe el comportamiento actual. Guardé una copia del test fuera del repo y, al cerrar, era idéntica al test commiteado.
+- **Código:** `src/store.js` es nuevo y tiene `load(fallback)` y `save(bookings)` sobre `data/bookings.json` en el directorio actual. En `src/app.js`, `bookings` se carga con `load([...])` y `cancelar` llama a `save` después de cancelar.
+- **Commit:** `7229cc8`, con `src/store.js`, `src/app.js` y `test/persist.test.js` añadidos por ruta.
+- **Verificación:** `node --test test/persist.test.js` termina con 2 pass y 0 fail. El ledger registra `Task 1: complete (f89eb2a..7229cc8)`.
+- **Sin tasks.md:** no lo escribí porque el plan tiene una sola task.
+- **Sin rulings ni desvíos:** no hay `Ruling:` en el ledger ni cambios en la spec.
+- **Base:** `develop` no tiene cambios desde la bifurcación, así que no hay freno de alcance.
+- **Gate de cierre sin ejecutar:** `node --test` entero queda para la validación de `sdd-archive`.
+
+**Qué falta:** como era la última task, el siguiente paso es la revisión final de la rama con `sdd-verify`. Me quedé sin ella porque esta sesión no tiene herramienta de subagentes y sus revisores van aparte. Después vendría `sdd-archive`. Dime si la lanzo desde una sesión con subagentes o si quieres que la haga yo mismo en línea.

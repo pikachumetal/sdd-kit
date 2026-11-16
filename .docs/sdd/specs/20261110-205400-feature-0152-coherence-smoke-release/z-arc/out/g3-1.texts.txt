@@ -1,0 +1,90 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [17]
+Estoy en el paso 1 del cierre: la validación es `manual`, así que antes de pedírtela corro la suite en este árbol y ensayo el guion yo mismo.
+
+--- [27]
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o ninguno, responde «motivo no válido…». El comando nuevo `canceladas` lista las canceladas con su motivo: «Norte lun — sala ocupada».
+
+**Estado del cierre:** he pasado los pre-checks y no he escrito ningún registro. La validación de este proyecto es `manual` (`validation.mode` en `sdd-kit.json`) y todavía no la tengo. «Ciérrala» es la orden de cerrar, no la validación, así que me paro aquí.
+
+- **Pre-checks:** el árbol está limpio y `sdd merge --check` dice que `develop` está listo. No hay otras ramas abiertas.
+- **Spec y revisión final:** la spec está `approved` con la aprobación de Laura. La revisión final fue limpia sobre `0e3f051`. `HEAD` solo añade `tasks.md`, así que no hace falta otra revisión.
+- **Falta el walkthrough:** `walkthrough.md` de la 0010 no existe. Lo escribo en el cierre, después de tu validación.
+- **Cosas que anoto en el cierre:**
+  - **Gate de cierre:** el gate declarado (`node --test test/`) es el mismo comando que la suite unitaria, así que no lo repito.
+  - **Presupuesto E2E:** la E2E tardó 48,2 s y el presupuesto es de 0,5 min. Abro una fila de deuda con las dos cifras.
+  - **Ruling de la Task 2:** el test de `canceladas` reutiliza la cancelación del test anterior. Va a «Decisiones tomadas sin el dev-lead» del walkthrough y lo nombraré en el mensaje final.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Si es erróneo, el test falla al correr solo o en otro orden.
+
+**Smoke que he corrido** (sesión `agente-ensayo`, distinta de la tuya)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | la misma respuesta |
+| `canceladas` tras cancelar | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites** (sobre `c9b5ba3`, en este árbol: la base no va por delante)
+
+- `node --test test/`: 5/5, 0,5 s.
+- `node e2e/run.mjs`: 7/7, 48,2 s de 0,5 min de presupuesto. Entorno levantado por mí con `env-up` y comprobado con `/health` antes del pase. Configuración: la del gate.
+
+**Sin probar**
+
+- Nada. Tu sesión está intacta: no he tocado datos con tu cabecera.
+
+Hasta que contestes no lanzo nada contra el entorno.
+
+**Guion**
+
+Panel: plan B en http://127.0.0.1:63461/
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Esa página no ve la app, así que no recoge consola, red ni capturas. Si un paso falla, cuéntame el error en el comentario.
+
+El entorno ya está arrancado en el puerto 49326 (health: `ok`). Cada sesión (`x-session`) guarda su propio estado, y la tuya parte vacía.
+
+Terminal 1:
+
+```
+cd <run>\repo
+curl -G -H "x-session: validador" http://localhost:49326/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+1. Lo de arriba → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -G -H "x-session: validador" http://localhost:49326/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"me aburro\"]"
+```
+
+2. → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G -H "x-session: validador" http://localhost:49326/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+3. → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -G -H "x-session: validador" http://localhost:49326/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+4. → `Norte lun — sala ocupada`
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

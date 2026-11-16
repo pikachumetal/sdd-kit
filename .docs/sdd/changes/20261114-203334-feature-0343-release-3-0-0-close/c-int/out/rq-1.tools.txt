@@ -1,0 +1,123 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Grep: reserva|reservation|booking
+
+>>> Glob: *
+<<< Found 6 files
+test\app.test.js
+src\app.js
+ROADMAP.md
+README.md
+PRODUCT.md
+CHANGELOG.md
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src\app.js
+test\app.test.js
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor
+
+>>> Read: <run>\repo\src\app.js
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\steering\operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+8	## Testing
+9	
+10	- Tests: `node --test` (carpeta `test/`).
+11	
+
+>>> Bash: node -v && node -e "import('node:sqlite').then(m=>console.log('sqlite ok',Object.keys(m))).catch(e=>console.log('sqlite fail',e.message))"
+<<< v26.10.0
+sqlite ok [
+  'DatabaseSync',
+  'Session',
+  'StatementSync',
+  'backup',
+  'constants',
+  'default'
+]
+
+=== RESULTADO (14 turnos, 0.1497446 $)
+Antes de elegir dónde guardarlas, esto es lo que hay:
+
+- **Documentado** (`src/app.js:3`): las reservas son un array en memoria, `const bookings = [...]`. Cada comando de la CLI es un proceso nuevo, así que hoy se pierden en cada ejecución, no solo al reiniciar el servidor.
+- **Documentado** (`PRODUCT.md`): la usas solo tú, en tu propio servidor.
+- **Documentado** (`operations.md`): Node 22, sin dependencias externas, un único fichero de entrada.
+- **Sin verificar**: `node:sqlite` funciona en mi Node local (v26.10.0), pero el proyecto declara Node 22 y no lo he comprobado en esa versión.
+
+❓ **¿Dónde y en qué formato se guardan las reservas?**
+1️⃣ **Un fichero JSON con `node:fs`.** Lees el fichero al arrancar y lo reescribes tras cada `reservar` o `cancelar`. No añade dependencias y puedes abrirlo y editarlo a mano. A cambio, no tiene transacciones: si el proceso muere a media escritura, puedes corromper el fichero. Se mitiga escribiendo a un temporal y renombrando.
+2️⃣ **SQLite con `node:sqlite`.** Es integrado, así que tampoco añade dependencias, y las escrituras son atómicas. A cambio, pasas a un fichero binario y dependes de que esa API exista en Node 22, que no he verificado.
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, hay un puñado de reservas y `operations.md` pide cero dependencias; un JSON legible basta. A cambio, tienes que cuidar la escritura atómica y, si un día hay concurrencia o muchas reservas, habrá que migrar.

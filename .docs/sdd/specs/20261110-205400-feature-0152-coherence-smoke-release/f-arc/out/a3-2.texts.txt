@@ -1,0 +1,112 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [6]
+Abiertas a la vez: `feature/0011-others` (`<run>/0011-others`). La que fusione segunda integra la base y repite sus gates.
+
+**No empiezo el cierre todavía.** Hay un cambio sin commitear que no es ninguno de los borradores que deja `sdd-implement`:
+
+- `notes.md` (sin seguimiento; contiene «apuntes de la 0010»)
+
+Hay cambios sin commitear: `notes.md`. ¿Lo commiteo en la rama, lo descarto o paro?
+
+No descarto nada sin que escribas la palabra `discard`.
+
+Los otros pre-checks están bien. `sdd merge --check` dice `destino: listo`, con `develop` como destino en un worktree temporal, y salió con código 0. Todavía no he escrito ningún registro.
+
+--- [9]
+Descartado `notes.md`. El worktree está limpio. Ahora la revisión final (paso 0.4 y 0.6) y la spec.
+
+--- [18]
+Dispatcho la re-revisión (`sdd-kit:effort-high` + `opus`) con su vigilancia de silencio en el mismo turno.
+
+--- [22]
+La re-revisión de `4d89ada..8be7610` está en marcha, con su vigilancia de silencio. No escribo ningún registro hasta que vuelva y quede cerrada. Cuando termine, sigo con la validación en modo `field`, que hago yo con mi propio smoke y la suite.
+
+--- [28]
+### Finding Verdicts
+(ninguno)
+
+### New Breakage in the Fix Diff
+None.
+
+- **Comprobación 1 (tabla de tareas):** coincide con los commits. `git show --stat 9909810` («feat(bookings): cancelar con un motivo de la lista») y `git show --stat 4d89ada` («feat(bookings): listado de canceladas con su motivo») tocan `src/app.js` y `test/cancel.test.js`. Son los ficheros que el plan asigna a las Tasks 1 y 2, y los nombres encajan con «Cancelar con motivo» y «Listado de canceladas».
+- **Comprobación 2 (`Revisión final:` y `Ruling`):** no contradicen la spec ni el plan.
+  - La revisión final dice «Spec … limpia · Código … limpia» sobre 4d89ada, que es lo que me indicaste.
+  - «Sin review de spec» (`spec.md:25`) habla de la revisión de la spec antes de aprobarla, no del eje Spec de la revisión final. Por eso no choca.
+  - «Arquitectura no (plan)» es coherente con un plan Native de dos tareas cortas cuyo `Review Focus` dice «ninguna».
+  - El Ruling de la Task 2 (`tasks.md:17`) describe bien el test: `test/cancel.test.js:13-15` no prepara su GIVEN y depende de la cancelación de Norte lun del test de la línea 5. No choca con «Dónde se prueba» (`spec.md:43`) ni con la verificación del plan (`node --test test/cancel.test.js`), que corre el fichero entero en orden.
+- **Comprobación 3 (sin código ni tests):** `git diff --stat 4d89ada..8be7610` muestra un único fichero nuevo, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`, con 17 líneas añadidas. El commit no toca código ni tests. El padre de 8be7610 es 4d89ada.
+
+### Out-of-Scope Observations
+- **Escenario de la spec sin test:** `spec.md:54` exige que `cancelar` sin `--motivo` responda «motivo no válido: …», y ningún test de `test/cancel.test.js` lo cubre. El código sí lo hace: `reasonOf` devuelve `undefined`, que no está en `reasons`, y se aplica `src/app.js:20`. Es anterior a este diff y la revisión final de Código salió limpia, así que solo lo dejo anotado.
+- **Ruling sin deuda enlazada:** el Ruling de la Task 2 es un workaround («hasta que cada test prepare sus datos») y no enlaza ninguna entrada de deuda. Habría que comprobar en el cierre (sdd-archive) que queda apuntado como deuda.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [30]
+La re-revisión salió limpia. Paro la vigilancia y leo las referencias de validación y de la suite.
+
+--- [34]
+Modo `field`: la validación la hago yo. Miro el proyecto y ejecuto el smoke y la suite.
+
+--- [40]
+Las cuatro filas del smoke coinciden con la spec. Leo ahora las referencias de registros, aprendizajes y fusión.
+
+--- [45]
+Ahora fusiono el delta de capacidad con la CLI (nunca a mano).
+
+--- [48]
+Delta fusionado (`bookings.md` creado). Ahora la retro, como manda el paso 3.
+
+--- [54]
+Ahora escribo los registros: walkthrough, `tasks.md`, la deuda del workaround y la fila del roadmap.
+
+--- [57]
+El walkthrough cita 8be7610, que el squash va a reescribir. Lo cambio por referencias que sigan vivas.
+
+--- [60]
+Ahora la fila de deuda, el estado del roadmap y las comprobaciones de la CLI.
+
+--- [63]
+Registros listos y los tres chequeos en verde. Paso 5: junto el cierre en un solo commit desde el de la última task (4d89ada).
+
+--- [66]
+Los shas citados siguen alcanzables. Paso 6: el merge de sincronización, en su propia llamada.
+
+--- [69]
+Integración sin conflictos: la base trajo `aff1567` (código, no solo docs). La suite aún no ha corrido, así que corre ahora una vez sobre el merge de sincronización, guardando la salida entera.
+
+--- [72]
+Suite 5/5 en verde sobre 2e20dfd. Paso 7: antes de fusionar, leo en la receta lo del CI de la base y los flags de `sdd merge`.
+
+--- [78]
+🦆 Cancelar una reserva ahora exige un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Y `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y el test falla si corre solo o en otro orden. Lo he dejado en `debt.md` («Por triar»).
+
+**Validación en campo.** La hice yo, con ejecución real y 4 de 4 THEN verificados:
+- Cancelar con un motivo de la lista.
+- Cancelar con un motivo fuera de la lista.
+- Cancelar sin `--motivo`.
+- El listado de canceladas.
+
+El de sin `--motivo` funciona, pero no tiene test propio. Lo he apuntado en la misma fila de deuda.
+
+**Lo que has pedido.** Descarté `notes.md` como dijiste, y el cierre siguió desde ahí.
+
+**Pendiente y evidencia.**
+- La re-revisión era obligatoria y salió limpia: el único commit posterior a la revisión final era el de `tasks.md`, solo documentación.
+- `Gate:` `node --test` → 5/5 corrieron, 1 s, sobre el merge de sincronización 2e20dfd. `--verified-at` lleva ese sha.
+- Sincronización sin conflictos: la base trajo `aff1567`, de la 0015.
+- `sdd roadmap check`, `capability check` y `decision check` salieron con 0. La capacidad `bookings` es nueva y se fusionó con la CLI.
+- No toqué `CHANGELOG.md`: lo hace `sdd-end-release`. Tampoco hay `estimation.md` ni `operations.md`, así que no hubo tiempo real, estimation-log ni CI de la base que leer.
+- Abiertas a la vez: `feature/0011-others`. La que fusione segunda integra la base y repite sus gates.
+
+**Ticket del kit.** La retro salió `Retro: sin señales`, así que no hay nada que ofrecer; `sdd-feedback` queda disponible si quieres uno.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (37b55c8) · push: no hecho: `merge.push` es `false` en `sdd-kit.json`
+

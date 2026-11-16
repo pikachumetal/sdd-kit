@@ -1,0 +1,107 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0272-using-sdd-templates-english/.temp/k/cli/bin/sdd.js" capability index --path .docs/sdd; ls .docs/sdd; git ls-files | head -80
+
+>>> Grep: cancel|anula
+<<< Sin capacidades
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+<<< Found 5 files
+test\app.test.js
+src\app.js
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\roadmap.md
+.docs\sdd\changelog.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Grep: cancel|anula
+<<< 25:| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+31:Cancelar una reserva propia. [changelog](changelog.md)
+
+>>> Grep: cancel|anula
+<<< 13:test('cancelar respeta el día', () => {
+14:  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+
+=== RESULTADO (9 turnos, 0.11423230000000001 $)
+Cancelar es muy poca cosa ahora mismo, y por eso cuesta pillarlo: hay menos de lo que dice la documentación.
+
+**Lo que hay en el código** (`src/app.js:12`)
+
+```js
+if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+```
+
+- `cancelar <día> <hora>` solo devuelve el texto `cancelada mar 10:00`.
+- **No toca `bookings`.** Esa lista tiene una única reserva fija (Norte, lun, 10:00-12:00) y nada la modifica.
+- Tampoco comprueba que la reserva exista, ni que sea tuya, ni a qué sala se refiere.
+- Reservar tampoco guarda nada. `reservar --cada-semana` también devuelve solo un texto.
+- Hay un test (`test/app.test.js:13`, «cancelar respeta el día») que comprueba únicamente ese texto.
+
+**Lo que dice la documentación**
+
+- El roadmap (`roadmap.md:31`) lista «Cancelar una reserva propia».
+- El patch 0007 (`patch.md`) y el changelog (`roadmap.md:25`) dicen: «La cancelación borraba reservas de otro día con la misma hora». La causa raíz fue «comparación solo por hora», y quedó con fix y test de regresión.
+
+**Lo que infiero**
+
+El patch 0007 describe un borrado real por día y hora. En el código actual no hay borrado ni comparación, solo el eco de los parámetros. Hay tres explicaciones posibles:
+
+- Este repo es una versión simplificada o de molde, y la lógica real no está.
+- El fix se perdió o se reescribió.
+- El test pasa porque solo mira el texto devuelto, así que no demuestra que el bug esté arreglado.
+
+No he mirado el historial de git. Solo hay un commit visible, `feat: base del molde salas`, lo que apunta a la primera explicación.
+
+**Qué aclararía lo demás**
+
+- ¿Intentas entender el diseño que se pretendía, o has visto un comportamiento raro al cancelar?
+- Si quieres que implemente la cancelación de verdad (borrar de `bookings` por sala, día y hora, y solo las propias), eso es trabajo nuevo y entra por el roadmap. No lo he apuntado ni he tocado nada.

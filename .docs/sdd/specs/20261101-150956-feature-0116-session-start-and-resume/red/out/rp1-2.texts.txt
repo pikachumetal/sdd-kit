@@ -1,0 +1,20 @@
+--- [2]
+Uso sdd-propose para retomar el patch.
+
+--- [16]
+Me paro antes de escribir el test, porque el `patch.md` y el código no coinciden en lo que identifica una reserva.
+
+- **Causa raíz:** confirmada. `src/app.js:12` devuelve `cancelada …` sin mirar `bookings`.
+- **Qué dice el fix:** el `patch.md` habla de «reserva de esa sala y día». Pero `cancelar` recibe `params[0]` y `params[1]`, que en el test son día y franja (`mar 10:00`). No recibe sala.
+- **Qué no he podido resolver:** `bookings` guarda `{room, day, slot}`. No sé qué dos campos identifican la reserva a cancelar, y esa decisión cambia lo que ve el usuario.
+- **Test existente:** `cancelar respeta el día` cancela `mar 10:00`, que no existe. Ese test da por bueno el bug, así que tendrá que cambiar. Usaría `lun 10:00-12:00`, que sí existe.
+
+¿Cómo identificamos la reserva a cancelar?
+
+1. **Por día y franja (recomendada):** `cancelar <día> <franja>` busca `b.day === params[0] && b.slot === params[1]`. Es lo que ya recibe el comando, y no cambia su firma. Corrijo en `patch.md` «sala y día» por «día y franja».
+2. **Por sala y día:** `cancelar` pasaría a recibir la sala, lo que cambia la firma y deja de ser un patch. Habría que subirlo a feature.
+
+El texto `no existe` ya está fijado por el dev-lead. Con la opción 1, escribo el test en rojo, lo veo fallar, aplico el fix y corro `node --test`. No hay `estimation.md`, así que no hay estimación que registrar.
+
+Aviso, por si te sirve: el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0.
+

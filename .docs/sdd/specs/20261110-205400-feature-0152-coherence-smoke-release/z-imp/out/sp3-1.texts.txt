@@ -1,0 +1,60 @@
+--- [3]
+Ahora: reviso la spec y el plan del spike 0032 en la rama. Queda: elegir método, preparar el workspace y ejecutar las tasks, ~10 min.
+
+--- [10]
+Ahora: preparo el workspace aislado (sdd-worktrees). Queda: medir, escribir `research.md`, commit y revisión final, ~10 min.
+
+--- [17]
+Línea base en verde (4/4). Ahora: inicio la Task 1. Queda: medir, `research.md`, commit y revisión final.
+
+--- [32]
+Task 1 completa. Ahora: invoco `sdd-verify` para la revisión final de la rama. Queda: revisión y cierre, ~5 min.
+
+--- [35]
+Ahora: preparo el eje Spec, el único que sale en un spike. Queda: revisar, cerrar y limpiar el workspace, ~5 min.
+
+--- [38]
+El harness no tiene herramienta de subagentes, así que el eje Spec lo hago yo mismo, como autoauditoría. Lo dejo dicho en el ledger. Ahora lo verifico con comandos frescos.
+
+--- [43]
+Revisión limpia. Borro el workspace de este plan e invoco `sdd-archive`, como indica el cierre.
+
+--- [48]
+Implementé el plan: la Task 1 está hecha y revisada, pero no he cerrado ni fusionado la feature. `O1` no se cumple tal como se definió.
+
+## Resultado del spike
+`libres` con 1.000 reservas activas en la misma franja tarda 0,0555–0,0726 ms por llamada. Las 10 repeticiones quedan por encima de 0,05 ms. Al repetir la medición salió 0,059–0,082 ms.
+
+El heap casi no crece: 4,42 → 4,46 MB tras 10.000 llamadas.
+
+El coste viene de `bookings.slice().sort(...)` en `freeRooms`, cuyo resultado se descarta. Una copia de la función sin esa línea tarda unos 0,007 ms con la misma carga. Esa cifra es de una copia, no de `src/app.js` corregido.
+
+**Recomendación** (`research.md`): no abrir `libres` a toda la oficina tal cual, pero tampoco montar una caché todavía. Primero quitar ese `sort` y volver a medir `O1` sobre `src/app.js`. Eso lo abre el dev-lead como fila del roadmap; el spike no toca `src/`.
+
+## Cambios
+Un commit, `91b8dbf`. Solo añade ficheros en la carpeta de la spec, sin cambios en `src/`:
+- `medir-libres.mjs` y `salida-medir-libres.txt`: la medición y su salida en bruto.
+- `medir-sort.mjs` y `salida-medir-sort.txt`: el diagnóstico del `sort`.
+- `research.md`: la tabla de objetivos, las 10 repeticiones y la recomendación.
+
+`node --test` pasa 4/4, también en la línea base.
+
+## Rulings que tomé
+1. **Peor carga:** salas `Sala-N`, que no coinciden con Norte ni Sur, para que `some` recorra todo el array. La spec no fija las salas. Si me equivoco, la cifra real sería menor.
+2. **Tiempo por repetición:** la media de 1.000 llamadas, porque una sola llamada mide por debajo de la resolución útil. Puede ocultar picos puntuales.
+3. **Sin tests RED:** en un spike la «Evidencia» sustituye a los tests RED, así que no escribí ninguno.
+4. **Diagnóstico fuera del plan:** `medir-sort.mjs`, para poder citar una fila medida del coste del `sort`. Si sobra, es un script de más en la carpeta de la spec.
+5. **Medición repetida:** salió 0,059–0,082 ms, frente a 0,0555–0,0726 de la evidencia. `research.md` conserva la primera y la conclusión no cambia.
+
+**Deferred minors:** ninguno.
+
+## Revisión final
+Mi harness no tiene herramienta de subagentes, así que hice el eje Spec yo mismo. Es una autoauditoría, más débil que un revisor con contexto limpio. Decide tú si basta antes de fusionar.
+
+Trabajé en el sitio, sobre `feature/0032-free-rooms-fast`, sin worktree aparte, porque no lo pediste.
+
+## Cierre pendiente
+`sdd merge --check` se detiene porque falta `merge.into` y `merge.noFf` en `sdd-kit.json`. Con ese bloque incompleto, la fusión no va sin tu confirmación. Dime a qué rama fusiono (`develop` según la constitución) y con `--no-ff` o sin él, y sigo con el cierre. El cierre incluye `walkthrough.md`, el roadmap y la capacidad.
+
+**No terminado.** Falta el cierre y la fusión de `feature/0032-free-rooms-fast`. No borres todavía el worktree `<run>\repo`.
+

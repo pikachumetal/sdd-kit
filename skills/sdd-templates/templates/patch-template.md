@@ -16,14 +16,18 @@ commit: <hash>        # hash del commit del fix; se escribe en el commit de cier
 > Registro lightweight de un cambio pequeño con la solución ya fijada: un fallo determinista
 > (la causa raíz), un ajuste o una retirada solo de presentación (la petición) o una petición
 > cerrada (el ticket o el dev-lead). NO es una spec: no pasa por spec → plan → tasks → walkthrough. La trazabilidad
-> vive aquí + una línea en el changelog (si existe) + la fila del roadmap; el diff exacto, en
+> vive aquí + la fila del roadmap; el diff exacto, en
 > el commit. Si el fix toca una feature con walkthrough propio aún abierto, NO crear este doc:
 > añadir un apéndice fechado "Post-release fixes" en ese walkthrough.
 > Borra los bloques de ayuda (`>`) al redactar.
 
+Validación: <dev-lead | agente, «<frase literal del dev-lead>»> — <porqué>
+
+> `agente` solo si un humano no observaría nada que el agente no haya medido ya (configuración, tests, documentos, estrés, un entorno muy complicado); lo que usa una persona, y en duda, `dev-lead`. Un patch no tiene gate de spec: `agente` solo con la frase literal del dev-lead en la petición o en la pregunta del carril.
+
 ## Capacidades
 
-> Se escribe al cerrar, tras listar `.docs/sdd/capabilities/`, con el nombre exacto de cada fichero (sin `.md`). Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, y cada una tiene su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Lo comprueba `Test-Capabilities.ps1` al cerrar.
+> Se escribe al cerrar, con el nombre exacto que da `sdd capability index`. Un patch no crea capacidades: no hay «Nuevas». Con delta, una línea por capacidad, con su subsección en «Delta de capacidad». Sin delta, una sola línea: «Ninguna, porque el fix devuelve `<comando>` a lo que ya dice `<nombre>`» o «Ninguna, porque ninguna capacidad describe `<pieza>`». Un delta que la vacía: `- Retiradas:`, con nombre y motivo.
 
 - Modificadas: `<nombre>` — <qué requisito cambia>
 
@@ -33,7 +37,7 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 
 ## 2. Causa raíz (o intención, en un ajuste visual; o solución fijada, en una petición cerrada)
 
-> Resultado de `superpowers:systematic-debugging` (Fase 1). El **por qué** con su evidencia
+> Resultado de `sdd-debugging` (Fase 1). El **por qué** con su evidencia
 > en el código, no solo el dónde. La hipótesis de quien reporta no es la causa hasta que la
 > confirma la investigación.
 > En un ajuste solo de presentación no hay causa: la intención en una frase, sacada de la
@@ -56,9 +60,11 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 ## 4. Verificación
 
 > Distinguir lo verificado por el agente de lo reportado por el usuario. Debajo de la tabla, la
-> validación del paso 0 de `sdd-end-patch`: `Validado: <fecha> · «<frase literal>»`,
+> validación de `sdd-archive`: `Validado: <fecha> · «<frase literal>»[ · no detalló qué probó]`,
 > `Validación diferida: <fecha> · «<frase literal>» · disparador: <…>` o, con `validation.mode: field`,
-> `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>`.
+> `Validación en campo: <fecha> · <verificación del agente, p. ej. «npm test 12/12 · smoke 3/3 casos»>` o,
+> con `Validación: agente`, `Validación por el agente: <fecha> · <evidencia>`.
+> Encima, la línea del gate de cierre: `` Gate: `<suite unitaria, si «Suites» la declara>` · `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>) `` (sin tareas, `→ <N>/<M>`).
 
 | # | Caso | Resultado |
 | --- | --- | --- |
@@ -66,21 +72,23 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 | 1 | *(ajuste visual)* captura de `<pantalla>` en `<navegador>`, antes y después del cambio | `<rutas de las capturas, fuera de git>` · enseñadas en la validación |
 | 2 | *(ajuste visual)* detector de `§Frontend` en `<viewports>` | `<hallazgos: resueltos · justificados>` · o «composición no medida» |
 
-## 5. Tiempo (ligero) *(si existe `.docs/sdd/estimation.md`)*
+## 5. Tiempo (ligero) *(si existe `.docs/sdd/steering/estimation.md`)*
 
-- Estimación: <Xh> (si la hubo)
-- Real: <Yh>
+- Estimación: <Xh, la de la pregunta del carril de `sdd-propose`, escrita antes del fix; si llega en el commit de cierre, `<Xh> (post hoc)`: no calibra>
+- Inicio: <hora UTC en que se abrió el patch, p. ej. 2026-10-09T11:20Z>
+- Esfuerzo real: <lo que sigue a `Esfuerzo real:` en la salida de `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta>`, tal cual: «<Zh> — reloj de la sesión <h> desde <inicio>, sin <min> min de espera al dev-lead (<n> esperas)[, sin <h> h sin actividad (<n> huecos)]» | fuera de Claude Code, `<Yh>, aproximado con las marcas de los commits`, nunca en blanco; los minutos de los subagentes no se suman, y «sumo los despachos» convierte el ratio en el de los subagentes>
+- Coste de sujetos: <X> $ en <n> sujetos <modelo> — <campaña> <X> $; … | no aplica
 
 ## 6. Delta de capacidad *(si existe `.docs/sdd/capabilities/` y el fix cambia lo que dice una capacidad)*
 
-> Si el patch solo devuelve el comportamiento a lo que la capacidad ya decía, no hay delta: el bloque
-> «Capacidades» lo dice con «Ninguna, porque el fix devuelve…» y esta sección se borra. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
-> la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-end-patch`.
-> Quitar un `- AND` o `- THEN` del vivo: `- REMOVED AND <texto literal>`.
+> Sin delta («Capacidades» dice «Ninguna, porque…»), esta sección se borra. Si no, misma forma que el delta de `spec-template.md`: el título del requisito es
+> la clave de fusión, y un `MODIFIED` copia el bloque entero con el cambio. Lo fusiona `sdd-archive`.
+> Una línea que quitas va como `- REMOVED <línea>` (`- REMOVED AND el aviso sale por correo`).
 
 ### Capacidad: `<nombre>`
 
-**MODIFIED — <título estable>**
+#### MODIFIED — <título estable>
+
 - GIVEN <contexto>
 - WHEN <acción>
 - THEN <resultado actualizado>

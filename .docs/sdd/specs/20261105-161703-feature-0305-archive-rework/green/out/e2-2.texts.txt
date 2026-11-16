@@ -1,0 +1,26 @@
+--- [22]
+No he pasado las specs ni empezado el cierre. El puerto 3587 está ocupado por un proceso que no es mío, y la skill me manda parar y preguntar en ese caso.
+
+**Qué pasó**
+- Las 11 ejecuciones de la tanda fallaron con `ERR_CONNECTION_REFUSED`. La tanda era: los 3 tests cambiados de `e2e/cancel.e2e.mjs` ×3 y los otros 2 de ese fichero ×1.
+- Esos rojos no cuentan. `node scripts/env-up.mjs` terminó con «el entorno no responde en /health», y mi comando lanzó las pasadas igualmente. Fue un fallo mío de encadenado.
+- El servidor no arrancó porque `listen` da `EADDRINUSE` en el 3587.
+- El proceso que escucha en ese puerto es el PID 81008, un `chrome-headless-shell` de Playwright. Cuelga del PID 74440, y el PID 90976 es un `vite` del worktree `document-manager\feature-0394-…`. Es de otro proyecto, y `/health` no le responde.
+- `env-up` no lo libera. No lo he matado, y tampoco he cambiado el puerto de `e2e/config.json`, porque entonces las specs no medirían lo que declara el gate.
+
+**Qué necesito de ti**
+Una de estas dos:
+1. Que cierres o libres el PID 81008, o me autorices a pararlo. Su puerto es del proyecto, pero el proceso es de otra sesión.
+2. Que me digas que use otro puerto para esta tanda.
+
+Con el puerto libre repito tal cual: levanto el entorno yo, compruebo `/health`, lanzo la tanda de 11 ejecuciones (~1,5 min) y sigo con el cierre.
+
+**Aviso del hook**
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`.docs/sdd/sdd-kit.json`). Las skills pueden ser de una versión vieja. Para actualizarlo: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code. `/reload-plugins` no aplica una actualización de ámbito proyecto.
+
+**Pre-checks**
+- El árbol está limpio.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+
+Todavía no he corrido `sdd merge --check` ni escrito ningún registro.
+

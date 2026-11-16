@@ -1,0 +1,116 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+
+--- [15]
+Ahora: te cuento lo que he entendido y abro la entrevista de la spec. Queda: tus respuestas a las decisiones de diseño, la spec (con su revisión) y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He reservado el id **0010** y creado la rama `feature/0010-exportar-reservas-csv` desde `develop`. La feature entra como 2–3 tasks sobre una sola superficie (CLI), así que no propongo partirla.
+
+**Lo que he entendido:** hoy `salas` no deja sacar las reservas de una sala. El responsable de cada sala las cuadra los lunes en su hoja de cálculo, así que quieres un comando que, dada una sala, escriba sus reservas en CSV, listo para abrir en Excel o Calc. Ahora mismo una reserva tiene `room`, `day` y `slot`, y las salas son `Norte` y `Sur`.
+
+Corrígeme lo que no case. Mientras tanto, la primera decisión:
+
+❓ **¿Cómo se entrega el CSV?**
+Hoy `run()` devuelve un texto y `src/app.js` lo imprime con `console.log`. Los otros comandos (`libres`, `cancelar`) funcionan así.
+1️⃣ **Por la salida estándar:** `node src/app.js exportar Norte > norte.csv`. Es lo mismo que hace el resto de comandos, y quien lo ejecuta decide dónde guardarlo. No toca el sistema de ficheros y se prueba con una cadena.
+2️⃣ **A un fichero:** `exportar Norte --salida norte.csv`. Es más directo para quien no usa redirecciones, pero añade E/S a disco, sobrescrituras y rutas.
+➡️ **Recomiendo 1️⃣**, porque encaja con cómo funciona la CLI y se prueba sin tocar disco. A cambio, quien no use redirecciones tiene que aprender `>`.
+
+--- [17]
+Anotado: salida estándar, y tú rediriges con `>`.
+
+❓ **¿Qué separador y qué cabecera lleva el CSV?**
+La hoja de cálculo la abre cada responsable de sala, y el proyecto está en castellano (constitución, art. 4). Excel y Calc en configuración regional española esperan `;` como separador. Con `,` suelen abrir todo en una sola columna. Una reserva tiene tres campos: `room`, `day` y `slot`. Ejemplo de lo que saldría para `exportar Norte`:
+
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+
+1️⃣ **`;` con cabecera en castellano** (`sala;dia;franja`), una fila por reserva. Se abre bien en una hoja española con doble clic. Cuesta que una herramienta que espere `,` no lo lea sin ajustes.
+2️⃣ **`,` con cabecera en castellano.** Es el CSV estándar, pero en una hoja española se abre en una sola columna salvo que se importe con asistente.
+3️⃣ **`;` sin cabecera.** Es más corto, pero las columnas quedan sin nombre en la hoja.
+➡️ **Recomiendo 1️⃣**, porque tu caso de uso es abrirlo en la hoja de cálculo cada lunes, en español. A cambio, si algún día lo lee otra herramienta, habrá que cambiar el separador.
+
+--- [19]
+Anotado: `;` y cabecera `sala;día;franja`.
+
+La tilde de `día` abre una decisión que antes no existía.
+
+❓ **¿Con qué codificación sale el CSV?**
+Node escribe UTF-8 sin más. Excel en Windows, si abre un `.csv` en UTF-8 sin BOM, suele mostrar `dÃ­a` en vez de `día`. Con BOM (`\uFEFF` al principio) lo reconoce bien. Calc detecta ambas. Como redirigís con `>`, lo que imprima el comando es lo que acaba en el fichero.
+
+1️⃣ **UTF-8 con BOM.** `día` se ve bien en Excel y en Calc con doble clic. A cambio, el primer carácter del fichero es invisible, y una herramienta que no lo espere puede leerlo como parte de la cabecera (`\uFEFFsala`).
+2️⃣ **UTF-8 sin BOM.** Es el CSV limpio, pero Excel mostraría `dÃ­a` salvo que se importe eligiendo la codificación.
+3️⃣ **Cabecera sin tilde (`dia`) y UTF-8 sin BOM.** No hay problema de codificación hoy, pero cambia lo que me pediste.
+➡️ **Recomiendo 1️⃣**, porque tu uso es abrirlo en la hoja cada lunes y así `día` sale bien sin pasos extra. A cambio, queda un carácter invisible al principio que ninguna otra herramienta de las que usas hoy debería notar.
+
+--- [21]
+Decidido por mí: **UTF-8 con BOM**, que es lo que hace que Excel muestre `día` bien con doble clic. Va a la spec en «✋ Decisiones que he tomado yo» para que puedas rechazarlo cuando la apruebes.
+
+❓ **¿Qué pasa si la sala no existe o no tiene reservas?**
+Hoy las salas son `Norte` y `Sur`, y solo `Norte` tiene una reserva (lunes, 10:00-12:00). Hay dos casos distintos:
+
+- **Sala sin reservas** (por ejemplo `Sur`): es una sala válida que está vacía.
+- **Sala que no existe** (por ejemplo `Este`, o un error de tecleo como `norte`): no hay nada que exportar.
+
+1️⃣ **Sala vacía: solo la cabecera. Sala inexistente: mensaje de error y sin CSV.** Ejemplo: `exportar Este` → `No existe la sala Este. Salas: Norte, Sur`, y el comando termina con código de salida distinto de 0. Así un fichero vacío por un error de tecleo no se confunde con «esa sala no tiene reservas esta semana». Cuesta un poco más de código y una prueba más.
+2️⃣ **En ambos casos, solo la cabecera.** Es más simple, pero un `norte` mal escrito produce un CSV vacío sin avisar, y el lunes parecería que la sala no tiene reservas.
+3️⃣ **Sala sin parámetro (`exportar` a secas): exportar todas las salas.** Es otro comportamiento que no me has pedido, así que no lo incluyo salvo que lo quieras.
+➡️ **Recomiendo 1️⃣**, porque el riesgo real de cuadrar a ciegas es que un error de tecleo parezca una sala vacía. A cambio, hay un caso de error más que mantener.
+
+--- [23]
+Decidido por mí: **sala vacía → solo la cabecera; sala inexistente → mensaje de error y código de salida 1, sin CSV**. También va al ✋.
+
+No me quedan decisiones que sean tuyas. El resto (nombre del comando, orden, comillas) lo fijo yo y lo verás en la spec.
+
+Ahora: escribo la spec, hago la pasada de coherencia y la reviso. Queda: presentarte la spec para tu aprobación, ~6 min.
+
+--- [35]
+Ahora: pasada de coherencia (el delta sobre una copia) antes de despachar a los revisores. Queda: revisión de la spec y presentártela, ~5 min.
+
+--- [41]
+Ahora: te presento la spec para tu aprobación. Queda: tu respuesta, luego el plan y la implementación, ~25 min.
+
+La spec está en `.docs/sdd/changes/20261113-144428-feature-0010-exportar-reservas-csv/spec.md`. Todavía no la he guardado en un commit.
+
+🦆 **Qué cambia:** hoy no puedes sacar las reservas de una sala de `salas`. Con esta feature, `node src/app.js exportar-csv Norte > norte.csv` deja en `norte.csv` la cabecera `sala;día;franja` y una fila por reserva, por ejemplo `Norte;lun;10:00-12:00`. Excel lo abre con doble clic y con `día` bien escrito. Si la sala no existe (`Este`, o `norte` con otra capitalización), el fichero queda vacío, el aviso sale por el canal de errores y el comando termina con código 1. Por dentro es un comando nuevo en `src/app.js` que imprime como los demás.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Nombre `exportar-csv`**, no `exportar`, para dejar libre `exportar` a la fila 0009 (calendario `.ics`).
+2. **BOM UTF-8**, para que Excel muestre `día`. En esta máquina bash, cmd y PowerShell 7 escriben los bytes tal cual, y Windows PowerShell 5 escribe UTF-16 con BOM, que Excel también abre. **Sin medir:** la apertura real en Excel; esa la validas tú.
+3. **Sala sin reservas:** solo la cabecera. **Sala inexistente o sin nombre:** sin CSV, aviso por stderr y código 1. Si el aviso saliera por stdout, acabaría dentro del fichero al redirigir con `>`.
+4. **Avisos:** `No existe la sala Este. Salas: Norte, Sur` y `Uso: exportar-csv <sala>`.
+5. **Nombre de sala exacto**, como `libres` (`norte` ≠ `Norte`).
+6. **Filas en el orden en que están guardadas**, sin ordenar.
+7. **Fin de línea `\n`.**
+8. **Comillas** si un campo lleva `;`, `"` o salto de línea. La deuda «sin validación del formato de franja» permite una franja con `;` que movería columnas sin avisar.
+9. **Enfoque A** (un `throw` en `run()` capturado en el arranque), frente a cambiar el contrato de todos los comandos o crear un módulo `src/csv.js`.
+10. **Capacidad nueva `booking-export`.**
+11. **No toco `README`, `CHANGELOG` ni `ROADMAP`:** el changelog lo escribe el corte de release.
+
+**La review de la spec no se ha hecho.** El nivel que toca son dos revisores, porque hay capacidad nueva y un formato de fichero que consume otra herramienta. Esta sesión no tiene herramienta para lanzar subagentes, así que nadie independiente ha leído la spec. Hice la pasada de coherencia (el delta se fusiona sin errores sobre una copia) y una lectura mía con los siete puntos, que cambió un escenario. Si quieres los dos revisores, dímelo.
+
+Tus decisiones, con tus frases, están en la spec bajo «Decisiones tomadas con el dev-lead».
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada).** Escribo el plan y sigo con la implementación.
+2. **Cambios.** Dime qué ajusto antes de aprobar.
+
+--- [42]
+Sin problema. La spec queda en espera: sin aprobar, sin plan y sin código.
+
+Lo que queda en el repo:
+- **Rama:** `feature/0010-exportar-reservas-csv`, creada desde `develop`, con el id 0010 reservado.
+- **Spec:** `.docs/sdd/changes/20261113-144428-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft`. Está sin commitear (carpeta sin seguimiento), y se guarda junto con el plan cuando la apruebes.
+- **Sin tocar:** `src/`, `test/`, `ROADMAP.md` y `CHANGELOG.md`.
+
+Cuando vuelvas, di «retoma la feature» o responde a la pregunta de aprobación. Si quieres cambiar algo, lo más probable es que miraras estas dos decisiones: el nombre `exportar-csv` y el BOM UTF-8. El BOM lo elegí yo para que Excel muestre `día`, y la apertura real en Excel solo la puedes validar tú. Recuerda también que la review de la spec no se hizo (esta sesión no puede lanzar subagentes), así que, si quieres esos dos revisores, hay que pedirlos desde una sesión que pueda.
+

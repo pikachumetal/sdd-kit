@@ -1,0 +1,83 @@
+--- [4]
+Ahora: leo el contexto SDD (roadmap, constitución) y la fila 0012. Queda: clasificar y preguntarte por el patch, ~2 min.
+
+--- [19]
+Reproducido: devuelve `Norte, Sur`. Leo la plantilla del patch y escribo el test rojo.
+
+--- [23]
+RED confirmado. Aplico el fix mínimo.
+
+--- [31]
+Despacho el revisor único del patch.
+
+--- [34]
+Ahora: espero el veredicto del revisor del patch. Queda: aplicar sus hallazgos, hacer commit y cerrar con `sdd-archive` (gate y merge con `--push`), ~10 min.
+
+El fix y el test rojo ya están en el árbol de trabajo y `patch.md` está escrito. El revisor sigue en marcha, así que todavía no hay commit ni veredicto.
+
+--- [39]
+Hallazgos, tras ejecutar `node --test` (5/5 en verde) y la CLI a mano:
+
+1. **Minor — la procedencia de la decisión 2 no es del todo honesta.** El patch.md la marca «— ticket». La fila 0013 solo da un ejemplo (`25:00-26:00`) y el texto de la respuesta. Que el rango se valide con horas 00-23 y minutos 00-59 es una interpretación razonable, pero no es lo que dice el ticket. Además, el regex es estricto en dos puntos que no se mencionan en el patch.md:
+   - Rechaza `9:00-10:00`, porque exige dos dígitos.
+   - Rechaza `24:00`.
+
+   Propongo marcarla como «inferido del ticket», o apuntar esas dos consecuencias.
+
+2. **Minor — el test solo cubre el caso RED.** El test nuevo cubre `25:00-26:00`. No hay uno para un minuto fuera de rango (`10:60-11:00`) ni para el formato (`abc`). El test preexistente sí cubre `10:00-12:00`. Lo que dice la sección 4 del patch.md es cierto: `libres 10:00-12:00` da `Sur`, y lo comprobé a mano.
+
+3. **Minor — el estado del patch.md va por delante del repo.** Tiene `status: done` y `commit: pendiente`, pero el diff sigue sin commitear. La fila 0013 del roadmap sigue en ⏳.
+
+La solución fijada coincide con el fix. El texto de la respuesta es literal y `libres 25:00-26:00` ya devuelve `franja no válida: usa HH:MM-HH:MM`. Tampoco veo regresiones. `libres` sin franja sigue devolviendo `Norte, Sur`, y el patch.md lo declara como decisión en la sección 3. No hay otros cambios fuera del alcance.
+
+--- [48]
+Ahora: el cierre se detiene en la validación. Queda: que valides y completes la política de fusión, y luego yo hago el commit de cierre, el merge y el push.
+
+🦆 Antes, `libres 25:00-26:00` te devolvía `Norte, Sur`, como si la franja fuera buena. Ahora devuelve `franja no válida: usa HH:MM-HH:MM`. `libres 10:00-12:00` sigue devolviendo `Sur`.
+
+**✋ Me salí del plan en…**
+
+- Nada. Dos decisiones del patch conviene que las mires:
+  - Se rechazan también `9:00-10:00` y `24:00`, además de `25:00`. Lo inferí del texto «HH:MM-HH:MM» y del ejemplo de la fila.
+  - `libres` sin franja y una franja con fin anterior al inicio se quedan como estaban. La fila no los menciona.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `libres 25:00-26:00` → mensaje fijado | ejecución real | `franja no válida: usa HH:MM-HH:MM` |
+| `libres 10:00-12:00` sigue igual | ejecución real | `Sur` |
+| minutos fuera de rango, `abc`, `9:00-10:00` | suite | mismo mensaje |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos, sobre el commit `9b02f69`.
+
+**Sin probar**
+
+- Nada.
+
+**Para fusionar**
+
+- Hay un cambio sin commitear: el hash del fix en `patch.md`. Va en el commit de cierre.
+- `sdd merge --check` falla porque `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Sin el bloque `merge` completo no fusiono sin preguntarte. Dime la rama de destino (supongo `develop`) y si quieres `--no-ff`, y lo añado.
+- `--push` lo aplico cuando fusione. Tu petición lo pide, pero `merge.push` no está declarado.
+
+**Guion**
+
+Rama `feature/0013-slot-format` · worktree `<run>\repo`
+
+```
+node src/app.js libres 25:00-26:00
+```
+
+Esperado: `franja no válida: usa HH:MM-HH:MM`
+
+```
+node src/app.js libres 10:00-12:00
+```
+
+Esperado: `Sur`
+
+Dime «validado» (o qué has probado) y dime el destino y `--no-ff`.
+

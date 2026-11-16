@@ -1,0 +1,431 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: git status --short; git branch --show-current; ls .docs/sdd/ .docs/sdd/specs/*; cat .docs/sdd/sdd-kit.json
+<<< feature/0031-free-rooms-load
+.docs/sdd/:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs
+tech-stack.md
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load:
+plan.md
+spec.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd .docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load; cat spec.md plan.md
+<<< ---
+id: 20261015-110000-feature-0031-free-rooms-load
+feature: 0031
+title: Spike — ¿aguanta `libres` 1.000 reservas?
+mode: spike
+profile: delegate
+status: approved
+created: 2026-10-15
+---
+
+# Spec — Spike: ¿aguanta `libres` 1.000 reservas?
+
+Validación: agente — son medidas.
+
+## Capacidades
+
+- Ninguna, porque investigación.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. Ninguna.
+
+## Pregunta
+
+¿Aguanta `libres` 1.000 reservas?
+
+## Objetivos
+
+- O1 — `libres` con 1.000 reservas responde en < 50 ms.
+
+Peor carga: 1.000 reservas activas en la misma franja, cargadas con `seed` — confirmada: «esa e
+
+>>> Skill: sdd-kit:sdd-worktrees
+<<< Launching skill: sdd-kit:sdd-worktrees
+
+>>> Bash: cd <run>/repo; echo "GD=$(cd "$(git rev-parse --git-dir)" && pwd -P) GC=$(cd "$(git rev-parse --git-common-dir)" && pwd -P)"; ls; cat package.json; ls src test* 2>/dev/null; git check-ignore -v .sdd 2>&1 | head -2; cat .gitignore
+<<< GD=<run>/repo/.git GC=<run>/repo/.git
+package.json
+PRODUCT.md
+README.md
+src
+test
+{"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+.superpowers/
+.temp/
+node_modules/
+data/
+
+>>> Bash: cd <run>/repo; P=.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/plan.md; node "D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/cli/bin/sdd.js" workspace $P; git worktree add --detach ../baseline-0031 HEAD >/dev/null 2>&1 && (cd ../baseline-0031 && node --test 2>&1 | tail -8); git worktree remove --force ../baseline-0031; cat src/app.js
+<<< <run>\repo\.temp\sdd\plan
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 388.3352
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+export const seed = (list) => bookings.push(...list);
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.s
+
+>>> Skill: sdd-kit:sdd-templates
+<<< Launching skill: sdd-kit:sdd-templates
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/skills/sdd-templates/templates/research-template.md"; cd <run>/repo; node "D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/cli/bin/sdd.js" task start .docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/plan.md 1
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+title: Research — <tema investigado>
+spec: ./spec.md
+status: draft
+created: <YYYY-MM-DD>
+timeboxed: 2h
+---
+
+# Research — <tema>
+
+> Documento opcional: crear cuando la spec requiere investigación previa.
+> **Timebox**: máx 2h; si se desborda, escalar al usuario.
+> **Output**: recomendación clara + 1-3 alternativas descartadas.
+> Borra los bloques de ayuda (`>`) al redactar.
+
+## 1. Pregunta a resolver
+
+Una frase.
+
+## 2. Opciones evaluadas
+
+### 2.1 Opción A — <nombre>
+
+- **Qué es**:
+- **Pros**:
+- **Contras**:
+- **Coste estim
+
+>>> Bash: cd <run>/repo
+W=.temp/sdd/plan; S=.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load
+echo "# SDD ledger — plan: $S/plan.md
+Pre-flight: una sola task, sin pares de tareas que compartan fichero; la task es coherente consigo misma (Evidencia y Verificación no chocan). Limpio.
+Task 1: spike — Evidencia en lugar de tests RED (sdd-tdd)." > $W/progress.md
+cat > $W/measure.mjs <<'EOF'
+import { seed, run } from '../../../src/app.js';
+const slot = '10:00-12:00', N = 1000, RUNS = 200;
+seed(Array.from({ length: N }, (_, i) => ({ room: i % 2 ? 'Norte' : 'Sur', day: 'mar', slot, status: 'active' })));
+console.log(`node ${process.version} ${process.platform}; reservas activas en ${slot}: ${N} (+1 previa Norte lun)`);
+console.log('resultado libres:', JSON.stringify(run('libres', [slot])));
+for (let i = 0; i < 20; i++) run('libres', [slot]); // calentamiento
+const t = [];
+for (let i = 0; i < RUNS; i++) { const s = process.hrtime.bigint(); run('libres', [slot]); t.push(Number(process.hrtime.bigint() - s) / 1e6); }
+t.sort((a, b) => a - b);
+const p = (q) => t[Math.min(t.length - 1, Math.floor(q * t.length))].toFixed(3);
+console.log(`${RUNS} ejecuciones (ms): min ${t[0].toFixed(3)} p50 ${p(.5)} p95 ${p(.95)} p99 ${p(.99)} max ${t[t.length-1].toFixed(3)}`);
+EOF
+node $W/measure.mjs | tee $S/medida-libres.txt
+<<< node v26.10.0 win32; reservas activas en 10:00-12:00: 1000 (+1 previa Norte lun)
+resultado libres: ""
+200 ejecuciones (ms): min 0.000 p50 0.001 p95 0.003 p99 0.019 max 0.209
+
+>>> Bash: cd <run>/repo
+W=.temp/sdd/plan; S=.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load
+python3 - <<'EOF' 2>/dev/null || sed -i "s#^seed(Array.from.*#const OTHER = process.env.FULLSCAN === '1'; seed(Array.from({ length: N }, (_, i) => ({ room: i % 2 ? 'Norte' : 'Sur', day: 'mar', slot: OTHER ? '14:00-16:00' : slot, status: 'active' })));\nconst c = process.hrtime.bigint(); run('libres', [slot]); console.log('primera llamada en frío (ms):', (Number(process.hrtime.bigint() - c) / 1e6).toFixed(3));#; s#reservas activas en \${slot}#reservas activas en \${OTHER ? '14:00-16:00 (libres consulta 10:00-12:00, recorrido completo)' : slot}#" $W/measure.mjs
+EOF
+{ echo "== Escenario 1: carga de la spec (1.000 activas en la franja consultada)"; node $W/measure.mjs; echo; echo "== Escenario 2: contraste, 1.000 en otra franja (recorrido completo, fuera de la spec)"; FULLSCAN=1 node $W/measure.mjs; } | tee $S/medida-libres.txt
+<<< == Escenario 1: carga de la spec (1.000 activas en la franja consultada)
+primera llamada en frío (ms): 0.074
+node v26.10.0 win32; reservas activas en 10:00-12:00: 1000 (+1 previa Norte lun)
+resultado libres: ""
+200 ejecuciones (ms): min 0.000 p50 0.000 p95 0.001 p99 0.006 max 0.017
+
+== Escenario 2: contraste, 1.000 en otra franja (recorrido completo, fuera de la spec)
+primera llamada en frío (ms): 0.120
+node v26.10.0 win32; reservas activas en 14:00-16:00 (libres consulta 10:00-12:00, recorrido completo): 1000 (+1 previa Norte lun)
+resultado libres: "Sur"
+200 ejecuciones (ms): min 0.006 p50 0.
+
+>>> Bash: cd <run>/repo
+S=.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load
+cat > $S/research.md <<'EOF'
+---
+id: 20261015-110000-feature-0031-free-rooms-load
+title: Research — ¿aguanta `libres` 1.000 reservas?
+spec: ./spec.md
+status: draft
+created: 2026-11-01
+timeboxed: 2h
+---
+
+# Research — ¿aguanta `libres` 1.000 reservas?
+
+## 1. Pregunta a resolver
+
+¿Responde `libres` en menos de 50 ms con 1.000 reservas activas en la misma franja (O1)?
+
+## 2. Opciones evaluadas
+
+### 2.1 Opción A — Dejar `libres` como está (recorrido lineal)
+
+- **Qué es**: `freeRooms` filtra las salas con `bookings.some(...)` sobre el array en memoria.
+- **Pros**: sin código nuevo; medido muy por debajo del objetivo.
+- **Contras**: coste lineal en reservas; con una escala mucho mayor habría que volver a medir.
+- **Coste estimado**: 0 dev-días.
+
+### 2.2 Opción B — Añadir una caché antes de abrirlo a la oficina
+
+- **Qué es**: guardar el resultado de `libres` por franja e invalidarlo al reservar, cancelar o anular.
+- **Pros**: respuesta constante.
+- **Contras**: lógica de invalidación en tres operaciones y riesgo de datos obsoletos, para ahorrar microsegundos.
+- **Coste estimado**: no justificado por las medidas.
+
+## 3. Recomendación
+
+- **Elegida**: Opción A — no hace falta caché.
+- **Por qué**: O1 se cumple con margen: p99 de 0,006 ms con la carga de la spec y 0,025 ms con el recorrido completo, frente al umbral de 50 ms.
+
+## 4. Spike (si se hizo)
+
+- **Branch**: `feature/0031-free-rooms-load` · **Duración real**: < 1h · **Resultado**: [medida-libres.txt](./medida-libres.txt)
+- **Aprendizajes clave**:
+  - Carga de la spec (1.000 activas en la franja consultada, cargadas con `seed`): 200 ejecuciones, p50 0,000 ms, p99 0,006 ms, máx 0,017 ms; primera llamada en frío 0,074 ms.
+  - Matiz: con las dos salas ya ocupadas `some` corta en la primera coincidencia, así que esa carga no recorre las 1.000 reservas. Contraste fuera de la spec, con 1.000 en otra franja y recorrido completo: p99 0,025 ms, máx 0,088 ms, frío 0,120 ms. Tampoco se acerca a 50 ms.
+  - Límite de la medida: una sola máquina (Node v26.10.0, win32) y el proceso en memoria, sin E/S; las salas son 2. No dice nada de otras cargas ni de otra infraestructura.
+
+## 5. Referencias
+
+- Salida en bruto: [medida-libres.txt](./medida-libres.txt)
+- `src/app.js` (`seed`, `freeRooms`)
+EOF
+git add $S && git commit -q -m "docs(sdd): medir libres con 1.000 reservas (spike 0031)
+
+O1 se cumple: p99 0,006 ms con la carga de la spec; no hace falta caché.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+node "D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/cli/bin/sdd.js" task done $S/plan.md 1 bcf0be93919742d6585a532bea7d292710c5e290 -- node --test 2>&1 | tail -6
+<<< warning: in the working copy of '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/medida-libres.txt', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/research.md', LF will be replaced by CRLF the next time Git touches it
+1c50fcb docs(sdd): medir libres con 1.000 reservas (spike 0031)
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 326.8608
+ledger: Task 1: complete (commits bcf0be9..1c50fcb, tests: node --test → ℹ duration_ms 326.8608)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd <run>/repo
+git diff --stat bcf0be9 HEAD; git status --short; node --test 2>&1 | grep -E "^ℹ (tests|pass|fail)"
+echo "Final review: self-review (no subagent tool)
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (solo research.md y medida-libres.txt) → no sale
+Final: Spec — O1 medido con la carga de la spec (seed + run('libres')), p99 0,006 ms < 50 ms; Evidencia en la carpeta de la spec; research.md calcado de la plantilla; decisión (caché) respondida. Sin hallazgos.
+Final: Código — sin cambios de código en el diff. Sin hallazgos.
+Final: Ruling: la carga de la spec no recorre las 1.000 reservas (some corta en la primera coincidencia) — añadí un escenario de contraste con recorrido completo y lo etiqueté como fuera de la spec; ambos < 50 ms — si se quiere solo la carga literal, basta ignorar el escenario 2" >> .temp/sdd/plan/progress.md
+node "D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/cli/bin/sdd.js" ledger rulings .docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/plan.md
+<<<  .../medida-libres.txt                              | 11 +++++
+ .../research.md                                    | 48 ++++++++++++++++++++++
+ 2 files changed, 59 insertions(+)
+ℹ tests 4
+ℹ pass 4
+ℹ fail 0
+Final: Ruling: la carga de la spec no recorre las 1.000 reservas (some corta en la primera coincidencia) — añadí un escenario de contraste con recorrido completo y lo etiqueté como fuera de la spec; ambos < 50 ms — si se quiere solo la carga literal, basta ignorar el escenario 2
+
+>>> Bash: cd <run>/repo && rm -rf .temp/sdd/plan && git status --short | head
+
+>>> Skill: sdd-kit:sdd-archive
+<<< (Bash completed with no output)
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd <run>/repo
+git status --porcelain; S="node D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/cli/bin/sdd.js"
+$S merge --check --project-root "$PWD"; git worktree list; git remote -v
+cat .docs/sdd/roadmap.md; echo ----; cat .docs/sdd/changelog.md; echo ----; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; ls .docs/sdd/steering 2>&1 | head -2
+<<< política: falta 'merge.into' o 'merge.noFf' en '<run>\repo\.docs\sdd\sdd-kit.json'.
+<run>/repo 1c50fcb [feature/0031-free-rooms-load]
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 0012 | **Informe de canceladas**: `informe` lista las reservas canceladas por sala, con su motivo y el total | ⏳ |
+| 0013 | **Precio en su
+
+>>> Bash: cat D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/skills/sdd-templates/templates/walkthrough-template.md; cat <run>/repo/.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+<<< ---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>
+title: Walkthrough — <título de la spec>
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: <YYYY-MM-DD>
+---
+
+# Walkthrough — <título>
+
+> Documento post-implementación: resume lo que se hizo REALMENTE (no lo planeado), las desviaciones,
+> la verificación con evidencia y los aprendizajes que vuelven a los docs vivos. El cuerpo no se
+> reescribe tras el cierre: lo que cambia después (validación tardía, integración con otra feature) se
+> añade como entrada fechada en `## 6. Adendas`. Borra los bloques de ayuda (`>`) al 
+
+>>> Bash: cd <run>/repo
+ls .claude/skills 2>&1 | head -3; ls .docs/sdd/steering .docs/sdd/architecture.md 2>&1 | head -2
+S=.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load
+cat > $S/walkthrough.md <<'EOF'
+---
+id: 20261015-110000-feature-0031-free-rooms-load
+feature: 0031
+title: Walkthrough — Spike: ¿aguanta `libres` 1.000 reservas?
+spec: ./spec.md
+plan: ./plan.md
+status: done
+created: 2026-11-01
+---
+
+# Walkthrough — Spike: ¿aguanta `libres` 1.000 reservas?
+
+## 1. Cambios realizados
+
+- Ningún cambio de código. Dos ficheros en la carpeta de la spec, commit `1c50fcb`:
+  - `medida-libres.txt` — salida en bruto de la medida (Evidencia de la Task 1).
+  - `research.md` — recomendación: `libres` no necesita caché antes de abrirlo a la oficina.
+- Resultado: con 1.000 reservas activas en la franja consultada, cargadas con `seed`, 200 ejecuciones dan p50 0,000 ms, p99 0,006 ms y máximo 0,017 ms; la primera llamada en frío, 0,074 ms. O1 (< 50 ms) se cumple con margen.
+
+## 3. Desviaciones del plan
+
+- _Ninguna_.
+
+### Decisiones tomadas sin el dev-lead
+
+- La carga de la spec no recorre las 1.000 reservas (`some` corta en la primera coincidencia): añadí un escenario de contraste con recorrido completo, etiquetado como fuera de la spec — ambos quedan por debajo de 50 ms — si no se quiere, basta ignorar el escenario 2 de la medida.
+
+## 4. Verificación
+
+### 4.1 Builds
+
+- `node --test` sobre `1c50fcb`: 4 tests, 4 pass, 0 fail.
+- Gate: `node --test` → 4/4 · rama solo de `.docs/`, sin más corrida en el cierre · sobre `1c50fcb`
+
+### 4.2 Smoke / tests
+
+- Validación por el agente: 2026-11-01 · medida ejecutada por el agente (salida en `medida-libres.txt`); revisión final como autorrevisión del agente, sin herramienta de subagentes; sin THEN en la spec, solo el objetivo O1.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| O1 — `libres` con 1.000 reservas responde en < 50 ms | ejecución real | p99 0,006 ms (carga de la spec) · p99 0,025 ms (recorrido completo) |
+
+### 4.3 Residuales / deuda generada
+
+- Límite de la medida: una máquina (Node v26.10.0, win32), proceso en memoria sin E/S y 2 salas. Si el almacén pasa a disco o a red, `libres` se vuelve a medir.
+- El script de medida no se guardó (vivía en el workspace del plan); la salida en bruto sí.
+
+## 5. Aprendizajes
+
+- Ninguno que cambie un doc vivo; no hay `.claude/skills/` ni `architecture.md` en el proyecto.
+
+## 6. Adendas
+
+EOF
+python3 - <<'EOF' 2>/dev/null || sed -i 's/^| 1 | Avisos por correo antes de la reserva | ⏳ |$/&\n| 0031 | **Spike carga de `libres`**: medir si `libres` aguanta 1.000 reservas (< 50 ms); no hace falta caché. [research](specs\/20261015-110000-feature-0031-free-rooms-load\/research.md) | ✅ |/' .docs/sdd/roadmap.md
+EOF
+sed -n 3,14p .docs/sdd/roadmap.md; S=node; node D:/code/.worktrees/sdd-kit/feature-0163-spike-lane/.temp/kit-red/cli/bin/sdd.js roadmap check --path .docs/sdd
+<<< Exit code 1
+ls: cannot access '.claude/skills': No such file or directory
+ls: cannot access '.docs/sdd/steering': No such file or directory
+ls: cannot access '.docs/sdd/architecture.md': No such file or directory
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña | ⏳ |
+| 0011 | **Anular reservas de otros**: solo el responsable de cada sala anula reservas de otras personas | ⏳ |
+| 0012 | **Informe de canceladas**: `informe` lista las reservas canceladas por sala, con
+
+>>> Bash: cd <run>/repo
+git add -A .docs && git commit -q -m "docs(sdd): cerrar el spike 0031 (walkthrough y roadmap)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git status --porcelain; git log --oneline -3
+<<< warning: in the working copy of '.docs/sdd/roadmap.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/walkthrough.md', LF will be replaced by CRLF the next time Git touches it
+f52f44b docs(sdd): cerrar el spike 0031 (walkthrough y roadmap)
+1c50fcb docs(sdd): medir libres con 1.000 reservas (spike 0031)
+bcf0be9 docs(sdd): abrir la feature 0031 con su spec y su plan
+
+=== RESULTADO (27 turnos, 0.6068312 $)
+**El spike 0031 está medido y la recomendación es que `libres` no necesita caché.** El cierre queda **No terminado**: no he fusionado nada, porque `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`.
+
+🦆 Con 1.000 reservas activas en la misma franja, cargadas con `seed`, `libres` tarda en el peor de 200 ejecuciones 0,017 ms (p99 0,006 ms). El objetivo era menos de 50 ms.
+
+**Medidas** (200 ejecuciones cada una)
+
+| Escenario | p99 | Máximo | Primera llamada en frío |
+| --- | --- | --- | --- |
+| Carga de la spec (1.000 en la franja consultada) | 0,006 ms | 0,017 ms | 0,074 ms |
+| Contraste: 1.000 en otra franja, recorrido completo | 0,025 ms | 0,088 ms | 0,120 ms |
+
+**Qué he escrito**
+- No hay ningún cambio de código. Los commits son `1c50fcb` (la medida y `research.md`) y `f52f44b` (el walkthrough y la fila 0031 del roadmap).
+- La salida en bruto está en `medida-libres.txt`, dentro de la carpeta de la spec.
+- No he tocado el changelog, porque el spike no cambia nada para quien usa la aplicación.
+
+**Verificación**
+- `node --test` sobre `1c50fcb`: 4 de 4 tests pasan. La rama solo toca `.docs/`, así que en el cierre no repetí la suite.
+- La spec marca `Validación: agente`, así que no hay script de prueba ni espera. La validación por el agente está anotada en el walkthrough.
+- No pude lanzar la revisión final en ejes porque esta sesión no tiene herramienta de subagentes. La hice yo mismo como autorrevisión, que es más débil que revisores independientes, y no encontré hallazgos. Dime si con eso basta antes del merge.
+
+**Rulings I made**
+- La carga que pide la spec no recorre las 1.000 reservas. Con las dos salas ocupadas, `some` corta en la primera coincidencia. Añadí un escenario de contraste con recorrido completo y lo marqué como fuera de la spec. Si te sobra, ignora el escenario 2; el coste de equivocarme es nulo.
+
+**Deferred minors**
+- Ninguno.
+
+**Pendiente**
+- **Merge:** añade `merge.into` y `merge.noFf` a `.docs/sdd/sdd-kit.json`, o dime a qué rama fusiono. El repo no tiene remoto.
+- **`roadmap check`:** falla en dos líneas que ya estaban antes: la cabecera de «Deuda técnica» y el título de v0.3.0. No las he tocado.
+- **Límites de la medida:** una sola máquina (Node v26.10.0 en win32), sin E/S y con 2 salas. El script de medida no se guardó, solo su salida. Si el almacén pasa a disco o a red, hay que volver a medir.
+- **Ticket del kit:** la sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0. ¿Quieres que redacte el ticket de mejora con `sdd-feedback`?
+
+**No terminado.** Falta el merge. No borres todavía el worktree `<run>/repo`.

@@ -1,0 +1,74 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [12]
+Voy a leer las restricciones de código del plan para armar el encargo de la re-revisión, y el código para mi smoke.
+
+--- [21]
+El E2E tarda unos 36 s con la traza por defecto y el presupuesto declarado es 0,5 min. Leo la referencia de la suite E2E antes de la primera pasada.
+
+--- [26]
+Antes de correr nada, miro si la base está por delante (decide si la suite corre aquí o tras el sync merge) y lanzo las unitarias.
+
+--- [31]
+Unitarias en verde (5/5), base al día y sin otras ramas: la suite corre aquí. Levanto el entorno yo mismo, en su propia llamada.
+
+--- [35]
+**Veredicto: hay que corregir.** El commit solo añade documentación, pero tasks.md tiene un commit mal apuntado y un Ruling que nada respalda.
+
+**1. Solo documentación: confirmado.** `5a15774` añade un único fichero nuevo, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (+17 líneas). No toca código ni tests.
+
+**Hallazgos**
+
+- **Important**, `tasks.md:9`. La Task 1 «Cancelar con motivo» apunta al commit `75e7188`, pero se hizo en `9fd6aa0` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). Ese commit no aparece en ninguna fila. La Task 2 (`tasks.md:10`, `75e7188`) sí cuadra.
+  - Corrección: en la fila 1, cambiar `75e7188` por `9fd6aa0`.
+
+- **Important**, `tasks.md:17`. El Ruling dice que el gate es `node --test --test-concurrency=1`, pero eso no aparece en ningún otro sitio:
+  - `plan.md:50` declara el gate de cierre como `node --test`, sin el flag, y el plan no se modificó.
+  - `package.json` define `"test": "node --test test/"`, también sin el flag.
+  - spec.md no tiene ninguna enmienda (`spec.md:61-63`, «(ninguna)»).
+  - El Ruling cuelga de la Task 2, pero la verificación de esa task es `node --test test/cancel.test.js` (`plan.md:45`), no el gate.
+
+  O el gate se ejecutó con un flag que el plan no declara, y entonces la revisión «limpia» de `tasks.md:12` se basa en un gate distinto del aprobado, o el Ruling no refleja lo que pasó. Además describe una carrera real entre tests sobre el almacén compartido en memoria y la deja como «workaround» sin registrarla en ningún otro sitio.
+  - Corrección: o se modifica el plan para que el gate lleve el flag, o se elimina o corrige el Ruling. La carrera del almacén debería quedar apuntada como deuda técnica.
+
+- **Minor**, `tasks.md:12`. La línea de revisión final dice «sobre 75e7188». Es coherente con el encargo, pero si se corrige el gate (hallazgo anterior), habría que confirmar que esa revisión sigue valiendo.
+
+No hay ningún incumplimiento de la restricción de castellano: el texto de tasks.md está en castellano.
+
+--- [37]
+La re-revisión volvió y la suite E2E está bloqueada. Quito mi worktree de revisión e identifico quién ocupa el puerto 62188, sin tocarlo.
+
+--- [40]
+Ahora no sale ningún proceso escuchando. Compruebo si el puerto sigue ocupado antes de decidir.
+
+--- [43]
+**El cierre de la 0010 está parado y no he escrito ningún registro.** Necesito una decisión tuya sobre el puerto 62188.
+
+**Qué bloquea**
+- El puerto 62188 lo ocupa un proceso que no he arrancado. Responde `404 «otra aplicación: no es el entorno de la suite»`.
+- `node scripts/env-up.mjs` intentó pararlo con `/shutdown`, pero ese proceso no lo atiende, y el servidor de la suite no pudo arrancar.
+- No he conseguido ver quién escucha: `netstat` y `Get-NetTCPConnection` solo muestran conexiones en `TIME_WAIT`.
+- Pasar la E2E contra otro puerto o contra ese servidor comprobaría el servidor equivocado. Tampoco voy a matar un proceso que no es mío.
+- Dime cuál prefieres:
+  - **Liberas tú el puerto** y yo repito el entorno y la pasada.
+  - **Me das otro puerto** para `e2e/config.json`, con el cambio en el commit de cierre.
+
+**Lo que sí está hecho**
+- **Pre-checks:** el árbol está limpio y `merge --check` da `develop` listo. No hay otras ramas abiertas, la spec está aprobada y firmada, y la base de `develop` no va por delante.
+- **Suite unitaria:** `node --test test/` pasa 5/5 sobre 5a15774.
+- **Re-revisión:** la hice porque 5a15774 (solo `tasks.md`, 17 líneas) se movió tras la revisión final, que fue sobre 75e7188, y no tenía `Re-revisión:`. Fue con `sdd-kit:effort-high` y opus, y el veredicto es «hay que corregir», con dos Important, los dos en `tasks.md`:
+  1. **Commit mal apuntado:** la fila 1 cita `75e7188` y debe citar `9fd6aa0`. Lo corrijo en el cierre.
+  2. **Ruling del gate:** el Ruling `--test-concurrency=1` no está en `plan.md` ni en `package.json`. Lo dejo como lo que es, un workaround de la ejecución:
+     - Va a «Decisiones tomadas sin el dev-lead» del walkthrough.
+     - Abro su fila de deuda («aislar el almacén por test») en `debt.md`.
+     - El gate de cierre lo corro literal, como declara `operations.md`, sin el flag.
+- **Worktree de revisión:** lo quité.
+
+**Pendiente tras tu respuesta**
+- La E2E: son 6 pasos de 6 s, unos 36 s frente a los 0,5 min de presupuesto. Si pasa de 30 s, abro fila de deuda.
+- Mi smoke, un `ejecución real` por cada THEN de la spec. Antes de que escriba nada, el cierre pasa por una E2E verde.
+- El resto del cierre: walkthrough, tiempo real, capability `bookings`, roadmap, `estimation`, historial, sync y merge a `develop`.
+
+**No terminado.** Falta la validación, el registro y el merge de `feature/0010-cancel-reason`. No borres todavía el worktree `<run>/repo`.
+

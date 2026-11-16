@@ -1,0 +1,202 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261026-090000-feature-0027-concurrent-edit\plan.md
+<<< 1	# Plan — Edición a la vez
+2	
+3	**Ejecución**: Native.
+4	
+5	## §3 Gate de cierre
+6	
+7	`npm test && npm run e2e`
+8	
+9	## Task 1: el API guarda cada celda por separado — hecha
+10	
+11	`PUT /api/sheets/<hoja>/cells/<celda>` guarda solo esa celda (`server/api.js`).
+12	
+13	## Task 2: prueba de estrés de la edición a la vez
+14	
+15	- **Qué**: cinco sesiones del navegador con la hoja `cierre` abierta, cada una edita 10 celdas distintas a la vez; al acabar, las 50 celdas tienen su valor.
+16	- **Verificación**: la prueba pasa contra la app arrancada con `npm run api` y `npm run dev`.
+17	
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0219-e2e-smoke-stress-out-of-suite\.temp\p0219\kit\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs. Playwright facts: its 1.65 docs.
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for:
+8	
+9	```
+10	1. An E2E names a core flow
+11	2. Between two user actions, wait only for what the user can see
+
+
+>>> Read: D:\code\.worktrees\sdd-kit\patch-0219-e2e-smoke-stress-out-of-suite\.temp\p0219\kit\skills\sdd-tdd\references\writing-good-tests.md
+<<< 1	# Writing Good Tests
+2	
+3	**Load this reference when:** writing or changing tests, adding mocks, or
+4	adding cleanup/helper methods for tests.
+5	
+6	## Overview
+7	
+8	A test exists to catch a specific break. Two principles govern everything
+9	here:
+10	
+11	```
+12	1. Every test names the break it catches
+13	2. Every test exercises the real thing
+14	```
+15	
+16	Strict TDD produces both naturally: a test written first and watched
+17	failing against real code has already proven it can fail, and only earns
+18	a mock when the real dependency proves slow or external.
+19	
+20	## Principle 1: Name the Bre
+
+>>> Bash: cd <run>/repo && git ls-files | grep -v node_modules | head -60 && cat package.json && cat playwright.config.* 2>/dev/null; cat .docs/sdd/operations.md | head -120
+<<< .docs/sdd/constitution.md
+.docs/sdd/estimation.md
+.docs/sdd/mission.md
+.docs/sdd/operations.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/plan.md
+.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/spec.md
+.docs/sdd/specs/20261026-090000-feature-0027-concurrent-edit/tasks.md
+.docs/sdd/tech-stack.md
+.gitignore
+PRODUCT.md
+README.md
+e2e/0012-sum-row.spec.ts
+e2e/0015-export-pdf.spec.ts
+e2e/0018-invoice-status.spec.ts
+e2e/0021-cell-format.spec.ts
+e2e/helpers.ts
+index.html
+package.json
+playwright.config.ts
+server/api.js
+src/invoi
+
+>>> Bash: cd <run>/repo && cat e2e/helpers.ts e2e/0012-sum-row.spec.ts server/api.js; cat .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/tasks.md; grep -n "testid\|aria\|role" src/sheet/Grid.tsx src/sheet/CellEditor.tsx | head -30
+<<< import { APIRequestContext, Page } from '@playwright/test';
+
+export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);
+}
+
+export async function typeInCell(page: Page, cell: string, text: string) {
+  await page.getByTestId(`cell-${cell}`).click();
+  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');
+}
+
+export async function cellValue(request: APIRequestContext, sheet: string, cell: string) {
+  const res = await request.get(`http://localhost:3001/api/sheets/${s
+
+>>> Bash: cd <run>/repo && cat src/sheet/CellEditor.tsx; sed -n 1,33p src/sheet/Grid.tsx
+<<< import { useState } from 'react';
+
+export default function CellEditor({ initial, onCommit }: { initial: string; onCommit: (v: string) => void }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <input
+      aria-label="Editor de celda"
+      autoFocus
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+      onKeyDown={(e) => { if (e.key === 'Enter') onCommit(value); }}
+    />
+  );
+}
+import { lazy, Suspense, useState } from 'react';
+import { copyRange, lastCopied } from './clipboard';
+import { ContextMenu } from './ContextMenu';
+
+const CellEditor =
+
+>>> Bash: cd <run>/repo && python - <<'E'
+p='e2e/helpers.ts'
+s=open(p).read()
+s=s.replace("""export async function login(page: Page, path: string) {
+  await page.goto(`/dev/login?user=admin@hojas.test&next=${path}`);""","""export async function login(page: Page, path: string, user = 'admin@hojas.test') {
+  await page.goto(`/dev/login?user=${user}&next=${path}`);""")
+s=s.replace("""  await page.keyboard.press('Enter');
+  await page.keyboard.type(text);
+  await page.keyboard.press('Enter');""","""  await page.keyboard.press('Enter');
+  const editor = page.getByRole('textbox', { name: 'Editor de celda' });
+  await expect(editor).toBeFocused();
+  await editor.pressSequentially(text);
+  await page.keyboard.press('Enter');""")
+s=s.replace("import { APIRequestContext, Page }","import { APIRequestContext, expect, Page }")
+open(p,'w').write(s)
+E
+cat > e2e/0027-concurrent-edit.spec.ts <<'E'
+import { expect, test } from '@playwright/test';
+import { cellValue, login, typeInCell } from './helpers';
+
+const SESSIONS = [1, 2, 3, 4, 5];
+const COLUMNS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+
+// Flujo core: editar celdas de una hoja y que se guarden.
+test('cinco sesiones editan 10 celdas distintas cada una y las 50 se guardan', async ({ browser, request }) => {
+  const contexts = await Promise.all(SESSIONS.map(() => browser.newContext()));
+  try {
+    const pages = await Promise.all(contexts.map((c) => c.newPage()));
+    await Promise.all(pages.map((page) => login(page, '/hojas/cierre', 'agente@hojas.test')));
+
+    // La sesión N edita la fila N; todas a la vez.
+    await Promise.all(pages.map(async (page, i) => {
+      for (const col of COLUMNS) await typeInCell(page, `${col}${SESSIONS[i]}`, `v${col}${SESSIONS[i]}`);
+    }));
+
+    for (const row of SESSIONS) {
+      for (const col of COLUMNS) {
+        await expect.poll(() => cellValue(request, 'cierre', `${col}${row}`)).toBe(`v${col}${row}`);
+      }
+    }
+  } finally {
+    await Promise.all(contexts.map((c) => c.close()));
+  }
+});
+E
+git diff --stat; npx tsc --noEmit --skipLibCheck --module esnext --moduleResolution bundler --target es2022 e2e/0027-concurrent-edit.spec.ts e2e/helpers.ts 2>&1 | head
+<<< Auto-install is enabled, attempting to install Python 3.15.1+20261021
+{"type":"progress","id":"python","message":"Installing Python with specification 3.15.1+20261021"}
+{"type":"progress","id":"python","message":"Installing Python 3.15.1+20261021"}
+{"type":"progress","id":"python","message":"Downloading pre-built archive cpython-3.15.1+20261021-x86_64-pc-windows-msvc-install_only.tar.gz"}
+{"type":"progress","id":"python","message":"Verifying checksum against SHA256SUMS"}
+{"type":"progress","id":"python","message":"Unpacking archive cpython-3.15.1+20261021-x86_64-pc-windows-msvc-install_only.ta
+
+>>> Bash: cd <run>/repo && git add e2e && git commit -q -m "test(sheet): estrés de edición a la vez de 5 sesiones (0027 Task 2)
+
+Escrita sin ejecutar: esta máquina no tiene navegadores de Playwright.
+typeInCell espera al editor visible antes de teclear.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< warning: in the working copy of 'e2e/0027-concurrent-edit.spec.ts', LF will be replaced by CRLF the next time Git touches it
+1cb4c8f test(sheet): estrés de edición a la vez de 5 sesiones (0027 Task 2)
+
+=== RESULTADO (11 turnos, 0.28756940000000003 $)
+He escrito la prueba de la Task 2 y hecho commit (`1cb4c8f`). No la he ejecutado, así que no he visto el RED que exige la skill. Tampoco he marcado la Task 2 en `tasks.md`.
+
+**La prueba** está en `e2e/0027-concurrent-edit.spec.ts`:
+- Abre 5 contextos de navegador con la hoja `cierre`, con el usuario `agente@hojas.test`.
+- Cada sesión edita 10 celdas distintas a la vez: la sesión N escribe en la fila N, columnas A–J.
+- Al acabar, comprueba contra el API que las 50 celdas tienen su valor.
+- Está declarada como parte del flujo core «editar celdas de una hoja y que se guarden».
+
+**Cambios en `e2e/helpers.ts`:**
+- `typeInCell` ahora espera a que el editor esté enfocado antes de teclear. Sin eso se pierden teclas, y con 5 sesiones a la vez pasaría más. Este cambio afecta a los demás E2E, que tampoco he ejecutado.
+- `login` acepta un usuario opcional. Por defecto sigue siendo `admin@hojas.test`, así que los otros tests no cambian.
+
+**Antes de ejecutarla, ten en cuenta dos cosas:**
+- **La prueba no puede pasar con la UI actual.** `Grid.tsx` solo pinta A–D × 1–5, 20 celdas, y la spec pide 50 celdas distintas. Hasta que se amplíe la rejilla, fallará por celdas que no existen (`cell-E1` y siguientes), no por la pérdida de escrituras. Ampliarla no está en ninguna task del plan. Antes de ejecutar hay que decidir si se añade una task o se cambia el tamaño del escenario.
+- **Los datos de la hoja `cierre` no se limpian.** El API no tiene endpoint para borrar celdas, así que la prueba no puede borrarlas al terminar. Con el API en memoria basta con reiniciarlo.
+
+Pendiente en una máquina con navegadores: arrancar `npm run api` y `npm run dev`, y ejecutar `npx playwright test e2e/0027-concurrent-edit.spec.ts`.

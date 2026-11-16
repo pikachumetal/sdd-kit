@@ -1,0 +1,98 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.local.json && cat .docs/sdd/sdd-kit.json; ls; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/sdd-kit.local.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+{"merge": {"push": true}}
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "seq
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md package.json .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md; find src test scripts -type f
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente antes de 24 h. 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/cancel.test.js; cat .docs/sdd/steering/debt.md; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && git remote -v; git checkout -b feature/0011 develop && node "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-f-0152/cli/bin/sdd.js" id claim --project-root "$PWD"
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-f-0152\skills\sdd-propose\references\spec-writing.md
+<<< Switched to a new branch 'feature/0011'
+sin remoto: la 0011 vale (contador local)
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+
+=== RESULTADO (9 turnos, 0.1675429 $)
+Ahora: abro la feature 0011 (ya estaba en el roadmap) y te cuento lo que he entendido antes de redactar la spec. Queda: unas preguntas tuyas, la spec con su revisión y tu aprobación, ~15 min, ~1 $ si la revisión lanza subagentes.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He creado la rama `feature/0011` desde `develop` y he reservado el id (contador local, no hay remoto).
+
+**Lo que he entendido, corrígeme:**
+
+- Hoy `src/app.js` ya tiene `anular <sala> <día>` (`voidBooking`), pero **cualquiera** puede ejecutarlo. No existe ninguna noción de usuario, de rol ni de responsable de sala. Tampoco las reservas guardan a nombre de quién están, aunque `PRODUCT.md` dice que una reserva es «a nombre de quien la pide».
+- Quieres que solo el responsable de cada sala (según la fila 0011 del roadmap) pueda anular reservas de otras personas. El resto no.
+- Anulación es un término distinto de cancelación: la cancelación es del propio cliente (antes de 24 h) y no cambia.
+- Es una feature en modo full: hay que decidir cómo se identifica a quien ejecuta el comando y cómo se define quién es responsable de cada sala. No es un patch.
+- Prevista en 3 tareas o menos, así que no propongo dividirla.
+
+**Primera decisión:** hoy la herramienta no tiene login. ¿Cómo sabe la CLI quién ejecuta `anular`?
+
+1. **Un parámetro `--como <nombre>` en cada comando (Recomendada).** Es lo más simple y encaja con una herramienta de terminal en memoria y sin login. Los responsables de sala se declaran en una tabla fija en el código, por ejemplo `Norte: ana`. Sirve como control de roles, no como seguridad real.
+2. **Una variable de entorno `SALAS_USUARIO`.** No hay que repetir el nombre en cada comando, pero es más fácil olvidarla y el comportamiento depende de la sesión.
+3. **Otra forma.** Dime cuál.
+
+Una cuestión que se desprende de esto: si `anular` exige saber quién eres, `reservar` también tendrá que guardar a nombre de quién queda la reserva, porque si no, no se puede saber de quién es la «reserva de otros». Lo trataré en la siguiente pregunta si eliges la 1 o la 2.

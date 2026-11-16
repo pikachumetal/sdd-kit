@@ -1,0 +1,59 @@
+--- [11]
+Ahora: clasifico el cambio y abro la entrevista de diseño. Queda: unas pocas preguntas, luego la spec para que la apruebes, ~10 min.
+
+--- [14]
+Ahora: te cuento cómo lo he clasificado y abro la entrevista. Queda: unas pocas preguntas, luego la spec para que la apruebes, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme).** Quieres que `reservar <sala>` en una franja ocupada no sea simplemente un callejón sin salida: te apuntas en una lista de espera de esa sala y franja. Es una feature nueva, sin fila en el roadmap, así que le reservaré un id propio. Prevé unas 3 tareas (apuntarse, ver la cola, atender la cola al liberarse), todas en `src/app.js`, así que no propongo dividirla. Lo que he visto: `src/app.js` guarda las reservas en memoria y `cancelar` solo devuelve un texto; aún no hay noción de «ocupada» al reservar. Hay un aviso por correo planificado en la 0008, que no tocaré.
+
+La decisión que más condiciona las demás es qué pasa cuando la sala se libera:
+
+❓ **¿Qué hace la lista de espera cuando alguien cancela?**
+Ahora `cancelar` solo confirma la cancelación. Escena con datos: Norte está reservada el lun 10:00-12:00 y tú estás en espera; alguien ejecuta `cancelar lun 10:00`.
+
+1️⃣ **Reserva automática** La primera persona en la cola recibe la reserva: `cancelada lun 10:00; Norte reservada para ti (1.º en espera)`. Sin pasos extra, pero te puede caer una reserva que ya no quieres.
+2️⃣ **Solo aviso** La sala queda libre y se informa: `cancelada lun 10:00; Norte libre, 1 en espera: reserva con «reservar Norte»`. Tú decides, pero otro puede adelantarse antes de que reserves.
+3️⃣ **Reserva con confirmación** La sala queda retenida para el primero de la cola hasta que confirme (`confirmar`) o la libere. Es lo más justo, pero añade un estado nuevo (retenida) y una regla de caducidad.
+
+➡️ **Recomiendo 1️⃣**, porque la herramienta la usas tú solo y no hay otra persona a la que adelantar: el aviso sin acción te obligaría a reintentar a mano. A cambio, una reserva automática que no querías se cancela con `cancelar`.
+
+¿Cuál eliges?
+
+--- [16]
+Anoto lo que has confirmado: feature, modo full y perfil delegate. Tu motivo también queda anotado: ahora tienes que repetir `libres` a mano cada rato mientras Norte está ocupada.
+
+Ese «sí, adelante» no me dice qué hacer cuando alguien cancela, así que esa decisión sigue abierta. Tu motivo apunta a las opciones 1️⃣ y 2️⃣, porque las dos te ahorran mirar `libres`. Con 3️⃣ tendrías que hacer `confirmar` a mano, que es otra consulta más.
+
+Ejemplo con datos. Ejecutas `reservar Norte lun 10:00-12:00` y Norte está ocupada, así que sale `Norte ocupada; en espera (1.º)`. Alguien cancela y, con 1️⃣, sale `cancelada lun 10:00; Norte reservada para ti (1.º en espera)`. No hace falta volver a mirar `libres`.
+
+Un dato del código que afecta a esto: `bookings` vive en memoria y se reinicia en cada ejecución del comando. Hoy eso ya pasa con las reservas, así que la lista de espera tendría la misma limitación. Solo funcionaría dentro de un mismo proceso, y no resolvería tu caso de volver a mirar más tarde desde otra terminal. Dejo esa limitación apuntada y la trato en la spec.
+
+➡️ **Sigo recomendando 1️⃣ (reserva automática)**, porque es la que más te ahorra: no tienes que hacer nada cuando se libera. A cambio, si ya no la quieres, la cancelas con `cancelar`.
+
+¿Confirmas 1️⃣ o prefieres 2️⃣?
+
+--- [18]
+Te lo explico con un caso concreto.
+
+Ahora mismo, si reservas una sala que ya está ocupada, la herramienta no hace nada útil. Tú lo resuelves a mano: ejecutas `libres 10:00-12:00`, ves que Norte no sale, y repites cada rato hasta que aparece.
+
+Lo que añadiría la lista de espera es esto:
+
+1. Norte está reservada el lunes de 10:00 a 12:00.
+2. Tú ejecutas `reservar Norte lun 10:00-12:00`. En vez de fallar, te apunta en una cola y responde `Norte ocupada; en espera (1.º)`.
+3. Más tarde alguien ejecuta `cancelar lun 10:00`. Aquí hay que decidir qué hace la herramienta con la cola. Es la decisión que te preguntaba.
+
+- **Reserva automática.** La herramienta pasa la reserva a la primera persona de la cola. La respuesta sería `cancelada lun 10:00; Norte reservada para ti (1.º en espera)`. Ya la tienes, sin hacer nada más.
+- **Solo aviso.** La herramienta deja la sala libre y avisa de que había alguien esperando. La respuesta sería `cancelada lun 10:00; Norte libre, 1 en espera`. Tienes que ejecutar `reservar Norte` tú mismo, y otra persona podría reservarla antes.
+- **Retener hasta confirmar.** La herramienta guarda la sala para el primero de la cola hasta que ejecute `confirmar`. Es el reparto más justo, pero añade un comando y un estado nuevos.
+
+Sobre la memoria: `src/app.js` guarda las reservas en una lista en memoria, que se vacía cada vez que ejecutas un comando. Por eso, hoy, una reserva que hagas con un comando no existe cuando ejecutas el siguiente desde la terminal. Una lista de espera guardada de la misma forma tendría el mismo límite. Para que funcione de un día para otro habría que guardar los datos en un fichero, y eso es un cambio mayor que esta feature.
+
+Dime qué parte no te ha quedado clara, o cuál de los tres comportamientos encaja con lo que quieres, y seguimos desde ahí.
+

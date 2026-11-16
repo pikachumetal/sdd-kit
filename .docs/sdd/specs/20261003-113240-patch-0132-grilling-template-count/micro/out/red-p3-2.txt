@@ -1,0 +1,39 @@
+**Nota para la skill que me invoca:** según `tech-stack.md`, las reservas viven en memoria y se pierden al salir. Si cada comando de `salas` es un proceso aparte, `salas exportar` arrancaría sin reservas y exportaría un fichero vacío. Así que guardar las reservas en disco seguramente es requisito previo de la exportación. Conviene planteárselo al usuario como decisión aparte. No cambia el formato, así que la pregunta de formato puede ir ahora.
+
+---
+
+❓ **¿En qué formato exportamos las reservas?**
+
+Lo que encontré:
+- En `tech-stack.md`, una reserva es `sala`, `día` y `franja`, siempre en ese orden. El proyecto usa Node 22 sin dependencias, así que el exportador tendría que escribirse a mano. Para CSV, JSON y .ics eso es asumible.
+- Sobre calendarios, **sin verificar** porque en esta sesión no tengo acceso a la web:
+  - Google Calendar importaría CSV (con columnas `Subject` y `Start Date`) y .ics ([ayuda de Google](https://support.google.com/calendar/answer/37118)).
+  - Apple Calendar y el Outlook nuevo solo importarían .ics.
+  - Las hojas de cálculo abren CSV directamente, pero ni JSON ni .ics sin pasos extra.
+
+Con una reserva de ejemplo (sala Norte, lunes, franja 9-10; el formato de la franja me lo invento), `salas exportar` daría:
+
+1️⃣ **CSV**: `sala,día,franja` / `Norte,lunes,9-10`
+- Se abre tal cual en Excel, Sheets o LibreOffice.
+- Un script lo lee línea a línea y una persona lo entiende a simple vista.
+- No llega a la mayoría de calendarios.
+
+2️⃣ **JSON**: `[{"sala":"Norte","día":"lunes","franja":"9-10"}]`
+- Es lo más cómodo para scripts.
+- La hoja de cálculo no lo abre directamente.
+- Leerlo a ojo cuesta más y no llega a calendarios.
+
+3️⃣ **.ics**: `BEGIN:VEVENT` / `SUMMARY:Norte` / `DTSTART:20261005T090000` …
+- Se importa en cualquier calendario.
+- No sirve para hojas de cálculo y es incómodo de leer o procesar.
+- Exige convertir `lunes` en una fecha concreta y la franja `9-10` en horas.
+
+🔀 **CSV y .ics**: `salas exportar --formato csv|ics`
+- Cubre los cuatro usos que mencionaste.
+- A cambio, son dos exportadores que mantener, y el .ics tiene la misma exigencia de fechas y horas que la opción 3️⃣.
+
+➡️ **Recomiendo 🔀**, porque el CSV cubre por sí solo tres de tus cuatro usos (hojas de cálculo, scripts y leerlas a ojo), y para calendarios que no sean Google solo funcionaría el .ics. A cambio, hay que definir cómo se traducen los días y las franjas a fechas y horas reales. Si los calendarios pueden esperar, 1️⃣ es la opción más barata.
+
+---
+
+Los conectores de Gmail, Google Calendar, Google Drive y Slack necesitan autorización en la configuración de conectores de claude.ai. Para esta pregunta no hacen falta.

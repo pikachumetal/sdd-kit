@@ -1,0 +1,55 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (5 turnos, 0.0895553 $)
+Ahora mismo reservamos en tramos de una hora, ¿verdad? Cuéntame la última vez que alguien quiso reservar algo más corto de una hora: ¿qué pasó y qué se hizo?
+
+>>> Bash: git ls-files | head -50; grep -rniE "hora|slot|franja|duraci|hour" --include=* -I . 2>/dev/null | grep -v "^./.git/" | head -30
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+./.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md:3:Causa raíz: comparación solo por hor
+
+>>> Bash: cat src/app.js PRODUCT.md; sed -n 1,30p .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (3 turnos, 0.1169672 $)
+Antes de preguntarte, he mirado el código. Esto es lo que dice y lo que supongo:
+
+- **Lo que dice el código:** una reserva guarda `room`, `day` y `slot` como texto libre, por ejemplo `'10:00-12:00'`. `libres` solo compara ese texto por igualdad exacta. Ninguna regla fija la duración en una hora ni en dos, y `debt.md` ya apunta que no se valida el formato de la franja.
+- **Lo que supongo:** las dos horas no vienen del sistema, sino de cómo se usa. Tu ejemplo `10:00-12:00` y la sala Norte reservada así parecen indicarlo. Una reunión de media hora tiene que reservar una franja de dos horas porque no hay otra manera cómoda de hacerlo.
+- **Un problema aparte:** aunque escribieras `10:00-10:30`, no se solaparía con `10:00-12:00`. Dos franjas distintas se tratan como independientes, así que la sala saldría libre estando ocupada. Dejar reservar medias horas exige también comparar solapamientos, no solo igualdad.
+
+¿Qué te parece lo que he entendido: algo falla o falta? ¿Hoy tecleas tú la franja completa al reservar, o hay unas franjas fijas de dos horas que sigues por costumbre?

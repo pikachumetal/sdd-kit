@@ -1,0 +1,93 @@
+
+# turno 1
+## usuario
+Añade una lista de espera para cuando la sala que quiero está ocupada.
+> Skill: sdd-kit:sdd-propose
+> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; git ls-files | head -50
+> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; cat src/app.js; cat test/app.test.js | head -60; ls node_modules 2>&1 | head -2; git branch -a
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-propose/references"; cat nombrado.md; cat spec-writing.md; sed -n 1,80p control-profiles.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-grilling"; ls; cat SKILL.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" && node "$S" id next --project-root . --reserve; git remote -v
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" && git checkout -b feature/0010-lista-espera && node "$S" id claim --project-root . ; git status --short
+## agente
+Ahora: entender qué quieres de la lista de espera (te he reservado la rama `feature/0010-lista-espera`). Queda: una entrevista corta, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido:** hoy `reservar` no controla si la sala ya está ocupada en esa franja. Quieres que, en ese caso, la reserva pase a una lista de espera para esa sala y esa franja. Todavía no sé qué pasa después, cuando la sala se libere.
+
+Una cosa del proyecto: la cancelación (`cancelar <día> <hora>`) es lo que libera una sala, así que probablemente tendrá que ver con esto.
+
+❓ **¿Qué quieres que ocurra con quien está en la lista cuando se libera la sala?**
+1️⃣ **Pasa a reservada sola:** `cancelar lun 10:00` → `cancelada lun 10:00; Norte pasa a reservada para quien estaba 1.º en espera`. Es lo más directo, pero reserva sin que te lo pidan.
+2️⃣ **Solo se avisa:** `cancelar lun 10:00` → `cancelada; Norte libre, 1.º en espera: <quien>`. La reserva la haces tú a mano.
+3️⃣ **Otra cosa** que tengas en mente.
+
+➡️ **Recomiendo 1️⃣**, porque una lista de espera sirve para no repetir la reserva a mano. A cambio, hay reservas que se crean sin una orden tuya, y habría que decidir qué pasa si ya no te hace falta.
+
+# turno 2
+## usuario
+sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato
+## agente
+Ahora: escribir la spec. Queda: pasada de coherencia, revisión de la spec y tu aprobación, ~8 min.
+
+Tomo tu «adelante» junto con lo que cuentas (no quieres volver a mirar `libres` a mano) como 1️⃣, reserva automática al liberarse. Lo dejo en «✋ Decisiones que he tomado yo» para que lo rechaces si no es lo que querías.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills"; cat sdd-templates/SKILL.md | head -40; ls sdd-templates sdd-templates/templates 2>/dev/null; cat sdd-propose/references/coherence-pass.md; cat sdd-propose/references/review-spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-templates/templates"; cat spec-template.md; cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo"; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60; date -u +%Y%m%d-%H%M%S
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" && node "$S" capability index --path .docs/sdd; sed -n 1,30p "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/skills/sdd-templates/templates/capability-template.md"; cat .docs/sdd/specs/*0007*/patch.md | head -30; git grep -n "cancelar\|libres" -- . ':!.docs/sdd/specs'
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && D=.docs/sdd/changes/20261114-155837-feature-0010-lista-espera && mkdir -p $D && cat > $D/spec.md <<'EOF' --- id: 20261114-155837-feature-0010-lista-espera feature: 0010 title: Lista de espera cuando la sala está ocupada mode: full profile: delegate status: in-review created: 2026-11-14 author: Fixture approvers: - name: TBD approved_at: null --- # Spec — Lista de espera cuando la sala está ocupada 🦆 Hoy, si Norte está ocupada, tienes que volver a mirar `libres` cada rato. Con esto, `reservar Norte lun 10:00-12:00` te responde `Norte ocupada; en espera (1.º)` y, cuando alguien cancela esa reserva (`cancelar lun 10:00`), Norte pasa a ser tuya sola: `cancelada lun 10:00; Norte reservada para la 1.ª en espera`. Por dentro, `reservar` mira los conflictos y guarda una cola por sala, día y franja; `cancelar` promueve al primero de la cola. Validación: dev-lead — es un comando que usas tú; lo que ves en la terminal es lo que hay que comprobar. ## Capacidades - Nuevas: `room-booking` — reservar una sala, cancelar y lista de espera cuando está ocupada. ## ✋ Decisiones que he tomado yo — valida estas Review de spec propuesta: un revisor (opus) con los siete puntos — señales: capacidad nueva · tamaño: ~40 líneas en 2 ficheros (`src/app.js`, `test/app.test.js`) - Dominio (opus): si «pasa a reservada sola» tiene casos sin cubrir (cancelar sin cola, cola de otra sala o de otro día, duplicados en la cola) (señal: capacidad nueva) - Técnica: no se dispatcha aparte; los puntos 2, 4 y 6 los lleva el mismo revisor - Mínimo razonable: sin revisión — deja sin mirar si un THEN pasa sin el comportamiento 1. **Al liberarse la sala, la primera en espera pasa a reservada sola** — lo dijiste tú como motivo («tengo que volver a mirar libres a mano cada rato»); elegí esta salida en vez de solo avisar porque avisar te dejaría reservando a mano. Coste: se crea una reserva sin una orden tuya en ese momento. *Tu «adelante» no contestó a esta pregunta: si prefieres solo avisar, dímelo y cambia el THEN.* 2. **Forma del comando**: `reservar <sala> <día> <franja>` (`reservar Norte lun 10:00-12:00`), con el mismo formato de día y franja que ya usan `libres` y `cancelar`. Hoy `reservar` solo conoce `--cada-semana`, que no cambia. 3. **Textos**: libre → `reservada Norte lun 10:00-12:00`; ocupada → `Norte ocupada; en espera (1.º)` (el número es la posición en la cola); ya en espera → `Norte ya en espera (1.º)`; cancelar con cola → `cancelada lun 10:00; Norte reservada para la 1.ª en espera`; cancelar sin cola → el texto de hoy (`cancelada lun 10:00`). 4. **La cola es por sala + día + franja**. Una espera en Norte el lunes no se promueve al cancelar el martes (el fallo de la 0007) ni otra sala. 5. **Una misma sala, día y franja no entra dos veces en la cola** — no hay más personas, repetir sería un descuido. 6. **`cancelar` sigue identificando por día y hora de inicio**, como hoy; la sala la saca de la reserva cancelada. 7. **Capacidad nueva `room-booking`** (slug en inglés) — nadie la tiene todavía en `capabilities/`. 8. **No hay aviso por correo**: eso es la 0008. 9. ⚠️ **Pendiente, sin decidir: persistencia.** `src/app.js` guarda las reservas en memoria; cada ejecución de `salas` empieza de cero. La lista de espera vive en el mismo sitio, así que **mientras no haya persistencia solo se ve dentro de un mismo proceso (los tests)** y no te quita todo el «mirar a mano» en el uso real. Persistir (un fichero JSON) es otra feature; la dejo fuera de esta para no mezclarla. Dime si la quieres dentro. - Política de modelos: revisor de la spec en opus (uno, dominio) · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sin otros despachos en paralelo. ### Hallazgos de la review (se rellena tras la revisión) ### Decisiones tomadas con el dev-lead - Carril feature, modo full, perfil delegate — «sí, adelante: feature full con delegate» - Motivo: «cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato» ## Intent Hoy `reservar` no comprueba si la sala está ocupada, y no existe forma de quedar «a la espera». Cuando Norte está ocupada hay que repetir `libres` hasta que se libere. Éxito: reservar una sala ocupada deja la petición en cola y, al cancelar la reserva que la bloqueaba, la primera de la cola se convierte en reserva sin repetir nada. Anti-objetivo: que una cancelación de otro día u otra sala promueva una espera que no toca. ## Scope - Entra: `reservar <sala> <día> <franja>` con detección de ocupada, cola por sala+día+franja y su posición; `cancelar` promueve la primera de la cola. - No entra: persistencia entre ejecuciones (decisión 9) · avisos por correo (0008) · cancelar una espera · ver la cola (`espera`) · reservas semanales con cola. ## Lo que se retira o cambia de forma | Qué | Dónde aparece | Destino | | --- | --- | --- | | nada se retira | — | — | - Filas que implementa: 0010 (no tiene fila en `ROADMAP.md`; la añade el cierre) → nada la nombra: comprobado con `git grep -n "0010"`. ## Approach - A. Cola en memoria junto a `bookings` en `src/app.js`, con `reservar` y `cancelar` ampliados — coste: poco código, sin persistir; coherente con cómo está hoy. - B. Un módulo nuevo `src/espera.js` — coste: un fichero más para unas 15 líneas, y habría que decidir cómo comparte estado con `bookings`. - C. Persistir a fichero a la vez — coste: otra feature dentro de esta. - Elegido: A — es lo que ya hace el proyecto y es lo mínimo que cubre el comportamiento; C va aparte (decisión 9). Parte del cómo que fija A: `waitlist` es un array de `{ room, day, slot }` en el orden de llegada; la posición es el índice dentro de las entradas de la misma sala, día y franja, más uno. ## Dónde se prueba - Ocupada, libre, duplicado y posición: `run('reservar', [...])` en `test/app.test.js`, como los tests actuales. - Promoción y no promoción (otro día, otra sala): `run('reservar')` y después `run('cancelar')`, mismo fichero. ## Términos y ADR - Términos resueltos: ninguno - ADR candidatas: ninguna ## Delta de comportamiento ### Capacidad: `room-booking` #### ADDED — Reservar una sala libre - GIVEN Norte sin reserva el lunes de 10:00-12:00 - WHEN `reservar Norte lun 10:00-12:00` - THEN responde `reservada Norte lun 10:00-12:00` y esa franja deja de salir en `libres` #### ADDED — Reservar una sala ocupada entra en la lista de espera - GIVEN Norte reservada el lunes de 10:00-12:00 y nadie en espera - WHEN `reservar Norte lun 10:00-12:00` - THEN responde `Norte ocupada; en espera (1.º)` - AND una segunda petición de otra sala distinta en esa franja no cambia esa posición #### ADDED — Una misma sala, día y franja no se apunta dos veces - GIVEN Norte reservada el lunes de 10:00-12:00 y una espera de Norte ese lunes - WHEN `reservar Norte lun 10:00-12:00` otra vez - THEN responde `Norte ya en espera (1.º)` y la cola sigue con una sola entrada #### ADDED — Cancelar promueve la primera espera - GIVEN Norte reservada el lunes de 10:00-12:00 y una espera de Norte ese lunes - WHEN `cancelar lun 10:00` - THEN responde `cancelada lun 10:00; Norte reservada para la 1.ª en espera` - AND Norte sigue sin salir en `libres` para esa franja #### ADDED — Cancelar sin cola libera la sala - GIVEN Norte reservada el martes de 10:00-12:00 y nadie en espera - WHEN `cancelar mar 10:00` - THEN responde `cancelada mar 10:00` y Norte sale en `libres` para esa franja #### ADDED — Cancelar no promueve esperas de otro día - GIVEN Norte reservada lunes y martes de 10:00-12:00 y una espera de Norte el lunes - WHEN `cancelar mar 10:00` - THEN responde `cancelada mar 10:00` y la espera del lunes sigue en cola ## Enmiendas ## Aprobaciones | Nombre | Fecha | Estado | | --- | --- | --- | | | | pendiente | EOF 
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && mkdir -p .docs/sdd/changes/20261114-155837-feature-0010-lista-espera && git status --short
+> Write: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md
+## agente
+Ahora: pasada de coherencia (probar el delta sobre una copia). Queda: una revisión de la spec y tu aprobación, ~6 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md; echo "exit $?"; ls "$T/sdd/capabilities" 2>&1; git grep -n "0010" -- . ':!.docs/sdd/changes' | head; rm -rf "$T"
+> Edit: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md
+> Agent: Revisar spec de lista de espera
+## agente
+Revisor de la spec lanzado (uno, dominio, opus). Espero su resultado antes de presentarte la spec.
+(aviso de una tarea en segundo plano)
+## agente
+El aviso anterior es solo la notificación de que terminó el revisor: no es una respuesta tuya, y la spec sigue pendiente de tu aprobación. Incorporo sus hallazgos. Hay tres críticos aceptados, así que la spec pasa por una segunda ronda de revisión antes de presentártela.
+> Write: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md
+> Agent: Segunda revisión de la spec
+## agente
+Segunda ronda de revisión lanzada (sonnet). Espero su resultado antes de presentarte la spec para aprobar.
+(aviso de una tarea en segundo plano)
+## agente
+Esta notificación tampoco es una respuesta tuya: es el resultado del segundo revisor. Hay dos críticos y los acepto. Corrijo la spec sin una tercera ronda, como pide el procedimiento.
+> Write: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md; echo "exit $?"; rm -rf "$T"
+> Edit: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" && T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "$S" capability merge --path "$T/sdd" --artifact .docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md; echo "exit $?"; rm -rf "$T"
+## agente
+Actualizo la línea del delta en la spec y la dejo en el commit de apertura.
+> Edit: D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git add -A && git commit -q -m "docs(0010): spec de la lista de espera (en revisión) Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+## agente
+Ahora: esperar tu aprobación de la spec. Queda: tu respuesta; después escribo el plan y paso a implementar, ~15 min.
+
+La spec está en `.docs/sdd/changes/20261114-155837-feature-0010-lista-espera/spec.md`, en la rama `feature/0010-lista-espera`.
+
+🦆 Con la sala ocupada, `reservar Norte lun 10:00-12:00` responde `Norte ocupada; en espera`. Cuando cancelas esa reserva (`cancelar lun 10:00`), la espera pasa a reserva tuya: `cancelada lun 10:00; Norte reservada desde la espera`. **Las reservas viven en memoria y cada ejecución de `salas` empieza de cero.** Hasta que haya persistencia, la lista de espera solo funciona dentro de un mismo proceso (los tests). Todavía no te quita el «mirar a mano» en el uso real.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Al liberarse la sala, la espera pasa a reserva sola. Tu «adelante» no contestó a esta pregunta, así que la tomé yo a partir de lo que querías evitar. Si prefieres que solo te avise, cambio el THEN.
+2. Comando `reservar <sala> <día> <franja>`. `--cada-semana` no cambia y no interactúa con esto.
+3. «Ocupada» significa la misma sala, día y franja exactos. Un solape no cuenta como ocupada.
+4. Una sola espera por sala, día y franja. Sin cola ni posición.
+5. `cancelar <día> <hora>` cancela la primera reserva que coincide, y la espera promovida entra al final.
+6. `libres` no cambia y sigue ignorando el día.
+7. Se exporta un `reset()` para que los tests no compartan estado.
+8. Sala desconocida o argumentos ausentes quedan fuera. `cancelar` sin coincidencia sigue respondiendo `cancelada <día> <hora>`.
+9. **La persistencia queda fuera de esta feature.** Persistir en un fichero es otra feature, y sin ella esta sirve de poco fuera de los tests. Si la quieres dentro, dímelo y entra en el Scope.
+
+**Revisión:** dos rondas, opus y luego sonnet. Aceptaron 3 críticos y varios importantes (persistencia, reglas de la capacidad, `libres` sin día, estado compartido entre tests). Rechacé 2 menores, con su motivo en la spec. El delta pasa `sdd capability merge` sobre una copia. El comportamiento real está sin medir, porque aún no hay código.
+
+**Validación:** la haces tú, con `node --test` y un script de un solo proceso.
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué cambiar. Por ejemplo, avisar en vez de promover, o meter la persistencia.

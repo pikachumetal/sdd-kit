@@ -1,0 +1,99 @@
+--- [3]
+Empiezo por los pre-checks y leo las referencias de validación y de la suite.
+
+--- [21]
+Estoy ensayando el guion contra el entorno real. El `env-up` dijo «no responde» pero los pasos contestaron, así que compruebo que no me quede nada escuchando en el 5061.
+
+--- [26]
+Ese servidor lo arrancó mi `env-up` hace unos segundos, con el código de esta rama. Lo paro por su PID.
+
+--- [31]
+🦆 Al cancelar una reserva hay que decir el motivo, uno de tres: «cambio de planes», «sala ocupada» u «otro». `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, rechaza la cancelación. El nuevo comando `canceladas` lista lo cancelado con su motivo, por ejemplo «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si no es correcto, el test falla cuando corre solo o en otro orden. Al cerrar lo apunto en `debt.md`.
+
+**No te hago esperar por la tanda**
+
+Con la validación manual no puedo lanzar nada contra el 5061 mientras pruebas. La tanda y el gate de cierre arrancan y paran el servidor de ese puerto, que es el de tu guion. Por eso la tanda y el gate corren **después de tu respuesta**, no antes. Ahora no espero nada. La tanda será esta:
+
+```
+# Tanda: 3 tests cambiados de e2e/cancel.e2e.mjs ×3 + los 2 demás de ese fichero ×1 = 11 ejecuciones · ~1,4 min (7,6 s × 11 ÷ 1 worker)
+```
+
+`e2e/free.e2e.mjs` no la toca la rama, así que no entra en la tanda.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | la misma frase |
+| `canceladas` | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `d575bc6`, 0,1 s.
+- Gate de cierre (`node --test test/ && node e2e/run.mjs`): pendiente. Corre tras tu respuesta, junto con la tanda.
+
+**Sin probar**
+
+- Nada. La revisión final quedó limpia sobre `a349230`. El único commit posterior, `d575bc6`, es `tasks.md`, así que no hace falta otra revisión.
+
+Panel: plan B en http://127.0.0.1:1544/
+
+Esta página no ve la app. Si un paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno (puerto 5061):
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2. Usa la sesión `validacion`. Los pasos van en orden porque comparten estado:
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl.exe -H "x-session: validacion" "http://localhost:5061/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl.exe -H "x-session: validacion" "http://localhost:5061/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+3. Cancelar sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl.exe -H "x-session: validacion" "http://localhost:5061/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+4. Ver las canceladas → «Norte lun — sala ocupada»
+
+```
+curl.exe -H "x-session: validacion" "http://localhost:5061/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

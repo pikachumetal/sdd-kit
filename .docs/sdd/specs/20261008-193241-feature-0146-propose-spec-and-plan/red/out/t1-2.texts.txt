@@ -1,0 +1,22 @@
+--- [3]
+Antes de preguntar, miro qué hay en el repo sobre reservas y listas de espera.
+
+--- [10]
+Antes de preguntar he mirado el repo, y hay tres hechos que cambian el diseño:
+
+- **«Dar de baja» no es un término del proyecto.** `PRODUCT.md:9-10` lo marca como _Evitar_ en los dos casos: **Cancelación** es la que hace el propio cliente antes de 24 h, y **Anulación** es la que hace el responsable de sala.
+- **«Admin» no existe como rol.** El roadmap (0011) habla del «responsable de cada sala», y esa fila sigue en ⏳.
+- **Liberar la sala ya ocurre.** En `src/app.js:6`, `freeRooms` solo cuenta las reservas con `status === 'active'`. Tanto `cancelBooking` como `voidBooking` cambian el estado, así que la sala vuelve a salir en `libres`.
+- **La lista de espera no existe.** Tampoco hay usuarios ni canal de aviso: la app es una CLI sin identidad de persona. La fila 1 del roadmap solo prevé avisos por correo antes de la reserva.
+
+Lo que falta es la lista de espera y el aviso, y ambos dependen de qué baja dispara esto.
+
+❓ **¿Qué baja dispara «liberar y avisar al siguiente»?**
+Tu frase habla de un «admin», que en el glosario es el responsable de sala, es decir, la **anulación** (`anular`). La cancelación del cliente también libera la sala, y alguien en espera querría saberlo igual.
+
+1️⃣ **Solo la anulación del responsable** (`anular Norte lun`): libera y avisa al 1.º de la espera. La cancelación del cliente sigue como hasta ahora (libera sin avisar). Cuesta que quien cancela a tiempo no beneficia a la lista.
+2️⃣ **Las dos bajas** (`anular` y `cancelar`): cualquier reserva que se libere avisa al siguiente. Cuesta tocar `cancelBooking`, que acaba de arreglarse en el patch 0007, y los dos flujos quedan acoplados a la lista.
+3️⃣ **Solo la cancelación del cliente**: avisa al siguiente solo cuando se cancela. No encaja con lo que dices del admin, y lo incluyo para descartarlo.
+
+➡️ **Recomiendo 2️⃣**, porque desde la lista de espera el motivo de la baja da igual: la sala queda libre en ambos casos y el siguiente la querría. Con 1️⃣ alguien podría esperar para siempre una sala que un cliente ya canceló. A cambio, la feature toca los dos caminos y hay que cubrir ambos con tests.
+

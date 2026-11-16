@@ -1,0 +1,76 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [7]
+El árbol está limpio, `merge --check` da exit 0 y no hay otras ramas abiertas. Falta `.docs/sdd/changes/`, así que busco dónde está la 0010.
+
+--- [13]
+La revisión final revisó `20a2f3d` y `HEAD` está en `ab31824`, así que miro qué entró en medio.
+
+--- [23]
+Los dos commits posteriores cumplen la excepción de «Every commit of yours»: solo documentación y menos de 20 líneas. Verifico con `numstat`.
+
+--- [34]
+Voy a lanzar el smoke (una fila por THEN, con ejecución real) y la suite entera. Guardo la salida completa en el scratchpad antes de leerla.
+
+--- [37]
+Smoke y suite en verde, con un hallazgo que anoto más abajo: `canceladas` en un proceso nuevo sale vacío. Ahora leo la plantilla del walkthrough y la receta de merge.
+
+--- [41]
+Hago la fusión del delta de capacidad con la CLI, que es la única vía permitida.
+
+--- [44]
+`tasks.md` cita `20a2f3d` para las dos tasks, pero el log tiene dos commits `feat`. Compruebo qué toca cada uno.
+
+--- [47]
+Confirmado: la Task 1 es `b7f3af1`, no `20a2f3d`. Corrijo `tasks.md` y miro si el ledger de la ejecución tiene más rulings.
+
+--- [50]
+El ledger no tiene rulings (solo el de `tasks.md`). Escribo el walkthrough, sin citar ningún sha del rango que el cierre va a aplastar.
+
+--- [52]
+Ahora la retro del cierre, que deja su línea `Retro:` en §5.
+
+--- [58]
+Ahora la deuda y el roadmap: la fila de deuda en «Por triar» y el estado de la 0010 en `✅`.
+
+--- [62]
+El cambio de estado en el roadmap no se aplicó (sigue en `⏳`). Lo hago con `sed` sobre la fila de la 0010.
+
+--- [65]
+Antes de aplastar el cierre, compruebo que ningún registro cita un sha del rango que se va a juntar.
+
+--- [68]
+Ningún registro cita esos shas. Junto el cierre en un solo commit desde el último de las tasks (`20a2f3d`).
+
+--- [71]
+Cierre commiteado en `bbebb48`. Ahora la base integrada, en su propia llamada.
+
+--- [74]
+Base al día, no hay segunda suite. No hay `operations.md`, así que no hay CI de la base que leer. El bloque `merge` está completo en `delegate`, así que fusiono con el script.
+
+--- [77]
+🦆 Cancelar una reserva ahora exige un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista cada reserva cancelada con su motivo. Hay un límite importante: las reservas viven en memoria dentro de un proceso, así que desde la terminal, en dos invocaciones separadas, `canceladas` sale vacío. Eso es lo que cubre la 0014.
+
+**✋ Me salí del plan en…**
+- Task 2: el gate corrió con `node --test --test-concurrency=1` para esquivar una carrera entre tests sobre el almacén en memoria. Es un workaround y, si está mal, la suite tarda el doble. En el cierre corrí también `node --test` a secas, que es el gate del plan: 5/5 en las dos formas, así que no vi la carrera. Lo que sí es real es que `canceladas enseña sala, día y motivo` depende del estado que deja el test de `cancelar`. Lo dejé como fila en «Por triar» de `debt.md`.
+
+**Lo que ha pasado en el cierre**
+- **Revisión final:** había revisión de Spec y Código, limpias sobre `20a2f3d`. Los dos commits docs-only posteriores (17 y 5 líneas) los leí yo y los marqué como `revisado en el hilo`, así que no lancé re-revisión.
+- **Validación en campo (2026-11-11):** suite 5/5 y smoke 4/4 THEN con ejecución real. El THEN de `canceladas` solo se cumple dentro de un solo proceso, como explica el aviso de arriba.
+- **Corrección de registro:** `tasks.md` citaba `20a2f3d` para las dos tasks, pero la Task 1 es `b7f3af1`. Lo corregí y quedó en la línea `Retro:` del walkthrough.
+- **Capacidad:** `.docs/sdd/capabilities/bookings.md` es nueva, fusionada con `sdd capability merge`. Pasan `capability check`, `decision check` y `roadmap check`.
+- **Sin estimación:** el proyecto no tiene `estimation.md`, así que no hay tiempo real ni estimation-log.
+- **Roadmap:** la fila 0010 pasa a `✅`.
+- **Historia:** el cierre quedó en un solo commit sobre `20a2f3d`, `bbebb48`.
+
+**Pendiente**
+- El `merge` ya fusionó en `develop`. La base estaba al día (`base: al día`), así que no hubo segunda suite. La suite que cuenta es la de la validación, `node --test` 5/5, sobre el commit de cierre `bbebb48`, que se pasó como `--verified-at`.
+- No hubo conflictos que resolver.
+
+Para acabar la `0009` falta: `0016` — `Fotos de las salas`. Recomiendo `0016`, la primera del roadmap sin dependencias abiertas; su prompt lo da `sdd-roadmap`: «dame el prompt de la `0016`».
+
+Puedo preparar el ticket de mejora del kit con `sdd-feedback` si quieres. La retro no encontró nada atribuible al kit, así que no hay ninguna línea de ticket pendiente.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (ffb08bd) · push: no hecho: `merge.push` no lo autoriza
+

@@ -1,0 +1,53 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls; cat .docs/sdd/steering/debt.md; cat .docs/sdd/sdd-kit.json; git branch --all; ls ROADMAP.md
+<<< CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Copiar el molde de una campaña falla con `ENOENT` en una carpeta que existe | [ticket](../../../docs/tickets/2026-10-20-copia-molde.md) | 2026-10-20 |
+| `/tmp` no existe en la sesión de Git Bash y el script de informes no arranca | [ticket](../../../docs/tickets/2026-10-22-tmp.md) | 2026-10-22 |
+| `pnpm install` falla al preparar el worktree | [ticket](../../../docs/tickets/2026-10-25-red.md) | 2026-10-25 |
+| Un test agota su tiempo 
+
+>>> Bash: cd docs/tickets; for f in *; do echo "=== $f"; cat "$f"; done; cd ../..; cat ROADMAP.md; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< === 2026-10-05-salidas.md
+# Las salidas de `DRY_RUN=1` no aparecen en `out/`
+
+Lancé la campaña con `DRY_RUN=1` y `out/` quedó vacía, sin ningún error. `out_path` del lanzador descarta en silencio toda ruta de 140 caracteres o más. `RUNS_DIR` estaba en `D:\code\.worktrees\salas\feature-0031-informe-de-ocupacion\.temp\claude\D--code--worktrees-salas-feature-0031\9f2c\scratchpad\runs`, y con `dry\red\out\s1-1.tools.txt` detrás la ruta llegaba a 152.
+
+Perdí 25 minutos. Lancé la campaña desde un `RUNS_DIR` en `D:\r` y las salidas aparecieron.
+=== 2026-10-20-copia-molde.md
+# Copiar el molde fal
+
+=== RESULTADO (5 turnos, 0.1319518 $)
+Todavía no he escrito nada. Estoy en perfil `delegate`, así que le propongo el triaje y espero su decisión. Abrí los 4 tickets de «Por triar» y el de «En espera». `sdd roadmap check` sale válido y no avisa de ninguna fila caducada.
+
+| Ítem | Propuesta | Por qué |
+| --- | --- | --- |
+| Copia del molde con `ENOENT` (2026-10-20) + «En espera» de `DRY_RUN=1` sin salidas (2026-10-05) | **Una sola fila en «Lista»** | Es el mismo problema en los dos tickets. Una ruta larga de worktree o scratchpad (más de 140 caracteres para `out_path`, más de 260 para `cp`) hace fallar la operación. El remedio concreto también coincide: usar una ruta corta bajo `D:\r`. |
+| `/tmp` no existe en Git Bash (2026-10-22) | **«En espera»**, Causa `entorno de la máquina`, Falta `reproducirlo` | Solo hay un caso y no lo he reproducido. Lo resolvió `mkdir -p /tmp`. |
+| `pnpm install` con `ECONNRESET` (2026-10-25) | **Descartar**, motivo en el commit | Fue una caída de red de la oficina de diez minutos, y relanzar bastó. No hay ningún remedio que apuntar. |
+| Test agota su tiempo en el gate (2026-10-27) | **«En espera»**, Causa `carga o paralelismo`, Falta `reproducirlo` | Solo hay un caso. Pasó al relanzar el gate en solitario, en 2 s. |
+
+**Fila de «Lista» (fusión):**
+- **Causa:** `entorno de la máquina`. También podría ser `herramienta del kit`, porque `out_path` descarta en silencio, pero lo que desaparece con el remedio es la ruta larga.
+- **Origen y Evidencia:** los dos tickets, enlazados. No hay comando que lo reproduzca.
+- **Remedio temporal:** lanzar desde un `RUNS_DIR` o una copia bajo `D:\r`.
+- **Arreglo:** `comprobación automática`. Sería comprobar la longitud de la ruta al arrancar y fallar con un mensaje claro, en vez de descartar en silencio.
+- **Impacto:** Medio, como la fila de «En espera» que se fusiona.
+- **Destino:** le recomiendo una fila nueva en Next, de carril patch y tamaño S, con «solución por confirmar». Aún no he ejecutado el arreglo sobre una copia con el caso real. La alternativa es `sin fila`.
+
+¿Lo dejo así, o cambia algún resultado o el Destino? Si me dice «decide tú», escribo lo propuesto. Reservaría un id con `sdd id next --reserve`, validaría con `roadmap check` y publicaría con `roadmap publish`. Dejaría los motivos en el cuerpo del commit.

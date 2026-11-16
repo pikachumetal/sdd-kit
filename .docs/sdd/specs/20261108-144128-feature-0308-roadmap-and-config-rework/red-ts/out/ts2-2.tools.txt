@@ -1,0 +1,139 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Read: <run>\repo\docs\qa\2026-10-12-informe.md
+<<< 1	# Informe de QA — 2026-10-12
+2	
+3	Pruebas de la semana sobre la última versión publicada.
+4	
+5	## Hallazgos
+6	
+7	1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+8	2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`. Arreglo propuesto: en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`.
+9	
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls; ls .docs/sdd .docs/sdd/steering; git branch --all; git show develop:ROADMAP.md
+<<< Exit code 128
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+docs/
+package.json
+README.md
+src/
+test/
+ls: cannot access '.docs/sdd/steering': No such file or directory
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+* develop
+  main
+fatal: path 'ROADMAP.md' does not exist in 'develop'
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls .docs/sdd/specs; cat src/app.js; ls test; git log --oneline | head; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: node src/app.js libres --planta 2; node src/app.js exportar; node src/app.js exportar | od -c | head -3; cat package.json; cat "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/skills/sdd-templates/templates/roadmap-template.md"; cat .docs/sdd/constitution.md | head -40
+<<< Norte (planta 1)
+sala,día,franja
+Norte,lun,10:00-12:00
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+{"type": "module"}
+# Roadmap — <proyecto>
+
+> Índice vivo del proyecto: qué viene, qué se debe y qué se cerró. Lo escribe `sdd-roadmap` (filas nuevas, orden, descartes, la sección de release) y lo leen las skills del kit: `sdd-roadmap` (Backlog y deuda técnica), `sdd-archive` (marca la fila de la feature y la tabla de Patches) y `sdd-end-release` (colapsa la se
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" id next --project-root . --reserve --count 1
+<<< 0008
+
+>>> Bash: python - <<'EOF'
+p='.docs/sdd/roadmap.md'
+s=open(p,encoding='utf-8').read()
+s=s.replace("| 1 | Avisos por correo antes de la reserva | ⏳ |\n","| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: `salas libres --planta N` lista salas de otras plantas; `roomsOnFloor` (`src/app.js`) filtra con `<=` y debe comparar con `===` (informe QA 2026-10-12, hallazgo 2) | ⏳ |\n",1)
+s=s.replace("| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n","""| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+| `salas libres --planta 2` devuelve `Norte (planta 1)`. Evidencia: `node src/app.js libres --planta 2` → `Norte (planta 1)`. El arreglo propuesto del informe (`<=` por `<`) no sirve: Norte (1) < 2 sigue saliendo; hace falta `===`. Origen: [informe QA](../../docs/qa/2026-10-12-informe.md) §2 | Medio: resultado incorrecto en un comando de uso diario | **Actuar** → 0008 · causa: defecto del producto · arreglo: — |
+| La exportación a CSV pierde las tildes desde la 1.4.2 (`sala,d?a,franja`). Evidencia: `node src/app.js exportar` sale `sala,día,franja`, y los bytes son UTF-8 correctos (`c3 ad`); no se reproduce. Origen: [informe QA](../../docs/qa/2026-10-12-informe.md) §1 | Medio si se confirma: datos con tildes ilegibles | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo (¿codificación del programa que abre el CSV, p. ej. Excel?) |
+""",1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap publish --project-root . --message "docs(roadmap): triaje del informe QA 2026-10-12
+
+Decidido por delegación («decide tú»):
+- Hallazgo 2 (planta): reproducido; Actuar -> patch 0008. El arreglo del informe (<= por <) no sirve, hace falta ===.
+- Hallazgo 1 (CSV tildes): no se reproduce (bytes UTF-8 correctos); Esperar 2.º ticket, causa sin determinar.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" .docs/sdd/roadmap.md; git log --oneline | head -3
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+5ee7a46 feat: base del molde
+
+>>> Bash: git add .docs/sdd/roadmap.md && git commit -q -m "docs(roadmap): triaje del informe QA 2026-10-12
+
+Decidido por delegación («decide tú»):
+- Hallazgo 2 (planta): reproducido; Actuar -> patch 0008. El arreglo del informe (<= por <) no sirve, hace falta ===.
+- Hallazgo 1 (CSV tildes): no se reproduce (bytes UTF-8 correctos); Esperar 2.º ticket, causa sin determinar.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<< c51e7be docs(roadmap): triaje del informe QA 2026-10-12
+5ee7a46 feat: base del molde
+
+=== RESULTADO (11 turnos, 0.20087170000000001 $)
+Triado el informe de QA: el hallazgo 2 queda como patch `0008` y el 1 queda en espera. Está en el commit `c51e7be` de `develop`.
+
+**Hallazgo 2, `salas libres --planta 2` lista salas de otras plantas.** Lo reproduje: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- **Decisión:** **Actuar**, como patch `0008`, con una fila en «Próximo» y otra en «Deuda técnica». La causa es un defecto del producto.
+- **Arreglo del informe:** el cambio propuesto (`<=` por `<`) no sirve. Norte está en la planta 1 y `1 < 2` sigue siendo cierto, así que seguiría saliendo. En `roomsOnFloor` hay que comparar con `===`.
+
+**Hallazgo 1, el CSV pierde las tildes.** No lo reproduje.
+- **Qué vi:** `node src/app.js exportar` genera `sala,día,franja`, y los bytes son UTF-8 correctos (`c3 ad`).
+- **Decisión:** **Esperar 2.º ticket**, con causa «sin determinar» y falta «reproducirlo». Lo más probable es que el `?` aparezca al abrir el CSV en un programa que no lo lee como UTF-8, por ejemplo Excel. Si llega un segundo caso, se reabre.
+
+**Pendiente:**
+- **Publicación:** `sdd roadmap publish` se negó porque `develop` está en este mismo directorio y `roadmap.md` tenía cambios sin commitear. Hice el commit a mano en `develop`, sin `push`.
+- **Validador:** `sdd roadmap check` sigue fallando en dos líneas que no escribí, la cabecera de «Deuda técnica» y el título `v0.3.0 (2026-09-01)`. Las dejé como están; son forma heredada para la migración a v2.3.0.
+
+La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. El proyecto sigue con el formato 2.x (`roadmap.md`), así que lo traté así. Conviene actualizar con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar.
+
+Siguiente fila: `0008`. Prompt de lanzamiento:
+
+> Patch 0008: arregla `roomsOnFloor` en `src/app.js` para que `libres --planta N` solo liste salas de la planta N (comparar con `===`, no `<=`). Ejemplo: `--planta 2` devuelve vacío; `--planta 1` devuelve `Norte (planta 1)`. Test primero.
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

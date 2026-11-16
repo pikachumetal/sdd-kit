@@ -1,0 +1,29 @@
+--- [13]
+La exportación genera un fichero de calendario (`.ics`) con las reservas de un mes. El socio lo importa en Google Calendar u Outlook.
+
+## Cómo se usa
+
+`src/cli.js:5` define el comando `exportar --mes <AAAA-MM>`. Llama a `exportMonth(month)` e imprime la ruta del fichero generado.
+
+## Qué hace, paso a paso
+
+`exportMonth` (`src/export/index.js:6`) encadena cuatro pasos:
+
+1. **Carga** todas las reservas con `loadBookings()`. Salen de `data/bookings.json`, según `architecture.md`.
+2. **Filtra y ordena** (`src/export/filter.js`). Se queda con las reservas cuyo día empieza por el mes pedido y descarta las que tienen `status === 'cancelled'`. Las ordena por día y franja.
+3. **Convierte a ICS** (`src/export/ics.js`):
+   - Cada reserva pasa a ser un `VEVENT` con `SUMMARY:Sala <sala>`, `DTSTART` y `DTEND`.
+   - La franja (`"09:00-10:00"`) se lee como hora del coworking, con el desfase fijo `+02:00`. Se pasa a UTC para los sellos de tiempo.
+4. **Escribe** el fichero en `exports/<mes>.ics` (`src/export/writer.js`). Crea la carpeta `exports/` si no existe y devuelve la ruta.
+
+## Lo que dicen los documentos y lo que deduzco
+
+- **Dicen:** `PRODUCT.md` describe la exportación como el fichero de calendario con las reservas de un mes. Aclara que no es sincronización en vivo.
+- **Dicen:** `ROADMAP.md` tiene la 0012 (exportar el mes a `.ics`) como «implementada, sin cerrar». La 0013 (exportar solo una sala) está en «spec en borrador».
+- **Deduzco, sin confirmarlo en los docs:**
+  - El desfase `+02:00` está fijado en el código. Con el cambio de hora de invierno, las reservas de noviembre a marzo saldrían una hora desplazada. No lo he probado.
+  - Hay un límite en el filtro por mes: `startsWith(month)` no valida el formato. Si falta `--mes`, `args.indexOf` devuelve `-1` y se lee `args[0]`, que es `'--mes'` o `undefined`.
+  - Los `VEVENT` no llevan `UID` ni `DTSTAMP`, y el formato exige ambos. Algunos calendarios pueden rechazar el fichero o importarlo mal.
+
+Si alguno de esos puntos te interesa como trabajo, dímelo y lo paso al roadmap. No he tocado nada.
+

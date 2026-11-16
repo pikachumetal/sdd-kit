@@ -1,0 +1,75 @@
+--- [2]
+Usando `sdd-kit:sdd-propose` para clasificar este fallo antes de tocar nada.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto (docs, no código). Queda: reproducir el fallo para clasificarlo y preguntarte por el patch, ~3 min.
+
+--- [10]
+Contexto leído (sin capacidades; sin `sdd-kit.local.json`). Ahora: mirar el código de cancelación solo para reproducir y clasificar.
+
+--- [18]
+Causa raíz confirmada con evidencia (paso 1). Ahora: reservar id, crear rama y carpeta, y calcar `patch.md`.
+
+--- [26]
+RED por la causa correcta (`cancelada Norte mar` en vez de `sin reserva Norte mar`). Ahora el fix mínimo.
+
+--- [30]
+Fix commiteado. Ahora: cierre con `sdd-end-patch`.
+
+--- [33]
+El fix está commiteado (`e92964a`, rama `feature/0012-cancelar-dia`). Antes de cerrar y fusionar necesito tu validación. El proyecto no declara `validation.mode: field`, así que la validación es manual y el cierre se queda aquí hasta que respondas.
+
+## Lo que he verificado yo
+
+| # | Caso | Resultado |
+| --- | --- | --- |
+| 1 | `cancelar Norte mar` sin reserva el martes → `sin reserva Norte mar`, y la del lunes sigue activa | ✅ test `cancel-day.test.js`, RED→GREEN |
+| 2 | `anular Norte mar` → igual | ✅ test `void-day.test.js`, RED→GREEN |
+| 3 | `node --test && node scripts/lint.mjs` | ✅ 6/6, lint sin hallazgos |
+
+El fallo estaba en `findBooking`, que ignoraba el día. `anular` lo compartía, así que el fix lo arregla también.
+
+## Guion para probarlo tú
+
+Cada comando es un proceso nuevo con la reserva de Norte del lunes activa, porque las reservas viven en memoria.
+
+1. `node src/app.js cancelar Norte mar` → debe decir `sin reserva Norte mar`.
+2. `node src/app.js cancelar Norte lun` → debe decir `cancelada Norte lun`.
+3. `node src/app.js anular Norte mar` → debe decir `sin reserva Norte mar`.
+4. `node src/app.js anular Norte lun` → debe decir `anulada Norte lun`.
+
+## ¿Qué has probado?
+
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en el próximo uso de cancelar, a cargo del dev-lead`
+- `No funciona`
+
+Con «Validado» o «Diferir» sigo con el cierre. Eso incluye `patch.md`, changelog, roadmap, estimation-log y el merge a `develop` por el script del kit.
+
+--- [35]
+Entiendo el «sí» como respuesta a la validación (sin detalle de qué probaste). Sigo con el cierre.
+
+--- [42]
+Patch 0012 cerrado, pero **no he fusionado**: la rama `feature/0012-cancelar-dia` está lista y el merge queda pendiente de tu decisión.
+
+**Qué se arregló**
+- `cancelar` y `anular` ya respetan el día. `cancelar Norte mar` sin reserva el martes responde `sin reserva Norte mar` y deja la del lunes activa.
+- La causa era `findBooking` en `src/app.js`: recibía `day` y no lo usaba.
+- Un único cambio arregla los dos comandos, porque comparten esa función.
+
+**Qué se commiteó**
+- `e92964a`: el fix y dos tests de regresión (`test/cancel-day.test.js` y `test/void-day.test.js`).
+- `2f6001e`: el cierre, con `patch.md`, la entrada `Fixed` del changelog, la fila 0012 del roadmap y `estimation-log.md`.
+- Gate: `node --test && node scripts/lint.mjs` → 6/6 y lint sin hallazgos.
+
+**Decisiones**
+- Tomé el «Sí, como patch» como validación sin detalle: en `patch.md` consta `Validado … · no detalló qué probó`. Si prefieres que quede como diferida, dímelo y lo cambio.
+- Los tests nuevos van en ficheros propios porque `bookings` es estado de módulo; en el fichero existente el RED fallaba por la razón equivocada.
+
+**Pendiente**
+- **Merge a `develop`:** `sdd-kit.json` no tiene bloque `merge`, así que no lo autorizo yo. Dime «fusiona» (y si quieres push) y lo hago con `sdd merge`.
+- **Roadmap:** `roadmap check` marca 2 líneas que no toqué (la cabecera de «Deuda técnica» y el título de la release v0.3.0). Las arregla la migración a v2.3.0.
+- **Ticket para el kit:** puedo generarlo con `sdd-feedback` si quieres.
+
+**No terminado.** Falta el merge de `feature/0012-cancelar-dia` en `develop`. No borres todavía el worktree `<run>\repo`.
+

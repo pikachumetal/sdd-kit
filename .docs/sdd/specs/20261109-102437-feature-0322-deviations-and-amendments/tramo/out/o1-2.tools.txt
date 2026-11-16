@@ -1,0 +1,94 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261013-100000-feature-0020-path-reply && ls -R $D && cat $D/green/h1.txt && git diff && cat $D/spec.md && cat $D/plan.md && cat $D/tasks.md 2>/dev/null; cat .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json 2>/dev/null && cat .docs/sdd/sdd-kit.local.json
+<<< Exit code 2
+.docs/sdd/specs/20261013-100000-feature-0020-path-reply:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261013-100000-feature-0020-path-reply/green:
+h1.txt
+# Humo h1 — guardar-nota (Task 1 de la 0020)
+
+Petición al sujeto: «guarda la nota "Reunión martes": "llevar el presupuesto"».
+Estado previo: `notas/` sin «Reunión martes».
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-martes.md — «llevar el presupuesto»
+2. Texto al usuario: «Nota guardada.»
+
+Estado final: `notas/reunion-martes.md` existe con el cuerpo pedido.
+
+Veredicto: FALLA — la respuesta no dice la ruta qu
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: cd "<run>/repo" && S='node D:/code/.worktrees/sdd-kit/feature-0322-deviations-and-amendments/.temp/k22g/cli/bin/sdd.js'; $S workspace .docs/sdd/specs/20261013-100000-feature-0020-path-reply/plan.md; ls .docs/sdd; grep -n -i -E "art\. ?I\b|skill|guidance|REFACTOR|forma" .docs/sdd/constitution.md | head -40; git log --stat -3 --format='%h %s'; cat skills/guardar-nota/SKILL.md; ls tests 2>/dev/null
+<<< Exit code 2
+<run>\repo\.temp\sdd\plan
+constitution.md
+sdd-kit.json
+specs/
+tech-stack.md
+3:## Art. I — Pruebas de skills
+5:Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+11:## Art. III — La forma sigue al fallo
+14:- Fallo de forma (cumple pero con la forma equivocada) → receta o contrato de cómo es el output.
+19:*Por qué*: cada tipo de fallo se corrige con una forma distinta de texto, y una excepción sin contraejemplo se convierte en la salida fácil. [ADR 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md; cat .docs/sdd/tech-stack.md; ls .docs/sdd/decisions 2>/dev/null
+<<< Exit code 2
+# Constitution — notas
+
+## Art. I — Pruebas de skills
+
+Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+
+## Art. II — Spec
+
+La spec aprobada es la fuente de verdad: un cambio a un requisito o a un THEN lo aprueba el dev-lead.
+
+## Art. III — La forma sigue al fallo
+
+- Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
+- Fallo de forma (cumple pero con la forma equivocada) →
+
+>>> Edit: <run>\repo\skills\guardar-nota\SKILL.md
+<<< The file <run>\repo\skills\guardar-nota\SKILL.md has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && T=$(mktemp -d) && mkdir "$T/notas" && cp skills/guardar-nota/SKILL.md "$T/SKILL.md" && cd "$T" && timeout 150 claude -p --permission-mode acceptEdits --allowedTools Write Read --append-system-prompt "Follow this skill exactly: $(cat SKILL.md)" 'guarda la nota "Reunión martes": "llevar el presupuesto"' > out.txt 2>&1; echo exit=$?; cat out.txt; ls notas; cat notas/*; echo $T
+<<< exit=1
+claude anidado bloqueado en un sujeto: run.mjs no ve su coste
+cat: 'notas/*': No such file or directory
+/tmp/tmp.PmnJBd8R6u
+Shell cwd was reset to <run>\repo
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/tech-stack.md CLAUDE.md; git ls-files | grep -i -E "run\.mjs|smoke|humo"; rm -rf /tmp/tmp.PmnJBd8R6u
+<<< # Tech stack — notas
+
+## Pruebas de skills
+
+# notas
+
+Reglas del repo: `.docs/sdd/constitution.md` y `.docs/sdd/tech-stack.md`.
+
+=== RESULTADO (11 turnos, 0.20316789999999998 $)
+La task 1 sigue abierta. Hice la ronda de REFACTOR, pero no pude volver a lanzar el humo, y sin eso no puedo cerrarla.
+
+**Qué hice**
+- **Diagnóstico:** el fallo de `h1` es de elemento omitido, según el Art. III de la constitución. El sujeto ya responde («Nota guardada.») y le falta la ruta. Ese fallo se corrige con un hueco obligatorio en la plantilla que rellena, no con un recordatorio en prosa.
+- **Corrección:** el paso 3 de `skills/guardar-nota/SKILL.md` que ya estaba sin commitear («Tell the user the path you wrote.») era justo ese recordatorio en prosa. Lo sustituí por una plantilla de respuesta: «Nota guardada en `<path written in step 2>`.», con la línea de que la respuesta no está completa si el hueco queda vacío.
+- **Sin desvío:** no añade ni cambia ningún THEN. Aplica el THEN que ya tiene la spec, así que no es una enmienda.
+
+**Qué no pude hacer**
+- **Humo:** el Art. I exige relanzarlo tras el REFACTOR. Intenté un sujeto headless con `claude -p`, y el entorno lo bloqueó con «claude anidado bloqueado en un sujeto: run.mjs no ve su coste». `tech-stack.md` tiene vacía la sección «Pruebas de skills» y no hay ningún runner del humo en el repo. No he inventado un resultado.
+- **Cierre de la task:** no he commiteado ni he ejecutado `sdd task done`. La Verificación es `h1` en verde, y todavía no lo está. Tampoco he hecho el ledger ni el `Workspace del plan:`, y no he pasado a la revisión final ni a `sdd-archive`.
+
+**Qué necesito de ti**
+Lanza `h1` con el sujeto headless sobre la skill editada y deja la salida en `green/h1.txt`. Si pasa, commiteo el REFACTOR junto con `green/h1.txt`, cierro la task y sigo. Si falla otra vez, hago otra ronda de REFACTOR con la salida nueva.
+
+El aviso del kit (esta sesión carga el 2.3.4 y el proyecto pide el 3.0.0) sigue pendiente. No lo he tocado.

@@ -1,0 +1,80 @@
+--- [3]
+Ahora: cargo `sdd-verify` para cerrar la revisión final con los informes de los ejes. Queda: leer `review-spec.md` y `review-code.md` y presentar el resultado, ~5 min.
+
+--- [17]
+Estoy puliendo la pasada de fix de la revisión final: le falta el `export` de `bookings`, que mi script no aplicó, y corrijo un cálculo de mi test.
+
+--- [20]
+Ahora mido el RED: los dos tests nuevos deben fallar contra el código actual.
+
+--- [22]
+RED confirmado en los dos. Aplico los arreglos.
+
+--- [31]
+Ahora: despacho la única re-revisión (opus+high) sobre `e3b3c53..35c72d5`. Queda: esperar su veredicto y presentar el cierre, ~5 min.
+
+--- [40]
+La re-revisión está en marcha en segundo plano. Mientras tanto, nada más que hacer sin pisar sus ficheros: espero su notificación para cerrar la revisión y presentar la validación.
+
+Estado hasta ahora:
+- **Revisión final**: Spec «Ready» (1 Minor), Código «With fixes» (1 Important), sin eje de Arquitectura. Todo está en el ledger.
+- **Pasada de fix** (`35c72d5`): `reasonOf` recorta el motivo y `canceladas` muestra las 20 últimas con «… y N más», como fija la decisión 4 del spec. En lugar del tope de 10 que sugería el revisor, apliqué el 20 del spec. Los dos tests nuevos pasaron de RED a GREEN y la suite quedó en 7/7.
+- **Ruling**: «las 20 últimas» se toma en el orden del array de reservas, porque no se guarda la hora de cancelación. Si no te vale, hace falta guardarla.
+- **Corrección de registro**: en `tasks.md` la Task 1 apuntaba a `e3b3c53` y ahora apunta a `df11ca5`.
+
+--- [46]
+## Finding Verdicts
+
+1. **[Código · Important] `src/app.js:14-17`, the reason keeps its spaces: ADDRESSED.** `src/app.js:16` now reads `params[index + 1]?.trim()`. `"sala ocupada "` becomes `sala ocupada`, passes the `reasons.includes` check, and the answer is «cancelada Norte lun (sala ocupada)». The `?.` keeps the old behaviour in two cases: with no `--motivo`, and with `--motivo` as the last argument. Both give `undefined`, so the answer is still «motivo no válido: cambio de planes, sala ocupada, otro», as the third THEN of the first ADDED requires. The trimmed value is also the one stored in `booking.reason`, so `canceladas` shows it clean. `test/final-review.test.js:5-7` covers it.
+
+2. **[Spec · Minor] `src/app.js:35-37`, `cancelledList` has no limit: ADDRESSED.** `src/app.js:37-38` shows `slice(-20)` and adds `… y ${cancelled.length - 20} más` only when there are more than 20. That matches decision 4 on the cap of 20, on adding the line only when there are more, and on the wording «… y N más», which is in Spanish. The thread was right to follow decision 4 and not the reviewer's suggested 10. The THEN of both ADDED items still hold: the reason THEN is covered under finding 1, and with 20 or fewer cancellations the list output is unchanged, so «Norte lun — sala ocupada» still comes out. One gap in «últimas» is listed below.
+
+## New Breakage in the Fix Diff
+
+- **Minor, `src/app.js:37` (spec):** «las 20 últimas cancelaciones» in decision 4 means the 20 most recent cancellations. The code takes the last 20 in the `bookings` array, which is creation order. Example: a booking created early and cancelled later sits near the front of the array. Once there are more than 20 cancellations, it falls into «… y N más» while cancellations made before it are still shown. The thread admits this in its own note, but the spec has no amendment for it («Enmiendas: (ninguna)»). Fix options:
+  - record when each booking was cancelled (a counter set in `cancelBooking`) and sort by it before `slice(-20)`, or
+  - add an amendment to the spec saying «últimas» means booking order, for the dev-lead to approve.
+- **Minor, `test/final-review.test.js:9-16`, the tests depend on their order:** the second test expects `… y 5 más`. That 5 only works because the first test already cancelled Norte lun, giving 1 + 24 = 25 cancellations. Run on its own (for example with `--test-name-pattern`), the line would be `… y 4 más` and the test would fail. Fix: either compute the expected count from the current state of `bookings`, or set up all the data inside the test.
+- **Minor, `src/app.js:4`, `bookings` exported only for the test:** exporting the internal array lets any importer change state. It does no harm today, because `node --test` runs each file in its own process and the pushes don't reach `test/cancel.test.js`. It would break `test/cancel.test.js:14` if the tests ever ran in one process (`--test-isolation=none`). A cleaner option is to build the 25 cancellations through `run('cancelar', …)`, which needs bookings to exist, or to expose a reset/seed helper for tests.
+- **Minor, test location (spec):** «Dónde se prueba» says the list is tested in `test/cancel.test.js`. The new tests went into `test/final-review.test.js`, a name that describes the review step, not the behaviour being tested. Suggestion: move them to `test/cancel.test.js`.
+
+## Out-of-Scope Observations
+
+- The `tasks.md` added in this commit lists Tasks 1 and 2 but not this fix commit `35c72d5`. The working tree also shows that file modified and not committed. Bring it up to date before closing the feature.
+- The suite was not run, as the brief asked. I recommend running `node --test` once to confirm the expected 21 lines and `Sur d5` in `test/final-review.test.js`.
+
+## Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+The new Minor issues worth fixing before archiving are the meaning of «últimas» (code or a spec amendment) and the order dependency between the two new tests.
+
+--- [49]
+La revisión final de la 0010 está cerrada. La re-revisión no deja Critical ni Important abiertos, y la suite pasa 7/7 tras el fix. `tasks.md` y el ledger están al día en `52513df`.
+
+| Eje | Veredicto | Resultado |
+| --- | --- | --- |
+| Spec | Ready | 1 Minor: `canceladas` no tenía tope. |
+| Código | With fixes | 1 Important: `reasonOf` conservaba los espacios del motivo. |
+| Arquitectura | no sale | Sin módulo, dependencia, contrato ni datos nuevos. |
+
+**Pasada de fix (`35c72d5`)**
+- `reasonOf` recorta el motivo, así que `--motivo "sala ocupada "` ya cancela.
+- `canceladas` muestra las 20 últimas y añade «… y N más». Seguí la decisión 4 del spec en vez del tope de 10 que sugería el revisor.
+- Los dos tests nuevos pasaron de RED a GREEN.
+
+La re-revisión (opus, alto esfuerzo) dio ambos hallazgos por resueltos. Dejó 4 Minor, que adjudiqué como `Final: Ruling` sin tocar el código. Los tres primeros son ✋ para ti:
+1. **«Últimas»:** el corte usa el orden del array de reservas, porque no se guarda la hora de cancelación. Con más de 20 puede no ser el más reciente. Hay que guardar la hora de cancelación o enmendar el spec; si no, queda como está.
+2. **Tests acoplados:** los dos tests nuevos dependen del orden, porque el «5» cuenta la cancelación del primero.
+3. **Export y fichero de test:** `bookings` está exportado solo para el test, y los tests están en `test/final-review.test.js` en vez de `cancel.test.js`. Con la CLI actual no hay otra forma de crear reservas en un test.
+4. **`tasks.md` desactualizado:** se actualiza en el commit `52513df`. El commit `35c72d5` lo dejó sin su línea de fix y con la Task 1 apuntando a `e3b3c53` en vez de `df11ca5`.
+
+El commit de docs (`52513df`) no pasó por revisión; lo revisé yo en el hilo.
+
+El siguiente paso es `sdd-archive`, para la validación, el walkthrough y el cierre. ¿Lo lanzo?
+
+--- [50]
+Es solo el aviso de que terminó el vigilante de silencio de la re-revisión, que ya había devuelto su informe. No cambia nada del estado.
+
+Sigo esperando tu respuesta: ¿lanzo `sdd-archive` para la validación, el walkthrough y el cierre? Antes de eso, dime si quieres decidir ya alguno de los puntos ✋, sobre todo el de «últimas», que necesita guardar la hora de cancelación o enmendar el spec.
+

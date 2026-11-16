@@ -1,0 +1,175 @@
+
+>>> Read: <run>/review-final-3fc2dcb.diff
+<<< 1	# Review package: 4f774d9..HEAD
+2	
+3	## Commits
+4	3fc2dcb feat(bookings): anular sin aviso por correo
+5	ded2b1c docs(sdd): abrir la feature 0025
+6	
+7	## Files changed
+8	 test/void.test.js | 7 +++++++
+9	 1 file changed, 7 insertions(+)
+10	
+11	## Diff
+12	diff --git a/test/void.test.js b/test/void.test.js
+13	new file mode 100644
+14	index 0000000..81e8b97
+15	--- /dev/null
+16	+++ b/test/void.test.js
+17	@@ -0,0 +1,7 @@
+18	+import { test } from 'node:test';
+19	+import assert from 'node:assert/strict';
+20	+import { run } from '../src/app.js';
+21	+
+22	+test('anular responde sin aviso', () => {
+23	+  
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/spec.md
+<<< 1	---
+2	id: 20261014-100000-feature-0025-void-no-mail
+3	feature: 0025
+4	title: Quitar el aviso por correo al anular
+5	mode: full
+6	profile: delegate
+7	status: approved
+8	created: 2026-10-14
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: 2026-10-14
+14	---
+15	
+16	# Spec — Quitar el aviso por correo al anular
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — anular deja de avisar por correo.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. `anular` sigue respondiendo «anulada <sala> <día>».
+25	
+26	### Decisiones t
+
+>>> Read: <run>/repo/.docs/sdd/specs/20261014-100000-feature-0025-void-no-mail/plan.md
+<<< 1	---
+2	id: 20261014-100000-feature-0025-void-no-mail
+3	feature: 0025
+4	title: Plan de implementación — Quitar el aviso por correo al anular
+5	spec: ./spec.md
+6	status: draft
+7	created: 2026-10-14
+8	---
+9	
+10	# Plan de implementación — Quitar el aviso por correo al anular
+11	
+12	**Ejecución**: native, porque es una task.
+13	
+14	**Eje Arquitectura**: no — solo cambia el comando `anular`
+15	
+16	## Restricciones globales
+17	
+18	### De código
+19	
+20	- Texto de la interfaz en castellano.
+21	- Sin comentarios que repitan el código ni que citen documentos.
+22	
+23	## Review Focus
+24	
+25	- ninguna: com
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat -n src/app.js && git show --stat HEAD~1 | head -20 && grep -rni "correo\|mail\|aviso\|notif" --include=*.js . | grep -v node_modules; ls .docs/sdd/specs; ls .docs/sdd 2>/dev/null; cat .docs/sdd/capabilities/bookings* 2>/dev/null; ls .docs/sdd/capabilities 2>/dev/null
+<<< .docs/sdd/capabilities/availability.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/reports.md
+.docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/decisions/0003-bookings-in-memory.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261014-100000-fe
+
+>>> Bash: cd "<run>/repo" && cat -n test/app.test.js test/cancel.test.js; cat .docs/sdd/decisions/0003-bookings-in-memory.md | head -40
+<<<      1	import { test } from 'node:test';
+     2	import assert from 'node:assert/strict';
+     3	import { run } from '../src/app.js';
+     4	
+     5	test('libres excluye la sala reservada en la franja', () => {
+     6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+     7	});
+     8	
+     9	test('reservar --cada-semana crea la reserva semanal', () => {
+    10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+    11	});
+    12	import { test } from 'node:test';
+    13	import assert from 'node:assert/strict';
+    14	import { run } from '../s
+
+=== RESULTADO (6 turnos, 0.262753 $)
+### Strengths
+
+- `test/void.test.js` sigue la forma que pide «Dónde se prueba»: entra por el comando `anular`, no por la función interna.
+- El test fija la decisión ✋ 1 de la spec: `anular` sigue respondiendo «anulada <sala> <día>» (`test/void.test.js:6`).
+- El texto del test está en castellano y no lleva comentarios, así que cumple las dos restricciones de código.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. El aviso por correo que la spec quita sigue saliendo al anular**
+- **Dónde:** `src/app.js:18`, `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` });`
+- **Qué pasa:** el commit `3fc2dcb` solo añade `test/void.test.js` y no toca `src/app.js`, aunque el plan lo pone en **Ficheros** de la Task 1. `voidBooking` todavía guarda el aviso en `outbox`, y `salida` (`src/app.js:29,36`) lo muestra. Si se ejecuta `anular Norte lun` y después `salida`, la salida es `responsable: anulada Norte lun`.
+- **Por qué importa:** la spec pide exactamente que esto desaparezca. La rama hace lo contrario de lo que pide.
+- **Cómo arreglarlo:** borrar la línea 18. Revisar si `outbox`, `pending` y el comando `salida` siguen sirviendo para algo; si `anular` era lo único que llenaba `outbox`, quitarlos también y apuntarlo en la spec.
+- **Gap:** `contradicts`.
+- **Origen:** `REMOVED — Avisar por correo` (`spec.md:51`). También la decisión del dev-lead «El aviso por correo al anular desaparece» (`spec.md:28`): no hay ninguna regla en el diff que la cubra.
+
+#### Important (Should Fix)
+
+**2. El test no comprueba que el aviso ya no se manda**
+- **Dónde:** `test/void.test.js:5-7`
+- **Qué pasa:** el test se llama «anular responde sin aviso», pero solo compara la respuesta de `anular`. Esa respuesta ya era la misma antes del cambio, así que el test pasa con el aviso todavía activo. Ese es el estado actual, y por eso el fallo de Critical 1 no lo detecta nada.
+- **Por qué importa:** la línea de «Dónde se prueba» («Anular sin aviso … como `test/void.test.js`») no está verificada. Un test que pasa sin el cambio tampoco sirve como RED.
+- **Cómo arreglarlo:** añadir una aserción por el comando, por ejemplo que `run('salida', [])` no contenga `anulada Norte lun` después de anular. Si se quita `outbox`, comprobar la ausencia por la vía que quede.
+- **Gap:** `partial`.
+- **Origen:** la línea de «Dónde se prueba» del REMOVED.
+
+**3. La capacidad `bookings` sigue diciendo que se avisa por correo**
+- **Dónde:** `.docs/sdd/capabilities/bookings.md`, apartado `### Avisar por correo` («Se avisa por correo.»).
+- **Qué pasa:** el documento sigue describiendo el comportamiento retirado.
+- **Por qué importa:** que el código siga avisando es el fallo grave. Esto es solo documentación, y normalmente lo actualiza `sdd-archive` al cerrar. Lo apunto para que no se pierda al aplicar el delta.
+- **Gap:** `partial`.
+- **Origen:** el delta REMOVED.
+
+#### Minor (Nice to Have)
+
+- Ninguno.
+
+### Declined to judge
+
+- `test/app.test.js:10` y `test/cancel.test.js` llaman a `reservar` y `cancelar`, que `run` no implementa (`src/app.js:32-37` devuelve `'salas'`). Es código anterior a la rama, el diff no lo toca y está fuera de la spec 0025. Que esos tests fallen lo verá el hilo principal al pasar la suite.
+- `anular-todas` no avisa (`src/app.js:22-26`). La spec lo deja fuera del alcance y la rama no lo cambia.
+- La ADR 0003 (accepted) dice que `src/` no importa `node:fs`. La lista de ADRs que cubren el diff dice «ninguna», y el diff no toca `src/`, así que no la exijo.
+
+### Not verified
+
+- No he ejecutado `node --test test/void.test.js` porque el encargo lo prohíbe. No hay informe de task en el paquete que traiga la evidencia de que pasa.
+- No he visto ningún informe de task del executor, ni RED ni GREEN, porque el paquete no los incluye.
+
+### Recommendations
+
+- Al reabrir la Task 1, ir primero a RED: añadir la aserción sobre `salida` y ver que falla con el código actual. Después quitar `src/app.js:18`.
+- Hacer una pasada de la suite completa desde el hilo principal. Los tests de `reservar` y `cancelar` hacen pensar que ya está en rojo antes de esta rama.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** La rama no implementa el cambio. `anular` sigue guardando el aviso al responsable en `src/app.js:18`, que es el comportamiento que la spec quita. El único test que se añade no puede detectarlo, porque solo mira la respuesta, que es la misma con y sin aviso.

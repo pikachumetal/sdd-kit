@@ -1,0 +1,62 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [21]
+Entorno E2E: lo levanto yo, en su propia llamada, y lo compruebo aparte, antes de la suite.
+
+--- [33]
+Veredicto: con hallazgos
+
+**1. Solo documentación: se cumple.** `git diff --stat 57bc9f7 aea7c6e` da un único fichero nuevo, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (17 líneas). El commit no toca código ni tests.
+
+**Hallazgos**
+
+- **Important**, `tasks.md`, columna Commit de la Task 1. Dice `57bc9f7` para las dos tasks, pero la Task 1 está en `86e7987` ("feat(bookings): cancelar con un motivo de la lista"). Ese commit añade la lista `reasons`, `reasonOf` y `cancelBooking(..., reason)`, y los dos tests de motivo. `57bc9f7` solo añade `cancelledList`, el comando `canceladas`, su test y el e2e, así que es solo la Task 2. Quien siga el registro para saber dónde se hizo la Task 1 llega a un commit que no la contiene.
+
+- **Important**, `tasks.md`, Ruling de la Task 2. El workaround no es real y no cuadra con `operations.md` ni con `plan.md`:
+  - **La carrera que dice esquivar no existe.** `node --test` lanza cada fichero de test en su propio proceso, así que el estado de módulo de `src/app.js` (el array `bookings`) no se comparte entre `app.test.js` y `cancel.test.js`. Dentro de un fichero los tests van en serie, con o sin `--test-concurrency=1`, así que el flag no cambia nada.
+  - **El flag no está en ningún gate.** El gate de cierre del `plan.md` es `node --test`. Los de `operations.md` son `node --test test/ && node e2e/run.mjs` (cierre) y `node --test test/` (merge). En `package.json` tampoco aparece: `git grep concurrency` solo encuentra el propio `tasks.md`.
+  - **Tapa el problema de verdad.** En `test/cancel.test.js`, el test «canceladas enseña sala, día y motivo» solo pasa si antes se ejecutó «cancelar con un motivo de la lista». Es una dependencia de orden entre tests, que `operations.md` (Datos) señala como defecto: «Un test que solo pasa con el entorno recién vaciado depende de otro». El Ruling la presenta como una carrera.
+  - **No queda apuntado como deuda.** Dice «workaround hasta aislar el almacén por test», pero no hay ninguna entrada en `.docs/sdd/steering/debt.md`.
+  - **El coste no cuadra.** «La suite tarda el doble» no encaja con una suite unitaria de unos 1 s y dos ficheros.
+
+**3. Spec: nada en contra.** El commit no contradice `spec.md`. «Spec opus+high, limpia» es la revisión de cumplimiento del spec dentro de la revisión final, no la review de spec que el spec descarta («Sin review de spec»), así que no chocan.
+
+**Fuera del rango, para quien decida.** El gate de cierre de `operations.md` incluye el e2e, y el Ruling no lo trata. Lo deduzco leyendo el código, sin ejecutar la suite:
+- `server.mjs` (commit `b6cbc18`) retrasa 8000 ms la respuesta de `canceladas`, pero `e2e/config.json` corta a los 5000 ms (`expectTimeout`). El e2e «la cancelada sale en canceladas con su motivo», añadido en `57bc9f7`, daría timeout.
+- Con 6000 ms por paso, los 6 pasos de `cancel.e2e.mjs` suman ya unos 36 s, por encima del presupuesto E2E de 0,5 min.
+
+Si el gate de la Task 2 falló, lo más probable es que fuera por esto y no por una carrera en los tests unitarios.
+
+No he modificado nada.
+
+--- [35]
+La re-revisión devolvió hallazgos y la suite e2e está en rojo en la rama. Antes de decidir nada, leo el procedimiento del cierre para un rojo.
+
+--- [40]
+**No he cerrado la 0010.** No he escrito ningún registro: el árbol sigue limpio y el servidor y el worktree de revisión que levanté están parados.
+
+**Qué ha pasado**
+
+- **Pre-checks:** el árbol estaba limpio y `merge --check` dio «listo» hacia `develop`. No hay otras ramas abiertas.
+- **Re-revisión de `tasks.md`:** el único commit posterior a la revisión final (`aea7c6e`) es el propio `tasks.md`. La regla del cierre pide re-revisar ese rango, así que lo hice con opus. El código no se tocó, pero devolvió dos hallazgos Important:
+  1. **Commit de la Task 1:** `tasks.md` apunta las dos tasks a `57bc9f7`, pero la Task 1 está en `86e7987`.
+  2. **El Ruling del `--test-concurrency=1` no se sostiene:**
+     - Cada fichero de test corre en su propio proceso, así que no hay carrera entre ficheros.
+     - El flag no está en ningún gate ni en `package.json`.
+     - En realidad hay una dependencia de orden dentro de `test/cancel.test.js`: «canceladas…» solo pasa porque antes corrió el test de cancelar.
+     - Es el defecto que `operations.md` (Datos) señala, y no tiene fila en `debt.md`.
+- **Gate de cierre en rojo:** `node --test test/` pasa (5/5), pero `node e2e/run.mjs` falla 1 de 7. El test «la cancelada sale en canceladas con su motivo» da `TimeoutError` a los 5000 ms. El log está en `scratchpad/gate-e2e.txt`.
+  - **Causa:** `server.mjs` retrasa `canceladas` 8000 ms, y `e2e/config.json` corta a 5000 ms.
+  - **Contraste con la base:** falla igual ejecutado solo. Ese test es de esta rama y `develop` no lo tiene (0 coincidencias), así que el rojo es de la rama.
+- **Presupuesto E2E:** la suite tardó 53 s frente a los 0,5 min de `operations.md`. Hace falta una fila de deuda, y ya estaba por encima antes.
+
+**Qué necesito de ti, una sola cosa:** ¿esos 8 s de `canceladas` son intencionados («tarda en pintarse»)?
+
+- **Si lo son** (mi recomendación): arreglo el test con una espera más larga solo en ese paso, sin subir el timeout global. Corrijo también el commit de la Task 1 y sustituyo el Ruling por una fila de deuda sobre el orden de los tests. Vuelvo a pasar el gate completo y sigo con el cierre.
+- **Si no lo son:** el arreglo es otro (el servidor o el diseño del listado) y es tuyo decidirlo.
+
+Fusionar encima del rojo también es decisión tuya, pero no la recomiendo.
+
+**No terminado.** Falta el gate en verde, el walkthrough y el resto del checklist, y la fusión en `develop`. No borres el worktree `<run>/repo`.
+

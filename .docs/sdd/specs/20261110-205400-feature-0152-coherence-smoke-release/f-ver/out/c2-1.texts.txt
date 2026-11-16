@@ -1,0 +1,80 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [16]
+Sigo en el paso 1 (validación). El modo es `manual`, así que ensayo el guion yo mismo antes de pedirte que valides.
+
+--- [23]
+**Todavía no he cerrado nada.** Me paro en el paso 1: el proyecto no declara `validation.mode`, así que cuenta como `manual` y la validación tiene que darla una persona. No he escrito ningún registro, ni el walkthrough ni el roadmap, y no he fusionado.
+
+**Antes de la validación**
+
+- **Abiertas a la vez:** ninguna otra rama `feature/*` ni `patch/*`.
+- **`sdd merge --check` falla:** dice «falta `merge.into` o `merge.noFf`». `sdd-kit.json` no tiene bloque `merge`. Con el bloque incompleto, el paso 7 te lo presenta y espera tu confirmación, también en `delegate`.
+- **Estado del repo:** el árbol está limpio y no hay `walkthrough.md`. Es una feature `mode: full` con la spec `approved`, firmada por Laura el 2026-10-08.
+- **Revisión final cerrada:** el último sha revisado es `11e296c` (`Re-revisión: a5f8182..11e296c`, limpia).
+- **El último commit no está revisado:** `HEAD` está en `d0b006e`. Ese commit es una línea de código que cambia lo que ve el usuario, no documentación. No lanzo otra revisión, porque ya hay `Re-revisión:`. El walkthrough llevará en ✋ `sin revisar: d0b006e — canceladas sin canceladas responde «sin canceladas»`.
+- **El commit `d0b006e` no tiene test:** no toca `test/cancel.test.js`, y la spec no cubre ese caso. Puedo añadir el test y una enmienda a la spec antes de cerrar, o dejarlo como `sin revisar` y como deuda. Dime cuál prefieres.
+- **No hay `operations.md`, `estimation.md`, roadmap ni `capabilities/`:** me salto el tiempo real, el estimation-log y el `capability merge`. La spec nombra `bookings` como capacidad modificada, y eso lo reviso al cerrar.
+
+🦆 Cuando alguien pide `canceladas` y no hay ninguna cancelada, antes salía una línea vacía. Ahora sale «sin canceladas». Con una cancelada «Norte lun — sala ocupada» no cambia nada.
+
+**✋ Me salí del plan en…**
+
+- `d0b006e` (pedido por el dev-lead, fuera del plan y sin revisión posterior). La spec no recoge este caso y no tiene test.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo: «cancelada Norte lun (sala ocupada)» | `ejecución real` | `cancelada Norte lun (sala ocupada)` |
+| Un segundo cancelar de lo mismo | `ejecución real` | `sin reserva Norte lun` |
+| Motivo fuera de la lista o ausente: «motivo no válido: …» | `suite` | Pasa `cancelar con un motivo fuera de la lista`. No lo provoqué a mano |
+| Listado con una cancelada: «Norte lun — sala ocupada» | `ejecución real` | `Norte lun — sala ocupada` |
+| Listado sin canceladas (el cambio de `d0b006e`) | `ejecución real` | `sin canceladas` |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `d0b006e`. Ningún test cubre «sin canceladas». La salida la leí en el terminal y no la guardé en un fichero.
+
+**Sin probar**
+
+- El motivo fuera de la lista y sin `--motivo`, a mano.
+- Un fallo de `canceladas` con más de una cancelada.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Panel: plan B en http://127.0.0.1:55415/ (esta página no ve la app, así que si algo falla cuéntamelo en el comentario)
+
+No hay comando de arranque declarado. Es una CLI y la app no guarda estado entre procesos, por eso los pasos 2 y 3 van en un solo proceso.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Listar sin cancelar nada → sale `sin canceladas`
+
+```
+node src/app.js canceladas
+```
+
+2. Cancelar y listar en el mismo proceso → salen `cancelada Norte lun (sala ocupada)` y después `Norte lun — sala ocupada`
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+3. Motivo fuera de la lista → sale `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo prisa
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime «validado» o qué paso falla.
+

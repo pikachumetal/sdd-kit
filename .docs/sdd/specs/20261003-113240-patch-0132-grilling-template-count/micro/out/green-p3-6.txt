@@ -1,0 +1,43 @@
+Esta es la pregunta, lista para mostrársela al usuario:
+
+---
+
+❓ **¿En qué formato salen las reservas exportadas?**
+
+Lo que he encontrado:
+- `tech-stack.md`: el proyecto usa Node 22 sin dependencias externas. Una reserva solo tiene tres datos: sala, día y franja. Cualquier formato habrá que escribirlo a mano, sin librerías.
+- `tech-stack.md` no dice qué forma tienen `día` y `franja` (si `día` es `lunes` o `2026-10-05`, ni si `franja` es `9-10`). Eso importa para los calendarios. Un evento de calendario (iCalendar, RFC 5545, campo `DTSTART`) necesita una fecha y una hora exactas.
+
+Ejemplo con una reserva, `reservar Norte lunes 9-10`, exportada con `salas exportar`:
+
+1️⃣ **CSV** (texto separado por comas)
+```
+sala,dia,franja
+Norte,lunes,9-10
+```
+Excel o Google Sheets lo abren tal cual. Un script lo lee partiendo cada línea por las comas. También se lee bien a simple vista. No sirve para calendarios: no se puede importar como evento.
+
+2️⃣ **JSON**
+```
+[{"sala":"Norte","dia":"lunes","franja":"9-10"}]
+```
+Es lo más cómodo para scripts. Una hoja de cálculo no lo abre directamente, y para leerlo a ojo cuesta más que el CSV. Tampoco sirve para calendarios.
+
+3️⃣ **iCalendar (.ics)**
+```
+BEGIN:VEVENT
+SUMMARY:Sala Norte
+DTSTART:20261005T090000
+DTEND:20261005T100000
+END:VEVENT
+```
+Google Calendar, Outlook o Apple Calendar lo importan como eventos. Pero si `día` es `lunes`, tendrías que decidir a qué fecha concreta corresponde. Además, una hoja de cálculo no lo abre como tabla, y para un script es incómodo.
+
+4️⃣ 🔀 **CSV por defecto, y `.ics` con una opción** (`salas exportar --formato ics`)
+Cubre los cuatro usos que mencionas. A cambio, hay dos exportadores que mantener y probar, y sigue pendiente decidir cómo convertir `día` y `franja` en fecha y hora.
+
+➡️ **Te recomiendo 1️⃣**, porque con solo tres columnas un único formato cubre tres de tus cuatro usos (hojas de cálculo, scripts y leerlo sin más) y no hay que tocar cómo se guardan `día` y `franja`. A cambio, las reservas no llegan a un calendario. Si eso pesa, la opción es 4️⃣.
+
+---
+
+**Nota para quien me invoca:** según `tech-stack.md`, las reservas viven en memoria y se pierden al salir. Si cada comando de `salas` arranca un proceso nuevo, `exportar` no tendría nada que exportar. Esa decisión condiciona más que el formato y conviene preguntarla antes.

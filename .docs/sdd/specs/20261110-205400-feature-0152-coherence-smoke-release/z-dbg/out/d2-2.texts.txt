@@ -1,0 +1,20 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el script y reproduzco el error.
+
+--- [5]
+## Causa raíz
+
+`npm run informe` falla porque el script escribe en una carpeta que no existe, y nada la crea.
+
+**Evidencia:**
+- `scripts/informe.mjs:3` hace `writeFileSync('.cache/informes/ocupacion.csv', ...)`. `writeFileSync` no crea directorios intermedios.
+- `.cache/` no existe en el repo (`ls -a .cache` → no such file). El error es `ENOENT` con `syscall: 'open'` sobre `...\.cache\informes\ocupacion.csv`.
+- No hay `mkdirSync` en el script, ni un script `prepare` o `preinforme` en `package.json`, ni `.gitignore` que sugiera quién debería generar `.cache/`.
+- La ruta es relativa al directorio actual, no al script. Aquí coincide con la raíz del repo, así que no influye, pero es frágil.
+
+**Por qué te pasa ahora:** `.cache/` es un artefacto local que no se versiona. Un clon nuevo, un worktree nuevo o un `git clean` lo dejan sin crear.
+
+**Deuda existente:** la primera fila de `.docs/sdd/steering/debt.md` («El listado de ocupación no sale tras limpiar el repo») cubre este fallo. Se apoya en los tickets de 2026-10-12 y 2026-10-19. Su remedio temporal es recrear la carpeta de la caché. Eso no es la causa raíz, así que la fila sigue abierta.
+
+**Sin arreglar:** no he tocado nada. Cuando quieras arreglarlo, la entrada es `sdd-propose`. La causa que acabo de escribir es el punto de partida de §2 del patch.
+

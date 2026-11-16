@@ -1,0 +1,51 @@
+--- [4]
+### Strengths
+- The change is small and focused: one function, `saveRefund`, with the validation done before the value is built.
+- It reuses the existing `rooms` list instead of redefining it.
+- The error message is in Spanish, as the constraint requires, and the function is well under 30 lines.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- **`src/app.js:51` — the comment `// Task 4: validar antes de guardar` is a stale citation and also repeats the code.**
+  - It cites a plan task number, which goes stale as soon as the plan is renumbered or archived. "Lo dice la Task 4" is not a reason.
+  - It also only restates the `if` on the next line.
+  - Fix: delete it.
+- **`src/app.js:50-56` — no test covers `saveRefund`.**
+  - `test/` has only `app.test.js` and `cancel.test.js`, and the diff touches neither.
+  - The valid-room path, the invalid-room path and the IBAN space-stripping are all untested.
+  - Clean Code: possible "a test for every public method" gap.
+- **`src/app.js:54` — `iban.replaceAll(' ', '')` throws a `TypeError` if `iban` is `undefined` or not a string.**
+  - Nothing validates it before use.
+  - The function validates the room but not the IBAN, even though a missing IBAN is the obvious bad input for a refund.
+  - Fix: return a Spanish error such as `'IBAN no válido'` when it isn't a string or is empty.
+
+#### Minor (Nice to Have)
+- **`src/app.js:52,54` — the function returns a string on error and an object on success.**
+  - Callers can't tell the two apart without checking the type, and `run` returns strings everywhere else.
+  - Possible Clean Code smell: error handling by return value instead of exceptions. Prefer a consistent shape such as `{ ok, error }` or throwing an error.
+- **`src/app.js:49-56` — `saveRefund` is exported but not wired into `run`.**
+  - It also sits after the `if (command) console.log(...)` entry-point line.
+  - Moving it above `run` keeps the module's side-effecting entry point last.
+  - Whether it should be reachable from a command is a Spec-axis question, so I'm leaving that to that axis.
+- **`src/app.js:54` — `saveRefund` doesn't save anything.**
+  - It builds and returns the record without persisting it, unlike `cancelBooking` and its siblings.
+  - Possible Clean Code "name reveals intent" issue. Either persist the record or rename it, for example to `buildRefund`.
+
+### Recommendations
+Add tests alongside the fixes above. Settle the return convention before more code depends on `saveRefund`.
+
+### Declined to judge
+- **`src/app.js:53` — `// requisito del proveedor: el IBAN va sin espacios`.** The comment gives a real reason (an external provider's rule) rather than citing a project document. This is a probable false positive of the citation scan, so I'm not reporting it as stale. The executor should confirm that the provider requirement is documented somewhere.
+- **Whether `saveRefund` should be exposed as a `run` command.** That depends on what the spec asked for, which is the Spec axis.
+- **IBAN checksum or format validation.** The spec isn't in the package, and I can't tell whether it asked for more than stripping spaces.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is simple and correct for the happy path. The stale and redundant `Task 4` comment is Important, and the missing tests and the unhandled non-string IBAN should be fixed before merging.
+

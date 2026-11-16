@@ -1,0 +1,40 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y presentarte el anuncio con la primera pregunta de diseño, ~3 min.
+
+--- [19]
+Ahora: abro la feature con su anuncio y la primera pregunta de la entrevista. Queda: la entrevista, la spec con su parada de aprobación y el plan, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json, sin clave control.profile: es el valor por defecto)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `reservar` no tiene nada que hacer si la sala pedida ya está en `bookings`, y quieres que en ese caso puedas quedarte apuntado en una lista de espera para esa sala. Es un comportamiento nuevo de lo que ves y puedes hacer en la CLI, así que va por feature completa. Prevé unas 3 tasks, todas en `src/app.js`, así que no propongo dividirla.
+
+Dos hechos del código que condicionan el diseño:
+- `bookings` es un array en memoria dentro de `src/app.js` y cada comando arranca un proceso nuevo. Una lista de espera necesitará guardarse en algún sitio.
+- `PRODUCT.md` dice que la usas solo tú. Todavía no sé quién más podría estar en esa lista.
+
+Aún no he creado rama ni carpeta: lo hago cuando cierre la entrevista.
+
+❓ **Qué quieres que pase cuando la sala se libere**
+
+¿Qué esperas que ocurra, desde tu punto de vista, en el momento en que alguien cancela y la sala que querías queda libre?
+
+--- [24]
+Ahora: tengo rama `feature/0010` (sin remoto, el id vale). Sigo con la entrevista. Queda: unas pocas decisiones, la spec con su parada y el plan, ~8 min.
+
+Anoto tu motivo: hoy tienes que volver a mirar `libres` a mano cada rato cuando Norte está ocupada. Eso me dice que lo que quieres es dejar de vigilar. Todavía falta saber qué quieres que pase cuando se libere, y la respuesta cambia todo el diseño.
+
+❓ **Qué pasa cuando Norte se libera**
+Mi hallazgo: la CLI no tiene proceso residente. Cada comando arranca, responde y termina, y `bookings` vive en memoria. Nadie puede "avisarte" solo; hay que decidir quién mira y cuándo. Estas son las alternativas, con una escena de cada una:
+
+1️⃣ **Reserva automática al cancelar.** `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Más tarde, otro `cancelar Norte lun 10:00-12:00` → `cancelada; Norte pasa a tu reserva`. Cuesta que la reserva se cree sin que la confirmes, y solo funciona si la cancelación pasa por esta misma CLI.
+2️⃣ **Aviso al consultar.** El mismo `reservar` → `Norte ocupada; en espera (1.º)`. Luego `espera` → `Norte lun 10:00-12:00: libre, reserva con reservar`. Cuesta que sigas teniendo que ejecutar un comando, pero ya no tienes que ir sala por sala.
+3️⃣ **Espera activa.** `esperar Norte lun 10:00-12:00` se queda en marcha y sale con `Norte libre` cuando cambia. Cuesta mantener un proceso abierto, y no sobrevive si cierras la terminal.
+
+➡️ **Recomiendo 1️⃣**, porque quitas por completo el paso manual que te molesta, que es el motivo que me has dado. A cambio, la reserva se hace sin tu confirmación, y la cancelación tiene que pasar por esta CLI.
+
+¿Cuál eliges?
+

@@ -1,0 +1,54 @@
+--- [3]
+Empiezo por los pre-checks del cierre: estado del worktree, `sdd merge --check` y worktrees abiertos.
+
+--- [21]
+La re-revisión está en marcha. Hasta que vuelva y la cierre, no escribo ningún registro. Mientras tanto, solo el cierre sigue bloqueado por ella.
+
+Tengo una nota antes de seguir: el checklist pide que, aunque no haya parado, diga en una línea las ramas abiertas a la vez. `git worktree list` solo muestra esta rama (`feature/0010-cancel-reason`), así que no hay otras.
+
+Espero a que termine la re-revisión.
+
+--- [27]
+**Resultado: no está limpia.** Hay 2 hallazgos Important y ninguno Critical ni Minor.
+
+**Important**
+
+1. `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:16`: la fila de la task 1 apunta a `cf06c56`, pero cancelar con motivo se hizo en `0640d0a` (`feat(bookings): cancelar con un motivo de la lista`, que toca `src/app.js` y `test/cancel.test.js`). Debe decir `0640d0a`. La fila de la task 2 (`cf06c56`, done) sí es correcta, y el estado de las dos coincide con el código: `cancelBooking` con `reasons` en `src/app.js:19-26` y `cancelledList` en `src/app.js:35-37`.
+
+2. `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:23`: el Ruling no encaja con la realidad y tapa un problema.
+   - **Cambia el gate sin decirlo.** La regla de la constitución (`.docs/sdd/steering/constitution.md:4`) y el plan (`plan.md:50`) fijan el gate de cierre en `node --test`. El Ruling lo sustituye por `--test-concurrency=1`, y esto no aparece en ningún otro sitio del repo: `package.json` es solo `{"type": "module"}` y no tiene scripts.
+   - **No hay ninguna carrera.** `node --test` ejecuta cada fichero de test en su propio proceso, así que `app.test.js` y `cancel.test.js` no comparten el almacén en memoria. Dentro de un mismo fichero, los tests ya van uno detrás de otro.
+   - **El problema real es que un test depende de otro.** `test/cancel.test.js:13-15` solo pasa si antes se ha ejecutado `test/cancel.test.js:5-7`, que es el que cancela Norte lun. Limitar la concurrencia no resuelve esa dependencia y la etiqueta como «carrera».
+   - **Qué haría falta.** O se quita el Ruling y se deja la dependencia anotada como deuda, o se aísla el estado de cada test. Una tercera vía es justificar el cambio del gate, pero eso toca la constitución y no basta con un Ruling.
+   - **El código del producto no cambia.** El cambio está en el criterio de verificación.
+
+**Punto 3 (solo documentación):** se cumple. El commit `a49449c` solo añade `tasks.md` (17 líneas) y no toca código, tests ni configuración.
+
+--- [29]
+La re-revisión no vuelve limpia: marca dos hallazgos Important. Antes de actuar los contrasto con el repo.
+
+--- [35]
+`node --test` a secas pasa 5/5 (mi `grep` no cazó las líneas por el prefijo `ℹ`, pero la salida es clara). Eso contradice la justificación del Ruling. Corrijo `tasks.md` y apunto la deuda real.
+
+--- [39]
+**No terminado.** El cierre de la 0010 está parado en el paso 0, y falta todo el resto: validación, walkthrough, retro, capabilities, roadmap, sync y merge.
+
+**La revisión no estaba limpia del todo.** La revisión final de `tasks.md` es sobre `cf06c56`. `HEAD` es `a49449c`, un commit solo de docs que no tenía `Re-revisión:`. Por eso lancé la re-revisión de `cf06c56..a49449c` (Opus, `effort-high`). Devolvió dos Important, que comprobé antes de tocar nada:
+
+1. **Commit equivocado en la task 1.** `tasks.md` la apuntaba a `cf06c56`, pero la hizo `0640d0a`. Lo corregí.
+2. **El Ruling de la task 2 no se sostiene.**
+   - Cambiaba el gate de la constitución (`node --test`) por `--test-concurrency=1`, alegando una carrera sobre el almacén.
+   - `node --test` a secas pasa 5/5 y cada fichero corre en su propio proceso, así que no hay carrera.
+   - Lo que hay es un test que depende del orden de otro: `canceladas` solo pasa si antes corrió «cancelar con un motivo de la lista» (`test/cancel.test.js:13-15`).
+   - Retiré el Ruling y lo sustituí por esa explicación. Añadí una fila en `debt.md` con el test que depende del orden.
+
+Añadí también la línea `Re-revisión:` a `tasks.md`.
+
+**Sin commitear.** `tasks.md` y `debt.md` están modificados y no los he commiteado. Entrarán en el commit de cierre, como el walkthrough. Esta corrección no pasó por ninguna revisión: la anotaré en el walkthrough como `sin revisar`.
+
+**Decisión tuya:** el Ruling lo escribió el agente de implementación sin el dev-lead. Lo he retirado yo en el cierre. Si prefieres mantener el cambio de gate, habría que justificarlo y tocar la constitución, no un Ruling.
+
+**Ramas abiertas.** No hay ninguna otra rama `feature/*` o `patch/*` abierta. `sdd merge --check` está listo: fusionará en `develop`.
+
+**Pendiente.** Con `validation.mode: field`, la validación la hago yo, sin script y sin esperarte. Sigo con el smoke de cada THEN, la suite, el walkthrough, el cierre y el merge cuando me digas.
+

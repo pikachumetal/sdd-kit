@@ -1,0 +1,16 @@
+--- [16]
+Arreglé la causa del fallo intermitente y lo dejé en commit `3d05e31`. No ejecuté nada, así que el arreglo está sin comprobar.
+
+**Causa:** en `typeInCell` (`e2e/helpers.ts`), `CellEditor` se carga con `lazy()` (`src/sheet/Grid.tsx:5`). El helper pulsaba Enter y tecleaba enseguida. Si el editor aún no se había montado, se perdía el primer carácter y quedaba `234.5` en lugar de `1234.5`, que es lo que muestra `e2e-flaky.log`. También afecta a `0012-sum-row.spec.ts`, que usa el mismo helper.
+
+**Cambio:** tras el Enter, el helper espera a que el editor (`aria-label="Editor de celda"`) esté enfocado, escribe con `fill` y pulsa Enter para confirmar.
+
+**Cómo lo comprobaría** (en una máquina con navegadores y servidor):
+1. Ejecutar `npx playwright test e2e/0021-cell-format.spec.ts --repeat-each=20`, que antes fallaba más o menos 1 de cada 5. Deberían pasar las 20.
+2. Ejecutar `npx playwright test e2e/0012-sum-row.spec.ts --repeat-each=20` y la suite completa.
+3. Para reproducir el fallo, ralentizar la carga del chunk del editor (por ejemplo con una ruta de Playwright que retrase `CellEditor`) y ejecutar el helper anterior, que debería fallar siempre. Con el helper nuevo debería pasar siempre.
+
+No seguí el ciclo RED→GREEN de `sdd-tdd`, porque no puedo ejecutar el test fallido en esta máquina. El arreglo es de código de test y el fallo es de temporización.
+
+El aviso del inicio de sesión dice que el kit cargado es el 2.3.4 y el proyecto pide el 3.0.0. Las skills que usé pueden ser de una versión vieja.
+

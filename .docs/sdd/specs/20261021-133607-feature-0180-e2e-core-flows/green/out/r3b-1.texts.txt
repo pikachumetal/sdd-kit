@@ -1,0 +1,25 @@
+--- [8]
+Python no está disponible aquí, así que hago las ediciones con la herramienta Edit.
+
+--- [14]
+Arreglé la causa más probable de los rojos a ratos y lo dejé en el commit `8594e46`. No ejecuté nada, así que no está comprobado que la suite quede en verde. Hay un problema aparte que casi seguro la mantiene roja (el último punto).
+
+**Causa.** `typeInCell` en `e2e/helpers.ts` pulsaba Enter y tecleaba enseguida. `CellEditor` se carga en diferido (`lazy`), así que si el editor aún no tenía el foco, las teclas se perdían. Eso explica los dos fallos del log:
+- `0021-cell-format.spec.ts` recibió `""` en B2.
+- `0012-sum-row.spec.ts` agotó el timeout.
+
+**Cambios.**
+- **`typeInCell`:** ahora espera a que el editor («Editor de celda») tenga el foco, escribe con `fill`, confirma con Enter y espera a que el editor desaparezca.
+- **Sondeos al API:** quité los `expect.poll(cellValue…)` que había entre acciones en los dos tests. Maquillaban la carrera y contradicen la regla 3 de `writing-e2e.md`.
+- **Timeouts y reintentos:** no los toqué.
+
+**Cómo lo comprobaría.**
+1. Levantar el servidor y la app, e instalar los navegadores con `npx playwright install chromium`.
+2. Ejecutar `npx playwright test e2e/0012-sum-row.spec.ts e2e/0021-cell-format.spec.ts --repeat-each=10`.
+3. Ejecutar luego el gate completo: `npm test && npm run e2e`.
+
+**Pendiente: `0021-cell-format`.**
+- **Menú sin la opción:** `ContextMenu.tsx` solo ofrece «Pegar»; «Formato moneda» no existe. El test puede seguir fallando aunque el helper quede arreglado, porque la función no parece estar implementada. Tampoco encontré en `src` ni en `server` ninguna lógica de formato de moneda.
+- **No es un flujo core:** además, un formato no es un flujo core (regla 1), así que ese test debería bajar a un test de componente. `operations.md` ni siquiera tiene sección «Flujos core».
+- **Qué haría yo:** si hoy no hay función, `test.fixme()` con su issue. No lo hice porque es decisión tuya.
+

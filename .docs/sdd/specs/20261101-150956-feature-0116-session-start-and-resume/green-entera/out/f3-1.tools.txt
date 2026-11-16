@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0116-session-start-and-resume/.temp/claude/D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume/74405bf9-2b85-4c04-8d5c-2fde2a174cfe/scratchpad/kit-green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md .docs/sdd/roadmap.md package.json; ls specs .docs/sdd/specs src test; git branch --show-current
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la 
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; ls node_modules 2>&1 | head -1
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0116-session-start-and-resume\.temp\claude\D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume\74405bf9-2b85-4c04-8d5c-2fde2a174cfe\scratchpad\kit-green\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Modo lite — predicado observable, activación del usuario
+2	
+3	Una feature **puede** ir en modo lite si cumple **todas** estas condiciones:
+4	
+5	- El flujo a modificar ya existe en el repo y se puede leer.
+6	- No cambia contratos públicos (API, interfaces que consume otro módulo).
+7	- No cambia el schema de datos. Una migración solo de datos, idempotente y reversible (alta o baja de textos o de filas de catálogo) no lo descarta, pero la spec la nombra.
+8	- Cabe en un solo módulo o área.
+9	- Si existe `.docs/sdd/estimation.md`: la estimación es ≤ media jornada.
+10	
+11	Cumplirlas **habilita*
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0116-session-start-and-resume\.temp\claude\D--code--worktrees-sdd-kit-feature-0116-session-start-and-resume\74405bf9-2b85-4c04-8d5c-2fde2a174cfe\scratchpad\kit-green\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Perfiles de control y gates
+2	
+3	Cuánto para el agente lo elige el usuario con un perfil. Cada gate de la tabla dice qué hace en cada uno. Contrato de las tasks 0005, 0006, 0012, 0021 y 0022: no lo dupliques, enlázalo.
+4	
+5	## Perfiles
+6	
+7	- **`pair`** — para en todos los gates de la tabla.
+8	- **`delegate`** *(default)* — para en la spec, los desvíos y la validación; sin gate en el plan.
+9	- **`unattended`** — no para en ningún punto hasta terminar la release, salvo el merge a `main`, el tag y las acciones hacia fuera (push, PR, publicar), que siempre decide una persona; el push de la ra
+
+=== RESULTADO (8 turnos, 0.2265796 $)
+Ahora: clasifico el cambio y te pregunto el carril antes de abrir rama o carpeta. Queda: tu respuesta, y luego una spec corta con 2 o 3 preguntas de diseño, ~10 min.
+
+🦆 Ahora mismo `reservar` solo devuelve un texto fijo, y `src/app.js` no guarda nada de las reservas. Añadir una nota significa aceptar un texto al reservar y que `reservar` lo recuerde. Hay que decidir cómo se escribe la nota en la línea de comandos y dónde se muestra después. No es un patch, porque esas dos decisiones no las ha fijado nadie y tendría que inventarlas yo. Antes de guardar nada correría `node --test`.
+
+**Carril.** Cumple todas las condiciones del modo lite:
+- El flujo ya existe: `reservar` está en `src/app.js` y se puede leer.
+- No cambia contratos públicos: nadie más consume `run`, solo lo usas tú.
+- No toca el schema de datos: las reservas están en memoria.
+- Cabe en un solo módulo: `src/app.js` y `test/app.test.js`.
+- No hay `estimation.md`, así que esa condición no aplica.
+
+Sale menos de 3 tasks, así que no propongo partirlo. El perfil vigente es `delegate`, por defecto: `sdd-kit.json` no fija `control.profile` y no hay `sdd-kit.local.json`.
+
+¿Cómo lo hacemos?
+
+1. **Modo lite (recomendada):** spec corta, sin plan, con tu aprobación de la spec y la validación al final.
+2. **Modo full:** spec, plan y tasks completos. Es más ceremonia para un cambio así.
+3. **Modo lite, y apruebo la spec por delegación, nos vemos en la validación:** para si te vas a ausentar.
+
+Aviso aparte: esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

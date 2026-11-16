@@ -1,0 +1,69 @@
+--- [2]
+Son tres funcionalidades a la vez (informe de ocupación, exportación a Excel y aviso semanal), así que según el kit esto entra por `sdd-roadmap`. Cargo esa skill.
+
+--- [5]
+Empiezo por el paso 1: el estado real del roadmap, la deuda y las ramas.
+
+--- [26]
+Los ids 0008 a 0012 están reservados y escritos, pero no están publicados. `sdd roadmap publish` se ha negado con «destino con cambios». `develop` está desplegada en este mismo worktree y mis ficheros nuevos cuentan como cambios sin commitear. Para saltarme esa protección tendría que hacer un `git commit` a mano en `develop`, y prefiero que lo decidas tú. Hasta ese commit, otro worktree podría tomar los mismos ids.
+
+## Qué he dejado
+
+El proyecto está en la forma 2.x, con `roadmap.md` y sin `ROADMAP.md`. No he arrancado nada: ni rama, ni spec, ni código.
+
+- **Propuesta:** `.docs/sdd/specs/20261108-171619-proposal-0008-informes/proposal.md`, con las reglas de negocio con ejemplos con datos y las decisiones que tomé por ti.
+- **Filas en «Próximo»:**
+  - **0009:** informe de ocupación por sala (`ocupacion`).
+  - **0010:** exportar a Excel (`--exportar`), tras 0009.
+  - **0011:** aviso semanal a los responsables (`informe-semanal`), tras 0009 y tras la fila 1.
+- **Fila en «Backlog»:** 0012, `.xlsx` real.
+
+## Decisiones que conviene revisar
+
+- **CSV en vez de `.xlsx`:** el tech-stack dice «sin dependencias externas», y un `.xlsx` real necesita una librería o escribir el zip a mano. El CSV usa UTF-8 con BOM, separador `;` y coma decimal, y abre en Excel con doble clic. Si el cliente exige `.xlsx`, hay que cambiar el tech-stack. Por eso quedó en el Backlog (0012).
+- **Horario de apertura:** supuse lunes a viernes, de 08:00 a 20:00, porque el código no tiene horario. Confírmalo con el cliente.
+- **Aviso semanal:** lo lanza un comando y la programación la pone el cron de tu servidor, porque la herramienta es una CLI sin proceso residente. Los responsables salen de un `responsables.json`. Espera a la fila 1 para reutilizar su envío de correo.
+- **Misión:** `mission.md` dice que no hay más usuarios que tú, y los "responsables" y "el cliente" lo contradicen. Puede que haga falta actualizarla.
+
+## Avisos
+
+- **Kit desactualizado:** esta sesión tiene el kit 2.3.4 y el proyecto pide el 3.0.0. Ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.
+- **Forma heredada:** `sdd roadmap check` falla en dos líneas que no toqué: la cabecera de «Deuda técnica» y el título de la release v0.3.0. Es forma heredada pendiente de la migración.
+
+## Qué va primero
+
+Va la 0009. Este es su prompt de arranque:
+
+### *✨ 0009 — Informe de ocupación por sala*
+***Nombre:*** `feature/0009-room-occupancy-report`  
+***Base:*** `develop`  
+***Carril:*** `feature`
+
+```
+Arranca la 0009 con sdd-propose, carril feature: añadir el comando `ocupacion` que informa de la ocupación de cada sala en un periodo.
+
+Alcance:
+- src/app.js: comando `ocupacion [--desde AAAA-MM-DD --hasta AAAA-MM-DD]` y su cálculo, con tests en test/app.test.js
+
+Fuera de alcance:
+- exportar a Excel: 0010
+- aviso semanal por correo: 0011
+
+Decisiones ya tomadas:
+- ocupación = horas reservadas / horas disponibles, con semana disponible lun-vie 08:00-20:00 (60 h por sala), porque el código no tiene horario de apertura y es el supuesto acordado
+- una reserva semanal cuenta en cada semana del periodo
+- periodo por defecto: la semana natural anterior (lun-dom)
+- una fila por sala, de más a menos ocupada, p. ej. Norte con lun 10:00-12:00 en una semana → 2 h / 60 h = 3,3 %; Sur sin reservas → 0,0 %
+
+Antes de diseñar, lee:
+- .docs/sdd/specs/20261108-171619-proposal-0008-informes/proposal.md, §Reglas de negocio y §Decisiones tomadas por el agente
+
+Nada que saldar.
+
+Está hecho cuando `node src/app.js ocupacion` muestra una fila por sala con su porcentaje y `node --test` pasa en verde.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Dime cómo publico la reserva: puedo hacer un commit directo de `roadmap.md` y la propuesta en `develop`, o puedes commitearlos tú. Si prefieres hacer la 0009 en esta sesión, di "arráncalo".
+

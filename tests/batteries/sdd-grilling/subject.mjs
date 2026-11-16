@@ -1,0 +1,67 @@
+// Sujeto de la batería de sdd-grilling: una petición de battery.md que lleva a una skill que entrevista.
+// Lo lanza tests/headless/battery.mjs run: el sujeto no lleva el CLAUDE.md del dev-lead.
+import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs';
+import { initSubject } from '../../headless/lib.mjs';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const SC = process.argv[4];
+const s = initSubject(process.argv.slice(2), (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, ''));
+const cell = subjectCell(HERE, s);
+const ASK = cell('Petición');
+const SALAS = join(HERE, '..', 'using-sdd', 'mold-salas');
+const SALAS_MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}';
+
+const molds = {
+  salas: () => {
+    s.copy(SALAS);
+    s.putKitMarker(SALAS_MARKER);
+  },
+  reservas: () => {
+    s.copy(join(HERE, 'mold-reservas'));
+    s.putKitMarker(SALAS_MARKER);
+  },
+  'salas-csv': () => {
+    molds.salas();
+    const roadmap = join(s.R, 'ROADMAP.md');
+    // La fila «2» de la 2.x es la 0002 (una id de la secuencia: «arranca la 2 del roadmap»); va tras la de avisos por correo, la última de Now.
+    const row2 = '| 0002 | — | **Exportar a CSV las reservas de una sala**<br>*para que el responsable las cuadre los lunes en su hoja de cálculo; separador punto y coma (su Excel está en castellano) y por la salida estándar, que él redirige a su fichero (responsable de salas, 2026-11-01: «así me sirve»)*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |';
+    const text = readFileSync(roadmap, 'utf8');
+    const eol = text.includes('\r\n') ? '\r\n' : '\n';
+    const avisos = text.split(eol).find((line) => /^\| 0008 \|.*Avisos por correo antes de la reserva/.test(line));
+    if (!avisos) throw new Error(`salas-csv: falta la fila de avisos por correo en ${roadmap}`);
+    writeFileSync(roadmap, text.replace(avisos + eol, avisos + eol + row2 + eol));
+  },
+  'salas-sin-docs': () => {
+    s.copy(SALAS);
+    rmSync(join(s.R, '.docs'), { recursive: true });
+  },
+  'salas-web': () => {
+    s.copy(SALAS);
+    s.putKitMarker(SALAS_MARKER);
+    s.copy(join(HERE, 'mold-web', 'public'), 'public');
+    s.copy(join(HERE, 'mold-web', 'src'), 'src');
+    appendFileSync(join(s.R, '.docs', 'sdd', 'steering', 'operations.md'), `\n${readFileSync(join(HERE, 'mold-web', 'operations-frontend.md'))}`);
+  },
+  vacio: () => s.put('README.md', '# citas\n'),
+};
+const mold = moldFrom(cell, s, molds);
+mold();
+s.initRepo();
+
+const goAhead = 'sí, adelante: feature full con delegate. La quiero porque cuando Norte está ocupada tengo que volver a mirar libres a mano cada rato';
+const turn2 = { g3: goAhead, g4: 'mantengo lo que dije', g5: 'decide tú lo que puedas', g6: goAhead };
+if (turn2[s.SC]) s.env.TURN2 = turn2[s.SC];
+if (s.SC === 'g9') s.env.EXTRA_ALLOWED = 'WebSearch WebFetch';
+
+if (s.SC === 'ag') s.env.MAX_TURNS ||= '45';
+s.env.MAX_TURNS ||= '30';
+await s.launch(ASK);
+if (s.SC === 'g7') await s.converse(join(HERE, 'persona-g7.md'), 8);
+if (s.SC === 'g6') await s.resume('no, espera, explícamelo mejor');
+for (const file of s.git('ls-files', '--others', '--exclude-standard', '--', '.docs/sdd/specs/*/spec.md').split('\n').filter(Boolean)) {
+  s.keep(join(s.R, file), 'spec.md');
+}
+s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## ficheros\n${s.git('ls-files', '--others', '--exclude-standard')}`);

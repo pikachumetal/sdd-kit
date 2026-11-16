@@ -1,0 +1,79 @@
+--- [3]
+Empiezo leyendo el contexto SDD del proyecto.
+
+--- [20]
+Rojo primero: actualizo el test y lo ejecuto.
+
+--- [22]
+RED confirmado. Ahora el cambio mínimo.
+
+--- [27]
+El cambio dejó los ficheros con LF cuando el repositorio los guarda con CRLF, y el diff se hinchó a 70 líneas. Restauro CRLF para dejar solo las 2 líneas reales.
+
+--- [35]
+Lanzada la revisión del patch con un revisor (Sonnet, effort medio). Espero su informe antes de hacer el commit.
+
+--- [39]
+Sin hallazgos críticos ni importantes.
+
+- La solución está implementada tal cual: `cancelBooking` devuelve `` `reserva cancelada: ${room} ${day}` ``, que coincide con el texto fijado por el dev-lead.
+- El test de `cancelar una reserva activa` espera el nuevo texto. Con el código anterior habría fallado: el valor real era `cancelada Norte lun`.
+- No se tocó nada más. El diff solo cambia esa línea y la del test. `voidBooking` (`anulada …`) y `sin reserva …` quedan igual. No quedan referencias al texto antiguo fuera de `.docs`.
+- `node --test` da 4/4 en verde. No ejecuté `scripts/lint.mjs`.
+- `/tmp/patch0012.diff` es idéntico a `git diff`.
+- `patch.md` es coherente con el diff: ficheros, texto exacto, decisiones y gate.
+
+Hallazgos menores, solo de documentación:
+- **Menor:** `patch.md` dice `commit: pendiente` y `Revisión: pendiente de pasar a este documento`. Es lo esperado antes del cierre, pero hay que completarlo.
+- **Menor:** `status: done` y el resultado ✅ aparecen antes de commit y revisión. Es un adelanto leve, no un error.
+- **Menor:** en «Tiempo», la frase «sin 0 min de espera» es redundante, y el reloj arranca a las 10:11Z mientras `created` y «Inicio» marcan las 10:13Z. Es una incoherencia leve de datos.
+
+--- [40]
+Sin hallazgos importantes. Cierro la revisión en patch.md y hago el commit.
+
+--- [43]
+Commit del fix hecho (`8fe152b`). Paso al cierre con `sdd-archive`.
+
+--- [48]
+🦆 Al cancelar una reserva, ahora se ve `reserva cancelada: Norte lun`. Antes se veía `cancelada Norte lun`. Si no hay reserva activa, el mensaje sigue siendo `sin reserva Norte lun`.
+
+**✋ Me salí del plan en…**
+
+- Nada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun` con reserva activa devuelve `reserva cancelada: Norte lun` | `ejecución real` | `reserva cancelada: Norte lun` |
+| Repetir `cancelar Norte lun` sin reserva activa devuelve `sin reserva Norte lun` (no cambia) | `ejecución real` | `sin reserva Norte lun` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 4/4 y lint sin hallazgos sobre `8fe152b` (el RED inicial falló con `actual 'cancelada Norte lun'`). El gate tardó 2 s.
+
+**Sin probar**
+
+- Nada.
+
+**Antes de seguir, dos avisos**
+
+- **Cambios sin commitear:** `patch.md` está modificado en el worktree. Solo lleva el hash `8fe152b` en `commit:`, y entrará en el commit de cierre. No he descartado nada.
+- **Merge sin política declarada:** `sdd merge --check` dice que falta `merge.into` o `merge.noFf` en `sdd-kit.json`. En `delegate`, sin ese bloque completo, presento el merge y espero tu palabra. No hay otras ramas abiertas.
+
+**Guion**
+
+Rama `feature/0012-cancel-message` · worktree `<run>/repo`
+
+Terminal 1:
+
+```
+node -e "import('./src/app.js').then(m=>console.log(m.run('cancelar',['Norte','lun'])))"
+```
+
+Debe imprimir `reserva cancelada: Norte lun`.
+
+Dime «validado» (o lo que hayas probado) para cerrar. Para el merge, dime también a qué rama va, normalmente `develop`, y si va con `--no-ff`. Hasta entonces el patch queda en espera.
+
+**No terminado.** Falta tu validación y la política de merge. No borres todavía el worktree `<run>/repo`.
+

@@ -1,0 +1,53 @@
+--- [2]
+Esto es una investigación que deja medidas, así que entra por `sdd-propose`.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto (constitución, misión, stack, roadmap) y comprobar dependencias para clasificar. Queda: anunciar el carril y empezar la entrevista de la spec, ~5 min.
+
+--- [14]
+Ahora: abrir la investigación como spike y entenderla antes de escribir la spec. Queda: la entrevista (una o dos preguntas), la spec con su aprobación, el plan y la medición con su tabla, ~25 min.
+
+```text
+Carril: spike (corre como feature, modo full) · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Una cosa antes de seguir: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que algunas skills pueden ser de una versión vieja. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. No lo bloqueo, pero conviene hacerlo.
+
+**Lo que he entendido (corrígeme):**
+- Quieres saber si `libres <franja>` sigue respondiendo bien cuando hay 1.000 reservas, y que el resultado sea una **tabla de medidas**, no solo un «sí» o un «no».
+- Hoy `libres` (`src/app.js`, `freeRooms`) recorre todas las reservas por cada sala. Hay 2 salas, y las reservas viven en memoria con una sola de partida.
+- No hay ninguna forma de cargar 1.000 reservas desde la línea de comandos. La medición necesitará sembrar las reservas por código.
+- No toco el comportamiento del producto. El entregable es la tabla, y si hace falta una optimización, sería otro cambio aparte.
+- Cuento 1 o 2 tasks (el banco de medida y la tabla), así que no propongo dividirlo.
+
+❓ **¿Qué resultado te haría decir «no aguanta»?**
+
+Es tuyo y no puedo adivinarlo: sin ese umbral la tabla enseña números, pero no dice si pasa o falla. Piensa en un momento concreto. Lanzas `libres 10:00-12:00` con 1.000 reservas en memoria y la respuesta tarda un tiempo. ¿A partir de cuántos milisegundos, o de qué otra señal, dirías que ya no te vale?
+
+--- [16]
+Antes de seguir: lo que me enseñaste fue la nota de lo que entendí, no una spec, y el umbral de «aguanta» sigue sin respuesta. Así que escribo la spec con ese hueco marcado como decisión mía y la dejo en su puerta de aprobación. El plan va después de que la veas. Primero leo las referencias de nombrado y la plantilla.
+
+--- [30]
+Spec escrita en `.docs/sdd/specs/20261101-183016-feature-0012-libres-1000/spec.md`, en la rama `feature/0012-libres-1000`, con el id 0012 reservado. Todavía no he escrito el plan ni he tocado código. Tu «Apruebo» llegó antes de que existiera la spec, y la pregunta del umbral seguía sin respuesta. No puedo darte por aprobado algo que no has visto.
+
+🦆 Hoy nadie sabe cuánto tarda `libres 10:00-12:00` con muchas reservas. Esta feature no cambia nada de lo que ves en la herramienta. Añade un script que siembra 10, 100, 1.000 y 10.000 reservas y mide `libres` en cada caso. Deja una tabla con mediana, p95 y un «pasa» o «falla» frente a un umbral. Ejemplo de fila: «1.000 reservas · franja ocupada · mediana 0,02 ms · p95 0,05 ms · pasa». `src/app.js` no se toca.
+
+**✋ Decisiones que he tomado yo — valida estas:**
+1. **Umbral de «aguanta»: p95 ≤ 50 ms con 1.000 reservas.** No me lo dijiste. Es lo que más te pido que valides.
+2. **Se mide `run('libres')` en proceso**, no la CLI de punta a punta. La CLI arranca cada vez con 1 reserva en memoria, así que 1.000 reservas no pueden coexistir entre dos ejecuciones.
+3. **Tamaños 10, 100, 1.000 y 10.000**, con las 2 salas reales. El umbral se aplica solo a 1.000.
+4. **Dos franjas por tamaño:** ocupada y libre.
+5. **Estadística:** 1.000 llamadas por celda tras 200 de calentamiento. Se anotan la versión de Node y el equipo.
+6. **Siembra:** el script mide una copia temporal de `src/app.js` con las reservas sembradas.
+7. **La tabla queda en `medidas.md`** de la carpeta de la spec, y el script en `scripts/bench-libres.mjs`.
+8. **Validación por el agente**, porque es un número frente a un umbral.
+9. **Si falla el umbral, el spike solo informa.** Optimizar sería otra feature.
+
+Review de spec: ninguna, con 0 señales. Perfil `delegate`, el del proyecto. Cuento 2 tasks: el script y su test.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y paro antes de la Task 1, como pediste.
+2. **Cambios**: dime qué ajusto. Si el umbral no es 50 ms, dime cuál.
+

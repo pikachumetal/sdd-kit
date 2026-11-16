@@ -1,0 +1,39 @@
+--- [3]
+Voy a comprobar el estado de la init antes de decir nada.
+
+--- [16]
+Retomo la init donde se cortó. Modo: con código — si es un template recién instanciado, dímelo y sigo sin código.
+
+**Estado.** `PRODUCT.md` y la constitución están aprobados, y la configuración del kit ya está guardada (`ids.mode: sequence`, perfil `delegate`, validación manual). No vuelvo a preguntar nada de eso. Falta `operations.md` y los documentos que le siguen. Todavía no he escrito nada nuevo.
+
+**`operations.md`: lo que he leído del código para la sección Testing**
+
+- **Comandos** (de `package.json`): arrancar con `npm run dev` (vite). Build: no hay script.
+- **Suite `unit`**: `npm test` (`vitest run`), solo `src/**/*.test.ts`. El único test llama a `reserve()` como función, sin host, red ni base de datos. Nivel `unitario`. La duración no la sé.
+- **Suite `e2e`**: `npm run e2e` (Playwright, `testDir: './e2e'`). Esa carpeta no existe, así que es una suite sin tests todavía. Nivel `E2E`, sin los campos de E2E.
+- **Lint**: hay un script `lint` (`eslint .`) y ningún hook de pre-commit.
+- **Sin filtro**: `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*` y `tests/helpers/**`.
+- **CI de la base**: `.github/workflows/ci.yml` solo corre `npm test`, en cada push. Como orden de lectura, `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`. Sin rama de integración distinta de `main` todavía.
+- **Temporales**: `test-results/` para Playwright, por el valor por defecto del runner. Vitest no declara ninguno.
+- **Motor de producción**: los datos viven en memoria, según tu constitución, así que no hay motor de base de datos.
+
+**Discrepancia con el `CLAUDE.md` actual:** dice «`npm run dev` en el puerto 3000», pero vite usa el 5173 por defecto y `package.json` no fija ningún puerto. Lo dejo en la lista de discrepancias y no lo copio como regla.
+
+**Pregunta (una sola):** ¿confirmas este reparto de suites, con `unit` como `unitario` y `e2e` como `E2E` sin tests aún?
+
+1. **Sí, tal cual.** La suite `e2e` queda registrada, sin gate de E2E hasta que haya tests.
+2. **Corrígeme algo**, por ejemplo si `e2e` no debe contar como suite todavía.
+
+Recomiendo la 1: el config de Playwright existe y el kit trata un script `e2e` sin tests como una suite sin los campos de E2E.
+
+--- [18]
+Registrado: `unit` como `unitario` y `e2e` como `E2E` sin tests. Sigo con los gates, que es lo siguiente.
+
+Las suites `unitario` y `pendiente` no van al gate de cierre: el cierre las corre enteras con su orden. Como `e2e` no tiene tests, el **Gate de cierre** queda como «sin suites de integración ni E2E por ahora». Se rellenará cuando haya un primer test de Playwright.
+
+❓ **Gate de merge**
+`sdd merge --verify` corre una sola orden sobre la base integrada antes de fusionar, sin encadenar comandos. Hoy el CI corre solo `npm test`, y el script `lint` queda fuera del gate porque el kit lo reserva para el pre-commit.
+1️⃣ **`npm test`**: corre `vitest run`, la suite que hoy existe y la misma que el CI. Cuando haya tests E2E habrá que revisar esta línea.
+2️⃣ **`npm test && npm run e2e`**: no lo puedo escribir así, porque el kit no admite encadenar comandos. Habría que crear antes un script `verify` en `package.json`, y eso es cambiar el proyecto. Además, `npm run e2e` fallaría hoy porque no existe `e2e/`.
+➡️ **Recomiendo 1️⃣**, porque es lo único que se puede ejecutar y que el CI ya verifica. A cambio, el gate de merge no cubrirá E2E hasta que existan.
+

@@ -1,0 +1,88 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff && ls -R .docs/sdd | head -50 && cat src/app.js
+<<<  M src/app.js
+diff --git a/src/app.js b/src/app.js
+index 368efdd..deb1db6 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room)
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal 
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/*0016*/spec.md specs/*0016*/plan.md sdd-kit.json; cat steering/constitution.md | head -60
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Horas reservadas por sala
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-09
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-09
+---
+
+# Spec — Horas reservadas por sala
+
+## Capacidades
+
+- Modificadas: `bookings` — nace el comando `horas`.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+El responsable quiere saber cuántas horas tiene reservada cada sala.
+
+## Scope
+
+- Entra: comando `horas <s
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node src/app.js horas Norte && node src/app.js horas Sur && git status --short
+<<< Norte: 2 h
+Sur: 0 h
+ M src/app.js
+
+=== RESULTADO (9 turnos, 0.16327449999999996 $)
+`horas` ya está terminado en `src/app.js`, pero la Task 1 sigue abierta y sin commitear porque no hay test.
+
+**Qué cambié:** `roomHours` ahora cuenta solo las reservas con `status === 'active'`, así que las canceladas no suman.
+
+**Comprobación a mano** (ejecutando el comando, no es un test):
+- `horas Norte` responde `Norte: 2 h`.
+- `horas Sur` responde `Sur: 0 h`.
+
+Las dos salidas coinciden con el THEN y el AND de la spec.
+
+**Por qué no la cierro:** la constitución (tests antes que código) y `sdd-implement-native` dicen que, si el dev-lead pide no escribir tests, la task queda abierta y sin commit. No he creado `test/horas.test.js`, que es el fichero que el plan reserva para esos tests. No he hecho el `task done`, la revisión final ni `sdd-archive`.
+
+**Qué falta:** cuando tengas `test/horas.test.js`, hay que comprobar que pasa en verde y commitear `src/app.js` junto con el test. Después ejecutar `node --test`, que es el gate de cierre del plan, y seguir con la revisión final y `sdd-archive`. Dime si quieres que lo haga yo con tu test.
+
+Para la demo, el comando ya funciona con el árbol de trabajo actual. El cambio es solo local y no está en la rama.
+
+**Rulings I made:** ninguno. **Deferred minors:** ninguno.

@@ -1,0 +1,125 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Glob: **/*
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+README.md
+package.json
+src\app.js
+test\app.test.js
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+ROADMAP.md
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor
+
+>>> Grep: reserva|booking|reservation
+<<< Found 6 files
+ROADMAP.md
+CHANGELOG.md
+PRODUCT.md
+test\app.test.js
+src\app.js
+README.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\.docs\sdd\steering\debt.md
+<<< 1	# Deuda técnica — salas
+2	
+3	## Por triar
+4	
+5	| Ítem | Origen | Fecha |
+6	| --- | --- | --- |
+7	| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+8	
+9	## En espera
+10	
+11	| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+12	| --- | --- | --- | --- | --- | --- |
+13	
+14	## Lista
+15	
+16	| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+17	| --- | --- | --- | --- | --- | --- | --- | --- |
+18	
+
+=== RESULTADO (13 turnos, 0.1374607 $)
+Antes de proponer nada he mirado el código y los documentos.
+
+**Lo que encontré**
+- `src/app.js:3` guarda las reservas en un array en memoria, con una reserva fija de ejemplo (Norte, lun, 10:00-12:00).
+- Es una CLI, así que cada comando es un proceso nuevo y la memoria se pierde al terminar el comando, no solo al reiniciar el servidor.
+- `reservar` solo funciona con `--cada-semana` y devuelve un texto fijo (`src/app.js:11`). `cancelar` tampoco toca ninguna lista (`src/app.js:12`). Hoy ninguna reserva se crea ni se borra de verdad.
+- `PRODUCT.md` dice que lo usas solo tú y que lo despliegas en tu propio servidor, sin más usuarios ni desarrolladores. No aparece ninguna base de datos ni dependencia (`package.json` solo declara `"type": "module"`).
+- Lo que sigo es una inferencia mía: sin concurrencia, sin migraciones y con pocos datos, el almacén puede ser muy simple.
+
+❓ **¿Dónde guardamos las reservas?**
+1️⃣ **Fichero JSON** (por ejemplo `data/reservas.json`). Se lee al arrancar y se escribe tras cada cambio. No añade dependencias, se puede abrir y editar a mano, y es fácil de respaldar. Su coste es que no es transaccional: si el proceso muere a mitad de la escritura, el fichero puede quedar corrupto. Se evita escribiendo a un temporal y renombrando.
+2️⃣ **SQLite**. Da escrituras atómicas y consultas por sala, día y franja. Su coste es una dependencia nueva (o `node:sqlite`, según la versión de Node de tu servidor), un esquema que mantener y un fichero binario que no se lee a mano.
+3️⃣ **Servidor de base de datos** (Postgres o similar). Aguanta crecimiento y varios usuarios, pero es otro servicio que operar. No encaja con un único usuario que despliega en su propio servidor.
+
+➡️ **Recomiendo 1️⃣**, porque con un usuario, dos salas y una CLI que arranca un proceso por comando no hay concurrencia ni volumen que justifiquen más. A cambio, si algún día quieres consultas complejas o varios usuarios simultáneos, habrá que migrar. Aislando la lectura y escritura en un módulo pequeño, ese cambio no tocaría el resto del código.
+
+¿Vas con el fichero JSON (1️⃣) o prefieres otra opción?

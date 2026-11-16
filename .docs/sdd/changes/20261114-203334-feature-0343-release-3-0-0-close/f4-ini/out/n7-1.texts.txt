@@ -1,0 +1,84 @@
+--- [3]
+Primero miro en qué punto quedó la init.
+
+--- [11]
+Retomo la init. Modo: con código (`package.json`, `.ts`); si es un template recién instanciado, dímelo y sigo sin código.
+
+**Ya aprobados** (`init.approved`): `PRODUCT.md` y `constitution.md`. La configuración del kit (`ids`, `control`, `execution`, `validation`) ya está guardada y no la vuelvo a preguntar. Toca `operations.md`. Este es el borrador, sacado de `package.json`, los configs y el CI:
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: no declarado (no hay script `build`)
+- **Arrancar**: `npm run dev` (vite)
+
+## Testing
+
+- **Suites**:
+  - `unit` · `npm test` (vitest, `src/**/*.test.ts`) · duración pendiente · nivel pendiente
+  - `e2e` · `npm run e2e` (Playwright, `testDir: ./e2e`; la carpeta aún no existe) · duración pendiente
+- **Lo afectado**: no declarado (vitest y Playwright sin filtro por cambios)
+- **Gate de cierre**: `npm test`
+- **Gate de merge**: `npm test`
+- **Sin filtro**: `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**`
+- **Lint**: `ninguno` (el script `lint` existe, pero no hay pre-commit)
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: pendiente
+- **Motor de producción**: no aplica (los datos viven en memoria, según la constitución)
+- **Temporales**: `e2e` · `test-results/` (valor por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`; `unit` · no declarado
+```
+
+Antes de dar el «sí», hay cosas que decidir o que no puedo deducir:
+
+1. **Nivel y duración de `unit`.** Los tests de `src/app.test.ts` ¿solo llaman a funciones (`unitario`)? Si no sabes la duración, la dejo como `pendiente`.
+2. **Lint.** Existe `npm run lint`. ¿Lo pongo como `Lint` con ese comando, o prefieres `ninguno`? Nunca va en el gate de cierre.
+3. **Gate de cierre y de merge.** Propongo `npm test`. ¿Añadimos `npm run e2e` cuando exista la carpeta `e2e/`?
+4. **Temporales de Playwright.** ¿Quieres la propuesta de moverlos a `.temp/playwright`? Yo no edito el config de la suite.
+5. **Rama de integración.** Hoy solo existe `main` y el CI corre `on: [push]`. La orden de «CI de la base» usa `main`. ¿Sigues con `main` o prefieres git-flow (`develop`)?
+6. **Interfaz.** No veo UI en `src/`, solo `app.ts` con la lógica de reservas. ¿Tiene interfaz (para añadir `## Frontend`) o no?
+7. **Worktrees.** ¿Trabajáis con worktrees? Si sí, ¿su entorno necesita más que instalar dependencias?
+8. **Ticket tracker y changelog.** ¿Usáis un tracker (Azure DevOps, Jira…)? ¿Quieres un `CHANGELOG.md`?
+
+Respóndeme lo que sepas y los «no sé» quedan como `pendiente`. Con eso actualizo el borrador y te lo vuelvo a presentar para el «sí». No escribo nada hasta entonces.
+
+--- [14]
+Con tu «la que recomiendas» he aplicado mi recomendación a cada punto. El test solo llama a una función, así que `unit` es `unitario`. Este es el borrador completo de `operations.md`:
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: no declarado (no hay script `build`)
+- **Arrancar**: `npm run dev` (vite)
+
+## Testing
+
+- **Suites**:
+  - `unit` · `npm test` · duración pendiente · unitario
+  - `e2e` · `npm run e2e` · duración pendiente · pendiente (Playwright con `testDir: ./e2e`; la carpeta aún no existe y no hay tests)
+- **Lo afectado**: no declarado
+- **Gate de cierre**: `npm test`
+- **Gate de merge**: `npm test`
+- **Sin filtro**: `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**`
+- **Lint**: `npm run lint` (eslint; nunca en el gate)
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: pendiente
+- **Motor de producción**: no aplica (los datos viven en memoria)
+- **Temporales**: `e2e` · `test-results/` (valor por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`; `unit` · no declarado
+```
+
+Qué he decidido y por qué:
+- **Lint**: hay un script `lint`, así que lo declaro con su comando.
+- **Gates**: `npm test`, porque el e2e no tiene tests todavía. Se añade `npm run e2e` cuando exista `e2e/`.
+- **Temporales**: dejo la propuesta de `.temp/playwright`. No toco el config de la suite.
+- **Frontend**: no lo incluyo, porque no hay interfaz en `src/`.
+- **Entornos**: no lo incluyo. No hay scripts `env:*` ni `worktree:*` que lo respalden.
+- **Rama de la base**: `main` es la única que existe. Si adoptamos git-flow (mi recomendación), la rama pasa a `develop` en la orden de CI. Lo cierro en la pregunta de ramas, antes del paso de git.
+
+¿Das el «sí» a `operations.md`? Cuando lo des lo escribo y lo registro con `sdd init --approved`. Después sigo con `architecture.md`.
+
+Quedan por preguntar, para más adelante: ticket tracker, changelog y worktrees.
+

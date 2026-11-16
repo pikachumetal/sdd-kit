@@ -1,0 +1,164 @@
+
+>>> Bash: cd <run>/repo && cat .temp/sdd/plan/task-1-brief.md; node --test test/informe.test.js 2>&1 | head -40; ls; cat package.json; git ls-files
+<<< ### Task 1 — Comando `informe`
+
+**Tras**: —
+**Tests RED**: hilo principal · `test/informe.test.js`
+**Superficies**: backend
+**Verificación**: `node --test test/informe.test.js`
+**Interfaces**:
+- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason, owner }`), `rooms`, `reasons` y `week`.
+- Produce: `run('informe', ['--por', 'sala' | 'motivo'])` → una línea por grupo (`Norte: 2 canceladas`; `sala ocupada: 2 canceladas`), una por cancelada (por sala: `  mié 12:00-13:00 — otro (Ana)`; por motivo: `  Sur jue 16:00-17:00 (Luis)`) y `Total: <n> canceladas`; sin `--por`, `
+
+>>> Bash: cd <run>/repo && cat src/app.js; cat test/informe.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+const week = ['lun', 'mar', 'mié', 'jue', 'vie'];
+const bookings = [
+  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active', owner: 'Ana' },
+  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes', owner: 'Luis' },
+  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro', owner: 'Ana' },
+  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled',
+
+>>> Bash: cd <run>/repo && python - <<'E'
+p='src/app.js'
+s=open(p,encoding='utf-8').read()
+fn='''const reportGroupings = {
+  sala: {
+    groups: () => [...rooms].sort(),
+    key: (b) => b.room,
+    line: (b) => `  ${b.day} ${b.slot} — ${b.reason} (${b.owner})`,
+  },
+  motivo: {
+    groups: () => reasons,
+    key: (b) => b.reason,
+    line: (b) => `  ${b.room} ${b.day} ${b.slot} (${b.owner})`,
+  },
+};
+
+function byRoomThenWeekday(a, b) {
+  return rooms.indexOf(a.room) - rooms.indexOf(b.room) || week.indexOf(a.day) - week.indexOf(b.day);
+}
+
+function cancelledReport(grouping) {
+  const cancelled = bookings.filter((b) => b.status === 'cancelled').sort(byRoomThenWeekday);
+  const out = [];
+  for (const group of grouping.groups()) {
+    const members = cancelled.filter((b) => grouping.key(b) === group);
+    if (!members.length) continue;
+    out.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.line));
+  }
+  out.push(`Total: ${cancelled.length} canceladas`);
+  return out.join('\\n');
+}
+
+export function run('''
+s=s.replace('export function run(',fn,1)
+s=s.replace("  if (cmd === 'mias') {","""  if (cmd === 'informe') {
+    const grouping = reportGroupings[params[params.indexOf('--por') + 1]];
+    return grouping ? cancelledReport(grouping) : 'uso: informe --por sala|motivo';
+  }
+  if (cmd === 'mias') {""",1)
+open(p,'w',encoding='utf-8',newline='').write(s)
+E
+node --test test/informe.test.js 2>&1 | tail -12; node --test 2>&1 | grep -E "^ℹ (pass|fail)"
+<<< ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.6669
+
+✖ failing tests:
+
+test at test\informe.test.js:1:1
+✖ test\informe.test.js (56.2017ms)
+  'test failed'
+ℹ pass 0
+ℹ fail 3
+
+>>> Bash: cd <run>/repo && git status --short; node --test test/informe.test.js 2>&1 | head -20; head -c 300 src/app.js
+<<<  M src/app.js
+?? test/informe.test.js
+file:///<run>/repo/src/app.js:39
+  return out.join('
+                  ^
+
+SyntaxError: Invalid or unexpected token
+    at compileSourceTextModule (node:internal/modules/esm/utils:355:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:93:18)
+    at #translate (node:internal/modules/esm/loader:441:20)
+    at afterLoad (node:internal/modules/esm/loader:509:29)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:514:12)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:567:36)
+    at afterR
+
+>>> Bash: cd <run>/repo && node -e "
+const fs=require('fs');let s=fs.readFileSync('src/app.js','utf8');
+s=s.replace(\"out.join('\n')\",\"out.join('\\\\n')\");fs.writeFileSync('src/app.js',s)" && sed -n 36,42p src/app.js; node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)"; node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --stat
+<<<     out.push(`${group}: ${members.length} canceladas`, ...members.map(grouping.line));
+  }
+  out.push(`Total: ${cancelled.length} canceladas`);
+  return out.join('
+');
+}
+
+ℹ pass 0
+ℹ fail 1
+ℹ pass 0
+ℹ fail 3
+warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+ src/app.js | 132 ++++++++++++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 83 insertions(+), 49 deletions(-)
+
+>>> Bash: cd <run>/repo && git checkout src/app.js && file src/app.js && git config core.autocrlf
+<<< Updated 1 path from the index
+src/app.js: JavaScript source, Unicode text, UTF-8 text, with CRLF line terminators
+true
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Edit: <run>/repo/src/app.js
+<<< The file <run>/repo/src/app.js has been updated successfully.
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | grep -E "^(ℹ (pass|fail)|✖)"; git diff --stat
+<<< ℹ pass 3
+ℹ fail 0
+ src/app.js | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+>>> Bash: cd <run>/repo && git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de canceladas por sala o motivo
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'E'
+# Task 1 — Comando informe
+
+## Implementado
+`informe --por sala|motivo` en `src/app.js`: tabla `reportGroupings` (grupos, clave, línea), `byRoomThenWeekday` y `cancelledReport`; rama `informe` en `run`. Sin `--por` válido responde `uso: informe --por sala|motivo`.
+
+## TDD
+- RED: `node --test test/informe.test.js` → 3 fallos; `run('informe', …)` devolvía `'salas'` (comando inexistente). Esperado.
+- GREEN: mismo comando → pass 3, fail 0.
+
+## Ficheros
+`src/app.js`, `test/informe.test.js` (commiteado sin cambios).
+
+## Notas
+- Los grupos sin canceladas se omiten (la spec no lo define).
+- `--por` con valor desconocido también da el uso.
+- Un primer intento rompió los finales de línea CRLF; restaurado con `git checkout` de mi propio cambio y rehecho con Edit.
+- `node --test` completo no ejecutado (lo hace el hilo principal).
+E
+<<< aaff6f6 feat: comando informe de canceladas por sala o motivo
+
+=== RESULTADO (11 turnos, 0.1822186 $)
+- **Status:** DONE
+- **Commit:** aaff6f6 feat: comando informe de canceladas por sala o motivo (incluye `test/informe.test.js` sin cambios)
+- **Tests:** RED antes de implementar con 3 fallos, porque `informe` no existía. Después, `node --test test/informe.test.js` pasa 3/3. No ejecuté la suite completa.
+- **Notas:**
+  - Los grupos sin canceladas se omiten, porque la spec no lo define.
+  - Un valor de `--por` desconocido también devuelve el texto de uso.
+  - Un primer intento de edición alteró los finales de línea CRLF de `src/app.js`. Lo revertí con `git checkout` (era cambio mío) y lo rehice con Edit; el diff final son solo 33 líneas añadidas.
+- **Informe:** <run>\repo\.temp\sdd\plan\task-1-report.md

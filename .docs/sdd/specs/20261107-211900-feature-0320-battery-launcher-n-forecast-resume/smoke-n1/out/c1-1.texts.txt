@@ -1,0 +1,72 @@
+--- [3]
+Primero leo el estado: el workspace del plan, `tasks.md`, los dos informes de revisión y el git log.
+
+--- [15]
+Estoy retomando el cierre de la 0010: leo cómo cierra la revisión el kit y aplico el fix del hallazgo Important.
+
+--- [19]
+RED confirmado: reproduce el hallazgo. Ahora el fix.
+
+--- [28]
+Ahora: lanzo la única re-revisión del fix (opus + high) con su vigilancia de silencio. Queda: su veredicto y presentar el cierre, ~3 min.
+
+--- [34]
+Estado hasta ahora (la re-revisión sigue en marcha, no tengo su veredicto):
+
+- **Revisión final**: Spec lista sin Critical ni Important; Code con 1 Important.
+- **Fix hecho** (`e181b8d`): `reasonOf` recortaba mal el motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Ahora hace `trim()`. Escribí primero el test `cancelar acepta un motivo con espacios alrededor`, que falló, y después el fix. La suite pasa 6/6.
+- **Minor diferido**: el test `canceladas` depende de que `cancelar` se haya ejecutado antes. `review.minors` no está en `fix`, así que queda en el ledger como `minor (deferred)`.
+- **Registros**: `tasks.md` lleva `Revisión final` y `Pasada de fix`. Lo commiteé en `715267f` junto al ledger del workspace `.temp/sdd/plan`.
+- **Re-revisión**: está lanzada una única (opus + high) sobre `eeb8e8d..715267f`. Cuando vuelva, escribo su línea `Re-revisión:` en `tasks.md` y paso a `sdd-archive`.
+
+El hook de arranque avisa de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las skills pueden ser de una versión vieja. Para actualizar: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+--- [44]
+## Finding Verdicts
+
+- **Code · Important · `src/app.js:14-17`, `reasonOf` conservaba los espacios alrededor del motivo.** **ADDRESSED** en `src/app.js:16`. El motivo ahora se lee con `params[index + 1]?.trim()`.
+  - **El trim cubre el caso.** `node src/app.js cancelar Norte lun --motivo "sala ocupada "` responde «cancelada Norte lun (sala ocupada)». Antes respondía «motivo no válido: …».
+  - **Los motivos sin valor siguen sin fallar.** Con `--motivo` sin valor, `params[index + 1]` es `undefined` y `?.trim()` devuelve `undefined`, así que la respuesta es «motivo no válido: cambio de planes, sala ocupada, otro» y no un TypeError. Lo he comprobado por CLI, y también sin `--motivo` y con `--motivo "  "`. Los tres dan la misma respuesta, como pide el escenario de la spec.
+  - **El test nuevo no depende de los otros.** El test está en `test/cancel.test.js:17-19` y usa `Sur mar`, una reserva que no existe en el estado inicial y que ningún otro test crea. Por eso «sin reserva Sur mar» solo sale si el motivo pasa la validación. Ejecutado solo (`--test-name-pattern="espacios"`), pasa 1/1.
+  - **RED antes del fix.** Con el código anterior, el motivo `'sala ocupada '` no estaba en la lista y la respuesta habría sido «motivo no válido», así que el test fallaba.
+  - **La suite pasa.** `node --test` da 6/6, como dice el informe.
+
+## New Breakage in the Fix Diff
+
+- **Minor · `src/app.js` (todo el fichero): cambio de finales de línea mezclado con el fix.** El commit e181b8d pasa `src/app.js` de CRLF a LF. Por eso el diff enseña 48 líneas reescritas cuando el cambio real es una sola: `git diff --ignore-cr-at-eol eeb8e8d 715267f -- src/app.js` da 1+/1-. El repo no tiene `.gitattributes`, usa `core.autocrlf=true` y el resto del código está en CRLF (`git ls-files --eol`). No cambia el comportamiento, pero ensucia el blame y el diff.
+- **Minor · `test/cancel.test.js`: finales de línea mezclados.** `git ls-files --eol` marca el fichero como `i/mixed`. Las 4 líneas añadidas van en LF y el resto en CRLF. Es solo formato: no cambia ninguna aserción, nombre ni dato de los tests existentes.
+
+No hay roturas nuevas Critical ni Important.
+
+## Out-of-Scope Observations
+
+- **El test nuevo no cubre el motivo guardado.** El oráculo «sin reserva Sur mar» solo prueba que el motivo con espacios supera la validación. No prueba que se guarde recortado ni que aparezca recortado en `canceladas`. Hoy se guarda recortado porque `reasonOf` devuelve el valor ya recortado, pero ningún test lo fija.
+- **Faltan tests para «sin `--motivo`».** El escenario de la spec que dice «sin `--motivo` responde lo mismo» no tiene test, y `--motivo` sin valor tampoco. Funcionan bien (comprobado por CLI), pero nada en la suite lo asegura. Esto ya venía de antes del fix.
+- Ya está registrado como diferido en `progress.md:5`: el test 'canceladas' depende de que el test 'cancelar' corra antes (`test/cancel.test.js:13`). No lo he vuelto a evaluar.
+
+## Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [50]
+La revisión final de la 0010 está cerrada. Falta la validación del cierre, que es el paso 1 de `sdd-archive`. La suite pasa 6/6.
+
+- **Re-revisión (opus + high):** el Important queda resuelto en `src/app.js:16`. No hay roturas nuevas Critical ni Important.
+- **Hallazgo Minor propio:** mi `sed` había pasado `src/app.js` y `test/cancel.test.js` de CRLF a LF, y eso ensuciaba el diff. Los devolví a CRLF en `a7c2a35`, y un diff que ignora los finales de línea muestra solo el cambio real. Ese commit queda en ✋ como `sin revisar: a7c2a35 — solo finales de línea`, porque una re-revisión no abre otra.
+- **Minors diferidos:**
+  - El test `canceladas` depende del orden respecto a `cancelar`.
+  - Faltan tests de «sin `--motivo`» y de que el motivo se guarde recortado.
+- **Registros:** `tasks.md` lleva la línea `Re-revisión:`. El ledger del workspace (`.temp/sdd/plan`) tiene los `Final:`. El último commit es `ad99d10`.
+
+El siguiente paso es `sdd-archive`, y no lo he lanzado. Esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0, así que conviene actualizarlo antes de cerrar con la skill de esa versión: `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciar Claude Code.
+
+--- [51]
+Esa notificación es solo el aviso de que terminó el vigilante de silencio de la re-revisión. No hay nada nuevo que hacer.
+
+El estado sigue como en mi último mensaje:
+
+- La re-revisión terminó sin hallazgos abiertos.
+- La suite pasa 6/6.
+- `a7c2a35` queda en ✋ como `sin revisar`.
+- Falta `sdd-archive`, que no he lanzado. Conviene actualizar antes el kit de 2.3.4 a 3.0.0 y reiniciar Claude Code.
+

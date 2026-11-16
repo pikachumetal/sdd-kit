@@ -37,7 +37,7 @@ created: 2026-09-23
 
 ### 4.2 Smoke / tests
 
-- Validación diferida: 2026-09-23 · «se prueba en uso» · disparador: concretado por el agente (frase del dev-lead no lo nombraba) — próximo uso real de `libres`/`reservar` en producción tras el merge a `develop`, a cargo de Àngel Delgado (dev-lead). Corregir si no es el disparador correcto.
+- Validación diferida: 2026-09-23 · «se prueba en uso» · disparador: concretado por el agente (frase del dev-lead no lo nombraba) — próximo uso real de `libres`/`reservar` en producción tras el merge a `develop`, a cargo de <git-user> (dev-lead). Corregir si no es el disparador correcto.
 - Verificado por el agente (smoke del plan, 2026-09-21):
 
 | # | Caso | Resultado |

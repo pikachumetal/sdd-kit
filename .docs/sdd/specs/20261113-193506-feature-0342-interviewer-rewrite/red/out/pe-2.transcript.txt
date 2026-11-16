@@ -1,0 +1,107 @@
+
+# turno 1
+## usuario
+Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.
+> Skill: sdd-kit:sdd-propose
+## agente
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y abrir la entrevista de la spec, ~3 min.
+> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+> Bash: node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cat PRODUCT.md ROADMAP.md package.json README.md .docs/sdd/steering/*.md; ls -R src test; git branch -a; ls node_modules 2>&1 | head -3
+> Bash: cat src/app.js; head -40 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/skills/sdd-propose/references"; cat nombrado.md; cat spec-writing.md; sed -n 1,60p control-profiles.md
+## agente
+Ahora: reservar el id y crear la rama `feature/<id>` desde `develop` (no hay fila en el roadmap). Queda: anuncio, nota de comprensión y primera pregunta de diseño, ~2 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && SDD='node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js' && $SDD id next --project-root . --reserve
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git checkout -b feature/0010-exportar-reservas-csv develop && node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js id claim --project-root .; git status -sb
+> Skill: sdd-kit:sdd-grilling
+## agente
+Ahora: anuncio y nota de comprensión de la feature (rama `feature/0010-exportar-reservas-csv` creada desde `develop`). Queda: entrevista (unas 3-4 preguntas), spec y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV para que su responsable las abra en la hoja de cálculo y las cuadre los lunes. Hoy `src/app.js` solo tiene `libres`, `reservar` y `cancelar`. Las reservas son una lista en memoria con `room`, `day` y `slot`, por ejemplo `Norte, lun, 10:00-12:00`. Corrígeme si algo no cuadra.
+
+❓ **¿Qué reservas entran en el CSV?**
+Cada reserva solo tiene sala, día de la semana y franja, sin fecha. Eso limita lo que se puede filtrar.
+1️⃣ **Todas las de la sala:** `salas exportar Norte` da `sala,dia,franja` y debajo `Norte,lun,10:00-12:00`. Es simple, y el responsable filtra en la hoja si le sobra algo.
+2️⃣ **Solo un día de la semana:** `salas exportar Norte --dia lun` da solo las del lunes. Añade un parámetro y un caso más de error, como un día inválido.
+➡️ **Recomiendo 1️⃣**, porque sin fecha en los datos no hay "la semana pasada" que filtrar, y la sala tiene pocas reservas. A cambio, si algún día hay muchas, habrá que añadir el filtro.
+
+¿Con cuál te quedas?
+
+# turno 2
+## persona
+No sé, decide tú.
+## agente
+Decidido por mí: 1️⃣, todas las reservas de la sala. Va a «✋ Decisiones que he tomado yo» con ese motivo: los datos no tienen fecha y hay pocas reservas, así que el responsable filtra en su hoja.
+
+Sigo con otra decisión que sí depende de cómo trabaja el responsable. En Excel con configuración regional española, un CSV separado por comas suele abrirse con todo en una sola columna. Con punto y coma se abre bien, pero Google Sheets y LibreOffice suelen preferir la coma. Eso cambia el formato del fichero.
+
+¿Qué hoja de cálculo usa el responsable de cada sala para cuadrar las reservas?
+
+# turno 3
+## persona
+No sé.
+## agente
+Decidido por mí, y va a ✋:
+
+- **Formato:** separador `;`, con cabecera `sala;dia;franja`, por ejemplo `Norte;lun;10:00-12:00`. Es el que Excel en español abre bien, y Sheets y LibreOffice lo detectan al importar.
+- **Cabecera sin tilde:** así no hace falta BOM. A cambio, un nombre de sala con tilde podría verse mal en Excel.
+
+Queda una decisión que sí es tuya, sobre cómo llega el fichero al responsable. Tú eres el único que usa la herramienta.
+
+❓ **¿Dónde sale el CSV?**
+1️⃣ **Por pantalla (stdout):** `salas exportar Norte > norte.csv` te deja el fichero para mandarlo. Es lo habitual en terminal y se puede encadenar con otras herramientas, pero tú creas el fichero con la redirección.
+2️⃣ **Fichero directo:** `salas exportar Norte` escribe `norte.csv` en la carpeta actual y avisa `escrito norte.csv`. Es más cómodo, pero sobrescribe uno existente sin preguntar y hay que decidir dónde se guarda.
+➡️ **Recomiendo 1️⃣**, porque `run()` devuelve un texto que `app.js` imprime y así encaja sin tocar nada más. A cambio, el fichero lo creas tú con `>`.
+
+¿Con cuál te quedas?
+
+# turno 4
+## persona
+1️⃣ Por la salida estándar: yo redirijo a fichero con `>`.
+## agente
+Decidido: el CSV sale por stdout y lo rediriges tú con `>`. Ahora: leer la plantilla de spec y el pase de coherencia, y escribir `spec.md`. Queda: revisión de la spec y su aprobación, ~8 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red"; ls skills/sdd-templates skills/sdd-templates/* | head -40; cat skills/sdd-propose/references/coherence-pass.md; cat skills/sdd-propose/references/review-spec.md
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo"; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+> Read: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\.temp\i\kit-red\skills\sdd-templates\templates\spec-template.md
+> Skill: sdd-kit:sdd-rubber-duck
+> Bash: date -u +%Y%m%d-%H%M%S; date -u +%Y-%m-%d
+> Bash: D="D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/changes/20261113-210915-feature-0010-exportar-reservas-csv"; mkdir -p "$D" && cat > "$D/spec.md" <<'EOF' --- id: 20261113-210915-feature-0010-exportar-reservas-csv feature: 0010 title: Exportar a CSV las reservas de una sala mode: full status: draft created: 2026-11-13 author: Fixture approvers: - name: TBD approved_at: null --- # Spec — Exportar a CSV las reservas de una sala 🦆 Hoy no hay forma de sacar las reservas de una sala para trabajar con ellas fuera de la herramienta. Con `exportar Norte` saldrá una tabla de texto: una cabecera `sala;dia;franja` y una línea por reserva, por ejemplo `Norte;lun;10:00-12:00`. El responsable de la sala abre ese fichero en su hoja de cálculo y cuadra las reservas los lunes. Tú rediriges la salida a un fichero con `>`. Si la sala no existe, sale un aviso por el canal de errores y el fichero queda vacío. Validación: dev-lead — lo usa una persona con su hoja de cálculo: solo abriendo el fichero se ve si las columnas salen bien. ## Capacidades - Nuevas: `booking-export` — sacar las reservas de una sala en un formato que abre una hoja de cálculo. - Modificadas: ninguna. - Retiradas: ninguna. ## ✋ Decisiones que he tomado yo — valida estas Review de spec propuesta: dos revisores — señales: capacidad nueva (`booking-export`), contrato público (el formato del CSV lo consume la hoja de cálculo del responsable) · tamaño: ~25 líneas en 2 ficheros - Dominio (sonnet): si el THEN de «Sala sin reservas» (solo la cabecera) sirve a quien cuadra los lunes, y qué no debe ver el responsable de una sala de las reservas de otra (señal: capacidad nueva) - Técnica (sonnet): si `;` sin BOM y la cabecera `sala;dia;franja` abren bien en Excel en español, Sheets y LibreOffice, y si los avisos por stderr con código 1 caben en `run()` sin romper `libres`, `reservar` y `cancelar` (señal: contrato público) - Mínimo razonable: solo técnica — deja sin mirar si la salida le sirve de verdad al responsable los lunes **Estado de la review:** no se ha despachado ningún revisor: esta sesión no tiene herramienta para lanzar subagentes. El repaso de coherencia sí está hecho, por mí, con los siete puntos de la rúbrica. Si quieres revisores, dilo en el gate y se lanzan desde una sesión que los permita. 1. **Todas las reservas de la sala, sin filtros** — los datos no tienen fecha, solo día de la semana y franja, y hay pocas reservas: el responsable filtra en su hoja. *(Tú dijiste «decide tú»; elegí esto.)* 2. **Nombre del comando: `exportar <sala>`** — nadie lo dijo; sigue el verbo en infinitivo de `libres`, `reservar` y `cancelar`. 3. **Separador `;`, cabecera `sala;dia;franja`, una línea por reserva en el orden en que están registradas** — Excel en español abre `;` en columnas; Sheets y LibreOffice lo detectan al importar. *(Tú dijiste «no sé» sobre la hoja de cálculo; decidí yo.)* 4. **Sin BOM y cabecera sin tilde (`dia`, no `día`)** — evita ensuciar el fichero y el problema de codificación en la cabecera. Coste: un nombre de sala con tilde podría verse mal en Excel; hoy las salas son `Norte` y `Sur`. 5. **Sala sin reservas: solo la cabecera** — la hoja queda vacía pero con columnas, y el responsable ve que no hay reservas, no que falló. 6. **Sala que no existe: `sala desconocida: Este`** por el canal de errores, código de salida 1 y salida estándar vacía — así `> norte.csv` no guarda el aviso dentro del fichero, que parecería una reserva. 7. **Sin sala: `uso: exportar <sala>`**, mismo tratamiento que el punto 6. 8. **El nombre de la sala se compara tal cual** (`norte` no es `Norte`) — igual que ya hacen `libres` y las reservas. 9. **Enfoque: A, frente a B** (ver Approach). 10. **Validación: dev-lead** — ver arriba. 11. **Capacidad nueva `booking-export`** — nombre en inglés porque es un nombre de fichero; el proyecto no tiene `capabilities/`, esta sería la primera. La crea el cierre. 12. **Sin `§Frontend`** — es una herramienta de terminal, no cambia ninguna pantalla. - Política de modelos: ningún revisor de spec despachado (ver arriba) · revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sin otros despachos en paralelo ### Decisiones tomadas con el dev-lead - Sale por la salida estándar y el dev-lead redirige a fichero — «1️⃣ Por la salida estándar: yo redirijo a fichero con `>`.» - Carril feature, modo full — «Carril feature, modo full: añade un comando que exporte a CSV las reservas de una sala, porque el responsable de cada sala las cuadra los lunes en su hoja de cálculo.» ## Intent Hoy la herramienta solo muestra salas libres y crea o cancela reservas: no hay forma de sacar las reservas de una sala. El responsable de cada sala las cuadra los lunes en una hoja de cálculo y ahora tendría que copiarlas a mano. Se quiere un comando que, dada una sala, saque sus reservas en CSV para abrirlas en la hoja. Éxito: `salas exportar Norte > norte.csv` produce un fichero que abre en columnas sin tocar nada. Fracaso, aunque funcione: que un aviso de error acabe dentro del fichero como si fuera una reserva. ## Scope - Entra: el comando `exportar <sala>` con el formato de las decisiones 3 a 8; sus tests. - Entra: avisos de error por el canal de errores con código de salida 1, solo para este comando. - No entra: filtrar por día o franja; escribir el fichero directamente; BOM; fechas en las reservas; exportar todas las salas a la vez; guardar reservas en disco (siguen en memoria). - No entra: cambiar la salida ni el código de salida de `libres`, `reservar` y `cancelar`. ## Lo que se retira o cambia de forma | Qué | Dónde aparece | Destino | | --- | --- | --- | | Nada: el comando es nuevo y no cambia lo existente | `git grep -n "exportar" -- . ':!.docs'` → sin resultados | no aplica | - Filas que implementa: nada: la 0010 se reservó para esta feature y no tiene fila en `ROADMAP.md` (`git grep -n 0010 -- ROADMAP.md` → sin resultados). La 0009 («Exportar reservas a calendario (.ics)») es otra idea y no se toca. ## Approach - A: una función `exportCsv(sala)` en `src/app.js`, junto a `freeRooms`, y `run()` la llama para `exportar`. Los errores se señalan con una excepción que el arranque de `app.js` convierte en stderr + código 1. Cuesta: un caso nuevo en el arranque, que hoy solo hace `console.log`. - B: un módulo `src/exportar.js` aparte. Cuesta un fichero por ~10 líneas, y `bookings` y `rooms` viven en `app.js` sin exportarse: habría que sacarlos o pasarlos. - Elegido: A — el proyecto es de un solo fichero de entrada (`operations.md`), y B obliga a tocar cómo se comparten los datos sin que nada lo pida. `run('exportar', ['Norte'])` devuelve el texto del CSV con saltos de línea `\n`, sin salto final: `console.log` lo añade. Los errores salen por el arranque, no por `run()`. ## Dónde se prueba - Formato del CSV, sala sin reservas, sala desconocida y sin sala, en su valor devuelto: por `run()`, como los tests actuales de `app.test.js`. - Error por stderr con código 1 y salida estándar vacía: ejecutando `node src/app.js exportar Este` como proceso, porque `run()` no lo ve. - Apertura en columnas en la hoja de cálculo: la valida el dev-lead a mano, con `salas exportar Norte > norte.csv`. ## Términos y ADR - Términos resueltos: ninguno - ADR candidatas: ninguna ## Delta de comportamiento ### Capacidad: `booking-export` #### ADDED — Exportar las reservas de una sala - GIVEN una reserva `Norte`, `lun`, `10:00-12:00` - WHEN se ejecuta `exportar Norte` - THEN la salida estándar es exactamente `sala;dia;franja` y, en la línea siguiente, `Norte;lun;10:00-12:00` - AND el código de salida es 0 #### ADDED — Sala sin reservas - GIVEN la sala `Sur` sin reservas - WHEN se ejecuta `exportar Sur` - THEN la salida estándar es solo `sala;dia;franja` #### ADDED — Sala desconocida - GIVEN las salas `Norte` y `Sur` - WHEN se ejecuta `exportar Este` - THEN por el canal de errores sale `sala desconocida: Este`, el código de salida es 1 y la salida estándar está vacía #### ADDED — Falta la sala - GIVEN cualquier estado - WHEN se ejecuta `exportar` sin sala - THEN por el canal de errores sale `uso: exportar <sala>`, el código de salida es 1 y la salida estándar está vacía #### Reglas de la capacidad — booking-export - **Dónde viven los datos**: las reservas en memoria de `src/app.js`, como hoy - **Idioma de los nombres**: castellano, sin tildes en la cabecera (`sala`, `dia`, `franja`) - **Límites**: no aplica - **Avisos**: `sala desconocida: <sala>` y `uso: exportar <sala>`, por el canal de errores - **Regla ante conflicto**: no aplica ## Aprobaciones | Nombre | Fecha | Estado | | --- | --- | --- | | | | pendiente | EOF cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git grep -n "exportar" -- . ':!.docs'; git grep -n 0010 -- ROADMAP.md; echo "---"; rm -rf /tmp/sddcopy && mkdir /tmp/sddcopy && cp -r .docs/sdd /tmp/sddcopy/sdd && node D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js capability merge --path /tmp/sddcopy/sdd --artifact "$D/spec.md"
+> Bash: ls "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo/.docs/sdd/"
+## agente
+Estoy escribiendo la `spec.md` de la feature 0010. El comando anterior falló por un problema de comillas y no creó nada, así que la escribo con otra herramienta.
+> Write: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\.docs\sdd\changes\20261113-210915-feature-0010-exportar-reservas-csv\spec.md
+## agente
+Ahora: repaso de coherencia, con el delta probado sobre una copia de `.docs/sdd`. Queda: presentar la spec y esperar tu aprobación, ~3 min.
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" git grep -n "exportar" -- . ':!.docs'; echo "grep exportar: $?" git grep -n "0010" -- ROADMAP.md; echo "grep 0010: $?" T=$(mktemp -d); cp -r .docs/sdd "$T/sdd" node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-red/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact ".docs/sdd/changes/20261113-210915-feature-0010-exportar-reservas-csv/spec.md"; echo "merge: $?"; git status -s
+> Edit: D:\code\.worktrees\sdd-kit\feature-0342-interviewer-rewrite\<run>\repo\.docs\sdd\changes\20261113-210915-feature-0010-exportar-reservas-csv\spec.md
+## agente
+Ahora: la spec está escrita y el repaso de coherencia, hecho. Queda: tu aprobación. Después escribo el plan y paso a implementar, ~2 min.
+
+**Spec:** `.docs/sdd/changes/20261113-210915-feature-0010-exportar-reservas-csv/spec.md`, en la rama `feature/0010-exportar-reservas-csv`.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala para trabajar con ellas fuera de la herramienta. Con `exportar Norte` saldrá una tabla de texto: una cabecera `sala;dia;franja` y una línea por reserva, por ejemplo `Norte;lun;10:00-12:00`. El responsable de la sala abre ese fichero en su hoja de cálculo y cuadra las reservas los lunes. Tú rediriges la salida a un fichero con `>`. Si la sala no existe, sale un aviso por el canal de errores y el fichero queda vacío.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Todas las reservas de la sala, sin filtros (dijiste «decide tú»).
+2. El comando se llama `exportar <sala>`.
+3. Separador `;`, cabecera `sala;dia;franja` y reservas en el orden en que están registradas. No he comprobado el formato en Excel, Sheets ni LibreOffice (dijiste «no sé» sobre la hoja de cálculo).
+4. Sin BOM y sin tilde en la cabecera. Un nombre de sala con tilde podría verse mal en Excel.
+5. Una sala sin reservas da solo la cabecera.
+6. Sala inexistente: `sala desconocida: Este` por el canal de errores, código de salida 1 y salida estándar vacía. Así `> norte.csv` no guarda el aviso dentro del fichero.
+7. Sin sala: `uso: exportar <sala>`, con el mismo tratamiento.
+8. El nombre de la sala se compara tal cual, así que `norte` no es `Norte`.
+9. Enfoque: una función nueva en `src/app.js`, frente a un módulo aparte.
+10. Validación: la haces tú a mano, abriendo `norte.csv` en tu hoja de cálculo.
+11. Capacidad nueva `booking-export`. Sería la primera del proyecto.
+
+**Revisión de la spec:** la rúbrica pedía dos revisores, pero esta sesión no tiene herramienta para lanzar subagentes. No se ha lanzado ninguno. El repaso de coherencia sí está hecho y el delta se fusiona sin errores sobre una copia. Si quieres revisores, hay que lanzarlos desde una sesión que los permita.
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajustar.

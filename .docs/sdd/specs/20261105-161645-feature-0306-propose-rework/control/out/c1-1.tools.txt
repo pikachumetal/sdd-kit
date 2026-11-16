@@ -1,0 +1,101 @@
+
+>>> Bash: ls -a .docs/sdd .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1; echo ---; cat .docs/sdd/roadmap.md
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0306-propose-rework/.temp/k306/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; ls node_modules 2>&1 | head -3
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+./
+../
+changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+# Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 0010 | **Motivo al cancelar**: al cancelar una reserva se elige un motivo de una li
+<<< Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat .docs/sdd/constitution.md .docs/sdd/mission.md .docs/sdd/tech-stack.md; ls .docs/sdd/specs; git ls-files | grep -v '^.docs' | head -50; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la de
+
+>>> Bash: cat src/app.js package.json; cat test/cancel.test.js; ls .docs/sdd/specs/*; cat .docs/sdd/operations.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`: one decision per turn, the recommended option first. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	The 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (8 turnos, 0.1620049 $)
+Ahora: clasifico la 0010 y abro el diseño de la spec. Queda: la entrevista de diseño, la spec y su aprobación, ~10 min. Después sigo con el plan y la implementación sin más paradas hasta la validación.
+
+La rama `feature/0010-cancel-reason` tiene la fila 0010 pendiente en el roadmap, así que esa fila es el enunciado.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+
+- **Hoy:** `cancelar <sala> <día>` marca la reserva como cancelada y responde `cancelada Norte lun`. No guarda motivo.
+- **Listado:** no existe ningún listado de canceladas. `src/app.js` solo tiene `libres`, `reservar --cada-semana`, `cancelar` y `anular`. Habrá que crear un comando nuevo para enseñarlas, y eso es parte de esta feature.
+- **Pedido:** al cancelar se elige un motivo de una lista cerrada. El listado de canceladas enseña cada reserva con su motivo.
+- **Tamaño:** prevo 2 tareas, el motivo al cancelar y el listado. Ambas tocan `src/app.js`, sin migración, así que no propongo dividir.
+- **Dependencias:** no hay ninguna que instalar (Node sin dependencias).
+- **Fuera:** `anular` y la 0011 (permisos por responsable) quedan fuera.
+
+❓ **¿El motivo es obligatorio al cancelar?**
+Hoy `cancelar Norte lun` funciona sin más y `test/cancel.test.js` lo comprueba.
+1️⃣ **Obligatorio.** `cancelar Norte lun` → `falta el motivo: elige uno de …`, y `cancelar Norte lun --motivo enfermedad` → `cancelada Norte lun (enfermedad)`. Ninguna cancelada queda sin motivo, pero los tests actuales de `cancelar` cambian.
+2️⃣ **Opcional.** `cancelar Norte lun` sigue dando `cancelada Norte lun`. El listado lo enseña como `sin motivo`. No rompe nada, pero el listado puede tener huecos.
+➡️ **Recomiendo 1️⃣**, porque la fila dice «se elige un motivo» y solo con motivo obligatorio el listado siempre lo enseña. A cambio, hay que actualizar los dos tests actuales de `cancelar`.
+
+Después te preguntaré cuál es la lista de motivos, que eso solo lo sabes tú.

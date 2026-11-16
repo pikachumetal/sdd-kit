@@ -1,0 +1,69 @@
+--- [3]
+Ahora: leo la spec, el plan y `tasks.md` de la 0010 para ver qué pide exactamente la Task 2. Queda: decidir si es una desviación y parar, ~2 min.
+
+--- [9]
+Workspace del plan: la rama `feature/0010-cancel-reason` en el propio repo, con la Task 1 hecha y la Task 2 en curso. No he escrito código ni commiteado nada.
+
+🦆 La Task 2 pide que `canceladas` responda «Norte lun — sala ocupada — Ana». Ese «Ana» no sale de ningún sitio. La app no tiene usuarios ni sesión, y `cancelar` no recibe ningún dato de quién lo ejecuta. `PRODUCT.md` y `mission.md` dicen que la usa una sola persona. Esa parte de la spec fue una suposición mía (la decisión 2, «la petición habla de saber quién y por qué»), y el código no la respalda. Para cumplirla tendría que inventar una identidad. Eso cambia la salida observable, así que no lo decido yo.
+
+✋ **Necesito tu decisión sobre la spec 0010.** Opciones:
+
+1. **Recomendada:** quitar «quién canceló». El listado responde «Norte lun — sala ocupada».
+2. Añadir una identidad, por ejemplo `--por <nombre>` obligatorio en `cancelar`. Eso modifica también el comportamiento de la Task 1 ya cerrada, con una task nueva al final.
+3. Tomar el usuario del sistema operativo. No lo recomiendo: es frágil y poco útil en un servidor propio.
+
+He dejado la opción 1 escrita **sin commitear** en `spec.md`:
+- Decisión 2.
+- THEN del listado.
+- Línea de «Enmiendas», marcada «sin aprobar».
+
+Como la enmienda cambia el delta, aún falta que un revisor `sonnet` (`sdd-kit:effort-medium`) la lea con los siete puntos de `review-spec.md`. Lo lanzo cuando me confirmes la opción.
+
+Si apruebas la 1, sigo con la Task 2: primero los tests en RED, luego `canceladas` en `src/app.js`, y cierre con `node --test test/cancel.test.js`. Si prefieres la 2, reescribo la enmienda antes de tocar código.
+
+--- [11]
+Ahora: marco la enmienda como aprobada, lanzo el revisor de la spec y escribo los tests en RED mientras tanto. Queda: la Task 2 completa, ~5 min.
+
+--- [24]
+RED confirmado: `canceladas` devuelve «salas». Ahora implemento el comando.
+
+--- [30]
+El `\n` se escribió como salto de línea real. Lo arreglo.
+
+--- [33]
+Hallazgos de la enmienda, punto por punto. Solo he revisado el diff sin commitear de `spec.md`.
+
+1. **Contradicción con `capabilities/`**: sin hallazgos. El directorio `capabilities/` no existe en el proyecto. La enmienda no cambia ningún requisito ya existente.
+2. **Requisitos sin escenario**: sin hallazgos. El THEN «Norte lun — sala ocupada» es literal y lo comprueba el test nuevo con `assert.equal` sobre la misma cadena.
+3. **Alcance oculto**: sin hallazgos. El Intent y el Scope no prometían «quién». El `plan.md` y el código no mencionan «quién» ni «Ana», así que no queda ninguna referencia colgando.
+4. **Decisiones fuera de «✋»**: hay un hallazgo, de tipo Menor. En la sección «Decisiones que he tomado yo», la decisión 2 recoge el cambio, pero la decisión 3 («Sin review de spec: dos señales (MODIFIED, datos)») está sin actualizar. Sigue siendo defendible porque la enmienda reduce la spec. Aun así, la decisión 3 no deja constancia de que esta enmienda se haya revisado. Convendría añadir una línea que diga que la enmienda no cambia las señales.
+5. **Complemento de roles y estados**: sin hallazgos. La enmienda no introduce roles, estados ni condiciones de acceso. Al contrario, quita la identidad.
+5 bis. **Las cinco reglas**: sin hallazgos. La enmienda no añade datos, nombres, límites ni avisos nuevos. La constitución no define «Reglas de producto».
+6. **Contratos, datos o dependencias**: hay un hallazgo, de tipo Menor. Se quita el dato «quién» del listado, que es la salida de `canceladas`. Como la feature está sin commitear, no rompe nada, pero «Afecta a» solo cita la Task 2. Conviene decir que el formato de salida de `canceladas` queda como «sala día — motivo» y que no se guarda ningún dato de identidad.
+7. **Ejemplos**: hay un hallazgo, de tipo Menor, en la enmienda y en el texto de la spec. Cita a «Laura» (aprobadora) en la enmienda y en la decisión 2. Es un nombre real y lleva a publicar el dato en el artefacto, aunque ya figura en los metadatos y en las aprobaciones. Se puede dejar así por coherencia con la cabecera o sustituirlo por el rol («dev-lead»). La eliminación de «Ana» del GIVEN es correcta.
+
+Observación fuera del alcance de la enmienda: la capacidad se declara como «Modificadas: `bookings`», pero el delta usa dos `ADDED` y ningún `MODIFIED`. No es del diff, así que no lo cuento como hallazgo.
+
+--- [35]
+El revisor solo da hallazgos menores. Aplico dos: el «Afecta a» más claro y el rol en lugar del nombre en mi texto de la enmienda.
+
+--- [38]
+La Task 2 está hecha y commiteada, pero aún no he pasado `sdd-verify` ni la revisión final de la rama.
+
+- **Enmienda:** la dejé en la spec como aprobada por ti. Quité «quién canceló» de la decisión 2 y del THEN del listado.
+- **Revisor de la spec:** solo dio hallazgos menores y apliqué dos.
+  - **Afecta a:** la línea de la enmienda ahora aclara que no se guarda ninguna identidad.
+  - **Nombre en el texto:** puse el rol «dev-lead» en lugar del nombre de Laura en mi texto de la enmienda.
+  - **No apliqué** su sugerencia de revisar la decisión 3 («Sin review de spec»).
+- **Código:** `canceladas` está en `src/app.js` y responde «Norte lun — sala ocupada».
+- **Tests:** escribí el test nuevo antes que el código, en RED, y falló con «salas». Después pasó.
+  - Con la enmienda aplicada, `node --test` completo da 5 de 5.
+  - `node --test test/cancel.test.js` dio 3 de 3 antes de las ediciones de la spec y el `tasks.md`, que no tocan código.
+- **Commits:**
+  - `de9dafd` (la task, con la enmienda y los tests).
+  - `55a94dc` (el hash en `tasks.md`).
+
+La spec dice «Modificadas: `bookings`» pero el delta usa dos `ADDED` y ningún `MODIFIED`. Lo señaló el revisor y no es de esta enmienda, así que no lo toqué.
+
+Con `profile: delegate`, lo siguiente es la validación final de la rama, con el gate `node --test` y la revisión de cierre. ¿Sigo con eso?
+

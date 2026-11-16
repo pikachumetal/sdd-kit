@@ -1,0 +1,107 @@
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Bash: cd <run>/repo && grep -n "export\|module.exports\|^function\|bookings" src/app.js | head -40; cat package.json | grep -A3 scripts; ls test
+<<< 3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+5:function freeRooms(slot) {
+6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+9:function findBooking(room, day) {
+10:  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13:export function cancelBooking(room, day) {
+20:export function voidBooking(room, day) {
+27:export function run(cmd, params) {
+app.test.js
+cancel.test.js
+
+>>> Bash: cd <run>/repo && sed -n 1,50p src/app.js; grep -n libres test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'cancelled' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+  booking.sta
+
+>>> Bash: cd <run>/repo && cat > test/reactivar.test.js <<'EOF'
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('reactivar devuelve la reserva cancelada', () => {
+  assert.equal(run('reactivar', ['Norte', 'lun']), 'reactivada Norte lun');
+});
+
+test('reactivar saca a Norte de libres en su franja', () => {
+  run('reactivar', ['Norte', 'lun']); // idempotente para el estado: deja la reserva activa
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reactivar sin cancelada lo dice', () => {
+  assert.equal(run('reactivar', ['Sur', 'mar']), 'sin cancelada Sur mar');
+});
+EOF
+node --test test/reactivar.test.js 2>&1 | grep -v "^#" | head -60
+<<< ✖ reactivar devuelve la reserva cancelada (1.7544ms)
+✖ reactivar saca a Norte de libres en su franja (0.2937ms)
+✖ reactivar sin cancelada lo dice (0.8989ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 0
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.8778
+
+✖ failing tests:
+
+test at test\reactivar.test.js:5:1
+✖ reactivar devuelve la reserva cancelada (1.7544ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'reactivada Norte lun'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/reactivar.test.js:6:10)
+      at Test.runI
+
+=== RESULTADO (5 turnos, 0.10112840000000001 $)
+He escrito los tres tests y fallan los tres, como se esperaba. No he tocado `src/` ni he hecho commit.
+
+**Fichero:** `test/reactivar.test.js`
+
+**Comando:** `node --test test/reactivar.test.js`
+
+**Resultado:** 3 tests, 0 pasan, 3 fallan. Cada fallo es de aserción, sin errores de import ni de sintaxis, porque `run` aún no conoce `reactivar` y devuelve `'salas'`.
+- Primer test: esperaba `'reactivada Norte lun'` y recibió `'salas'`.
+- Segundo test: esperaba `'Sur'` y recibió `'Norte, Sur'`, porque Norte sigue cancelada y por tanto libre.
+- Tercer test: falla por la misma razón. Esperaba `'sin cancelada Sur mar'`, pero el recorte de la salida cortó ese detalle y no lo vi.
+
+**Tests, uno por THEN o AND:**
+1. `reactivar devuelve la reserva cancelada` codifica el THEN «responde `reactivada Norte lun`».
+2. `reactivar saca a Norte de libres en su franja` codifica el THEN «Norte deja de salir en `libres 10:00-12:00`», con salida esperada `Sur`.
+3. `reactivar sin cancelada lo dice` codifica el AND «sin cancelada, `reactivar Sur mar` responde `sin cancelada Sur mar`».
+
+El estado de `bookings` se comparte entre los tests del fichero. El segundo test llama antes a `run('reactivar', ['Norte', 'lun'])` sin comprobar su salida, para que no dependa de que el primero haya corrido antes. Funciona igual aislado o en orden.

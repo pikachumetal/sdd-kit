@@ -1,0 +1,100 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [13]
+La re-revisión es obligatoria: el commit `e4f4f7a` toca `package.json` (config, no documentación), así que no entra en la excepción. Preparo el encargo.
+
+--- [22]
+Aviso antes de seguir: la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0 (`.docs/sdd/sdd-kit.json`). Las skills que sigo pueden ser las de una versión vieja. Se arregla con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+**Dónde estoy en el cierre de la 0010:**
+- **Pre-checks 0.1 a 0.5:** pasan. El árbol está limpio, `sdd merge --check` deja `develop` listo y no hay otras ramas `feature/*` ni `patch/*` abiertas. La spec está `approved`, con la firma de Laura.
+- **Paso 0.6, revisión final:** la hicieron sobre `8da80b0`, pero `HEAD` es `e4f4f7a`. Los dos commits de por medio son `6d3706d`, que solo toca `tasks.md`, y `e4f4f7a`, que añade el script `cancelar` a `package.json`. El segundo es configuración, no documentación, así que no entra en la excepción. Sin `Re-revisión:` en `tasks.md`, me toca una única re-revisión del tramo `8da80b0..e4f4f7a`.
+- **Re-revisión lanzada:** va en segundo plano con modelo `opus` y con su vigía de silencio. Usé el tipo `general-purpose`, porque `sdd-kit:effort-high` no está entre los agentes de esta sesión.
+
+No escribo ningún registro hasta que vuelva y la cierre. Después de eso, pasos 1 y 2:
+- **Validación:** va en campo (`validation.mode: field`). Pasaré mi smoke y la suite completa sin `--affected`, porque `package.json` está en «Sin filtro». Después registraré `Validación en campo:`.
+- **Registros:** `walkthrough.md`, la fusión de la capability `bookings`, el changelog y el roadmap (la fila 0010 pasa a ✅), y la fila de estimación si procede.
+- **Merge:** a `develop` con `--no-ff`, sin push.
+
+--- [27]
+### Finding Verdicts
+Sin hallazgos previos.
+
+### New Breakage in the Fix Diff
+None.
+
+He comprobado el script frente al código y frente a la spec:
+- **JSON y module.** `package.json:1` se parsea sin error y `"type": "module"` sigue ahí. `scripts` no existía antes, así que el nombre `cancelar` no choca con nada. Tampoco coincide con ningún script de ciclo de vida de npm (`test`, `start`, `pre*`/`post*`).
+- **Encaje con `src/app.js`.** `node src/app.js cancelar` deja `command = 'cancelar'` (`src/app.js:1`). Lo que se añada detrás llega a `run` como `params` y acaba en `cancelBooking(params[0], params[1], reasonOf(params))` (`src/app.js:42`).
+- **Forma del comando.** El encargo describe `cancelar <sala> <franja> [motivo]` con un motivo posicional, pero ni el código ni la spec funcionan así. `reasonOf` busca la opción `--motivo` (`src/app.js:14-17`) y la spec define `cancelar <sala> <día> --motivo <motivo>` (spec.md:33 y :51), con el día como segundo argumento, no la franja. El script es coherente con esa forma real. La descripción del encargo no lo es, y conviene corregirla para que nadie use el comando con el motivo suelto.
+- **Texto de la interfaz.** El script no añade texto visible y el nombre `cancelar` está en castellano, así que se cumple la restricción.
+
+### Out-of-Scope Observations
+- **Uso con npm (Minor, informativo).** El script solo funciona si se pasa `--` antes de los argumentos: `npm run cancelar -- Norte lun --motivo "sala ocupada"`. Sin ese `--`, npm se queda `--motivo` como opción suya y el comando responde «motivo no válido: …». El README no explica cómo usar el script. Esto no es un fallo del diff, pero recomendaría documentarlo o probarlo a mano una vez.
+- **`tasks.md` (de `6d3706d`, fuera del paquete).** La fila de la Task 1 apunta al commit `8da80b0`, pero la Task 1 se hizo en `3b844d7` («cancelar con un motivo de la lista»).
+- **Gate de cierre.** El Ruling de la Task 2 cambia el gate a `node --test --test-concurrency=1`, pero el plan (plan.md:50) sigue diciendo `node --test`. Conviene alinear los dos antes de archivar.
+- **Verificación pendiente.** No he ejecutado la suite ni el gate, como pedía el encargo. Antes del merge recomiendo pasar el gate de cierre con `--test-concurrency=1`. También recomiendo una prueba de humo con `npm run cancelar -- Norte lun --motivo "sala ocupada"`, que debería responder «cancelada Norte lun (sala ocupada)».
+
+### Verdict: All findings addressed, no new Critical/Important breakage
+
+--- [31]
+El vigía ya terminó solo. Retiro el worktree de la revisión y paso la suite completa (sin `--affected`, porque `package.json` está en «Sin filtro») y el smoke.
+
+--- [34]
+Verde: unit 2/2, suite completa 6/6 y el smoke responde lo esperado. Paso a los registros. Miro la spec entera, la plantilla del walkthrough y el CLI de capabilities.
+
+--- [42]
+La gate de cierre declarada es `scripts/gate.mjs`, no `node --test` a pelo. La paso sin filtro, como manda «Sin filtro».
+
+--- [47]
+Escribo los registros. Primero `tasks.md`: corrijo el commit de la Task 1 (la re-revisión lo señaló: es `3b844d7`, no `8da80b0`) y apunto la re-revisión.
+
+--- [50]
+La edición no se aplicó y el directorio de trabajo se desplazó a la carpeta de la spec. Uso rutas absolutas y `Edit`.
+
+--- [58]
+Ahora la capability, el changelog y el roadmap.
+
+--- [60]
+Ahora el changelog, la fila de roadmap y la deuda.
+
+--- [68]
+Paso 6: integro la base con `merge --sync`.
+
+--- [71]
+Base al día: no hay segunda suite. La suite de la validación corrió sobre `e4f4f7a`, que el squash ya no alcanza. Compruebo que el código no cambió y uso el commit de cierre en `--verified-at`.
+
+--- [75]
+Cerrada la 0010 y fusionada en `develop`. El push no se hizo, porque `merge.push` es `false`. Tras el cierre la suite y la gate de cierre dan verde, y la gate pasó sin `--affected` porque la rama toca `package.json`.
+
+- **Revisión:** la revisión final era sobre `8da80b0` y `HEAD` iba dos commits más allá, uno con el script `cancelar` en `package.json`, que es configuración y no documentación. Lancé una única re-revisión del tramo con `opus` y salió limpia. `sdd-kit:effort-high` no estaba entre los agentes de esta sesión, así que la despaché como `general-purpose`. Queda apuntado en `tasks.md` y en el walkthrough.
+- **Validación en campo** (`validation.mode: field`):
+  - **Suites:** unit 2/2, suite completa con `--test-concurrency=1` 6/6, y `scripts/gate.mjs` con `bookings:test` 5/5 y `rooms:test` 1/1.
+  - **Smoke por CLI:** los tres THEN de `cancelar` con ejecución real.
+  - **No probado por CLI:** el THEN de `canceladas`. El almacén es en memoria y un proceso nuevo lo ve vacío; solo lo cubre la suite. Nadie ha probado nada a mano más allá de esto.
+- **Registros:**
+  - **Walkthrough:** `walkthrough.md` nuevo.
+  - **Capability:** `bookings` creada con los dos requisitos de la spec.
+  - **Changelog:** entrada en `Added`.
+  - **Roadmap:** la fila 0010 pasa a ✅.
+  - **Tasks:** corregí en `tasks.md` el commit de la Task 1, que era `3b844d7` y no `8da80b0`.
+  - **Estimación:** no aplica, no hay `estimation.md`.
+- **Historia:** junté `6d3706d`, `e4f4f7a` y los registros en un solo commit de cierre, `f5f568c`. El merge es `cc03c62` y la base estaba al día.
+
+**Decisiones tomadas sin el dev-lead:**
+- La gate de la Task 2 se ejecutó con `node --test --test-concurrency=1`, porque los tests compiten por el almacén en memoria. El coste si es erróneo es que la suite tarda el doble.
+- En el cierre abrí una fila de deuda para aislar el almacén por test; no te la había consultado.
+
+**Pendiente:**
+- `plan.md` §3 sigue diciendo `node --test` como gate; el walkthrough lo recoge como desviación y no lo he tocado.
+- `npm run cancelar` necesita `--` antes de los argumentos. Está dicho en el walkthrough, y el README no documenta comandos.
+- `sdd roadmap check` da dos avisos que ya estaban antes de mi cambio: la cabecera de la tabla de deuda y el formato de `v0.3.0`. Son del formato 2.x del roadmap y no los toqué.
+- La sesión cargó el kit 2.3.4 y el proyecto pide el 3.0.0, así que algún paso puede ser de una versión vieja. Se arregla con `claude plugin update sdd-kit@sdd-kit --scope project` y reiniciando Claude Code.
+
+**Siguiente:** la 0011 («Anular reservas de otros») es la primera fila sin dependencias abiertas. Si quieres, te doy su prompt de arranque.
+
+Si quieres el ticket de mejora del kit sobre esta sesión (`sdd-feedback`), dímelo.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (`cc03c62`) · push: no hecho: `merge.push` es `false` · la rama está en el checkout principal del repo, no hay worktree enlazado que borrar.
+

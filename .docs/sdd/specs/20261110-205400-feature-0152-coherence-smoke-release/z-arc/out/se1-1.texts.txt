@@ -1,0 +1,82 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [19]
+Estoy en el paso 1 del cierre (validación) y me paro aquí. La validación es `manual`, y «ciérrala» es la orden de cerrar, no la validación. Necesito que pruebes el guion de abajo.
+
+Antes de la validación, esto es lo que he comprobado:
+- No hay cambios sin commitear, y `merge --check` da «destino: listo» (`develop`).
+- No hay otras ramas abiertas.
+- La spec está aprobada (Laura, 2026-10-08).
+- La revisión final está limpia sobre `91dda00`. Los commits posteriores solo tocan documentación, así que no hace falta re-revisión.
+- `develop` no está por delante, así que la suite corre aquí.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y el test falla si corre solo o en otro orden. En el cierre lo registro como deuda en `debt.md`.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar … --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | el mismo literal |
+| `canceladas` responde «Norte lun — sala ocupada» | `ejecución real` (mismo proceso) | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test`: 5/5 sobre `c793802`.
+
+**Sin probar**
+
+- La app no guarda reservas entre procesos. Por eso `canceladas` lanzado en otro comando sale vacío, y el paso 4 usa un solo proceso. El «Se valida en: worktree con la base al día» se cumple: la base no tiene commits nuevos.
+
+Panel: plan B en http://127.0.0.1:59557/
+
+Esta página no ve la app, así que no tiene consola ni red. Si algún paso falla, cuéntame el error en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Es una CLI y no declara entorno, así que no hay nada que arrancar. Cada comando es un proceso nuevo con la reserva de Norte del lunes, 10:00-12:00.
+
+Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Este comando debe responder «cancelada Norte lun (sala ocupada)»:
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Este debe responder «motivo no válido: cambio de planes, sala ocupada, otro»:
+
+```
+node src/app.js cancelar Norte lun --motivo "porque sí"
+```
+
+3. Este debe responder lo mismo que el paso 2:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Este debe imprimir dos líneas, «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada»:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Para parar el panel, lo paro yo cuando contestes.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

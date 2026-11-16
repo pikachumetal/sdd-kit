@@ -1,0 +1,55 @@
+--- [6]
+### Strengths
+- The new test calls the command the way the spec's «Dónde se prueba» line asks (through `run('anular', …)`), in the file it names (`test/void.test.js`).
+- The test pins the decision the executor made: `anular` still answers «anulada Norte lun».
+- The commits stay in scope. Nothing touches `anular-todas`, which the spec puts out of scope.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. The removed behavior still runs: `anular` still sends the email notice**
+- File: `src/app.js:18`. `voidBooking` still runs `outbox.push({ to: 'responsable', body: \`anulada ${room} ${day}\` })`. The `salida` command (`src/app.js:29,36`) still shows that notice to the user.
+- What's wrong: the spec's delta says «REMOVED — Avisar por correo». The diff never changes `src/app.js`, even though the plan's Task 1 lists it under **Ficheros**. The only commit after the spec is a test.
+- Why it matters: after this branch, `anular Norte lun` followed by `salida` still prints `responsable: anulada Norte lun`. The feature delivers none of what it promised.
+- How to fix: remove the `outbox.push` line from `voidBooking`. Then decide whether `outbox`, `pending()` and the `salida` command still have any purpose. Nothing else in the app writes to `outbox`, so they look dead now.
+- Gap: `contradicts`.
+- Source: the REMOVED requirement «Avisar por correo», and the dev-lead's decision «El aviso por correo al anular desaparece».
+
+#### Important (Should Fix)
+
+**2. The test passes even with the notice still there, so it proves nothing about the change**
+- File: `test/void.test.js:5-7`. The test is named «anular responde sin aviso», but it only checks the returned string. It never looks at `outbox` or at `salida`. It passes against the unchanged code from 039d68c, so it was never red for the behavior it claims to cover.
+- Why it matters: the spec's «Dónde se prueba» line, «Anular sin aviso … como `test/void.test.js`», has no test that actually fails while the notice exists. That is why finding 1 got through.
+- How to fix: after `run('anular', ['Norte', 'lun'])`, assert that `run('salida', [])` returns `''` (or that the imported `outbox` stays empty). Watch it fail before you apply the fix for finding 1.
+- Gap: `partial`.
+- Source: the «Dónde se prueba» line «Anular sin aviso».
+
+**3. The dev-lead's decision is not covered**
+- «decisión del dev-lead cubierta a medias: El aviso por correo al anular desaparece — no rule in the diff removes it; the only change is a test that leaves the notice in place.»
+- Gap: `missing`.
+- Source: «Decisiones tomadas con el dev-lead».
+
+#### Minor (Nice to Have)
+- `.docs/sdd/capabilities/bookings.md` still lists «Avisar por correo». Files under `.docs/` don't count toward the REMOVED check, but sdd-archive will need to remove that requirement when it closes the feature.
+- The new test needs a booking that is still active. `bookings` is module state shared within a test file, so if other `anular` cases are added to the same file later, their order will matter. That matters even more once the test also reads `outbox`.
+
+### Declined to judge
+- `test/app.test.js` and `test/cancel.test.js` test commands `run` doesn't have (`reservar`, `cancelar`), so those tests fall through to `'salas'` and would fail. They come from earlier commits and this branch doesn't touch them. The main thread's suite run will show whether they already failed on the base.
+- `anular-todas` sends no notice: the spec puts it out of scope, and it already doesn't notify.
+- The executor's decision «`anular` sigue respondiendo "anulada <sala> <día>"» is met by the code and pinned by the test. I have no objection.
+- No ADRs and no ledger, so there are no `Ruling:` lines or deferred minors to weigh.
+
+### Not verified
+- no verificado: whether `test/void.test.js` passes. I didn't run the suite, as the brief says, and the package has no task report with test evidence. Reading the code, I'd expect it to pass, which is exactly the problem in finding 2.
+
+### Recommendations
+- Implement Task 1 for real: change `src/app.js` and first write a test that fails while the notice still goes out.
+- Run the whole suite on the main thread. The failing `cancelar` and `reservar` tests should be checked against the base so they don't hide failures from this feature.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The only behavior the spec removes, the email notice when booking a room is voided (`src/app.js:18`), still runs, and the one test added would pass with or without it. The branch adds a test and no implementation.
+

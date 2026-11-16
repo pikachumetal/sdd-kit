@@ -1,0 +1,60 @@
+--- [20]
+Ahora: investigo la causa raíz (reproducir el fallo y leer la deuda). Queda: crear la carpeta del patch, el test RED, el fix y el commit (~20 min).
+
+--- [28]
+RED confirmado: ambos fallan por la causa esperada. Ahora el fix mínimo.
+
+--- [31]
+Esa llamada anterior fue un error mío (ruta inventada, no cambió nada). El fix real:
+
+--- [36]
+6/6 en verde y lint limpio. Escribo `patch.md` y despacho el revisor que exige el flujo del patch.
+
+--- [39]
+Ahora: el revisor del patch está leyendo el diff. Queda: contestar sus hallazgos en §4, el commit del fix y el cierre con `sdd-archive` (~10 min). Espero su aviso; no toco nada mientras tanto.
+
+--- [42]
+**Hallazgos**
+
+1. Causa raíz (§2): confirmada. Antes del fix, `findBooking` en `src/app.js:9-11` recibía `day` y no lo usaba. `cancelBooking` y `voidBooking` (`src/app.js:13-25`) responden con el día pedido, no con el de la reserva. Eso explica el síntoma de §1.
+
+2. Fix: mínimo y correcto. El diff es una sola condición, `b.day === day`, en `findBooking`. `cancelar` y `anular` comparten esa función, así que las dos quedan arregladas. Los textos de salida no cambian.
+
+3. Tests: prueban el comportamiento. Cada uno comprueba que el día sin reserva da `sin reserva Norte mar` y que la reserva del lunes sigue activa. Habrían fallado antes del fix, porque se habría devuelto `cancelada Norte mar` o `anulada Norte mar`. No hay contaminación de estado entre ficheros, porque `node --test` ejecuta cada fichero en su propio proceso. `node --test` da 6/6 en verde, igual que el patch. No he ejecutado `scripts/lint.mjs`.
+
+4. Sin cubrir en el mismo código:
+   - **Menor, `src/app.js:5-7`:** `freeRooms` filtra solo por `slot` y no por día, aunque las reservas tienen `day`. Una reserva de `Norte lun 10:00-12:00` hace que `libres 10:00-12:00` excluya Norte en cualquier día. El patch lo menciona en la nota de 0007 (§2), pero no lo trata ni lo anota como deuda. Como `libres` no recibe día, parece una carencia de la función y no del fix. Convendría dejarlo apuntado como deuda.
+   - **Menor, `src/app.js:30-31`:** si se llama a `cancelar Norte` sin día, `day` es `undefined`. Tras el fix devuelve `sin reserva Norte undefined`, antes cancelaba la reserva. Es mejor que antes, pero el texto es feo y no hay test.
+   - **Menor, `patch.md` §2:** el `CHANGELOG.md` sigue diciendo que 0007 arregló este caso y no es cierto. Eso se corrige al cerrar, con el changelog, o se deja anotado.
+
+Nada crítico ni importante.
+
+--- [46]
+Commit del fix hecho. Paso al cierre.
+
+--- [57]
+Ahora: pido tu validación del patch 0012. El cierre espera a que la des; hasta entonces no he fusionado nada.
+
+🦆 `cancelar` y `anular` buscaban la reserva solo por sala, sin mirar el día. Con `Norte lun` reservada, `cancelar Norte mar` la cancelaba y contestaba «cancelada Norte mar». Ahora comparan también el día, así que contesta `sin reserva Norte mar` y deja la del lunes como estaba.
+
+Panel: plan B en http://127.0.0.1:59140/ (no tengo herramientas de Chrome). Esa página no ve la app: si algo falla, cuéntamelo en el comentario del paso. Cuando pulses «listo» leeré las marcas y pararé el servidor.
+
+Cada comando es un proceso nuevo y las reservas viven en memoria, así que el estado vuelve a `Norte lun` activa en cada uno. Los he ensayado yo antes con estas salidas:
+
+1. `node src/app.js cancelar Norte mar` → `sin reserva Norte mar`
+2. `node src/app.js cancelar Norte lun` → `cancelada Norte lun`
+3. `node src/app.js anular Norte mar` → `sin reserva Norte mar`
+4. `node src/app.js anular Norte lun` → `anulada Norte lun`
+
+No ensayado desde la terminal: que «cancelar el martes no quita la del lunes» en una sola sesión. Entre procesos no se ve, y lo cubren `test/cancel-day.test.js` y `test/void-day.test.js` (suite 6/6 y lint sin hallazgos).
+
+**Para el cierre:**
+- **Validación:** dime «validado» o qué probaste. `cierra` por sí solo no cuenta como validación.
+- **Revisor:** no encontró nada crítico ni importante. Quedan dos menores que no he tocado porque decidirlos es una feature: `libres` filtra solo por franja, sin mirar el día, y `cancelar Norte` sin día da `sin reserva Norte undefined`.
+- **Changelog:** el `CHANGELOG.md` atribuye este caso al patch 0007, y en la base actual no estaba arreglado. Lo corrige el corte de la release.
+- **Fusión:** `sdd merge --check` falla porque `.docs/sdd/sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Con tu validación te propongo qué poner y espero tu respuesta.
+- **`.gitignore`:** el panel ha creado `.temp/`, que no está ignorado y deja el árbol sin limpiar. Propongo añadir `.temp/` a un `.gitignore`.
+- **Carpeta del patch:** está en `.docs/sdd/changes/…` como manda el kit, mientras los patches anteriores del proyecto están en `specs/`. Dime si prefieres moverlo.
+
+**No terminado.** Falta tu validación y la fusión en `develop`. No borres todavía el worktree `<run>/repo`.
+

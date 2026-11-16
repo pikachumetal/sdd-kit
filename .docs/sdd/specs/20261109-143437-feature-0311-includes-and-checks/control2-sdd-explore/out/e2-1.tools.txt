@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cat package.json; ls -a; ls .docs/sdd 2>/dev/null; node -v; grep -rniE "node[-_ ]?version|node:[0-9]|nvm|\.nvmrc|engines|setup-node" --exclude-dir=node_modules --exclude-dir=.git . -I 2>/dev/null | grep -v package-lock | head -40
+<<< {"type": "module", "engines": {"node": ">=22"}}
+./
+../
+.docs/
+.git/
+package.json
+README.md
+src/
+test/
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+v26.10.0
+./package.json:1:{"type": "module", "engines": {"node": ">=22"}}
+
+>>> Bash: cd .docs/sdd; cat tech-stack.md constitution.md roadmap.md; cat ../../README.md; ls -R ../../src ../../test specs | head -30; node "D:/code/.worktrees/sdd-kit/feature-0311-includes-and-checks/.temp/k11d/cli/bin/sdd.js" --help 2>&1 | head -20
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la int
+
+>>> Bash: cd <run>/repo && cat src/app.js | head -40; node --test 2>&1 | tail -8; ls .github .gitlab-ci.yml Dockerfile 2>&1 | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0311-includes-and-checks/.temp/k11d/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< # Prompt de arranque — plantilla
+
+> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+>
+> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+>
+> - Cuenta lo que no encuentra mirando: cada decisión con su literal y su porqué. La constitution, el stack y el código los lee solo.
+> - En positivo: lo que tiene que hacer.
+> - Lecturas por
+
+>>> Bash: cat <run>/repo/.docs/sdd/sdd-kit.json
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+
+=== RESULTADO (8 turnos, 0.1332018 $)
+No, no rompe nada. Es un cambio de configuración, sin fila de roadmap.
+
+**Qué he mirado**
+- `package.json` tiene hoy `"engines": {"node": ">=22"}`. Es el único sitio donde aparece la versión de Node.
+- No hay `.nvmrc`, `Dockerfile`, CI ni `.github`. Nada más fija la versión.
+- `src/app.js` no usa ninguna API específica de Node. Son `process.argv`, `console.log` y arrays.
+- No hay dependencias externas, así que ninguna puede tener un `engines` incompatible.
+- `node --test` pasa con 3 de 3 en tu Node local (v26.10.0). Eso no prueba que funcione en 22.18 exacto, pero el código no depende de nada que cambie entre 22.x.
+- `tech-stack.md` dice «Node 22», y 22.18 sigue siendo Node 22, así que sigue siendo cierto. Podrías precisarlo a «Node ≥ 22.18», pero no hace falta.
+
+**Qué cambia en la práctica**
+- `>=22` pasa a `>=22.18`. Quien tenga Node 22.0–22.17 verá el aviso de `engines`, o un error si usa `engine-strict`.
+- Como no hay CI ni Dockerfile, nadie más tiene que actualizarse.
+
+Aquí tienes el prompt para pegarlo en otro worktree:
+
+### *⚙️ Subir Node a 22.18 en engines*
+***Nombre:*** `feature/node-22-18-engines`  
+***Base:*** `develop`  
+***Carril:*** `config`
+
+***Prompt***
+
+```
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node de 22 a 22.18 en los engines de package.json.
+
+Alcance:
+- package.json: "engines": {"node": ">=22.18"}
+- .docs/sdd/tech-stack.md: cambiar «Node 22» por «Node ≥ 22.18»
+
+Fuera de alcance:
+- Añadir .nvmrc, CI o Dockerfile: hoy no existen y este cambio no los introduce.
+
+Decisiones ya tomadas:
+- El rango es ">=22.18", no "22.18.x", porque el proyecto ya aceptaba cualquier Node 22 o superior y solo sube el mínimo.
+
+Antes de diseñar, lee:
+- Sin lecturas: los requisitos son los de este prompt.
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa en verde y `grep -n '"node"' package.json` muestra ">=22.18".
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+*si prefieres hacerlo en esta sesión, di "arráncalo"*

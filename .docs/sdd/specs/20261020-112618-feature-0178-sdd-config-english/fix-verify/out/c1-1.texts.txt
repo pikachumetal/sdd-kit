@@ -1,0 +1,72 @@
+--- [3]
+Retomo: las dos tasks están completas y toca cerrar la revisión final.
+
+--- [11]
+Re-grado: lo Important se mantiene (una persona no puede cancelar por un espacio al final); el Minor de orden de tests se difiere (`review.minors` no es `fix`). Empiezo por el test en RED.
+
+--- [22]
+Estoy lanzando la única re-revisión del fix (el `trim` del motivo), en segundo plano y sobre un worktree aparte; mientras tanto no toco más código.
+
+--- [26]
+Mientras esa re-revisión corre, dejo preparado `tasks.md`: la línea de revisión final, la pasada de fix y los rulings.
+
+--- [30]
+La revisión final está casi cerrada, pero falta el veredicto de la re-revisión. Está en marcha y no tengo su resultado.
+
+- **Ya hecho:**
+  - El eje de Spec no dejó nada que arreglar.
+  - El eje de Código dejó un hallazgo Important: `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Lo arreglé con `trim()` en `src/app.js:16`, en el commit `54ba8b7`.
+  - Escribí antes un test que reproducía el fallo. Falló con «motivo no válido…» y pasa con el arreglo. Con el arreglo, `node --test test/cancel.test.js` da 4/4.
+  - Dejé en `tasks.md` las líneas `Revisión final:` y `Pasada de fix:`.
+- **Pendiente:** esperar el informe de la re-revisión. Es la única que se hace y es de solo lectura. Con su veredicto, escribo la línea `Re-revisión:`, retiro el worktree `review-0010-54ba8b7` y borro el workspace del plan. Después paso a la validación (paso 7).
+
+**Rulings I made:** ninguno. El ledger no tiene ninguna línea `Ruling:`.
+
+**Deferred minors:**
+- El test de `canceladas` (`test/cancel.test.js:13`) solo pasa si antes se ha ejecutado el de `cancelar`: depende del orden. Lo difiero porque `review.minors` no está en `fix`.
+
+--- [38]
+### Finding Verdicts
+- **(Código · Important) `src/app.js:14-17`, el motivo conserva los espacios: ADDRESSED.** `src/app.js:16` ahora devuelve `params[index + 1]?.trim()`, así que el recorte ocurre antes de la comparación con `reasons` en `src/app.js:20`. He revisado los tres casos del What to Check leyendo el código, sin ejecutarlo:
+  - **Sin `--motivo`:** `indexOf` da -1 y `reasonOf` devuelve `undefined`, igual que antes. Si `--motivo` es el último argumento, `undefined?.trim()` también da `undefined`. En los dos casos la respuesta es «motivo no válido…», como pide el spec en la línea 54.
+  - **Motivo fuera de la lista:** `'me aburro'` recortado no cambia y sigue sin ser válido. Un motivo solo de espacios queda en `''` y tampoco es válido.
+  - **El test nuevo es RED sin el arreglo:** sin `trim`, `' sala ocupada '` no está en la lista y la respuesta es «motivo no válido…». El test espera `'sin reserva Norte lun'`, así que falla. Esto coincide con la evidencia que se dio.
+
+### New Breakage in the Fix Diff
+- **Minor, `test/cancel.test.js:17-19`.** El test nuevo solo demuestra que el motivo con espacios pasa la validación. No demuestra que se pueda cancelar, que es lo que pedía el hallazgo. Espera `'sin reserva Norte lun'` porque el primer test (`test/cancel.test.js:5-7`) ya canceló Norte lun, de modo que depende del orden de los tests y del estado compartido del módulo. Tampoco comprueba que el motivo guardado quede recortado. Sería más fuerte usar una reserva activa propia y esperar `'cancelada … (sala ocupada)'`. Hoy no es posible porque la única reserva de partida, Norte lun en `src/app.js:4`, ya la consume el primer test.
+- **Minor, `src/app.js` entero.** El fix reescribe las 48 líneas del archivo porque cambia los finales de línea de CRLF a LF: el blob pasa de 1846 a 1806 bytes y `git diff --ignore-cr-at-eol` deja un cambio de una sola línea. No cambia el comportamiento, pero ensucia el diff y el blame. En el índice quedan formatos mezclados: `test/app.test.js` en CRLF, `test/cancel.test.js` mixto y `src/app.js` en LF.
+
+### Out-of-Scope Observations
+- El spec, en la línea 54, pide que cancelar sin `--motivo` responda «motivo no válido…», pero ningún test de `test/cancel.test.js` cubre ese caso. Viene de antes del fix (rango `1b8e316`).
+- El nombre del test nuevo y los mensajes de la interfaz siguen en castellano, así que se cumple la restricción.
+
+### Verdict
+All findings addressed, no new Critical/Important breakage
+
+--- [42]
+El revisor tiene razón en el segundo Minor: mi `sed` convirtió `src/app.js` de CRLF a LF y el commit reescribe el archivo entero. Restauro los finales de línea originales.
+
+--- [50]
+La revisión final de la 0010 está cerrada y su workspace borrado. Queda abierto un commit sin revisar (`ac0cd6e`, más abajo).
+
+**Resultado**
+- El eje de Spec no dejó ningún arreglo pendiente. El de Código dejó un Important: `reasonOf` conservaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido». Lo arreglé con `trim()` en `src/app.js:16` (`54ba8b7`). El test que lo reproduce falló antes del arreglo.
+- La única re-revisión (opus, effort high) dio el hallazgo por resuelto y no vio roturas Critical ni Important.
+- `node --test test/cancel.test.js` da 4/4 en el último commit (`ac0cd6e`).
+- El hilo está en `ac0cd6e`; el worktree de revisión está retirado.
+- `tasks.md` tiene las líneas `Revisión final:`, `Pasada de fix:`, `Re-revisión:` y `## Rulings`. Sigue sin versionar; entra con el siguiente commit de hitos.
+
+**Sin revisar (para ✋)**
+- **`ac0cd6e`:** mi `sed` había convertido `src/app.js` de CRLF a LF en `54ba8b7`, y el commit reescribía las 48 líneas del archivo. Lo detectó la re-revisión. `ac0cd6e` restaura el CRLF. Ahora `src/app.js` solo difiere de `c2d2979` en una línea.
+- **Por qué sigue sin revisar:** ese commit es de 96 líneas, solo de espacio en blanco, y una re-revisión no abre otra. Lo he comprobado yo, no un revisor.
+- **Cómo se comprueba:** `git diff c2d2979 HEAD -- src/app.js` debe mostrar solo la línea del `trim`.
+
+**Rulings I made:** ninguno. El ledger no tenía líneas `Ruling:`.
+
+**Deferred minors:**
+- El test de `canceladas` (`test/cancel.test.js:13`) solo pasa si antes se ha ejecutado el de `cancelar`: depende del orden.
+- El test nuevo de espacios (`test/cancel.test.js:17`) solo prueba que el motivo pasa la validación, no que se pueda cancelar. Espera `sin reserva Norte lun` porque ese primer test ya canceló esa reserva.
+- Ningún test cubre cancelar sin `--motivo`, que la spec (línea 54) dice que debe responder «motivo no válido…».
+
+Sigue el paso 7 de `sdd-start-feature` (validación), que no he empezado.
+

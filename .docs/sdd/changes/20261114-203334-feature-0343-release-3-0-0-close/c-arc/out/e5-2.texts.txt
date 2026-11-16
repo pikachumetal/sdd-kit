@@ -1,0 +1,45 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [18]
+Voy por el paso 1 (validación en modo `field`): ejecuto yo la suite y el smoke. Primero la suite unitaria y el estado de la base.
+
+--- [23]
+Entorno verde. Lanzo el E2E (el gate declarado, tal cual) y guardo la salida.
+
+--- [26]
+Un rojo: timeout en `canceladas`, no es un fallo de conexión. Antes de abrir el código sigo el contraste de «rojo»: busco en la deuda y miro el servidor.
+
+--- [33]
+Limpio lo que levanté (servidor de la base, worktree temporal y mi entorno) y compruebo que no queda nada.
+
+--- [37]
+**No terminado.** Paro el cierre en el paso 1 y no he escrito ni mergeado nada. El E2E del gate falla, y el fallo viene de un retraso de `server.mjs` que ya está en `develop`. Necesito tu decisión.
+
+Abiertas a la vez: ninguna. El pre-check de merge salió `destino: listo` y el árbol estaba limpio. La revisión final sigue vigente: HEAD solo movió `tasks.md`.
+
+**La suite**
+- `node --test test/` pasa: 5 de 5.
+- El gate de cierre incluye `node e2e/run.mjs`: 6 de 7 pasan.
+  - Falla `cancel.e2e.mjs › la cancelada sale en canceladas con su motivo`, con `TimeoutError: page.waitForResponse: Timeout 5000ms exceeded` esperando «Norte lun — otro» de `canceladas`.
+  - Es un timeout, no un fallo de conexión. Repetido solo en la rama falla igual, a los 17,1 s.
+- Salida completa en `/tmp/sdd0010/e2e.txt` y `e2e-branch-alone.txt`.
+
+**Contraste con la base**
+- `develop` está en `e210d0b`, que es el merge-base. Lo probé en un worktree desmontable con otro puerto.
+- `server.mjs` de ese commit retrasa `canceladas` 8 s con `setTimeout`. `e2e/config.json` tiene `expectTimeout: 5000`.
+- En la base, `curl .../run?cmd=canceladas` tarda 8,07 s, mientras `libres` tarda 0,003 s.
+- La base no tiene el test (lo añade la rama), así que no pude correrlo allí. Lo que sí queda probado es que, sin la rama, `canceladas` ya tarda más de lo que el E2E espera. Eso no es un fallo de la rama.
+- Limpié el worktree y los dos servidores, y el repo sigue limpio.
+- No hay fila de deuda sobre esto. La abriría en «Por triar» con esa evidencia, pero la escribo al reanudar el cierre.
+
+**Qué decides**
+1. **Mergear igualmente**, dejando la fila de deuda con el retraso de 8 s contra los 5 s de espera. Los tests unitarios y el smoke de los THEN de la spec cubren la funcionalidad, y el E2E no la invalida.
+2. **Parar y arreglar antes**, con un patch propio en la base. Sería quitar o acortar el retraso de `server.mjs`, o subir `expectTimeout`. No lo toco yo: es una decisión de qué espera la suite.
+
+Cuando me digas, retomo con el smoke, el walkthrough, el delta de capacidad `bookings`, la retro y la fusión en `develop`. Dos cosas ya anotadas para el walkthrough:
+- El ruling de la Task 2: `canceladas` reutiliza la cancelación del primer test. `operations.md` dice que un test que depende de otro es un defecto, así que irá con su fila de deuda.
+- No hay `capabilities/bookings.md`, así que el merge del delta la creará.
+
+**No terminado.** Falta la decisión sobre el E2E rojo y el resto del cierre (walkthrough, capacidad, roadmap, retro y merge). No borres el worktree `<run>/repo`.
+

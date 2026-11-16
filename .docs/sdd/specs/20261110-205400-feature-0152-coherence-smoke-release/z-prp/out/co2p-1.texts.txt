@@ -1,0 +1,50 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs, no código). Queda: clasificar, escribir la spec y presentártela, ~5 min.
+
+--- [21]
+Ahora: escribo la spec en su carpeta (ya hay un hallazgo que te cuento al presentarla: el test de topes de palabras). Queda: pasada de coherencia, un revisor y presentarte la spec, ~6 min.
+
+--- [29]
+Ahora: espero al revisor de la spec (un revisor, sonnet). Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~3 min.
+
+--- [35]
+1. Importante · Intent / Scope · El gate de éxito cita `node scripts/lint.mjs`, pero la constitution (art. 2) solo define `node --test` como gate de cierre, y el spec no declara ese script ni confirma que exista. Hay un criterio de éxito sin respaldo, y el lint podría fallar por razones ajenas a este cambio. · Quitar `scripts/lint.mjs` del Intent, o citar de dónde sale (operations) y comprobar que existe y pasa en verde sobre el estado actual.
+2. Importante · Dónde se prueba / Decisión 3 · No se fija cómo compara `test/aviso.test.js` el final del fichero. `aviso.md` terminará probablemente en salto de línea, y un `endsWith` literal falla o pasa por azar. Tampoco se dice qué vigila el test de la separación con línea en blanco (decisión 2), que es una decisión del spec sin escenario. · Especificar `trim()` o normalización de saltos de línea, y añadir al test la aserción de la línea en blanco entre la línea actual y el párrafo, o retirar esa decisión.
+3. Importante · Cabecera de review (✋) · Dice «señales: ninguna de las ocho» y en el mismo renglón da como señal «tope de palabras» para justificar el dominio+técnica. Es contradictorio y deja sin base por qué se despacha la review. · Reformular: «ninguna de las ocho; se revisa por el cálculo del tope y la transcripción literal», sin llamarlo señal.
+4. Importante · Decisión 1 / Topes de palabras · El «mínimo de la regla de topes» (+20 de margen) se invoca sin citarlo. No está en la constitution, PRODUCT ni architecture que he leído, así que no es verificable. Las cifras sí cuadran: 6+46=52, párrafo=42, 94, 114. El conteo real de `words.test.js` (`split(/\s+/)` sin vacíos) da 52 y 42; `wc -w` coincide. · Citar el fichero o la sección donde está la regla del margen (p. ej. operations), o presentar los 20 como decisión propia.
+5. Menor · Decisión 4 / Scope · El título de `words.test.js` pasa a decir 114, pero la línea de Scope solo dice «subir el tope». Está en la tabla «Lo que se retira» (`:5`), no en Scope. · Añadir en Scope «y su título» para que Intent, Scope y decisión 4 digan lo mismo.
+6. Importante · Intent / PRODUCT · PRODUCT dice que la herramienta la usa una sola persona («No hay más usuarios»), pero el aviso se dirige a «quien reserva» y a «quien reserve la sala después». Además conserjería y seguridad no figuran en la Terminology. Se introducen actores y datos de contacto (ext. 5500 y 5599, horarios) que PRODUCT no recoge. · Reconocer la tensión en el Intent, o añadir los términos «conserjería» y «seguridad» a PRODUCT. Indicar que las extensiones son datos fijos de la plantilla, no configuración.
+7. Menor · Capacidades / Delta · «Ninguna, porque docs» es defendible: no hay `capabilities/` y no se contradice nada. Pero el aviso sí es comportamiento visible para quien reserva, y la decisión 7 prueba el merge solo sobre una copia, sin dejar evidencia. · Dejar la salida del `sdd capability merge` en el spec, o suavizar a «la plantilla no la consume ningún código».
+8. Menor · Intent / Scope · «Todo aviso lleve ese párrafo» es más amplio que lo que se entrega. Se afirma que `src/app.js` no usa las plantillas, así que ningún aviso real cambia. El éxito medible es solo que el documento tenga el texto. · Acotar el Intent a «la plantilla» y anotar como no-objetivo que quien consuma las plantillas queda fuera.
+9. Menor · ✋ decisión 7 / Política de modelos · La lista de decisiones mezcla política de modelos y la prueba del delta con decisiones de producto, lo que diluye lo que el humano debe validar (3 y 4 son consecuencias mecánicas). · Separar «decisiones de producto» (1, 2, 5) de las verificaciones mecánicas.
+10. Menor · Decisiones tomadas con el dev-lead · El párrafo literal es idéntico al citado, 42 palabras, pero no hay regla para que el test lo compare con una fuente única. Se duplica el texto en el spec y en `aviso.test.js`. · Declarar que el texto del test es copia literal del spec y que cualquier cambio de redacción exige actualizar ambos.
+
+--- [38]
+Ahora: te presento la spec para aprobar. Queda: tu aprobación; después el plan y la implementación, ~10 min.
+
+**Spec 0014 — Párrafo de conserjería al final de la plantilla de aviso**
+Archivo: `.docs/sdd/changes/20261112-160354-feature-0014-notice-room/spec.md`, rama `feature/0014-notice-room`. La rama ya existía y el id está libre.
+
+Carril: feature, modo full. Perfil: delegate, del proyecto (`sdd-kit.json`). Si te vas a ausentar, di «apruebo la spec por delegación, nos vemos en la validación».
+
+🦆 Hoy `docs/plantillas/aviso.md` solo dice «Aviso de sala: {sala} el {dia}.». Con el cambio, esa línea se queda y detrás va tu párrafo de conserjería, con el texto exacto que me diste. Por dentro se edita ese documento, se añade un test que comprueba el párrafo y se sube el tope de palabras de otro test. Con el párrafo, `docs/plantillas` pasa de 52 a 94 palabras y el tope actual es 60.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **El tope de palabras sube de 60 a 114.** Es lo que más conviene que mires. Con el tope de 60, `node --test` (el gate de cierre) fallaría. 114 es 94 más 20 de margen. Descarto recortar `recibo.md`, que tiene 46 palabras «palabra» repetidas y no es del alcance, y también excluir `aviso.md` del tope.
+2. **El párrafo va tras la línea actual, separado por una línea en blanco**, con tu texto literal.
+3. **Test nuevo `test/aviso.test.js`**: comprueba que se conserva la línea actual, que hay una línea en blanco y que el fichero termina con el párrafo literal.
+4. **El título de `test/words.test.js` pasa a decir 114.**
+5. **Enfoque**: editar el documento y subir el tope, frente a recortar `recibo.md` o excluir `aviso.md`.
+6. **Validación: agente.** Es un documento y un test, sin pantalla.
+7. **Sin entrada de CHANGELOG ahora.** La escribe el corte de `sdd-end-release`.
+8. **Capacidades: ninguna** (no hay `capabilities/`). `sdd capability merge` probado en una copia: «Sin delta que fusionar».
+
+**Review de la spec**: un revisor, sonnet, porque el cambio es pequeño y sin contrato público ni `MODIFIED`. Aceptados: citar el origen del margen, fijar cómo compara el test el final del fichero y la línea en blanco, la cabecera de la review, el Intent y el Scope. Rechazados, con motivo en la spec: la duda sobre `lint.mjs` (está en el gate de `operations.md`) y separar las decisiones mecánicas de las de producto.
+
+El proyecto tiene la carpeta antigua `specs/` y la nueva es `changes/`. Hay una carpeta nueva sin commitear.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios (dime cuáles; por ejemplo, otro valor para el tope)
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media. No la recomiendo: prevé 1 o 2 tasks y no compensa.
+

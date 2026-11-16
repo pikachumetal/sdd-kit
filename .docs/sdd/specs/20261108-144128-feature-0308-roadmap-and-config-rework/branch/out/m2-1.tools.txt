@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -la .docs/sdd/ 2>&1; cat .docs/sdd/sdd-kit.json 2>&1 | head -40; cat .docs/sdd/sdd-kit.local.json 2>&1 | head
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -40
+<<< total 10
+drwxr-xr-x 1 <user> 197609   0 Nov  8 22:27 ./
+drwxr-xr-x 1 <user> 197609   0 Nov  8 22:27 ../
+-rw-r--r-- 1 <user> 197609 590 Nov  8 15:30 changelog.md
+-rw-r--r-- 1 <user> 197609 450 Nov  8 15:30 constitution.md
+-rw-r--r-- 1 <user> 197609 244 Nov  8 15:30 mission.md
+-rw-r--r-- 1 <user> 197609 678 Nov  8 15:30 roadmap.md
+-rw-r--r-- 1 <user> 197609 226 Nov  8 22:27 sdd-kit.json
+drwxr-xr-x 1 <user> 197609   0 Nov  8 22:27 specs/
+-rw-r--r-- 1 <user> 197609 204 Nov  8 15:30 tech-stack.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": fals
+<<< Sin capacidades
+
+>>> Bash: cd .docs/sdd; for f in constitution mission tech-stack roadmap changelog; do echo "=== $f"; cat $f.md; done; ls specs; git -C ../.. ls-files | head -30
+<<< === constitution
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+=== mission
+# Misión — salas
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: l
+
+>>> Bash: cd ../..; wc -l src/app.js test/app.test.js; cat package.json; sed -n 1,200p src/app.js; ls node_modules 2>&1 | head -2
+<<<   16 src/app.js
+  15 test/app.test.js
+  31 total
+{"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${pa
+
+=== RESULTADO (7 turnos, 0.1459591 $)
+Ahora: clasificado como **feature** en modo full. Como lo veo más grande que una sola feature, en vez del anuncio te hago la pregunta de división. Queda: tu respuesta; después, entrevista breve y spec para aprobar, ~10 min.
+
+**Carril:** feature, modo full · **Perfil:** delegate, del proyecto (`sdd-kit.json`). No hay `sdd-kit.local.json`.
+
+**Qué he visto en el código.** Hoy `src/app.js` tiene 16 líneas, con salas y reservas en memoria y sin persistencia. No hay dependencias instaladas y el stack dice «Node 22, sin dependencias externas». No existe ningún modelo de «responsables», ni envío de correo, ni planificador. El roadmap ya tiene «Avisos por correo antes de la reserva» (#1), que comparte con el aviso semanal la parte de envío.
+
+**Por qué propongo dividir.** Prevengo unas 6 tasks sobre tres superficies distintas. Una de ellas, el `.xlsx` sin dependencias, obliga a escribir a mano un zip con XML. Otra, el envío periódico, necesita decidir quién lo dispara y por qué canal.
+
+1. **Dividir en 3 features con fila propia en el roadmap** (recomendada):
+   - **A. Informe de ocupación por sala:** comando `salas informe`, con el cálculo y la salida en texto, por semana. Es la base de las otras dos.
+   - **B. Exportar el informe a Excel:** `salas informe --xlsx`, escrito a mano sin dependencias. Va después de A.
+   - **C. Aviso semanal a los responsables:** envía el informe de A. Va después de A y conviene hacerla junto con el #1 (envío de correo), así que la ordenaría tras él.
+   
+   Arrancaría por A.
+2. **Mantenerlo entero como una sola feature.** Es más largo de validar y mezcla tres decisiones de riesgo distinto.
+
+**Tres cosas que quiero que sepas antes de contestar:**
+- **Misión.** `mission.md` dice que la herramienta la usas solo tú y que no hay más usuarios. «Los responsables» y «el cliente» chocan con eso. Si el cliente es real, conviene actualizar la misión. Lo dejo como decisión pendiente para la spec, no lo toco por mi cuenta.
+- **Versión del kit.** La sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Algunas reglas de estas skills pueden no ser las del proyecto. Actualiza con `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code. `/reload-plugins` no aplica una actualización de ámbito proyecto.
+- **Detalles.** Decido yo los detalles, como has pedido, pero quedarán listados en la spec bajo «✋ Decisiones que he tomado yo — valida estas». No se asumen aprobados hasta que lo apruebes.
+
+**Si te vas a ausentar,** dime: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+
+¿Opción 1 o 2?

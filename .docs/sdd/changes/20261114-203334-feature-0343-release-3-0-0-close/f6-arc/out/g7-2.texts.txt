@@ -1,0 +1,104 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [6]
+Árbol limpio, destino listo. Ahora spec, tasks y la referencia de la revisión final.
+
+--- [12]
+`HEAD` se movió tras lo revisado (557e155): `7066205` toca `package.json`, que no es documentación, y no hay `Re-revisión:`. Toca la re-revisión única; leo cómo se encarga.
+
+--- [23]
+Re-revisión lanzada en segundo plano, con su vigilancia de silencio. Hasta que vuelva y quede cerrada no escribo ningún registro del cierre.
+
+Abiertas a la vez: ninguna (solo está `feature/0010-cancel-reason`).
+
+Sigo cuando termine la re-revisión de `557e155..7066205`.
+
+--- [36]
+## Re-revisión de 0010, rango 557e155..7066205
+
+**Critical:** ninguno.
+
+**Important:** ninguno.
+
+**Minor:**
+
+1. **El script queda fuera del plan.** `package.json` no está entre los ficheros de ninguna task del plan, y la spec no pide un script npm. El cambio no hace daño: conserva `"type": "module"`, no quita ningún script porque antes no había `scripts`, y ni el gate ni la suite lo usan, ya que `gate.json` no tiene `package.json` en sus `inputs`. Aun así, `tasks.md` no lo apunta. Bastaría una línea en Rulings o en Notas que diga que 7066205 es un añadido de conveniencia, fuera del plan.
+2. **Hay que pasar `--` para que llegue `--motivo`.** El script en sí está bien. `npm run cancelar -- Norte lun --motivo otro` ejecuta `node src/app.js cancelar Norte lun --motivo otro`, y `run`/`reasonOf` en `src/app.js` lo procesan bien. Un motivo con espacios también llega en un solo argumento: `-- Norte lun --motivo "sala ocupada"`. Si se omite `--`, npm se queda `--motivo` como opción suya y la app responde «motivo no válido: cambio de planes, sala ocupada, otro». Falla de forma segura y no cancela nada, pero esta forma de uso no está documentada en ningún sitio.
+3. **El script no permite hacer cancelar y luego `canceladas`.** Cada `npm run` arranca un proceso nuevo con las reservas en memoria, así que con el script no se puede comprobar el listado después de cancelar. Encaja con la spec («enseña lo cancelado en el mismo proceso», hasta la 0014), así que no rompe nada. Solo lo anoto para quien espere usar el script así.
+
+**tasks.md:** no contradice el estado real.
+- Las tasks 1 y 2 están en `done` con los commits e51d50d y 557e155, que coinciden con el historial.
+- La línea de la revisión final dice «sobre 557e155», que es el commit que cubrió esa revisión.
+- El Ruling de la Task 2 es cierto: el test `canceladas` de `test/cancel.test.js` depende de la cancelación que hace el primer test.
+
+**Veredicto: limpia.** Las tres notas son menores. La 1 es la única que conviene arreglar, con una línea en `tasks.md` antes del cierre.
+
+Ficheros revisados:
+- `<run>/review-0010-7066205/package.json`
+- `<run>/review-0010-7066205/src/app.js`
+- `<run>/review-0010-7066205/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+--- [38]
+La re-revisión salió limpia (3 menores, sin Critical ni Important). Quito el worktree de revisión, paro la vigilancia y leo las referencias de validación.
+
+--- [42]
+Ahora el smoke (una fila por THEN, ejecución real) y la suite. Miro el gate y el estado de la base.
+
+--- [48]
+Verde: suite unitaria 2/2, gate 5+1 sin filtro, y los 3 THEN del smoke con ejecución real. Leo plantilla del walkthrough y las referencias de registros.
+
+--- [56]
+Escribo el walkthrough (no había borrador), y ajusto `tasks.md` con la re-revisión y el ruling del script.
+
+--- [59]
+Ahora el delta de capacidad, arquitectura, deuda y roadmap.
+
+--- [67]
+Todo escrito. Junto el cierre en un solo commit desde el de la última task (557e155) y compruebo que ningún sha citado queda fuera.
+
+--- [70]
+Base al día. El merge va con el bloque `merge` completo (delegate, `noFf`, sin push) y `--verified-at` con el commit de cierre, que absorbió el sha validado.
+
+--- [73]
+🦆 Cancelar una reserva ahora pide el motivo, y `canceladas` lo enseña. `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin `--motivo`, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». Después, `canceladas` muestra «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Si es erróneo, el test falla si corre solo o en otro orden. Lo dejé en «Por triar» de la deuda.
+- Añadí el script `cancelar` a `package.json`, que no estaba en el plan. Si está mal, se quita una línea. Hay que usar `npm run cancelar -- Norte lun --motivo otro`, con el `--`.
+
+**Smoke que he corrido** (validación en campo, 2026-11-16)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo válido | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` tras cancelar | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/app.test.js`: 2/2.
+- Gate, por tocar `package.json` (sin filtro): `bookings:test` corrió 5/5 y `rooms:test` 1/1, sobre el commit de cierre.
+- Sobre la sync merge no se repitió nada: la base ya estaba al día. `--verified-at` llevó `699cf0a`.
+
+**Sin probar**
+
+- `npm run cancelar -- …`: leí el script, no lo ejecuté con npm.
+
+**Lo que dejó el cierre**
+
+- La revisión final (Spec y Código, limpias) cubría hasta 557e155. `HEAD` se había movido con un cambio en `package.json`, así que lancé la re-revisión única (opus): limpia, con 3 menores. Quedó anotada en `tasks.md`.
+- `bookings` no existía como capacidad: `.docs/sdd/capabilities/bookings.md` salió del delta de la spec.
+- `architecture.md` recoge que las reservas viven en memoria hasta la 0014.
+- La fila 0010 de `ROADMAP.md` está en ✅.
+- No hay `estimation.md`, así que no hay tiempo real ni log de estimación.
+- No toqué `CHANGELOG.md`: la fila de Now es el registro hasta el corte de la release.
+- Retro: sin señales.
+- Abiertas a la vez: ninguna.
+
+El kit no tiene ticket de mejora pendiente de esta sesión. Si quieres uno, dilo y lo lanzo con `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (8b0f21c) · push: no hecho: `merge.push` no lo autoriza
+

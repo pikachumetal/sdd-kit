@@ -1,0 +1,43 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (constitución, misión, stack, roadmap y capacidades). Queda: anunciar carril y perfil, y arrancar el brainstorming de la spec, ~5 min.
+
+--- [14]
+Ahora: cargo la guía de preguntas del kit para la entrevista de la spec. Queda: la primera pregunta de diseño (parada tuya), ~2 min.
+
+--- [20]
+Ahora: te presento lo que he entendido y la primera pregunta de la entrevista. Queda: tu respuesta, y después más preguntas de diseño hasta tener la spec, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», si prevemos más de una task)
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme): la fila 0011 del roadmap dice «Avisos por correo antes de la reserva». Lo leo como un recordatorio por correo que sale antes de que empiece una reserva, pero la frase admite otras lecturas, así que no lo doy por hecho.
+
+**Lo que he encontrado en el código** (`Booking.cs`, `BookingsEndpoints.cs`, `docs/api.md`):
+- `Booking` tiene `Id`, `Room`, `Start`, `End` y `Owner`, que es un `string`. No hay ningún campo de correo.
+- La API solo expone `GET /bookings`. No hay endpoint para crear reservas.
+- No hay nada de correo en el repo: ni envío, ni configuración SMTP, ni tarea en segundo plano.
+
+Esto pesa en la spec: sin dirección de correo ni forma de crear reservas, hay que decidir de dónde sale el destinatario y cuándo se dispara el aviso.
+
+❓ **¿Qué situación quieres resolver con estos avisos?**
+Cuéntame, con tus palabras, el momento concreto en el que hoy falta ese correo: quién lo recibe, qué ha pasado justo antes y qué debería poder hacer esa persona al leerlo.
+
+--- [24]
+Ahora: esperando tu decisión sobre «confirmada» y «cancelada». Queda: más preguntas de diseño (destinatario, cuándo y cómo se dispara el aviso) y la spec, ~8 min.
+
+**Lo que entiendo:** un correo al cliente 24 h antes del inicio de una reserva confirmada, con fecha, hora y sala; si la cancela antes de esa hora, no sale. Cómo se envía lo elijo yo y lo dejaré anotado como decisión mía.
+
+**Lo que he encontrado y no cuadra con tu descripción** (`Booking.cs`, `BookingsEndpoints.cs`, `git log --all`):
+- `Booking` no tiene estado: no existe «confirmada» ni «cancelada».
+- No hay ningún endpoint para crear ni para cancelar reservas, solo `GET /bookings`.
+- El roadmap marca la 0012 «Filtrar la lista de reservas por estado» como ✅, pero en el repo (rama `develop` incluida) no hay rastro de un estado. O vive en otro sitio que no veo, o el roadmap va por delante del código.
+
+❓ **¿Qué significa «reserva confirmada» y «cancelarla» para este aviso?**
+1️⃣ **Esta feature añade el estado y la cancelación.** `Booking` gana `Status` (`Confirmada` / `Cancelada`) y un endpoint para cancelar. El aviso sale solo para `Confirmada`. Escena: `Norte, mañana 10:00, Confirmada` → sale el correo a las 10:00 de hoy; `Norte, mañana 10:00` cancelada a las 18:00 → no sale nada. Coste: la feature crece (migración, endpoint, pruebas) y, si el estado ya existe en otra rama, habrá que reconciliarlo.
+2️⃣ **Sin estado: cancelar es borrar la reserva.** No se toca el modelo de estado; el aviso sale para toda reserva que siga existiendo a 24 h del inicio. Escena: `Norte, mañana 10:00` borrada a las 18:00 → no sale. Coste: sigue sin existir una acción de cancelar en la API, así que «si la cancela» no tendría por dónde ocurrir en esta feature, y la 0012 (filtrar por estado) no tendría en qué apoyarse.
+
+➡️ **Recomiendo 1️⃣**, porque tu petición habla de «confirmada» y de «cancelar» como dos situaciones distintas que el aviso debe distinguir, y sin estado ni acción de cancelar no hay forma de comprobarlo con una prueba. A cambio, es la opción que más amplía el alcance, y antes de aprobar la spec convendría que me confirmes dónde vive hoy el estado de la 0012.
+

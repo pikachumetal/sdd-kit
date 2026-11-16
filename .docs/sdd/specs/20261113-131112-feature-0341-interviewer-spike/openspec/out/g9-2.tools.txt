@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cat package.json; node -v; ls; ls test tests 2>/dev/null | head -30; ls .docs/sdd 2>/dev/null; git ls-files | head -40
+<<< {"type": "module"}
+v26.10.0
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+test:
+app.test.js
+sdd-kit.json
+specs/
+steering/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROAD
+
+>>> Bash: cat .docs/sdd/sdd-kit.json .docs/sdd/steering/operations.md .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md; head -30 test/app.test.js; wc -l src/app.js; grep -rin "cobertura\|coverage\|c8" --include=*.md . | head
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+# Operations — salas
+
+## Comandos
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+## Testing
+
+- Tests: `node --test` (carpeta `test/`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-fl
+
+>>> Bash: node --test --experimental-test-coverage --test-coverage-lines=90 2>&1 | tail -25; echo exit=$?
+<<< ✔ libres excluye la sala reservada en la franja (0.8321ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1129ms)
+✔ cancelar respeta el día (0.0959ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 99.5881
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ---------------------------------------------
+
+=== RESULTADO (8 turnos, 0.12211450000000001 $)
+Estoy comprobando qué ofrece Node 26 por sí solo; ya lo he probado en este repo.
+
+**Lo que hay** (fuentes: `operations.md`, `constitution.md`, `package.json`, una ejecución real):
+- La constitución dice «sin dependencias externas». El proyecto es un solo `src/app.js` de 16 líneas con 3 tests.
+- `node --test --experimental-test-coverage` funciona hoy y da líneas, ramas y funciones, con las líneas sin cubrir (`app.js` 93,75 % de líneas, 83,33 % de ramas, línea 13 sin cubrir).
+- Admite umbrales que hacen fallar el comando: `--test-coverage-lines`, `--test-coverage-branches` y `--test-coverage-functions`.
+- También admite `--test-coverage-include` y `--test-coverage-exclude`.
+- La ejecución con umbral de líneas del 90 % terminó con código 0.
+
+**Lo que c8 añadiría:** informes lcov o html, fusionar la cobertura de varios procesos, y que no dependa de una API que Node llame experimental. Para eso hay que meter una `devDependency`, un `package-lock` y un `node_modules`.
+
+**Lo que no sé:** el flag lleva «experimental» en el nombre, y no he comprobado en qué estado está en Node 22, que es el que fija `operations.md`. Tú has corrido en Node 26.10, y el documento y tu entorno no coinciden.
+
+❓ **¿Qué cobertura necesitas?**
+1️⃣ **Node nativo, con umbral en el script `test`.** No añade dependencias y respeta la constitución. No genera HTML ni lcov, y la salida es solo texto.
+2️⃣ **c8.** Da informes lcov o html y es más estable entre versiones de Node. Rompe «sin dependencias externas» y habría que enmendar la constitución.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto son 16 líneas y la regla de cero dependencias es explícita. A cambio, hay que fijar Node ≥ 22 en `operations.md`, y puede que el flag cambie entre versiones.
+
+Una decisión previa condiciona la anterior: ¿lo quieres para **ver** la cobertura a ratos, o como **puerta** (que `node --test` falle por debajo de un umbral)? Si es una puerta, ¿qué umbral y sobre qué métrica: líneas, ramas o ambas?
+
+No he tocado nada. Si acabamos decidiendo implementarlo, pasaría por `sdd-roadmap`.

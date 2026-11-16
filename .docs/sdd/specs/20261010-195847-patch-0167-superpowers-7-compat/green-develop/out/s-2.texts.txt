@@ -1,0 +1,26 @@
+--- [3]
+Ahora: leer el contexto SDD del proyecto (constitución, misión, stack, roadmap). Queda: clasificar con la fila 0013 y abrir la spec, ~5 min.
+
+--- [12]
+Aplico los overrides del kit: no ofrezco saltar las preguntas, la spec va a `.docs/sdd/specs/` y las preguntas siguen `sdd-grilling`.
+
+--- [15]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme):** la lista de reservas debe decir cuántas reservas hay. Mi lectura, que es una suposición mía hasta que la confirmes, es el **total de reservas guardadas**, no las de la página que se ve. Hoy el frontend pide `/api/bookings` sin `page` y pinta solo la primera página (20), así que el total no se puede sacar de lo que llega y la API tiene que darlo.
+
+Dos hechos del repo:
+- `GET /bookings` devuelve un array plano, 20 por página, ordenado por inicio (`BookingsEndpoints.cs`, `docs/api.md`).
+- El roadmap marca la 0012 (filtrar por estado) como hecha, pero en esta rama no veo ningún filtro en el código. Si existe en `develop`, el total tendría que respetarlo; por ahora asumo que no hay filtro.
+
+❓ **¿Cómo le damos el total a la lista?**
+Lo que decidas fija el contrato de `GET /bookings`.
+
+1️⃣ **Cabecera `X-Total-Count`** en la misma respuesta. El cuerpo sigue siendo el array y quien ya lo consume no se entera. `httpResource` expone las cabeceras (`headers()`), así que la lista lee el total de la misma petición, y es coherente con la página que pinta: con 57 reservas, `page=1` → 20 filas y «57 reservas».
+2️⃣ **Envoltorio `{ items, total }`**. Es el contrato más explícito y viaja en el cuerpo, pero rompe el formato de array que documenta `docs/api.md`: cambia a la vez backend, frontend y doc, y cualquier otro consumidor.
+3️⃣ **Endpoint aparte `GET /bookings/count`**. No toca el contrato existente, pero son dos peticiones, y el total puede no cuadrar con la página si alguien reserva entre las dos.
+
+➡️ **Recomiendo 1️⃣**, porque conserva el contrato de array y da el total en la misma petición que la página. A cambio, si el frontend se sirviera desde otro origen que la API, habría que exponer la cabecera por CORS; no lo he verificado porque en el repo no veo configuración de proxy ni de CORS.
+

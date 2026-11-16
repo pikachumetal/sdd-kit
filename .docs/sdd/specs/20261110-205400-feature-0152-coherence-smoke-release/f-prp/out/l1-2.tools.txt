@@ -1,0 +1,64 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; ls .docs/sdd/steering .docs/sdd/capabilities 2>/dev/null; ls node_modules 2>&1 | head -2
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json README.md; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; grep -n libres test/*.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (5 turnos, 0.1356824 $)
+Ahora: clasifico el cambio y abro la feature. Queda: una pregunta de diseño, luego la spec para tu aprobación (~10 min, ~0,3 $ con la revisión de la spec).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido.** Hoy `libres <franja>` mira solo la franja: en `src/app.js:5`, `freeRooms` no usa el día, aunque cada reserva lo guarda. Con la reserva `Norte lun 10:00-12:00`, `libres 10:00-12:00` da `Sur` aunque pregunten por el martes. Quieres que `libres` también acepte el día y filtre por él. No hay roadmap ni capacidades que lo cubran, y en el roadmap no encuentro una fila para esto. Son 2 o 3 tasks, así que no propongo dividirla.
+
+🦆 En llano: ahora `libres` responde «qué salas están libres a esta hora» sin saber de qué día hablas. Después podrás preguntar «qué salas están libres el lunes a esta hora». Hay que decidir cómo se escribe el día y qué pasa si no lo das.
+
+**Pregunta:** ¿cómo se pasa el día y qué pasa si falta?
+
+1. **`libres <franja> [día]`, con el día opcional (Recomendada).** Ejemplo: `libres 10:00-12:00 lun`. Sin día, todo sigue como hoy, así que el test actual (`test/app.test.js:5`) y cualquier uso existente no cambian. Con día, solo cuentan las reservas de ese día.
+2. **`libres <día> <franja>`, con el día obligatorio.** Es más natural al leerlo, pero rompe `libres 10:00-12:00` y hay que cambiar el test existente.
+3. **`libres <día> <franja>` con el día opcional.** Lo distingo por la forma de los argumentos. Es más flexible, pero es más ambiguo y más código.
+
+Si eliges la 1, también quedaría decidido, salvo que me digas otra cosa, que un día que no existe en las reservas no da error y devuelve todas las salas.

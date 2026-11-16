@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test .docs/sdd/specs; cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references"; cat control-profiles.md | head -60
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -40 test/app.test.js; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references" && cat nombrado.md spec-writing.md
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: cd "<run>/repo" && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id next --project-root "$PWD" --reserve 2>&1
+<<< 0010
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0010-estados-reserva 2>&1 && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id claim --project-root "$PWD" 2>&1; git status --short
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0010-estados-reserva'
+sin remoto: la 0010 vale (contador local)
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.2112939 $)
+Ahora: te enseño el flujo dibujado y te planteo la primera duda de diseño. Queda: unas pocas preguntas más, la spec y su aprobación, ~10 min.
+
+**Lo que he entendido (corrígeme):** una reserva tendría un estado (`pendiente`, `confirmada` o `cancelada`) y solo valdrían estas transiciones. No tengo diagrama ni Artifact en esta sesión, así que lo dibujo en Mermaid.
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente
+    pendiente --> confirmada: confirmar
+    pendiente --> cancelada: cancelar
+    confirmada --> cancelada: cancelar
+    cancelada --> pendiente: reactivar
+```
+
+Hoy el código no tiene estados. `bookings` guarda `{room, day, slot}`, `libres` trata toda reserva como ocupada y `cancelar` solo devuelve un texto. Esta feature añade el estado y las reglas de transición.
+
+El flujo es coherente y no tiene estados sin salida. El único punto flojo es `cancelada → pendiente`. Una reserva cancelada libera la franja, así que otra persona puede reservarla después. Si luego reactivas la cancelada, tendrías dos reservas vivas de la misma sala y franja. Esto cambia otras reglas, como si una reserva `pendiente` bloquea la sala o cuándo se detecta el choque.
+
+❓ **¿Qué pasa al reactivar una reserva cuando su franja ya la ocupa otra?**
+Todas las alternativas permiten `cancelada → pendiente`, que es lo que pediste. Se diferencian en cuándo se detecta el choque.
+1️⃣ **Rechazar la reactivación si la franja está ocupada.** Una `pendiente` bloquea la sala igual que una confirmada, así que `libres` queda como hoy. Escena: `reactivar Norte lun 10:00-12:00` → `No se puede: Norte ya está reservada en esa franja`. Coste: una cancelada no siempre se puede revivir y hay que crear una reserva nueva.
+2️⃣ **Dejar que `pendiente` no bloquee y comprobar el choque al confirmar.** Solo bloquean las confirmadas. Escena: `reactivar Norte lun 10:00-12:00` → `Norte lun 10:00-12:00: pendiente`, y después `confirmar` → `No se puede: Norte ya está confirmada en esa franja`. Coste: `libres` ofrece salas que luego no se pueden confirmar, y hay que cambiar su regla.
+3️⃣ **Permitir el solape sin comprobar nada.** Escena: `reactivar Norte lun 10:00-12:00` → `Norte lun 10:00-12:00: pendiente`, con dos reservas vivas en la misma sala y franja. Coste: rompe la regla de una reserva por sala y franja.
+➡️ **Recomiendo 1️⃣**, porque mantiene que cada sala y franja tiene una sola reserva viva, y `libres` y las reservas semanales siguen como están. A cambio, no se puede reactivar una cancelada cuya franja ya se haya vuelto a reservar.
+
+¿Cuál eliges?

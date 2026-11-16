@@ -1,0 +1,116 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [19]
+Aún no he escrito ningún registro del cierre. Estoy esperando a que vuelva la re-revisión de `fba56fd`, el cambio de código que entró después de la revisión final.
+
+Abiertas a la vez: ninguna. Solo hay un worktree, el de `feature/0010-cancel-reason`, y el de revisión temporal que acabo de crear.
+
+Hasta ahora he comprobado esto:
+- El árbol está limpio y `merge --check` sale con exit 0. Fusionará en `develop`.
+- El spec está `approved` y firmado por Laura, y el modo es `full`.
+- `fba56fd` cambia una línea de comportamiento (`?.trim()`), sin test nuevo. También convirtió todo `src/app.js` de CRLF a LF. Lo he anotado como ruido para el revisor.
+
+Cuando vuelva el informe sigo con el paso 1. Con `validation.mode: field` el smoke y la suite los hago yo, sin pedirte nada.
+
+--- [28]
+Re-revisión de `6b9b6b4..a93ce92`, feature 0010 «Motivo al cancelar»: el `?.trim()` no contradice la spec y no rompe ningún caso, pero el comportamiento nuevo entra sin test, así que la rama no está limpia.
+
+Ámbito: he trabajado en el worktree `review-0010-a93ce92` (HEAD detached en `a93ce92`). Fuera de `.docs`, el único cambio de código con `-w` es una línea:
+
+```diff
+-  return index === -1 ? undefined : params[index + 1];
++  return index === -1 ? undefined : params[index + 1]?.trim();
+```
+
+## Las tres preguntas
+
+1. **¿Contradice algún escenario de la spec?** No.
+   - «sala ocupada» sigue respondiendo «cancelada Norte lun (sala ocupada)».
+   - «me aburro» sigue respondiendo «motivo no válido: …».
+   - Lo nuevo es que `" sala ocupada "` ahora se acepta y se guarda recortado, y `canceladas` lo enseña limpio. La spec no dice nada de espacios, así que esto amplía lo que se acepta sin chocar con ella.
+   - Los espacios interiores (`"sala  ocupada"`) y un motivo hecho solo de espacios (`"   "`, que queda en `""`) siguen siendo «motivo no válido».
+2. **¿El comportamiento nuevo tiene test?** No. Ver Important 1.
+3. **¿Rompe el caso sin `--motivo` o con `--motivo` al final sin valor?** No.
+   - Sin `--motivo`: `index === -1` devuelve `undefined`, y `reasons.includes(undefined)` es falso, así que responde «motivo no válido: cambio de planes, sala ocupada, otro», como pide la spec.
+   - Con `--motivo` al final: `params[index + 1]` es `undefined` y el `?.` evita el `TypeError` que daría `.trim()` a secas. Responde el mismo «motivo no válido». El encadenamiento opcional es justo lo necesario.
+
+## Hallazgos
+
+### Critical
+Ninguno.
+
+### Important
+1. **`src/app.js:16`: el comportamiento nuevo entra sin test.** `fba56fd` solo toca `src/app.js` y `test/cancel.test.js` no cambia. Ningún test fija que un motivo con espacios alrededor se acepte y se guarde recortado. Esto incumple la regla 2 de la constitución («Tests antes que código»). Además, como el commit se presenta como «fix», debería venir con un test que falle antes del arreglo y pase después. Si alguien quita el `.trim()`, nada se pone rojo.
+   - Propuesta: añadir un test en `test/cancel.test.js` que cancele con `--motivo ' sala ocupada '` y espere «cancelada … (sala ocupada)».
+   - Otro opcional: `--motivo` como último argumento, que espere «motivo no válido: …». Hoy ese escenario de la spec («sin `--motivo`») tampoco tiene test, ni con el flag al final ni sin él.
+   - Ojo al almacén compartido en memoria (ver el Ruling de `tasks.md`): conviene usar una sala y día que no choquen con los tests que ya existen.
+
+### Minor
+1. **`src/app.js` (fichero entero): cambio de CRLF a LF metido en el commit del fix.** El blob de `6b9b6b4` tenía 48 CR y el de `fba56fd` tiene 0. Sin `-w`, el diff marca las 48 líneas como cambiadas (48 añadidas y 48 quitadas) para un arreglo de una línea, lo que ensucia `git blame` y la revisión.
+   - El repo no tiene `.gitattributes` y los finales de línea en el índice están mezclados: `test/*.js`, `package.json` y `README.md` tienen CRLF; `src/app.js`, `spec.md` y `tasks.md` tienen LF. Con `core.autocrlf=true` el árbol de trabajo no cambia, así que no rompe nada.
+   - Lo mejor sería normalizar todo el repo en un commit aparte con `.gitattributes` (`* text=auto eol=lf`), o deshacer el cambio de finales de línea en este commit.
+2. **`fba56fd`: el mensaje del commit es un relleno.** El cuerpo es «Cuerpo del commit.» y no explica qué fallaba ni por qué se recorta.
+3. **No hay enmienda ni registro del fix (`spec.md`, `tasks.md`).** La regla de aceptar con espacios alrededor no figura en la spec (Enmiendas: «(ninguna)»). `tasks.md` dice que la revisión final fue «sobre 6b9b6b4» y no registra `fba56fd`. Solo el borrador del walkthrough lo menciona.
+
+Restricción de idioma: el rango no añade textos de interfaz y las cadenas que hay siguen en castellano.
+
+No he ejecutado la suite, el build ni el lint, como pedía el encargo.
+
+**Veredicto: con hallazgos.**
+
+--- [30]
+La re-revisión no sale limpia. No hay Critical, pero hay un Important: `fba56fd` añadió un comportamiento (recortar el motivo) sin test. Hago la única pasada de arreglo que prevé el cierre, con un test que falle sin el `.trim()`. Cada fichero de test corre en su propio proceso, así que lo pongo en un fichero nuevo para no chocar con el almacén compartido.
+
+--- [34]
+Sin el `.trim()` el test falla, y con él pasan los 7 tests. Commiteo el test y sigo con el cierre.
+
+--- [39]
+Voy con el smoke real, una fila por THEN, ejecutando el CLI.
+
+--- [47]
+Ahora la retro, que escribe su línea `Retro:` en el walkthrough. Antes escribo el cuerpo del walkthrough.
+
+--- [50]
+Escribí `Retro: sin señales` como marcador, y no puedo dejarlo así sin pasar por `sdd-retro`. La invoco ahora.
+
+--- [57]
+Antes de squashear tengo que quitar de los registros los shas que el squash reescribe (`fba56fd`, `b04f3bf`, `a93ce92`). Actualizo también `tasks.md` y la fila del roadmap.
+
+--- [62]
+El squash está hecho y los shas de las tasks siguen en la rama. Ahora el sync con la base, en su propia llamada.
+
+--- [67]
+La base está al día, no hay CI declarado y `merge.push` es `false`. Fusiono con el script, con la suite verificada sobre el commit de cierre.
+
+--- [70]
+🦆 Cancelar ya pide un motivo de la lista. Con `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo que no está en la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». Además, un motivo con espacios alrededor, como `" sala ocupada "`, se acepta y se guarda recortado.
+
+**✋ Me salí del plan en…**
+- La opción `--test-concurrency=1` en la suite: la fijé para esquivar la carrera de los tests sobre el almacén compartido en memoria. Si es un error, la suite tarda el doble. Está en «Por triar» de `debt.md`.
+- Recortar el motivo (la corrección de la validación): la spec no dice nada de espacios y «Enmiendas» sigue en «(ninguna)». No contradice ningún escenario, pero el dev-lead no lo ha aprobado. Si prefieres que `" sala ocupada "` sea «motivo no válido», es quitar el `?.trim()`.
+
+**Instrucciones antes del cierre.** Dijiste que la revisión final estaba limpia. Lo estaba para `6b9b6b4`, pero no para el último commit de código de la rama, que entró después sin revisar.
+- Lancé una re-revisión de ese rango. No encontró ningún Critical, pero sí un Important: el recorte de espacios entraba sin test.
+- Añadí `test/cancel-trim.test.js` con dos pruebas. Probé que falla sin el `.trim()` y que pasa con él.
+- La re-revisión también marcó dos Minor: ese commit cambió los finales de línea de todo `src/app.js` de CRLF a LF, y su mensaje era un relleno.
+
+**Verificación (validación en campo, hecha por mí).**
+- La suite pasa 7 de 7 tras el squash. El proyecto no declara gate ni `operations.md`, así que no hay línea `Gate:`.
+- Smoke por el CLI con ejecución real: los THEN de cancelar con motivo válido, motivo fuera de lista y sin `--motivo` responden lo que dice la spec.
+- **El THEN de `canceladas` no se cumple por el CLI.** Con un proceso aparte, tras cancelar, imprime una línea vacía, porque las reservas viven solo en memoria. Dentro de un mismo proceso sí responde «Norte lun — sala ocupada». Queda así en el walkthrough y en `architecture.md`. Lo resuelve la 0014 «Motivo guardado», que ya está en el roadmap.
+
+**Registros.**
+- Creé `capabilities/bookings.md` con `sdd capability merge`.
+- Completé el walkthrough y `tasks.md`. En `tasks.md` corregí el commit de la Task 1 a `59cb4d8`, porque decía `6b9b6b4` en las dos filas.
+- La fila 0010 del roadmap pasa a ✅.
+- Anoté dos deudas en «Por triar»: la política de finales de línea (`.gitattributes`) y aislar el almacén por test.
+- No hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+- La retro quedó como `Retro: error que cazaría un chequeo → pendiente de decidir por el dev-lead: política de finales de línea (.gitattributes)`. No añadí el `.gitattributes` yo porque cambia la política de todo el repo.
+
+**Pendiente.** Nada del cambio. Con `merge.push: false` no se publicó nada. Los tres checks (`capability`, `decision`, `roadmap`) salieron con exit 0. Los shas citados en los registros eran los del rango squasheado, así que los quité. La base ya estaba al día, sin conflictos.
+
+**Ticket del kit.** No hay ninguna línea `Retro: … → ticket del kit`. Si quieres igualmente el ticket de mejora del kit sobre esta sesión, dímelo y lanzo `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (f906ce8) · push: no hecho: `merge.push` es `false` y no hay remoto. La rama está en el checkout principal del repo, así que no hay worktree que borrar.
+

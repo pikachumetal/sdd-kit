@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls .docs/sdd; cat package.json; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0306-propose-rework\.temp\k306\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the one in `tech-stack.md` §Testing; without either, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, say so and ask what to run: never invent a command (`tests/sdd-propose-0160-red.md`, k1).
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the
+<<< changelog.md
+constitution.md
+estimation.md
+mission.md
+operations.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+{"type": "module", "engines": {"node": ">=20"}}
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+
+>>> Bash: cd .docs/sdd; grep -n -i -A6 "gate\|build\|testing" operations.md tech-stack.md constitution.md | head -60; git branch --show-current
+<<< operations.md:7:## Testing
+operations.md-8-
+operations.md-9-- **Suites**: `unit` · `node --test` · ~1 s
+operations.md-10-- **Lo afectado**: `node --test <fichero de test>`
+operations.md:11:- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+operations.md:12:- **Gate de merge**: `node --test && node scripts/lint.mjs`
+operations.md-13-- **Acceso a la aplicación**: `sin login`
+operations.md-14-- **Motor de producción**: sin base de datos; las reservas viven en memoria
+--
+constitution.md:4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+constitution.md-5-3. Git-f
+
+=== RESULTADO (6 turnos, 0.1185846 $)
+Ahora: he clasificado el cambio y te pregunto antes de tocar nada. Queda: editar `package.json`, pasar el gate y commitear, ~2 min.
+
+🦆 Es un cambio de configuración. Solo toca el campo `engines.node` de `package.json`, que pasa de `>=20` a `>=22.18`. Lo que ve o puede hacer el usuario del producto no cambia. Antes de guardarlo corro el gate de cierre de `operations.md`: `node --test && node scripts/lint.mjs`.
+
+Carril: config. Perfil: delegate, del proyecto (`sdd-kit.json`). No hay spec, plan, id ni fila de roadmap.
+
+Hay una cosa que tienes que saber: estás en `develop`, que es la rama de integración. La constitución no prohíbe commitear ahí; solo `main` es la estable. Por eso el commit sale en `develop`, sin rama `feature/*` ni merge.
+
+¿Cómo seguimos?
+
+1. **Config: edito `engines.node` a `>=22.18`, paso el gate y commiteo en `develop` (Recomendada).**
+2. Lo trato como feature, con spec y plan. Es excesivo para un campo de `package.json`.
+3. No hacer nada.
+
+Responde con el número, o con «sí» para la 1.
+
+>>> Edit: <run>\repo\package.json
+<<< The file <run>\repo\package.json has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node --test 2>&1 | tail -15; node scripts/lint.mjs 2>&1 | tail -10; echo "exit=$?"
+<<< ✔ libres excluye la sala reservada en la franja (0.7138ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1127ms)
+✔ cancelar una reserva activa (0.7123ms)
+✔ cancelar sin reserva lo dice (0.1395ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.0144
+lint: sin hallazgos
+exit=0
+
+>>> Bash: cd "<run>/repo" && git add package.json && git commit -q -F - <<'EOF'
+chore: sube la versión mínima de node a 22.18 en engines
+
+Gate: `node --test && node scripts/lint.mjs` → unit: corrió 4/4 · lint: corrió sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< 2788743 chore: sube la versión mínima de node a 22.18 en engines
+2b49c5f feat: base del molde
+
+=== RESULTADO (4 turnos, 0.1449143 $)
+Hecho: `engines.node` en `package.json` pasa de `>=20` a `>=22.18`.
+
+- **Gate:** `node --test` pasó 4 de 4 y `node scripts/lint.mjs` salió sin hallazgos.
+- **Commit:** `2788743` en `develop`. Lleva la línea `Gate:` en el cuerpo. No hay spec, rama ni merge, porque es el carril config.
+- **Kit:** la sesión carga el 2.3.4 y el proyecto pide el 3.0.0. Para actualizar, ejecuta `claude plugin update sdd-kit@sdd-kit --scope project` y reinicia Claude Code.

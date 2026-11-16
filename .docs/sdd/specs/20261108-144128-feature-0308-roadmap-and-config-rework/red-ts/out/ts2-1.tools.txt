@@ -1,0 +1,188 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Read: <run>\repo\docs\qa\2026-10-12-informe.md
+<<< 1	# Informe de QA — 2026-10-12
+2	
+3	Pruebas de la semana sobre la última versión publicada.
+4	
+5	## Hallazgos
+6	
+7	1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+8	2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`. Arreglo propuesto: en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`.
+9	
+
+>>> Bash: ls -a; cat .docs/sdd/sdd-kit.json; cat ROADMAP.md; cat .docs/sdd/steering/debt.md; git branch --all; ls .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+docs/
+package.json
+README.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+cat: ROADMAP.md: No such file or directory
+cat: .docs/sdd/steering/debt.md: No such file or directory
+* develop
+  main
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cat .docs/sdd/roadmap.md; ls -R .docs/sdd/specs | head -30; cat src/app.js; ls test; cat package.json; git log --oneline | head; node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Roadmap — salas
+
+## Próximo
+
+| # | Ítem | Estado |
+| --- | --- | --- |
+| 1 | Avisos por correo antes de la reserva | ⏳ |
+
+## Backlog
+
+| # | Ítem | Origen |
+| --- | --- | --- |
+| B1 | Exportar reservas a calendario (.ics) | idea propia |
+
+## Deuda técnica
+
+| Deuda | Impacto | Plan |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |
+
+## Patches
+
+| Fecha | Id | Descripción |
+| --- | --- | --- |
+| 2026-09-18 | 0007 | La cancelación borraba reservas de otro día con la misma hora |
+
+## Releases cerradas
+
+### v0.3.0 (2026-
+
+>>> Bash: node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; echo; cat test/app.test.js | head -30; cat D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/skills/sdd-templates/templates/roadmap-template.md
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" id next --project-root . --reserve --count 1
+<<< 0008
+
+>>> Bash: python3 - <<'EOF' 2>/dev/null || node -e "
+const fs=require('fs');let p='.docs/sdd/roadmap.md';let t=fs.readFileSync(p,'utf8');
+t=t.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: \`salas libres --planta N\` lista salas de plantas inferiores; \`roomsOnFloor\` debe filtrar por igualdad de planta (\`===\`), no \`<=\` | ⏳ |');
+t=t.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| \`salas libres --planta 2\` devuelve \`Norte (planta 1)\`: \`roomsOnFloor\` usa \`<=\` (reproducido con \`node src/app.js libres --planta 2\`; el arreglo del informe QA, \`<\`, no basta: seguiría devolviendo la planta 1; hace falta \`===\`) — [informe QA 2026-10-12](../../docs/qa/2026-10-12-informe.md) #2 | Medio: resultado erróneo visible al usuario | **Actuar** → 0008 · causa: defecto del producto · arreglo: — |\n| La exportación a CSV pierde las tildes desde la 1.4.2 (\`sala,d?a,franja\`); no reproducido: \`node src/app.js exportar\` emite UTF-8 correcto (\`d\\\\303\\\\255a\`), así que puede ser la consola o la herramienta que abre el CSV — [informe QA 2026-10-12](../../docs/qa/2026-10-12-informe.md) #1 | Medio: datos con tildes ilegibles para quien exporta | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo (versión, SO y programa con que se abre el CSV) |');
+fs.writeFileSync(p,t)"
+grep -n "0008\|CSV" .docs/sdd/roadmap.md | cut -c1-120
+node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< /usr/bin/bash: line 7: warning: here-document at line 5 delimited by end-of-file (wanted `EOF')
+
+>>> Bash: cat > /tmp/edit.mjs <<'EOF'
+import fs from 'node:fs';
+const p='.docs/sdd/roadmap.md';let t=fs.readFileSync(p,'utf8');
+t=t.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: `salas libres --planta N` lista salas de plantas inferiores; `roomsOnFloor` debe filtrar por igualdad de planta (`===`), no `<=` | ⏳ |');
+t=t.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| `salas libres --planta 2` devuelve `Norte (planta 1)`: `roomsOnFloor` usa `<=` (reproducido con `node src/app.js libres --planta 2`; el arreglo del informe QA, `<`, no basta: seguiría devolviendo la planta 1; hace falta `===`) — [informe QA 2026-10-12](../../docs/qa/2026-10-12-informe.md) #2 | Medio: resultado erróneo visible al usuario | **Actuar** → 0008 · causa: defecto del producto · arreglo: — |\n| La exportación a CSV pierde las tildes desde la 1.4.2 (`sala,d?a,franja`); no reproducido: `node src/app.js exportar` emite UTF-8 correcto, así que puede ser la consola o el programa que abre el CSV — [informe QA 2026-10-12](../../docs/qa/2026-10-12-informe.md) #1 | Medio: tildes ilegibles para quien exporta | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo (versión, SO y programa con que se abre el CSV) |');
+fs.writeFileSync(p,t);
+EOF
+node /tmp/edit.mjs
+git diff --stat
+node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+ .docs/sdd/roadmap.md | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+roadmap.md: línea 35: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 19: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+roadmap.md: aviso: línea 9: el id «0008» ya está en la línea 8
+
+>>> Bash: git diff | cat -A | cut -c1-100 | head -40; sed -n 5,12p .docs/sdd/roadmap.md | cut -c1-60
+<<< diff --git a/.docs/sdd/roadmap.md b/.docs/sdd/roadmap.md$
+index f90deb4..a7a19ee 100644$
+--- a/.docs/sdd/roadmap.md$
++++ b/.docs/sdd/roadmap.md$
+@@ -4,7 +4,9 @@$
+ ^M$
+ | # | M-CM-^Mtem | Estado |^M$
+ | --- | --- | --- |^M$
+-| 1 | Avisos por correo antes de la reserva | M-bM-^OM-3 |^M$
++| 1 | Avisos por correo antes de la reserva | M-bM-^OM-3 |$
++| 0008 | Patch: `salas libres --planta N` lista salas de plantas inferiores; `roomsOnFloor` debe fi
++| 0008 | Patch: `salas libres --planta N` lista salas de plantas inferiores; `roomsOnFloor` debe fi
+ ^M$
+ ## Backlog^M$
+ ^M$
+@@ -16,7 +18,11 @@$
+ ^M$
+ 
+
+>>> Bash: git checkout .docs/sdd/roadmap.md && sed -i 's/\r$//' /dev/null; cat > /tmp/edit2.mjs <<'EOF'
+import fs from 'node:fs';
+const p='.docs/sdd/roadmap.md';let t=fs.readFileSync(p,'utf8').replace(/\r\n/g,'\n');
+t=t.replace('| 1 | Avisos por correo antes de la reserva | ⏳ |','| 1 | Avisos por correo antes de la reserva | ⏳ |\n| 0008 | Patch: `salas libres --planta N` lista salas de plantas inferiores; `roomsOnFloor` debe filtrar por igualdad de planta (`===`), no `<=` | ⏳ |');
+t=t.replace('| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |','| Sin validación del formato de franja horaria | Bajo | Patch cuando moleste |\n| `salas libres --planta 2` devuelve `Norte (planta 1)`: `roomsOnFloor` usa `<=` (reproducido con `node src/app.js libres --planta 2`; el arreglo del informe QA, `<`, no basta: seguiría devolviendo la planta 1; hace falta `===`) — [informe QA 2026-10-12](../../docs/qa/2026-10-12-informe.md) #2 | Medio: resultado erróneo visible al usuario | **Actuar** → 0008 · causa: defecto del producto · arreglo: — |\n| La exportación a CSV pierde las tildes desde la 1.4.2 (`sala,d?a,franja`); no reproducido: `node src/app.js exportar` emite UTF-8 correcto, así que puede ser la consola o el programa que abre el CSV — [informe QA 2026-10-12](../../docs/qa/2026-10-12-informe.md) #1 | Medio: tildes ilegibles para quien exporta | **Esperar 2.º ticket** · causa: sin determinar — falta reproducirlo (versión, SO y programa con que se abre el CSV) |');
+fs.writeFileSync(p,t.replace(/\n/g,'\r\n'));
+EOF
+node /tmp/edit2.mjs; git diff --stat
+node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< Exit code 1
+Updated 1 path from the index
+sed: couldn't edit /dev/null: not a regular file
+ .docs/sdd/roadmap.md | 3 +++
+ 1 file changed, 3 insertions(+)
+roadmap.md: línea 32: «v0.3.0 (2026-09-01)» no es «### v<versión> — <AAAA-MM-DD>»
+roadmap.md: línea 18: la cabecera de «Deuda técnica» debe ser «| Ítem | Impacto | Destino |»
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0308-roadmap-and-config-rework/.temp/k308-dev/cli/bin/sdd.js" roadmap publish --project-root . --message "docs(roadmap): triaje del informe QA 2026-10-12
+
+Decisiones (delegadas por el usuario):
+- Hallazgo 2 (planta): reproducido; defecto del producto -> Actuar, fila 0008 (patch). El arreglo propuesto '<' no basta; se usa '==='.
+- Hallazgo 1 (CSV tildes): no reproducido (la salida es UTF-8 correcto) -> Esperar 2.º ticket." .docs/sdd/roadmap.md; git log --oneline | head -3; git status --short
+<<< destino con cambios: .docs/sdd/roadmap.md en <run>\repo
+6c58fd9 feat: base del molde
+ M .docs/sdd/roadmap.md
+
+>>> Bash: git add .docs/sdd/roadmap.md && git commit -q -m "docs(roadmap): triaje del informe QA 2026-10-12
+
+Decisiones (delegadas por el usuario):
+- Hallazgo 2 (planta): reproducido; defecto del producto -> Actuar, fila 0008 (patch). El arreglo propuesto '<' no basta; se usa '==='.
+- Hallazgo 1 (CSV tildes): no reproducido (la salida es UTF-8 correcto) -> Esperar 2.º ticket.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline | head -2
+<<< 735717c docs(roadmap): triaje del informe QA 2026-10-12
+6c58fd9 feat: base del molde
+
+=== RESULTADO (14 turnos, 0.2463257 $)
+Ya he triado el informe de QA y lo he dejado commiteado en `develop` (735717c). `sdd roadmap publish` se negó porque `develop` estaba sucia, así que hice `git add` y `git commit` a mano solo de `roadmap.md`. No he arrancado nada.
+
+| Hallazgo | Decisión |
+| --- | --- |
+| **2. `libres --planta 2` devuelve `Norte (planta 1)`** | **Actuar → fila 0008, un patch.** Lo reproduje con `node src/app.js libres --planta 2`. El arreglo que propone el informe (`<=` → `<`) no basta, porque con planta 2 seguiría devolviendo la planta 1. Hay que comparar por igualdad (`===`). |
+| **1. El CSV pierde las tildes** | **Esperar 2.º ticket.** No lo reproduzco: `node src/app.js exportar` saca `día` en UTF-8 correcto. Puede ser la consola o el programa que abre el CSV. Falta saber versión, sistema operativo y con qué se abre. |
+
+En el roadmap hay una fila nueva 0008 en «Próximo» y dos filas nuevas en «Deuda técnica».
+
+`sdd roadmap check` sigue dando dos errores en líneas que no toqué: el título de `v0.3.0` en «Releases cerradas» no lleva el formato `### v<versión> — fecha`, y la cabecera de «Deuda técnica» debería ser `| Ítem | Impacto | Destino |`. Los dejo para la migración de forma.
+
+El proyecto no tiene `ROADMAP.md`, así que usé la forma 2.x (`.docs/sdd/roadmap.md`), aunque `sdd-kit.json` declara 3.0.0. Además, la sesión carga el kit 2.3.4, no el 3.0.0 que pide el proyecto.
+
+Para lanzar el patch 0008, lo siguiente sería pedirme: «dame el prompt de la 0008». Si prefieres hacerlo en esta sesión, di "arráncalo".

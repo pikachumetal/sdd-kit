@@ -1,0 +1,160 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; echo "--- check"; node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "<run>/repo"; echo "--- worktrees"; git worktree list; echo "--- files"; ls .docs/sdd .docs/sdd/specs 2>&1 | head -50; cat .docs/sdd/sdd-kit.json
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0010-cancel-reason'
+--- worktrees
+<run>/repo 2877d03 [feature/0010-cancel-reason]
+--- files
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261008-100000-feature-0010-cancel-reason/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, 
+
+>>> Bash: cd .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason && ls; head -30 spec.md; echo ----; cat tasks.md; cd ../..; echo ----; cat sdd-kit.local.json; ls; ls capabilities 2>&1; cat roadmap.md | head -40; ls /d/code 2>/dev/null | head -0; ls ../../ROADMAP.md 2>&1
+<<< Exit code 2
+plan.md
+spec.md
+tasks.md
+---
+id: 20261008-100000-feature-0010-cancel-reason
+feature: 0010
+title: Motivo al cancelar
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-08
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-08
+---
+
+# Spec — Motivo al cancelar
+
+## Capacidades
+
+- Nuevas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+
+## Decisiones que he tomado yo — valida estas
+
+1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+3
+
+>>> Bash: cd "<run>/repo"; git diff --stat 2710328..HEAD; git diff --stat main...HEAD 2>&1 | tail -15; sed -n 30,200p .docs/sdd/specs/*0010*/spec.md; cat "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/skills/sdd-archive/references/dev-validation.md"; ls; cat package.json
+<<<  .../20261008-100000-feature-0010-cancel-reason/tasks.md | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+ .../tasks.md                                       | 17 ++++++
+ .docs/sdd/steering/operations.md                   | 29 +++++++++
+ .gitignore                                         |  1 +
+ README.md                                          |  4 ++
+ e2e/cancel.e2e.mjs                                 |  7 +++
+ e2e/config.json                                    |  1 +
+ e2e/free.e2e.mjs                                   |  4 ++
+ e2e/run.mjs                                        | 53
+
+>>> Bash: cd "<run>/repo"; cat .docs/sdd/steering/operations.md server.mjs scripts/*.mjs; cat src/app.js; cat README.md; cat .gitignore
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la persona que valida
+- **Mot
+
+>>> Bash: cd "<run>/repo"; node scripts/env-up.mjs; curl -sf http://localhost:4422/health; echo; q(){ curl -s -H 'x-session: agente' -G "http://localhost:4422/run" --data-urlencode "cmd=$1" --data-urlencode "args=$2"; echo; }
+q cancelar '["Norte","lun","--motivo","vacaciones"]'
+q cancelar '["Norte","lun"]'
+q canceladas '[]'
+q cancelar '["Norte","lun","--motivo","sala ocupada"]'
+q canceladas '[]'
+<<< entorno arriba: http://localhost:4422 (pid 11932)
+ok
+motivo no válido: cambio de planes, sala ocupada, otro
+motivo no válido: cambio de planes, sala ocupada, otro
+
+cancelada Norte lun (sala ocupada)
+Norte lun — sala ocupada
+
+>>> Bash: cd "<run>/repo"; node --test test/ 2>&1 | tail -12; git rev-parse --short HEAD
+<<< ✔ reservar --cada-semana crea la reserva semanal (0.1211ms)
+✔ cancelar con un motivo de la lista (0.7291ms)
+✔ cancelar con un motivo fuera de la lista (0.1113ms)
+✔ canceladas enseña sala, día y motivo (0.9297ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 112.5253
+2877d03
+
+=== RESULTADO (9 turnos, 0.21667800000000004 $)
+Los pre-checks están hechos, pero el cierre se para en la validación. Todavía no he escrito ningún registro, ni walkthrough ni changelog ni roadmap, ni he fusionado nada.
+
+**Pre-checks**
+- El árbol está limpio y `merge --check` dice `destino: listo` (`develop`).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura. Es `full`, con `plan.md` y `tasks.md`.
+- La revisión final se hizo sobre `2710328`. Desde entonces solo cambió `tasks.md`, que es documentación, así que no hace falta otra revisión.
+- `tasks.md` apunta la Task 1 al commit `2710328`, pero su commit real es `4b373a2`. Lo corrijo en el cierre.
+- La spec numera sus decisiones 1 y 3, sin la 2. Es una anomalía de la spec y no la toco.
+
+**Mi smoke** (separado de tu validación)
+- `node --test test/` da 5/5 en verde sobre `2877d03`.
+- No he lanzado la suite E2E. El gate de cierre del proyecto es solo `node --test test/`, y la E2E reinicia el servidor que vas a usar tú.
+- Ensayé los pasos del script en la sesión `agente`, aparte de la tuya, y las salidas coinciden con lo esperado.
+
+**Script de validación**
+- Entorno arriba en `http://localhost:4422` (pid 11932). Para pararlo: `node scripts/env-down.mjs`.
+- No toco el entorno hasta que respondas.
+- Panel: sin panel, no tengo las herramientas de Chrome. Plan B: te paso los pasos en texto y me dices el resultado.
+- Tu sesión es la de por defecto (`anon`), con la reserva de Norte del lunes 10:00-12:00 sin cancelar. Sustituye `<cmd>` y `<args>` en cada comando:
+
+  `curl -s -G "http://localhost:4422/run" --data-urlencode "cmd=<cmd>" --data-urlencode "args=<args>"`
+
+| # | `cmd` | `args` | Debe responder |
+| --- | --- | --- | --- |
+| 1 | `cancelar` | `["Norte","lun","--motivo","vacaciones"]` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 2 | `cancelar` | `["Norte","lun"]` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 3 | `cancelar` | `["Norte","lun","--motivo","sala ocupada"]` | `cancelada Norte lun (sala ocupada)` |
+| 4 | `canceladas` | `[]` | `Norte lun — sala ocupada` |
+
+Haz el 3 antes del 4. Los pasos 1 y 2 no cancelan nada. Una vez cancelada, la reserva no vuelve a su estado anterior en esa sesión.
+
+¿Qué has probado? Tienes tres opciones:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+**Avisos**
+- El hook de sesión avisó de que esta sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Las instrucciones del cierre vienen de `kit-green`. Si prefieres actualizar el plugin antes de cerrar, dilo.
+- La validación es `manual`, así que no puedo seguir sin tu respuesta. Aunque el perfil sea `delegate`, la validación no se delega.

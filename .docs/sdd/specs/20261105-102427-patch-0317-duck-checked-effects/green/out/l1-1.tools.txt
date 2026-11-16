@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: git ls-files | head -100; ls -a
+
+>>> Grep: export|exporta
+<<< Found 15 files
+test\export.test.js
+src\export\writer.js
+src\export\index.js
+src\export\ics.js
+src\export\filter.js
+src\cli.js
+src\bookings\repository.js
+README.md
+PRODUCT.md
+.docs\sdd\tech-stack.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\roadmap.md
+.docs\sdd\mission.md
+.docs\sdd\constitution.md
+<<< .docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/tech-stack.md
+PRODUCT.md
+README.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+./
+../
+.docs/
+.git/
+data/
+package.json
+PRODUCT.md
+README.md
+src/
+test/
+
+>>> Bash: cat PRODUCT.md src/cli.js src/export/*.js src/bookings/repository.js; head -c 600 data/bookings.json; cat README.md
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+- **No es**: un calendario compartido ni una sincronización en vivo.
+
+## Terminology
+
+**Reserva**:
+El uso de una s
+
+=== RESULTADO (6 turnos, 0.1035017 $)
+Sigo una exportación concreta: la de marzo de 2026. El socio escribe la orden de exportar con el mes `2026-03`.
+
+1. La terminal recibe la orden y lee el mes que pidió el socio.
+2. El programa abre la lista de reservas guardada. Hay 5 reservas: 4 en marzo y 1 en abril.
+3. Se queda solo con las de marzo que no están canceladas. La reserva de la sala Norte del 12 de marzo está cancelada, así que sale. Quedan 3 reservas.
+4. Ordena esas 3 por día y por franja: Norte el 2, Sur el 5 y Norte el 19.
+5. Convierte cada reserva en un evento de calendario. El evento se titula «Sala Norte» o «Sala Sur». Lleva la hora de inicio y la de fin de la franja.
+6. Antes pasa las horas a UTC, que es un reloj sin zona horaria. El programa da por hecho que el coworking va dos horas por delante de UTC. Así, la franja de 10:00 a 12:00 del día 2 queda de 08:00 a 10:00.
+7. Junta los 3 eventos dentro de un solo bloque de calendario. Es el texto de la exportación.
+8. Crea la carpeta de exportaciones si no existe. Guarda ahí el texto con el nombre del mes.
+9. Devuelve la ruta del fichero, y la terminal la muestra.
+
+Después, fuera del programa, el socio abre el fichero. Lo importa en Google Calendar u Outlook y ve sus 3 reservas.
+
+Al leer el código vi dos cosas que no encajan con lo que dice el producto. No las he probado ejecutando nada.
+- **Hora fija:** el programa suma siempre dos horas de diferencia. El horario de invierno tiene una hora de diferencia. En las reservas de marzo antes del cambio de hora, las horas saldrían una hora desplazadas.
+- **Marca de UTC:** a las horas les falta la «Z» final, la letra que dice «esta hora es UTC». Sin ella, el calendario puede leerlas como horas locales. Entonces no les aplicaría ninguna conversión.
+
+**Dónde mirar**
+- Recibir la orden: `src/cli.js`
+- Coordinar los pasos: `src/export/index.js`
+- Leer las reservas: `src/bookings/repository.js` (los datos están en `data/bookings.json`)
+- Filtrar y ordenar: `src/export/filter.js`
+- Crear eventos y pasar a UTC: `src/export/ics.js`
+- Guardar el fichero: `src/export/writer.js` (queda en `exports/2026-03.ics`)
+
+¿Quieres que te aclare algún paso?

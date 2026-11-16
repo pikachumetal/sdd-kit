@@ -1,0 +1,56 @@
+
+# turno 1
+## usuario
+Pensémoslo bien antes de tocar nada: ¿cómo enfocarías dejar reservar medias horas?
+> Skill: sdd-kit:sdd-explore
+> Skill: sdd-kit:sdd-grilling
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && git ls-files | head -100 && echo --- && node "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/.temp/i/kit-r4/cli/bin/sdd.js" capability index --path .docs/sdd
+> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0342-interviewer-rewrite/<run>/repo" && for f in PRODUCT.md ROADMAP.md src/app.js test/app.test.js .docs/sdd/steering/*.md .docs/sdd/specs/*/spec.md .docs/sdd/specs/*/patch.md; do echo "=== $f"; cat "$f"; done
+## agente
+Antes de proponer nada, esto es lo que he encontrado en el repo (lo que dicen los documentos, separado de lo que deduzco):
+
+**Lo que hay**
+- `src/app.js:2-8`: una franja es un texto libre como `'10:00-12:00'`. `freeRooms` la compara por igualdad exacta (`b.slot === slot`). No hay nada que fije el tamaño de la franja.
+- `reservar` solo devuelve el texto `'reserva semanal creada'`. No añade nada a `bookings`, que es una lista en memoria con una sola reserva de ejemplo.
+- `debt.md`, «Por triar»: «Sin validación del formato de franja horaria».
+- `ROADMAP.md` no tiene ninguna fila sobre medias horas. La 0008 (avisos por correo) está en Now y la 0009 (.ics) en Later.
+
+**Lo que deduzco**
+- Hoy nada impide escribir `10:00-10:30`, así que "dejar reservar medias horas" no es un cambio de formato.
+- Lo que cambia es el solape. Con la comparación por igualdad, `10:30-11:00` no choca con `10:00-12:00` y la sala saldría libre estando ocupada. Mientras todas las franjas fueran del mismo tamaño, la igualdad bastaba.
+
+Esto cambia casi todo lo demás: si hace falta detectar solapes, si hay que validar el formato (la deuda ya anotada) y qué pasa con `libres`.
+
+❓ **¿Qué quieres poder hacer que hoy no puedas?** Cuéntamelo con tus palabras: qué reservas se te quedan cortas hoy y cómo las harías con medias horas.
+
+# turno 2
+## usuario
+lo quiero porque hay reuniones de media hora y hoy bloquean una franja entera de dos horas
+## agente
+Entendido: la reunión de media hora hoy ocupa la franja entera de dos horas, y quieres que ocupe solo su media hora.
+
+Falta decidir cómo se representa una franja. Es lo que más afecta al resto: la validación del formato, el solape y `libres` dependen de ello. Los escenarios usan la reserva que ya existe, Norte lun `10:00-12:00`.
+
+❓ **Modelo de franja**
+Hoy `freeRooms` compara franjas por igualdad exacta (`src/app.js:5`). Con medias horas hace falta decidir qué es una franja.
+
+1️⃣ **Rango libre alineado a :00 y :30, con detección de solape.** La franja sigue siendo `inicio-fin`, y el fin debe ser mayor que el inicio.
+- `libres 10:30-11:00` da `Sur`, porque Norte solapa con `10:00-12:00`.
+- `libres 12:00-12:30` da `Norte, Sur`.
+- Una reunión de 2 h sigue siendo una sola reserva.
+- La reserva existente no cambia de formato.
+- Coste: hay que escribir la lógica de solape y validar el formato. Esa validación es la deuda ya anotada en `debt.md`.
+
+2️⃣ **Unidad fija de 30 minutos.** Cada reserva es una celda (`10:30`), sin rangos.
+- `libres 10:30` da `Sur`.
+- Una reunión de 2 h son 4 reservas, o hay que añadir un parámetro de duración.
+- No hay solape que detectar, porque la igualdad sigue valiendo.
+- Coste: cambia el formato de todo lo existente (`10:00-12:00` deja de ser válido) y las reservas largas resultan incómodas.
+
+3️⃣ **Mantener los bloques de 2 h y subdividirlos en cuatro medias horas.**
+- El bloque `10:00-12:00` pasa a ser cuatro celdas.
+- Coste: obliga a que todas las reuniones caigan en bloques de 2 h alineados, y una de 1 h que empiece a las 11:00 no cabe. No es compatible con lo que quieres.
+
+➡️ **Recomiendo 1️⃣**, porque tus reuniones ya son de duraciones distintas (30 min y 2 h) y es la única opción que las cubre sin cambiar el formato que ya usas. A cambio, tendrás que mantener la lógica de solape.
+
+¿Con cuál te quedas?

@@ -1,0 +1,110 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && ls -a && cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+
+>>> Grep: bookings
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+<<< src\app.js:3:const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+src\app.js:6:  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+src\app.js:10:  return bookings.find((b) => b.room === room && b.status === 'active');
+
+>>> Read: <run>/repo/src/app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reserva ${room} ${day}
+
+>>> Read: <run>/repo/test/cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Read: <run>/repo/.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+<<< 1	# Patch — cancel
+2	
+3	Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+4	
+5	## Tiempo
+6	
+7	- Esfuerzo real: 0,5h
+8	
+
+>>> Read: D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills/sdd-propose/references/patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md package.json .docs/sdd/sdd-kit.json; grep -rn "gate\|Gate" .docs/sdd/specs/*/walkthrough.md | head
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- Los pat
+
+=== RESULTADO (10 turnos, 0.1540386 $)
+Ahora: clasificado como patch. Queda: tu confirmación, y después implemento con test de regresión (~0,5 h).
+
+🦆 **El orden del array no es la causa, y buscar desde el final no arregla esto.** `findBooking` (`src/app.js:9-11`) recibe `day` pero no lo usa. Solo mira `room` y `status === 'active'`, así que cualquier "Norte" activo coincide, sea el día que sea. Con una sola reserva (Norte lun), buscar desde el final devolvería esa misma reserva y seguiría cancelando el lunes. `voidBooking` usa la misma función, así que `anular Norte mar` tiene el mismo fallo.
+
+**El arreglo:** añadir `b.day === day` al `find`. Es determinista y tiene una causa raíz clara, así que lo trato como un patch de fallo. La solución es una sola línea. Antes escribo un test que hoy falla (`cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes) y compruebo que pasa después. También añado el caso equivalente para `anular`.
+
+**Estimación:** 0,5 h, tomando como referencia el patch 0007. El gate de cierre no tiene medida en el proyecto, porque ningún `patch.md` ni walkthrough la registra.
+
+Perfil: `delegate`, del proyecto (`sdd-kit.json`).
+
+¿Cómo seguimos?
+
+1. **Patch con el arreglo del `day` (recomendada).** Abro la rama y la carpeta del patch, escribo el test rojo, aplico el fix y verifico.
+2. **Patch con tu cambio (buscar desde el final).** No lo recomiendo: no arregla el síntoma, y si luego hubiera dos reservas de Norte activas en días distintos, cancelaría la última sin importar el día.
+
+Si lo quieres con otro perfil, dímelo («perfil `<otro>` para este patch»).

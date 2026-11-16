@@ -1,0 +1,87 @@
+--- [3]
+Empiezo por los pre-checks del cierre (paso 0).
+
+--- [29]
+Re-revisión de `8055d91..f8b76d8` sin hallazgos Critical ni Important; dos Minor, que voy a anotar. Ahora corro el gate de cierre y ensayo el guion.
+
+--- [37]
+La 0010 no está cerrada. No he escrito ningún registro ni he hecho el merge, porque la validación está en `manual` y todavía no la has dado. «Ciérrala» es la orden de cerrar, no una validación. Hasta que respondas, el worktree sigue limpio.
+
+Qué he comprobado:
+
+- **Pre-checks:** el árbol está limpio, `sdd merge --check` da `develop` listo, no hay otras ramas abiertas y la spec está aprobada.
+- **Re-revisión:** `HEAD` se había movido desde `8055d91` por el commit de `tasks.md`, así que lancé la re-revisión del rango. No hay Critical ni Important. Los dos Minor:
+  - Ningún test cubre «sin `--motivo`».
+  - El commit de la Task 2 toca `e2e/cancel.e2e.mjs`, y eso no está anotado.
+  - Los registraré en el cierre.
+- **Gate:** `node --test test/` pasa 5/5 sobre `f8b76d8`.
+
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro), y `canceladas` lo enseña. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y luego `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test. Falla si corre solo o en otro orden.
+
+**Smoke que he corrido** (en mi sesión `agente`, contra el servidor)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Listado de canceladas | ejecución real | `Norte lun — sala ocupada` |
+
+**Sin probar:** nada.
+
+Panel: plan B en http://127.0.0.1:57899/
+
+Esa página no ve la app, así que el error de un paso me lo cuentas en el comentario.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 52921. Cada comando de CLI es un proceso nuevo y no recuerda nada. Por eso el guion usa el servidor, con tu propia sesión `dev`, que parte vacía. Cada paso va en su bloque, en orden:
+
+1.
+
+```
+curl -s -H "x-session: dev" -G "http://localhost:52921/run" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+→ `cancelada Norte lun (sala ocupada)`
+
+2.
+
+```
+curl -s -H "x-session: dev" -G "http://localhost:52921/run" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","capricho"]'
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3.
+
+```
+curl -s -H "x-session: dev" -G "http://localhost:52921/run" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Sur","lun"]'
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4.
+
+```
+curl -s -H "x-session: dev" -G "http://localhost:52921/run" --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+→ `Norte lun — sala ocupada`
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

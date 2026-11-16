@@ -1,0 +1,108 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering 2>/dev/null; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; git ls-files | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/sdd-kit.json .docs/sdd/steering/*.md .docs/sdd/specs/*patch-0007*/patch.md src/app.js test/app.test.js package.json; ls node_modules 2>&1 | head -2
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda
+
+>>> Read: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-80ae6c702425\scratchpad\kit-r3-0152\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Bash: cd "D:/code/git/sdd-kit/.temp/claude/cd84ffa9d182514d/b032bbfb-9be6-451a-845e-80ae6c702425/scratchpad/kit-r3-0152/skills" && sed -n 1,60p sdd-rubber-duck/SKILL.md; cat sdd-propose/references/control-profiles.md | head -40
+<<< ---
+name: sdd-rubber-duck
+description: Use when the user asks you to explain how something in their project works or travels, step by step or in plain words («explícame cómo viaja un pedido de punta a punta», «explícamelo en llano»), when your last message didn't land («no te he entendido», «wait, what?»), or when another sdd-kit skill needs the 🦆 paragraph of a stop.
+---
+
+# sdd-rubber-duck
+
+## Overview
+
+Explain for a reader who knows the product, not its code or the kit. Write everything they read in the language of their message, skill announcements included: an English question gets an Eng
+
+=== RESULTADO (8 turnos, 0.1644551 $)
+Ahora: clasifico el cambio y te hago la pregunta del carril. Queda: tu respuesta y después la spec corta, ~5 min.
+
+🦆 Hoy `cancelar mar 10:00` responde «cancelada mar 10:00» aunque no haya ninguna reserva ese día a esa hora, porque el comando nunca mira las reservas. Además tampoco quita nada de la lista. Lo que cambiaría es que, si no existe esa reserva, el comando lo diga en lugar de confirmar. Si existe, cancelaría de verdad y confirmaría. Falta decidir el texto del aviso.
+
+No es un patch. La causa es determinista, pero el patch exige que la solución ya esté fijada, y aquí nadie ha fijado el texto del aviso. Tampoco está claro qué cuenta como «existe», porque `cancelar` recibe día y hora pero no sala. Decidir eso es diseñar la solución, así que va como cambio pequeño.
+
+1. **Lite (recomendada).** Cumple las condiciones una a una:
+   - El flujo ya existe y se puede leer: `cancelar` en `src/app.js`.
+   - No cambia contratos públicos: el comando y sus argumentos son los mismos. Solo cambia la respuesta cuando la reserva no existe.
+   - No toca el esquema de datos.
+   - Cabe en un solo módulo, `src/app.js`, con su test.
+   - No hay `estimation.md`, así que esa condición no aplica.
+   
+   Hace falta una spec corta con su revisión y su puerta de aprobación, sin plan. La estimación es de 0,5 h, a ojo.
+2. **Feature completa.** Es lo mismo con spec y plan completos. Solo compensa si quieres que cancelar de verdad borre la reserva y que el comando acepte la sala, porque eso ya cambia el contrato.
+
+Perfil de control: `delegate`, del proyecto. `sdd-kit.json` no fija ninguno, así que va el valor por defecto, y no hay `sdd-kit.local.json`. Con `delegate` paro en la spec, en las desviaciones y en la validación.
+
+Si te vas a ausentar, puedes decirme: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `pair` para este cambio».
+
+¿Lite (1) o feature completa (2)?

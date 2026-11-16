@@ -1,0 +1,87 @@
+
+>>> Skill: sdd-kit:sdd-consult
+<<< Launching skill: sdd-kit:sdd-consult
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat package.json 2>/dev/null; node --version; ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/changelog.md
+.docs/sdd/constitution.md
+.docs/sdd/mission.md
+.docs/sdd/roadmap.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/tech-stack.md
+README.md
+package.json
+src/app.js
+test/app.test.js
+{"type": "module"}
+v26.10.0
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/tech-stack.md .docs/sdd/constitution.md README.md; wc -l src/app.js test/app.test.js; head -15 test/app.test.js
+<<< # Tech Stack — salas
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Tests: `node --test` (carpeta `test/`).
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-start-task` → spec → plan → `sdd-end-task`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la int
+
+>>> Bash: cd "<run>/repo" && node --test --experimental-test-coverage --test-coverage-lines=90 2>&1 | tail -25; echo exit=$?
+<<< ✔ libres excluye la sala reservada en la franja (0.9575ms)
+✔ reservar --cada-semana crea la reserva semanal (0.116ms)
+✔ cancelar respeta el día (0.1168ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 110.1627
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ---------------------------------------------
+
+=== RESULTADO (6 turnos, 0.1341056 $)
+**Recomendación: nos vale lo que trae Node. No metería c8.**
+
+**Por qué**
+- `tech-stack.md` dice «sin dependencias externas» y `package.json` ni siquiera tiene `devDependencies`. c8 sería la primera dependencia del proyecto, y hoy no tiene nada que justifique romper esa regla.
+- Ya funciona. Lo he probado con `node --test --experimental-test-coverage` y da el informe por fichero: líneas 93,75 %, ramas 83,33 %, funciones 100 %. También da las líneas sin cubrir (la 13 de `src/app.js`).
+- Es el mismo motor V8 que usa c8, así que los números son equivalentes. Con un solo fichero de entrada y 3 tests no se nota ninguna diferencia.
+
+**Lo que c8 aportaría y aquí no hace falta**
+- Informes HTML y lcov, para subirlos a Codecov, Sonar o similar.
+- Fusionar la cobertura de varios procesos.
+- Reglas de inclusión y exclusión más cómodas.
+
+Si algún día se quiere un informe HTML o integrarlo con un servicio externo, ahí sí tendría sentido c8. Es un cambio pequeño y se puede hacer entonces.
+
+**Dos cosas a tener en cuenta**
+1. **Versión de Node.** `tech-stack.md` dice Node 22, y aquí corre Node 26. En 22 la cobertura sigue siendo experimental: hay que mantener el flag `--experimental-test-coverage` y el aviso puede cambiar. Si el equipo usa 22, el flag es obligatorio. Lo que no he comprobado es qué ofrece cada versión intermedia.
+2. **Umbral.** Con `--test-coverage-lines=90` (también hay `--test-coverage-branches` y `--test-coverage-functions`) el comando falla si no se llega. Eso permitiría cumplir de verdad la regla 2 de la constitución («`node --test` en verde antes de cada commit») también para la cobertura. Hay que elegir el umbral y, sobre todo, decidir si es bloqueante o solo informativo. Con 3 tests, un umbral alto bloquearía cualquier función nueva sin test.
+
+**Decisiones que quedan abiertas (son tuyas):**
+- ¿Bloqueante o solo informe? Yo empezaría solo informando, con un script `npm test` que ponga el flag.
+- ¿Qué métrica y qué número? Yo pondría líneas, con el umbral cerca de lo actual si luego se quiere bloquear.
+
+Todo lo anterior es consulta: no he tocado nada. Si quieres dejarlo hecho, serían tres cosas: el script `test` en `package.json`, una línea en `tech-stack.md` y, si hay umbral, una línea en la constitución. Es trabajo nuevo, así que pasaría por `sdd-start-feature`. Dime si lo quieres.

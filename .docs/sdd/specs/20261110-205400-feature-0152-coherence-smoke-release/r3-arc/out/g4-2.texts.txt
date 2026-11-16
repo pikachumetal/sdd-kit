@@ -1,0 +1,156 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [28]
+Ahora ensayo el guion tal como lo escribirá la persona: levanto el entorno y compruebo que responde.
+
+--- [38]
+Los cuatro pasos dan el literal de la spec. Paro el entorno, porque no hay `startEnvironment`, y arranco el panel plan B.
+
+--- [52]
+Cierre de la 0010 parado en la validación. No toco nada más hasta que la hagas tú (`validation.mode` es `manual`). La re-revisión sigue en marcha y no sé todavía qué devuelve.
+
+🦆 Cancelar ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro».
+
+**✋ Me salí del plan en…**
+
+- Task 2: usé `node --test --test-concurrency=1` durante la implementación para esquivar una carrera de los tests sobre el almacén compartido en memoria. Es un workaround hasta aislar el almacén por test, y si fuera erróneo la suite tarda el doble. En el cierre corro el gate tal como lo declara `operations.md`, sin esa opción. Abriré su fila de deuda al cerrar.
+
+**Smoke que he corrido** (todo con `ejecución real`, en una sesión mía distinta de la tuya)
+
+| THEN | Resultado |
+| --- | --- |
+| Motivo fuera de la lista | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | el mismo literal |
+| Motivo válido | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `faf5a01`, 0,1 s.
+- Gate E2E (`node e2e/run.mjs`): pendiente, corre después de tu respuesta.
+
+**Sin probar**
+
+- **Re-revisión:** `faf5a01` es un commit solo de documentación (`tasks.md`, 17 líneas) posterior a la revisión final. Lo reviso con una re-revisión única en segundo plano. Si devuelve algo que haya que arreglar, la validación vuelve a empezar.
+
+**Sobre la tanda de E2E: no la pongo en segundo plano mientras pruebas.**
+- Usa el mismo servidor del puerto 56559 que tu guion, así que la tanda chocaría con tus datos y lo pararía al acabar.
+- Corre después de tu respuesta, así no esperas ahora. Será esta, sin `E2E_TRACE=light` (el gate va literal):
+
+```
+# Tanda: 3 tests cambiados ×3 + 2 más de e2e/cancel.e2e.mjs ×1 = 11 ejecuciones · ~1,4 min (7,6 s × 11 ejecuciones ÷ 1 worker; estimado, sin pasada previa)
+```
+
+- Los tres cambiados llevan «motivo» en el nombre y salen con `--grep=motivo --repeat-each=3`. Los otros dos son `anula una reserva` y `anular sin reserva avisa`.
+- `free.e2e.mjs` no lo toca la rama, así que queda fuera.
+
+Panel: plan B en http://127.0.0.1:51374/ (esa página no ve la app: si un paso falla, cuéntamelo en el comentario)
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2 (en PowerShell, `curl.exe` en vez de `curl`). Usa tu propia sesión `validacion`; el orden importa porque la reserva solo se cancela una vez:
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -H "x-session: validacion" "http://localhost:56559/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -H "x-session: validacion" "http://localhost:56559/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+3. Motivo válido → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -H "x-session: validacion" "http://localhost:56559/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+4. Listado → «Norte lun — sala ocupada»
+
+```
+curl -H "x-session: validacion" "http://localhost:56559/run?cmd=canceladas"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
+--- [53]
+### Finding Verdicts
+- Ninguno abierto. La revisión previa sobre 2ea0b53 no dejó hallazgos.
+
+### New Breakage in the Fix Diff
+- **Important**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:10`: la Task 1 figura con el commit `2ea0b53`, pero se implementó en `3793255` («feat(bookings): cancelar con un motivo de la lista», que toca `src/app.js` y `test/cancel.test.js`). `2ea0b53` es el commit de la Task 2 («listado de canceladas con su motivo»). El registro asigna mal el commit de la Task 1 y rompe la trazabilidad de la que tira el cierre. La línea debería decir `3793255`.
+- **Important**, `tasks.md:17`: el ruling no está bien formado.
+  - Conducta: está escrita (`node --test --test-concurrency=1` en el gate).
+  - Qué obtiene quien usa el software: no lo dice. Solo habla de la suite.
+  - Coste si es erróneo: «la suite tarda el doble» es el coste de aplicarlo, no el de que esté equivocado. Si el diagnóstico es erróneo, el coste es que el gate sigue frágil y el problema real queda tapado.
+- **Important**, `tasks.md:17`: el ruling no encaja con el resto de la rama.
+  - La conducta no está aplicada en ningún sitio. `plan.md:50` mantiene el gate `node --test`, sin enmienda. `package.json` sigue con `"test": "node --test test/"`. Ningún fichero del árbol contiene `concurrency`, salvo el propio `tasks.md`.
+  - El diagnóstico no cuadra con el código. `bookings` es un array del módulo (`src/app.js:4`). Si `node --test` aísla cada fichero en su propio proceso, que es lo habitual en las versiones actuales de Node, los ficheros no comparten almacén y `--test-concurrency=1` no cambia nada. Dentro de un fichero, los tests ya corren en orden. Esto lo deduzco del código; no he ejecutado nada.
+  - El acoplamiento real es de orden dentro del mismo fichero. `test/cancel.test.js:13-14` (`canceladas` → «Norte lun — sala ocupada») depende de que antes haya corrido el test de `:5-6`. El ruling describe una «carrera» que su propia medida no resuelve.
+- Minor, `tasks.md:13`: la línea registra dos ejes revisados y «Arquitectura no (plan)». Al revisor se le dijo que la revisión previa «salió limpia en los tres ejes». Es coherente con un plan Native de dos tasks sin Review Focus (`plan.md:30-32`), pero la línea no dice qué parte del plan justifica saltarse ese eje.
+- Comprobado: el rango es un solo commit (`faf5a01`) que crea un único fichero, `tasks.md` (+17). No toca código, tests, e2e ni configuración.
+- Comprobado: las tasks 1 y 2 con estado `done` coinciden con las dos tasks de `plan.md:36-46` y con los commits de la rama, salvo el hash de la Task 1.
+- Comprobado: la restricción «Texto de la interfaz en castellano» no se ve afectada, porque el rango no toca la interfaz.
+
+### Out-of-Scope Observations
+- `test/cancel.test.js`: ningún test cubre el escenario de la spec «sin `--motivo` responde lo mismo» (`spec.md:54`). El código lo resuelve (`src/app.js:16`, que devuelve `undefined`, y `:20`), pero `spec.md:42` dice que se prueba en ese fichero y no hay test.
+- `test/cancel.test.js:13-14`: el test depende del estado que deja el test de `:5-6`, sobre el almacén en memoria del módulo. Esa es la causa de fondo del ruling, y el ruling la pospone en vez de resolverla.
+- `spec.md:24-25`: la lista de decisiones salta del 1 al 3. Falta la decisión 2 o la numeración está mal.
+
+### Verdict
+**Fix round:** No hay hallazgos previos abiertos, pero el rango introduce tres hallazgos Important, así que no se puede dar por cerrado:
+1. `tasks.md:10`: commit de la Task 1 equivocado (`2ea0b53` en lugar de `3793255`).
+2. `tasks.md:17`: al ruling le falta qué obtiene quien usa el software, y el coste que indica no es el de que sea erróneo.
+3. `tasks.md:17`: la conducta del ruling no está aplicada en el plan ni en `package.json`, y su diagnóstico no corresponde al acoplamiento de orden real de `test/cancel.test.js`.
+
+El Minor de `tasks.md:13` (eje de Arquitectura sin justificar) también queda abierto.
+
+--- [55]
+La re-revisión de `faf5a01` ha vuelto. Solo toca documentación, así que tu guion sigue valiendo tal cual: el código y los tests no se han movido. Sigo esperando tu "validado" o el paso que falle.
+
+Ha dejado tres hallazgos Important, todos en `tasks.md`, y un Minor:
+
+- **Commit de la Task 1:** figura `2ea0b53`, pero se hizo en `3793255`. Es un error de registro y lo corrijo.
+- **Ruling de `--test-concurrency=1`, mal formado:** no dice qué cambia para quien usa el producto, y el coste que da es el de aplicarlo, no el de equivocarse. Lo reescribo.
+- **Ruling sin efecto real:** esa opción no está aplicada en ningún sitio (ni en el plan ni en `package.json`). Además, el reviewer duda del diagnóstico por lo que ve en el código, aunque no ha ejecutado nada. Dice que `node --test` ya aísla cada fichero y que `test/cancel.test.js:13-14` depende del orden del test anterior. No lo he comprobado yo. Lo apunto como deuda con ese acoplamiento de orden como causa probable.
+- **Minor:** la línea de «Arquitectura no (plan)» no dice qué la justifica.
+
+Esos arreglos van en el cierre, en el paso del registro, y no antes de que valides. Los hará un solo commit de documentación, que revisaré en el hilo. Después de tu respuesta paso, en este orden:
+
+1. Gate completo, literal: `node --test test/ && node e2e/run.mjs`.
+2. La tanda de 11 ejecuciones.
+3. Registros, deuda, ADR, `sdd merge --sync` y el merge a `develop`.
+
+Fuera del rango, el reviewer señala dos cosas más:
+
+- No hay test para «sin `--motivo`». Yo sí lo ejecuté en tu paso 2.
+- La spec numera las decisiones 1 y 3, sin la 2. Lo dejo anotado para la 0010 y no lo toco.
+
+--- [56]
+El servidor del panel plan B (`sdd validation serve`) se ha parado por el límite de tiempo de segundo plano. La página http://127.0.0.1:51374/ ya no responde.
+
+Tu guion sigue valiendo: el panel era solo para marcar los pasos. Puedes validar en el chat diciéndome "validado" o qué paso falla. Si prefieres el panel, dímelo y lo relanzo. Avisa antes de marcar nada en él, porque no leeré sus marcas hasta que lo relance.
+
+Sigo parado en tu validación. No he empezado el gate E2E, la tanda ni los registros.
+

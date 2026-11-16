@@ -1,0 +1,2 @@
+Task 1: Ruling: el código de horas llegó escrito antes del test (sin commitear, del dev-lead) — lo aparté con stash en vez de borrarlo, escribí el test desde los THEN de la spec, vi RED (ambos 'salas'), restauré el código byte a byte y vi GREEN — si me equivoco, el test pudo quedar influido por haber leído el código antes
+Task 1: complete (commits e3bf9a9..9bb6131, tests: node --test test/horas.test.js → ℹ duration_ms 146.8579)

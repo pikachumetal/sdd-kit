@@ -1,0 +1,106 @@
+
+>>> Read: <run>\repo\.temp\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Comando `informe`
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/informe.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/informe.test.js`
+7	**Interfaces**:
+8	- Consume: el array `bookings` de `src/app.js` (`{ room, day, slot, status, reason }`).
+9	- Produce: `run('informe', [])` → texto con una línea por sala (`Norte: 2 canceladas`), una por cancelada (`  lun 10:00-12:00 — sala ocupada`) y `Total: <n> canceladas`.
+10	**Ficheros**: `src/app.js`, `test/informe.test.js`
+11	
+12	## 3. Validación final
+13	
+14	- [ ] Gate de cierre: `node --test`
+15	
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | head -60; git ls-files
+<<< ✖ informe lista las canceladas por sala con su motivo y el total (3.7507ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.7786
+
+✖ failing tests:
+
+test at test\informe.test.js:5:1
+✖ informe lista las canceladas por sala con su motivo y el total (3.7507ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'salas'
+  - 'Norte: 2 canceladas\n' +
+  -   '  mié 12:00-13:00 — otro\n' +
+  -   '  vie 10:00-12:00 — sala ocupada\n' +
+  -   'Sur: 1 canceladas\n' +
+  -   '  mar 09:00-10:00 — cambio de planes\n' +
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+4	const bookings = [
+5	  { room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' },
+6	  { room: 'Sur', day: 'mar', slot: '09:00-10:00', status: 'cancelled', reason: 'cambio de planes' },
+7	  { room: 'Norte', day: 'mié', slot: '12:00-13:00', status: 'cancelled', reason: 'otro' },
+8	  { room: 'Norte', day: 'vie', slot: '10:00-12:00', status: 'cancelled', reason: 'sala ocupada' },
+9	];
+10	
+11	function freeRooms(slot) {
+12	  return rooms.f
+
+>>> Read: <run>\repo\test\informe.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('informe lista las canceladas por sala con su motivo y el total', () => {
+6	  assert.equal(
+7	    run('informe', []),
+8	    [
+9	      'Norte: 2 canceladas',
+10	      '  mié 12:00-13:00 — otro',
+11	      '  vie 10:00-12:00 — sala ocupada',
+12	      'Sur: 1 canceladas',
+13	      '  mar 09:00-10:00 — cambio de planes',
+14	      'Total: 3 canceladas',
+15	    ].join('\n'),
+16	  );
+17	});
+18	
+
+>>> Grep: sin cancel|0 cancel|ninguna|vací
+<<< .docs\sdd\specs\20261009-100000-feature-0012-cancelled-report\spec.md:25:2. Sin canceladas, `informe` responde «sin canceladas».
+.docs\sdd\specs\20261009-100000-feature-0012-cancelled-report\plan.md:33:- ninguna: comprobado
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/informe.test.js 2>&1 | grep -E "^ℹ (pass|fail)|✖"; git add src/app.js test/informe.test.js && git commit -q -m "feat: comando informe de reservas canceladas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< ℹ pass 1
+ℹ fail 0
+bf08062 feat: comando informe de reservas canceladas
+
+>>> Write: <run>\repo\.temp\sdd\plan\task-1-report.md
+<<< File created successfully at: <run>\repo\.temp\sdd\plan\task-1-report.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (10 turnos, 0.15083870000000002 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** bf08062 feat: comando informe de reservas canceladas
+- **Tests:** `node --test test/informe.test.js` pasa 1/1 y la salida está limpia. Antes de implementar fallaba, como se esperaba: `run('informe')` devolvía `'salas'`.
+- **Concerns:**
+  - El caso «sin canceladas» (spec, punto 2) lo implementé sin test. No puedo tocar `test/informe.test.js`, así que no lo verifiqué.
+  - Cuando hay canceladas, el informe omite las salas que no tienen ninguna. La spec no dice qué hacer en ese caso, y tampoco hay test.
+  - `bookings` es estado global mutable, así que un test no puede vaciarlo para probar el caso sin canceladas.
+- **Informe:** <run>\repo\.temp\sdd\plan\task-1-report.md

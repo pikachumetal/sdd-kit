@@ -1,0 +1,56 @@
+--- [2]
+Using sdd-kit:sdd-start-feature, porque es una funcionalidad concreta con comportamiento por decidir.
+
+--- [5]
+Ahora: leer el contexto SDD del proyecto (constitution, mission, tech-stack, roadmap). Queda: la pregunta de enrutado y, tras ella, la spec; ~5 min.
+
+--- [11]
+Ahora: confirmar carril, modo y perfil, en una pregunta sola. Queda: rama, spec con brainstorming y gate de aprobación, ~10 min hasta que tengas que validar la spec.
+
+He leído constitution, mission, tech-stack y roadmap. Esto es lo que he sacado:
+
+- **Carril: feature, no patch.** Hay que decidir cómo se comporta la lista de espera, y eso no lo fija tu petición. Es qué pasa al reservar una sala ocupada, cómo te apuntas y qué ocurre cuando se libera.
+- **Modo: full, no lite.** Lite exige cumplir todas estas condiciones, y aquí fallan dos:
+  - ✅ El flujo existe y se puede leer: `reservar` y `cancelar` en `src/app.js`.
+  - ❌ Cambia contratos públicos: añade comportamiento nuevo a la CLI (`reservar` con sala ocupada, y probablemente un comando para ver o salir de la lista).
+  - ❌ Cambia el esquema de datos: hace falta una estructura nueva para guardar la lista de espera.
+  - ✅ Cabe en un solo módulo: todo vive en `src/app.js`.
+  - ➖ `estimation.md` no existe, así que esa condición no aplica.
+- **Tamaño: no la parto.** Preveo 3 tasks (apuntarse a la lista, promoción al cancelar, consulta o baja), todas en la misma superficie y sin migración.
+- **Perfil: `delegate`**, que sale del default de `sdd-kit.json`. No hay `sdd-kit.local.json` ni `control.profile` en el proyecto ni en el roadmap. Con `delegate` paro en la spec, en los desvíos y en la validación, y no en el plan.
+- **Enunciado:** no estás en una rama `feature/<id>` ni hay fila en el roadmap. Parto de tu frase: «lista de espera cuando la sala que quiero está ocupada». Reservaré el id con `Get-NextSddId.ps1 -Reserve` y crearé `feature/<id>-lista-espera`.
+
+¿Confirmas feature en modo full con perfil `delegate`? Si vas a estar ausente, te ofrezco también «apruebo la spec por delegación, nos vemos en la validación», que me deja aprobar la spec yo y no parar ahí. Sigo parando en la validación del trabajo.
+
+--- [13]
+Ahora: reservar el id y crear la rama. Queda: spec con brainstorming y gate de aprobación, ~10 min.
+
+--- [17]
+Rama `feature/0008-lista-espera` creada con el id 0008 reservado. Ahora invoco brainstorming para la spec.
+
+--- [20]
+Ahora: entrevista de diseño para la spec. Queda: spec, repaso de coherencia y aprobación, ~8 min. Uso `sdd-grilling` para las preguntas, como pide el kit.
+
+--- [23]
+❓ **Qué pasa con tu lugar en la lista cuando la sala se libera**
+
+Esto es lo que he encontrado en `src/app.js`:
+
+- Las reservas son un array en memoria (`bookings`). Cada ejecución de la CLI arranca desde cero.
+- `reservar` solo implementa `--cada-semana`, que devuelve un texto fijo. Hoy no existe ni la reserva de una franja ni la detección de «ocupada».
+- `cancelar` tampoco libera nada de verdad: devuelve `cancelada <día> <hora>`.
+- La misión dice que la usas solo tú. La lista no sirve para que otra persona espere, sino para que tú encadenes alternativas.
+
+La lista tiene que nacer ocupada (`reservar` sobre una franja con reserva) y salir en `cancelar`. Lo que cambia todo lo demás es qué ocurre cuando la sala se libera:
+
+🅰️ **Promoción automática.** Al cancelar la reserva que ocupaba la sala, la primera en espera pasa a ser reserva.
+- `reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`
+- `cancelar lun 10:00` → `cancelada lun 10:00; Norte lun 10:00-12:00 reservada desde la lista de espera`
+- Coste: la reserva se crea sin que la confirmes, así que podrías encontrarte una reserva que ya no quieres. Se resuelve cancelándola.
+
+🅱️ **Solo aviso.** Al cancelar, la CLI dice que alguien esperaba esa franja, y tú reservas a mano.
+- `cancelar lun 10:00` → `cancelada lun 10:00; en espera: Norte lun 10:00-12:00 (reserva tú)`
+- Coste: como la CLI no corre en segundo plano, el aviso solo sale si tú ejecutas `cancelar`. Si la cancelación llega por otro lado, la lista no avisa de nada.
+
+➡️ **Recomiendo 🅰️**, porque `salas` no tiene proceso residente ni correo (el correo es la fila 1 del roadmap, aún sin hacer). Con 🅱️, la lista de espera dependería de que te acuerdes de mirarla. A cambio, aceptas que una reserva pueda aparecer sola; con 🅰️ la cancelas y listo.
+

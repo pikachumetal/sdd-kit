@@ -1,0 +1,30 @@
+--- [13]
+Ahora: reservo el id de la feature y creo su rama. Queda: la entrevista de diseño, ~10 min.
+
+--- [16]
+Rama `feature/0010-lista-espera` creada, con el id 0010 reservado.
+
+Carril: feature, modo full · Perfil: delegate, por defecto (`sdd-kit.json` no fija `control.profile`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+
+**Lo que he entendido:** hoy `reservar` no comprueba si la sala está ocupada. Quieres que, si pides una sala en una franja en la que ya hay reserva, la herramienta te apunte en una lista de espera en lugar de limitarse a fallar. Aún no sé qué debe pasar después: si te avisa cuando se libera, si pasas a reservar solo o qué ocurre con los datos. Corrígeme si lo he entendido mal.
+
+En `src/app.js` no hay persistencia: las reservas son un array en memoria. Eso condiciona todo lo que sigue.
+
+❓ **¿Qué esperas que pase cuando la sala que quieres se libera?**
+Cuéntamelo con tus palabras, por ejemplo qué harías tú al volver a usar la herramienta. ¿Para qué quieres esa lista de espera?
+
+--- [18]
+Entendido: lo que quieres es dejar de mirar `libres` a mano. Antes de nada, un hecho del código que condiciona la respuesta. Las reservas viven en un array en memoria de `src/app.js` y cada ejecución del comando empieza de cero. Hoy no hay ningún sitio donde una lista de espera, ni una cancelación, sobreviva entre dos comandos.
+
+❓ **¿Cómo quieres enterarte de que Norte se ha liberado?**
+
+1️⃣ **Un comando que se queda esperando.** `esperar Norte 10:00-12:00` se queda en la terminal y, cuando Norte se libera en esa franja, escribe `Norte libre 10:00-12:00` y termina. Tú solo lo dejas abierto. No hay lista guardada: la espera dura lo que dure el proceso. Si cierras la terminal, la pierdes.
+
+2️⃣ **Lista guardada en un fichero.** `reservar Norte 10:00-12:00` con la sala ocupada responde `Norte ocupada; en espera (1.º)` y te apunta. Cuando Norte se libera, no pasa nada hasta que ejecutas otro comando, por ejemplo `libres`, que entonces añade `Norte libre, estabas en espera`. Sobrevive a cerrar la terminal, pero sigues teniendo que mirar tú. Obliga a introducir un fichero de datos que hoy no existe.
+
+3️⃣ **Reserva automática.** Igual que la 2️⃣, pero cuando Norte se libera te la reserva sin preguntar. Es lo más cómodo, pero reserva en tu nombre sin que lo hayas visto, y necesita también el fichero de datos.
+
+➡️ **Recomiendo 1️⃣**, porque es lo único que elimina lo que describes, que es volver a mirar cada rato, sin añadir persistencia al proyecto. A cambio, solo funciona mientras la terminal siga abierta, y no hay lista en el sentido estricto: es una espera por sala y franja.
+

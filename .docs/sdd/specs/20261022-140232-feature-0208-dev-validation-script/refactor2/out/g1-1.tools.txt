@@ -1,0 +1,114 @@
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: cd "<run>/repo" && git status --porcelain && echo "--- check" && node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" merge --check --project-root "$PWD"; echo "exit $?"; echo "--- worktrees"; git worktree list; echo "--- files"; ls .docs/sdd .docs/sdd/specs 2>&1 | head -50; cat .docs/sdd/sdd-kit.json
+<<< --- check
+destino: listo: 'develop' irá en el worktree temporal '<run>\merge-0008-cancel-missing'
+exit 0
+--- worktrees
+<run>/repo a04b4f0 [feature/0008-cancel-missing]
+--- files
+.docs/sdd:
+changelog.md
+constitution.md
+mission.md
+roadmap.md
+sdd-kit.json
+specs/
+tech-stack.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+20261010-090000-patch-0008-cancel-missing/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "de
+
+>>> Bash: cd "<run>/repo/.docs/sdd" && cat specs/20261010-090000-patch-0008-cancel-missing/patch.md; ls specs/20261010-090000-patch-0008-cancel-missing; git log --stat --format='%h %s' -3 | head -30
+<<< ---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+Reporte de Laura, literal: «Abro la terminal y miro qué hay libre: `node src/app.js libres 10:00-12:00` me da «Sur». Como el miércoles no tengo nada reservado, pruebo `node src/app.js cancelar mie 10:00` y me dice «cancelada mie 1
+
+>>> Read: D:\code\.worktrees\sdd-kit\0208-dev-validation-script\.temp\kit-green\skills\sdd-archive\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 1 of `sdd-archive`, step 7 of `sdd-start-feature`). With `validation.mode: field` none of this runs: no script, browser, panel or environment started to validate.
+4	
+5	## 1. The script
+6	
+7	Each step is an action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in their order: the symptom of `patch.md`
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json; node --test 2>&1 | tail -12
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres 10:00-12:00; node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00; git status --porcelain; grep -n "temp" .gitignore 2>&1
+<<< Exit code 2
+Sur
+no hay reserva mie 10:00
+cancelada lun 10:00
+grep: .gitignore: No such file or directory
+
+>>> Bash: cd "<run>/repo" && mkdir -p .temp/validation && cat > .temp/validation-steps.json <<'EOF'
+[{"id":"1","title":"node src/app.js libres 10:00-12:00 → Sur"},{"id":"2","title":"node src/app.js cancelar mie 10:00 → no hay reserva mie 10:00"},{"id":"3","title":"node src/app.js cancelar lun 10:00 → cancelada lun 10:00"}]
+EOF
+(node "D:/code/.worktrees/sdd-kit/0208-dev-validation-script/.temp/kit-green/cli/bin/sdd.js" validation serve --steps .temp/validation-steps.json --out .temp/validation/0008.json > .temp/serve.log 2>&1 &) ; sleep 3; cat .temp/serve.log
+<<< panel: http://127.0.0.1:8083/
+
+=== RESULTADO (9 turnos, 0.2467186 $)
+Antes de tocar nada falta la validación (`validation.mode: manual`), así que el cierre del patch 0008 se para aquí.
+
+**Pre-checks**
+- El worktree está limpio.
+- `merge --check` da listo: `develop` irá en un worktree temporal.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- `patch.md` está completo (§2–§4). Su única decisión la firma el dev-lead, así que no hace falta escalar a feature.
+- Vuestra rama no tiene `.gitignore`. Ahora mismo `.temp/` (donde está el panel) aparecería como cambio sin commitear. Propongo añadirlo al cerrar.
+
+**Mi smoke:** `node --test` da 4 pasados y 0 fallos, con el test nuevo «cancelar sin reserva avisa». Ensayé los tres pasos del guion tal como los vais a teclear y salen los literales de abajo.
+
+Panel: plan B en http://127.0.0.1:8083/
+Este panel no ve la app, así que si algo falla tendréis que contármelo en el comentario. `cancelar` no escribe nada entre procesos, así que no queda ningún dato que restaurar.
+
+**Guion de prueba**
+1. `node src/app.js libres 10:00-12:00` → «Sur»
+2. `node src/app.js cancelar mie 10:00` → «no hay reserva mie 10:00» (antes decía «cancelada mie 10:00»)
+3. `node src/app.js cancelar lun 10:00` → «cancelada lun 10:00» (la reserva que sí existe sigue cancelándose)
+
+¿Qué has probado? Responde con una de estas tres opciones:
+- `Validado: lo he probado y funciona`
+- `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+- `No funciona`
+
+Hasta que respondas no escribo registros ni hago el merge.

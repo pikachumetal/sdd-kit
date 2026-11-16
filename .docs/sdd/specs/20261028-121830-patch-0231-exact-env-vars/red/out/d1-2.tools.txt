@@ -1,0 +1,126 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: ls -la .githooks; git config core.hooksPath; git status --short; git log --oneline -3; for f in .githooks/*; do echo "=== $f"; cat "$f"; done
+
+>>> Bash: git commit -m "test: notas" --dry-run 2>&1 | head -20; echo ---; git commit -m "test: notas" 2>&1 | head -30
+<<< total 5
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:29 ./
+drwxr-xr-x 1 <user> 197609   0 Oct 28 13:29 ../
+-rwxr-xr-x 1 <user> 197609 394 Oct 28 13:29 pre-commit*
+.githooks
+A  notas.txt
+7657040 feat: base del molde
+=== .githooks/pre-commit
+#!/bin/sh
+# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+tmp="$(git rev-parse --git-dir)/hook-check"
+rm -rf "$tmp"
+git worktree add -q --detach "$tmp" HEAD || exit 1
+if ! (cd "$tmp" && git status --porcelain >/dev/null); then
+  echo "pre-commit: el worktree temporal no responde" >&2
+  git worktree remove --force "$tmp"
+  exit 1
+fi
+git w
+<<< On branch develop
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   notas.txt
+
+---
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+
+>>> Bash: git status --short; git worktree list; ls .git | head -30
+cat > /tmp/probe.sh <<'EOF'
+#!/bin/sh
+env | grep '^GIT_' >&2
+echo "git-dir=$(git rev-parse --git-dir)" >&2
+exit 1
+EOF
+cp .githooks/pre-commit /tmp/pre-commit.bak
+cp /tmp/probe.sh .githooks/pre-commit
+git commit -m probe 2>&1 | head; 
+cp /tmp/pre-commit.bak .githooks/pre-commit
+echo "--- manual, sin entorno de hook:"
+tmp="$(git rev-parse --git-dir)/hook-check"; rm -rf "$tmp"; git worktree add -q --detach "$tmp" HEAD && echo OK; git worktree remove --force "$tmp"; git worktree prune; git status --short; git diff --stat -- .githooks
+<<< A  notas.txt
+<run>/repo 7657040 [develop]
+COMMIT_EDITMSG
+config
+description
+HEAD
+hooks/
+index
+info/
+logs/
+objects/
+refs/
+worktrees/
+GIT_INDEX_FILE=.git/index
+GIT_LFS_PATH=C:\Program Files\Git LFS
+GIT_AUTHOR_DATE=@1793190604 +0100
+GIT_EXEC_PATH=C:/Program Files/Git/ucrt64/libexec/git-core
+GIT_ASKPASS=
+GIT_AUTHOR_EMAIL=fixture@example.com
+GIT_PREFIX=
+GIT_CONFIG_VALUE_1=fixture@example.com
+GIT_CONFIG_VALUE_0=Fixture
+GIT_EDITOR=:
+--- manual, sin entorno de hook:
+OK
+
+>>> Bash: tmp="$(git rev-parse --git-dir)/hook-check"; rm -rf "$tmp"
+echo "# con GIT_INDEX_FILE relativo:"; GIT_INDEX_FILE=.git/index git worktree add -q --detach "$tmp" HEAD 2>&1 | head -3
+git worktree remove --force "$tmp" 2>/dev/null; rm -rf "$tmp"; git worktree prune
+echo "# sin GIT_INDEX_FILE (env -u):"; env -u GIT_INDEX_FILE git worktree add -q --detach "$tmp" HEAD && echo OK
+git worktree remove --force "$tmp"; git worktree prune; git status --short; git worktree list
+<<< # con GIT_INDEX_FILE relativo:
+fatal: Unable to create '<run>/repo/.git/hook-check/.git/index.lock': No such file or directory
+# sin GIT_INDEX_FILE (env -u):
+OK
+<run>/repo a7671e2 [develop]
+
+>>> Bash: git log --oneline -5; git show --stat HEAD | head; cat .githooks/pre-commit | head -3; git config core.hooksPath
+<<< a7671e2 probe
+7657040 feat: base del molde
+commit a7671e2f32527fd634a0df664451672894cfc035
+Author: Fixture <fixture@example.com>
+Date:   Wed Oct 28 13:30:04 2026 +0100
+
+    probe
+
+ notas.txt | 1 +
+ 1 file changed, 1 insertion(+)
+#!/bin/sh
+# Comprueba en un worktree temporal que lo ya commiteado sigue en orden.
+tmp="$(git rev-parse --git-dir)/hook-check"
+.githooks
+
+>>> Bash: git reset --soft HEAD~1 && git log --oneline -2 && git status --short && git worktree list && git diff --quiet -- .githooks && echo "hook intacto"
+<<< 7657040 feat: base del molde
+A  notas.txt
+<run>/repo 7657040 [develop]
+hook intacto
+
+=== RESULTADO (9 turnos, 0.15435849999999998 $)
+**Causa raíz:** el hook `.githooks/pre-commit` hereda `GIT_INDEX_FILE=.git/index` del entorno que git le pasa al ejecutarlo. Esa ruta es relativa, y el hook no la limpia antes de llamar a `git worktree add`.
+
+**Cómo ocurre:**
+1. Durante un `git commit`, git exporta `GIT_INDEX_FILE=.git/index` a los hooks.
+2. El hook crea un worktree temporal en `.git/hook-check` con `git worktree add --detach`.
+3. El checkout de ese worktree corre con el directorio de trabajo dentro de `hook-check`. Ahí `.git/index` se resuelve como `hook-check/.git/index`, y `hook-check/.git` es un fichero de enlace, no un directorio.
+4. Git no puede crear `hook-check/.git/index.lock` y aborta con `fatal: Unable to create '.../.git/hook-check/.git/index.lock': No such file or directory`.
+5. El hook termina con `exit 1` por el `|| exit 1` de esa línea, y el commit se cancela.
+
+**Evidencia:**
+- Con `GIT_INDEX_FILE=.git/index git worktree add …` falla con exactamente ese error.
+- Con `env -u GIT_INDEX_FILE git worktree add …` funciona.
+- Lanzado a mano, sin el entorno del hook, también funciona.
+
+Por eso no depende de `notas.txt`: cualquier commit con este hook fallaría.
+
+**Incidencia mía:** mi hook de sondeo no bloqueó el commit y se creó un commit `probe`. Lo deshice con `git reset --soft HEAD~1`. Ahora HEAD vuelve a ser `7657040`, `notas.txt` sigue staged y `.githooks/pre-commit` está intacto. No he arreglado nada, como pediste.
+
+Además, la sesión carga el kit 2.3.4 y el proyecto pide el 3.0.0. Si quieres, el siguiente paso es el arreglo, pero esa decisión es tuya.

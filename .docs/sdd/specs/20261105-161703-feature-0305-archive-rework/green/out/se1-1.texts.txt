@@ -1,0 +1,78 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [5]
+Árbol limpio, destino listo y ninguna otra rama abierta. Sigo con el spec, la revisión final y la validación.
+
+--- [16]
+No cierro todavía. Con `validation.mode: manual`, «ciérrala» y una revisión limpia son la orden de cerrar, no la validación. Necesito que pruebes tú la 0010 antes de escribir ningún registro. Los pre-checks están bien: el árbol está limpio, el destino `develop` está listo y no hay otras ramas abiertas.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista cerrada (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». El comando `canceladas` lista las canceladas con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: gate con `node --test --test-concurrency=1`. Es un workaround para la carrera de los tests sobre el almacén compartido en memoria, hasta que se aísle el almacén por test. Si fuera erróneo, la suite tarda el doble.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | el mismo mensaje |
+| El listado enseña el motivo | `ejecución real`, en un solo proceso | «Norte lun — sala ocupada» |
+
+El primer THEN lleva `Se valida en: worktree con la base al día`. `develop` ya está dentro de la rama, y esta es la base.
+
+**Suites**
+
+- `node --test --test-concurrency=1`: 5/5 sobre cf872ae, 0,19 s.
+
+**Sin probar**
+
+- `canceladas` lanzado como comando suelto sale vacío, y es correcto. Las reservas viven en memoria y se pierden al acabar cada proceso, así que la cancelación del paso 1 no llega al paso 4. Por eso el listado lo probé con un script de un solo proceso (paso 4).
+
+**Pendiente de mi lado, después de tu respuesta**
+
+- `HEAD` (cf872ae) va 2 commits por delante de lo que revisó la revisión final (a9fa935), con 18 líneas de documentación. Despacharé la re-revisión única de ese tramo y la anotaré en `tasks.md`.
+
+Panel: plan B en http://127.0.0.1:<port>/ — no lo he arrancado porque el guion es corto y va en texto. Si lo prefieres, lo levanto.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar ni parar. Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → responde «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Cancelar sin motivo → responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → imprime «cancelada Norte lun (sala ocupada)» y, debajo, «Norte lun — sala ocupada»
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

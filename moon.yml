@@ -1,0 +1,81 @@
+# Sin shell: en Windows moon envuelve cada tarea en pwsh o powershell.exe, y el repo no depende de PowerShell.
+taskOptions:
+  shell: false
+tasks:
+  # El gate la corre con --affected: cuando cambia el lanzador de sujetos, sus tests o lo que hace envejecer un molde
+  # (el kit que se copia al sujeto y el validador de capacidades).
+  test-headless:
+    command: pnpm
+    args: [--dir, cli, exec, vitest, run, test/kit/headless, --test-timeout, '120000', --maxWorkers, '8']
+    # Fuera de esta tarea, cli/vitest.config.ts excluye los tests de test/kit/headless/ que lanzan procesos.
+    env:
+      SDD_KIT_HEADLESS: '1'
+    inputs:
+      - '/tests/headless/**'
+      - '/tests/batteries/**'
+      - '/cli/test/kit/headless/**'
+      - '/cli/test/kit/process.ts'
+      - '/cli/test/temp-setup.ts'
+      - '/cli/vitest.config.ts'
+      - '/cli/package.json'
+      - '/skills/**'
+      - '/dist/**'
+      - '/build/**'
+      - '/.claude-plugin/**'
+      - '/cli/src/**'
+    options:
+      cache: false
+      mutex: heavy-tests
+  roadmap:
+    command: node
+    args: [cli/bin/sdd.js, roadmap, check, --path, .docs/sdd]
+    options:
+      cache: false
+  # dist/ es lo único que viaja en el plugin; su test en cli:test falla si no es lo que sale de aquí.
+  build:
+    command: node
+    args: [build/dist.ts]
+    options:
+      cache: false
+  # THIRD_PARTY_NOTICES.md y los NOTICE salen de upstream.json, y después reconstruye dist/; su test en cli:test falla si no coinciden.
+  notices:
+    command: node
+    args: [build/notices.ts]
+    options:
+      cache: false
+  upstream:
+    command: node
+    args: [tests/upstream/check.ts]
+    options:
+      cache: false
+  # Lee la fuente con sus inclusiones, sin reconstruir dist/: en el pre-commit, el build taparía un dist/ viejo.
+  skill-size:
+    command: node
+    args: [tests/skill-size/check.ts]
+    options:
+      cache: false
+  # Necesita SDD_UPSTREAM_DIR con los clones de las fuentes.
+  copies:
+    command: node
+    args: [tests/copies/check.ts]
+    options:
+      cache: false
+  # Lee la fuente con sus inclusiones, sin reconstruir dist/, como skill-size.
+  own:
+    command: node
+    args: [tests/own/check.ts]
+    options:
+      cache: false
+  # moon run kit:copies-update -- <fuente> <tag>: sube las copias anotadas de esa fuente con git merge-file.
+  copies-update:
+    command: node
+    args: [tests/copies/update.ts]
+    options:
+      cache: false
+  # moon run kit:dist-compare -- [--base <ref>] <rutas de dist/>…: lo que cambia una anotación en lo que carga el agente.
+  dist-compare:
+    command: node
+    args: [tests/copies/dist-compare.ts]
+    deps: ['~:build']
+    options:
+      cache: false
