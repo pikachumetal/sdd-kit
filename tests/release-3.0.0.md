@@ -2004,7 +2004,10 @@ Enmienda del 2026-11-16: los rojos se arreglan antes del corte y se relanzan sol
 
 | Resultado | Escenarios |
 | --- | --- |
-| Verdes tras el arreglo (4/4 leídos) | propose `cr3`, `d1`, `l1`; archive `c2`, `a6`, `v1b`, `se1`, `g6`, `m3` (salvo L 1/4); implement `ml1`; init `n6`, `n7` (N7d); upgrade `v5`; roadmap `m7` (M7b); interviewer `p2`, `pe`, `fp` (f5); grilling `sk-c` |
+| Verdes tras el arreglo (4/4 leídos) | propose `cr3`, `d1`, `l1`; archive `c2`, `a6`, `v1b`, `se1`, `g6`; implement `ml1`; init `n6`, `n7` (N7d); upgrade `v5`; roadmap `m7` (M7b); interviewer `p2`, `pe`, `fp` (f5); grilling `sk-c` |
 | Verdes por re-juicio con la letra nueva de la fila | retro `r4` (R9); propose `co4`, `p2`, `sp1` (TP), `co6`, `pt1`, `a2`, `a3`; verify `c7`; implement `e1`; interviewer E5 en `fp`, `g3`, `g8`, `p2`; grilling R1 en `g2` |
 | Siguen rojos: filas de bug en `debt.md` «Por triar» (2026-11-16) | propose `f1` 3/4, `id1` 1/4, `k6` 1/4; archive `g4` 1/4, `g3d` 1/4; implement `cp1` 3/4, `p4` 1/4, D de `r1`/`r1b`; verify `c10` 3/4; rubber-duck `w1` 4/4, `s1` 3/4, `l1` 1/4; end-release `r6` 3/4; roadmap `m5` 1/4, `m7` M7 1/4; init `n7` N7a 3/4; grilling `g6` 3/4, `sk` 2/4, `g7` 3/4, `g3` R3 2/4, `g9` R11 |
+| Rojos de la ronda que no llegaron a 4/4 (fila de bug, aunque verdes en el corte) | roadmap `m3` 1/4 (`r2-rmp`); archive `g5` G5c 1/4 (`r-arc`); implement `h2` 1/4 (`r-imp`); archive `m3` L 1/4 (`f4-arc`) |
+| Sin medir o con n = 1 en el corte | archive `g7`, `ci2`, implement `a2` (n = 1: sin RESULTADO el otro sujeto); implement `t3` sin medir (su molde no se arregló); `f5` (`fp`, `l1`) leído por máquina y por `tools.txt` (fila K), sin lector de prosa |
+| Sin destino en la tabla anterior, ya rojos antes | rubber-duck `s2` 1 de 2; interviewer `fp` E0, `g9` E5, `pe` E7 1 de 5 (fila de bug de `sdd-grilling`, feature 0342) |
 | Sueltos de un sujeto, sin arreglo (en el ticket) | L tras un fallo de herramienta en archive `a4`, `a9`, `t3`; verify `v1`, `mp1`; implement `u2`; propose `g1`; y `x1`, `co2p`, `c3`, `g2` de upgrade, `f6` |

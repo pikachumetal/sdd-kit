@@ -39,7 +39,7 @@ Against `sdd-propose` the verb decides: doing it now («añade», «hazme», «a
 2. **What each entry leaves** — the section below that matches.
 3. **Propose and wait** — in `pair` and `delegate`, present the rows, the proposal and the split before writing them, and wait for the user's decision. A «decide tú» or «no hay nadie a quien preguntar» is a delegated decision: write, and leave the decisions you took in the proposal or in the commit body. In `unattended`, the most conservative option, registered the same way.
 4. **Ids** — in `sequence`, the N new ids (N + 1 if there is a proposal) come from **one** reservation: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" id next --project-root "<root>" --reserve --count N`. Without `--reserve` the script only proposes, and another worktree can take the same one. Later rows enter that reservation too, never `B<n>`. In `tracker`, the tracker sets the id; a Later row without ticket takes `0000`. Never a number by eye.
-5. **Check the form** — after writing in the roadmap (in `pair` and `delegate`, only once the user answered step 3) and before committing, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`: it checks `ROADMAP.md` and `debt.md`.
+5. **Check the form** — after writing in the roadmap and before committing, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`: it checks `ROADMAP.md` and `debt.md`.
 A failure on a line you wrote you fix in the roadmap, never in the validator. A failure on a line you didn't touch you don't fix, and it doesn't stop you: your final message lists them and says how many, as inherited form (`tests/release-close-roadmap-red.md`, K1 and P3).
 6. **Publish the reservation** — run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap publish --project-root "<root>" --message "<message>" <the paths you touched>`: `ROADMAP.md` and `.docs/sdd/steering/debt.md` (plus the `proposal.md` if there is one). It commits only those files in the integration branch, with the lock of `sdd merge`, in the worktree where it is checked out or in a temporary one if it is in none. The branch comes from `merge.into` in `sdd-kit.json`, or from `--into`. Until that commit the reservation doesn't exist for the other worktrees; for another clone, until its start runs `sdd id claim`.
 7. **Close** — say which row goes first and give its launch prompt, traced from [launch-prompt-template.md](../sdd-templates/templates/launch-prompt-template.md), also with «apunta, no lo arranques»: the prompt starts nothing. A triage that left no row says where each item went instead.
@@ -87,7 +87,7 @@ First thing in this entry: read [references/prepare-release.md](references/prepa
 
 ### Triage
 
-Triage decides the state of each item of the technical debt (`debt.md`). First, run `sdd roadmap check`: each «En espera» row it warns expires is proposed for discarding, with reason `caducada`; its count decides, not yours. Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
+Triage decides the state of each item of the technical debt (`debt.md`). First, run `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`: each «En espera» row it warns expires is proposed for discarding, with reason `caducada`; its count decides, not yours. Each item of «Por triar» gets exactly one of three outcomes. Step 3 of the checklist applies: you propose and wait; with «decide tú», you write and leave what was decided in the commit body.
 
 - **«En espera»** — with «Causa» and «Falta» `reproducirlo` or `2.º caso`.
 - **«Lista»** — with «Causa», «Evidencia» and «Destino».
@@ -119,7 +119,7 @@ The rules:
 | Rationalization | Reality |
 | --- | --- |
 | «Each feature gets its spec and plan when it starts; I leave the common decisions in a block of the roadmap» | The roadmap is the index every skill reads. The rules and their why go to `proposal.md`, with examples with data. |
-| «The Azure item and the row are the same; I keep one row» | Deleting or replacing a row is the user's decision, not a cleanup (p3). Ask about the duplicate. |
-| «It's an epic; it gets split when it starts» | When it starts nobody looks at the whole roadmap. The split is proposed now, so the PM creates the children (p3). |
-| «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before (p10). |
+| «The Azure item and the row are the same; I keep one row» | Deleting or replacing a row is the user's decision, not a cleanup. Ask about the duplicate. |
+| «It's an epic; it gets split when it starts» | When it starts nobody looks at the whole roadmap. The split is proposed now, so the PM creates the children. |
+| «The proposal's example was incomplete; I rewrite it» | The proposal is historical: the change goes to «Enmiendas» with its date. Rewriting it erases what was agreed before. |
 | «The note is on the topic of the feature in flight; I group it in its row» | Its branch is editing that row and that spec. Grouping it there causes the conflict on closing and changes an approved scope: it goes to a new row «tras» it. |

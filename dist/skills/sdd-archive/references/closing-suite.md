@@ -4,7 +4,7 @@ Steps 1 and 6 of `sdd-archive`. With E2E fields in `operations.md` §Testing («
 
 ## In the validation
 
-If the suite already ran for this close (the validation names its sha; the closing commit moves `HEAD`, not that), don't run it again, whatever the base did: step 6 repeats only what the base brought. If it hasn't run, with another branch open (item 3 of step 0) or the base ahead (`git rev-list --count HEAD..<remote>/<merge.into>` > 0 after `git fetch`), step 6 runs it once, and your validation record says it runs on the sync merge; otherwise run the closing gate here. Here, before the closing commit, nothing else of the suite runs.
+If the suite already ran for this close (the validation names its sha; the closing commit moves `HEAD`, not that), don't run it again, whatever the base did: step 6 repeats only what the base brought. If it hasn't run, with another branch open (item 3 of step 0) or the base ahead (`git rev-list --count HEAD..<remote>/<merge.into>` > 0 after `git fetch`), step 6 runs it once, nothing of it runs before, and your validation record says it runs on the sync merge; otherwise run the closing gate here.
 
 ## What runs
 

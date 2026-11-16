@@ -13,7 +13,7 @@ Each step is a numbered action in the app with the scenarios' data and its expec
 
 ## 2. The environment
 
-The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd/sdd-kit.local.json` it must be up: if nothing you started answers (a closing gate that doesn't raise it), raise it with `env:setup` of `## Entornos` in `operations.md` if the section exists, otherwise «Arrancar»; check it answers, and open with its URL or port and the command that stops it. Without the key, or `false`, stop what you started (`sdd-implement`, «Processes you start») and open with how to start it. With no command declared, say so. Up or down, the panel of §4 goes up. An app you also run from the CLI still has one if «Arrancar» declares it.
+The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd/sdd-kit.local.json` it must be up: if nothing you started answers (a closing gate that doesn't raise it), raise it with `env:setup` of `## Entornos` in `operations.md` if the section exists, otherwise «Arrancar»; check it answers, and open with its URL or port and the command that stops it. Without the key, or `false`, stop what you started (`sdd-implement`, «Processes you start») and open with how to start it. With no command declared, say so. An app you also run from the CLI still has one if «Arrancar» declares it.
 
 ## 3. Hands off
 

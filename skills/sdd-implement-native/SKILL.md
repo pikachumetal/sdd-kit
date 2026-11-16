@@ -321,7 +321,7 @@ Then invoke `sdd-archive` with `Skill`: its first step is the validation.
 | "Subagents are slow and expensive, I'll skip the final review too" | Inline already removed the per-task reviewers. One review of the whole branch is the floor, not the ceiling. |
 | "The reviewer said Minor, so it's Minor" | The label graded the spec's silence. Grade what the person gets. Re-grade, then gate. |
 <!-- kit: 0343 · sustituye: «"The fix is obvious…a diff and a hope.» -->
-| "The dev-lead said no tests, so I commit and close the task" | Their order is an exception to `sdd-tdd`, not a close: without its test the task stays uncommitted and open, and your message says the test is missing. |
+| "The dev-lead said no tests, so I commit and close the task" | Their order lifts the test-first rule of `sdd-tdd`, not the test: without its test the task stays uncommitted and open, and your message says the test is missing. |
 <!-- kit: fin -->
 <!-- kit: 97ec9c02 · sustituye: «your partner did not ask for. Ledger them; your partner decides.» -->
 | "I'll fix the minors too while I'm in there" | Every minor you fix is a test, a fix, and a suite run that only the final review's `review.minors: fix` asks for; otherwise, ledger them. |

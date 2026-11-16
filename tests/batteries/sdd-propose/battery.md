@@ -183,8 +183,8 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 
 
 | Regla | Origen | Escenarios |
-| Spec y plan cargan `sdd-templates` (paso 4 y paso 5: «traced from `spec-template.md` / `plan-template.md` of the `sdd-templates` skill») | feature 0343, decisión 8: carga de la skill de plantillas en la batería del corte; RED, `sp1`, `co4` y `p2` de la fase `z-prp` de la 0152 releídos con TP | sp1, co4, p2 |
 | --- | --- | --- |
+| Spec y plan cargan `sdd-templates` (paso 4 y paso 5: «traced from `spec-template.md` / `plan-template.md` of the `sdd-templates` skill») | feature 0343, decisión 8: carga de la skill de plantillas en la batería del corte; RED, `sp1`, `co4` y `p2` de la fase `z-prp` de la 0152 releídos con TP | sp1, co4, p2 |
 | `coherence-pass.md` (antes, paso 4): al retirar algo con pasos numerados, `grep` de esos pasos | ticket de la feature 0206 §4 (feature 0281): RED `co6` 1/3; GREEN y REFACTOR 1 1/2, buscando solo el nombre; REFACTOR 2, la orden con su `grep`, 2/2 (`tests/coherence-pass-0281-green.md`) | co6 |
 | Paso 4 (sin regla propia): lo que el Scope añade y una capacidad describe entra en el delta | ticket de la feature 0116 §1 (feature 0281): RED `co5` limpio 6/6 en dos moldes (`tests/coherence-pass-0281-red.md`); el caso de campo fue en una sesión larga | co5 (control) |
 | `plan-writing.md`, sin regla propia: un paso de RED limpio remite a la marca, y §4 abre el molde que da por cubierto un THEN | tickets de las features 0276 §2, 0277 §5 y 0282 §2 (feature 0271): RED `cr2` y `cr3` limpios 3/3, salen con un ruling; CR2B, posible falso negativo en sesión larga | cr2, cr3 (control) |
