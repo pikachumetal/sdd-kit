@@ -1,0 +1,83 @@
+--- [12]
+# Review de la feature 0021: eje Spec (`071eb79`)
+
+`071eb79` cubre la primera mitad de lo pedido: `anular` exige motivo y lo devuelve en la respuesta. Pero el correo de anulación sigue saliendo, `anular-todas` sigue anulando sin motivo, el código escribe en disco en contra de la ADR 0003 y de la spec, y `libres` cambia su salida sin que nadie lo haya pedido. El test que fija el Review Focus no existe. **No está listo para merge.**
+
+### Strengths
+- **El motivo es obligatorio en `anular`.** `voidBooking` comprueba el motivo antes de nada (`src/app.js:30`) y devuelve «falta el motivo» con el texto exacto de la decisión ✋1.
+- **El motivo viaja con la reserva**, como pide el Approach: `booking.reason = reason` (`src/app.js:34`).
+- **El THEN principal tiene su test.** `test/void.test.js` comprueba «anulada Norte lun (avería)» a través de `run('anular', …)`, que es la vía que nombra «Dónde se prueba».
+- **Restricciones de código:** el texto de la interfaz está en castellano y no hay comentarios.
+
+### Issues
+
+#### Critical (Must Fix)
+
+**1. El correo de anulación sigue saliendo.**
+- **Dónde:** `src/app.js:35`, `notifyByMail(\`anulada ${room} ${day}\`)`.
+- **Qué falla:** el delta lo marca como **REMOVED**, pero la llamada sigue en `voidBooking`. Cada anulación todavía se mete en `outbox`.
+- **Por qué importa:** contradice el requisito que se elimina y la decisión del dev-lead «El correo de anulación desaparece».
+- **Cómo arreglarlo:** quitar la llamada. Si `notifyByMail` y `outbox` se quedan sin uso, quitarlos también. Añadir un test que compruebe que `outbox` no crece al anular.
+- **Gap:** `contradicts`.
+- **Origen:** REMOVED «Las anulaciones se avisan por correo» y la decisión del dev-lead nº 2.
+
+#### Important (Should Fix)
+
+**2. El código guarda las anulaciones en disco.**
+- **Dónde:** `src/app.js:1` (`import { writeFileSync } from 'node:fs'`), `src/app.js:25-27` (`saveVoided`) y `src/app.js:36`.
+- **Qué falla:** cada anulación escribe `data/anuladas.json`. La Confirmación de la ADR 0003 dice: «`src/` no importa `node:fs` ni ningún paquete de base de datos». Además, el Scope de la spec dice «No entra: guardar las anulaciones».
+- **Efecto añadido:** el test tiene que crear `data/` (`test/void.test.js:6`) y deja un fichero en el disco. Eso rompe la consecuencia de la ADR «los tests no limpian nada».
+- **Por qué importa:** si `data/` no existe, `anular` lanza `ENOENT` en la terminal del usuario.
+- **Cómo arreglarlo:** quitar `saveVoided`, el import y el `mkdirSync` del test.
+- **Gap:** `contradicts`.
+- **Origen:** la Confirmación de la ADR 0003 y el Scope de la spec.
+
+**3. Decisión del dev-lead cubierta a medias.**
+- **La decisión:** «Anular pide motivo en las dos vías, `anular` y `anular-todas`».
+- **Lo que la regla deja fuera:** `anular-todas`. La línea `src/app.js:52` sigue llamando a `voidAll()` sin motivo, y `voidAll` (`src/app.js:40-44`) no ha cambiado. `anular-todas` anula todas las reservas activas sin pedir motivo, que es justo lo que se quería evitar con «que no se cuele ninguna sin motivo».
+- **Cómo arreglarlo:** pasar `reasonOf(params)` a `voidAll`, devolver «falta el motivo» si no llega y guardar `reason` en cada reserva. Añadir un test.
+- **Gap:** `partial`.
+- **Origen:** la decisión del dev-lead nº 1 y el Scope («`anular-todas --motivo <texto>`»).
+
+**4. Review Focus sin test.**
+- **La línea:** `anular Norte lun` sin `--motivo` → «falta el motivo» · Task 1, `pide motivo al anular`.
+- **Qué falla:** el código sí da ese comportamiento (`reasonOf` devuelve `undefined` y la línea 30 corta). Pero el test `pide motivo al anular` no está en `test/void.test.js`, y el AND del delta queda sin verificación.
+- **Cómo arreglarlo:** añadir `assert.equal(run('anular', ['Norte', 'lun']), 'falta el motivo')`.
+- **Gap:** `partial`.
+- **Origen:** el AND del ADDED «Anular pide un motivo» y el Review Focus.
+
+**5. `libres` cambia su salida sin delta.**
+- **Dónde:** `src/app.js:47-50`. Ahora devuelve `${n} libres: …`.
+- **Qué falla:** la capacidad `availability` cambia de comportamiento y la spec no tiene ninguna subsección para ella. Su requisito «Libres lista las salas sin reserva activa» espera la respuesta «Sur».
+- **Por qué importa:** rompe el test existente `test/app.test.js:5-7`, que espera `'Sur'` y recibirá `'1 libres: Sur'`. La concordancia «1 libres» también es incorrecta.
+- **Cómo arreglarlo:** revertir el cambio, o, si el dev-lead lo quiere, abrir un MODIFIED en `availability`.
+- **Gap:** `unrequested`, y contradice el requisito vigente de `availability`.
+- **Origen:** la capacidad `availability`.
+
+#### Minor (Nice to Have)
+
+**6. El orden de los argumentos de `anular` es frágil.**
+- **Dónde:** `src/app.js:51`.
+- **Qué falla:** si `--motivo` va antes que la sala o el día, se usa como sala o como día. Por ejemplo, `anular Norte --motivo avería` responde «sin reserva Norte --motivo», cuando lo esperable sería avisar de que falta el día.
+- **Gap:** `partial`. Es lo que esperaría una persona razonable.
+
+### Declined to judge
+- **`cancelar` y `reservar` no están en `run`.** Devuelven «salas», así que `test/cancel.test.js` y el segundo test de `test/app.test.js` fallan. Ya era así en `490efd5` y el diff no lo toca.
+- **`.docs/sdd/capabilities/bookings.md` no está actualizado.** Sigue diciendo que se manda el correo. Lo dejo aparte porque la consolidación de la capacidad corresponde al archive, no a este diff.
+- **Comprobar el motivo antes de buscar la reserva.** `anular Sur mar` sin motivo responde «falta el motivo» y no «sin reserva». La spec no dice nada y cualquiera de los dos órdenes es razonable.
+- **Un motivo de varias palabras sin comillas.** `--motivo fuga de agua` solo toma «fuga». Las comillas son responsabilidad de la shell y la spec no lo trata.
+
+### Not verified
+- **Que la suite pase:** no verificado, porque las instrucciones no permiten ejecutarla. Leyendo el código, el test de `libres` de `test/app.test.js` debería fallar por el issue 5.
+- **Ledger:** no hay, así que no hay minors diferidos que valorar.
+
+### Recommendations
+- La verificación del plan solo ejecuta `node --test test/void.test.js`. El hilo principal debería ejecutar la suite completa, que habría detectado el issue 5.
+- Añadir tests para el AND sin motivo, para `anular-todas` sin motivo y con motivo, y para comprobar que `outbox` sigue vacío.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** Sigue funcionando el comportamiento que la spec elimina (el correo), se incumple la Confirmación de la ADR 0003 al escribir en disco, y `anular-todas` sigue sin pedir motivo. Además `libres` cambia sin delta y rompe un test que ya existía.
+

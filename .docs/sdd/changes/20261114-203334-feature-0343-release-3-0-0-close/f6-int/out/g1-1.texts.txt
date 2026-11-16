@@ -1,0 +1,25 @@
+--- [9]
+Esto es lo que he encontrado en el repo (no he tocado nada):
+
+- **Lo que dice el código** (`src/app.js`): una franja es un texto opaco, `'10:00-12:00'`. `freeRooms` decide si una sala está ocupada comparando ese texto **por igualdad exacta**.
+- **Lo que dice la deuda** (`.docs/sdd/steering/debt.md`): sigue sin triar «Sin validación del formato de franja horaria».
+- **Lo que infiero:** hoy ya podrías escribir `10:00-10:30`, pero no chocaría con `10:00-12:00`. Reservarías la sala dos veces a la vez. Además, `reservar` solo existe con `--cada-semana` y devuelve un texto fijo, así que no guarda nada.
+
+Por eso, antes de pensar en la interfaz, hay que decidir cómo se modela el tiempo. Esa decisión condiciona casi todo lo demás: la validación, el solapamiento, cancelar y los avisos del 0008.
+
+❓ **¿Cómo representamos el tiempo?**
+1️⃣ **Rejilla de medias horas con inicio y fin libres.** Una reserva es `inicio` + `fin`, ambos en punto o y media (`10:30-11:30`). Se solapan si los intervalos se cruzan. `10:00-10:30` ya choca con `10:00-12:00`. Cuesta cambiar `freeRooms`, `cancelar` y el formato de la franja, y resolver la validación pendiente de la deuda.
+2️⃣ **Franjas fijas de 30 min.** El día se divide en huecos `10:00`, `10:30`… y una reserva larga son varios huecos. La igualdad exacta sigue valiendo, pero una reserva de dos horas pasa a ser cuatro filas y `cancelar` tiene que borrar el grupo.
+3️⃣ **Mantener el texto opaco y permitir `10:00-10:30`.** No cambia nada del modelo. Es el cambio mínimo, pero deja abierto el doble reserva.
+
+➡️ **Recomiendo 1️⃣**, porque el defecto real ya existe: la igualdad de texto no detecta solapes. Con medias horas dejaría de funcionar en el primer uso mixto, por ejemplo `10:30-11:00` frente a `10:00-12:00`. A cambio, es el que más toca, y la regla de que `10:15` no vale sale de aquí.
+
+¿Con cuál vamos?
+
+--- [11]
+Entendido, y eso me aclara el para qué: hoy una reunión de 30 minutos ocupa la franja entera de 2 horas. Lo apunto como motivo. Con 1️⃣ y con 2️⃣ ese caso se resuelve igual, así que todavía no has elegido modelo y no lo doy por elegido.
+
+Lo que decide entre las dos es una cosa que solo sabes tú. Con 1️⃣, `reservar Norte lun 10:30-11:00` dejaría libres 10:00-10:30 y 11:00-12:00, y valdría cualquier longitud en múltiplos de 30 min. Con 2️⃣ también, pero cada reserva sería un número de huecos de 30 min.
+
+¿Qué duraciones tienen en la práctica las reuniones de tu coworking?
+

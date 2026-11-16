@@ -1,0 +1,28 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y presentarte el entendimiento, ~3 min.
+
+--- [16]
+Ahora: ya tengo el contexto y la rama `feature/0010-export-csv-reservas` (id 0010 reservado). Queda: una o dos preguntas de diseño, luego la spec para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija perfil)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hoy `src/app.js` guarda las reservas en memoria (`sala`, `día`, `franja`) y no hay forma de sacarlas. Quieres un comando nuevo que, dada una sala, produzca un CSV con sus reservas, para que quien la gestiona lo abra los lunes en su hoja de cálculo y lo cuadre. Veo unas 2–3 tasks, así que no propongo dividirla. En esta sala el éxito sería que el CSV se abra en la hoja sin arreglos manuales (columnas separadas, acentos bien).
+
+❓ **Hoja de cálculo.** El separador y la codificación del CSV dependen de ella. Excel con configuración regional en castellano espera `;` y a menudo UTF-8 con BOM. Google Sheets y LibreOffice suelen aceptar `,`. ¿Qué hoja de cálculo usa el responsable de cada sala?
+
+--- [18]
+Entendido: separador `;`. Lo apunto como decisión tuya, con tu frase.
+
+❓ **Adónde va el CSV**
+Excel en castellano también necesita UTF-8 con BOM para mostrar bien «Sáb» o «Sala Núñez». Si el comando escribe en pantalla y rediriges con `>`, la codificación depende del shell: el PowerShell clásico guarda en UTF-16 y pwsh 7 en UTF-8 sin BOM, y Excel destrozaría los acentos en ambos casos. No he podido comprobar tu shell, así que lo tomo como riesgo.
+
+1️⃣ **Escribe un fichero.** `salas exportar Norte` crea `Norte.csv` en la carpeta actual, con BOM y `;`, y responde `exportadas 3 reservas de Norte en Norte.csv`. Con `--salida ruta.csv` eliges el nombre. Sobrescribe si ya existe.
+2️⃣ **Escribe en pantalla.** `salas exportar Norte` imprime `sala;día;franja` y las filas, y tú redirigís con `> Norte.csv`. No hay BOM garantizado.
+3️⃣ **Las dos cosas.** Pantalla por defecto y fichero con `--salida ruta.csv`, que sí lleva BOM.
+
+➡️ **Recomiendo 1️⃣**, porque es la única forma de garantizar los acentos en Excel sin depender del shell. A cambio, pierdes la composición con tuberías de Unix y hay que decidir qué pasa si el fichero ya existe, que dejo como sobrescribir.
+

@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Grep: reserva|booking|reservation
+
+>>> Glob: *
+<<< Found 6 files
+src\app.js
+test\app.test.js
+ROADMAP.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+package.json
+ROADMAP.md
+src\app.js
+test\app.test.js
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código: `node --test` en verde antes de cada commit.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+=== RESULTADO (11 turnos, 0.1246388 $)
+Esto es lo que encontré, con su fuente.
+
+- `src/app.js:3`: las reservas son un array en memoria con una reserva sembrada (Norte, lun, 10:00-12:00).
+- `src/app.js:1` y `:16`: es una CLI, así que cada comando es un proceso nuevo y termina. Hoy no se pierden solo "al reiniciar": se pierden al acabar cada comando. `reservar` ni siquiera añade nada al array.
+- `PRODUCT.md`: la usas tú solo y la despliegas en tu servidor.
+- `package.json`: ESM y cero dependencias.
+- `constitution.md`: los tests con `node --test` van antes del código.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un fichero JSON** (por ejemplo `reservas.json`). Se lee al arrancar y se escribe tras cada cambio. No añade dependencias, se puede abrir y editar a mano y es fácil de testear con un fichero temporal. Su coste es que dos comandos simultáneos podrían pisarse, y que una escritura cortada a medias puede dejar el fichero corrupto, salvo que se escriba a un temporal y se renombre.
+2️⃣ **SQLite**, con `node:sqlite` o con una dependencia. Da transacciones y consultas, y no sufre con las escrituras concurrentes. Su coste es una dependencia o una versión mínima de Node, y un binario que no se puede editar a mano. Es demasiado para un puñado de reservas de una sola persona.
+3️⃣ **Un servidor o servicio externo**. Cambia la CLI por un cliente de ese servicio. Su coste es operar algo más, para un único usuario.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario y no hay concurrencia real. El volumen es de unas pocas reservas por semana y el proyecto no tiene dependencias. A cambio, si algún día hay varios usuarios o escrituras simultáneas, habría que migrar a 2️⃣.
+
+Escena de 1️⃣: `reservar Sur lun 10:00-12:00` guarda la reserva en el JSON. Después de reiniciar el servidor, `libres 10:00-12:00` responde `Norte`, porque Sur sigue reservada.
+
+¿Te encaja 1️⃣, o prefieres otra opción?

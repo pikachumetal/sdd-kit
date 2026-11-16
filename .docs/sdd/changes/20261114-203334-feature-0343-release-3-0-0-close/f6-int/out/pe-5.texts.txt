@@ -1,0 +1,80 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering, capacidades). Queda: clasificar y presentar la comprensión, ~2 min.
+
+--- [15]
+Ahora: reservo el id y creo la rama `feature/<id>` desde `develop`. Queda: anunciar el carril y la primera pregunta de diseño, ~2 min.
+
+--- [18]
+Ahora: presento el carril y lo que he entendido. Queda: entrevista de diseño, spec (con tu aprobación), plan e implementación, ~25 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+He creado la rama `feature/0010` desde `develop` (id reservado 0010, sin fila de roadmap). Prevé 2–3 tasks, así que no propongo dividirla.
+
+**Lo que he entendido (corrígeme):** quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV. El responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Hoy una reserva solo tiene `room`, `day` (`lun`, `mar`…) y `slot` (`10:00-12:00`). No tiene fecha concreta ni nombre de quien reserva, así que el CSV solo puede llevar esas tres cosas.
+
+❓ **¿Cómo llega el CSV a la hoja de cálculo?**
+La app solo imprime por pantalla (`console.log`) y no escribe ficheros.
+1️⃣ **Por salida estándar:** `salas exportar Norte > norte.csv`. No añade nada nuevo y se redirige como cualquier comando. Si la sala no existe, el error iría mezclado con el CSV si no se cuida.
+2️⃣ **Con fichero propio:** `salas exportar Norte --salida norte.csv` escribe `norte.csv` y muestra `exportadas 1 reservas de Norte en norte.csv`. Hay más código y más casos, como sobrescribir un fichero que ya existe.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto es un solo fichero sin dependencias y la redirección ya hace lo mismo. A cambio, tú tienes que acordarte del `>`.
+
+¿Cuál eliges?
+
+--- [20]
+Decidido: el CSV sale por salida estándar y tú lo rediriges con `>`. Anoto que los errores, como una sala que no existe, no deben ir mezclados con el CSV.
+
+❓ **¿Qué separador usa el CSV?**
+Tu hoja de cálculo decide cómo se abre el fichero. Con una hoja en castellano, un CSV con comas suele abrirse con todo en una sola columna.
+1️⃣ **Punto y coma:** `salas exportar Norte` imprime
+```
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Se abre en columnas con un doble clic en una hoja en castellano. En una hoja configurada en inglés puede pasar lo contrario.
+2️⃣ **Coma:** la misma salida con `sala,dia,franja` y `Norte,lun,10:00-12:00`. Es el CSV estándar y lo leen bien las hojas en inglés y casi cualquier herramienta. Una hoja en castellano puede mostrarlo en una sola columna.
+
+➡️ **Recomiendo 1️⃣**, porque cuadras las reservas en una hoja de cálculo y lo normal en castellano es `;`. A cambio, otra herramienta que espere comas no lo leerá bien.
+
+¿Cuál usa tu hoja?
+
+--- [22]
+Decidido: separador `;`. Ahora: redacto la spec con lo decidido y mis decisiones técnicas en ✋, y hago la pasada de coherencia. Queda: revisión de la spec y tu aprobación, ~10 min.
+
+--- [34]
+Sigo con la spec: la fusión del delta sobre una copia pasa sin errores. Ahora corrijo en la spec la parte de la revisión, porque en esta sesión no tengo forma de lanzar revisores.
+
+--- [39]
+Ahora: la spec está escrita y pasó la pasada de coherencia. Queda: tu aprobación. Después escribo el plan e implemento, ~15 min.
+
+La spec está en `.docs/sdd/changes/20261116-184452-feature-0010-export-csv/spec.md`, en la rama `feature/0010`. Todavía no he escrito ni el plan ni el código.
+
+🦆 Con `node src/app.js exportar Norte > norte.csv` sale un fichero con las reservas de la sala Norte, una por línea y separadas por `;`: `Norte;lun;10:00-12:00`. El responsable de la sala lo abre los lunes en su hoja en castellano y lo ve ya en columnas. Si la sala no existe, el error sale por la pantalla y el fichero queda vacío.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `exportar <sala>`.
+2. Las columnas son `sala;dia;franja`, con cabecera. Una reserva no guarda el nombre de quien reserva, así que no puede salir.
+3. Las reservas salen en el orden en que se dieron de alta. No hay fechas, solo `lun`, `mar`…
+4. Una sala sin reservas sale solo con la cabecera.
+5. Una sala que no existe, o un `exportar` sin sala, escribe el error por la salida de errores y termina con código 1. No escribe nada por la salida estándar. Los textos son `sala desconocida: Zzz` y `uso: exportar <sala>`.
+6. El nombre de la sala se compara exacto, con mayúsculas, como en `libres`.
+7. Las líneas terminan en `\n`, sin BOM y sin comillas ni escapes. Las salas y franjas son una lista fija sin `;`. Si una sala con tilde sale mal en tu hoja, el BOM va en otra feature.
+8. Declaro una capacidad nueva, `bookings-export`. El proyecto aún no tiene ninguna.
+9. Implemento el comando dentro de `run`, que lanza un error que el arranque captura, en vez de crear un módulo aparte. Solo hay un fichero de entrada y así no se tocan los otros comandos.
+
+**Decididas contigo:** el CSV sale por salida estándar y lo rediriges con `>`; el separador es `;`.
+
+**La revisión de la spec no se hizo con revisores independientes.** La rúbrica pide dos, pero esta sesión no tiene herramienta para lanzar subagentes. Pasé yo solo los siete puntos. Eso me hizo corregir el 🦆, que decía que el fichero «no se crea con basura» cuando con `>` se crea vacío. Falta la mirada de un segundo revisor.
+
+Probé la fusión del delta sobre una copia de `.docs/sdd` y pasó sin errores. `git grep` no encontró nada previo sobre `exportar` o `csv` fuera de la fila 0009 del roadmap, que es el `.ics`.
+
+La validación la haces tú: abres el CSV en tu hoja en castellano y compruebas que salen tres columnas.
+
+1. **Apruebo (Recomendada).**
+2. **Cambios.**
+

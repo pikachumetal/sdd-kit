@@ -1,0 +1,94 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Grep: reserva|reservation|booking
+
+>>> Glob: **/*
+<<< Found 6 files
+src\app.js
+test\app.test.js
+ROADMAP.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+package.json
+ROADMAP.md
+src\app.js
+test\app.test.js
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# salas
+2	
+3	## Product Purpose
+4	
+5	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+6	
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna<br>**Salda:** nada<br>**Toca:** `src/correo.js`</details> | ⏳ | — | M |
+8	| 0007 | — | **La cancelación borraba reservas de otro día con la misma hora**<br>*2026-09-18*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `.do
+
+=== RESULTADO (11 turnos, 0.1268854 $)
+Antes de preguntar he mirado `src/app.js` y `PRODUCT.md`.
+
+- **Estado actual:** las reservas son un array en memoria (`bookings`, línea 3), con una reserva de ejemplo escrita a mano. `reservar` ni siquiera añade nada: solo devuelve un texto.
+- **Es una CLI:** cada comando es un proceso nuevo. Así que hoy no se pierde solo «al reiniciar»: se pierde entre un comando y el siguiente.
+- **Uso:** solo lo usas tú, en tu propio servidor (`PRODUCT.md`).
+- **Dependencias:** `package.json` no tiene ninguna.
+
+❓ **¿Dónde se guardan las reservas?**
+1️⃣ **Un archivo JSON** (`reservas.json`), que se lee al arrancar cada comando y se reescribe al cambiar. No añade dependencias y se puede abrir y editar a mano. No aguanta bien dos comandos a la vez: el último en escribir pisa al otro.
+2️⃣ **SQLite**, con una base de datos en un archivo. Resuelve las escrituras simultáneas y las consultas. Añade una dependencia o el módulo experimental de Node, y no se edita a mano.
+3️⃣ **Un archivo de líneas (JSONL)**, donde cada reserva es una línea que se añade al final. Reservar nunca reescribe lo anterior. Cancelar obliga a reescribir el archivo, o a marcar la línea como cancelada.
+
+➡️ **Recomiendo 1️⃣**, porque eres el único usuario, no hay dependencias y el volumen son unas pocas salas. En ese caso las escrituras simultáneas casi no ocurren. A cambio, si algún día hay más gente o un proceso en segundo plano, como los avisos por correo de la 0008, habrá que pasar a SQLite.
+
+¿Cuál eliges?

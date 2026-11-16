@@ -1,0 +1,59 @@
+
+>>> Read: <run>/review-final-e600c8d.diff · offset=0 · limit=400
+<<< 0	# Review package: 1abcb7b..HEAD
+1	
+2	## Commits
+3	e600c8d feat(bookings): informe de ocupación
+4	
+5	## Files changed
+6	 src/app.js | 28 ++++++++++++++++++++++++++++
+7	 1 file changed, 28 insertions(+)
+8	
+9	## Diff
+10	diff --git a/src/app.js b/src/app.js
+11	index 10d99e4..5bb4288 100644
+12	--- a/src/app.js
+13	+++ b/src/app.js
+14	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+15	   const booking = findBooking(room, day);
+16	   if (!booking) return `sin reserva ${room} ${day}`;
+17	   booking.status = 'voided';
+18	   return `anulada ${room} ${day}`;
+19	 }
+20	 
+21	 function cancelle
+
+=== RESULTADO (2 turnos, 0.0937152 $)
+### Strengths
+The report is a single focused function. The interface text is in Spanish, and `ocupacion` is wired into `run` consistently with the other commands. Singular and plural are handled ("reserva" / "reservas").
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- `src/app.js:25-50` (diff lines 25-50): `occupancyReport` is 26 lines, so it fits the 30-line limit. No finding on length.
+- `src/app.js:34`: the comment `// incrementa count` repeats what `count++` already says. The brief makes this Important. Delete it.
+- No test in the diff covers `occupancyReport` or the new `ocupacion` command. Clean Code asks for a test per public method, and the task reports may not have covered it. Add tests for the empty case, a single reservation, several reservations, and cancelled reservations.
+
+#### Minor (Nice to Have)
+- `src/app.js:28,45`: `const now = 'hoy'` is a constant that pretends to be a time. It prints the literal "(hoy)" after the total and carries no information. Remove it, or use a real date.
+- `src/app.js:29-37`: the nested loop with the two `continue`s could be `bookings.filter((b) => b.room === room && b.status === 'active').length`. That would be shorter and would match `cancelledList`. Possible Refactoring smell: Long Method / loops where a filter would do.
+- `src/app.js:41`: the filter for `status === 'cancelled'` is duplicated in `cancelledList` (two occurrences). Not yet a problem, but a shared `byStatus(status)` helper would stop it spreading.
+- The report is split across mixed concerns (count per room, cancelled, total). Possible Ousterhout concern, but acceptable at this size.
+
+### Declined to judge
+- Whether the `ocupacion` command and its output format match the spec: that belongs to the Spec axis.
+- Whether the `rooms` and `bookings` module-level state is a good boundary: that belongs to the Architecture axis.
+- Comments that cite documents: the brief lists none, and I found none in the diff.
+- E2E rules: the project declares no E2E, so none applies.
+
+### Recommendations
+Remove the redundant comment and the `now` constant. Replace the inner loop with a filter, and add tests.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The function is correct and within the length limit. The redundant comment is Important under the brief's rules, and the new command has no visible tests.
