@@ -1,0 +1,111 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.local.json 2>&1; cat package.json; ls node_modules 2>&1 | head -3
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+{"type": "module", "engines": {"node": ">=20"}}
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cat .docs/sdd/steering/operations.md; echo ----; cat .docs/sdd/steering/constitution.md | head -60; echo ----; cat .docs/sdd/sdd-kit.json; git grep -n -i -E "node.{0,12}(20|22)|engines|nvmrc" -- . ':!.docs/sdd/steering/debt.md' | head -20
+<<< # Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas viven en memoria
+----
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs d
+
+>>> Bash: sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && node --version && node --test 2>&1 | tail -12 && node scripts/lint.mjs; echo "exit $?"; git branch -a; git log --oneline develop..HEAD 2>&1
+<<< {"type": "module", "engines": {"node": ">=22.18"}}
+v26.10.0
+✔ libres excluye la sala reservada en la franja (0.713ms)
+✔ reservar --cada-semana crea la reserva semanal (0.153ms)
+✔ cancelar una reserva activa (0.7002ms)
+✔ cancelar sin reserva lo dice (0.1072ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.4568
+lint: sin hallazgos
+exit 0
+  develop
+* feature/bump-node-22-18
+  main
+
+>>> Bash: git add package.json && git commit -q -F - <<'EOF'
+chore: sube el mínimo de node a 22.18 en engines
+
+Gate: `node --test && node scripts/lint.mjs` → unit: corrió 4/4 · lint: sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline develop..HEAD && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" merge --project-root "$(pwd)" 2>&1 | tail -15; git log --oneline -4 --graph --all
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+dd1645f chore: sube el mínimo de node a 22.18 en engines
+Fusionado feature/bump-node-22-18 en develop: 58fa374
+*   58fa374 merge: feature/bump-node-22-18 en develop
+|\  
+| * dd1645f chore: sube el mínimo de node a 22.18 en engines
+|/  
+* ab96f47 chore: política de merge
+* ad86e97 feat: base del molde
+
+=== RESULTADO (8 turnos, 0.139128 $)
+Hecho: `engines.node` en `package.json` pasa de `>=20` a `>=22.18`. Va en un commit y ya está fusionado en `develop`.
+
+- **Carril:** config. Tu petición ya lo nombraba y el código lo confirma: es solo un campo de `package.json`, sin dependencias que instalar. Por eso no hay spec, plan, id ni fila de roadmap.
+- **Gate:** `node --test && node scripts/lint.mjs` pasó. Corrieron 4 de 4 tests y el lint salió sin hallazgos. El commit lleva la línea `Gate:`.
+- **Merge:** el commit era el único de la rama por encima de `develop`, así que lo fusioné con `sdd merge` (`58fa374`). El perfil `delegate` lo permite y `merge.push` es `false`, así que no hay push.
+- **Node local:** el gate corrió con Node v26.10.0, que cumple el nuevo mínimo. No lo probé con Node 22.18 exacto.
+
+Por si te interesa, `architecture.md` ya decía «Node 22», así que no hizo falta tocar la documentación.
+
+=== RESULTADO (1 turnos, 0.14668520000000002 $)
+Mi último mensaje no te hacía ninguna pregunta, así que no sé a qué respondes con «Sí». ¿Quieres algo más sobre este cambio? Por ejemplo, hacer push de `develop` (ahora mismo `merge.push` es `false`), borrar la rama `feature/bump-node-22-18` o probar el gate con Node 22.18 exacto. Dime cuál y lo hago.

@@ -1,0 +1,64 @@
+--- [3]
+Ahora: reviso la spec, el plan y la configuración del kit para ver que está aprobado y elegir el método. Queda: setup y tasks, sin estimar aún.
+
+--- [8]
+Ahora: la spec y el plan están aprobados, hay una sola task y la ejecución es Native. Invoco `sdd-implement-native`. Queda: medir y escribir `research.md`, unos minutos.
+
+--- [11]
+Ahora: preparo el workspace y el ledger, y leo el código a medir. Queda: la medición, `research.md` y el commit.
+
+--- [14]
+Ahora: escribo el script de medida en la carpeta de la spec. Queda: ejecutarlo, guardar la salida en bruto y escribir `research.md`.
+
+--- [17]
+La salida en bruto ya está. Ahora: leo la plantilla de `research.md` en `sdd-templates`. Queda: escribirlo y hacer el commit.
+
+--- [21]
+La plantilla pide una sección de aguante con al menos 10 repeticiones seguidas y el recurso acumulado. Mi script tiene 5 rondas, así que lo amplío a 12 y registro el heap por ronda.
+
+--- [24]
+Ahora: escribo `research.md` calcado de la plantilla. Queda: commit y verificación.
+
+--- [27]
+Ahora: cierro la task con `sdd task done` y la verificación del plan (la salida en bruto existe). Queda: la revisión final.
+
+--- [30]
+Ahora: invoco `sdd-verify` para la revisión final de la rama. Queda: su cierre y pasar a `sdd-archive`.
+
+--- [36]
+Ahora: dejo en el ledger la revisión y el eje de arquitectura. Queda: `sdd-archive`.
+
+--- [38]
+Revisión final cerrada sin hallazgos. Ahora: paso a `sdd-archive`, que empieza por la validación. Queda: validación y cierre.
+
+--- [41]
+Ahora: ejecuto los pre-checks del cierre (git status, `merge --check`, worktrees). Queda: validación (la hago yo, la spec dice «agente»), registros y merge.
+
+--- [44]
+La task está implementada y commiteada, pero **no he cerrado ni fusionado**: el cierre se para en `merge --check`.
+
+**Hecho**
+- Task 1 del plan (Native, un spike): commit `c7d06c5` en `feature/0032-free-rooms-fast`, con la medida y `research.md`. El ledger la tiene como `complete`. `node --test` da 4/4 en verde.
+- La revisión final no la hizo un revisor independiente, porque esta sesión no tiene herramienta de subagentes. Pasé el eje Spec yo mismo, el único que aplica a un spike, sin hallazgos. Lo dejé como `self-review` en el ledger, y es más débil que una revisión fresca.
+- Los ficheros nuevos están en la carpeta de la spec: `measure-libres.mjs` (el script), `libres-salida-bruta.txt` (la salida en bruto) y `research.md`.
+
+**Resultado del spike**
+- **O1: `no cumple tal como se definió`.** Con la peor carga (1.001 activas en la misma franja) hice 12 rondas de 2.000 llamadas.
+  - La media por ronda está entre 0,033 y 0,041 ms en 11 de las 12 rondas. La ronda 9 dio 0,0538 ms, por encima de 0,05.
+  - El p99 está entre 0,06 y 0,31 ms, siempre por encima del umbral.
+  - El heap fluctúa entre 4,7 y 8,7 MB sin tendencia clara, pero 12 rondas no descartan una fuga lenta.
+- **Recomendación:** no abrir `libres` a toda la oficina dando O1 por cumplido, y no meter caché todavía. Primero quitar el `bookings.slice().sort(...)` de `freeRooms`, que se ejecuta en cada llamada y cuyo resultado se descarta, y repetir la medida. No he tocado `src/app.js`: un spike no deja código de producción.
+
+**Rulings que tomé**
+1. Marqué O1 como `no cumple tal como se definió` aunque la media cumple casi siempre, porque la spec no dice si el umbral es media, mediana o p99. Si el dev-lead entiende «media», sería `cumple` con una ronda atípica.
+2. Anoté que la carga real son 1.001 reservas (1 del arranque más las 1.000 sembradas). Cambia la medida un 0,1 %.
+
+**Por qué no he cerrado**
+- `merge --check` falla porque `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. Sin ese bloque no fusiono.
+- Faltan los registros de cierre: `walkthrough.md`, la retro y el cambio de `ROADMAP.md`. `ROADMAP.md` ni siquiera tiene una fila para la 0032, así que habría que crearla o decidir dónde va.
+- La spec dice `Validación: agente`, así que la validación la haría yo sin esperar a nadie.
+
+¿Quieres que siga con el cierre? Si sí, dime `merge.into` (¿`develop`?) y si va con `--no-ff`, y si creo la fila 0032 en el roadmap.
+
+**No terminado.** Falta el cierre y el merge. No borres todavía el worktree `<run>/repo`.
+

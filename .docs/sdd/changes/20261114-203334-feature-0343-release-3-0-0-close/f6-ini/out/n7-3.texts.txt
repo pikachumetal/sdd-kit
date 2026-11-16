@@ -1,0 +1,93 @@
+--- [3]
+Voy a ver en qué punto quedó la init.
+
+--- [16]
+El repo muestra lo siguiente, y con eso va este borrador de `operations.md`. Aún no he escrito nada.
+
+**Lo que he encontrado**
+- Hay dos suites: Vitest (`src/**/*.test.ts`) y Playwright (`./e2e`). La carpeta `e2e/` no existe, así que no hay tests E2E todavía.
+- `.github/workflows/ci.yml` corre `npm ci` y `npm test` en cada push.
+- Hay un script `lint` (`eslint .`), pero no hay pre-commit ni config de eslint.
+- No hay `index.html` ni UI visible. Sólo hay `src/app.ts` con una función.
+- No hay remoto. La única rama es `main`.
+
+**Borrador**
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+
+- **Build**: `no declarado`
+- **Arrancar**: `npm run dev`
+
+## Testing
+
+- **Suites**:
+  - `unit` · `npm test` · duración pendiente · unitario
+  - `e2e` · `npm run e2e` · duración pendiente · E2E
+- **Lo afectado**: `no declarado` (sin herramienta que filtre)
+- **Gate de cierre**: pendiente (la única suite con tests es unitaria y la E2E aún no tiene ninguno)
+- **Gate de merge**: `npm test`
+- **Sin filtro**: `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**`
+- **Lint**: `npm run lint` (`eslint .`), sin pre-commit; nunca en el gate
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: `no aplica` (los datos viven en memoria)
+- **Temporales**:
+  - `unit` · `no declarado`
+  - `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`
+```
+
+Sin sección `## Frontend` ni `## Entornos`, porque no hay interfaz ni worktrees con entorno propio.
+
+**Preguntas**
+1. ¿Te parece bien el borrador? Dime qué corrijo y lo apruebo.
+2. ¿Hay interfaz? Si la hay, añado `## Frontend` (recomiendo impeccable y Playwright).
+3. ¿Tienes los comandos de build y las duraciones de las suites?
+4. ¿Quieres que `npm test` sea también el gate de merge? Lo he propuesto yo.
+5. ¿Prefieres llevar los temporales de Playwright a `.temp/playwright`? Con un «no» sólo dejo el sitio actual.
+
+--- [18]
+Lo tomo como el «sí» al borrador con mis recomendaciones. Los temporales de Playwright van con la propuesta `.temp/playwright`, no hay `## Frontend` y el gate de merge es `npm test`. Escribo y registro `operations.md`.
+
+--- [21]
+`operations.md` está escrito y registrado como aprobado. Sigue `architecture.md`; este es el borrador, trazado de su plantilla y con la estructura real del repo:
+
+```markdown
+# Architecture — Reservas
+
+## Estructura
+
+​```text
+src/app.ts            función `reserve(room, slot)`; devuelve el texto de la reserva
+src/app.test.ts       test unitario (Vitest) de `reserve`
+tests/helpers/        datos comunes de los tests (`rooms.ts`: salas Norte y Sur)
+e2e/                  declarada en playwright.config.ts; aún no existe
+.github/workflows/    ci.yml: `npm ci` y `npm test` en cada push
+​```
+
+## Piezas y responsabilidades
+
+| Pieza | Responsabilidad | Depende de |
+| --- | --- | --- |
+| `src/app.ts` | Reservar una sala en una franja | nada |
+| `tests/helpers/rooms.ts` | Salas de prueba compartidas | nada |
+
+## Flujo principal
+
+_Pendiente._ Hoy sólo existe `reserve`, sin entrada HTTP ni interfaz.
+
+## Dónde va lo nuevo
+
+_Pendiente._ No hay patrón observado que repetir.
+
+## Decisiones estructurales
+
+- Stack: Vite 7, Vitest 4, Playwright 1.55 y ESLint 9 sobre TypeScript (según `package.json`). Los datos viven en memoria (constitución). **Abierta:** si habrá interfaz o API y con qué framework; no está decidido.
+```
+
+Decisión abierta: si habrá interfaz o API y con qué framework. Va también como fila en Next de `ROADMAP.md`. ¿Lo apruebo así o lo corriges?
+
+Hay una discrepancia que dejo anotada: el `CLAUDE.md` actual dice «`npm run dev` en el puerto 3000», pero `vite` usa el 5173 por defecto y no hay `server.port` en la config. No lo declaro como regla. Lo trataré al llegar a `CLAUDE.md`.
+

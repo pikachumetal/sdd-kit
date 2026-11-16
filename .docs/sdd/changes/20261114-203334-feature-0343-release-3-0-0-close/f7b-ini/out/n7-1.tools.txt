@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -la && cat .docs/sdd/sdd-kit.json 2>&1; ls -R .docs 2>&1 | head -50; git status --short | head
+<<< total 15
+drwxr-xr-x 1 <user> 197609   0 Nov 16 21:31 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 16 21:31 ../
+drwxr-xr-x 1 <user> 197609   0 Nov 16 21:31 .docs/
+drwxr-xr-x 1 <user> 197609   0 Nov 16 21:31 .git/
+drwxr-xr-x 1 <user> 197609   0 Nov 16 21:31 .github/
+-rw-r--r-- 1 <user> 197609  76 Nov 16 21:31 CLAUDE.md
+-rw-r--r-- 1 <user> 197609 239 Nov 16 21:31 package.json
+-rw-r--r-- 1 <user> 197609  67 Nov 16 21:31 package-lock.json
+-rw-r--r-- 1 <user> 197609 101 Nov 16 21:31 playwright.config.ts
+-rw-r--r-- 1 <user> 197609 118 Nov 16 21:31 PRODUCT.md
+-rw-r--r-- 1 <user> 197609  20 Nov 16 21:31 READM
+
+>>> Bash: cd "<run>/repo" && for f in CLAUDE.md package.json package-lock.json playwright.config.ts PRODUCT.md README.md vitest.config.ts .docs/sdd/steering/constitution.md; do echo "=== $f"; cat $f; done; find src tests .github -type f; cat .github/*/* 2>/dev/null; git branch -a; git remote -v
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k3a09/skills/sdd-init/references/generation.md
+<<< === CLAUDE.md
+# Reservas
+
+- Usa `npm run dev` en el puerto 3000.
+- Las fechas van en UTC.
+=== package.json
+{
+  "name": "reservas",
+  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test", "lint": "eslint ." },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0", "eslint": "^9.0.0" }
+}
+=== package-lock.json
+{
+  "name": "reservas",
+  "lockfileVersion": 3,
+  "packages": {}
+}
+=== playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({ testDir: './e2e' });
+=== PRODUCT.md
+# Product — Reservas
+
+##
+<<< 1	# Generating the anchor documents — detail
+2	
+3	## Order and gate
+4	
+5	One document per turn, each presented before it is written and recorded with `sdd init --approved <path>` after its «sí»:
+6	
+7	1. `PRODUCT.md` — who uses it and with which roles, what problem it solves (with code: what the system does TODAY), what it is and what it leaves out, and the glossary in `## Terminology`.
+8	2. `.docs/sdd/steering/constitution.md` — what is non-negotiable; with code, the observed conventions AS PROPOSALS plus the golden rules below; «Reglas de producto» with the five rules by name, each answered, 
+
+=== RESULTADO (6 turnos, 0.127222 $)
+Retomo la init desde donde quedó: `init.approved` solo tiene `PRODUCT.md` y la constitución, así que no vuelvo a presentarlas. La config del kit (ids, perfil, validación) tampoco se vuelve a preguntar.
+
+Modo: con código. Si es un template recién instanciado, dímelo y sigo sin código.
+
+Lo siguiente en el orden es `operations.md`, y lo leído del repo es esto:
+
+| Qué | Lo que encuentro |
+| --- | --- |
+| Comandos | `dev` (vite), `test` (vitest run), `e2e` (playwright test), `lint` (eslint .) |
+| Suite `test` | Vitest; incluye solo `src/**/*.test.ts` (hay un `src/app.test.ts`). Nivel propuesto: `unitario`, porque la config no arranca host ni base de datos |
+| Suite `e2e` | Playwright con `testDir: './e2e'`, pero esa carpeta no existe, así que no hay tests E2E todavía. Es una suite sin campos E2E |
+| Lint | `lint` (`eslint .`), sin config de eslint en el repo. Se declara y no entra en la puerta de cierre |
+| CI | GitHub Actions `.github/workflows/ci.yml`: `npm ci` y `npm test` en cada push. No corre `e2e` ni `lint` |
+| Temporales | Playwright sin `outputDir`: escribe en `test-results/`. Te propongo moverlo a `.temp/playwright` |
+| Sin filtro | `package.json`, `package-lock.json`, `vitest.config.ts`, `playwright.config.ts` y `tests/helpers/**` |
+
+Discrepancias que anoto para tu lista:
+- El `CLAUDE.md` actual dice «puerto 3000», pero no hay config de vite que lo fije y su puerto por defecto es 5173.
+- El mismo `CLAUDE.md` dice «las fechas van en UTC», y en `src/` no lo he verificado.
+- `tests/helpers/rooms.ts` queda fuera del `include` de vitest, lo cual es normal para un helper.
+
+**Pregunta 1:** ¿Cuál es la puerta de cierre de una tarea, es decir, qué comando tiene que pasar para darla por terminada? Mi recomendación es `npm test` (unitario, el mismo que corre la CI) y dejar `e2e` fuera hasta que existan tests. ¿Te encaja, o prefieres otra cosa?
+
+Las duraciones de cada suite las dejo `pendiente` salvo que me las digas.
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k3a09/skills" && cat sdd-init/references/structure.md | head -40; ls sdd-templates sdd-templates/references 2>/dev/null; cat "<run>/repo/src/app.ts"
+<<< # Target structure — the kit fixes it, it isn't redesigned
+
+```text
+/
+├── PRODUCT.md                (traces PRODUCT-template.md)
+├── ROADMAP.md                (traces now-next-later-template.md)
+├── CHANGELOG.md              (optional, per the interview · traces changelog-template.md)
+├── CLAUDE.md                 (short: pointers + 3-5 critical rules; through its gate)
+├── .claude/settings.json, hooks/sdd-kit-loaded.mjs   (by `sdd init --finish`, merged with what it already has)
+├── .gitignore                (+ `.playwright-mcp/`, `.superpowers/`, `.docs/sdd/sdd-kit.local.json`, `.te
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k3a09/skills/sdd-templates/templates" && ls | head -50; cat operations-template.md
+<<< adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+patch-template.md
+plan-template.md
+PRODUCT-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+retro-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+validation-template.md
+walkthrough-template.md
+# Operations — <proyecto>
+
+> Cómo se ejecuta y se verifica el proyecto. Sin vers
+
+=== RESULTADO (3 turnos, 0.1764327 $)
+**Pregunta 2: gate de merge.** `sdd merge --verify` corre una sola orden sobre la base integrada antes de fusionar. Recomiendo `npm test`, que es la misma que el gate de cierre y la que ya corre la CI. Así el merge no depende del `e2e`, que no tiene tests todavía, y sigue valiendo si lo añades después. ¿Te encaja `npm test`, o prefieres otra?
+
+Antes de presentarte `operations.md` me faltan tres cosas, que te pregunto por turnos:
+- Si quieres mover los temporales de Playwright a `.temp/playwright`.
+- Cómo entra el agente en la app.
+- Si usas worktrees.
+
+Mientras tanto avanzo con lo que ya sale del repo, y lo verás en el borrador:
+- **Lo afectado:** `no declarado`, porque vitest no tiene un comando de «solo lo afectado» configurado. La alternativa sería `vitest run --changed`.
+- **Motor de producción:** `no aplica`, porque los datos viven en memoria, tal como declara la constitución.

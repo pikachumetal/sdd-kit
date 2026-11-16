@@ -1,0 +1,56 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`, porque los ejes ya volvieron. Queda: leer los informes y resolver los hallazgos, ~5 min.
+
+--- [19]
+RED confirmado: el test falla con el código actual. Ahora el fix.
+
+--- [29]
+Ahora: lanzo la única re-revisión del fix (`opus` + effort high), con su vigilancia de silencio. Queda: esperar su veredicto y cerrar, ~5 min.
+
+--- [36]
+La re-revisión sigue en marcha y todavía no sé su veredicto. Hasta ahora, con la revisión final de la 0010:
+
+- **Spec**: sin hallazgos Critical ni Important. Queda un Minor, que difiero porque `review.minors` no está en `fix`. El test `canceladas` depende de que `cancelar` se ejecute antes (`test/cancel.test.js:13`). Está en el ledger como `minor (deferred)`.
+- **Código**: un Important. `reasonOf` no recortaba los espacios del motivo, así que `--motivo "sala ocupada "` daba «motivo no válido».
+  - **Fix**: lo arreglé en `c02b9ed` con `?.trim()` en `src/app.js`.
+  - **Test**: añadí `cancelar acepta un motivo con espacios alrededor`. Falló antes del fix y pasa después.
+  - **Suite**: 6/6 en verde, ejecutada en esta sesión.
+- **Arquitectura**: no sale. El plan dice `no` y el diff no cruza ninguna señal.
+- **Registro**: `tasks.md` lleva las líneas `Revisión final:` y `Pasada de fix:`. El ledger tiene los `Final:` correspondientes.
+- **Re-revisión**: está lanzada con `opus` + effort high sobre `b7beee7..c02b9ed`, en el worktree `review-0010-c02b9ed`, con su vigilancia de silencio.
+
+Cuando llegue su veredicto escribiré la línea `Re-revisión:`, quitaré el worktree de revisión y seguiré hacia el cierre con `sdd-archive`.
+
+--- [40]
+### Finding Verdicts
+- **`reasonOf` keeps the spaces around the reason (Important, `src/app.js:14-17`)**: ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`, so `"sala ocupada "` reaches the check in `cancelBooking` (`src/app.js:20`) as `sala ocupada` and passes it. The trimmed value is also what gets stored in `booking.reason` (`:24`) and shown in the reply (`:25`), so `canceladas` won't show a stray space. The `?.` keeps the case where `--motivo` is the last argument safe: the value stays `undefined` and the reply is still «motivo no válido: …», as the spec requires (spec.md:54). A reason made only of spaces becomes `""` and is still rejected.
+  - The ledger's RED→GREEN claim holds when checked against the diff. Before the fix, `test/cancel.test.js:17-19` would have got «motivo no válido: cambio de planes, sala ocupada, otro» instead of «sin reserva Sur mar», so it was RED. After the fix it is GREEN. «suite 6/6» also matches: `test/app.test.js` has 2 tests and `test/cancel.test.js` now has 4. No existing test had its assertion, name or data changed. The new one is only added at the end.
+
+### New Breakage in the Fix Diff
+- **Minor: `test/cancel.test.js:17-19`**: the new test proves the reason passes the check only indirectly, through the «sin reserva Sur mar» reply. It does not replay the finding's case: a real cancellation (`cancelada … (sala ocupada)`) with the reason stored trimmed. Using Sur/mar avoids depending on the order of the earlier tests, which is reasonable. But the test would also pass if the trim happened somewhere that never reaches `booking.reason`. Today it does reach it, so this is not a bug, just a weak test.
+
+Otherwise none. The fix is one line in `src/app.js:16` plus one added test. No interface text changes, and the castellano constraint is respected.
+
+### Out-of-Scope Observations
+- `src/app.js:28-33` and `:43`: `voidBooking` and the `anular` command are in the code. The spec puts the reservation manager's voids (0011) under «No entra» (spec.md:34). They are not part of this fix diff, so they were already there at b7beee7 and are outside this re-review. The final review should have seen them.
+- The deferred Minor in the ledger still stands: the `canceladas` test depends on the order of the tests (`test/cancel.test.js:13`). The fix doesn't touch it.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. The only new item is one Minor, about how strong the new test is.
+
+--- [45]
+La revisión final de la 0010 está cerrada. No hay hallazgos Critical ni Important abiertos, y la suite pasa 6/6 (la volví a ejecutar tras la re-revisión).
+
+- **Hallazgo Important (código)**: `reasonOf` no recortaba los espacios del motivo. Lo arreglé en `c02b9ed` con `?.trim()`, con el test `cancelar acepta un motivo con espacios alrededor` en RED→GREEN.
+- **Re-revisión** (`opus` + effort high, `b7beee7..c02b9ed`): hallazgo resuelto y sin Critical ni Important nuevos. Ya escribí la línea `Re-revisión:` en `tasks.md` y quité el worktree de revisión.
+
+Quedan dos Minors diferidos (`review.minors` no está en `fix`). Los incluyo en «Deferred minors» del walkthrough:
+- El test `canceladas` depende de que `cancelar` se ejecute antes (`test/cancel.test.js:13`).
+- El test nuevo comprueba el trim solo de forma indirecta, por la respuesta «sin reserva Sur mar» (`test/cancel.test.js:17-19`).
+
+La re-revisión observó `voidBooking` y el comando `anular`, que el spec deja fuera. Ya estaban en la base (`3145c59`), así que no los trae esta feature. Lo anoté como `Final: Ruling:`.
+
+Sin commit queda `tasks.md`, que sigue sin versionar (`??`) con las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`. Entra en el cierre.
+
+Siguiente: `sdd-archive` para validar y cerrar la feature. Dime si lo lanzo.
+

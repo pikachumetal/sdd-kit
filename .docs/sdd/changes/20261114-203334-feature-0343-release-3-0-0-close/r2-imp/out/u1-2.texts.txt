@@ -1,0 +1,134 @@
+--- [3]
+Ahora: leo el spec, el plan y `tasks.md` de la 0010 para ver qué pide exactamente la Task 2. Queda: decidir si es una desviación y parar o seguir, ~2 min.
+
+--- [10]
+Ahora: dejo en `spec.md` la corrección que recomiendo (sin commit) y lanzo un revisor de spec. Queda: el revisor y parar en ✋, ~3 min.
+
+--- [13]
+Python no está disponible, así que hago las ediciones con Edit.
+
+--- [18]
+Ahora: despacho el revisor de spec (sonnet, con los siete puntos). Queda: sus hallazgos y parar en ✋, ~3 min.
+
+--- [30]
+🦆 **Dónde estoy.** La Task 2 pide que `canceladas` responda «Norte lun — sala ocupada — Ana». Pero la aplicación no guarda ni recibe ningún dato de quién ejecuta un comando. `PRODUCT.md` dice que la usa una sola persona, y `cancelar` solo recibe sala, día y motivo. No hay de dónde sacar «Ana», así que el THEN no se puede implementar tal cual. Cambiarlo es una desviación de la spec aprobada, no una decisión mía, así que paro antes de tocar código.
+
+**Lo que he dejado, sin commit.** En `spec.md` he reescrito la Decisión 2 y el THEN del listado: ahora enseña sala, día y motivo, sin «quién». También he puesto la línea en «Enmiendas», marcada «sin aprobar». No he tocado código, la Task 1 ni `tasks.md`.
+
+**Revisor de spec (sonnet).** Sus hallazgos más relevantes:
+
+- **Crítico:** `spec.md` sigue con `status: approved` y firma de Laura del 08-10, pero el texto ya no es el que ella aprobó.
+- **Crítico:** el Intent habla de «saber quién y por qué». Quitar el «quién» exige decidirlo explícitamente. Puedo añadir «No entra: quién canceló» al Scope.
+- **Importante:** `PRODUCT.md:11` define la Reserva como «a nombre de quien la pide», así que sí existe un dato de persona: el titular de la reserva. Puede que «Ana» fuera el titular y no quien ejecuta. Esto no lo puedo resolver yo.
+- **Importante:** la Decisión 2 mezcla la decisión con el texto de la enmienda.
+- **Importante:** faltan escenarios de lista vacía, orden, y sin `--motivo` sobre un `cancelar` que antes funcionaba, que sería un MODIFIED sin declarar.
+- **Menor:** el listado no incluye la franja horaria.
+
+Los hallazgos 5 a 10 afectan a la spec ya aprobada, no a mi enmienda. No los he aplicado.
+
+✋ **Necesito tu decisión para seguir con la Task 2:**
+
+1. **Recomendación: quitar «quién» del listado.** La enmienda queda como está. Añadiría «No entra: quién canceló» al Scope y dejaría la Decisión 2 limpia. Laura tendría que reaprobar la spec.
+2. **Mostrar el titular de la reserva.** Habría que guardar un titular en cada reserva y decidir de dónde sale, porque hoy las reservas no lo tienen. Esto es otra feature.
+3. **Añadir `--por <nombre>` a `cancelar`.** Es una entrada nueva fuera del Scope, y la descarté.
+
+Responde con 1, 2 o 3. Mientras tanto la enmienda queda sin aprobar y sin commit.
+
+--- [32]
+Ahora: marco la enmienda como aprobada y commiteo la spec. Queda: implementar la Task 2 en Native con RED primero, ~5 min.
+
+--- [42]
+Escribo el test RED (el THEN enmendado) y lo ejecuto.
+
+--- [44]
+RED por la razón correcta (`canceladas` no existe, cae en «salas»). Ahora el código mínimo.
+
+--- [47]
+El `\\n` del script de edición se coló como salto real y rompió la sintaxis. Lo arreglo.
+
+--- [55]
+Ahora: preparo el paquete de revisión final y despacho los ejes Spec y Code. Queda: revisiones, cierre y parar en la validación, ~10 min, ~$1–2.
+
+--- [68]
+Los dos ejes (Spec en opus, Code en sonnet) están revisando en segundo plano. Mientras tanto no toco nada del repo. Espero sus informes.
+
+--- [73]
+**Hallazgos**
+
+Minor · src/app.js:43 · Si se omite `--motivo`, el CLI responde «motivo no válido: cambio de planes, sala ocupada, otro». Es engañoso, porque el motivo no es inválido, sino que falta. Además, la validación va antes que la comprobación de la reserva, así que `cancelar Norte lun` sobre una reserva inexistente también dice «motivo no válido». · Distinguir `undefined` y responder algo como «falta --motivo: …». Ese caso no tiene test.
+
+Minor · src/app.js:38 · `reasonOf` busca `--motivo` en cualquier posición, pero `cancelBooking` sigue tomando sala y día de `params[0]` y `params[1]`. Con `cancelar Norte --motivo otro` el día pasa a ser `--motivo`, y la salida es «sin reserva Norte --motivo». Con `--motivo` al principio, la sala sería `--motivo`. · Extraer los argumentos posicionales quitando `--motivo` y su valor, o documentar que va al final.
+
+Minor · src/app.js:52 · `cancelledList()` devuelve `''` cuando no hay canceladas, y `console.log` imprime una línea en blanco. Los demás comandos siempre contestan con un texto («sin reserva…»). · Devolver un mensaje tipo «sin reservas canceladas» cuando la lista esté vacía, con su test.
+
+Minor · test/cancel.test.js:98 · El test de `canceladas` depende del estado compartido del módulo. En la ejecución completa, el `run('cancelar', ['Norte','lun', …])` de la línea 99 no hace nada, porque el primer test ya canceló esa reserva y devuelve «sin reserva Norte lun». La aserción pasa solo porque el test 1 dejó «sala ocupada». Si se cambia el motivo del test 1 o se reordenan los tests, falla sin que el listado tenga ningún fallo. · Cancelar otra reserva en este test, o preparar un estado propio, y aserir sobre ese resultado.
+
+Minor · test/cancel.test.js:92 · Se borró «cancelar sin reserva lo dice». Con un motivo válido, la ruta `sin reserva` ya no tiene cobertura. El test de motivo fuera de lista usa `Sur mar`, que tampoco existe, así que no distingue qué validación dispara la respuesta. · Recuperar el test con motivo válido (`['Sur','mar','--motivo','otro']`), y usar una reserva existente en el test de motivo inválido.
+
+**Veredicto: Approved.** No hay Critical ni Important. Las cinco observaciones son Minor y casi todas son casos límite del CLI o fragilidad de los tests.
+
+--- [75]
+El eje Code ha vuelto: aprobado, con cinco Minor. Falta el eje Spec; espero su informe antes de cerrar la revisión.
+
+--- [79]
+**Spec axis review: feature 0010 at `4aa59ad`**
+
+## Findings
+
+- **Important** · `<run>/repo/.temp/sdd/plan/progress.md:3` (and spec «Enmiendas», line 64) · **What fails:** the Ruling says to reopen if «quién canceló» meant the person who holds the booking, and the project's own glossary seems to meet that condition. In `PRODUCT.md`, Terminology defines a booking as «a nombre de quien la pide» and a Cancelación as one «que anula el propio cliente». So whoever cancels is always the person who holds the booking. Roadmap item 0011 also speaks of «reservas de otras personas». The amendment rests on «la aplicación no tiene usuarios», which matches Product Purpose but not the glossary. The code matches the amended spec. The open question is whether the amendment rests on the right premise. · **What to change:** no code change yet. Show the dev-lead this glossary entry and the 0011 entry and settle the Ruling's condition explicitly. If «quién» means the booking holder, reopen Task 2 as the Ruling says. Bookings have no holder field today, so that would mean adding one, which goes beyond the current Scope. If the amendment stands, record in the ledger why the condition is not met.
+- **Minor** · `test/cancel.test.js:9` · **What fails:** the old test «cancelar sin reserva lo dice» became the invalid-reason test, so nothing tests the «sin reserva Sur mar» answer any more. The behavior is still in the code at `src/app.js:21`. Nothing in the spec asked to drop it. · **What to change:** put that test back with a valid reason, e.g. `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+- **Minor** · `test/cancel.test.js` (no test) · **What fails:** the spec's third case (spec line 55: cancelling without `--motivo` gives «motivo no válido: …») has no test. The code handles it, because `reasonOf` returns `undefined`, which is not in the list. · **What to change:** add a test that cancels with no `--motivo` and checks that error.
+- **Minor** · `src/app.js:28-32` · **What fails:** when nothing has been cancelled, `canceladas` prints an empty line. Someone using the tool can't tell «nothing cancelled» from «the command did nothing». The spec doesn't cover this case. · **What to change:** return a message in Spanish, e.g. «sin canceladas», and test it.
+
+Checked and in line with the amended spec: the closed list of reasons, both answer texts (they match the spec character for character, including the «—»), `canceladas` showing only cancelled bookings, no «quién», and all interface text in Spanish.
+
+## Declined to judge
+
+- **Losing the reason between runs** (the bookings list lives only in memory, so a separate `canceladas` run sees nothing): the app already worked this way. Saving the reason is roadmap item 0014, so it is out of this Scope.
+- **Voided bookings left out of `canceladas`:** voiding by the room's manager is 0011, which the Scope excludes explicitly.
+- **Reasons matched case-sensitively** («Sala ocupada» is rejected): the spec fixes a closed, literal list.
+- **The reason is checked before looking up the booking**, so a missing booking with no reason answers «motivo no válido»: the spec doesn't set an order, and both answers are correct.
+- **Test 3 depends on state left by test 1:** that is test quality, another axis's job. Run on its own it still passes.
+- **`--motivo` as the last token** with nothing after it: it falls into the «sin motivo» answer, which is what the spec asks.
+- **A suggested heavy check:** run `node --test` across the whole repo, including `test/app.test.js`, to confirm nothing else called `cancelar` without a reason. I did not run it, as instructed.
+
+## Verdict
+
+**Needs fixes.** The code does what the amended spec asks. The Important finding is a decision for the dev-lead about the amendment's premise, not a code fix. The Minor findings are test gaps against spec cases and the empty-list case.
+
+--- [81]
+Ahora: leo el cierre de la revisión y re-gradúo los hallazgos. Queda: un pase de fix, validación y parar, ~5 min.
+
+--- [89]
+La Task 2 está implementada y commiteada, pero el listado de canceladas no enseña quién canceló. Antes de seguir hice una enmienda a la spec y la aprobaste.
+
+**Verificación.** `node --test` pasa: 5 de 5, 0 fallos. El gate de cierre del plan es ese mismo comando.
+
+**Lo que hay en la rama:**
+- `fae95fb`: la enmienda. `canceladas` responde «Norte lun — sala ocupada», sin «quién». Cambié el THEN y la Decisión 2, y dejé la línea en «Enmiendas».
+- `3558961`: `canceladas`, con su test escrito antes y visto fallar por la razón correcta.
+- `4aa59ad`: `tasks.md` actualizado con la Task 2 hecha. La línea de «Revisión final:» la añadí después y quedó sin commitear.
+
+**Revisión final** (sobre `4aa59ad`; el eje de arquitectura no salió porque el diff no toca módulos, dependencias, contratos ni datos):
+- **Código (sonnet): aprobado**, con 5 Minor.
+- **Spec (opus): necesita arreglos.** Su único hallazgo Important no es un fallo del código. Señala que `PRODUCT.md` define la Reserva como «a nombre de quien la pide» y la Cancelación como la que anula el propio cliente. Eso apunta a que «quién» podría ser el titular de la reserva, no quien ejecuta el comando. Es el mismo punto que te planteé antes de que aprobaras la enmienda, así que lo dejé como `Ruling:`. Si resulta que era el titular, hay que reabrir la Task 2 y añadir un titular a las reservas.
+
+**Rulings que tomé** (todos en el ledger, con lo que cuestan si me equivoco):
+1. La enmienda se queda, porque la aprobaste viendo ese punto. Si «quién» era el titular, hay que reabrir la Task 2.
+2. Cinco comportamientos que el revisor apartó, resueltos así:
+   - La memoria entre ejecuciones queda fuera: ya era así y guardar es la 0014.
+   - Las anuladas no salen en `canceladas`: son de la 0011.
+   - El motivo distingue mayúsculas: la lista es cerrada y literal.
+   - El motivo se valida antes de buscar la reserva: la spec no fija orden.
+
+**Minors diferidos.** No hay `review.minors: fix` en la configuración, así que no los arreglé:
+- Sin `--motivo`, el mensaje dice «motivo no válido» en vez de «falta --motivo».
+- `--motivo` en cualquier posición desplaza sala y día.
+- `canceladas` vacío imprime una línea en blanco.
+- El test de `canceladas` depende del estado que deja el test 1.
+- Faltan dos tests: «sin reserva» con motivo válido, y `cancelar` sin `--motivo`.
+
+Los dos últimos tests faltan por cambios de la Task 1; los vio la revisión final, y los dos ejes los marcaron.
+
+**Pendiente.** No he invocado `sdd-archive` (validación, walkthrough y merge): ahí empieza el cierre y el merge lo decides tú. El workspace del plan (`.temp/sdd/plan`) sigue ahí hasta entonces. Dime si sigo con el cierre.
+

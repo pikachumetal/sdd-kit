@@ -1,0 +1,67 @@
+--- [14]
+Ahora: escribo los tests en RED del patch 0021 (cancelar una reserva inexistente) y los ejecuto antes de tocar `src/app.js`. Queda: el fix mínimo, la verificación, un revisor y el commit, ~10 min.
+
+--- [17]
+RED confirmado: el test nuevo falla porque devuelve `cancelada mar 10:00-12:00` en vez de `no existe`. Ahora el fix mínimo.
+
+--- [21]
+Verde: 4 de 4. Anoto la verificación en `patch.md` y lanzo el revisor del patch.
+
+--- [28]
+Retomé el patch 0021 en el paso 4 (fix mínimo). El fix y su test ya están hechos y en verde. Falta que el revisor conteste, y después el commit y el cierre.
+
+- **Qué había:** la causa raíz del `patch.md` era cierta. `run` en `src/app.js` devolvía `cancelada …` sin mirar `bookings`. El código estaba intacto y el único cambio sin commitear era la carpeta del patch.
+- **RED:** cambié `cancelar respeta el día` para que use `lun 10:00-12:00` y añadí `cancelar una reserva que no existe responde no existe`. El test nuevo falló con `cancelada mar 10:00-12:00` en vez de `no existe`.
+- **Fix:** `cancelar` responde `no existe` si no hay reserva de ese día y franja. `node --test` da 4 de 4 en verde. El diff es de 2 ficheros, +10 y −2 líneas.
+- **`patch.md`:** §4 ya lleva la evidencia, el RED, el verde y el diff.
+
+El revisor (sonnet) está en marcha en segundo plano, con su vigilancia de silencio. Sigo cuando conteste: respondo cada hallazgo en §4, hago el commit único del fix, que irá con tipo `fix` y el id 0021, y paso al cierre con `sdd-archive`.
+
+Hay dos cosas que cerrar antes del commit. El tiempo de §5 solo tiene el inicio (`2026-09-21T09:00:00Z`), así que falta el tiempo real. El proyecto no tiene `estimation.md`, por lo que no hace falta línea de estimación.
+
+--- [30]
+**Resultado:** sin hallazgos bloqueantes ni de severidad media o alta. `node --test` pasa con 4 de 4 tests y 0 fallos. Solo hay dos observaciones menores.
+
+**Comprobaciones**
+1. **Causa raíz (§2): cierta.** En el código original, `src/app.js:12` era `if (cmd === 'cancelar') return \`cancelada ...\``, sin consultar `bookings`.
+2. **Fix de `src/app.js:12-16`: mínimo y correcto.**
+   - Desestructura `[day, slot]`, comprueba con `bookings.some` el día y la franja, y devuelve `no existe` si no hay reserva.
+   - No toca `libres`, `reservar` ni el resto de `run`.
+   - No hace falta comparar la sala, porque `cancelar` no recibe ese parámetro.
+3. **Tests: prueban el síntoma y no se ajustan al código.**
+   - El test nuevo (`test/app.test.js:17-19`) usa `mar` con `10:00-12:00`. El formato de franja es válido, así que el único motivo de que no exista la reserva es el día.
+   - La modificación de `cancelar respeta el día` (`test/app.test.js:13-15`) estaba justificada. El test anterior (`mar`, `10:00`) afirmaba la conducta errónea, porque esa reserva no existe en `bookings` y además usaba un formato de franja que nunca coincide. Ahora usa la reserva real `lun 10:00-12:00`.
+   - Los datos de `bookings` no se han tocado.
+4. **Cifras del patch (§4): coinciden.** El diff tiene 10 líneas añadidas y 2 quitadas (src +5/−1, test +5/−1), como dice el patch. No se elimina ningún símbolo.
+
+**Observaciones menores**
+- **Baja, `test/app.test.js:17-19`:** no hay caso de franja distinta con el día correcto, por ejemplo `lun 10:00`. La mitad `b.slot === slot` de la condición no tiene cobertura propia.
+- **Baja, `src/app.js:15`:** `cancelar` no elimina la reserva de `bookings`. Una segunda cancelación de la misma reserva real seguiría respondiendo `cancelada`. Es anterior al patch y queda fuera del síntoma descrito. Convendría anotarlo como deuda o confirmar que se descarta a propósito, porque §3 no lo menciona.
+
+**Nota informativa:** `patch.md` §5 solo tiene `Inicio`, sin fin ni duración. Es normal si el patch aún no está cerrado.
+
+--- [37]
+Commit hecho. Paso al cierre con `sdd-archive`.
+
+--- [48]
+**Falta tu validación antes de seguir con el cierre.** En este proyecto la validación es manual (`sdd-kit.json` no fija `validation.mode`), así que el cierre espera a que pruebes el fix. Ya lo ensayé yo con los mismos comandos.
+
+🦆 Antes, `cancelar` de una reserva que no existe contestaba `cancelada` igual. Ahora contesta `no existe`: `cancelar mar 10:00-12:00` da `no existe`, y `cancelar lun 10:00-12:00`, que es la reserva real, sigue dando `cancelada lun 10:00-12:00`.
+
+**✋ Me salí del plan en…** nada. La decisión del texto `no existe` figura como `dev-lead` en `patch.md` §3.
+
+Panel: plan B en http://127.0.0.1:6365/ (no tengo herramientas de Chrome). Esa página no ve la app: si algo falla, cuéntame el error en el comentario. Paro el servidor al terminar.
+
+**Cómo probarlo** (desde la raíz del repo, rama `patch/0021-cancel-missing`; la app no guarda estado entre ejecuciones):
+1. `node src/app.js cancelar lun 10:00-12:00` → `cancelada lun 10:00-12:00`
+2. `node src/app.js cancelar mar 10:00-12:00` → `no existe`
+
+Dime qué probaste y si funciona, o márcalo en el panel y escribe «listo». Si prefieres diferir, dime con qué disparador y quién lo prueba.
+
+**Pendiente tras tu validación:**
+- **Política de fusión:** `sdd merge --check` falla porque falta `merge.into`/`merge.noFf` en `.docs/sdd/sdd-kit.json`. Te propondré el bloque antes de fusionar. En el repo hay `develop` y `main`, sin remoto.
+- **Roadmap:** no hay fila para el 0021, así que mi propuesta es añadirla en Now con estado ✅ al validarse.
+- **Deuda:** apuntaré en «Por triar» que `cancelar` no borra la reserva de `bookings`.
+- **Historia:** el patch queda en dos commits, el fix (`51a9a28`) y el cierre. Pondré ese hash en `patch.md`.
+- **Tiempo:** `Inicio` es de `2026-09-21`, así que el tiempo total no es fiable. Lo dejé anotado.
+

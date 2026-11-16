@@ -1,0 +1,27 @@
+--- [16]
+Ahora: te enseño el flujo dibujado y te planteo la primera duda de diseño. Queda: unas pocas preguntas más, la spec y su aprobación, ~10 min.
+
+**Lo que he entendido (corrígeme):** una reserva tendría un estado (`pendiente`, `confirmada` o `cancelada`) y solo valdrían estas transiciones. No tengo diagrama ni Artifact en esta sesión, así que lo dibujo en Mermaid.
+
+```mermaid
+stateDiagram-v2
+    [*] --> pendiente
+    pendiente --> confirmada: confirmar
+    pendiente --> cancelada: cancelar
+    confirmada --> cancelada: cancelar
+    cancelada --> pendiente: reactivar
+```
+
+Hoy el código no tiene estados. `bookings` guarda `{room, day, slot}`, `libres` trata toda reserva como ocupada y `cancelar` solo devuelve un texto. Esta feature añade el estado y las reglas de transición.
+
+El flujo es coherente y no tiene estados sin salida. El único punto flojo es `cancelada → pendiente`. Una reserva cancelada libera la franja, así que otra persona puede reservarla después. Si luego reactivas la cancelada, tendrías dos reservas vivas de la misma sala y franja. Esto cambia otras reglas, como si una reserva `pendiente` bloquea la sala o cuándo se detecta el choque.
+
+❓ **¿Qué pasa al reactivar una reserva cuando su franja ya la ocupa otra?**
+Todas las alternativas permiten `cancelada → pendiente`, que es lo que pediste. Se diferencian en cuándo se detecta el choque.
+1️⃣ **Rechazar la reactivación si la franja está ocupada.** Una `pendiente` bloquea la sala igual que una confirmada, así que `libres` queda como hoy. Escena: `reactivar Norte lun 10:00-12:00` → `No se puede: Norte ya está reservada en esa franja`. Coste: una cancelada no siempre se puede revivir y hay que crear una reserva nueva.
+2️⃣ **Dejar que `pendiente` no bloquee y comprobar el choque al confirmar.** Solo bloquean las confirmadas. Escena: `reactivar Norte lun 10:00-12:00` → `Norte lun 10:00-12:00: pendiente`, y después `confirmar` → `No se puede: Norte ya está confirmada en esa franja`. Coste: `libres` ofrece salas que luego no se pueden confirmar, y hay que cambiar su regla.
+3️⃣ **Permitir el solape sin comprobar nada.** Escena: `reactivar Norte lun 10:00-12:00` → `Norte lun 10:00-12:00: pendiente`, con dos reservas vivas en la misma sala y franja. Coste: rompe la regla de una reserva por sala y franja.
+➡️ **Recomiendo 1️⃣**, porque mantiene que cada sala y franja tiene una sola reserva viva, y `libres` y las reservas semanales siguen como están. A cambio, no se puede reactivar una cancelada cuya franja ya se haya vuelto a reservar.
+
+¿Cuál eliges?
+

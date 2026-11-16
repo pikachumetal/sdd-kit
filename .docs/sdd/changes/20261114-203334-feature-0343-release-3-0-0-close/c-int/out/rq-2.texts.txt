@@ -1,0 +1,36 @@
+--- [11]
+Voy leyendo el repo para anclar la pregunta. Esto es lo que he encontrado.
+
+**Qué dice el código (`src/app.js`)**
+- `bookings` es un array en memoria con una reserva fija (Norte, lun, 10:00-12:00).
+- `reservar` no añade nada a ese array. Solo devuelve un texto. Cada comando de la CLI es un proceso nuevo, así que hoy no se guarda ninguna reserva.
+- `cancelar` tampoco modifica nada.
+
+**Qué dicen los documentos**
+- `PRODUCT.md`: la usas solo tú y la despliegas en tu propio servidor.
+- `operations.md`: Node 22, sin dependencias externas y un único fichero de entrada.
+- Hay un patch 0007 ya hecho (la cancelación respeta el día) y una fila 0009 en Later (exportar a `.ics`). Ambas leerán o escribirán el mismo almacén.
+
+**Qué he comprobado y qué no**
+- En esta máquina hay Node 26 y `node:sqlite` carga. El proyecto declara Node 22 y no he comprobado cómo está `node:sqlite` en esa versión. Creo que allí aún es experimental, pero es algo que recuerdo, no que haya verificado.
+
+❓ **¿Dónde se guardan las reservas?**
+Tu uso es de una sola persona y los comandos son procesos cortos y secuenciales. Solo hay que decidir el formato de almacenamiento.
+
+1️⃣ **Fichero JSON** (por ejemplo `reservas.json`), leído al arrancar y escrito tras cada `reservar` o `cancelar`.
+- Respeta «sin dependencias» y se abre y se arregla a mano.
+- Es fácil de exportar a `.ics` (fila 0009).
+- Coste: si dos procesos escriben a la vez, uno pisa al otro. Con un solo usuario es un riesgo muy bajo, pero existe. Se puede reducir escribiendo a un fichero temporal y renombrando.
+
+2️⃣ **SQLite con `node:sqlite`**, integrado en Node y sin paquetes externos.
+- Es transaccional y evita el pisado entre procesos.
+- Coste: no he comprobado su estado en Node 22 y puede dar avisos de módulo experimental. Para un array de unas decenas de reservas es más maquinaria de la necesaria.
+
+3️⃣ **Fichero de líneas (JSONL), solo añadiendo al final.**
+- Cada reserva o cancelación se añade como una línea, sin reescribir nada, y el estado se reconstruye al leer.
+- Coste: es menos legible y la cancelación pasa a ser un evento en vez de un borrado. Complica el resultado de `libres`.
+
+➡️ **Recomiendo 1️⃣**, porque eres la única usuaria o usuario, el volumen es mínimo y las reglas del proyecto excluyen dependencias. Además, el JSON se inspecciona a mano y alimentará el `.ics` sin trabajo extra. A cambio, aceptas el riesgo teórico de escrituras simultáneas, que se mitiga con escritura atómica.
+
+¿Vas con 1️⃣ o prefieres otra opción?
+

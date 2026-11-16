@@ -1,0 +1,127 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261013-100000-feature-0020-path-reply && ls -R $D | head -50 && git status --short && git diff && cat $D/green/h1-r1.txt && cat $D/tasks.md
+
+>>> Bash: cd "<run>/repo" && D=.docs/sdd/specs/20261013-100000-feature-0020-path-reply && cat $D/spec.md && cat $D/plan.md
+<<< Exit code 1
+.docs/sdd/specs/20261013-100000-feature-0020-path-reply:
+green/
+plan.md
+spec.md
+
+.docs/sdd/specs/20261013-100000-feature-0020-path-reply/green:
+h1.txt
+h1-r1.txt
+ M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/
+diff --git a/skills/guardar-nota/SKILL.md b/skills/guardar-nota/SKILL.md
+index 4ae6a6d..58d2ca6 100644
+--- a/skills/guardar-nota/SKILL.md
++++ b/skills/guardar-nota/SKILL.md
+@@ -7,3 +7,4 @@ description: Use when the user asks to save a note in notas/.
+ 
+ 1. Ask for the title and the body if the request lacks them.
+ 2. Write `not
+<<< ---
+id: 20261013-100000-feature-0020-path-reply
+feature: 0020
+title: Confirmar el guardado con la ruta
+mode: full
+profile: delegate
+status: approved
+created: 2026-10-13
+author: agente con el dev-lead
+approvers:
+  - role: dev-lead
+    name: Laura
+    approved_at: 2026-10-13
+---
+
+# Spec — Confirmar el guardado con la ruta
+
+## Capacidades
+
+- Modificadas: `notes` — `guardar-nota` dice dónde guardó la nota.
+
+## Decisiones que he tomado yo — valida estas
+
+1. Sin decisiones propias.
+
+## Intent
+
+Quien guarda una nota no sabe en qué fichero ha quedado, y la busca a mano en `n
+
+>>> Bash: cd "<run>/repo" && cat skills/guardar-nota/SKILL.md; echo ----; cat .docs/sdd/specs/*0020*/green/h1.txt; ls; ls skills; git log --oneline | head; grep -rn "humo\|smoke\|headless" --include=*.md --include=*.json --include=*.sh . -il | grep -v node_modules | head
+<<< ---
+name: guardar-nota
+description: Use when the user asks to save a note in notas/.
+---
+
+# guardar-nota
+
+1. Ask for the title and the body if the request lacks them.
+2. Write `notas/<slug of the title>.md` with the body.
+3. Always tell the user the full path you wrote — never omit it.
+----
+# Humo h1 — guardar-nota (Task 1 de la 0020)
+
+Petición al sujeto: «guarda la nota "Reunión martes": "llevar el presupuesto"».
+Estado previo: `notas/` sin «Reunión martes».
+
+Lo que hizo el sujeto (tools.txt):
+1. Write notas/reunion-martes.md — «llevar el presupuesto»
+2. Texto al usuario: «No
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/constitution.md CLAUDE.md; ls .docs/sdd .docs/sdd/steering; ls -la notas
+<<< # Constitution — notas
+
+## Art. I — Pruebas de skills
+
+Ninguna skill nueva ni edición de una existente sin su prueba: un humo (un sujeto headless con la skill editada). Si el humo falla, una ronda de REFACTOR de la skill y se vuelve a lanzar.
+
+## Art. II — Spec
+
+La spec aprobada es la fuente de verdad: un cambio a un requisito o a un THEN lo aprueba el dev-lead.
+
+## Art. III — La forma sigue al fallo
+
+- Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
+- Fallo de forma (cumple pero con la forma equivocada) → receta o co
+
+>>> Edit: <run>\repo\skills\guardar-nota\SKILL.md
+<<< The file <run>\repo\skills\guardar-nota\SKILL.md has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && which claude; claude --version 2>&1 | head -1
+T=$(mktemp -d); echo $T; for i in 1 2 3; do mkdir -p $T/s$i/notas $T/s$i/.claude/skills; cp -r skills/guardar-nota $T/s$i/.claude/skills/; cp notas/reunion-lunes.md $T/s$i/notas/; done; echo $T > /tmp/h1dir
+<<< /c/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/tests/headless/no-claude/claude
+claude anidado bloqueado en un sujeto: run.mjs no ve su coste
+/tmp/tmp.q59DzYqUTW
+
+>>> Bash: rm -rf "$(cat /tmp/h1dir)" /tmp/h1dir; cd "<run>/repo" && git status --short
+<<< Dangerous rm operation detected: the target is the output of a command substitution (`$(...)` or backticks) and cannot be checked before the command runs. This requires explicit approval and cannot be auto-allowed by permission rules.
+
+Run the substitution on its own first, then remove the literal paths it prints.
+
+>>> Bash: rm -rf /tmp/tmp.q59DzYqUTW /tmp/h1dir; cd "<run>/repo" && git status --short
+<<<  M skills/guardar-nota/SKILL.md
+?? .docs/sdd/specs/20261013-100000-feature-0020-path-reply/green/
+
+=== RESULTADO (11 turnos, 0.16930169999999997 $)
+No he cerrado la Task 1: la ronda 2 está escrita, pero no he podido lanzar el humo para comprobarla.
+
+**Diagnóstico.** El fallo de h1 y h1-r1 es un elemento omitido: los sujetos escriben bien `notas/reunion-martes.md`, pero la respuesta no dice la ruta. La ronda 1 solo reforzó la frase en prosa («Always… never omit it»), y los tres sujetos siguieron sin decir la ruta. Eso va contra el Art. III, que para un elemento omitido pide un hueco obligatorio en una plantilla, no prosa.
+
+**Ronda 2.** He cambiado el paso 3 de `skills/guardar-nota/SKILL.md`:
+- La respuesta pasa a ser una plantilla: ``Nota guardada en `<path>`.``
+- `<path>` es la ruta que el sujeto pasó a la escritura del paso 2.
+- Una respuesta sin `<path>` se declara incompleta, y se nombra el contraejemplo «Nota guardada.» como respuesta que no vale.
+
+No cambia ningún THEN ni AND de la spec, así que es una ronda de REFACTOR y no una desviación.
+
+**Humo.** El `claude` del entorno es un stub (`tests/headless/no-claude/claude`) que bloquea el `claude` anidado: «run.mjs no ve su coste». No he buscado otro binario para saltármelo. Por eso no tengo `green/h1-r2.txt` y no he inventado ningún veredicto. He borrado la copia temporal que había preparado.
+
+**Estado.** La skill está modificada sin commit y `green/` sigue sin añadirse. No he creado `tasks.md` ni marcado nada como hecho.
+
+**Para cerrar la task.** Lanza el humo h1 con tres sujetos desde `tests/headless/run.mjs` o desde una sesión sin ese bloqueo, y pásame la salida. Si pasa 3/3, guardo `h1-r2.txt`, creo `tasks.md` y hago el commit de la task con la skill y `green/`. Si falla, hago la ronda 3 con lo que digan los sujetos.

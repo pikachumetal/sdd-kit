@@ -1,0 +1,65 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`. Queda: tratar los informes de los ejes y pasar al siguiente stop, ~5 min.
+
+--- [17]
+Ahora: ordeno los hallazgos (1 Important de Código, 1 Minor de Spec) y hago la única pasada de fix en Native. Queda: test RED→GREEN, suite, commit y re-revisión, ~10 min.
+
+--- [22]
+Primero el test RED del hallazgo Important (motivo con espacio final).
+
+--- [25]
+RED confirmado. Ahora el fix y el Minor del eje Spec (test de `canceladas` independiente del orden).
+
+--- [47]
+Ahora mismo está en marcha la re-revisión de la pasada de fix (`47b2837`) y su vigilancia de silencio, y no tengo resultado aún. Espero el aviso antes de dar la revisión por cerrada.
+
+**Estado de la 0010**
+- **Spec:** sin Critical ni Important. Quedaba 1 Minor: el test de `canceladas` dependía del orden. Está corregido.
+- **Código:** 1 Important: `reasonOf` conservaba los espacios del motivo. Lo corregí con un test RED→GREEN («cancelar acepta un motivo con espacios alrededor»). La suite pasa 6/6.
+- **Arquitectura:** no sale. El plan dice `no` y el diff no tiene módulos nuevos, dependencias ni contratos.
+- **Commit:** `47b2837`. También corrijo en `tasks.md` el hash de la Task 1: ponía `d363d76` y es `da6ea99`.
+
+Pendiente: anotar el veredicto de la re-revisión en `tasks.md` como línea `Re-revisión:` y pasar a `sdd-archive`.
+
+--- [53]
+### Finding Verdicts
+- **(Code, Important) `src/app.js:14-17`: `reasonOf` keeps the spaces around the reason** — ADDRESSED. `src/app.js:16` is now `return index === -1 ? undefined : params[index + 1]?.trim();`. The reason is trimmed before `cancelBooking` checks it against the list (`src/app.js:20`), and the trimmed value is what gets stored and echoed (`src/app.js:24-25`). So `cancelar Norte lun --motivo "sala ocupada "` now gives «cancelada Norte lun (sala ocupada)». The `?.` keeps the spec case «sin `--motivo`» working (spec.md:54), and it also covers `--motivo` as the last argument: both still return `undefined` and get «motivo no válido: …». The RED→GREEN claim holds when I check it against the diff. At d363d76 the new test (`test/cancel.test.js:18-20`) would have sent `' sala ocupada '` into the `includes` check, got «motivo no válido: …» and failed. With the trim it reaches the booking lookup and returns «sin reserva Sur mar». The «6/6» count also matches the files: 2 tests in `test/app.test.js` plus 4 in `test/cancel.test.js`.
+- **(Spec, Minor) `test/cancel.test.js:13`: `canceladas` only passed after the `cancelar` test had run** — ADDRESSED. `test/cancel.test.js:14` adds a setup line, `run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']);`, before the assertion. Run alone, the test now cancels Norte lun itself and the listing returns «Norte lun — sala ocupada». In the full file run, that extra cancel returns «sin reserva Norte lun» and is ignored. The booking is still in the list only once, so the assertion holds either way. The assertion, test name and data did not change; it is only an added setup step.
+
+### New Breakage in the Fix Diff
+None at Critical or Important.
+- Minor, test strength, `test/cancel.test.js:18-20`: the new test uses `Sur mar`, which has no booking, so it expects «sin reserva Sur mar». That proves the padded reason passes the check. It does not prove the stored or echoed reason is trimmed, which was the symptom in the finding (`Norte lun`, «cancelada … (sala ocupada)»). The code does trim before storing, so the behaviour is right; only the test is weaker than it could be. The name «acepta un motivo…» next to an expected «sin reserva» also reads oddly.
+- `tasks.md:30` says «Pasada de fix: pendiente de sha». That is expected, because a commit cannot contain its own sha. It is not a defect.
+
+### Out-of-Scope Observations
+- Minor: spec.md:54 («sin `--motivo` responde … motivo no válido») has no test in `test/cancel.test.js`. The code handles it (`src/app.js:16,20`), but no test checks that scenario. This gap was already there at d363d76.
+- The tests share module-level state in `src/app.js:4` (`bookings` is a mutable array that is never reset). Other tests can still depend on order: for example, `cancelar con un motivo de la lista` (`test/cancel.test.js:5-7`) would fail if any earlier test had already cancelled Norte lun. No test currently does that.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [55]
+Ahora: anoto el veredicto en `tasks.md` y en el ledger, y quito el worktree de revisión. Queda: el commit de docs y el stop.
+
+--- [57]
+La revisión final de la 0010 está cerrada. Quedó en cinco puntos:
+
+- **Fix del Important:** `reasonOf` ya recorta el motivo (`47b2837`). El test «cancelar acepta un motivo con espacios alrededor» falló antes del cambio y pasa después. La suite completa pasa 6/6.
+- **Minor del eje Spec:** el test de `canceladas` ya no depende del orden de ejecución. Lo arreglé en el mismo commit.
+- **Re-revisión (opus+high):** da por resueltos los dos hallazgos y no ve Critical ni Important nuevos.
+- **Commit de docs `68b39af`:** deja el veredicto en `tasks.md`, que ahora trae las líneas `Revisión final`, `Pasada de fix` y `Re-revisión`. Es un commit solo de documentación, de menos de 20 líneas. Lo revisé yo en el hilo. También corregí el hash de la Task 1, que era `da6ea99` y no `d363d76`.
+- **Eje Arquitectura:** no salió. El plan dice `no` y el diff no tiene módulos, dependencias ni contratos nuevos.
+
+**Pendiente**
+- **Ruling:** el test nuevo usa `Sur mar`, que no tiene reserva. Comprueba que el motivo con espacios se acepta, pero no que el motivo guardado salga recortado. El código sí recorta antes de guardar. Si el eco del motivo se rompiera algún día, ese test no lo cazaría.
+- **Minors diferidos, ya en el ledger:**
+  - `spec.md:54` («sin `--motivo`») no tiene test propio. Ya era así en `d363d76`.
+  - `bookings` en `src/app.js:4` es estado global y no se reinicia entre tests. Los tests dependen del orden.
+
+No queda nada `sin revisar` ni «no verificado». Lo siguiente es `sdd-archive` (validación, walkthrough y merge). Los borradores de cierre (walkthrough y merge de capabilities) los dejo para ese paso.
+
+--- [58]
+Ese aviso es solo el de la vigilancia de silencio de la re-revisión, que ya terminó con el agente. No cambia nada de lo anterior.
+
+La revisión final de la 0010 está cerrada, sin hallazgos abiertos. Falta `sdd-archive` (validación, walkthrough y merge). Cuando me lo pidas, sigo por ahí.
+

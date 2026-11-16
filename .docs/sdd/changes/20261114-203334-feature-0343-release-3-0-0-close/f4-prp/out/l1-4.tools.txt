@@ -1,0 +1,115 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls .docs/sdd .docs/sdd/steering && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2; git ls-files | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/w
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md package.json src/app.js; cat .docs/sdd/specs/*free/spec.md; git branch -a
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/*free/walkthrough.md test/app.test.js; cat .docs/sdd/steering/debt.md; git status --short
+<<< # Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix/skills/sdd-propose/references" && cat modo-lite.md; sed -n 1,80p patch-lane.md
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- L
+
+=== RESULTADO (8 turnos, 0.1750412 $)
+🦆 Hoy `libres <franja>` lista las salas sin reserva activa en esa franja, sin mirar el día, porque `freeRooms` en `src/app.js` solo compara la franja. «Aceptar también el día» sería que `libres` admita un día (`lun`, `mar`…) y solo cuente las reservas de ese día. Ese cambio es pequeño, pero el orden de los argumentos y si el día es opcional los decido yo, así que no puede ser un patch.
+
+**Carril.** Lo veo como **lite**, no como patch, porque el patch exige que la solución ya esté fijada. Cumple las cinco condiciones de lite:
+- El flujo ya existe y se lee en `freeRooms` y `run`.
+- No cambia contratos públicos: el día es un argumento opcional añadido y `libres <franja>` sigue igual.
+- No toca datos: las reservas ya llevan `day`.
+- Cabe en un solo módulo, `src/app.js`.
+- Estimo unas 1 h en total, dentro de medio día. Incluye el gate de cierre `node --test && node scripts/lint.mjs`; la última feature, `free`, tardó 1 h reales, sin medida del gate.
+
+Pregunto antes de abrir nada:
+
+1. **Lite (recomendada).** Spec corta con la estimación dentro, sin plan, y reviso la spec antes de tu aprobación. Propongo `libres <franja> [día]`, con el día opcional y detrás de la franja. Si no lo das, funciona como hoy. Con día, solo cuentan las reservas de ese día.
+2. **Feature en modo full.** Igual, pero con spec, plan y tasks completos.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`). Si te vas a ausentar, puedes decir «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil, di «perfil `<otro>` para esta feature».
+
+¿1 o 2? Si prefieres otro orden de argumentos (`libres <día> <franja>`) o el día obligatorio, dímelo y lo recojo en la spec.

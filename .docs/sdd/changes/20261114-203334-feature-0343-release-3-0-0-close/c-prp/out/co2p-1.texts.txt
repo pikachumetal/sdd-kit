@@ -1,0 +1,74 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [16]
+Ahora: reservo el id y mido los topes del repo. Queda: escribir la spec, repaso de coherencia y una review, y presentártela, ~5 min.
+
+--- [23]
+Ahora: lanzo el revisor adversarial de la spec (uno, sonnet). Queda: integrar sus hallazgos y presentarte la spec, ~3 min.
+
+--- [25]
+La review de la spec sigue en curso. Espero su resultado antes de integrar hallazgos y presentarte la spec.
+
+--- [37]
+1. Importante · Intent y Constitution · La spec dice que el gate es `node --test && node scripts/lint.mjs`, pero el art. 2 fija como gate de cierre solo `node --test`. `scripts/lint.mjs` solo lee `src/app.js`, así que no tiene relación con este cambio. · Alinear el Intent con el art. 2 (`node --test`) o justificar por qué se añade el lint.
+
+2. Importante · Scope, decisión 3 y Approach (test) · No dice cómo termina `aviso.md`: si hay salto de línea final tras el párrafo ni si el párrafo va en una sola línea. «Acaba con el párrafo» puede dar un test frágil, o uno que pase con basura al final. El `aviso.md` actual termina en `\n`. · Fijar el contenido exacto del fichero (`primera línea\n\npárrafo\n`) y que el test compare el fichero entero o `trimEnd()`.
+
+3. Importante · ✋ Decisiones y Scope · Hay decisiones tomadas en el cuerpo que no están en la lista. Una es que el test también congela la primera línea (`{sala} el {dia}.`) y no solo el párrafo. Otra es que el título del test de `words.test.js` pasa a decir 114. · Añadirlas como decisiones numeradas.
+
+4. Importante · Decisión 1 / Topes de palabras · El tope 114 incluye 20 palabras de margen sin justificar, y eso permite crecimiento silencioso de plantillas hasta 20 palabras más. El conteo sí es correcto: `wc -w` da 6 + 46 = 52, el párrafo da 42 y el total es 94. · Justificar el margen o proponer 94 (o 100) como tope. Ofrecerlo como alternativa explícita al dev-lead.
+
+5. Importante · Intent / Decisiones tomadas con el dev-lead · Cita a un «dev-lead» que fija el texto, pero PRODUCT.md dice «No hay más usuarios ni más desarrolladores». La procedencia del texto literal y de las extensiones 5500/5599 no es verificable, y esa contradicción debilita la decisión. · Aclarar quién es el dev-lead (¿el propio autor?) o citar la fuente del literal. Reflejarlo también en el rol de aprobador.
+
+6. Menor · Validación (cabecera) · «No hay nada que una persona vea y el test no mida» es discutible. El test solo compara el texto con la spec, no con la realidad (extensiones, horarios), y el aviso lo lee una persona. · Matizar la frase, o dejar la validación humana de las extensiones al dev-lead como paso de aprobación.
+
+7. Menor · Scope / ficheros tocados · No se menciona `CHANGELOG.md` (existe en la raíz), y no queda dicho si el cambio de plantilla de cara al usuario necesita entrada. · Declarar «no entra: CHANGELOG» o añadirla.
+
+8. Menor · Delta de comportamiento / Capacidades · «Sin delta» es coherente con `capabilities/` vacío y no hay contradicción. Aun así, el aviso es contenido que ve el usuario y no hay ni un escenario GIVEN/WHEN/THEN que lo ancle. Las salas de PRODUCT.md no mencionan avisos ni conserjería. · Añadir una frase en PRODUCT.md o aceptar explícitamente que el aviso queda fuera del producto especificado.
+
+9. Menor · Decisión 8 y bloque de review · La decisión 8 («no se probó la fusión en copia») y la línea «Mínimo razonable: sin review» son ruido. Además la ✋ mezcla política de modelos y alternativas descartadas dentro de la lista de decisiones. · Quitar la decisión 8 y separar metadatos de review de las decisiones a validar.
+
+10. Menor · Dónde se prueba / Approach · La spec cita el art. 2 («tests antes que código») pero no ordena el trabajo: no pide ver `aviso.test.js` en rojo antes de editar `aviso.md`. El test de tope seguiría verde hasta tocar el párrafo. · Indicar el orden: primero `aviso.test.js` (rojo), luego `aviso.md`, y subir el tope al ver `words.test.js` rojo.
+
+--- [43]
+Ahora: spec escrita y revisada; te la presento para aprobar. Queda: tu aprobación, y después plan y hand-off a `sdd-implement`, ~3 min.
+
+**Carril:** feature, modo full · **Perfil:** delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación». Para otro perfil: «perfil `<otro>` para esta feature».
+
+La spec está en `.docs/sdd/changes/20261115-200408-feature-0014-notice-room/spec.md`. Es la feature 0014, en la rama `feature/0014-notice-room`. La reserva del id con `sdd id claim` dio «sin remoto: la 0014 vale».
+
+🦆 Hoy el aviso de sala dice solo «Aviso de sala: Norte el lunes.». Con este cambio, quien lo recibe lee debajo un párrafo nuevo. Dice dónde está la conserjería (extensión 5500, de lunes a viernes de 8:00 a 20:00), a quién llamar fuera de ese horario (seguridad, extensión 5599) y qué dejar listo al salir (sillas, pizarra, proyector, ventanas). El texto es el literal que decidiste, y un test comprueba que el fichero entero lo contiene. Hay un choque que decidir, que explico justo debajo.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+1. **Tope de palabras: 60 → 114.**
+   - `test/words.test.js` limita `docs/plantillas/` a 60 palabras en total. Hoy hay 52 (`aviso.md` 6, `recibo.md` 46) y tu párrafo suma 42, es decir 94. Sin cambiar el tope, `node --test` falla.
+   - Propongo 114: 52 + 42 + 20 de margen, que es el mínimo que fija el kit.
+   - Alternativa: 94, sin margen. Cualquier palabra más en las plantillas rompería el gate.
+   - Descarté acortar el párrafo (es literal tuyo) y recortar `recibo.md` (no pediste tocarlo).
+   - Si el tope de 60 era una restricción buscada, dímelo y cambio de enfoque.
+2. **Enfoque A:** párrafo, test de contenido y tope nuevo. Descarté B (sin test) y C (fichero nuevo).
+3. **Colocación:** el párrafo va separado por una línea en blanco y la primera línea queda intacta. «Al final» no decía si iba pegado o separado.
+4. **Capacidades:** ninguna («Ninguna, porque docs»). `capabilities/` está vacío y el aviso es una plantilla sin reglas de producto.
+5. **Test nuevo en `test/aviso.test.js`:** es un fichero propio, porque el contenido y el tope de palabras son dos comprobaciones distintas.
+6. **Validación `agente`:** el texto es literal y lo mide un test. El test no verifica que las extensiones y los horarios sean los reales; eso lo cubre tu aprobación de esta spec.
+7. **Sin `§Frontend`:** no cambia nada que se vea en una pantalla.
+8. **Contenido exacto del fichero:** primera línea, línea en blanco, párrafo en una sola línea y un salto de línea final. El test compara el fichero entero.
+9. **El test también congela la primera línea,** y el título del test de `words.test.js` pasa a decir 114.
+10. **`CHANGELOG.md` no se toca:** lo escribe el corte de la release.
+
+Review: un revisor (sonnet) dio 10 hallazgos. Acepté 7, y su conteo de palabras coincide con el mío. Rechacé 3:
+- El gate: `operations.md` lo fija como `node --test && node scripts/lint.mjs`.
+- El rol de dev-lead: es quien aprueba la spec.
+- Un escenario GIVEN/WHEN/THEN: no hay capacidad que lo ancle.
+
+No probé la fusión de capacidades en copia, porque no hay delta que fusionar. El detalle está en la spec, en «Hallazgos de la review».
+
+**¿Apruebas la spec?**
+1. **Apruebo (Recomendada)**, con el tope en 114.
+2. **Cambios**, por ejemplo tope 94, otro enfoque o ajustes de texto.
+
+La spec queda en espera hasta que respondas. No escribo el plan ni implemento nada antes.
+

@@ -1,0 +1,64 @@
+--- [3]
+Ahora: reviso la spec escrita y abro la rúbrica de revisión antes de presentártela. Queda: la revisión y tu aprobación, ~5 min.
+
+--- [10]
+Ahora: despacho el revisor de la spec (lite: uno, Sonnet, siete puntos). Queda: integrar sus hallazgos y presentarte la spec, ~4 min.
+
+--- [15]
+El revisor de la spec está en marcha y el vigilante de silencio también. Cuando termine integraré sus hallazgos y te presentaré la spec para aprobar. Hasta entonces no hay nada más que hacer.
+
+--- [19]
+1. Importante · Delta de comportamiento, ADDED `rooms` · El escenario solo fija «Norte reservada el lunes», pero `libres` no recibe día. La condición GIVEN no dice qué día se consulta y `libres 10:00-12:00` responde `Sur` sin día. El escenario pasa por intuición, o no es verificable tal cual. · Declarar si `libres` consulta un día fijo o implícito (el lunes del catálogo). Añadir en GIVEN la fecha de la consulta, o decir «no aplica día».
+
+2. Importante · Delta de comportamiento (ADDED vs. comportamiento actual) · El Intent reconoce que hoy `libres` sin franja responde `Norte, Sur`. Eso es un comportamiento existente que se cambia, así que debería ser `MODIFIED`, no `ADDED`. Hoy no hay carpeta `capabilities/` y los steering no lo documentan, por lo que la capacidad `rooms` figura como «Nueva» sin línea base. · Declarar el comportamiento previo como línea base, o marcarlo como `MODIFIED` con «antes: `Norte, Sur`». Si `capabilities/rooms` no existe, decirlo y justificar `ADDED`.
+
+3. Importante · Delta, escenario · Ningún escenario cubre la regresión que el Scope promete («`libres <franja>` responde igual que hoy»). Solo se comprueba un caso con `Sur`. Faltan también los casos de franja vacía (`''`), de franja malformada y de franja sin reservas. · Añadir un escenario GIVEN/WHEN/THEN para `libres <franja>` sin conflicto y otro para franja malformada, o sacarlos del Scope.
+
+4. Importante · «✋ Decisiones que he tomado yo» · La decisión 1 fija el texto exacto del mensaje y lo justifica con «la forma de la guía». Esa guía no está citada ni existe en steering, así que no se puede comprobar. Hay otras decisiones sin listar: que el mensaje es una respuesta normal y no un error, y que no cambia el código de salida. · Citar la guía (ruta) o quitar la justificación. Listar como decisiones el tipo de salida (stdout o stderr) y el código de salida.
+
+5. Importante · Delta, THEN · El escenario no dice si el mensaje sale por stdout o stderr, ni con qué código de salida. «Responde» es ambiguo, y `run('libres', [])` devuelve un valor, no un código. Un mensaje de error devuelto como si fuera una respuesta válida puede confundirse con una lista de salas. · Fijar en el THEN el valor devuelto por `run` y, si aplica, el canal y el código de salida.
+
+6. Menor · Delta, regla de producto (5 bis) · El texto del mensaje es un dato nuevo y no se declaran las cinco reglas (dónde vive, idioma, límites, avisos, conflicto). El idioma es castellano y encaja con la constitución 4, pero no está dicho. La constitución no tiene «Reglas de producto». · Declarar «no aplica» para dónde vive, límites, avisos y conflicto. Dejar el castellano explícito, o notar que la constitución carece de esa sección.
+
+7. Menor · Dónde se prueba / constitución 2 · Solo se prueba el mensaje nuevo, pero el AND («`libres 10:00-12:00` responde `Sur`») es una regresión que también necesita su test, y no aparece en «Dónde se prueba». El gate es `node --test` entero. · Añadir a «Dónde se prueba» el test de `libres 10:00-12:00` → `Sur` y citar el gate `node --test` entero.
+
+8. Menor · Frontmatter / modo lite · Se cita «lite con sus cinco condiciones» pero no se enumeran, y la decisión consta como una cita «sí, lite» sin comprobar. `profile: delegate` tampoco se explica. · Enumerar las cinco condiciones de lite y mostrar cómo se cumplen (una rama, sin contratos nuevos).
+
+9. Menor · Scope · El Scope no menciona `libres` con argumentos extra (`libres a b`) ni con franja vacía. Tampoco dice si `Norte` y `Sur` salen del catálogo o están fijados. El contrato de `run(cmd, args)` se toca sin declararlo. · Declarar el contrato de `run` (firma, valor devuelto) y la entrada vacía como fuera de Scope, o cubrirla.
+
+10. Menor · Intent / Terminology · El Intent dice «quien lo escribe reserva una sala ocupada», pero `libres` es una consulta y no una reserva. PRODUCT.md define «Reserva» como sala + día + franja, y el mensaje habla de franja sin día. Los nombres `Norte`/`Sur` coinciden con PRODUCT.md, sin datos reales. · Reformular el Intent («cree que están libres y reserva una ocupada») y alinear con la terminología de PRODUCT.md.
+
+--- [24]
+Sin Críticos: aplico los hallazgos a la spec, sin segunda ronda.
+
+--- [31]
+🦆 En corto: hoy `libres` sin franja responde `Norte, Sur`, como si las dos salas estuvieran libres a cualquier hora, y eso puede llevar a reservar una sala ocupada. Con este cambio responderá `falta la franja: libres <franja>`. `libres 10:00-12:00` sigue igual y devuelve `Sur`.
+
+**Spec 0019 (lite, perfil delegate) — pendiente de tu aprobación**
+
+Está en `.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot/spec.md`. Hice la pasada de coherencia y una revisión con un revisor Sonnet. No salió ningún Crítico, así que no hay segunda ronda.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El mensaje es `falta la franja: libres <franja>`. El texto lo he puesto yo; ninguna guía del proyecto lo fija. En el borrador decía «con la forma de la guía», pero esa guía no existe, y lo he quitado.
+2. `run` lo devuelve como una respuesta normal: sale por stdout y el código de salida sigue siendo 0.
+3. `rooms` no tiene capacidad previa en `capabilities/`. Por eso el delta va como `ADDED`, aunque cambia lo que hoy responde (`Norte, Sur`).
+4. El texto vive en `src/app.js` y está en castellano. Sobre límites, avisos y conflicto, la spec dice «no aplica».
+
+**Hallazgos de la review**
+- Aceptados (7):
+  - El GIVEN ahora dice que `libres` no recibe día.
+  - El THEN indica el valor anterior (`Norte, Sur`) y el canal y código de salida.
+  - Las decisiones 1 a 4 recogen los puntos anteriores.
+  - «Dónde se prueba» incluye el test existente de `libres 10:00-12:00` y el gate `node --test` entero.
+  - El Intent está reformulado.
+- Rechazados (3), cada uno con su motivo en la spec:
+  - Escenario extra para `libres <franja>`: ya lo cubre el test existente (`test/app.test.js:5`).
+  - Enumerar en la spec las cinco condiciones de lite: quedaron citadas con el dev-lead en la conversación.
+  - `libres` con argumentos extra: queda fuera del Scope.
+
+La spec sigue en `status: draft` y la aprobación de Laura está en blanco. No he escrito plan ni código.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

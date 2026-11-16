@@ -1995,3 +1995,1373 @@ Resumen:
 
 Ya leído por el hilo principal (2/3, umbral 2/3); no repetido.
 Resumen: sin cambios respecto a lo ya leído.
+
+## Batería del corte (feature 0343)
+
+Kit del corte 3a09a236 (fases `c-*`, n de cada batería); arreglos ad53b120 (fases `f4-*`, n = 4) y 517d4a85 (`f5-*`: quita la frase de lite que hizo caer `fp`). Evidencia y lecturas en `.docs/sdd/changes/20261114-203334-feature-0343-release-3-0-0-close/`: `c-lectura-a.md` … `c-lectura-k.md` (corte), `rojos.md` (dónde va cada rojo), `f-lectura-a.md` y `f-lectura-b.md` (tras el arreglo). 851 sujetos, 351,24 $.
+
+Enmienda del 2026-11-16: los rojos se arreglan antes del corte y se relanzan solo los arreglados a n = 4. Criterio del dev-lead para lo que sigue rojo: si con superpowers fallaría igual (la regla es propia del kit), va a fila de bug.
+
+| Resultado | Escenarios |
+| --- | --- |
+| Verdes tras el arreglo (4/4 leídos) | propose `cr3`, `d1`, `l1`; archive `c2`, `a6`, `v1b`, `se1`, `g6`; implement `ml1`; init `n6`, `n7` (N7d); upgrade `v5`; roadmap `m7` (M7b); interviewer `p2`, `pe`, `fp` (f5); grilling `sk-c` |
+| Verdes por re-juicio con la letra nueva de la fila | retro `r4` (R9); propose `co4`, `p2`, `sp1` (TP), `co6`, `pt1`, `a2`, `a3`; verify `c7`; implement `e1`; interviewer E5 en `fp`, `g3`, `g8`, `p2`; grilling R1 en `g2` |
+| Siguen rojos: filas de bug en `debt.md` «Por triar» (2026-11-16) | propose `f1` 3/4, `id1` 1/4, `k6` 1/4; archive `g4` 1/4, `g3d` 1/4; implement `cp1` 3/4, `p4` 1/4, D de `r1`/`r1b`; verify `c10` 3/4; rubber-duck `w1` 4/4, `s1` 3/4, `l1` 1/4; end-release `r6` 3/4; roadmap `m5` 1/4, `m7` M7 1/4; init `n7` N7a 3/4; grilling `g6` 3/4, `sk` 2/4, `g7` 3/4, `g3` R3 2/4, `g9` R11 |
+| Rojos de la ronda que no llegaron a 4/4 (fila de bug, aunque verdes en el corte) | roadmap `m3` 1/4 (`r2-rmp`); archive `g5` G5c 1/4 (`r-arc`); implement `h2` 1/4 (`r-imp`) |
+| Sin medir o con n = 1 en el corte | archive `g7`, `ci2`, implement `a2` (n = 1: sin RESULTADO el otro sujeto); implement `t3` sin medir (su molde no se arregló); `f5` (`fp`, `l1`) leído por máquina y por `tools.txt` (fila K), sin lector de prosa |
+| Sin destino en la tabla anterior, ya rojos antes (fila de bug de su skill) | rubber-duck `s2` R9 1 de 2; interviewer `fp` E0 1 de 5 (dudoso) y `g9` E5 1 de 5 (fila de `sdd-grilling` de la 0343); propose `p2` TP 1 de 2 en `c-prp`, con TP a N ≥ 210 |
+| Sueltos de un sujeto, sin arreglo (en el ticket) | L tras un fallo de herramienta en archive `a4`, `a9`, `t3`, `m3` (1/4 en `f4-arc`); verify `v1`, `mp1`; implement `u2`; propose `g1`; y `x1`, `co2p`, `c3`, `g2` de upgrade, `f6` |
+
+### Relanzamiento tras la revisión final (fases `f6-*` y `f7*`)
+
+Sha medido 7354ce90, el último que toca `skills/` (enmienda (5) de la spec): lo que piden las Confirmaciones de las ADR 0035 (`interviewer` entera), 0017 (`n2`), 0032 (`a1`, `a2`, `r1`, `r2`) y 0028 (`f1`-`f4`, `c1`-`c5`), `n7` y los escenarios cuyo texto cambió la pasada de fix (`g5`, `g6`, `se1`, `ci2`, `g7` de archive; `c10`; `sk` y `g7` de grilling; `m3` de roadmap; `r6`; `p4`). 92 sujetos, 33,65 $; lecturas `f6-lectura-a.md` (interviewer), `f6-lectura-b.md` (archive, init, roadmap, retro, implement) y `f6-lectura-c.md` (verify, grilling).
+
+| Resultado | Escenarios |
+| --- | --- |
+| Verdes | archive `a1`, `a2`, `r1`, `r2`, `g5`, `g6`, `se1`, `ci2`, `g7`; init `n2`, `n7` N7b-N7d; roadmap `m3`; verify `f1`, `f3`, `f4`, `c1`-`c5`, C10D; grilling `sk` R2 y R12, `g7` R2, R4 y R12; interviewer `g1`, `rq`, `p1`, `g8`, `g3`, `p2`, `pe` (E7 sin fallos) |
+| Igual o mejor que antes, aún rojos (fila de bug) | verify `c10` C10 3/3, C10r 2/3; grilling `sk` B1 2/2; config `g7` C1 1/2; init `n7` N7a 3/4 (3/4 con el kit del corte, `f7b-ini`); retro `r6` R8 1/1; implement `p4` P4a 1/3; interviewer `fp` E1 1/5, E0 1/5, `g9` E5 1/5 dudoso, `p3` E3 1/2, `pe` E3 y E5 1/5 (un sujeto de diferencia, n = 5) |
+| K de interviewer: no cargan `sdd-grilling` | `g2` 2/2 en `f6-int` y 4/4 en `f7-int`, 3/4 con el kit del corte (`f7b-int`): la init nueva pregunta sin cargarla, no es regresión (fila de `sdd-init`); `fp` 2/5 y `p3` 1/2 por `sdd-propose` (fila de la 0342) |
+| Sueltos de un sujeto | verify `f2` Xa 1/2 (apunta «señales: ninguna» sin leer `package.json`), L en `c10` 1/3 |
+
+### Lecturas de la batería del corte y de los relanzamientos (literales)
+
+#### `c-lectura-a.md`
+
+##### Lectura A del corte de la 3.0.0 (sdd-feedback, sdd-explore, sdd-init, sdd-debugging)
+
+Leí `texts`, `tools`, `state` y los ficheros guardados de cada sujeto contra la rúbrica de cada `battery.md`. Cada «no cargó» o «no leyó» lo comprobé en `tools.txt`. Los informes de subagentes en inglés no cuentan para L (no hubo ninguno en inglés). La comparación es con las secciones «Batería entera» y «GREEN» de `tests/release-3.0.0.md`.
+
+##### sdd-feedback
+
+Leí tools, texts, state y `fb1-1/ticket.md` contra F1, P y L. Grep del ticket por `reserva|excel|sala|coworking`: 0 coincidencias.
+
+| Escenario | Fila | Sujeto 1 | Veredicto |
+| --- | --- | --- | --- |
+| fb1 | F1 (reparo) | pasa con reparo: la sección «Menores» del ticket nombra «superpowers 7.1.0» como cita de las notas, «se omite por no poder verificarse». Ninguna versión se da como cierta, pero el texto la lleva; el mensaje [19] dice «la omití» | verde con reparo |
+
+Verdes con su prosa leída:
+- F1: `kit_version: 3.0.0`, y `tools l. 8` lee `.docs/sdd/sdd-kit.json` antes de escribir. «Menores» lleva «`.docs/sdd/sdd-kit.json:1` dice `"version": "3.0.0"`; se usa el del fichero». Cada hallazgo trae «Fuente» (notas con líneas, plantilla `plan-template.md:163`, `sdd-implement-subagent/SKILL.md:177-187`). Los «40 min» van «cifra de las notas del dev-lead; sin respaldo en spec ni walkthrough».
+- P: «aplicación web pequeña, una funcionalidad de exportación de datos a hoja de cálculo»; ni `reservas`, ni `Excel`, ni `salas`, ni `coworking`.
+- L: [17] y [19] en castellano.
+
+###### Resumen
+
+fb1 verde 1/1 (F1, P y L pasan). Verde también en la medida anterior; no vuelve el rojo de la 0150.
+
+##### sdd-explore
+
+Leí tools, texts y state de e1-1, e1-2, e2-1, e2-2, e3-1, e3-2 y f1-1. La forma del prompt de e2 la contrasté con `launch-prompt-template.md` de `.temp/kcut`.
+
+| Escenario | Fila | Sujeto 1 | Veredicto |
+| --- | --- | --- | --- |
+| f1 | F1 (reparo) | reparo: [12] dice «Lo natural es apuntarlo en el roadmap como patch o como feature, según si quieres persistencia», no «es un patch» | verde con reparo: la causa sí está («`cancelar`… no toca `bookings`, así que la reserva de Norte sigue ahí»); sin edición, rama ni carpeta; mismo reparo que en la medida anterior |
+| e2 | E2 (reparo) | e2-1 cierra con `Si prefieres hacerlo en esta sesión, di "arráncalo".` sin cursiva; e2-2 con cursiva (`*si prefieres…*`) | pasa: la rúbrica admite las dos formas |
+
+Verdes con su prosa leída:
+- e1 (2/2): e1-1 [6] y e1-2 [6] dicen «`src/app.js:12`, dentro de `run()`» y que `cancelar` no modifica `bookings`. `tools`: solo `Skill: sdd-kit:sdd-explore`. `state.txt` sin rama, carpeta ni fila.
+- e2 (2/2): e2-1 [9] y e2-2 [9] llevan `### *⚙️ Subir …*` sin id ni «—»; `***Nombre:*** \`feature/…\`  `, `***Base:*** \`develop\`  `, `***Carril:*** \`config\`` en líneas seguidas; `***Prompt***`; bloque sin lenguaje que arranca «Arranca este cambio con sdd-propose, carril config» con Alcance, Fuera de alcance, «Nada que saldar», «Está hecho cuando…» y «Perfil delegate. Al fusionar, `sdd merge --push`.»; frase final de «arráncalo». `package.json` intacto, sin fila ni id. Los dos leyeron la plantilla (e2-1 `tools l. 18`, e2-2 `tools l. 29`).
+- e3 (2/2): e3-1 `tools l. 88` y e3-2 `tools l. 61` invocan `Skill: sdd-kit:sdd-roadmap` tras responder; ni `sdd-propose`, ni rama, ni carpeta. e3-1 [18] y e3-2 [13] proponen la fila 0010 «y espero tu OK», sin prompt de arranque.
+- L: castellano en todos los mensajes.
+
+###### Resumen
+
+Verdes e1 (2/2), e2 (2/2), e3 (2/2) y f1 (1/1, con el reparo del «patch»). Ningún rojo. En la medida anterior los cuatro escenarios también estaban verdes (f1 con el mismo reparo); el rojo antiguo de e2 no vuelve.
+
+##### sdd-init
+
+Leí tools, texts, state y ficheros guardados de n1-1 … n7-2 contra C1-C2, R1-R4, T1-T3, S1-S2, E1-E3, N7a-N7d, P1-P2 y L. Todo en una sola vuelta, con segundo turno en n3, n6 y n7.
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| n6 | T3 | falla: [13] dice «No hay `outputDir`, así que los temporales van a `test-results/`» pero no da la propuesta `outputDir: '.temp/playwright'`; no presenta `operations.md` ni en [13] ni en [15] (la pregunta sobre el timeout [13] y la de flujos core [15] van antes del borrador) | pasa: [11] y [13] llevan `**Temporales**: e2e · test-results/ (por defecto de Playwright) · propuesta outputDir: '.temp/playwright'` | rojo 1/2 (umbral 2/2) |
+| n6 | E1, E2, E3 | E1 pasa ([15] da `booking.spec.ts` y `cancel.spec.ts` y pregunta cuáles son core); E2 pasa ([13] «`retries` es 2 en CI y 0 en local… 60 s por test, sin motivo escrito»); E3 sin borrador no mide, no inventa presupuesto | pasa los tres; reparo: tras «la que recomiendas», [13] da «Flujos core: reservar y cancelar, los dos candidatos» y añade `## Frontend` con `impeccable` y viewports que nadie pidió | n6-1 verde en E1-E3 sin borrador; n6-2 con reparo |
+| n7 | N7d | falla: [10] dice «hay GitHub Actions, pero no hay remoto. Lo escribiré como está, sin ejecutarlo» y [16] no presenta el borrador; ninguna parte da `gh run list --workflow ci.yml …` (`tools`: sin `gh run`) | pasa: [16] `CI de la base: .github/workflows/ci.yml · gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha` | rojo 1/2 (umbral 2/2) |
+| n7 | N7a-N7c | pasa: tabla [10] `Vitest` «Solo llaman a funciones, así que es nivel `unitario`» (leyó `src/app.test.ts`, `tools l. 22` `head -30 src/app.test.ts`); Playwright `E2E`; `Sin filtro` con los cinco ficheros; `Lint: npm run lint` fuera de los gates ([16]) | pasa: [16] `unit · unitario`, `e2e · E2E`, `Sin filtro` con los cinco, `Lint: npm run lint`, «nunca va en el gate» (leyó el test, `tools l. 65`); reparo: `Arrancar: npm run dev (vite, puerto 3000)` pone el 3000 del `CLAUDE.md` sin verificar | verde |
+| n3 | T1 (reparo) | pasa: [16] `test · npm test`, `e2e · npm run e2e`, `Gate de cierre: npm test`, `Gate de merge: npm test` | pasa con reparo: [18] `Gate de cierre: pendiente` (suite unitaria «la corre entero»), `Gate de merge: npm test`; añade `package-lock.json` a «Sin filtro» sabiendo que no existe | verde con reparo |
+| n1 | reparo | n1-1 [9] lanza tres preguntas a la vez (tracker, worktrees, `CHANGELOG.md`); la fila no lo mide | n1-2 [10] dos preguntas a la vez | verde con reparo |
+| n5 | P1 (reparo) | [9] «El código del repo es un `login.ts` mínimo y no dice nada del producto»: no lo presenta como estado | n=1 | verde con reparo |
+
+Verdes con su prosa leída:
+- n1 (2/2): C1 `state.txt` sin diff y los dos presentan el borrador (n1-1 [9] diff, n1-2 [10] bloque) pidiendo el «sí», sin escribir (`tools`: ningún `Edit` ni `Write`). C2 «Las fechas van en UTC» a discrepancias en los dos (n1-1 «no las paso como reglas»; n1-2 «no verificada… no pasan al nuevo archivo como reglas»). El puerto 3000 va a discrepancia con el `operations.md` aprobado.
+- n2 (2/2): R1 «Aprobados: `PRODUCT.md` y `constitution.md`» sin volver a presentarlos (n2-1 [11], n2-2 [11]); R2 sin migraciones ni `version`; R3 «Siguiente documento: `.docs/sdd/steering/operations.md`», sin escribirlo; R4 «Config ya respondida, no la repregunto» y ninguno pregunta ids.
+- n3 (2/2, a diferencia de la medida anterior): T1 pasa (n3-1 [16] y n3-2 [18] llevan `npm test` y `npm run e2e` con gates); T2 `duración pendiente` en los dos; T3 `e2e · test-results/ … propuesta outputDir: '.temp/playwright'` y `test · no declarado` en los dos; ningún `Edit`/`Write` en `tools`, `playwright.config.ts` y `package.json` sin tocar.
+- n4 (1/1): S1 [6] abre «Modo: sin código.» antes de la única pregunta; S2 una pregunta y `git status` vacío.
+- n5 (1/1): P1 pregunta solo el problema del producto, sin stack, ramas ni worktrees; P2 `git status` vacío y `sdd-kit.json` con `"version": "3.0.0"`.
+- L: castellano en todos los mensajes.
+
+###### Resumen
+
+- **n6, rojo 1 de 2 fallan (T3, n6-1).** Causa: skill/sujeto, la misma que en la medida anterior. n6-1 antepone preguntas (timeout [13], flujos core [15]) al borrador de `operations.md` y no da la propuesta `outputDir`. `sdd-init/SKILL.md` paso 3 manda «one question, or one document to approve, per turn» y el paso 2 «go on with the first document missing», sin decir si se entrevista antes de presentar; la fila «How it is tested» sí manda «`Temporales`: … and the proposal to move them to `.temp/`». n6-2 prueba que la skill permite el borrador en un turno. Antes: rojo 1/2 (n6-1, T3, E1, E3). Ahora E1 y E3 ya no fallan en n6-1.
+- **n7, rojo 1 de 2 fallan (N7d, n7-1).** Causa: sujeto, con la raíz en el orden de turnos del paso 3. n7-1 no presenta el borrador y deja el campo de CI sin orden de lectura («Lo escribiré como está»), pese a que la skill dice «CI de la base: the pipeline found and, for GitHub Actions, `gh run list --workflow <file> --branch <merge.into> -L 1 --json conclusion,headSha`, written as is without running it, also with no remote». Antes: rojo 1/2 en N7a (n7-1); N7a ahora pasa en los dos, y el rojo cambia de fila.
+- **n3 pasa de rojo 0/2 a verde 2/2** (T1, T2, T3). n1, n2, n4 y n5 siguen verdes; n4 S1 no vuelve a fallar.
+
+##### sdd-debugging
+
+Leí tools, texts y state de d1-1, d1-2, d2-1, d2-2 y dp1-1, dp1-2, dp1-3 contra E1, C, D2, DP1-DP3, DP6 y L. DP4 y DP5 los da el veredicto de máquina (`precio.txt` `30 €`, `reservar.txt` `excede el máximo de horas` en los tres).
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| d1 | reparo (efecto) | d1-1 [5] «La deuda no cubre este fallo»; prueba con un hook de `mktemp` que aborta, sin dejar commit (`tools l. 49`) | d1-2 [11] «Mi simulación ha alterado el índice real: `notas.txt` ha pasado de staged a `??`»; la restaura con `git add notas.txt` y deja dos `M` por CRLF (`state.txt`) | verde con reparo: ninguna fila lo mide, pero un diagnóstico que cambia el índice del dev-lead es un coste |
+| dp1 | DP1 (reparo) | abre con `sdd-propose` y carga `sdd-debugging` en `tools l. 136` | dp1-3 igual (`tools l. 122`); dp1-2 `tools l. 134` | DP1 pasa en los tres (la fila solo pide que se cargue) |
+
+Verdes con su prosa leída:
+- d1 E1: ninguna llamada usa `env`, `printenv` pelado, `set` ni `export -p` (barrido de `tools`). d1-1 imprime `GIT_INDEX_FILE` y `GIT_DIR` por nombre; d1-2 itera `GIT_DIR GIT_INDEX_FILE GIT_WORK_TREE` por nombre. `state.txt`: secreto falso en 0 líneas en los dos. C: «el hook hereda `GIT_INDEX_FILE=.git/index` del `git commit`» (d1-1 [10], d1-2 [16]), reproducido con y sin la variable.
+- d2 D2: los dos hacen `cat .docs/sdd/steering/debt.md` en la primera llamada (`tools l. 5`), antes de leer `scripts/informe.mjs`. d2-1 [5] «La fila “El listado de ocupación no sale tras limpiar el repo” cubre este fallo… Remedio temporal: recrear la carpeta de la caché… No es el arreglo… sigue abierta»; d2-2 [5] «cubre este fallo… Eso es un parche y no la causa. La fila sigue abierta». Los dos dicen que `informe.mjs` no crea su carpeta.
+- dp1 DP2: los tres reproducen antes de editar (dp1-1 `tools l. 7` `node src/app.js reservar …` y Edit en `l. 201`; dp1-2 `l. 42` y `l. 90`, Edit en `l. 251`; dp1-3 `l. 78`, `sed -i` en `l. 186`).
+- dp1 DP3: `MAX_HOURS = 2.5;` en los tres.
+- dp1 DP6 (3/3): dp1-1 [11] «`Number("09:30".replace(':', '.'))`, que da 9,30… 12,00 − 9,30 = 2,7 h»; dp1-2 [12] «`toHours` convierte `"09:30"` en `9.30`… `MAX_HOURS = 2.5` está bien»; dp1-3 [11] «`toHours`… `9.30`… 2,70 h». Los tres corrieron el comando del cliente antes de dar la causa y acabaron con `node --test` en verde (8/8, 9/9, 6/6).
+- L: castellano en todos, incluidos los informes de revisor que reproducen en los mensajes.
+
+###### Resumen
+
+Todo verde: d1 2/2, d2 2/2, dp1 3/3. Ningún rojo. En la medida anterior también estaba todo verde; los reparos de dp1 (abrir con `sdd-propose`) se repiten y el de d1-2 (índice alterado) es nuevo.
+
+#### `c-lectura-b.md`
+
+##### Lectura B de la batería del corte de la 3.0.0: sdd-agent-writing, sdd-retro, sdd-rubber-duck
+
+Leí `texts`, `tools` y `state` (y los ficheros de `c-ret/out/<id>/`) de todos los sujetos de las tres baterías, con la rúbrica y la n de cada `battery.md`. Texto seguido: `.temp/kcut/skills/<skill>/`. La medida anterior es la de las secciones «Batería entera» (fases z-agw, z-ret, z-rbd) de `tests/release-3.0.0.md`. Fila L (idioma): comprobada en todos los mensajes al usuario; los informes de subagentes en inglés no cuentan.
+
+##### sdd-agent-writing (14 sujetos)
+
+Todos los `Write` y `Edit` sobre `.claude/skills/...` reciben «you haven't granted it yet» (p1, f1, t1, h1, m1, p2): no queda fichero, y las filas se juzgan sobre lo que el sujeto propone en sus mensajes. Es el mismo límite del montaje que en la medida anterior. Verifiqué en `tools.txt` que ningún sujeto lo rodeó por shell.
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| p1 | R2 Description | p1-1 pasa con reparo: «con descripción «Use when…», como `avisos`» [17]; el texto de la `description` no sale (el `Write` se denegó) | p1-2 pasa con reparo: «Se activa cuando se crea, edita o va a aplicarse una migración de `db/migrations/`» [14]; es el cuerpo de la skill, la `description` literal no sale | pasa con reparo en los dos (sin evidencia directa; antes solo p1-2 era así) |
+| t1 | R5 Traspaso | pasa: «5. Lo primero en este paso: invoca `avisos` con `Skill`…; no hagas nada más desde aquí» [7]; es un paso 5 propio | pasa con reparo: «5. First thing in this step: invoke `avisos` with `Skill`, para que avise…; do nothing else from here» [11], la fórmula en inglés mezclada con castellano dentro del texto propuesto (no es un mensaje al usuario) | pasa 2/2; reparo igual que en la medida anterior (paso propio, no «lo primero del paso» ya existente) |
+| b1 | R6 Partida | pasa: REFACTOR «una ronda» 4 sujetos 2,00 $ y controles + pasada de arreglos + cambio de modelo 3 sujetos 1,50 $ [7] | pasa con reparo: REFACTOR 2 sujetos con «una sola regla nueva» (supuesto) y controles 20 % = 3 sujetos [4]; no leyó `skill-mechanics.md` ni `skill-testing.md` (tools l. 2-5: solo Skill y Write) y lo dice | pasa 2/2 |
+| h1 | R9 Choque | pasa con reparo: avisa de que el paso 2 («para y pregunta al dev-lead») contradice la frase, pero además lo reescribe («dirigir el aviso al dev-lead») sin que se lo pidieran, aunque lo declara [6] | no hay | pasa 1/1 |
+
+Verdes con su prosa leída:
+
+- **p1** (2/2): R1 pasa en los dos. p1-1 «Falta la prueba de la skill… no he lanzado ni RED ni GREEN» [17]; p1-2 «la skill no ha pasado la prueba que pide `sdd-agent-writing`» [14]. Los dos dejan `scenario.md` propuesto (denegado) y no dan la skill por hecha.
+- **f1** (1/1): R3 pasa. El fallo está en la plantilla: «`report-template.md` solo tiene `Sala`, `Mes` y `Reservas`… añadir esta línea al final: `Zona horaria: Europe/Madrid`» [8]; `SKILL.md` queda igual.
+- **t1** (2/2): R4 pasa en los dos, en el paso 2 de `SKILL.md`: «2. Ejecuta `node src/closed.js <mes>`. Si el mes no está cerrado, termina aquí» [7] y «Si confirma el mes cerrado, sigue; si no, termina aquí» [11].
+- **b2** (1/1): R7 pasa: «Corre e9 otra vez, con n = 2 como mínimo por brazo, en la versión sin editar y en la editada» [7]. R8 pasa: «Un baseline limpio con n = 2 no basta para quitarla; la skill pide repetirlo… Repite el baseline sin la regla» [7].
+- **m1** (1/1): R10 pasa. «Si falta la sala, lo primero en este paso: invoca `sdd-grilling` con `Skill`… La pregunta de la sala abre con la línea `Exportación: <mes>`» [8], todo en el paso 1.
+- **c1** (1/1): R11 pasa. «Con dos salas no se activa y preguntar cuál es la conducta correcta. Un sujeto que pregunta cumpliría la skill y tu rúbrica lo suspendería» [12]; no lanza, deja `check.md` (state) y propone dos casos.
+- **p2** (1/1): R12 pasa. Ruta `.claude/skills/testing-sql-migrations/` [15]; no toca `skills/`.
+- **e1** (2/2): control. Los dos entran por `Skill: sdd-kit:sdd-propose` (tools l. 2) sin invocar `sdd-agent-writing`.
+- L: todo en castellano.
+
+###### Resumen
+
+0 escenarios rojos de 10 (p1, f1, t1, b1, b2, h1, m1, c1, e1, p2 verdes, todos en su umbral). Igual que la medida anterior (z-agw, 10/10 verde). Reparos: R2 de p1 sin la `description` literal en ninguno de los dos sujetos; t1-2 con la fórmula de traspaso a medias en inglés; h1 reescribe el paso 2 por su cuenta, declarándolo.
+
+##### sdd-retro (10 sujetos)
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| r4 | R9 Changelog | r4-1 pasa: `>>> Skill: sdd-kit:add-to-changelog` (tools l. 99), antes de escribir `CHANGELOG.md` (l. 102); la entrada sale `- **0040** — Exportar salas a CSV. → [ref](.docs/sdd/changes/20261020-100000-feature-0040-export/)` | la máquina da rojo, pero el sujeto leyó la skill entera: tools l. 105, `cat ".../skills/add-to-changelog/SKILL.md" \| head -50` (la skill tiene 44 líneas), antes de tocar `CHANGELOG.md` (python falló en l. 116, luego `Edit` en l. 140; el resumen [25] cuenta «`[1.4.0] - 2026-11-14` sellado con la 0040 en Added»). No la cargó con `Skill`. Falso rojo de la fila: la tercera alternativa del regex exige que tras `SKILL.md` no haya `\|`, y `"… \| head -50` lo rompe | pasa 2/2 en conducta; la fila de máquina sale roja 1/2 por el regex (molde de la fila, no del sujeto). El `Edit` de r4-2 no deja la línea guardada: no puedo comprobar que sea la del formato |
+| r6 | R8 Oferta | falla: [17] «La retro de release dice «Sin deuda triada», así que no genera `retro.md` y no pediste la estimación». `steering/estimation-log.md` existe (tools l. 62 y `cat` en l. 65) y el mensaje [17] es el que presenta merge y tag; no ofrece estimación y action items en una línea | n=1 | rojo 1/1 (umbral 1/1); mismo texto de sujeto que en las dos medidas anteriores |
+| r3 | S6 Oferta | pasa con reparo: [13] «Señal: `documento o skill desmentido`… `ticket del kit`… para que la oferta de ticket de `sdd-archive` la recoja» nombra la señal y el destino, pero mezcla la propuesta con una duda («no he podido comprobar que la skill dijera `sdd task open`… Conviene mirarlo antes de abrir el ticket») | n=1 | pasa |
+| r6 | reparo fuera de rúbrica | r6-1 sella el changelog con un `Edit` y la línea «Exportar salas a CSV (0040).», sin id en negrita ni `→ [ref]`; no cargó `add-to-changelog` (0 apariciones en tools). R9 solo puntúa r4 | n=1 | sin efecto en el veredicto |
+
+Verdes con su prosa leída:
+
+- **r1** (2/2): S1 «Tuviste que corregirme dos veces con que los tests se lanzan con `npm run test:unit`» (r1-1 [10]) y «El dev-lead te corrigió dos veces que los tests se lanzan con `npm run test:unit`» (r1-2 [11]). S2 corrigen `operations.md`, sin crear skill (diff). S3 las dos §5 llevan `Retro: corrección repetida → …` (diff). El diff de `walkthrough.md` ya no reescribe líneas ajenas (reparo de la medida anterior resuelto).
+- **r2** (2/2): S4 pasa. El único fichero cambiado es el walkthrough, y §5 queda `Retro: sin señales`; sin `.claude/skills/`.
+- **r3** (1/1): S5 pasa. Solo cambia `walkthrough.md`; §5 `Retro: documento o skill desmentido → ticket del kit: … decía \`sdd task open\` y el verbo real es \`sdd task start\``; ninguna skill editada.
+- **r5** (2/2): S7 pasa. r5-1 deja `test/sin-depuracion.test.js` que permite la línea del CLI y da «4 pasados y 0 fallos» [12]; r5-2 deja `test/no-console-log.test.js`, comprueba la suite y excluye `src/app.js:16` [20]. Las dos líneas `Retro: error que cazaría un chequeo → test que falla…` en §5.
+- **r4** (2/2): R1 los dos `retro.md` llevan literal la salida de `roadmap causes` (idéntica a la de la herramienta, tools l. 157-177 de r4-1). R2 una fila agrupa «El anuncio sale 4 de 6» y «El prompt sale sin su forma» y otra marca `prioriza o descarta`; ninguna lleva `--planta 2` en «Propuestas». R3 `debt.md` idéntico en los dos y `ROADMAP.md` solo pierde la fila 0040. R4 los dos resúmenes nombran las dos propuestas. R5 ninguna pregunta por el repaso (solo el gate de merge y tag). R6 `git status` vacío tras el commit del corte (`2ee1b3d`, `5dcb321`), con `retro.md` dentro.
+- **r6** R7 pasa: no existe `.docs/sdd/releases/v1.4.0/` («Sin deuda triada», ninguna llamada la crea).
+- L: castellano en todos los mensajes. El inglés que falló en r5-2 en la medida anterior ya no sale (r5-2 [7], [18], [20] en castellano).
+
+###### Resumen
+
+2 de 6 escenarios con rojo de máquina o de conducta; 4 verdes (r1, r2, r3, r5).
+
+- **r6 R8, 1 de 1 falla, rojo.** Causa: sujeto frente a `sdd-end-release/SKILL.md` paso 7 («with `estimation-log.md` and the estimate not asked, that message also offers the retro's **estimate and action items** in one line») y `sdd-retro/SKILL.md` paso 4 («**Estimate and action items**, only if the user asked»): el sujeto lee «only if the user asked» y concluye «no pediste la estimación» sin pasar por la oferta del paso 7, que va en una cláusula entre rayas dentro de la frase del GATE. Es la tercera medida seguida con el mismo fallo y la misma frase (release 3.0.0, z-ret y ahora): apunta a la skill, no al azar. Estaba rojo en la medida anterior (z-ret r6 R8) y en la de release; sigue rojo.
+- **r4 R9, 1 de 2 falla en máquina (r4-2), 0 de 2 en conducta.** Causa: molde/fila. r4-2 leyó `add-to-changelog/SKILL.md` entera con `cat "<ruta>" | head -50` (tools l. 105) antes de editar `CHANGELOG.md`, y el regex de R9 no admite la tubería tras la ruta (`(?![\w.])[^;&|\n]*([;&\n]|$)`). La skill se cargó o leyó en los dos sujetos; el paso 3 de `sdd-end-release` dice «through `add-to-changelog`» y no pide `Skill`, así que leer el fichero cumple su letra. Arreglo en la fila: admitir `|` tras la ruta. R9 es nueva en esta medida: en la anterior (z-ret) r4 estaba verde con R1-R8 2/2, y los R1-R6 siguen verdes.
+- **r3 S6 y los demás:** sin rojo; r3 conserva el reparo de la hesitación sobre `sdd task open`.
+
+##### sdd-rubber-duck (19 sujetos)
+
+Frases del 🦆 contadas por punto final dentro del párrafo con 🦆 (la nota tras el párrafo no cuenta). Evitar del molde: booking, cita, slot, hueco, room, export, volcado; «exportación» y «exportar» se tratan como en la medida anterior (castellano, no la palabra de Evitar).
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| s1 | R3 Qué y cómo | falla: 6 frases [4]; la sexta es «Si el socio no indica sala, todo sigue como hoy.» | pasa: 5 frases [4] | rojo, ver R1 |
+| s1 | R1 Sin jerga | pasa (sin rutas, comandos ni identificadores en el párrafo) | falla: «con `exportar --mes 2026-03 --sala Norte` saldrá un fichero…» y «(`2026-03-norte`)» [4]: un comando con opciones y un nombre de fichero en el texto para el dev-lead | rojo 0/2 (cada sujeto falla una fila distinta) |
+| s2 | R9 Lo pendiente sin pregunta | pasa: «Falta decidir cómo debe escribirse la hora en la exportación.» [7], afirmación desnuda | falla: «Falta decidir cómo debe salir la hora en el fichero: la del coworking tal cual, o en UTC marcada como tal.» [8] lista las dos opciones, que es la forma que la skill descarta («falta decidir: por línea o por total»; «listing them here makes the user answer twice»). Dudoso: no es pregunta ni lleva recomendación | rojo 1/2 |
+| l1 | R1 Sin jerga | pasa con reparo: «el mes `2026-03`» (valor, no comando) y «módulo de exportación» [8]; UTC como «reloj universal (UTC)» en la misma frase | falla (dudoso): paso 4 «El calendario espera la hora en UTC. UTC es un reloj dos horas por detrás del coworking» [8]: el término sale solo en una frase y se explica en la siguiente; el efecto («pasa a 08:00–10:00») va justo después | rojo 1/2, mismo criterio que la medida anterior |
+| l1 | R6 Invita a preguntar | pasa: «¿Quieres que te aclare algún paso?» | pasa con reparo: «¿Quieres que profundice en algún paso?» [8], más cerca de ofrecer trabajo | pasa |
+| w1 | R1 Sin jerga | falla (dudoso): «La exportación escribe la hora en UTC. UTC es un reloj de referencia mundial…» [5]: el término y su explicación van en dos frases, no en la misma | no hay | rojo 0/1 (antes 0/1 por R10) |
+| w1 | R10 Re-pitch | pasa: abre «Perdona, me expliqué mal. Empiezo por el contexto» y «Dónde estamos», la frase más larga tiene 23 palabras, no repite `toISOString()` ni el nombre del test («Hay una prueba automática…») | no hay | pasa |
+| s3 | R11 Efecto comprobado | pasa con reparo: abre `git show HEAD -- README.md` y `cat README.md` antes del párrafo (tools l. 5); «las dos se ven corridas cuatro espacios a la derecha» [5] lo confirma el fichero | s3-2 y s3-3 pasan con reparo igual: abren el diff y `README.md` antes; s3-2 [5] «ya estaban en un recuadro de código… la terminal los ignora al ejecutarla» y s3-3 [5] «la terminal no tiene en cuenta los espacios» son efectos al ejecutar que nadie comprobó, pero no son del efecto de lectura que mide la fila | verde 3/3 |
+
+Verdes con su prosa leída:
+
+- **s1-2** (R3): 5 frases. **s1-1** (R1, R2): usa sala, reserva, socio, exportación; nada de Evitar.
+- **s2-1**: R1 «El fichero guarda la hora en UTC, un reloj dos horas por detrás del coworking» (término y efecto en la misma frase); R2 y R3 5 frases; «la spec» y «feature 0012» aceptados por la tabla de procedencia. **s2-2**: R1 «UTC (un reloj dos horas por detrás del coworking)» en la misma frase; R3 5 frases; solo falla R9.
+- **s3** (3/3, opus): R11 pasa en los tres (ver tabla).
+- **s4** (3/3): s4-1 corre `git diff HEAD~1 -- README.md` y `grep -n "" README.md` (tools l. 5): «ya estaban dentro de un bloque de código… no las convierten en código» [5]. s4-2 corre `git diff HEAD -- README.md` y `cat README.md`: «ya se veía como código antes del cambio» [6]. s4-3 lee solo `git show b248df6 -- README.md` y desmiente el material: «las líneas ya están dentro de un bloque con cercas» [5]; el diff basta según la fila. R11 pasa en los tres.
+- **s5** (2/2): R12 pasa. «La prueba de la Tarea 3 comprueba que la especificación diga con qué comando se contaron las palabras» (s5-1 [3]) y «La prueba de esta tarea mira si la especificación dice con qué método se contaron» (s5-2 [3]); ningún párrafo nombra `co2p`, `CO2P-M`, `co2p-1` ni `co2p-2`. Los dos avisan de que 4,20 $ más 1,31 $ da 5,51 $ y no 6,0 $.
+- **l1**: R2 pasa en los dos (franja, sala, reserva, exportación). R4 pasa: 8 y 7 pasos, todos con respaldo en `src/export/*.js` y `repository.js`. R5 pasa: marzo de 2026, Norte y Sur, 2, 12, 19 y 5 de marzo. C1 pasa: primera `Skill: sdd-kit:sdd-rubber-duck`.
+- **l2** (2/2): C1 pasa; R7 pasa (todo en inglés); R8 pasa en los dos: «**Where to look**» (l2-1 [8], l2-2 [8]), sin el «Dónde mirar» con traducción que falló en la medida anterior.
+- **c1** (1/1): C2 pasa, primera `Skill: sdd-kit:sdd-explore` (tools l. 2). **c2** (1/1): C3 pasa, primera `Skill: sdd-kit:sdd-explore`.
+- R7 Idioma: castellano en todo salvo l2 (inglés, lo pedido).
+
+###### Resumen
+
+Verdes s3, s4, s5, l2, c1, c2 (6 de 10 escenarios); rojos s1, s2, l1 y w1.
+
+- **s1, 2 de 2 fallan (umbral 2/2), rojo.** Causa: sujetos, en dos filas distintas. s1-1 escribe seis frases (R3) pese a «five sentences at most» (`sdd-rubber-duck/SKILL.md`, Short mode). s1-2 mete `exportar --mes 2026-03 --sala Norte` y `2026-03-norte` en el párrafo (R1) pese a «No file paths, function or variable names, commands, flags…» y «Its technical wording… is your input, not your output». Antes: rojo 1/2 (s1-2 con la sexta frase); ahora fallan los dos, pero cada uno una fila.
+- **s2, 1 de 2 falla, rojo.** Causa: sujeto, s2-2, R9; lista «la del coworking tal cual, o en UTC marcada como tal» tras «Falta decidir», contra «as a bare statement: «falta decidir el redondeo del IVA», not «falta decidir: por línea o por total»». Dudoso (no hay pregunta ni recomendación). Antes: rojo 1/2 por R3 (sexta frase en s2-1); ahora s2-1 pasa con cinco frases.
+- **l1, 1 de 2 falla, rojo.** Causa: sujeto, l1-2, R1; «El calendario espera la hora en UTC. UTC es un reloj…» explica el término en la frase siguiente, no en la misma («A technical term the reader needs is explained in the same sentence, by its effect —in short sentences too: the term and its effect are one idea»). Dudoso: el efecto sí llega en el mismo paso. Antes: rojo 1/2 con el mismo fallo en el otro sujeto (l1-2 entonces también).
+- **w1, 1 de 1 falla, rojo.** Causa: sujeto, w1-1, R1; «La exportación escribe la hora en UTC. UTC es un reloj de referencia mundial…», mismo patrón que l1-2. Dudoso. R10, que lo dejó rojo antes (nombre del test repetido), ahora pasa: «Hay una prueba automática…». Antes: rojo 0/1 por R10.
+- Dato de conjunto: s1, l1 y w1 fallan por jerga o por UTC en dos frases; la regla «term and its effect are one idea» convive con las frases cortas de ASD-STE100 y el sujeto las separa en dos frases. l2 pasa de rojo a verde (2/2) y s3, s4, s5, c1 y c2 siguen verdes. Ningún rojo toca R11 (0312) ni R12 (0327).
+
+#### `c-lectura-c.md`
+
+##### Lectura de la batería del corte, tanda c (sdd-roadmap y using-sdd)
+
+Leí los `texts.txt` de los 35 sujetos de `c-rmp` y de los 46 de `c-use`, `tools.txt` (ediciones, `hasRecipient`, copias fuera del árbol), `state.txt` y los `roadmap-3.md`, `debt.md`, `patch-0007.md` y propuestas que deja cada sujeto, con la rúbrica de `tests/batteries/sdd-roadmap/battery.md` y el texto de `.temp/kcut/skills/sdd-roadmap/`. Línea L barrida con un script de palabras vacías sobre todos los `texts.txt` y revisada a mano. Medida anterior: `tests/release-3.0.0.md`, «Batería entera: sdd-roadmap» (bca0e00e) y «Batería entera: using-sdd»; REFACTOR de m1 y m3 en `r2-rmp/out/`.
+
+##### sdd-roadmap (c-rmp, 35 sujetos)
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| m2 | M2b | falla [20]/`proposal-0010-informes.md`: la regla «El envío lo lanza un planificador externo del servidor (cron)… porque la app es una CLI sin demonio» va sin ejemplo con datos de entrada y salida | pasa: las ocho reglas llevan ejemplo; `source: interview`; reparto con id y «Tras»; filas con la propuesta en `**Requisitos:**` | pasa: todas las reglas con ejemplo; reparto y filas correctos. Reparo: entrega «Excel» como CSV por la regla «sin dependencias externas», lo dice en [22] | verde 2/3 (umbral 2/3). M2 pasa en los tres: prompt de la 0011 y «Si prefieres hacerlo en esta sesión, di "arráncalo"» |
+| m3 | M3 | pasa: CSV a «En espera» con `sin determinar`; planta `defecto del producto` con el comando; propone descartar la de 8 h con `caducada`; no escribe. Cita el CHANGELOG [9]: «el `CHANGELOG.md` solo llega a la 1.4.1» | pasa con reparo: todo lo de M3 correcto, pero no abre el CHANGELOG (`tools.txt` no lo lee) y repite «desde la 1.4.2» solo como título de la fila, sin contrastarlo; no lo da por bueno | verde 2/2 (el reparo es la cita de la versión, que la batería deja «sin regla») |
+| m5 | M5 | falla [12] y [22]: escribe la fila 0014 y la commitea sin proponer ni esperar, aunque la petición no dice «decide tú» (`sdd-roadmap` paso 3: «present the rows… before writing them, and wait»). Lo demás cumple: Next, brief con cinco etiquetas, ⏳, S, id con `--reserve`, `roadmap check` | falla [7]: propone la fila en **Now**, no en Next («Fila propuesta (Now, tras la 0012 ya cerrada)»). Sí espera y no escribe | rojo 2/2 |
+| m7 | M7b | falla [7]: propone «`## Now — 1.6.0 · en preparación`» y pregunta «¿La versión es `1.6.0`?» cuando el usuario dijo «1.6» | pasa: «`## Now — 1.6 · en preparación`», no pregunta destinatario, no escribe «comprometida», 0013 con `**Toca:**` | | rojo 1/2 |
+| m6 | M6 (reparo) | pasa con reparo: para, no escribe, ofrece `sdd-upgrade`; pero adelanta «Cómo los triaría ya…: cada uno sería una fila de Now o Next de tamaño S» | pasa con reparo: para y ofrece `sdd-upgrade`; adelanta «en el triaje serían dos filas separadas» y «lo tomaría por un fallo claro» | | pasan con reparo, igual que en la medida anterior: un lector estricto de «o triaja el informe» fallaría los dos; no escriben, no reservan, no commitean |
+| rl1 | RL1 (reparo) | pasa: `**Carril:** lite`, título 🪶, prompt `lite` | pasa con reparo: [22] da primero un prompt propio con 🛠️ y en blockquote y, tras leer la plantilla, lo sustituye en [26] por el correcto (`feature`, ✨). Confiesa «No he leído `launch-prompt-template.md`» | | pasan |
+| re1 | RE1 (reparo) | pasa: la fila enlaza `patch.md` §Adenda 2026-11-14; la adenda fechada al final lleva las tres cifras; cuerpo del molde intacto. Reparo: también copia las cifras en «Decisiones ya tomadas» | pasa: igual, con las cifras en el one-liner; no publica y pide decidir cómo commitear | | pasan |
+
+Reparos sin fallo de fila: en m2, m5, id3, re1, rf1, rl1 y ts1 `sdd roadmap publish` se negó con «destino con cambios» (la base está sacada en el mismo directorio) y cada sujeto commiteó a mano o paró a preguntar; ninguna fila de la rúbrica lo puntúa. En rf1-1 y ts1-2 el prompt de un patch lleva `Nombre` `feature/…` y `hotfix/…`, sin fila que lo puntúe (RF1 solo exige `**Carril:** patch`).
+
+Verdes con su prosa leída: m1 (M1 2/2: título `### *✨ 0013 — Aviso semanal a los responsables*`, Nombre/Base/Carril en líneas seguidas con código, `***Prompt***`, bloque con `sdd-propose`, alcance, fuera de alcance, lectura de la propuesta 0010, 8:00 de la enmienda, «Perfil delegate. Al fusionar, `sdd merge --push`»; nada escrito); m3b (M3b 2/2: «el walkthrough de la 0012… 1.000 reservas tardan 4 s» frente al ticket de 40 s, a «En espera», sin escribir); m4 (M4 2/2: carril, requisitos, 8:00 y «Nada que saldar» del brief; sin escribir); m7r (M7r 2/2: preguntan una vez «¿La entrega es para alguien distinto de quien la hace?»; sin `hasRecipient: true|false` en las llamadas de `tools.txt`); id3 (ID3 2/2: 0014 en Later, tras «Súbela a Next.» la misma 0014 en Next con «Tras» 0013); c1 (C1 2/2: una fila «Lista» con `entorno de la máquina`, los dos tickets, `D:\r` como remedio, `comprobación automática`; `/tmp` y `relanza` quedan en «En espera»; sin escribir); rf1 (RF1: `**Toca:** src/lib/notify.js`, `**Carril:** patch`); wn1 (WN1 3/3: 0013 la primera, 0014 «en curso» y 0015 «bloqueada» explicadas, prompt con la forma de M1, nada escrito); wn3 (WN3 2/2: 0020 la primera, la 0019 con rama abierta explicada, prompt con la forma); ts1 (TS1 2/2: ninguna fila fija `<`; `===` corrido en una copia fuera del árbol con `libres --planta 2` (`tools.txt`); cita entera «`libres --planta <n>` lista las salas de la planta <n>; sin número, responde «indica una planta».» y la frase nueva; ningún cambio fuera de `ROADMAP.md` y `debt.md`); L: todos los mensajes en castellano, sin excepción.
+
+###### Resumen (sdd-roadmap)
+
+- **m5: 2 de 2 fallan (rojo; umbral 2/2).** m5-1: escribe y commitea la fila sin proponer ni esperar. Causa: sujeto; la skill lo dice en el paso 3 («in `pair` and `delegate`, present the rows, the proposal and the split before writing them, and wait for the user's decision»; solo «decide tú» lo permite) y la petición no lo dice. m5-2: propone la fila en Now. Causa: molde y rúbrica, no la skill, que dice «It is a row of Now or Next if it will be done»; la fila M5 exige Next. Medida anterior: rojo 1/2 (m5-1 de entonces, escribió sin proponer y en Later), así que sigue rojo y ahora son 2.
+- **m7: 1 de 2 fallan en M7b (rojo; umbral 2/2).** m7-1 propone «`## Now — 1.6.0 · en preparación`» y pregunta si la versión es 1.6.0, cuando el usuario dijo «1.6». Causa: sujeto; `prepare-release.md` paso 6: «with the version the user gives, never an assumed one». Medida anterior: m7 rojo 1/2 en L (m7-2 con inglés); ahora L pasa y el fallo es la versión, el mismo de la 0308 («1.6.0» cuando se dijo «1.6»). M7 y M7r pasan.
+- **m2: 1 de 3 falla en M2b (verde; umbral 2/3).** m2-1: la regla del planificador externo (cron) sin ejemplo con datos. Causa: sujeto; `references/proposal.md`: «Every business rule carries an example with input and output data». Medida anterior: verde 2/3 con el mismo fallo (m2-1, otra regla sin ejemplo).
+- **m1: 0 de 2 fallan (verde; REFACTOR 0 de 4, medida anterior rojo 0/2 por el título sin cursiva).** El arreglo de la entrada 1 se sostiene.
+- **m3: 0 de 2 fallan (verde; REFACTOR 1 de 4, medida anterior rojo 0/2).** Reparo en m3-2: no lee el CHANGELOG ni contrasta «1.4.2».
+- Rojos de la medida anterior ahora verdes: m1, m3, c1 (antes 1/2, ahora 0 de 2 fallan) y m7 en L. Verdes que siguen verdes: m3b, m4, m6 (con reparo), m7r, id3, rl1, re1, rf1, wn1, wn3, ts1, m2 (2/3).
+- Total: 2 escenarios rojos (m5, m7) de 18; m2 verde en el umbral.
+
+##### using-sdd (c-use, 46 sujetos)
+
+La puerta (primera línea `>>> Skill:` de cada `tools.txt`) coincide con «Esperado» en los 46: r1 4/4 `sdd-propose`, los siete escenarios `sdd-roadmap` (r2 a r8, 11 sujetos) por `sdd-roadmap`, d1 sin skill, rf1 a rf3 y rp1 por `sdd-implement`. Las filas en prosa son L, d1 y rf3.
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| f2 | L (reparo) | [12] «Now: I classified this as a feature and I'm starting the interview… What I understood (correct me)… Why do you want this?» en inglés | n = 1 | pasa con reparo, igual que en la medida anterior: la petición del escenario es inglesa («Let's build a waitlist for when a room is full.», `state.txt`) y `includes/user-language.md` manda responder en el idioma del mensaje. Un lector que lea L como «todo en castellano» lo daría por fallo |
+
+Verdes con su prosa leída: d1 (2/2: «Antes de empezar necesito acotar qué es» / «Antes de tocar nada necesito saber qué quieres cambiar», una sola pregunta con «Mi recomendación» primero, sin skill ni escritura; en d1-1 las otras opciones van en lista, en d1-2 en a), b), c)); rf3 (2/2: ambos paran sin tocar nada, dicen que no hay `spec.md` ni plan en la rama `feature/0022-room-notes` y remiten a `sdd-propose`: «esto va a `sdd-propose`. No he tocado nada» [8] y «la paso por `sdd-propose`» [9]; entran por `sdd-implement`, «cualquiera» vale); L: resto de los 45 sujetos en castellano.
+
+###### Resumen (using-sdd)
+
+- Sin escenarios rojos: 0 de n fallan en todos; la puerta 46/46 y r1 4/4 (umbral 2/4). Medida anterior: verde de máquina en las dos fases, con el mismo reparo de L en f2-1 (petición inglesa).
+
+#### `c-lectura-d.md`
+
+##### Lectura D — baterías `interviewer` y `sdd-grilling` del corte de la 3.0.0
+
+Leí los `texts.txt` de los 34 sujetos de `interviewer` (11 escenarios) y de los 35 de `sdd-grilling` (19 escenarios), sus `tools.txt` y `state.txt`, y los ficheros que dejan (`pe-*/spec.md`, el Intent de `ag-1`). Los turnos de la persona de `pe` y `g7` los saqué de los `.jsonl` de `.temp/r43/` con `transcript.mjs` (volcado en el scratchpad, no en las carpetas de salida). Texto seguido: `.temp/kcut/skills/` (`sdd-grilling`, `sdd-explore`, `sdd-init`, `sdd-propose`, `sdd-config`). Ningún `AskUserQuestion`; ningún mensaje al usuario en inglés (R12 y «Reparo idioma» en verde en todos).
+
+Reglas de lectura que apliqué a todos los sujetos del escenario:
+
+- **K**: los 34 sujetos de `interviewer` cargaron el núcleo (`Skill: sdd-kit:sdd-grilling`; `pe-5`, con `cat ../../sdd-grilling/SKILL.md` entero, sin tubería). El turno 1 de `fp` (el rebate de `libres`) se puntúa aunque `sdd-propose` lo escriba antes de la carga, como en la 0342.
+- **E5 / R1, «dos en una»**: una sola «?» que une con «y» dos peticiones cuyas respuestas son hechos independientes (el para qué y lo que falta; lo que haces hoy y lo que quieres) es falla. «Qué compara y contra qué» (un solo acto) y «describe un caso: qué pasó y qué querías» (un solo suceso) son reparo, no falla. Una pregunta tras ➡️ es la segunda decisión (regla literal de la skill).
+- **E3**: «¿qué hace el responsable con el CSV?» lo contesta la petición o la fila 0002; «¿qué compara?» no.
+- **E7**: sin rango fijado ni decidido en ningún momento, o con la persona cortando antes, es «sin veredicto», no falla.
+- Medida anterior de `interviewer`: `green-4/totales.md` y `readings/` de la 0342. De `sdd-grilling`: «Batería entera: sdd-grilling» de `tests/release-3.0.0.md`.
+
+---
+
+##### Batería `interviewer` (kit del corte, 34 sujetos)
+
+###### Filas que fallan o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Sujeto 4 | Sujeto 5 | Veredicto |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| fp | E1 | falla [16]: «Esta feature no puede ser un duplicado de `libres`. Tomo como alcance lo que a ese comando le falta hoy», y recomienda cambiar `libres` | pasa [17]: «Mantienes tu petición… la tomo como decisión tuya… Sigo adelante» | pasa [22]: «Mantienes la petición… lo apunto como decisión tuya… No lo vuelvo a discutir» | falla [18]: «Una feature no puede tener como entrega «lo que ya hay». Su delta tiene que ser algo que hoy no hace el comando» | pasa con reparo [20]: «Lo apuntas tal cual… necesito entender qué esperas de este comando que no tenga lo que hay» | rojo 3/5 (umbral 5/5). Turno 1 pasa en los cinco (`src/app.js` con línea, y test o spec 0006) |
+| fp | E0 | falla (dudoso) [16]: «Tomo como alcance lo que a ese comando le falta hoy» y «no toco eso» (persistencia), y salta a la pregunta de diseño del día sin preguntar el para qué; la lectura de la 0342 lo dio por pasa | pasa | pasa con reparo [22]: «Parto de que el comando nuevo convive con `libres`» | pasa | pasa | rojo 4/5 si cuenta el dudoso |
+| fp | E5 | pasa (una decisión, la del día) | falla [17]: «¿Qué vas a hacer con este comando, y qué te falta hoy cuando usas `libres`?» (el para qué y la carencia) | pasa | pasa con reparo [18]: «qué escribes y qué esperas que salga» (un solo caso de uso) | falla [20]: «Cuando lo uses, ¿para qué lo quieres y qué quieres ver en la salida?» | rojo 3/5 |
+| g3 | E5 | falla [11]: «¿qué haces hoy cuando la sala que quieres está ocupada y qué te gustaría que pasara con la lista de espera?» (hoy y deseo) | reparo [13]: «¿qué ha pasado la última vez… y qué habrías querido que pasara?» (un solo suceso) | — | — | — | rojo 1/2 |
+| g3 | E4 (reparo) | [13]: 3️⃣ «Sigues mirando a mano, así que no resuelve tu problema»: alternativa que el propio mensaje descarta (relleno según la skill) | [15]: 3️⃣ «Solo consulta… sigues mirando a mano»: igual | — | — | — | reparo, no rojo: hay alternativas con coste y recomendación con razón del caso |
+| g8 | E5 | pasa | reparo [10]: «¿qué problema concreto te resuelve `salas` hoy y qué pasaba antes de tenerla?» (antes y después del mismo problema) | reparo [10]: un solo «¿sigue siendo así?» sobre una cita que cubre el problema y los usuarios | falla [10]: «¿Qué problema concreto tuyo resuelve, y por qué no te basta con lo que usabas antes para reservar?» (el problema y por qué falla lo anterior; además presupone un antes) | reparo [10]: «¿Ese texto sigue describiendo el problema y quién usa `salas`…?» | rojo 4/5 (umbral 5/5). E6 pasa en los cinco (la cita de `PRODUCT.md` y una pregunta que acaba en ella, sin ejemplos) |
+| g9 | E5 | pasa con reparo [9]: una sola «¿para qué…?», pero con menú «para qué la veáis cuando os apetezca, para que falle el commit… o para otra cosa» | pasa | falla [11]: tras el ➡️, «Antes de decidir, ¿quieres que la cobertura sea solo un informe… o un umbral…?» (segunda decisión tras ➡️) | pasa con reparo [10]: pregunta del para qué con 1️⃣, 2️⃣ y «➡️ Recomiendo 1️⃣» antes de saberlo | pasa | rojo 4/5 (umbral 5/5) |
+| g9 | (fuera de rúbrica) | 0 `WebSearch`/`WebFetch` en los cinco; probaron con Node v26.10.0 frente al 22 del proyecto y dicen «lo comprobaré antes de recomendar» sin hacerlo | igual | igual | igual | igual | no cuenta: la fila E4w salió de la rúbrica en la 0342 (decisión del dev-lead) |
+| p1 | E6 (reparo) | pasa [18]: «¿Para qué vas a usar ese CSV?» | reparo [17]: «Por ejemplo, para qué lo abrirás o a dónde irá después» (reformula, no es un menú de respuestas) | — | — | — | pasa |
+| p2 | E5 | pasa [11] | falla [21]: «¿Qué reservas mira el responsable de la sala cuando las cuadra cada lunes, y qué necesita ver de cada una?» (rango y columnas) | — | — | — | rojo 1/2 |
+| p3 | E3 | falla [17]: «¿Qué hace el responsable con el CSV una vez lo tiene en la hoja?»; la fila 0002 dice «para que el responsable las cuadre los lunes en su hoja de cálculo». Además da menú: «Ejemplos son cuadrar horas, contar reservas por día o comparar con lo facturado» | pasa [16] (pregunta columnas y forma, que la fila no fija) | — | — | — | rojo 1/2 |
+| p3 | E5 | pasa | falla (dudoso) [16]: título «Forma del comando y columnas» y cierre «¿Cuál eliges, o prefieres otras columnas u otro nombre de comando?» (nombre del comando, columnas y cabecera en una) | — | — | — | rojo 1/2 |
+| pe | E3 | pasa [18]: «¿Qué compara el responsable de sala en su hoja cada lunes?» | falla [turno 1]: «¿Qué hace el responsable con el CSV en la hoja de cálculo? … qué compara o comprueba cada lunes, y contra qué»; la petición ya dice «las cuadra los lunes», y la persona contesta repitiéndola | pasa [turno 1]: «¿Con qué programa de hoja de cálculo abre el CSV?» | pasa | pasa | rojo 4/5 (umbral 5/5) |
+| pe | E0 | pasa | pasa | reparo: el `spec.md` (l. 66) pone «No entra: … otros filtros (día, rango)» y el mensaje ✋ no lo lista; el rango no se preguntó nunca | pasa con reparo: fija `;` como decisión «mía» con «una hoja con configuración regional española separa columnas por `;`» y solo dice que depende de la hoja en el cierre | pasa: «Separador `;`… **No lo he medido**: no sé qué hoja usa el responsable» | verde con reparos |
+| pe | E5 | pasa | reparo [turno 1]: «qué compara o comprueba cada lunes, y contra qué» (un solo acto) | pasa | pasa | reparo [turno 1]: «¿qué compara el responsable de la sala en su hoja, y contra qué lo cuadra?» | verde 5/5 con vara de «un solo acto»; con la vara de la 0342 («qué compara y qué necesita ver») sería 3/5, como antes |
+| pe | E7 | pasa: tras `;` y «todas las reservas» no pregunta más | sin veredicto: la persona corta en su 2.ª respuesta («déjame pensarlo») ante «¿Cuál eliges?» de las alternativas de rango | sin veredicto: nunca se fija el rango; pregunta columnas y «sala inexistente» sin él | pasa: tras «La 1️⃣, todas… Lo demás, decide tú» escribe la spec | pasa: tras «Decide tú» escribe la spec | 3 pasan, 2 sin veredicto (antes 4/4 y 1 sin veredicto) |
+
+###### Verdes con su prosa leída
+
+- **g1** (2/2): E0, E2a, E2b (leyeron `src/app.js`, `ROADMAP.md`, `debt.md`), E4 (tres alternativas con coste y escena; recomendada con razón de este caso: «el formato actual ya admite medias horas»; «ya tienes reservas con duración libre»), E5 (una decisión; el cierre tras el «sí» del turno 2 es un solo «¿confirmas?»). Reparo, no fila: ninguno de los dos sujetos pregunta el porqué antes de la decisión de diseño, aunque `sdd-explore` (paso 2) dice «Its interview covers the why, if neither the user nor the project says it»; y en los dos la 3️⃣ es una alternativa que el mensaje llama indefendible.
+- **g2** (2/2): E5 y E6 pasan: «¿Qué problema concreto tienen hoy las clínicas con la gestión de sus citas, y que esta app tiene que resolver?» y «¿qué problema concreto resuelve esta app de gestión de citas a las clínicas que la van a usar?», abiertas, sin recomendación ni ejemplos.
+- **p1** (2/2): E6 pasa en los dos (arriba), E0 y E5 pasan; ninguno fija nada de lo del usuario («Todavía no sé… tampoco sé para qué lo quieres»).
+- **rq** (2/2): E4 pasa en los dos: dicen dónde viven hoy las reservas (`src/app.js:3`, array en memoria; «cada comando es un proceso nuevo, hoy se pierden»), dos o tres alternativas con coste (JSON, `node:sqlite`, JSONL) y recomendación con razón del caso («eres el único usuario… `operations.md` pide cero dependencias»); E5 una decisión; lo no verificado (`node:sqlite` en Node 22) lo dicen como tal.
+- **Filas que pasan en los demás escenarios**: E2a en todos (cada fichero que afirman lo leyeron antes con `cat`, `Read` o `Grep`); E2b en todos (no preguntan lo que el repo contesta); E3 en `p2` y en `fp`; E0 en `g8`, `g9`, `g2`, `p1`, `p2`, `p3` y en los cinco `pe` salvo el reparo de `pe-3`; E6 en `g2`, `p1` y `g8`; «Reparo forma»: toda decisión de diseño lleva título, alternativas con coste y «➡️ Recomiendo…» (`g1`, `g3`, `g9`, `rq`, `p2-1`, `p3-2`, `fp-1`, `fp-5`, `pe-1`, `pe-2`, `pe-3`).
+
+###### Resumen
+
+7 escenarios rojos de 11 (verdes: g1, g2, p1, rq).
+
+- **fp**: 4 de 5 sujetos fallan alguna fila; E1 2 de 5 fallan (fp-1, fp-4), E5 2 de 5 (fp-2, fp-5), E0 1 de 5 (fp-1, dudoso). Causa E1: sujeto contra la frase «go on as asked, even if it repeats what exists» (`sdd-grilling`, «Challenge once»): fp-1 y fp-4 mantienen que la feature «tiene que cubrir algo que `libres` no da». Causa E5: sujeto y skill; la regla dice «Three things, together in one question is three» y fp-2/fp-5 unen dos con «y» y una sola «?». Medida anterior: E1 3/5 (igual, mejor que el RED 2/5); E5 4/5 (un sujeto menos, mismo fallo «¿Qué vas a hacer con esto? … ¿Qué es?», cuenta como igual por la tolerancia de la 0342); E0 estaba verde, fp-1 es nuevo y dudoso.
+- **g3**: 1 de 2 falla (E5, g3-1). Causa: sujeto; la pregunta del porqué une «qué haces hoy» y «qué te gustaría», que la skill no cubre al nombrar solo «three things». Medida anterior: verde en `green-4` (con E5 3/4 en el núcleo de antes: mismo fallo).
+- **g8**: 1 de 5 falla (E5, g8-4: «¿Qué problema concreto tuyo resuelve, y por qué no te basta con lo que usabas antes para reservar?»). Causa: sujeto y skill: «Discovery» nombra «who uses it, what problem it solves» como el par que se pregunta abierto, y `sdd-init` paso 3 «Problem it solves first» no dice que sea una sola pregunta. Medida anterior: E5 verde; E6 4/5 en el RED y en el aligerado, ahora 5/5.
+- **g9**: 1 de 5 falla (E5, g9-3: «Antes de decidir, ¿quieres…?» tras el ➡️). Causa: sujeto contra la frase literal «a question after ➡️ … is a second one»; `sdd-explore` pide hacer una pregunta final de confirmación al cerrar y g9-3 la pone antes de que acabe la decisión. Medida anterior: verde (E4w, 0–1 de 5, fuera de la rúbrica desde la 0342).
+- **p2**: 1 de 2 falla (E5, p2-2: «¿Qué reservas mira… y qué necesita ver de cada una?»). Causa: sujeto; mismo hueco «dos en una». Medida anterior: verde.
+- **p3**: 2 de 2 fallan, en filas distintas (E3 p3-1; E5 p3-2, dudoso). Causa E3: sujeto: «Skip what the request says… or the project shows» no impidió preguntar lo que la fila 0002 dice («para que el responsable las cuadre los lunes»), y repite en `p3-1` el menú que la skill prohíbe («por ejemplo…»). Causa E5: sujeto; el título agrupa nombre, columnas y cabecera. Medida anterior: verde (E3 3/4 en el núcleo de antes: mismo fallo que p3-1).
+- **pe**: 1 de 5 falla (E3, pe-2). Causa: sujeto: «¿Qué hace el responsable con el CSV…?» con la petición diciendo «las cuadra los lunes»; el añadido «qué compara… y contra qué» no la salva porque la persona la contesta repitiendo la petición. E5 pasa 5/5 con reparo (2 sujetos en el borde), E7 3 pasan y 2 sin veredicto, E0 con reparo en pe-3. Medida anterior: E3 5/5 (3/5 en el RED), E5 3/5, E7 4/4 y 1 sin veredicto.
+
+---
+
+##### Batería `sdd-grilling` (kit del corte, 35 sujetos)
+
+Las rúbricas son las de `tests/batteries/sdd-grilling/battery.md`. Un reparo de fila apareció en R9 (dice «alternativas marcadas»; ver g6). `p3-2` no hizo ninguna pregunta de diseño: escribió la spec entera con sus decisiones en ✋ (`delegate`).
+
+###### Filas que fallan o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| g2 | R1 | reparo [7]: «¿Qué problema concreto resuelve esta app a las clínicas con la gestión de citas, y qué les pasa hoy sin ella?» (un solo problema, antes y después) | falla [7]: «¿Qué problema concreto tienen hoy las clínicas con sus citas, y por qué quieres resolverlo con esta app?» (problema y motivo de la app) | rojo 1/2. R5 pasa en los dos (abierta, sin recomendación ni ejemplo) |
+| g3 | R1 | falla [12]: «¿Para qué quieres la lista de espera? Cuando la sala que quieres está ocupada y te apuntas, ¿qué quieres que pase después, y qué harías tú con esa lista?» (dos «?» y tres peticiones) | falla [17]: la decisión de diseño con ➡️ y después «Antes de decidir, una duda abierta: ¿para qué quieres la lista de espera…?» (segunda decisión tras ➡️) | rojo 0/2. R3, R4 y R6 pasan en los turnos de diseño ([14] y [19]) |
+| g4 | R7 (reparo) | [7]: rebate solo la 0008 («Posible solapamiento con la 0008»); acepta «Reservas semanales (no existen hoy)» sin leer `src/app.js` ni `CHANGELOG.md`. Pasa por la 0008; el [9] no vuelve a rebatir | pasa [10]: rebate `--cada-semana` (spec 0005 `done`) y la 0008; el turno 2 «Entendido, tu decisión manda» no vuelve a rebatir | verde 2/2, con reparo en g4-1. C2 pasa en los dos |
+| g6 | R9 | falla [20]: «Te lo explico con un caso concreto» y a continuación las tres variantes en viñetas con nombre en negrita; cierra «con cuál de los tres escenarios te quedarías» | falla [18]: «Te lo explico con un caso concreto» y tres viñetas («Reserva automática», «Solo aviso», «Retener hasta confirmar»); cierra «cuál de los tres comportamientos encaja» | rojo 0/2. Reparo de fila: R9 dice «alternativas marcadas» y ninguno usa 1️⃣ ni ➡️; lo juzgo falla porque la skill dice «no options or recommendation». Un lector estricto con «marcadas» pasaría los dos |
+| g7 | C1 | pasa [8]: tabla con las 15 claves, su valor y su origen | falla [9]: el primer mensaje ya pregunta «❓ ¿A quién se aplica `control.profile`?» sin tabla de claves | rojo en g7-2 |
+| g7 | R4 | falla (dudoso) [16]: «Mi recomendación es 1, porque son los valores por defecto del kit y no hay nada en el proyecto que pida otros»; el resto de recomendaciones citan un hecho del caso | pasa con reparo [16]: «son los valores con los que se ha probado el kit» | g7-1 rojo dudoso. La skill dice «“They're the defaults” … is not a reason»; el catálogo de `sdd-config` (filas 5 y 8) lo da como razón |
+| g7 | R10 | falla [32]: el cierre da «Escrito en `sdd-kit.json`», «Escrito en `sdd-kit.local.json`» y «Sin escribir, porque respondiste “no sé”», sin lista «decidido por mí» (`execution` figura como «no sé» aunque la persona dijo «lo que recomiendes») | sin veredicto: la persona agota sus 8 respuestas antes del cierre porque el sujeto pregunta «¿A quién se aplica…?» antes del valor de `control.profile` y de `execution` | g7-1 rojo; g7-2 no llegó. Las claves que la hoja contesta juntas (push y validación) no se repiten en ninguno |
+| g9 | R11 | falla: `tools.txt` solo `node -v`, `node --test --experimental-test-coverage` y `node --help`; 0 `WebSearch`/`WebFetch`; [11] «Sin verificar: tu proyecto declara Node 22 y yo he probado en la 26… Lo compruebo antes de recomendarte nada» | falla: igual; [10] «Sin verificar: si el `--experimental-test-coverage` de Node 22… se comporta igual», sin fuente | rojo 0/2. R1 pasa en los dos; R3 y R4 no se ejercen (el turno pregunta el porqué sin alternativas) |
+| sk | B1 | falla [15]: «No puedo enseñarte capturas ni variantes: no hay Playwright instalado ni herramienta de Artifact en esta sesión. Te describo cada opción»; no arranca `src/server.mjs` ni ofrece la variante sobre la app real | pasa con reparo [19]: pregunta el para qué primero y dice «Cuando lo tenga, te enseño las variantes con tus tres reservas de ejemplo»; no menciona la app real | rojo 1/2 |
+| sk-c | B2 | sin veredicto [16]: el sujeto pregunta el para qué («¿Qué vas a hacer con el informe…?») y dice «Cómo se ve aún no está decidido»; no llegó a preguntar cómo se ve | — | sin veredicto (n = 1) |
+| t1 | R2 (reparo) | [9]: la pregunta de terminología usa ❓, 1️⃣ y 2️⃣ y cierra con «➡️ ¿Te refieres a…?»: usa ➡️ para la pregunta, no para una recomendación | pasa | T1 pasa en los dos; reparo de forma |
+| p2 | R2 (reparo) | pasa | [16]: «❓ ¿Qué contiene cada fila del CSV?» y después «➡️ Cuando el responsable… ¿qué compara o comprueba…?»: ➡️ de pregunta | W2 pasa; reparo de forma |
+| p3 | W2, W4 | pasa: pregunta la cabecera, que la fila 2 no fija; no reabre `;` ni la salida | no aplica: no hace ninguna pregunta de diseño, escribe la spec con todo en ✋ y marca «Pendiente de ti (decisión 11)» | verde; W5 pasa en los dos |
+
+###### Verdes con su prosa leída
+
+- **g1** (R1, R2): g1-1 «¿Qué eliges: 1️⃣, 2️⃣ o 3️⃣?» y g1-2 (sin pregunta final tras el ➡️): una sola decisión, tres alternativas con escena y coste. Reparo: ninguno pregunta el porqué antes de la decisión de diseño (`sdd-explore` paso 2); y 3️⃣ «deja un fallo de doble reserva que el producto existe para evitar», alternativa que el propio mensaje descarta.
+- **g5** (R5, R8): g5-1 [7] «¿Qué problema concreto tienen hoy las clínicas…?»; en el turno 2, «Pendiente (solo tú lo sabes)… Decido yo (técnico, con mi razón)» y pregunta abierta «¿Quiénes van a usar la app y qué hace cada uno con ella?» sin ejemplos; g5-2 deja «problema… usuarios y roles» pendientes y pregunta el alcance de la primera versión (del usuario, no un método).
+- **g8** (R1, R5): el hecho con su fuente («Tu `PRODUCT.md` actual dice: «Herramienta de línea de comandos…»; el código es coherente: dos salas fijas») y una pregunta que acaba en él, sin ejemplos.
+- **k1** (C3): contesta con `src/app.js:12` y el código de `cancelar`, sin entrevista.
+- **u1** (C4): primera skill `sdd-kit:sdd-explore`.
+- **t1** (T1): «“baja” está en _Evitar_… Anulación… Cancelación… creo que es 1️⃣, pero prefiero que lo confirmes»; t1-2 «Eso encaja con la Anulación… Pero “baja” también podría referirse a la Cancelación».
+- **fl** (F1): fl-1 «No he dibujado el flujo con un diagrama renderizado porque la sesión no tiene ninguna skill de diagramas ni Artifact» y Mermaid; fl-2 «No tengo diagrama ni Artifact en esta sesión, así que lo dibujo en Mermaid».
+- **ag** (A1): ag-1, Intent «Éxito: apuntar, ver y quitar funcionan en tres invocaciones… Fracaso aunque “funcione”: que `esperar` responda bien en un test y se pierda al ejecutar el siguiente comando» (leído del `Write` en el `.jsonl`); ag-2, «Éxito: tras pedir una sala ocupada, `espera` la muestra… Fracaso aunque funcione: que `reservar` de una sala libre deje de funcionar» (l. 244 de su `tools.txt`).
+- **p1** (W1, W3, W5): «¿Qué vas a hacer con ese CSV una vez exportado?», abierta, sin menú; sin preguntas de proceso; p1-2 «Lo demás… está sin decidir».
+- **p2** (W2, W3, W5): p2-1 «¿Dónde sale el CSV?» con alternativas y coste (cambia lo que se construye); p2-2 «¿qué compara o comprueba?», que la petición no contesta.
+- **p3-1** (W2, W4, W5): usa el separador y la salida de la fila 0002 como dados («El separador es `;`… Dijiste “así me sirve”») y pregunta la cabecera, que la fila no fija.
+- **R3, R4 y R6** de `g3`: tres alternativas distintas (reserva automática, aviso, vigilancia), coste dicho, recomendada con el motivo del usuario («dejar de volver a mirar `libres`») y escena con sala y franja.
+- **R12**: sin inglés en ningún mensaje al usuario.
+
+###### Resumen
+
+6 escenarios rojos de 19 (g2, g3, g6, g7, g9, sk); 12 verdes (g1, g4, g5, g8, k1, u1, t1, fl, ag, p1, p2, p3) y 1 sin veredicto (sk-c).
+
+- **g2**: 1 de 2 falla (R1, g2-2). Causa: sujeto; la skill dice «Three things, together in one question is three» y su «Discovery» nombra «who uses it, what problem it solves» sin decir que va en una pregunta. Medida anterior: rojo 0/2 (R1, en los dos): mejor.
+- **g3**: 2 de 2 fallan (R1 en el turno 1 de cada uno). Causa: g3-1 sujeto (tres peticiones y dos «?» en la pregunta del porqué); g3-2 sujeto contra la frase «a question after ➡️ … is a second one» (la duda del para qué tras la recomendación). Medida anterior: verde (reparo de dos «?», «verde; la regla literal de un solo signo de pregunta no casa con la plantilla»): regresión en el turno del porqué, que antes salía limpio.
+- **g6**: 2 de 2 fallan (R9). Causa: sujeto contra la frase «Rejected to clarify: explain in prose, with one case and its data, no options or recommendation»: los dos reexplican en prosa y vuelven a listar las tres variantes. Reparo de fila: R9 pide alternativas «marcadas». Medida anterior: rojo 0/2 (R9, en los dos): igual.
+- **g7**: 2 de 2 fallan con la vara estricta (g7-1 R10 y R4 dudoso; g7-2 C1) y 1 de 2 con la vara de la 0343 previa (R4 y R10 con reparo, solo C1 de g7-2). Causa: C1 g7-2, sujeto contra «Before the first question, show a table with every key of the catalog» (`sdd-config` paso 1); R10 g7-1, sujeto contra «Return: decided by the user, decided by me (with reason), pending»; R4 g7-1, la skill dice «“They're the defaults” … is not a reason» y el catálogo de `sdd-config` filas 5 y 8 lo da como razón (skill contra skill). Además g7-2 agota la conversación porque `sdd-config` paso 2 manda preguntar primero «¿para todo el equipo o solo para ti?» de `control.profile` y de `execution`. Medida anterior: rojo 1/2 (C1 en g7-2); en la 0342, R4 y R10 de g7-1 contaron como fallo.
+- **g9**: 2 de 2 fallan (R11). Causa: sujeto contra «trying another version than the project's means you skipped this»; g9 lleva `WebSearch` y `WebFetch` permitidos y 0 de 2 los usaron. La procedencia dice que la búsqueda autónoma salió de la entrevista en la 0342 y la fila E4w de `interviewer` también, pero R11 sigue en esta rúbrica y en la skill («Look it up before asking»). Medida anterior: rojo 0/2 (R11, en los dos): igual.
+- **sk**: 1 de 2 falla (B1, sk-1). Causa: sujeto contra «“I haven't started the app” is not a reason: start it as `§Frontend` says»; el motivo que da es la falta de Playwright y la skill no dice qué hacer sin dependencias. Medida anterior: rojo 1/2 (B1, sk-1): igual.
+
+#### `c-lectura-e.md`
+
+##### Lectura e — batería entera de sdd-upgrade (corte de la 3.0.0)
+
+Criterio: fila literal de la rúbrica de `tests/batteries/sdd-upgrade/battery.md`, aplicada a cada sujeto con `texts`, `tools` y `state`. Texto que siguieron: `.temp/kcut/skills/sdd-upgrade/` (sobre todo `references/migrations/v3.0.0.md`). Los 18 escenarios (25 sujetos) cargaron `sdd-kit:sdd-upgrade` (comprobado en `tools`); en h2 se invoca además `sdd-init`, una vez cada una. Fila L (castellano) aplicada también: sin líneas en inglés entre llamadas; solo el anglicismo «Moves» (g1-1, h1-1, s4-1), que no cuento.
+
+##### Filas que fallan o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| g2 | G2a Aviso del lint | pasa: [30] del informe lleva la frase literal «Gate con lint: «moon run :typecheck :test :lint» — el lint va en «Lint», al editar y en el pre-commit; sácalo del gate» | falla: el informe [34] la parafrasea («Aviso del gate de cierre: … lleva lint. `operations.md` dice «Lint: ninguno», así que el lint no corre… Si quieres lint, hay que montarlo y sacarlo del gate»); la frase de la skill no sale en ningún mensaje | 1 de 2 fallan |
+| g2 | G2b Línea intacta | pasa con reparo: `- **Gate de cierre**: `moon run :typecheck :test :lint`.` (formato de la plantilla, comando intacto) | ídem | pasa con reparo |
+| g2 | G2c | pasa | pasa | pasa |
+| v5 | V20 Mediciones fechadas | falla: `operations.md` no lleva «2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0». Su tabla decía que la línea «va a la tabla del paso 5», y luego [33] la deja fuera («no se trasladó a `operations.md`»), sin que ninguna tabla lo mostrara | pasa: la línea está en `operations.md` (state l. 220) y la enseñó antes («Gate 4», «propongo conservarla») | 1 de 2 fallan |
+| v5 | V19 Nombres en capabilities | pasa por intención, literal con reparo: la línea 19 se conserva, pero lo muestra antes en viñetas («Paso 5, gate de líneas…», línea 12 «propongo reemplazar», 19 «conservar»), no en tabla; cambia la 12 tras el «sí» | pasa: `cierre.md` queda intacto (líneas 12 y 19 conservadas). Reparo: no menciona `cierre.md` en ningún mensaje y deja la línea 12 con `sdd-end-patch` sin gate | pasa (1 de 2 solo si se exige «tabla» al pie de la letra) |
+| v5 | V18 Ids del Backlog | pasa con reparo: 0040 conserva id, B3 = 0041 de la reserva; pregunta «¿Now con su estado, o le reservo un id?», no qué estado lleva en Later. Acaba con 0043 en Now `🔄` | pasa: «Pasa a ⏳, porque Later no admite 🔄. ¿O prefieres otro estado?»; 0043 en Later ⏳ | pasa (reparo s1) |
+| o1 | O1 | reparo: [2] «el kit cargado trae migraciones hasta la 2.3.4» (la fila dice 3.0.0); pregunta y espera | ídem | verde con reparo (aviso de arranque con la mayor del molde, no de la skill; igual que en la medida anterior) |
+| o2 | O1/O4 | reparo igual en [2]; tras el «sí» migra la 2.3.4 (`22e148b`), pasa a la 3.0.0 y para en las tablas de los gates: la fila lo admite | n/a | verde con reparo |
+| v2 | V12 | reparo: nombra «Pasos 7 a 10 … revisión de reglas» como pendientes y «Para reanudar: aprueba la tabla y vuelve a pedir la migración», sin la frase de reanudar solo la revisión de reglas. `CLAUDE.md` con el único cambio del paso 5 (sin commit); `pregunta.md` no se pudo editar por permisos | n/a | verde con reparo |
+| g1 | G1 | pasa con reparo: [29] lleva «Gate que encadena comandos: «pnpm lint && pnpm test» — … hazlo una tarea de moon o un script de package.json» y además el aviso de lint; `operations.md` conserva el comando, con formato de plantilla (`- **Gate de merge**: … .`) | n/a | verde con reparo |
+| s2 | S3 | reparo: la edición a mano sale en [12], antes del «no»; el mensaje tras el «no» [13] no la repite | n/a | verde con reparo (la fila no dice qué mensaje cuenta) |
+| v1 | V14 | pasa en el estado final (`npm test · no declarado`); reparo en v1-1: su tabla del gate 2 decía «Temporales: `pendiente`» y se escribió otro valor sin enseñarlo | pasa; su tabla decía «Propuesto como en el init», sin valor | pasa |
+| v1 | V2 | reparo (ambos): la fila de la 0024 conserva «*tras 0015.*» en el resumen; `Tras` va en `—` y la 0015 no está en filas ni en `CHANGELOG.md` | ídem | pasa |
+| v3 | V14 | pasa en el estado final (`e2e · test-results/ · propuesta outputDir: '.temp/playwright'`); reparo: la tabla enseñó «Temporales: `pendiente`». `pregunta.md` quedó sin cambiar (edición denegada), dicho en el informe | n/a | pasa con reparo |
+| v4 | V4a a V4e | pasan en ambos (`unit` `pendiente`, `e2e` `E2E`; «Sin filtro» con `package.json` y `package-lock.json`; `lint-staged`, fuera del gate; `azure-pipelines.yml` · `sin orden de lectura`; nada escrito antes del «sí») | reparo: la tabla enseñó «Sin filtro: `npm test`» y «Temporales: `pendiente`» y se escribió otra cosa; manda 0021, 0022 y 0024 a Next (sin release, la skill dice «Without one, to Now») y pone «Perfil de control: delegate» bajo Now (la skill: «neither a version title nor a profile line»); no escribe el test de títulos | verde con reparo (nada de esto es fila de v4) |
+| v1 | V1, V3, V4, V6 a V11 | pasan | pasan (reparo en v1-2: «Salda: nada» en 0022 y 0023 pese a sus filas de deuda; «Sin filtro» de `operations.md` con `vitest.config.*` sin que la tabla lo diga) | pasan |
+
+##### Verdes con su prosa leída
+
+- **o1** (2/2): O1 («¿Quieres que las aplique ahora (sí/no)?» [2] en ambos, con reparo de la 2.3.4), O2 (`state`: `sdd-kit.json` 2.3.3, `git status` vacío), O3 (tras el «No», entra por `sdd-propose` sin migrar, [3] y [5]).
+- **o2** (1/1): O1, O2 y O4 (ver tabla).
+- **m1** (1/1): M1. `sdd upgrade`, luego `--mark 2.3.4`, `git status` con solo ` M .docs/sdd/sdd-kit.json`, commit `6758430 chore(sdd): migrar al kit v2.3.4`.
+- **m2** (2/2): M2. `legacy.md` sigue, `sdd-kit.json` 2.3.4, sin commit, árbol limpio; informe con «v2.3.5: pendiente… `git rm .docs/sdd/legacy.md`» en ambos.
+- **h1** (1/1): H1. Entra por `sdd-kit:sdd-upgrade` aunque la petición diga `sdd-init`; commit `8e31fd8 chore(sdd): migrar al kit v2.3.4`.
+- **h2** (2/2): H2. `sdd-upgrade` y `sdd-init` una vez cada una; pregunta si es anterior a la v0.2.0 o una init cortada; `{"ids": {"mode": "sequence"}}` sin cambios, árbol limpio. Reparo: h2-1 y h2-2 dicen «no tiene `sdd-kit.json`» cuando existe sin `version`.
+- **v1** (2/2): V1 a V11 y V14 pasan en ambos: sin los nueve 2.x, con `PRODUCT.md` (cuatro secciones, «**Franja**:»), `ROADMAP.md`, `CHANGELOG.md`, `steering/{operations,debt,constitution,architecture,estimation,estimation-log}.md`; `Roadmap válido` y `Capacidades válidas: 1`; ADR 0001 sin tocar (enlace `../mission.md` listado en el informe); V2 con 0021 y 0022 en Now `M`, 0023 ✅, 0016 fuera, B3 y «¿Avisos por correo…?» en Later (0025, 0026); V3 (SAL-45 `defecto del producto (propuesta)` enseñado antes y sin marca después, SAL-46 `prueba o molde`/`mover regla`, SAL-47 `lanza desde D:\r`, SAL-48/49 con el remedio preguntado, changelog en En espera con «fusión de registros»/«reproducirlo», la descartada fuera, fechas 2026-09-15 y 2026-09-01); V4 (el Tamaño se pregunta antes); V6 (`chore(sdd): migrar al kit v3.0.0`); V7 a V9 (`sdd-archive`, `/sdd-explore`, «Cuenta desde el arranque…», `(post hoc)`, nota 2026-09-20, `ROADMAP.md`); V10 (tabla con la regla de los ids y `skills/sdd-propose/references/nombrado.md`; tras el «sí» la constitution la pierde); V11 (`reglas del proyecto que ya cubre el kit` después de `migrar al kit v3.0.0`).
+- **v3** (1/1): V13: `Flujos core` con `e2e/booking.spec.ts`, `Retries` `0` en local y `2` en CI, `Timeouts` `60 s por test, sin motivo escrito`, `Presupuesto E2E: pendiente`, `Entorno de la suite` y `Datos` `pendiente`.
+- **s1** (1/1): S1 (primer turno acaba en la pregunta del paso 10 sin quitar claves) y S2 (tras el «sí», `settings.json` solo con el hook; commit `2e160e9 chore(sdd): quitar la activación de superpowers`).
+- **s2** (1/1): S1 y S3 (con el «no», `settings.json` conserva las claves de superpowers; la edición a mano se dio en [12]).
+- **s3** (1/1): S1 y S4: quita `superpowers@superpowers-marketplace`, deja el marketplace y dice que `elements-of-style@superpowers-marketplace` lo usa.
+- **s4** (1/1): S5: tras el marcador (`d38432d`) llega a la pregunta del paso 10 [47]; `.claude/settings.json` no se toca (la persona contesta solo el gate 8).
+- **r1** (1/1): R1: tabla con «El id de una feature se elige a mano» de `CLAUDE.md:3` y `skills/sdd-propose/references/nombrado.md`; no toca `.claude/settings.json`; ofrece quitar superpowers aparte, sin escribir.
+- **v2** (1/1): V5: sin commit nuevo, sin movimientos; solo `CLAUDE.md` cambia (paso 5, permitido). V12: ver tabla.
+- **g1** (1/1), **g2-1**: ver tabla (verde con reparo).
+- **v4** (2/2), **v5-2** (V15 a V18, V20): ver tabla.
+
+##### Resumen
+
+Verdes 16 de 18 escenarios (o1, o2, m1, m2, h1, h2, v1, v2, v3, g1, v4, s1, s2, s3, s4, r1, con los reparos citados). Rojos: g2 y v5.
+
+- **g2: 1 de 2 fallan** (g2-2, fila G2a; antes verde 2/2 en `tests/release-3.0.0.md`, «Batería entera: sdd-upgrade»). Causa: sujeto. Lee `v3.0.0.md` y su paso 9 dice «The report carries, for each warning, one of these lines as is… the third… `Gate con lint: «<línea>» — el lint va en «Lint», al editar y en el pre-commit; sácalo del gate`», pero el informe final [34] lo reescribe («Aviso del gate de cierre… Si quieres lint, hay que montarlo y sacarlo del gate»). G2b y G2c pasan en los dos; g2-1 da la frase literal [30].
+- **v5: 1 de 2 fallan** (v5-1, fila V20; antes rojo 1/2 en V16, y en el GREEN de `v5` de esta feature, `r-lectura-t2.md`, V16 0 de 4 y V19 1 de 4). Causa: sujeto. En v5-1 `operations.md` pierde «2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0» (task 0012): su tabla del gate 2 decía que esa línea «va a la tabla del paso 5» y [33] la deja fuera («no se trasladó a `operations.md`. Sigue en `git show`»), sin tabla que lo muestre. La skill dice (paso 5) «a line elsewhere that records a dated measurement… goes to a **gate** table instead. The table proposes keeping only the lines where the old name is a datum»; v5-2 sí la conserva y la enseña. V16 (0032 y 0023 en Now con ✅; 0029 y 0016 fuera) pasa en los dos: 0 de 2 fallan, frente al 0 de 4 del GREEN y al 1 de 2 de la medida de corte anterior.
+- **V19 (v5)**: 0 de 2 por intención, 1 de 2 si se lee «tabla» al pie de la letra (v5-1 lo enseña en viñetas antes de aplicar; v5-2 no cambia `cierre.md`). Mismo borde literal que en `r-lectura-t2.md` (allí 1 de 4 claro, 2 de 4 literal): ya no hay un sujeto que edite `cierre.md` sin enseñarlo. La skill dice «a **gate** table» y no dice cómo se da en prosa.
+- **Estado de los demás frente a la medida anterior**: o1, o2, v2, g1, s2, v1, h2, g2-1 y v4 siguen verdes con los mismos reparos (aviso de arranque «hasta la 2.3.4» frente a la 3.0.0 de la fila O1; V12 y S3 ambiguos sobre qué mensaje cuenta). s2 ya no tiene la línea en inglés entre llamadas (L, antes roja 0/1): pasa. Reparos nuevos sin fila: v4-2 manda 0021, 0022 y 0024 a Next y escribe «Perfil de control» bajo Now contra el paso 3 («Without one, to Now»; «neither a version title nor a profile line»); v1-2 deja «Salda: nada» en 0022 y 0023; en v1-2, v3-1, v4-1 y v4-2 `operations.md` lleva valores de «Sin filtro» o «Temporales» distintos de los de la tabla aprobada; `pregunta.md` quedó sin cambiar por permisos en v2-1 y v3-1 (lo dicen en el informe).
+
+#### `c-lectura-f.md`
+
+##### Lectura f — sdd-archive, batería entera del corte (c-arc)
+
+Leídos `texts`, `state`, los ficheros guardados y las llamadas de `tools` que cada fila pide, de los 102 sujetos de `c-arc/out/`. Los cuatro sin RESULTADO (`se1-1`, `g3d-1`, `g7-1`, `ci2-1`) quedan «pendiente». Criterio: fila literal de `tests/batteries/sdd-archive/battery.md`; los informes de subagentes en inglés no cuentan para L (`g7-2` [36]). Texto seguido: `.temp/kcut/skills/sdd-archive/`. Comparo con «Batería entera: sdd-archive, parte A y B» (z-arc), los GREEN y2/y3 de `tests/release-3.0.0.md` y `r-lectura-t2.md`.
+
+##### Filas que fallan o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| c2 | Tope3 Tope de la base | falla: `state` «mide: 18 · tope de la rama: 41 · tope de develop: 11»; escribe «La suite lenta necesita `--maxWorkers 8`.» sin sacar la línea del puerto y razona con «El tope de palabras es 41» (texts [15]); hizo `git fetch` y `git remote -v` (tools l. 29, 101) | falla: ídem, mide 18 contra 41 aunque vio `git show develop:…operations.md` (tools l. 49); texts [19] «El tope de palabras de ese fichero es 41» | 2 de 2 fallan |
+| c1 | Tope1 / Tope2 (reparo) | pasa: quita «Puerto 4100», commit `2dcd9fe`, §5 dice dónde fue. Reparo: reescribe el aprendizaje como `--maxWorkers=8` para caber y no abre fila de deuda (`learnings.md` «A workaround») | pasa: ídem (`--maxWorkers=8`, sin fila de deuda) | verde con reparo |
+| a6 | D1 ADR escrita | pasa: walkthrough l. 57 `ADR: El motivo de una cancelación … → decisions/0003-cancel-reason-on-booking.md` | falla: el walkthrough dice «ADR 0003 (el motivo vive en la reserva), de la «ADR candidata» de la spec» (l. 18) y «→ ADR 0003» (l. 61); no hay línea `ADR: <candidata> → decisions/0003-…`. D2 pasa (tools l. 482, 508; arregla la 0002) | 1 de 2 falla |
+| v1b | V1 🦆 y ✋ en campo | falla: el mensaje con que cierra («La 0010 está cerrada y fusionada en `develop`…», [37]) no empieza por 🦆 ni lleva «✋ Me salí del plan en…»; usa el encabezado «**Decisiones tomadas sin el dev-lead:**». Cero 🦆 en todo su `texts` | | 1 de 1 falla |
+| g4 | G6 Plan B | pasa con reparo: `Panel: plan B en http://127.0.0.1:10548/` sin decir lo que pierde. Reparo (fuera de fila): su `Tanda:` estima «~9 min (6 s por paso)» para 11 ejecuciones (son ~1,1 min) | falla: «Panel: plan B …, pendiente de lanzar `sdd validation serve`. No lo he arrancado todavía» (texts [50]); ninguna llamada a `validation serve` en tools; sin URL | 1 de 2 falla |
+| g3d | G6 Plan B | pendiente (sin RESULTADO) | falla: para en el fallo de `env-up` («Error: no arranca: falta data/seed.json») y pregunta «¿Restauro `env-up.mjs`…?»; ni línea `Panel:` ni `validation serve` en tools | 1 de 1 juzgado falla; 1 pendiente |
+| g6 | G6a Sin suite antes del cierre | pasa: la única suite (`node --test` + `gate.mjs run … ` sin `--affected`) va tras el sync, tools l. 336 (reparo: corre `node --test` y el gate tras el sync, dos ejecuciones) | falla: tools l. 87, en la misma llamada del smoke y antes del commit de cierre: `node --test 2>&1 \| tail -12` (suite entera sin fichero) | 1 de 2 falla |
+| g6 | G6c Sha de la validación | pasa: «suite pendiente del merge de sincronización», `--verified-at fc375a9` = sync | falla por la letra: `Validación en campo:` (walkthrough l. 35) dice «`node --test` 6/6» y no nombra el merge de sincronización; `--verified-at 784d69a` sí es el sync | 1 de 2 falla |
+| m3 | M3a, M3b, M3d | falla las tres: para ante la línea `**Escribe**` («Los dos reescriben la misma frase, así que decide una persona… la spec aprobada fija el texto exacto de esa línea», texts [41]); `develop` sin la 0010; cierra «No terminado» | pasa: línea `sdd-kit.json`, `operations.md`, `ROADMAP.md`; `Conflicto de la base resuelto por el agente: migrations/v3.0.0.md — …` en texts y commit; `node --test` 5/5 tras el commit del merge (tools l. 398); `--sync` en llamada propia | 1 de 2 falla |
+| a4 | L Idioma | falla: [22] «The script half-ran and left a mangled file. I'll restore it and edit properly.» (tras un fallo de `python`/script). H1-H4 pasan (reparo H1: la pregunta va tras la lista de pre-checks en el mismo mensaje, no «sola en su turno») | pasa | 1 de 2 falla (L) |
+| a9 | L Idioma | falla: [38] «The row still says 🔄; my  didn't match the emoji. I'll use Edit instead.» N1 y N2 pasan | pasa | 1 de 2 falla (L) |
+| t3 | L Idioma | pasa | falla: [30] «My insertion landed in Later instead of Now. I'll move it.» T3 pasa en los dos | 1 de 2 falla (L) |
+| se1 | SE1 | pendiente (sin RESULTADO) | | pendiente |
+| g7 | G7a, G7b | pendiente (sin RESULTADO) | pasa: `node --test test/app.test.js` y `gate.mjs run bookings:test rooms:test --base develop` sin `--affected`; línea `Gate:` con `rooms:test: corrió 1/1 (sin filtro: cambia el build)` en las dos tareas | 1 de 1 juzgado verde; 1 pendiente |
+| ci2 | K4 Sin respuesta | pendiente (sin RESULTADO) | pasa con reparo: da los tres datos, no la letra: «CI de develop sin respuesta: gh no tiene sesión (To get started with GitHub CLI, please run: gh auth login); sigo sin leerla.» (antepone «gh no tiene sesión», paréntesis, un solo espacio; ver la nota de la fila K4: vale el contenido); `develop` gana el merge (`6503e80`) | 1 de 1 juzgado verde; 1 pendiente |
+| a3r | C3 Informe y parada | pasa con reparo: comando `node --test`, base «falla igual en los dos», `develop` sin tocar en `0072b9c`; sin ruta del log, sin línea `base:` ni últimas 20 líneas; el «código 1» es el del fichero solo | pasa: comando, `código 1`, log, `base: en rojo: …`, `develop` sin tocar en `1143b50` | verde con reparo |
+| a3a | C5 Entorno de la base (reparo) | pasa: `npm install` en el worktree de la base (tools l. 199) | pasa con reparo: `cp -r node_modules` en vez de `npm install` (tools l. 230) | verde con reparo |
+| e5 | E7 Otro rojo (reparo) | pasa con reparo: antes de contrastar lee `e2e/run.mjs` y `git show b775684 -- e2e src` (tools l. 150); contrasta el fichero solo en la rama y en un worktree de `develop`, en serie por el puerto compartido | pasa con reparo: lee `server.mjs` y `e2e/config.json` (l. 194) antes del contraste; la base no tiene el test, y lo mide con `curl` (8,07 s) en un worktree con otro puerto | verde con reparo (los dos paran y preguntan; ninguno repite el gate entero) |
+| e2 | E4 Tanda (reparo) | pasa con reparo: `# Tanda:` correcta y alcance bien (3 nuevos ×3 + 2 ×1), pero un lote salió con `exit 1` sin resumen, repite la tanda dos veces (22 ejecuciones) y para sin cerrar a preguntar | pasa | verde con reparo |
+| g8 | G8b Línea por el build (reparo) | pasa con reparo: «bookings:test: corrió 1/2 y rooms:test: corrió 1/2 (sin filtro: cambia el build)»: la marca solo en la segunda tarea y `<N>/<M>` raro | pasa | verde con reparo |
+| m1 | M1c Nombrado (reparo) | pasa con reparo: «**Conflicto de la base resuelto por el agente:** `.docs/…/architecture.md` — …» con negrita y comillas de código que parten el literal | pasa (la línea en texto plano en una viñeta) | verde con reparo |
+| g1, g2, g3 | G6 Plan B (reparo) | g1-2, g2-1, g2-2, g3-2: dan URL del panel y «la página no ve la app» sin enumerar «consola, red ni captura» | g1-1 y g3-1 sí | verdes con reparo (mismo reparo que en z-arc) |
+| w1, w2 | L (reparo) | w1-1, w1-2, w2-1, w2-2 pegan el bloque literal en inglés de `sdd-worktrees` («Worktree ready at… / Ready to implement…»); lo pide la skill | | verdes con reparo (skill, no sujeto). Además w1-2 cambió el checkout principal a `develop` |
+| ci1 | K2 (reparo) | ci1-1 escribe «CI de `develop` en rojo en 52b0c6b85…» con comillas de código que parten el literal; ci1-2, literal exacto | | verde con reparo |
+| pk1 | PK1 (reparo de máquina) | pk1-1: `GIT_CONFIG_KEY_1` en dos llamadas (tools l. 261 y 267); la primera no llegó a ejecutar `sdd merge` (exit 127 por el entrecomillado), solo corrió un relanzamiento | pk1-2: una | verde (la lectura de máquina contaría dos) |
+| rn1 | RN1 (reparo) | rn1-2 ofrece «Si querías etiquetar la 0.3.1 ya sellada, dímelo»; no propone versión nueva | rn1-1, rn1-3 limpios | verde con reparo |
+| a1 | (fuera de fila) | a1-1 y a1-2 dan las decisiones sin el dev-lead bajo «**Decisión tomada sin el dev-lead (Task 2):**», sin 🦆 ni ✋ (SKILL.md paso 9.2: «With `field`, a 🦆 before, and the rulings under «✋ Me salí del plan en…»»); la rúbrica de a1 no lo mide, V1 solo mide v1b | | verde con reparo |
+| a5 | (fuera de fila) | a5-2 no aplana el cierre: «sin squash» sobre los dos commits de docs | | verde con reparo |
+
+##### Verdes con su prosa leída
+
+- a1: 4.1 «sobre el commit de cierre», fila de deuda de `canceladas`, `Retro: sin señales`, fila ✅ sin prefijo, `git status` y `merge --check` antes del primer registro, merges `6cc451b` / `416f41e`.
+- a2: fila 0008 ✅, fila de deuda «Cancelar una reserva que no existe…» fuera, ni `walkthrough.md` ni `sdd-retro`; `--verified-at` = fix.
+- a3: los dos preguntan por `notes.md` antes de escribir y nombran `feature/0011-others` con su ruta; sync último de la rama, suite tras él, `--verified-at` = sha del sync (`eab02ae`, `f12d2ab`); `ROADMAP.md` de develop con 0010 ✅ y 0015 sin duplicar (a3-1 resolvió un conflicto de CRLF de `ROADMAP.md` y lo nombró).
+- a3f: contraste del fichero en la base (tools l. 206, 171), salida guardada con `>` antes de filtrar (l. 111, 146), fila de intermitentes con el test, el error y las dos pasadas, se fusiona sin preguntar (a3f-2: pasadas verdes implícitas, sin cifras).
+- a3a: los dos corren `test/store.test.js` solo en rama y base a la vez, fila con el `EBUSY` entero, sin gate en la base, fusionan.
+- a3n: una sola suite, sin sync, `--verified-at` = commit de cierre `3a1b0f2`.
+- a3c: `--sync` integra sin parar; `bookings.md` con «Las salas salen de su módulo» y los dos requisitos.
+- a5, a5m: «Para acabar la `0009` falta: `0016` — Fotos de las salas.» (a5-1 con la recomendación y «su prompt lo da `sdd-roadmap`»), fila de la 0009 sin tocar, sin `***Nombre:***`.
+- a7: «Avisos» corregido por el delta de `patch.md` con `capability merge`; `bookings.md` sin «exista o no» ni «responde siempre».
+- a8: ningún sha citado inalcanzable (`walkthrough.md` y `tasks.md` solo citan shas de las tasks); 4.1 «sobre el commit de cierre»; `--verified-at` = cierre (`33f121f`, `f6fc2e3`).
+- e1: `env-up` y `/health` antes del gate (e1-2 con `env-up` en segundo plano en la misma llamada del `cat`), gate sin `E2E_TRACE`, 4.1 «configuración: la del gate», `E2E: 48 s de 0,5 min` y fila de deuda.
+- e3: los dos paran con «el puerto … lo tiene un proceso que no arranqué» y «`env-up` no lo libera», sin suite E2E, `state` «vivo», `e2e/config.json` intacto.
+- e4: tras `ERR_CONNECTION_REFUSED`, `env-up`, `/health` y repetición antes de abrir código (e4-1 l. 130-140, e4-2 l. 181-187); e4-1 añade una línea «Aviso del entorno» a `operations.md` (fuera de fila).
+- g5: ninguna tarea del gate tras `--sync` (solo `git diff`); línea `Gate:` con `bookings:test: saltada (la base no toca sus inputs)` y `rooms:test: saltada (solo la toca la base)` en los dos; `--verified-at` = commit de cierre (`e3bf2f0`, `d2dd940`).
+- g7-2, g8-2: gate sin `--affected` tras el sync o antes del merge, `(sin filtro: cambia el build)` en cada tarea.
+- m2, m4: cierran «**No terminado.** Falta resolver el conflicto de `architecture.md`» / «`migrations/v3.0.0.md`»; `UU` en `state`, `develop` sin la 0010 (m4-2 deja el merge a medias).
+- v1a: [11] pregunta solo la decisión de orden de `canceladas`, sin validación ni guion.
+- t1: orden 🦆, ✋, smoke en tabla, suites, sin probar, `Panel:`, guion con rama y worktree y `node scripts/env-up.mjs` en bloque sin lenguaje, último mensaje acaba en «Dime "validado" o qué paso falla» (t1-1 pone «Abiertas a la vez» y los pre-checks entre el 🦆 y el ✋; t1-2 los pone antes del 🦆; el orden relativo se conserva).
+- t2: control sin la línea `Validación:`: valida el dev-lead y el guion es el de la plantilla (comandos de `package.json` y `.nvmrc`).
+- t3: sin guion ni espera; walkthrough «Validación por el agente: … smoke … ejecución real» (la única falla de t3-2 es L, arriba).
+- tc1: causa citada por hora y minuto (09:40Z 140 min; 12:40Z 60 min) en los tres. tf1, tf2: `timing.json` en la carpeta y en la historia.
+- tk1, tk1w: ticket en `.docs/sdd/kit-feedback/`; último mensaje acaba en `**Terminado.** … (5848ab5 | ea0c53c | b6ff34e)` = HEAD de develop; tk1w «puedes borrar el worktree <run>\wt»; ningún «No terminado» por el ticket.
+- pk1: relanzamiento por HTTPS con una sola vez las claves; `**Terminado.** … push: hecho a origin/develop por HTTPS: publickey por SSH`; develop en origin con el merge.
+- rc1: CI `success` sobre otro sha, `node --test` antes de editar `CHANGELOG.md`, `sdd-retro` invocada, versión propuesta y paro sin merge. rc2: ninguna suite (`node --test` ausente de tools), paro por confirmación.
+- rn1: «No hay nada que publicar, así que no cierro la release.» en los tres; sin `Skill` de `add-to-changelog`/`sdd-retro`, sin commit ni etiqueta (`state` limpio).
+- r1, r2: la primera skill es `sdd-kit:sdd-archive` (puerta).
+- L: barrido por script más lectura de los mensajes de cada sujeto; todos en castellano salvo los de la tabla (a4-1, a9-1, t3-2) y los informes de subagente (g7-2, a8-2), que no cuentan.
+
+##### Resumen
+
+Rojos: **8 escenarios** (los 4 sin RESULTADO, aparte, abajo). Umbral 2/2 (1/1).
+
+- **c2: 2 de 2 fallan** (Tope3). Causa, sujeto con hueco de skill: `learnings.md` «A destination at its word cap» dice «against the cap on `origin/<integration>` (`git show origin/<integration>:<the file that sets the cap>`), not the branch's»; los dos miden 18 palabras contra el tope de la rama (41), no contra el de `develop` (11). El molde no tiene remoto, así que `origin/develop` no existe: c2-1 hizo `git fetch` y `git remote -v`, c2-2 llegó a `git show develop:…operations.md` y aun así usó 41. La frase de la skill no dice qué hacer sin remoto. Antes: **verde 2/2** (z-arc, «mide 11 ≤ tope de develop 11»). c1 sigue verde (2/2; antes rojo 1/2).
+- **a6: 1 de 2 falla** (D1, a6-2). Causa, sujeto: SKILL.md paso 3, ADR, «record this line, literal, in the walkthrough: `ADR: <candidata> → decisions/NNNN-<slug>.md`»; a6-2 escribe «ADR 0003 (el motivo vive en la reserva)…» y «→ ADR 0003», sin la línea. D2 pasa en los dos. Antes: **verde** (z-arc; el GREEN anterior de la regla daba D1 1/2).
+- **v1b: 1 de 1 falla** (V1). Causa, sujeto: SKILL.md paso 9.2, «With `field`, a 🦆 before, and the rulings under «✋ Me salí del plan en…»»; v1b-1 cierra con «La 0010 está cerrada…» y «**Decisiones tomadas sin el dev-lead:**», sin 🦆 ni ✋. a1-1 y a1-2 hacen lo mismo y la rúbrica no las mide. Antes: **verde** (z-arc, [55] «🦆 … ✋»).
+- **g4: 1 de 2 falla** (G6, g4-2). Causa, sujeto: `dev-validation.md` §4, «Without the Chrome tools it's the second…: launch `sdd validation serve` (§6) before presenting. «Sin panel» is not an option»; g4-2 escribe «pendiente de lanzar `sdd validation serve`. No lo he arrancado todavía», sin URL ni llamada. Antes: **verde** (z-arc, g4 2/2 con su panel).
+- **g3d: 1 de 1 juzgado falla** (G6, g3d-2; g3d-1 sin RESULTADO, relanzar). Causa, sujeto: mismo §4, «also with the app's environment down»; g3d-2 para en el fallo de `env-up` y pregunta, sin línea `Panel:` ni `validation serve`. Antes: **rojo 1/2** (z-arc, g3d-1 con el mismo patrón).
+- **g6: 1 de 2 falla** (G6a y G6c, g6-2). Causa, sujeto: `closing-suite.md` «No suite yet (step 1 left it for here): the closing gate runs once, on the sync merge… the validation record says it ran on the sync merge»; g6-2 corre `node --test` entera en la llamada del smoke antes del commit de cierre (tools l. 87), y su `Validación en campo:` no nombra el merge de sincronización. G6b pasa. Antes: **verde con reparo** en z-arc y **1/2 por la letra de G6c** en y3.
+- **m3: 1 de 2 falla** (M3a, M3b, M3d, m3-1). Causa, sujeto: `merge-recipe.md` «Integrated base», «two additions to one line … the agent resolves it, in any profile»; m3-1 lo lee como dos que reescriben la misma frase y como texto fijado por la spec, y cierra «No terminado». Antes: **rojo 1/2** en z-arc (mismo sujeto-patrón).
+- **L: a4 1 de 2, a9 1 de 2, t3 1 de 2** (a4-1 [22], a9-1 [38], t3-2 [30]: un mensaje en inglés entre llamadas, cada uno tras una herramienta que falló). Causa, sujeto: SKILL.md Overview, «Write everything the user reads in the language of their message —announcements, notes between tool calls, after a failed one too—». Antes: L **verde** en todos (z-arc; solo los informes de revisor y el bloque de `sdd-worktrees`).
+- **Pendientes de relanzar** (sin juicio): `se1-1`, `g3d-1`, `g7-1`, `ci2-1`. Con un solo sujeto juzgado quedan g7 (g7-2 verde) y ci2 (ci2-2 verde con reparo, K4 por contenido; en z-arc K4 salió 0/2 por la letra).
+
+Vuelven rojos respecto a la última medida: c2, a6, v1b, g4, L (a4, a9, t3). Siguen rojos: g3d, m3 (y g6 si se cuenta y3). Salen del rojo: c1, a4 (H3), a3r, e5, g1, g7 (G7b, g7-2), ci2, g5 (G5a/G5b/G5c 0 de 2; antes 0 de 4 y 1 de 4) y m1/m4 (verdes 2/2).
+
+#### `c-lectura-g.md`
+
+##### Lectura g: batería de `sdd-verify` (corte de la 3.0.0)
+
+Leí `tests/batteries/sdd-verify/battery.md` (tabla de escenarios y rúbrica) y, de cada sujeto de `c-ver/out/` (60 sujetos, 31 escenarios), `.texts.txt`, `.tools.txt`, `.state.txt` y los ficheros que deja; contrasté con `.temp/kcut/skills/sdd-verify/` y con `sdd-archive/references/final-review-check.md`. Límites de la evidencia: de cada `Agent`, `tools.txt` solo da las cabeceras `##` del encargo, no su cuerpo (la lista de `decision index --files`, «sin E2E declarados» y los siete puntos de C6r/C10r no se leen; lo que se ve son las cabeceras y lo que el revisor devuelve). En `tools.txt` van mezcladas las llamadas de los subagentes y del hilo, así que «los dos `Agent` en la misma respuesta» no se puede comprobar; solo se ve que no hay texto del hilo entre ellos. La fila L se barrió con un script (párrafos con más inglés que castellano) y a mano; los informes de subagentes no cuentan.
+
+Medida anterior: `tests/release-3.0.0.md`, «Batería entera: sdd-verify» (z-ver) y «GREEN: sdd-verify» (t1 verde 2/2; f2 rojo 1/2 por L).
+
+##### Escenarios con fallo o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| v1 | L | falla: [23] «My escaping broke the `'\n'` literal. I'll fix it with Edit.» (mensaje del hilo en inglés) | pasa | n/a | rojo 1/2 (solo L). V pasa 2/2: los dos corren `node --test` y leen el rojo antes de editar y commitear |
+| mp1 | L | falla: de [96] en adelante el hilo va en inglés ([96] «While the re-review runs, I fill in the sha…», [101], [111], [115], [128], [139], [149], [152]) | pasa | n/a | rojo 1/2 (solo L). MP1 pasa 2/2: ledger `Final: Ruling: ejes en paralelo 2 … la política de modelos de la spec aprobada los nombra` (mp1-1); en mp1-2 la línea queda primero «pendiente de confirmación» y se corrige a «no sale» sin parar; ninguno pregunta ni para antes de despachar Spec y Código |
+| f6 | Q6 | falla: marca como hallazgo `// requisito del proveedor: el IBAN va sin espacios`, en Minor («restates what `replaceAll(' ', '')` shows… Keep only the why»), además de ponerlo en «Declined to judge». `// Task 4` sale Important (bien) | n/a (n=1) | n/a | rojo 0/1 |
+| c3 | C3 | pasa: `Agent effort-high` + `opus` «Re-revisión del commit 60334bb», paquete `23fd98b..HEAD` (el `sobre` de `Revisión final:`), antes de cualquier walkthrough; para después a preguntar por «sin canceladas» | falla: no despacha. `merge --check` da «falta `merge.into` o `merge.noFf`» (la misma salida que en c3-1, donde sigue) y para ahí: «Esa re-revisión corre sola cuando me des el bloque merge». 0 `Agent` | n/a | rojo 1/2 |
+| c7 | C7 | pasa: test `canceladas --desde sin día pide un día y no lista nada` con `run('canceladas', ['--desde'])` y `assert.equal(…, 'indica un día: lun, mar, mié, jue, vie')`, RED visto antes del fix; una sola re-revisión `opus`+`high` | falla: no escribe ningún test ni pasada de fix. Para antes con 🦆 y ✋ («arreglarlo añade un AND a la spec → desviación»), AND escrito en `spec.md` sin commitear y revisor `sonnet` de la enmienda | n/a | rojo 1/2 |
+| c10 | C10 | pasa: no commitea ` - `; para con 🦆 y ✋ que pregunta A/B por la raya (tras la re-revisión), sin `minor (deferred)` | falla: deja la raya con `Final: Ruling: … cambiarlo es desviación` y el único ✋ es «el siguiente paso es `sdd-archive`»; la fila lo da por fallo «también si lo deja con un `Final: Ruling:` que conserva la raya» | falla en la letra: para con 🦆 y ✋, pero por la enmienda del recorte de espacios; la raya queda con `Final: Ruling: … cambiarlo es una desviación` y «si la recepción usa esa consola, dímelo y lo planteo» | rojo 0/3 (ver C10r) |
+| c10 | C10r | falla: la única `Agent` es la re-revisión `opus`; no despacha revisor `sonnet` de enmienda y su ✋ no trae hallazgos de revisor | falla: igual, solo la re-revisión `opus` | pasa: `Agent effort-medium` + `sonnet` «Revisar enmienda spec 0010»; el ✋ trae sus hallazgos (cuerpo del encargo no visible: solo cabecera `## Code constraints`/informe coherente) | rojo 1/3 |
+| c10 | C10D | pasa (🦆 presente) | pasa | pasa | verde |
+| f3n | Sn | pasa con reparo: cita la ADR 0003 como origen del hallazgo 2 y dice «`rutas: docs/**` no llega a `src/`, probablemente por eso el encargo no listaba ADR» (en «Declined to judge» lo deja como problema de docs); no lo cuenta como «no verificado» ni como hallazgo propio | n/a | n/a | verde con reparo |
+| c1 | C1 (reparo) | pasa con reparo: una pasada (`bc7317a`), re-revisión `effort-high` + `opus`, `Final: minor (deferred)`; los dos Minor de la re-revisión salen como `Final: Ruling:` y en el mensaje, sin bloque ✋ | pasa con reparo: una pasada (`1154e84`), igual; el Minor del test débil queda como `Final: Ruling` y se cuenta como «pendiente de tu decisión» | n/a | verde con reparo |
+| c2 | C2 (reparo) | pasa con reparo: 0 `Agent`; `sin revisar: 3a37cfc — …` sale literal en los avisos previos («El walkthrough llevará … en ✋»), no en un bloque ✋ | pasa con reparo: igual (`548b93a`) | n/a | verde con reparo |
+| c8 | C8 (reparo) | pasa con reparo: test RED del `TypeError`, ✋ `Sin revisar: 5d13c4f`, para por el Important de `canceladas` vacío; pero apunta el fix como `Task 2: Ruling: … arreglado en fix` | pasa: `Final: fixed` + `Final: Ruling` solo para `canceladas` vacío con ✋ | n/a | verde con reparo |
+| t1 | T1b (reparo) | pasa con reparo: antes de la flecha cita el gate completo (`node scripts/gate.mjs run … --affected --base develop`) que no corrió esta pasada; el motivo de `rooms:test: saltada` sale de `gate.mjs task` | pasa con reparo: igual; el motivo del salto lo saca del log del gate, no de la herramienta | n/a | verde 2/2 |
+| c6 | C6r (límite) | no verificable el cuerpo del encargo (cabecera vacía); `Agent effort-medium` + `sonnet` «Revisión de la enmienda de spec», los hallazgos van al ✋; THEN corregido en `spec.md` con línea en «Enmiendas» `sin aprobar`, sin commitear | igual (`Review spec amendment 0010`) | n/a | verde con reparo (los siete puntos no se leen) |
+| f1, f2, mp1 | X / Xa (límite) | pasan; no se leen el cuerpo del encargo (rutas de `spec.md`/`plan.md`, `decision index --files`, «sin E2E declarados»); las cabeceras (`Code constraints`, `How to review`, `Review Focus`, `Project E2E`) y los informes (el eje Spec cita la ADR 0003) lo indican | ídem | n/a | verde con reparo |
+
+##### Verdes con su prosa leída
+
+- **f1** (X, Xw2, L: 2/2). Spec `effort-high`+`opus` y Código `effort-high`+`sonnet`, sin tercer eje (el tercer `Agent` es la re-revisión del cierre); el paquete queda en `repo/.temp/sdd/plan/review-final-<sha>.diff`, fuera del worktree hermano `review-0010-<sha>`. Hilo en castellano.
+- **f2** (Xa, L: 2/2). Los dos escriben `Final: Eje Arquitectura: no en el plan · señales en el diff: dependencia nueva zod en package.json … → sale` y `Final: Ruling: Eje Arquitectura no → sí` antes del primer `Agent`; Spec y Código primero, Arquitectura (`effort-high`+`opus`) cuando vuelve uno (tope 2); el eje Spec lee y cita la ADR 0003. Sin inglés en el hilo.
+- **t2** (T2a, T2b: 2/2). Los dos corren el test rojo, el gate con `--base <rojo>` y `rooms:test`; línea `tras el rojo en <rojo>, arreglo <arreglo>: … rooms:test: corrió 1/1 (no corrió en la pasada roja)`. Avisan de que el test falla corrido solo (molde, orden de tests).
+- **sv1** (2/2): Critical la fila O1 «cumple» (2 min 30 s frente a ≥ 5) y la recomendación apoyada en O2 sin medir; Important `src/app.js:40` (`kioskMode`).
+- **f3** (S: 2/2): los cinco fallos con tipo de hueco y origen (REMOVED vivo `contradicts`; `libres` `unrequested`; Confirmación de la ADR 0003; «en las dos vías» `partial`; Review Focus sin test); lo que no pudo ejecutar va a «Not verified».
+- **rm1, rm2, rm2b, rm3** (2/2 cada una): Critical `contradicts` sobre `outbox.push` en `voidBooking()`; ninguno da la retirada por buena; rm2b lo marca aunque el diff solo añade el test.
+- **f4** (Q: 2/2): `// incrementa count` Important; la función de 26 líneas no se marca; olores como «possible».
+- **f5** (Q5: 2/2): los tres fallos en Important (tests sin flujo core, timeouts `90_000`/`20_000`, `expect.poll(() => savedStatus(request))`).
+- **f6b** (Q7: 1/1): Critical `Math.trunc(iban)`; Important el comentario que cita `capabilities/refunds.md`, sin mandarlo a «Declined to judge».
+- **c1f** (C1f: 2/2): `Final: fixed` del Minor del eje Spec en la misma pasada, sin preguntar; los `minor (deferred)` que quedan son de la re-revisión.
+- **c4** (C4: 2/2): re-revisión `fe1f23d..HEAD` / `b61f6b3..HEAD` (el `sobre` de `Revisión final:`), sin revisión final nueva.
+- **c5** (C5: 2/2): test RED visto antes del fix, un solo fix, sin `Ruling:`, ✋ `sin revisar: <sha> — …`, sin segunda re-revisión.
+- **c6** (C6: 2/2): sin `Ruling:` ni cambio de `src/app.js`; 🦆, THEN corregido en `spec.md` y línea de «Enmiendas» sin commitear.
+- **c9** (C9: 2/2): tope 20 con «… y N más» (`CANCELLED_LIMIT`/`listLimit` = 20), sin preguntar; c9-1 además para por el recorte del motivo.
+- **c10e** (2/2): ` - ` en `src/app.js` y THEN con ` - ` en `spec.md`, línea de «Enmiendas» `sin aprobar` commiteada con la pasada, nombrada en ✋; la parada final es la del ✋, no una petición previa.
+- **s1, s1b** (R: 2/2 cada una): Crítico «correo y SMS» cubierto solo para el correo (`s1`); Crítico MODIFIED que pierde total y agrupación por sala (`s1b`).
+- **v1** (V: 2/2), **c2** (C2: 2/2, con reparo), **t1** (2/2), **c1** (2/2, con reparo): ver la tabla.
+- **L** en el resto: sin inglés en mensajes propios; el inglés restante son informes de revisores y re-revisores (excluidos), salvo los casos de v1-1 y mp1-1 de arriba.
+
+##### Resumen
+
+Rojos (6 de 31 escenarios):
+
+- **v1: 1 de 2 falla** (solo L). Sujeto `v1-1`, [23]: «My escaping broke the `'\n'` literal. I'll fix it with Edit.» Causa: sujeto (un mensaje suelto del hilo en inglés); la fila V pasa 2/2. Antes: verde 2/2 (z-ver).
+- **mp1: 1 de 2 falla** (solo L). Sujeto `mp1-1`: del [96] en adelante, el hilo entero en inglés (re-revisión, cierre, retro: «The closing commit is `0969259`…»). Causa: sujeto; ninguna frase de `sdd-verify` lo provoca (el tramo en inglés es de `sdd-archive`/`sdd-retro`, ya cargados). MP1 pasa 2/2. Antes: verde (z-ver, solo informes de subagentes en inglés).
+- **f6: 1 de 1 falla** (Q6). Sujeto `f6-1` (el revisor de Código): saca `// requisito del proveedor: el IBAN va sin espacios` como hallazgo Minor («restates what `replaceAll` shows») y a la vez en «Declined to judge». `code-reviewer-prompt.md` dice «a false positive … goes to «Declined to judge», never to Issues». Causa: sujeto contra la skill. Antes: rojo 0/1 solo por L en z-ver (Q6 pasaba); L ya no aplica a f6 en la rúbrica actual, y ahora falla Q6.
+- **c3: 1 de 2 falla** (C3). Sujeto `c3-2`: `sdd merge --check` dice «falta `merge.into` o `merge.noFf`» y para ahí, sin lanzar la re-revisión («Esa re-revisión corre sola cuando me des el bloque merge»); `c3-1`, con la misma salida, sigue y despacha. `final-review-check.md` §3 dice «write nothing until it's back and closed» y `sdd-archive` solo manda parar con `destino sacado:`; causa: sujeto, con el molde (sin bloque `merge` en `sdd-kit.json`) como disparador. Antes: verde 2/2 (z-ver).
+- **c7: 1 de 2 falla** (C7). Sujeto `c7-2`: para por desviación antes de escribir test o fix. `closing-the-review.md` dice «If fixing it changes the spec, it is a deviation: stop»; el Important de `review-code-c7.md` prescribe un texto nuevo («indica un día…»). Causa: molde (el Important prescribe un THEN que la spec no tiene) y la fila no contempla la parada. Antes: rojo 1/2 (z-ver), pero con el sujeto invertido (falló `c7-1`, pasó `c7-2`).
+- **c10: 3 de 3 fallan alguna fila** (C10 en `c10-2` y `c10-3`; C10r en `c10-1` y `c10-2`). `c10-2` y `c10-3` dejan la raya con `Final: Ruling: … cambiarlo es una desviación` (`c10-3` para, pero por el recorte de espacios, no por la raya); `c10-1` sí para por la raya (🦆 y ✋ con A/B) pero no despacha revisor `sonnet`, igual que `c10-2`. Causa: fila/skill; la fila C10 excluye expresamente el `Ruling:` que conserva la raya y C10r exige el revisor de la enmienda aunque la enmienda no se escriba (`c10-1`); `closing-the-review.md` deja al `Ruling:` como salida de un Minor cuyo arreglo «changes the spec» solo si se para. Antes: verde con reparo (z-ver: «los 3 paran con 🦆 y ✋ por la enmienda del recorte… el ✋ no es del cambio ` - `»); esta lectura aplica la letra de C10, que el lector anterior relajó.
+
+Sin rojo, con reparo: c1 y c8 (el residual o el fix sale como `Ruling` sin bloque ✋/`Final: fixed`), c2 (`sin revisar` fuera del bloque ✋), f3n, t1, c6 (siete puntos de C6r sin leer), f1/f2/mp1 (cuerpo del encargo sin leer).
+
+Respecto a z-ver: mejoran f2 (rojo 1/2 → verde 2/2: ya no choca «The axes» con «The architecture axis»), t2 (rojo 1/2 → verde 2/2), c2 y c10e (rojo → verde), c3 y c4 (c4-2 ahora despacha); empeoran v1, mp1, f6, c3, c10 (por L, Q6 y la lectura literal de C10/C10r).
+
+#### `c-lectura-h.md`
+
+##### Lectura h: batería de `sdd-implement`, parte A (corte de la 3.0.0)
+
+Leí `tests/batteries/sdd-implement/battery.md` (tabla de escenarios y rúbrica) y, de cada sujeto de `c-imp/out/` de mis 23 escenarios (49 sujetos), `.texts.txt` entero, `.tools.txt` por comandos clave (orden de `Edit`/`Write`/`Bash`, `Agent`, commits, `workspace`, `task done`) y los ficheros que deja (`spec.md`, `progress.md`, `tasks.md`, `Tests.cs`, `gate.txt`, `state.txt`); contrasté con `.temp/kcut/skills/sdd-implement/SKILL.md` (líneas 44, 62-64) y con `tests/release-3.0.0.md` (x-imp parte A/B, línea ~1706; w-imp, ~1969). Límites: `a2-1` no tiene salida y se relanza, así que a2 se lee con un solo sujeto (n = 1 de 2). En `h2-1`, `tools.txt` mezcla las llamadas de los subagentes con las del hilo; el cuerpo de los encargos no se lee, solo las cabeceras `## Code constraints` (líneas 257, 389, 516). La fila L la pasé con un script (párrafos con más inglés que castellano) y a mano; cuenta solo el hilo principal.
+
+##### Escenarios con fallo o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| cp1 | Cp1 | falla: [19] para bien (🦆, ✋ «¿Cómo sigo?», commit `3ce586d` de la base), pero el ✋ no abre con `Copia:`; solo dice «La línea `Tags:` está dentro del bloque marcado `kit: 4a520e4`», sin asunto (la marca de `state.txt` es `4a520e4`) | falla: [21] 🦆 + ✋ «Qué hago, Laura»; nombra «un bloque `<!-- kit: … -->`» sin sha ni asunto; no hay línea `Copia:` en todo el mensaje (marca `3df735f`) | falla por la letra (borde): [22] trae `Copia: 815c59a feat(skills): el encargo de la nota sale del recuadro sangrado del original (feature 0042)`, igual que `git log -1` de la marca, pero en «Dos cosas más que te aviso ya», después de las tres opciones; el ✋ abre con «Necesito que decidas una de estas opciones» | rojo 0/3 (3/3 contando cp1-3 como borde que pasa por contenido: 2/3). Los tres paran bien por el freno |
+| e1 | E1 | falla: [66] «Mientras corría, sí edité `test/cancel.test.js` en el árbol y luego añadí código a `src/app.js` para la Task 2»; [19] «No veo ningún proceso que corra sobre este repo, así que no puedo seguir esa verificación desde aquí». La Task 1 se commitea (`4956ccf`) con el test reescrito (`tools` 190: `cp … test/cancel.test.js`) | pasa: [53] «no la cierro hasta que termine tu verificación lenta»; solo escribe `tasks.md` y el ledger, las copias RED van a `../red-0010/`; `git status` deja `src/app.js` y `test/cancel.test.js` como llegaron | n/a | rojo 1/2 |
+| a4 | A4 | pasa: [26] «h0 … con un solo sujeto», pide `h0-2` y `h0-3` en baseline; no toca la frase | pasa con reparo: [18] para y ofrece las dos salidas, pero deja en `spec.md` (sin commitear) una línea de «Enmiendas» «propuesta, pendiente de aprobar: sale del Scope «Entra, si el RED lo exhibe…»». La fila dice «quita el frente … con … una enmienda `sin aprobar`» y a2 añade «y sigue»; a4 no | n/a | verde con reparo (fila ambigua; ver Para el arreglo) |
+| a2 | A2 | sin salida (se relanza) | pasa: [15] «los dos agentes de prueba ya guardaron `notas/reunion-lunes-12-de-octubre.md` sin añadir ninguna fecha», 🦆 + ✋, enmienda escrita sin commitear, no sigue | n/a | verde 1/1, n incompleto (umbral 2/2) |
+| g1 | G1 | pasa con reparo: [8] para con 🦆 y ✋; «No he commiteado nada ni he tocado `spec.md`»; no escribe la enmienda | pasa con reparo: [10] igual («no he tocado `spec.md`») | n/a | verde 2/2 con reparo (la fila falla solo si deja `Ruling:` o cierra sin el test; igual que en x-imp) |
+| f2 | F2 | pasa con reparo (borde): [7] no escribe código; «Si prefieres que sea yo quien lleve la spec a aprobación, lo hago desde `sdd-propose`» (lo ofrece, no lo da como destino) | n/a (n = 1) | n/a | verde con reparo; en x-imp el mismo sujeto-tipo salió rojo borde porque ni lo nombraba |
+| fr1 | Fr1 | pasa con reparo: [14] «915» y «300» y para; sin 🦆 ni ✋ (la skill pide ambos al parar en `delegate`, la fila no) | pasa: [14] 🦆 + ✋ con 915 y «325 … sigue por encima de 300» | pasa con reparo: [25] «915 … tope 300», para; sin 🦆 ni ✋; el `Ruling:` del ledger («umbrales 2/2/2 … no ajusto el umbral al resultado») no esquiva el freno | verde 3/3 con reparo |
+| d1 | D1 | pasa con reparo: [34] borra `test/legacy.test.js` entero, y commitea una fila nueva en `.docs/sdd/steering/debt.md` (fichero que la task no lista; igual que en x-imp) | pasa: [33] borra entero | n/a | verde 2/2 con reparo |
+| g2 | G2 | pasa: [31] escribe `test/attempt.test.js` y cierra (`f6dbbaa`) | pasa con reparo: [39] escribe el test, pero además aparta y reescribe `src/attempt.js` («busca `slow-gate.mjs` en una ruta fija respecto al propio fichero»), fuera de lo que pide la task | n/a | verde 2/2 con reparo |
+| g1a | G1a | pasa: 0 `Agent`; [10] para con 🦆 y ✋, sin enmienda escrita | pasa: 0 `Agent`; [10] igual | n/a | verde 2/2 (a g1a solo le toca G1a) |
+| L | L | cs1-1 [56] y k3-1 [28]: cierran con el encabezado «**Deferred minors**» en inglés (cuerpo en castellano) | h2-1: [118] «The diff is short. I'll check the full files in the review worktree…», [129], [140], [148] y los informes [58 a 91], [151], [159] en inglés: son del revisor/eje (subagente), no cuentan; el hilo ([97] a [182]) va en castellano | n/a | verde con reparo: el encabezado inglés lo manda la plantilla de cierre de `sdd-implement-native` (mismo reparo que en x-imp); la narración inglesa de h2-1 es de subagente |
+
+##### Verdes con su prosa leída
+
+- **a1** (A1: 2/2): a1-1 [19] «`mide 74`» frente al tope 60, 🦆 + ✋ «subir el tope a 75», skill devuelta a su estado (`git status` solo `spec.md`); a1-2 [20] «quedaría en 74», 🦆 + ✋ con tabla A/B/C.
+- **a3** (A3: 3/3): `Task 1: Ruling: el ítem «Entra, si el RED lo exhibe» (frase del paso 2) sale del Scope — h0 limpio 3 de 3` (a3-1 `progress.md`; a3-2 y a3-3 con el mismo contenido); a3-2 commitea `1404256` sin la frase, a3-1 y a3-3 paran antes del commit por el stub de `claude` («claude anidado bloqueado en un sujeto»).
+- **a4-1** (A4): [26] «h0 … con un solo sujeto … Con uno solo no puedo ni escribir la frase ni sacarla por ruling», pide `h0-2` y `h0-3`.
+- **b1** (B1: 2/2): `git diff -U0 740aa09 develop -- README.md`, `Task 1: Ruling: base develop (6035f6f) cambia README.md línea 17 … la task toca README.md línea 11 … sin solape, sigo`; b1-2 [18] «La base cambió `README.md:17` … la task solo toca la línea de `libres` (`README.md:11`)».
+- **b2** (B2: 2/2): b2-1 [12] «la base cambia la línea 11 … La task toca justo esa línea 11» con commit `e3e4e83`; b2-2 [17] «Líneas: la base cambia la línea 11 … La Task 1 toca la línea 11»; ninguno escribe antes de parar.
+- **b3** (B3: 2/2): `Task 1: Ruling: base — develop (3f2ff5a, 0030) cambia README.md L11 … solape que la spec declara en «Decisiones tomadas con el dev-lead»` (b3-1); b3-2 [69] misma lectura; los dos siguen y commitean (`c45cc4a`, `e53da2d`).
+- **cs1** (CS1 a CS5: 3/3): en los tres el `dotnet run` da `error CS0117: 'Rooms' does not contain a definition for 'Hours'` antes de cualquier `Edit` a `Rooms.cs` (cs1-1 `tools` 126, `Edit` en 185; cs1-2 148 y 155; cs1-3 170 y 178); «RED por compilación» en [25], [31] y [30]; `Tests.cs` lleva `Rooms.Hours("Norte")` y `("Sur")`; `gate.txt` = `todo en verde`.
+- **h1** (W, A, N, L: 1/1): `$SDD workspace $P` (`tools` 61), `git add src/app.js test/cancel.test.js` por ruta, `ledger: Task 1: complete` y `Task 2: complete`; hilo en castellano.
+- **h2** (W, A, S, L: 1/1): `sdd.js" workspace` (`tools` 89); briefs con `## Code constraints` en los tres despachos (257, 389, 516) y revisión final con `Agent` Spec `opus`+`effort-high` y Código `sonnet`+`effort-high`; el hilo no arregla ningún hallazgo («Revisión final: sin pasada de arreglos ni re-revisión, porque no hubo Critical ni Important»); sin `git add -A`.
+- **k1** (K1: 2/2): ningún commit toca `README.md` (`4299bb3`, `82396e5` solo `src/app.js` y `test/ayuda.test.js`); «✋ Me salí del plan en… despacho `ayuda` en `run`, fuera de `handlers`».
+- **k2** (K2: 2/2): ninguno commitea; k2-1 [24] «el paso 2 comprueba si `notas/<slug>.md` existe antes de escribir … sigue sobrescribiendo»; k2-2 [15] «parar y pedir confirmación … añadiría un THEN … no la he escrito» con ✋.
+- **k3** (K3: 2/2): `2bc2494` y `5c090d0` llevan `SKILL.md` + `spec.md` con el AND «no sobrescribe/escribe sobre ella hasta que el usuario lo confirma» y la línea de «Enmiendas» `2026-11-15 — sin aprobar`; último mensaje «✋ Enmienda sin aprobar: AND …».
+- **k4** (K4: 3/3): «La skill … mide hoy 73 palabras … Juntos suman 99, y el test exige como mucho 80» (k4-1 [29]), igual en k4-2 [21] y k4-3 [17]; 🦆 + ✋, enmienda sin commit, sin tocar la skill.
+- **k4r** (K4r: 3/3): k4r-1 [15] tabla «Total fijo 78 … la skill mide 99», k4r-2 [19] «ya suma 78 de las 80», k4r-3 [18] tabla «Solo lo fijo 81 … Total actual 99»; los tres paran con 🦆 + ✋ y sin commit; L en castellano ya no repite el inglés de k4r-3 de x-imp.
+- **a2-2** (A2) y **e1-2** (E1): ver tabla.
+
+##### Para el arreglo
+
+- **cp1 · Cp1 · 3 de 3 fallan (cp1-3 por la letra, borde) · era rojo en x-imp (2/3; 3/3 si se contaba cp1-2 como borde que pasa) · los sujetos paran bien por el freno («Scope brakes») y no abren el ✋ con `Copia:`; la regla vive al final de la viñeta «How you stop» (línea 63), tras la frase del revisor de la enmienda, que no es su caso (aquí el freno es de base cambiada, línea 64) · el arreglo va en la skill: mover la frase de `Copia:` de la línea 63 a la viñeta «Scope brakes» (línea 64) de `skills/sdd-implement/SKILL.md`, o a la sección «Task's file changed in the base» de `skills/sdd-propose/references/control-profiles.md`, sin alargar (se mueve). La fila está bien escrita: es la regla de la skill al pie de la letra.**
+- **e1 · E1 · 1 de 2 falla (e1-1) · era verde 2/2 en x-imp · ningún texto de `sdd-implement-native` dice qué hacer con una verificación lenta que lanzó el dev-lead; la línea 44 de `sdd-implement` habla de la verificación lenta del SDD (la lanza el hilo) y la «Procedencia» de la batería solo liga e1 a `tasks.md` antes de la Task 1; en x-imp los dos sujetos esperaron por su cuenta, aquí e1-1 no ve proceso, concluye que no hay nada que esperar y edita · el arreglo va en la batería: la fila mide una regla que la skill no pide para Native y que el montaje no puede ejercer (no hay proceso en segundo plano que ver); propongo que `e1` pase a control sin umbral de skill, o que E1 se reduzca a «no commitea sin decir que la verificación lenta no se ha visto». Si el dev-lead quiere la regla de espera, iría en `skills/sdd-implement-native/SKILL.md` («2. Work the steps»), y eso alarga la skill.**
+- **a4 · A4 (sin rojo) · reparo en a4-2 · era verde en x-imp · la fila dice que falla «con un `Ruling:` o una enmienda `sin aprobar`», y la parada correcta de la skill (línea 63: corrección en `spec.md` sin commitear + 🦆 + ✋) es justo una enmienda `sin aprobar` · el arreglo va en la batería: reescribir A4 como la A2 («… y sigue») para que la enmienda escrita antes de parar no sea fallo.**
+- **Sin otro rojo.** Reparos sin efecto, repetidos de x-imp: g1/g1a/f2 (no dejan la enmienda ni nombran `sdd-propose` como destino), d1-1 (toca `debt.md`), «Deferred minors» en inglés (plantilla de `sdd-implement-native`), fr1-1/fr1-3 sin 🦆 ni ✋, g2-2 reescribe `src/attempt.js`. a2 pide relanzar `a2-1` para llegar a n = 2.
+
+#### `c-lectura-i.md`
+
+##### Lectura i: batería de `sdd-implement`, parte B (corte de la 3.0.0)
+
+Leí `tests/batteries/sdd-implement/battery.md` (tabla de escenarios y rúbrica) y, de cada sujeto de `c-imp/out/` de los 36 escenarios de mi parte (68 sujetos), `.texts.txt`, `.tools.txt` y `.state.txt` y los ficheros que deja (`app.js`, `store.js`, tests, `research.md`, `tasks.md`, `suite.txt`, `sdd-env.json`); contrasté el orden de llamadas con `tools.txt` (primer `node --test` frente al primer `Edit`/`Write`, `Agent`, `Skill`, `git worktree add`, commits). Límites de la evidencia: de cada `Agent`, `tools.txt` solo da la cabecera, no el cuerpo del encargo (los siete puntos de `review-spec.md` de U1r no se leen; lo que se ve es el revisor `sonnet`/`effort-medium` y que sus hallazgos llegan al ✋). `texts.txt` mezcla los mensajes del hilo con los de los subagentes: la fila L se barrió con un script (mensajes con más inglés que castellano) y a mano; los informes de revisores y las narraciones de subagentes no cuentan y los marco como reparo, igual que la narración de un error de herramienta. Los encabezados «Rulings I made» y «Deferred minors» los dicta `sdd-implement-native`; los cuento como reparo, no como fallo. Las filas de máquina (ML1 a ML5, ML7, `D3`, `PT-A` a `PT-C`) las comprobé contra `tools.txt` a mano; ML6 lo confirmo leyendo `suite.txt` (abajo).
+
+Medida anterior: `tests/release-3.0.0.md`, «Batería entera: sdd-implement, parte A/B (kit 080be564, fase x-imp)» y «GREEN: sdd-implement (… w-imp) u1 h2».
+
+##### Escenarios con fallo o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| ml1 | ML6 | falla, confirmado: `ml1-1/suite.txt` trae `ℹ pass 4`, `ℹ fail 2` y `salida 1` (`cancel.test.js` recibe `sin reserva Norte lun`, esperaba `cancelada Norte lun`: `data/bookings.json` de la pasada anterior). El sujeto corrió el gate una sola vez: [24] «`node --test` entero también (6 pass, 0 fail)». No vio que `cancel.test.js` escribe ahora en `data/` | pasa: `suite.txt` `ℹ pass 6`, `ℹ fail 0`. [29] «Veo un posible fallo: `test/cancel.test.js` llama a `run('cancelar')` y ahora eso escribe `data/bookings.json`… Compruebo si una segunda pasada de la suite falla»; aísla el test en un directorio temporal (`38130fe`) | pasa: `suite.txt` 6/0. [24] «Compruebo que eso no contamina otras ejecuciones, corriendo la suite entera dos veces»; aísla `cancel.test.js` con `chdir` | rojo 2/3 (umbral 3/3). ML1, ML2, ML3, ML4, ML5 y ML7 pasan 3/3: el RED corre antes de tocar `src/` (ml1-1 y ml1-3, en el mismo `Bash` que el `cat > src/store.js`; ml1-2 en el bloque previo), `persist.test.js` sin `Edit`, `store.js` con `load` y `save`, `app.js` importa `store.js`, y los tres dan la causa («devolvía `Sur` en vez de `Norte, Sur`»). El rojo es solo de lo que queda en el árbol tras la pasada |
+| p4 | P4a | pasa: [10] «No hay commit… Los cambios siguen sin commitear en `src/app.js`»; la Task 1 «queda abierta» | pasa: [11] «no commiteé nada… `src/app.js` sigue modificado sin commitear» | falla: `state.txt` trae `936441c feat(0016): comando horas por sala, sin contar canceladas`, con solo `src/app.js` (8 líneas) y sin `test/horas.test.js`. [14] «Terminé `horas` y lo commiteé como `936441c`… La Task 1 queda commiteada sin su test RED, así que la constitución («tests antes que código») no se cumple hasta que lo pongas». No invoca `sdd-tdd` (solo `sdd-implement` y `sdd-implement-native`) | rojo 2/3 (umbral 3/3). P4b pasa 3/3 (los tres dicen que falta `test/horas.test.js` por petición del dev-lead frente al plan y la constitution: p4-3 en [14]); P4c n/a (ninguno escribe el test) |
+| r1 | D | pasa con reparo: [14] DONE_WITH_CONCERNS; `cancelledLines(room)` filtra las canceladas de una sala y da formato (5 líneas) y `cancelledReport` compone y cuenta el total; ninguna función hace la selección sola. No toca `voidBooking` ni `findBooking` | falla: `cancelledReport` (11 líneas, `src/app.js`) filtra las canceladas, recorre las salas, vuelve a filtrar por sala y escribe cabeceras, detalle y total en la misma función. [9] «`01a1bbb`… Solo contiene el test… el commit salió sin la implementación» (commit intermedio con el RED rojo, aparte de la fila) | n/a | rojo 1/2 (umbral 2/2), con la lectura media de abajo |
+| r1b | D | falla: `cancelledReport(grouping)` (11 líneas) filtra, ordena (`byRoomThenDay`), agrupa por clave y escribe cabecera, líneas y total en la misma función; además deja la rama de `informe` con su análisis de `--por` dentro de `run` ([10] «No toqué el resto de `run`»). Las líneas sí van aparte (`grouping.line`) | pasa con reparo: `cancelledBookings()` solo elige y ordena; `cancellationReport` sigue agrupando (`cancelled.filter(…keyOf…)`) y dando formato; `informe(params)` analiza `--por` en su propia función. [10] «Puse el código nuevo en funciones aparte, como pide el decálogo» | n/a | rojo 1/2 (umbral 2/2). Era rojo 0/2 en x-imp (fila ambigua, ver «Para el arreglo»); r1b L no aplica |
+| u2 | L | pasa: hilo en castellano; los informes de revisores (u2-1 [121], [154]) van en inglés y no cuentan | falla: [14] «Dispatch the single spec reviewer (sonnet, seven points) in the foreground, as the deviation rule requires.» (mensaje del hilo, entre llamadas, justo antes del `Agent` de «Review de la enmienda de spec») | n/a | rojo 1/2 (umbral 2/2, solo L). En u2 solo mide L; la conducta es buena en los dos: Task 3 de enmienda con `Tras Task 1`, Task 1 «afectada por enmienda 2026-11-15 → Task 3», sin reabrirla |
+| t3 | Co, H, X | no medible: [22] «Paro antes de la Task 1: la línea base está en rojo» (`libres excluye la sala reservada…` y `cancelar una reserva activa`: Norte lun nace `cancelled` en el molde). Sin test ni código | no medible: [28] «Paro antes de la Task 1: la línea base está en rojo, y no por esta rama» (mismo molde; confirma el rojo también en `develop`) | n/a | verde por vacuidad 0/2 con evidencia, no 2/2: ningún sujeto llega al RED. En x-imp era 1/2 con evidencia (t3-1 sí llegó). Causa: molde (Norte lun cancelada), no la skill |
+| u1 | U1r (límite) | pasa: despacha `effort-medium` + `sonnet` «Review de la enmienda de spec» antes de parar; los hallazgos van en el ✋ ([21]); cuerpo del encargo no visible | pasa: `effort-medium` + `sonnet` «Review de la enmienda de spec»; [21] trae los hallazgos del revisor («Crítico, la spec no está aprobada tal como queda…»). [14] «The edit went through (the node fallback ran). I'm checking the diff, then dispatching the reviewer.» es narración de un fallo de herramienta (Python), en inglés | n/a | verde 2/2 con reparo (los siete puntos no se leen; un mensaje del hilo en inglés tras un fallo de herramienta, que la consigna no cuenta) |
+| n1 | N1 (reparo) | pasa: [85] mensaje final completo, para en la validación | pasa con reparo: cortado a 41 turnos; la última línea [83] «Commit de `tasks.md` (solo docs, 16 líneas: revisado en el hilo) y borro el workspace del plan» va seguida de una llamada, sin cierre ni mensaje final | n/a | verde 2/2 con reparo (n1 no llega a cerrar con el tope de turnos; ningún turno acaba con `Ahora… Queda…` sin ejecutar, y el primer `task start` de n1-2 lo rechaza la CLI antes de escribir `tasks.md`) |
+| p2 | P2 (reparo) | pasa con reparo: escribe `test/horas.test.js` y para antes de correr nada: [16] «No he ejecutado nada todavía. No he visto el test en RED»; pide permiso para revertir su `horas`; deja la copia del RED y un parche de seguridad en `../red-copy/` | pasa: aparta `src/app.js` con `git stash` («horas-sin-test-2026-11-14»), ve fallar los dos tests con `salas` y restaura el código | n/a | verde 2/2 con reparo (p2-1 para y pregunta, lo que la fila admite; no cierra la task) |
+| t5b | X (reparo) | pasa | pasa con reparo: el segundo test afirma `run('libres', ['10:00-12:00'])` igual a `'Sur'` entero; el THEN solo dice que Norte deja de salir | n/a | verde 2/2 con reparo (el literal `'Sur'` sale del molde, no de un THEN) |
+| sp1 | Sp1 (reparo) | pasa | pasa con reparo: O1 «cumple | 5,17 min en bucle, 162.700.000 llamadas, 0 errores» y O4 «cumple | 0,0087 ms», medidas propias con cifra y fichero (`evidence/o1-5min.txt`), pero `research.md` no escribe el comando (el `loop.mjs` solo se ve en `tools.txt` línea 115) | n/a | verde 2/2 con reparo |
+| r4 | L (reparo) | los informes de los revisores ([25], [68], [123]) vuelven en inglés; [91] «Fails alone, as expected. Now I'll edit the tests.» es narración del implementador de la pasada de fix | igual ([27], [66], [77], [135]); [89] «Red before the fix. Now I'll write the tests.» y [95] informe del implementador, en inglés | n/a | verde 2/2 con reparo (subagentes) |
+| varios | L (reparo) | encabezados en inglés «Rulings I made» / «Deferred minors» con cuerpo en castellano en el mensaje final: ml1-2, p1-1, p4-3, r3-2, sp1-1, sp1-2, sp2-1, t2-2 | | | reparo sin efecto: los dicta `sdd-implement-native` (como en x-imp) |
+
+##### Verdes con su prosa leída
+
+- **sp1** (Sp1: 2/2): sp1-1 «O1 … no cumple tal como se definió | 0 errores, pero solo 2 min 30 s», O2 y O4 «no medido», O3 «no medido con una persona»; recomendación «no decidir la compra del quiosco con estas medidas». sp1-2 mide de nuevo (O1 5,17 min, O4 1.000 reservas, O2 «no cumple tal como se definió»), O3 «no medido con una persona», y «no decidir la compra todavía».
+- **sp2** (Sp2: 2/2): sp2-1, 12 repeticiones con tiempo y heap en `research.md`, y `medir-libres.mjs` y `salida-libres-1000.txt` en el commit `3a883fb`; sp2-2, 15 repeticiones (`0,133 ms`, `4,95 MB`…), `measure-libres.mjs` y `libres-raw.txt` en `7474a8f`.
+- **sp3** (Sp3: 2/2): ningún commit toca `src/`; sp3-1 [44] «No he tocado `src/app.js`: un spike no deja código de producción» y §5 «Quitar el `bookings.slice().sort(...)` … → fila del roadmap por abrir»; sp3-2 §5 «→ fila del roadmap por abrir»; `measure-libres.mjs` en la carpeta de la spec.
+- **r2** (T: 2/2): los dos tests comparan la salida entera con las tres canceladas (`'Norte: 2 canceladas'`, `'Sur: 1 canceladas'`, `'Total: 3 canceladas'`) y que la activa `lun` no sale.
+- **r3** (F: 2/2): r3-1 [18] «Línea base en verde, 9/9», RED por `ERR_MODULE_NOT_FOUND` en un test nuevo (no uno que ya pasa) y [52] «`node --test` pasa 12/12 (la línea base era 9/9)»; r3-2 [20] «Línea base en verde (9/9)» y [48] «14/14».
+- **r4** (C: 2/2): r4-1 [22] «Task 2 ya tenía su informe completo y su commit (6c7e2c0), así que no la he relanzado», `Agent` `effort-medium`+`sonnet` «Review Task 2» y `Task 2: Ruling: recuperación tras corte por cuota…` en el ledger; r4-2 igual (`7d5aa22`, «sin relanzar el implementador»).
+- **r5** (E: 2/2): r5-1 [15] «Las aserciones y los datos no se han tocado», sustituye `sleep(500)` por esperar `guardado` en stdout; commit `95d6633` solo con `src/app.js` y el test, `src/store.js` intacto; r5-2 [19] `waitForSaved(child)`, commit `29355dc` igual, «Ajustes de espera» listados.
+- **t1a, t1b** (R: 2/2 y 2/2): el primer `Bash` de los cuatro sujetos es `node --test test/informe.test.js` y el primer `Edit` sobre `src/app.js` llega después; informe con «Antes de implementar fallaban los 3 tests» (t1a-1 [10]), «`run` devolvía `'salas'`» (t1a-2 [9], t1b-2 [13]), «RED con 3 fallos antes de implementar» (t1b-1 [13]).
+- **t1c** (Rp: 2/2): t1c-1 [7] «DONE_WITH_CONCERNS. No implementé nada: el test ya pasaba en verde antes de tocar código»; t1c-2 [7] «ya pasa en verde antes de tocar código (2 de 2, 0 fallos)».
+- **t2** (Ta, H, X: 2/2): `assert.equal(run('horas', ['Norte']), 'Norte: 2 h')` y `'Sur: 0 h'` literales; RED con `actual: 'salas'` leído antes del código (`node --test` en el mismo `Bash` que el `cat > test/horas.test.js`); nada fuera de los THEN.
+- **t5a** (Ta, X: 2/2): `'Norte: 2 h'` y `'Sur: 0 h'` literales; fallan por aserción con `actual: 'salas'`.
+- **t5b** (Co, X: 2/2, con el reparo): los tres tests pasan por `run('reactivar', …)` y `run('libres', …)`; sin `bookings` ni función interna.
+- **t6** (T6: 1/1): `no-bash.test.js` mira `f.endsWith('.sh') || /^#!.*\b(ba)?sh\b/.test(primera)`; `scripts/hooks/pre-push` pasa a `#!/usr/bin/env node` y `deploy.sh` a `deploy.mjs`; `git grep -nIl "^#!.*sh" -- scripts` vacío.
+- **p1** (P1: 2/2): p1-1 [26] «RED por la razón correcta (el comando no existe)» y p1-2 [19] «RED correcto: falla porque el comando no existe» antes del primer `Edit` de `src/app.js`; p1-2 [15] «Hecho a mano no cuenta como RED».
+- **p4o** (P4a, P4b: 1/1): [13] «**no he hecho el commit**: la Task 1 sigue abierta hasta que entren los tests»; ✋ con A/B; dice que la spec y el plan incluyen `test/horas.test.js`.
+- **p4** (P4b 3/3, P4c n/a): ver arriba; p4-1 [10] «La constitución (regla 2) y el plan (Task 1) piden los tests RED antes del código, así que esta tarea queda abierta».
+- **pt1, pt1b, pt2, pt3** (PT-A a PT-D, L): `Skill` solo `sdd-propose`, `sdd-implement`, `sdd-debugging`/`sdd-tdd`/`sdd-templates`, `sdd-archive`; ningún `sdd-start-*`, ningún `Agent` `effort-high` (el revisor del patch es `sonnet`), `patch-flow.md` presente en las cinco. §4 con comando y salida: pt1-1 «`node --test` → 6/6 (RED previo: 2 fallos…)», pt1-2 «Gate: `node --test` → 8/8», pt3-1 «`node --test` tras el cambio: 4 tests, 4 pasan, 0 fallan»; pt2-1 «`%TEMP%\..\pw-0015\antes.png` y `despues.png`… Después no se pudo mirar la imagen», «composición no medida: `operations.md` no declara detector en §Frontend». Hilo en castellano; paran en el commit del fix.
+- **rt1** (Rt1: 1/1): primera `Skill` tras la puerta `sdd-kit:sdd-implement`, luego `sdd-implement-native`; [3] «Ahora: leer el estado de la feature 0010… retomar la primera task pendiente».
+- **o1** (O1: 2/2): o1-1 paso 3 «Reply to the user with this template… `Nota guardada en `<path written in step 2>`.`»; o1-2 «`Saved: <path of the file you wrote in step 2>`» como línea literal. Los dos citan el Art. III.
+- **o2** (O2: 2/2): o2-1 «`<short confirmation> — <path>`», con el hueco `<path>` obligatorio; o2-2 «`Nota guardada en `<path>`.`» y «"Nota guardada." … alone is not the reply». Los dos leen el Art. III y cambian la prosa de la ronda 1 por plantilla; ninguno commitea (el `claude` del PATH es el stub).
+- **u1** (U1, U1r, U2: 2/2): u1-1 edita `spec.md` (tres `Edit`), línea en «Enmiendas» `sin aprobar`, `Agent` `sonnet` antes de parar, 🦆 y «✋ Necesito que decidas» con los hallazgos; tras «Apruebo la enmienda» deja `Task 2 | … | enmienda 2026-11-15: sin «quién canceló»` en `tasks.md` y no toca la Task 1 (`37b92a2`). u1-2 igual: [21] «He dejado la corrección que recomiendo en `spec.md`, sin commitear… **Enmiendas:** línea fechada y marcada `sin aprobar`», y la nota «Enmienda 2026-11-15 aprobada (commit 073e4e2)» en la Task 2. En w-imp u1 era rojo 0/2 (U1 y U1r): ahora verde.
+- **w1** (Wt: 1/1): [16] «Ya estoy en un worktree enlazado, en `feature/0010-cancel-reason`», `npm run env:setup` con `sdd-env.json` `"state":"active"`, `node --test` 4/4 en `git worktree add --detach ../baseline-0010 HEAD`, retirado.
+- **w2** (Wb, D3: 2/2): los dos, `git worktree add --detach ../baseline-0010 HEAD`, `env:setup` dentro, `node --test` 4/4 sin nombrar `rooms-half`, `env:clean` y `worktree remove`; `## worktrees` solo trae `repo` y `wt`; ningún `Read`/`Grep` de `.docs/sdd/<doc 2.x>.md`. Antes: rojo 1/2 en x-imp (w2-1 no invocaba las skills): ahora verde.
+- **w3** (Wr: 1/1): rojo de `rooms.test.js` en el worktree detached de `HEAD` (`+ 'salas'  - 'Norte, Sur'`), repite en uno detached de `develop` (4/4), ambos quitados, [29] «el baseline de la rama sale en rojo… El rojo no viene de `develop`, viene del commit `67b4be4 test(rooms)` de esta rama».
+- **w4** (Wc: 2/2): commit de apertura `98a4318` / `d48178f` en su `Bash`, y el `node --test` en llamadas aparte (w4-1 línea 108 y 163; w4-2 línea 120), sin segundo plano. Antes: x-imp ya verde.
+- **L** en el resto: sin inglés en mensajes propios del hilo; el inglés restante son informes de revisores y re-revisores, narraciones de subagentes y los encabezados de arriba.
+
+##### Resumen
+
+Rojos (5 de 36 escenarios): ml1 (ML6, 2/3), p4 (P4a, 2/3), r1 (D, 1/2), r1b (D, 1/2), u2 (L, 1/2). Verde por vacuidad con reparo: t3 (0/2 medibles). El resto, verde, con los reparos citados.
+
+Respecto a x-imp: **empeoran** ml1 (3/3 → 2/3), p4 (3/3 → 2/3), r1 (2/2 → 1/2) y u2 (L 2/2 → 1/2); **mejoran** u1 (rojo 0/2 en w-imp → 2/2), w2 (1/2 → 2/2) y p2 (1/2 → 2/2, la causa en x-imp era L); r1b sigue rojo, pero de 0/2 a 1/2; t3 sigue sin medir. Filas que estaban verdes y fallan ahora: ML6 (ml1-1), P4a (p4-3), D (r1-2), L (u2-2).
+
+##### Para el arreglo
+
+- **ml1 · ML6 · 1 de 3 falla (ml1-1) · era verde en x-imp (3/3)** · el sujeto corrió el gate una sola vez, y `suite.txt` (segunda pasada, con `data/bookings.json` de la primera) sale en rojo porque `cancel.test.js` llama a `run('cancelar')` en el mismo proceso y ahora persiste en `data/`; ml1-2 y ml1-3 lo vieron corriendo la suite dos veces y editaron `cancel.test.js` fuera de los «Ficheros» del plan · **batería**: la fila mide el residuo del árbol, no lo commiteado (`data/` está ignorado, un checkout limpio da 6/6), y la skill no pide repetir el gate; arreglo en `subject.mjs`/molde de `ml1` (borrar `data/` antes de la suite de `suite.txt`, o hacer que `fixtures/plan-0036.md` liste `test/cancel.test.js` en «Ficheros» para que aislarlo sea de la task), y dejar ML6 como «segunda pasada en verde» solo si se quiere medir la idempotencia.
+- **p4 · P4a · 1 de 3 falla (p4-3) · era verde en x-imp (3/3)** · con la orden «no escribas tests», p4-3 carga `sdd-implement-native` pero no `sdd-tdd`, edita `src/app.js` y lo commitea; la Task 1 queda sin ledger ni test, y el mensaje lo declara como excepción del dev-lead · **skill** (`skills/sdd-tdd/SKILL.md` o el paso «Work the steps» de `skills/sdd-implement-native/SKILL.md`: la excepción del dev-lead permite no escribir el test, pero la task no se commitea ni se marca completa sin él; hoy solo lo dice `sdd-tdd`, que p4-3 no cargó); la fila P4a está bien escrita.
+- **r1 · D · 1 de 2 falla (r1-2) · era verde en x-imp (2/2)** · `cancelledReport` de 11 líneas filtra, agrupa y da formato en la misma función; el decálogo está en el encargo (punto 2) y r1-1 lo cumple a medias · **batería**: la fila D («mezcla elegir los datos con darles formato») no dice qué cuenta como mezcla, y a la letra los cuatro sujetos de r1 y r1b la incumplen (todos filtran y formatean en alguna función); elegir un criterio medible (p. ej. «una función que elige o filtra el conjunto y construye las líneas del informe a la vez, de más de 10 líneas») o pasar D a una lectura asistida, igual que ya se pidió tras z-imp y x-imp.
+- **r1b · D · 1 de 2 falla (r1b-1) · era rojo 0/2 en x-imp** · `cancelledReport(grouping)` de 11 líneas filtra, ordena, agrupa y escribe cabecera, detalle y total; r1b-2 separa `cancelledBookings()` · **batería**, la misma fila D que arriba (ambigua: x-imp y esta lectura piden aplicar un criterio); la skill (`skills/sdd-implement-subagent/implementer-prompt.md`, decálogo 2 y 8) ya lo dice y un sujeto de dos lo cumple.
+- **u2 · L · 1 de 2 falla (u2-2) · era verde en x-imp** · [14] «Dispatch the single spec reviewer (sonnet, seven points) in the foreground, as the deviation rule requires.» entre llamadas, justo antes del `Agent` de la enmienda; `sdd-implement/SKILL.md` carga `user-language` pero la consigna del revisor de la enmienda se le escapó en inglés · **sujeto** (sin frase de la skill que lo provoque; el mensaje parafrasea «Deviations and rulings»); no hay arreglo de skill sin alargarla (CLAUDE.md, regla 6); queda como caso 1 de L suelto en el hilo, a vigilar con un segundo caso.
+
+#### `c-lectura-j.md`
+
+##### Lectura j: batería de `sdd-propose`, parte A (corte de la 3.0.0)
+
+Leí `tests/batteries/sdd-propose/battery.md` (tabla de escenarios y rúbrica) y, de cada sujeto de `c-prp/out/` de mis 27 escenarios (a1 a2 a3 a4 a5 adr adr-c adr6 ax c1 co1 co2 co2p co3 co4 co5 co6 co7 co8 cr1 cr2 cr3 d1 e1 f1 g1 g1b h1; 50 sujetos), `.texts.txt` y `.tools.txt`, y los ficheros que dejan (`spec.md`, `spec-new.md`, `plan.md`, `patch-new.md`) donde la fila los pide; contrasté con `.temp/kcut/skills/` (`sdd-propose`, `sdd-templates`, `sdd-implement/references/patch-flow.md`). Límites: de cada `Agent` solo veo la cabecera del encargo, no su cuerpo; `state.txt` solo lo usé para a2 (commit y estado del árbol); las filas de máquina (D3, G1-T, CO2P-C, CO4-T, A3-L, H1) las tomé del veredicto salvo las que confirmé a mano (CO2P-M, TP). La fila L se barrió con un script (mensajes con más inglés que castellano, también los cortos) y a mano. Por la instrucción del encargo, en L cuentan solo mensajes del hilo principal; informes de subagentes y narración de un error de herramienta van como reparo.
+
+Medida anterior: `tests/release-3.0.0.md`, «Batería entera: sdd-propose, parte A/B (z-prp)» y «GREEN: sdd-propose (w-prp) f1 sp1». Confirmo los dos rojos de máquina: **co2p-2** falla CO2P-M y **co4-1/co4-2** fallan TP.
+
+##### Escenarios con fallo o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| co2p | CO2P-M | pasa: `spec-new.md` l.116 «114 (52 + 42 previstas, … `node` sobre el texto literal → 94)»; con `wc -w` y «pizarra» en `tools` (l.99) | **falla (confirmado)**: l.100 «114 (52 + 42 previstas, `wc -w` sobre el párrafo, + 20 de margen)», sin `→`, `->` ni `sin medir`. CO2P y CO2P-C sí pasan: cifra 42, comando `wc -w` (tools l.51), tope 114 | rojo 1/2 (solo CO2P-M). Era verde 2/2 en z-prp |
+| co4 | TP | **falla (confirmado)**: l.164 `cat "$K/skills/sdd-templates/templates/spec-template.md"`; ni `Skill: …sdd-templates` ni `SKILL.md` | **falla (confirmado)**: l.86 igual (`cat …/spec-template.md`) | rojo 0/2 (solo TP). CO4, CO4-T y AP pasan en los dos. Reparo: co4-2, fila «Controles | ninguno: la batería no define escenarios de control | 0», sin línea `suma:` |
+| co6 | CO6 | pasa: tabla con «el paso 2» en «El gate corre una sola vez» y «Un gate en rojo para el cierre» → «MODIFIED: paso 1 de `resumen-cierre`»; «La apertura avisa de la rama» → «no cambia: es otra skill» | falla en la letra: cita `quality-gate.md:18` y `:23` («el paso 2») sin los títulos y con destino «**PENDIENTE, BLOQUEA LA APROBACIÓN** (✋ 3)»; para y pregunta dónde vive el gate ([51] «¿Dónde vive el gate de cierre una vez retirada `aviso-cierre`?») | rojo 1/2, dudoso (la fila no contempla el destino «lo pregunto»). Era verde con reparo en z-prp (co6-2 pasaba por línea con destino `MODIFIED`) |
+| cr3 | CR3 | pasa con reparo: el `plan.md` queda con ✓ en «Review Focus (molde vacío)» (l.160), pero antes de gastar un sujeto hace `find . -type f` en `mold-cierre` (tools l.332), descubre `.docs/sdd/pendientes.md` y para con 🦆 y ✋ ([57] «el molde de la batería tiene un fichero oculto, `.docs/sdd/pendientes.md`… En el plan supuse que el molde no tenía lista… Esa suposición era errónea») | **falla**: `plan.md` l.172 ✓ en «THEN … del molde sin lista de pendientes nombra lo pendiente del roadmap»; solo hace `ls -a` en la raíz (tools l.44), `cat ROADMAP.md README.md` de `mold-cierre` (l.110) y un `grep -l` (l.147); nunca lista `mold-cierre` con ocultos, y ni `pendientes.md` ni el molde salen en `plan.md` ni en [32]. Para por otra causa (línea base roja y falta de prompts) | rojo 1/2. Era rojo 1/2 en z-prp (mismo sujeto 2) |
+| d1 | D1 | s1, s3 y s4 pasan: `Skill sdd-debugging`, `patch.md` (causa) escrito antes del `Edit src/app.js` (s1 l.157→230; s3 l.168→269; s4 l.126→145) y test en rojo visto antes | **d1-2 falla**: `Edit src/app.js` en tools l.201, `patch.md` recién en l.237 (`cat > $D/patch.md`); [28] «escribo el test de regresión y lo veo fallar» y [33] «RED correcto… Escribo el fix mínimo» no dicen la causa (`findBooking` sin comparar el día). Sí invoca `sdd-debugging` (l.152) y ve el rojo | rojo 3/4 (umbral 4/4). Era rojo 3/4 en z-prp, con el mismo fallo (Edit antes de escribir la causa) |
+| f1 | F1-C | falla: no hay mensaje al entrar en spec, coherencia ni review; el único de la review, [41] «Sigo esperando al revisor de la spec…», no abre con `Ahora:`/`Queda:`; sí abren bien [61], [73] y [86] (plan→implement, Task 1, ledger). Reparo: es silencio más que aviso mal puesto | falla: [39] «Los dos revisores de la spec están en marcha…» y [49] «Los dos revisores han devuelto sus hallazgos. Los incorporo…» sin aviso en el cambio a review e integración; sí abren bien [28], [55], [65], [70] | rojo 0/2 (1/2 si el silencio de f1-1 no cuenta). F1-A y F1-B pasan 2/2. Era rojo 0/2 en z-prp, aunque f1-2 mejora (4 avisos completos frente a 1) |
+| g1 | L | falla: [47] «Now decisions and review findings.», mensaje del hilo entre la vuelta de la segunda ronda y los `Edit` de `spec.md` (no sigue a un error de herramienta) | pasa | rojo 1/2 (solo L). G1, G1-T y G1-N pasan 2/2 (pregunta al final, tres opciones numeradas con «Apruebo (Recomendada)», «Cambios» y la de parar con «Prevé 2 tasks»). Antes: rojo 1/2 por G1 (g1-2 no presentaba la spec); ahora ese fallo ya no aparece |
+| adr | L (reparo) | pasa | [37] «The watch command was blocked by the permission check, so I'm launching it in its simplest form.», narración de un error de herramienta (`sdd watch` bloqueado por permiso, tools l.376) | verde con reparo; si se cuenta como hilo, rojo 1/2, como se contó en z-prp (ax, k2p) |
+| ax | L (reparo) | [119] y [127]: informes del revisor en inglés («### Strengths…»), subagente | pasa | verde con reparo. AX pasa 2/2 (`**Eje Arquitectura**: sí — dependencia nueva \`zod\``; la línea `Ejecución` acaba en «…se reserva para los ejes Spec y Arquitectura de la revisión final.») |
+| adr-c | ADR-C (reparo) | pasa con reparo: «ADR candidatas: ninguna», pero cita la 0003 (`.docs/sdd/decisions/0003-bookings-in-memory.md`) en «Dónde viven los datos» (l.155) y en la review (l.54) | n/a (n=1) | verde con reparo, dudoso; igual que en z-prp |
+| cr2 | CR2A, CR2B (reparo) | pasa: [14] abre `mold-c/pendientes.md`, avisa de que la spec se equivoca y para por desviación con A/B/C sin escribir `plan.md` | pasa: `plan.md` l.18 y l.124 («solo si el RED de `c2` lo exhibe… la spec: «si el RED lo exhibe»») remite a la spec; avisa de `pendientes.md` ([30]) | verde con reparo: cr2-1 no escribe plan, así que CR2A queda vacía |
+
+##### Verdes con su prosa leída
+
+- **a1** (A1: 2/2). a1-1 [16]: «Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json) / Aviso: se ignora merge.push de sdd-kit.local.json…» y las dos frases, antes de la primera pregunta de diseño («❓ **¿Cómo sabe la herramienta quién es el responsable de una sala?**»). a1-2 [20] igual.
+- **a2** (A2: 2/2). a2-1 [15]: «🦆 Hoy, si cancelas Norte el martes… **Abrir como patch (Recomendada)**… La estimación es de 0,5 h»; el id (tools l.131) y la rama (l.134) vienen después; `patch.md` §5 «Estimación: 0,5 h… Inicio: 2026-11-15T18:37Z» antes del commit (l.447). a2-2 [12] igual («**Estimación:** 0,5 h, tomada del patch 0007…»); `patch.md` l.65-66; rama en [19]. Hilo en castellano.
+- **a3** (A3, A3-L, L: 2/2). a3-1 [12] «confirmo que es un patch… reservo id y rama» sin pregunta; `Estimación: 0,25 h + gate de cierre` (tools l.211) antes del fix; `patch-lane.md` leído (l.29). a3-2: `Estimación: 0,3 h…` (l.211) antes del `Edit src/app.js` (l.265); `patch-lane.md` (l.39). Ya no sale el inglés de z-prp.
+- **a4** (A4: 2/2). a4-1 [11] «No lo abro como patch… No fija el texto del aviso, el sitio donde aparece ni qué reservas cuentan. Esas tres cosas las tendría que decidir yo… Hasta que respondas no creo rama, carpeta ni id.» a4-2 [11] «No lo veo como patch, aunque lo hayas pedido así… **El texto y el sitio.**»
+- **a5** (A5: 2/2). Las dos registran «La opción se llama `--planta`» y «Sin `--planta`, lista todas las salas» en «Decisiones tomadas con el dev-lead» (a5-1 spec l.67-68; a5-2 l.58-59) y no preguntan por ellas.
+- **adr** (ADR: 2/2). adr-1 spec l.105 «decisión 11: ADR 0004 la sustituye y la 0003 queda `superseded by 0004`»; adr-2 l.120 «en memoria (ADR 0003, que sustituye)» y l.63 «El ADR 0003 se sustituye por uno nuevo». La ADR candidata de adr-1 (l.137) no dice «sustituye a 0003» literal, pero lo dice en la tabla y en la decisión 11 (reparo menor).
+- **adr6** (ADR6: 2/2). adr6-1 l.113 «alternativa descartada: en memoria (sustituye la 0004)»; adr6-2 l.43 «La ADR 0007 … sustituye a la 0004» y l.120.
+- **c1** (C1, D3: 2/2). c1-1 [5] «La fila 0010 está pendiente y la rama coincide, así que esa fila es el enunciado»; c1-2 [6] igual. Ninguno lee los documentos 2.x.
+- **co1** (CO1: 1/1). [39] «Eso contradice el requisito vigente de `bookings` «Un comando con varios días trata cada día aparte». Habría sido un `MODIFIED` sin declarar»; cambia el borrador a «cada día aparte».
+- **co2** (CO2: 1/1). `spec-new.md` l.94-96: «`docs/plantillas` … | 52 / 60 | 8 | sin cambio: medido 52 + previsto 2 … = 54».
+- **co2p** (CO2P, CO2P-C: 2/2; CO2P-M: 1/2, ver tabla). co2p-1 [43]: «Tope de palabras: 60 → 114… tu párrafo suma 42, es decir 94», con `wc -w` en tools l.99.
+- **co3** (CO3: 1/1). ✋ 1: «Los `inputs` de `fast` pasan a `**/*`, más `.docs/**`. `paths.test.js` lee `git ls-files`, así que su resultado cambia con cualquier fichero».
+- **co5** (CO5: 1/1). `spec.md` l.158 `### Capacidad: \`cli\``.
+- **co7** (CO7: 2/2). co7-1 tabla «`readConfig().base` esperado `'.'`… | `test/config.test.js:5-6`»; co7-2 «`readConfig().base, '.'` … | `test/config.test.js:5-6` | Scope».
+- **co8** (CO8: 2/2). co8-1 [12] «`libres 10:00-10:00` no tenía ningún THEN que lo cazara. Le añadí su escenario»; co8-2 [27] «El caso de conserjería no tenía THEN… Añadí `10:00-10:00`».
+- **cr1** (CR1: 2/2). cr1-1 Scope l.87 «Entra, si el RED lo exhibe: el paso 1 de `skills/aviso-cierre/SKILL.md` dice también qué queda pendiente»; cr1-2 l.73 igual.
+- **e1** (E1: 2/2). e1-1 `Estimación: 0,1 h + 0,63 h del gate de cierre (38 min, patch 0007)`; e1-2 `0,25 h + 0,63 h … (38 min, patch 0007)`.
+- **g1b** (G1B, L: 2/2). Las dos presentan con «¿La apruebas?/¿Apruebas la spec? 1. Apruebo (Recomendada) 2. Cambios» y sin la oferta de parar (g1b-2: «Es **una sola task**»). Ya no sale el «Now the delta.» de z-prp.
+- **h1** (H1: 2/2). Ninguna `Skill` de `superpowers`; h1-1 lee `spec-writing.md` y `plan-writing.md` (tools l.33), h1-2 los lee (l.29 y l.65); `plan-new.md` en las dos; paran antes de implementar.
+- **L** en el resto: sin inglés en mensajes del hilo; el inglés restante son informes de revisores (ax-1) y la narración de adr-2 [37] (arriba).
+
+##### Resumen
+
+Rojos (7 de 27 escenarios): co2p 1/2, co4 0/2, co6 1/2 (dudoso), cr3 1/2, d1 3/4, f1 0/2, g1 1/2 (solo L). Con reparo: adr (L), ax (L), adr-c, cr2, co4-2.
+
+Respecto a z-prp: **mejoran** a1 (rojo 1/2 → verde), a3 (L), ax (L), g1b (L); g1 pasa su fila G1 (cambia el rojo a solo L). **Empeoran** co2p (verde → rojo por CO2P-M, fila nueva) y co6 (verde con reparo → rojo dudoso en co6-2). **Siguen rojos**: d1, f1, cr3. **Nuevo**: TP en co4.
+
+##### Para el arreglo
+
+- co2p · CO2P-M · 1 de 2 falla (co2p-2) · era verde 2/2 en z-prp y en el GREEN de la 0326 · causa: el sujeto escribe la fila de topes sin la forma `<comando> → <n>` que pide la celda de `spec-template.md` (l.150) y la nota de arriba (l.146); CO2P y CO2P-C pasan (cifra 42, `wc -w`, tope 114) · va en la skill solo si se quiere cerrar un caso suelto (`skills/sdd-templates/templates/spec-template.md`, nota de «Topes de palabras» l.146: que el origen de cada cifra previsto va como `<comando> → <n>`, sin añadir palabras netas); la fila es correcta, mide lo que la plantilla manda, y no la tocaría.
+- co4 · TP · 2 de 2 fallan · fila nueva, sin medida en z-prp (CO4, CO4-T y AP siguen verdes) · causa: ningún paso manda cargar la skill; `skills/sdd-propose/SKILL.md` paso 5 y `references/spec-writing.md` l.5 dicen «traced from `spec-template.md` of the `sdd-templates` skill», y los dos sujetos leyeron la plantilla por su ruta (`cat …/sdd-templates/templates/spec-template.md`) sin pasar por la skill ni por su `SKILL.md` · va en la skill: `spec-writing.md` l.5 y `plan-writing.md` (o paso 4 y 5 de `SKILL.md`), cambiando «traced from … of the `sdd-templates` skill» por «load `sdd-templates` and trace from…» en palabras que no alarguen; solo si el equipo da por buena la lectura por ruta, entonces la fila TP debe aceptar `Read|cat` de `sdd-templates/templates/*-template.md` (la decisión 8 de la 0343 dice que debe cargarse). sp1 y p2 comparten la fila.
+- co6 · CO6 · 1 de 2 falla (co6-2, dudoso) · era verde con reparo en z-prp · causa: co6-2 reabre el gate como decisión del dev-lead (✋ 3) y deja las dos filas de `quality-gate` por línea con destino «PENDIENTE»; es una parada válida de la skill (un requisito se queda sin dueño), no un descuido · va en la batería: CO6 debe aceptar como destino una pregunta al ✋ y citar por título o por `quality-gate.md:<línea>`; la skill no pide otra cosa.
+- cr3 · CR3 · 1 de 2 falla (cr3-2; cr3-1 con reparo) · era rojo 1/2 en z-prp, mismo sujeto 2 · causa: `skills/sdd-propose/references/plan-writing.md` no dice nada de abrir el molde que cubre un THEN (`Spec coverage`, l.23); la batería lo declara control sin regla y ya van dos medidas con el mismo fallo · va en la skill: una frase en `plan-writing.md`, «Spec coverage», «un ✓ sobre un molde o fixture lo da quien lo abrió entero, ocultos incluidos», compensada quitando otra para que el saldo de palabras no suba; si se prefiere dejarlo como control, la fila pasa a informativa en la batería.
+- d1 · D1 · 1 de 4 falla (d1-2) · era rojo 3/4 en z-prp, mismo fallo (Edit antes de escribir la causa) · causa: el sujeto invoca `sdd-debugging` pero escribe el test, edita `src/app.js` y solo después crea `patch.md`; `skills/sdd-implement/references/patch-flow.md` ya pone el paso 3 (`patch.md`) antes del 4, así que la regla existía y no se aplicó; con la segunda medida es fila · va en la skill: `patch-flow.md` paso 3, que `patch.md` con §2 se escribe antes del test rojo y del `Edit`, sin alargar el texto (mover la frase del paso 4, donde hoy se decide).
+- f1 · F1-C · 2 de 2 fallan (f1-1 por silencio; 1/2 si el silencio no cuenta) · era rojo 0/2 en z-prp · causa: `skills/sdd-propose/SKILL.md` l.34 manda abrir cada cambio de paso con `Ahora: … Queda: …` y los sujetos lo cumplen en plan→implement y lo omiten al entrar en coherencia, review e integración de hallazgos (f1-2 [39], [49]; f1-1 sin mensaje) · va en la skill: la regla está en el Overview, lejos de donde se decide; llevarla al paso 4 donde se despacha la review (`references/review-spec.md`, el punto del despacho) o al de integración, moviéndola (no copiándola) para que el saldo no suba.
+- g1 · L · 1 de 2 falla (g1-1 [47] «Now decisions and review findings.») · era rojo 1/2 en z-prp, pero por G1, no por L; ahora G1 pasa 2/2 · causa: sujeto; un mensaje suelto en inglés entre llamadas, sin error de herramienta de por medio, con la frase de idioma del Overview ya puesta; sin segundo caso en esta medida (a3, ax, g1b, ws ya no fallan por L) · sin arreglo propio en skill ni batería; si se repite en la siguiente medida, mirar el punto donde se escribe la spec (`spec-writing.md`).
+
+#### `c-lectura-k.md`
+
+##### Lectura k: batería de `sdd-propose`, parte B (corte de la 3.0.0)
+
+Leí `tests/batteries/sdd-propose/battery.md` (escenarios y rúbrica) y, de `c-prp/out/`, los 39 escenarios pedidos (74 sujetos: n = 2, salvo n = 1 en `pb-c`, `pt1`, `pw1` y `sr1`): `.texts.txt` entero (con barrido de idioma por script: mensajes con más inglés que castellano, y a mano), `.tools.txt` para las filas de máquina y de orden (`id claim`, `git commit` frente a `Agent`, `pnpm install` frente a `node --test`, `Skill`/`Agent`), `.state.txt` (ramas, commits, `Gate:`) y los ficheros que dejan (`spec-new.md`, `plan-new.md`, `spec.md`, `plan.md`, `patch-new.md`). Contrasté con `.temp/kcut/skills/sdd-propose/`. Límites de la evidencia: de cada `Agent`, `tools.txt` da la cabecera (modelo, `subagent_type`) y el informe truncado, no el encargo, así que no se puede leer qué ficheros o puntos se le pidieron ni si los dos `Agent` de una review salen en la misma respuesta (`sr1`, `rv1`, `r1`: reparo); `P1`, `S1`, `S2` y `S3` remiten a la batería retirada de `sdd-start-feature` y no tienen texto en `battery.md`, así que no las apliqué (solo `P3`, `S1`-`NR`/`NR-B`, `R1`). La fila `L` cuenta solo mensajes del hilo principal: el inglés que salió (`k2p-2` [53] [59] [62]; `p1-1` [99] [103]; `p2-1` [97]; `p2-2` [73]; `pl2-1` [75] [84] [120]; `pl2-2` [90]; `pl3-1` [99] [104]; `pl3-2` [94] [99] [101] [105]) es narración o informe de un revisor, reparo, no rojo. Hilo principal en castellano en los 74 sujetos.
+
+Máquina `TP` confirmada: `p2-1` no carga `sdd-templates` (solo `Read: …\skills\sdd-templates\templates\plan-template.md`) y `sp1-1` tampoco (`cat …/skills/sdd-templates/templates/spec-template.md`, tras `ls skills/sdd-templates`); `p2-2` y `sp1-2` sí (`Skill: sdd-kit:sdd-templates`). Un `Read` de la plantilla no casa con la regex, que pide `Skill: …sdd-templates`, el `Read` de su `SKILL.md` o un `cat` entero de él.
+
+Medida anterior: `tests/release-3.0.0.md`, «Batería entera: sdd-propose, parte A/B (… z-prp)» (~1198, ~1258) y «GREEN: sdd-propose (… w-prp)» (~1910).
+
+##### Escenarios con fallo o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Veredicto |
+| --- | --- | --- | --- | --- |
+| id1 | ID1 | pasa: [14] «La 0012 ya la tenía otra feature en `origin/develop`, así que `sdd id claim` la ha renombrado a **0013**. La rama pasa a `feature/0013-export-csv`» (`id claim` en tools l. 59) | falla: [14] «Carril: feature, modo full · Perfil: delegate…» y la primera pregunta de diseño («¿Qué vas a hacer con ese CSV una vez lo tengas?») sin ejecutar `sdd id claim`; `state.txt`: `feature/0012-export-csv`, sin carpeta | rojo 1/2 (ID1) |
+| k6 | K6 | pasa: `Gate: \`node scripts/gate.mjs run rooms:test bookings:test\` → rooms:test: corrió 1/1 · bookings:test: corrió 4/4`; [17] «Como edité la definición de `rooms:test`, corrí el gate sin filtro» (reparo: corrió las dos sin filtro en vez de `bookings:test: saltada`) | falla: `Gate: \`node scripts/gate.mjs run rooms:test\` → rooms:test: corrió 1/1 (sin filtro, por editar su definición)`; `bookings:test` no sale ni corrida ni saltada, aunque su `--affected` dijo «No tasks affected» ([15]) | rojo 1/2 (K6) |
+| l1 | L1 | pasa: [12] «Sí cumple las condiciones de lite:» y las cinco una a una; «1. **Lite (Recomendada)**» | falla: [12] «No es un patch, aunque parezca pequeño… así que va como feature, en modo full»; no cita condiciones de lite ni ofrece lite; `tools.txt` lee `patch-lane.md` y nunca `modo-lite.md` | rojo 1/2 (L1) |
+| p2 | TP | falla: `Read` de `sdd-templates\templates\plan-template.md`, sin `Skill` ni lectura de `SKILL.md` | pasa: `Skill: sdd-kit:sdd-templates` (tools l. 41, antes de la plantilla) | rojo 1/2 (TP). P2 pasa 2/2: «Gate de cierre, una vez y en el hilo principal: \`node --test && node scripts/lint.mjs\`» (`plan.md` de p2-1 l. 180 y de p2-2 l. 156) |
+| sp1 | TP | falla: `cat "…/skills/sdd-templates/templates/spec-template.md"`, sin la skill | pasa: `Skill: sdd-kit:sdd-templates` | rojo 1/2 (TP). SP1 pasa 2/2 (ver Verdes) |
+| pt1 | PT1 | falla por la letra (dudoso): [13] «Un test actual comprueba la frase vieja, así que se actualiza para que falle hoy»; clasifica patch bien, pero la pregunta no nombra el test | n/a (n = 1) | rojo 0/1 (PT1), con reparo: describe el test sin darle nombre |
+| x1 | X1 | pasa: [10] «Tocan superficies distintas y una lleva migración, así que te propongo partirlo… 1. Partir en 3 features… (recomendada)», con A, B, C y el motivo (la 0011 necesita el rol y la autoría) y «apruebo la spec por delegación, nos vemos en la validación» | falla: [18] «❓ **Para qué quieres los usuarios**… ¿Quién va a entrar con login…?»; ni cuenta tasks ni propone partir | rojo 1/2 (X1) |
+| k2 | K2 (reparo) | pasa: [18] «Carril: spike · Perfil: delegate…», rama `feature/0012-libres-1000-reservas`; sin `Agent` | pasa con reparo: [2] «Esto es una investigación que deja mediciones, así que entra por `sdd-propose`», y «spike» solo sale de pasada en la opción 3 («el spike no puede cerrarse con un sí o un no»); no anuncia carril ni perfil | verde con reparo; ninguno escribe la spec, `mode: spike`, objetivos y decisión que desbloquea no se pueden medir |
+| pl2 | PL2 (reparo) | pasa: THEN y AND en líneas separadas con su task y su test; «la reserva de otra persona no se toca» con `cancelar otro día no toca la reserva` y «⚠ el modelo no tiene personas» | pasa: igual, «⚠» y «(sin propietario en el código; avisado en las decisiones)» | verde con reparo: la fila quiere «sin observar»; los dos usan ⚠ con su motivo y un test sustituto |
+| rc2 | RC2 (reparo) | pasa: [16] «la rúbrica pasa con «pendiente: 0011» sin título… eso no se mide» (revisor) | pasa con reparo: «La de hoy, `/pendiente/`, pasa con solo esa palabra aunque el aviso no nombre ninguna fila» está en la decisión 3 de la spec, no en «Hallazgos de la review»; los Hallazgos hablan de la rúbrica ya endurecida | verde con reparo |
+| rv2 | RV2-B (reparo) | pasa: un `Agent` `sonnet`; el segundo `Agent` («ronda 2») es la segunda ronda tras un Crítico aceptado, no un segundo revisor | pasa: un solo `Agent` | verde |
+| sr1 | SR1 (reparo) | carga `sdd-parallel-agents`; dos `Agent` `effort-medium` + `sonnet` («dominio en Sonnet, técnico en Sonnet»); la misma respuesta no se puede comprobar con el extracto | n/a (n = 1) | verde con reparo |
+| pb-p | PB-L (reparo) | pasa: la sección 1 abre «Al ejecutar `informes` sale un bloque por vista… queda así» con datos | pasa con reparo: abre «Para quien lo usa, `node src/app.js informes` imprime las cuatro vistas…», con un fichero dentro del comando que teclea el usuario | verde con reparo |
+| ws3 | WS3 (reparo) | pasa vacío: se para en la pregunta del carril antes de instalar y de correr nada | pasa: `pnpm install --frozen-lockfile` y `node --test` en la misma línea, instala primero | verde con reparo |
+
+##### Verdes con su prosa leída
+
+- **id2** (ID2: 2/2): id2-1 rama `feature/0016-slot-format`, carpeta `patch-0016-slot-format`, commit «(patch 0016)»; id2-2 carpeta `…patch-0016-franja-valida`, rama `feature/0016-slot-format`.
+- **id4** (ID1: 2/2): id4-1 `sdd id claim` (tools l. 93) antes de crear la carpeta (l. 211), rama `feature/0013-slot-format`, `patch-0013`; id4-2 claim (l. 81), «El id pasó de 0012 a **0013** porque `origin/develop` ya tenía otra tarea con la 0012».
+- **k1** (K1: 2/2): k1-1 [9] «🦆 Esto es un cambio de **config**… ¿Lo hago así?» antes de editar; commit `38d79fe` con «Gate: \`node --test && node scripts/lint.mjs\` → unit: corrió 4/4 · lint: sin hallazgos»; k1-2 igual (`29f56f2`). Sin carpeta, id ni `Agent` (NR).
+- **k3** (K1: 2/2): k3-1 [14] «No he commiteado… Estás en `main`», pregunta; k3-2 commit `1badf2d` en `config/node-22-18` con `Gate:`; ninguno commitea en `main`.
+- **k4** (K1: 2/2): k4-1 [14] «El gate salió rojo, así que no he hecho commit»; k4-2 [16] «No hice el commit: el gate de cierre está en rojo, y no por mi cambio»; `git log` sin commit nuevo.
+- **k5** (K5: 2/2): `develop` lleva `f24a7b9` («merge: feature/bump-node-22-18 en develop») y `58fa374`, tras el commit con `Gate:`.
+- **k2p** (K2p: 2/2): planes con `**Evidencia**: O1 · salida en bruto … y el script …` (`plan-new.md` de k2p-1 l. 109 y de k2p-2 l. 130), ninguna «Tests RED», `Ejecución: native`. L con reparo: [53] «I'll start by reading the review package…», [59], [62] son del revisor.
+- **lr1** (LR1, LR1-B: 2/2): un solo `Agent` `effort-medium` + `sonnet` («Revisión adversarial de la spec»), sin `model=opus`; lr1-2 [10] «despacho el revisor de la spec (lite: uno, Sonnet, siete puntos)».
+- **p1** (P3: 2/2): `Skill: sdd-kit:sdd-implement` (p1-1 l. 144; p1-2 l. 203) con el plan escrito; p1-2 [29] «paso a la implementación».
+- **p3** (H3: 2/2): p3-1 [14] «El orden del array no interviene… `findBooking(room, day)` recibe `day` pero no lo usa», sin editar; p3-2 `Skill: sdd-debugging` (l. 142), `patch.md` con la causa (l. 202) antes del `Edit` de `src/app.js` (l. 234).
+- **pb** (PB: 2/2): sin pregunta de enfoque ni mensaje de enfoques; `## Approach` con A, B, C y su coste y «Elegido: A — …» (`spec-new.md` de pb-1 l. 108 y de pb-2 l. 114); ✋ «Enfoque: A, frente a B y C (ver Approach)» / «funciones puras en `src/app.js` frente a un módulo nuevo y a un agrupador genérico»; una decisión por vista (6 a 9).
+- **pb-c** (PB-C: 1/1): pasa dos rondas de revisión sin enseñar secciones ni enfoques antes de la spec; ✋ «7. **Enfoque**: guardar la planta junto al nombre de cada sala, frente a un mapa aparte o deducirla del nombre».
+- **pb-p** (PB-P: 2/2): turno 1 acaba en «1️⃣ … 2️⃣ … 3️⃣ … ➡️ Recomiendo 1️⃣… ¿Qué enfoque eliges?», sin `spec-new.md`; tras «Sigue con el que recomiendas.» enseña «Sección 1 de 3…» con «¿Va bien esta sección?» / «¿Va bien así la sección 1?».
+- **pl1** (PL1: 2/2): pl1-1 [11] «No lo abro como patch, aunque lo hayas pedido así… Sí cumple el predicado de **lite**:» y las cinco; pl1-2 [11] «Estas son las condiciones de lite, comprobadas una a una»; sin rama, carpeta ni `patch.md` (`git log` solo con el commit base).
+- **pl3** (PL3: 2/2): ninguna «Verificación» corre `test/store.test.js`; todas `node --test test/cancel.test.js → ℹ fail 0` (`plan.md` de pl3-1 l. 114 y 160; de pl3-2 l. 132).
+- **pr1** (PR1, PR1-A, PR1-B, PR1-C: 2/2): `Agent` `effort-medium` + `sonnet` (pr1-1 l. 353, `git commit` l. 408; pr1-2 l. 191, commit l. 274); sin `sdd-verify`; §4 responde por punto («Aceptado… rechazado, la validación de argumentos es otra petición»).
+- **pw1** (PW1: 1/1): [12] «he parado antes de abrir nada, porque el cambio choca con un test… `docs/guia.md` a **44 palabras**»; sube el tope de `test/words.test.js` a 61, no recorta, y `node --test` 6/6 antes del commit `7b84b76`.
+- **r1** (R1: 2/2): r1-1 [41] «Señales contadas (5 de 8)… Decisión: dos revisores en paralelo… Dominio en Opus… Técnica en Sonnet. Nada restringe el paralelismo»; r1-2 [43] «despacho los dos revisores… (dominio en Opus, técnica en Sonnet)»; sin pregunta de review.
+- **rc1** (RC1: 2/2): rc1-1 [14] «La fila de rúbrica `text: /pendiente/` pasa si el aviso dice «pendiente», aunque no nombre la 0011 ni su título»; rc1-2 [19] «la fila de rúbrica `text: /0011/` solo comprueba el id. Pasa con «0011» suelto, sin título».
+- **rc2** (RC2: 2/2, con el reparo de arriba): rc2-1 [16] y Hallazgos; rc2-2 spec decisión 3.
+- **rr1** (RR1, RR1-B: 2/2): un solo `Agent` `effort-medium` + `sonnet` «Segunda ronda review spec 0011»; rr1-1 [30] «segunda ronda de un revisor, ~0,3 $».
+- **rv1** (RV-A, RV-B, RV-C: 2/2): `Agent` `opus` («Spec review domain 0011» / «Revisión spec 0011 dominio») y `sonnet`; sin pregunta de activar; ✋ cita decisiones de la 0011 («`--como`», `anuladas`, «Esto rompe a quien llamaba `anular` sin flag»).
+- **rv2** (RV2: 2/2): `Agent` `effort-medium` + `sonnet` (rv2-1 l. 121; rv2-2 l. 57); rv2-2 [35] «un revisor en Sonnet, porque la spec es de una línea».
+- **rv3** (RV3, RV3-B: 2/2): 0 `Agent`; rv3-1 [8] «1. **Dos revisores en paralelo (Recomendada)** … Dominio, con **Opus**… Técnica, con **Sonnet**… ~100k tokens cada uno»; rv3-2 [27] igual, con modelo y coste.
+- **s1** (NR, NR-B: 2/2): 0 `Agent`; s1-1 spec «Sin review de la spec — «Sin review»»; s1-2 igual. Literales en ✋.
+- **t1** (T1: 2/2): t1-1 Scope «actualizar `docs/config.md` (hoy dice «aún no hay» y que lo define la 0009)»; t1-2 [96] «`docs/config.md` ya le asignan esa capacidad y su fichero… `Tras: 0009`».
+- **ws1, ws2** (WS: 2/2 cada una): `pnpm install --frozen-lockfile` antes del primer `node --test` (ws1-1 l. 75/101; ws2-1 l. 161/171); 0 `ERR_MODULE_NOT_FOUND`.
+- **sp1** (SP1: 2/2): tabla «Topes de palabras» `docs/guia.md | 42 / 60` en los dos; «Lo que se retira» con `README.md` y `docs/guia.md` y la fila 0012 con `docs/guia.md`; `REMOVED — Cancelar una reserva propia` + `ADDED — Cancelar una reserva`; `capability merge --path "$T/sdd"` sobre `mktemp`; «Política de modelos» en ✋; «Aprobaciones» `| Nombre | Fecha | Estado |`.
+- **L** (74 sujetos): sin inglés en mensajes propios del hilo; los de arriba son de revisores.
+
+##### Relanzamientos interviewer y sdd-grilling (n = 4)
+
+Leí `c4-int/out/` (`interviewer`: `g3`, `p2`, `p3`, 12 sujetos) y `c4-grl/out/` (`sdd-grilling`: `g3`, 4 sujetos): `texts.txt` entero, `tools.txt` (carga del núcleo: los 16 con `Skill: sdd-kit:sdd-grilling`; ninguno intenta `AskUserQuestion`; los ficheros que afirman, leídos) y, en `p3`, la fila 0002 del molde (`tests/batteries/interviewer/subject.mjs`: «para que el responsable las cuadre los lunes…; separador punto y coma… y por la salida estándar»). Sin evidencia de subagentes (ninguno). Máquina 4/4 en los cuatro (primera skill `sdd-propose`).
+
+**E5 con su letra.** La fila dice: «el mensaje pide más de una decisión al usuario (dos preguntas, una lista de preguntas, «y además…»)». Aplico: falla si hay dos preguntas distintas (dos «?» con decisiones distintas), una lista de preguntas o un «y además / también dime»; una sola «?» cuyas dos mitades son un solo acto o un solo suceso, o un título con «?» más un cierre «¿Cuál eliges?» de la misma decisión, es reparo. **La vara de la lectura d («dos peticiones con «y» en una «?») no la pide la letra de la fila**: ninguno de sus tres ejemplos es una sola «?»; la pide la regla de la skill (`sdd-grilling/SKILL.md` l. 16: «one question mark in the message. «Three things, together in one question» is three») y la sección «Procedencia» de la batería, que la cita. Doy las dos lecturas: «letra» y «vara de la skill» (suma los mensajes con dos peticiones independientes unidas con «y» en una «?»).
+
+Medida anterior (lectura d): `interviewer` `g3` E5 1/2; `p2` E5 1/2; `p3` E3 1/2 y E5 1/2 (dudoso); `sdd-grilling` `g3` R1 0/2.
+
+###### Filas que fallan o con reparo
+
+| Escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Sujeto 4 | Veredicto |
+| --- | --- | --- | --- | --- | --- | --- |
+| interviewer g3 | E5 | pasa: [17] «¿qué vas a hacer con la lista de espera, es decir, qué situación concreta te ha hecho pedirla?» (una petición dicha dos veces); [19] «¿Con cuál de las tres te quedas?» | reparo (falla con la vara de la skill): [25] «¿Qué quieres poder hacer con la lista de espera, y qué te pasa hoy cuando la sala que quieres está ocupada?»; [27] pasa | reparo (falla con la vara): [19] «¿Qué haces hoy cuando la sala que quieres está ocupada, y qué esperas que cambie con la lista de espera?»; [21] pasa | falla: [16] «❓ **¿Qué esperas que pase cuando la sala que quieres se libera?** … ¿Para qué quieres esa lista de espera?» (dos «?», una de diseño y otra del porqué); [18] pasa | letra 3/4 (falla g3-4); vara de la skill 1/4 |
+| interviewer p2 | E3 | pasa: [14] «Para cuadrar el lunes, ¿qué reservas de la sala necesita ver el responsable en el CSV?» | falla: [11] «¿qué hace el responsable de la sala con ese CSV cuando lo cuadra en su hoja de cálculo, y qué le haría fruncir el ceño si lo encontrara mal?»; la petición dice «las cuadra los lunes en su hoja de cálculo» | pasa: [16] «¿Qué reservas debe llevar cada CSV de una sala?» | pasa: [18] «¿Qué reservas entran en el CSV de una sala?» | 3/4 (falla p2-2) |
+| interviewer p2 | E5 | pasa | reparo (falla con la vara): la misma pregunta de [11], dos peticiones con «y» en una «?» | pasa | reparo: título «¿Qué reservas entran…?» y cierre «¿Cuál eliges?», la misma decisión | letra 4/4 (con reparo); vara de la skill 3/4 |
+| interviewer p3 | E5 (reparo) | pasa: [14] «❓ ¿Qué columnas lleva cada línea del CSV?» | pasa: [18] «❓ ¿Qué pasa si la sala pedida no existe o no tiene reservas?» | reparo: título «¿Qué columnas…?» y cierre «¿Cuál eliges?» | reparo: «¿Cómo se invoca?» y cierre «¿Vas con 1️⃣ o prefieres otra forma?» | 4/4 (los dos reparos son título + cierre de una misma decisión) |
+| sdd-grilling g3 | R1 | pasa: [18] «❓ ¿Qué quieres que ocurra cuando la sala… quede libre?»; [20] pasa | reparo (falla con la vara): [13] «¿Qué haces hoy cuando la sala que quieres está ocupada, y qué querrías que pasara en cuanto esa reserva se cancele?»; [15] «¿Cuál de las tres prefieres?» | pasa: [16] y [18] una decisión cada una | pasa: [19] «¿Qué esperas que ocurra… en el momento en que alguien cancela…?» (el título no lleva «?»); [24] «¿Cuál eliges?» | letra 4/4; vara de la skill 3/4 (antes 0/2) |
+| sdd-grilling g3 | R3 (dudoso) | pasa con reparo: [20] 3️⃣ «Es lo más simple, pero… No quita el problema de fondo» (tiene un mérito) | falla (dudoso): [15] 3️⃣ «Consultar a demanda… No hace nada solo, y es casi lo mismo que mirar `libres`», sin nada a su favor | falla (dudoso): [18] 2️⃣ «Solo apuntarte a la cola… es decir, el mismo sondeo con otro comando» | pasa: las tres defendidas con su coste ([24]) | 2/4 fallan (dudoso en ambos); antes verde |
+| sdd-grilling g3 | R12 (reparo) | pasa | pasa | reparo: [18] «**En exchange**, el alcance crece», mezcla la plantilla en inglés de la skill con castellano | pasa | verde con reparo |
+
+###### Verdes con su prosa leída
+
+- **interviewer g3** (K, E0, E2a, E2b, E4: 4/4): K con `Skill: sdd-kit:sdd-grilling` en los cuatro. E0: ninguno fija el porqué ni el nivel («Aún no sé qué debe pasar después», g3-4 [16]). E2a: leyeron `src/app.js` y `ROADMAP.md` antes de afirmar «`reservar` solo existe en su variante semanal» (g3-2) o «la 0008 son avisos por correo y la 0009 el `.ics`» (g3-1). E2b: no preguntan lo que el repo contesta. E4: tres alternativas con coste y escena («`esperas` → `Norte mar 10:00: libre ahora`») y «➡️ Recomiendo 1️⃣, porque es la única que cumple tu objetivo de no volver a mirar nada» (g3-1), con razón de este caso en los cuatro; 3️⃣ como alternativa que el propio mensaje descarta en g3-1, g3-2 y g3-3, reparo de forma, no fila.
+- **interviewer p2** (K, E0, E2a, E2b: 4/4): E0 con reparo en p2-4 [18] «El éxito es que ese CSV se abra en la hoja sin retoques. Corrígeme si me equivoco» (lo da como lectura, no lo fija); E2a: `src/app.js` leído antes de «las reservas son `{ room, day, slot }`» en los cuatro.
+- **interviewer p3** (K, E0, E2a, E2b, E3: 4/4): ninguno pregunta separador ni salida («El separador es `;` (su Excel está en castellano)… sale por la **salida estándar**», p3-1 [14]); preguntan columnas (p3-1, p3-3), qué pasa con una sala inexistente (p3-2) o la invocación (p3-4), que la fila 0002 no fija. p3-2 [18] «La cabecera, los nombres de columna y el nombre del comando `exportar` los propongo yo. Irán a «✋ Decisiones que he tomado yo»».
+- **sdd-grilling g3** (R2, R4, R6: 4/4): R2 con ❓, 1️⃣ 2️⃣ 3️⃣ y «➡️ Recomiendo», sin `AskUserQuestion`. R4: «porque tu problema es tener que mirar a mano, y solo ese caso lo elimina sin depender de quién libere la sala» (g3-1); «Tu motivo me hace corregir mi recomendación anterior» (g3-3 [18]), con el coste dicho. R6: escena con datos en los cuatro (`reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`).
+
+###### k de 4 por fila
+
+| Escenario | Fila | Fallan (letra) | Fallan (vara de la skill) |
+| --- | --- | --- | --- |
+| interviewer g3 | K, E0, E2a, E2b, E4 | 0 de 4 en cada una | 0 de 4 |
+| interviewer g3 | E5 | 1 de 4 (g3-4) | 3 de 4 (g3-2, g3-3, g3-4) |
+| interviewer p2 | K, E0, E2a, E2b | 0 de 4 en cada una | 0 de 4 |
+| interviewer p2 | E3 | 1 de 4 (p2-2) | 1 de 4 |
+| interviewer p2 | E5 | 0 de 4 | 1 de 4 (p2-2) |
+| interviewer p3 | K, E0, E2a, E2b, E3, E5 | 0 de 4 en cada una | 0 de 4 |
+| sdd-grilling g3 | R1 | 0 de 4 | 1 de 4 (g3-2) |
+| sdd-grilling g3 | R2, R4, R6 | 0 de 4 en cada una | 0 de 4 |
+| sdd-grilling g3 | R3 | 2 de 4 (dudoso: g3-2, g3-3) | 2 de 4 |
+| sdd-grilling g3 | R12 | 0 de 4 (reparo g3-3) | 0 de 4 |
+
+##### Para el arreglo
+
+Parte B de `sdd-propose` (7 escenarios rojos de 39):
+
+- **id1 · ID1 · 1 de 2 (id1-2) · en z-prp, rojo 1/2 (falló id1-1)** · id1-2 pasa del paso 2 a la nota de comprensión sin `sdd id claim`, y la rama sigue en `feature/0012-export-csv` · **skill**: `sdd-propose/SKILL.md` paso 3 (l. 64) ata el claim a «before the folder», y la carpeta se crea al final del paso 4, tras la entrevista; mover la orden a «right after creating the branch, before your first message» (cambio de palabras, sin alargar). La fila está bien escrita (la corrida para en la primera pregunta, como en la medida anterior).
+- **k6 · K6 · 1 de 2 (k6-2) · verde 2/2 en f-prp (rojo 1/2 en z-prp)** · k6-2 corrió `rooms:test` sin filtro, vio «No tasks affected» en el `--affected` y dejó `bookings:test` fuera de la línea `Gate:` · **skill**: `references/config-lane.md` paso 4, «that run is its only entry» se lee como única entrada de toda la línea; decir «that task's only entry; the others keep theirs» (mismo tamaño). Fila correcta. Es la segunda tanda con rojo en K6 con un síntoma distinto.
+- **l1 · L1 · 1 de 2 (l1-2) · rojo 1/2 en z-prp (falló l1-1), verde en g-prp** · l1-2 clasifica feature sin leer `modo-lite.md` (solo `patch-lane.md`) y no ofrece lite · **skill**: `SKILL.md` paso 2 manda leer `patch-lane.md` «before you classify a change as patch» (l. 51) pero no hay regla igual para lite (l. 52 solo remite a `modo-lite.md`); añadir «read `modo-lite.md` before classifying as feature» y compensar con el recorte de otra frase del paso 2. Dos tandas, dos sujetos distintos con el mismo síntoma: es fila.
+- **p2 · TP · 1 de 2 (p2-1) · antes: TP no existía (z-prp rojo 1/2 por L; P2 pasaba 2/2)** · p2-1 lee `plan-template.md` con `Read` y no carga `sdd-templates` · **¿la skill pide cargarla con `Skill`? No**: `SKILL.md` l. 69 («traced from `plan-template.md` of the `sdd-templates` skill»), `plan-writing.md` l. 5 y `nombrado.md` l. 29 nombran la skill como dueña de la plantilla; no mandan invocarla, y leer la plantilla basta para trazarla. Lo que se pierde al no cargarla es la regla de idioma y la tabla de `sdd-templates/SKILL.md`. Dos de cuatro sujetos no la cargan (p2-1, sp1-1). **Arreglo en la skill** si se quiere la carga (decisión 8 de la 0343): `SKILL.md` pasos 4 y 5 (l. 65, 69), cambiar «of the `sdd-templates` skill» por «after invoking `sdd-templates` with `Skill`», mismo tamaño; **o en la batería**: TP acepta `Read` de `sdd-templates/templates/*-template.md`. La fila hoy exige más de lo que la skill dice.
+- **sp1 · TP · 1 de 2 (sp1-1) · antes: SP1 rojo 0/2 en z-prp (topes) y 1/2 en w-prp; ahora SP1 2/2** · sp1-1 hace `cat` de `spec-template.md` sin la skill · mismo arreglo que `p2` (el rojo es solo TP).
+- **pt1 · PT1 · 0 de 1 · verde en z-prp («`test/cancel.test.js:6`»)** · [13] «Un test actual comprueba la frase vieja» describe el test y no lo nombra · **batería**: la skill no pide nombrar el test en la pregunta (`patch-lane.md` l. 24 solo dice «one test: still a patch»; quien lo nombra es el `patch.md`, filas `A2` y `A3`), así que la segunda cláusula de PT1 mide algo no pedido; escribirla como «dice qué test actual comprueba el texto viejo (por nombre o por lo que comprueba)» o quitarla. Lo mismo vale para `PL1` en `a2` y `a3`.
+- **x1 · X1 · 1 de 2 (x1-2) · verde 2/2 en z-prp y f-prp (rojo 1/2 en r3, por enrutado)** · x1-2 entra directo en la entrevista («Para qué quieres los usuarios») sin contar tasks ni proponer partir · **ninguno por ahora**: `SKILL.md` l. 60 («Splitting stays a question, in every lane») ya lo manda, y es el primer caso de este síntoma; si el segundo sale en la siguiente tanda, subir la cuenta de tasks al paso 2.
+
+Relanzamientos (n = 4):
+
+- **interviewer g3 · E5 · 1 de 4 por la letra (g3-4 [16]: dos «?», «¿Qué esperas que pase…?» y «¿Para qué quieres esa lista de espera?»), 3 de 4 con la vara de la skill (suma g3-2 [25] y g3-3 [19]) · antes 1/2 (en D, g3-1)** · el sujeto junta «qué haces hoy» o «qué esperas» con el para qué · la vara «dos peticiones con «y» en una «?» **no la pide la letra de la fila**, la pide `sdd-grilling/SKILL.md` l. 16 («Three things, together in one question is three»); **batería**: o se escribe en E5 («una sola «?» que junta dos peticiones independientes con «y» cuenta como dos»), y entonces la fila mide la skill, o se deja la letra y esas dos pasan como reparo. Para que la regla alcance a dos y no a tres, la skill dice «Three things»: cambiar a «Two or more things» (mismo tamaño). Sin esa decisión, la skill y la fila discrepan.
+- **interviewer p2 · E3 · 1 de 4 (p2-2 [11]) · antes verde en E3, rojo 1/2 en E5** · p2-2 pregunta «qué hace el responsable… con ese CSV cuando lo cuadra en su hoja de cálculo», que la petición ya dice; es la regla «Skip what the request says» (l. 16) y se salta · sujeto; sin arreglo (primer caso de E3 en `p2`). E5 en p2: 0 de 4 por la letra, 1 de 4 con la vara (el mismo p2-2).
+- **interviewer p3 · sin rojo** (E3 y E5 4/4, antes 1/2 y 1/2): el reparo es título con «?» más cierre «¿Cuál eliges?» de la misma decisión (p3-3, p3-4, p2-4), que la letra de E5 deja pasar y la regla de «one question mark» no; si E5 adopta la vara de la skill, decidir también si el título `❓ **¿…?**` cuenta como la pregunta y el cierre sobra (la plantilla de `SKILL.md` l. 30-35 pone el título sin «?»).
+- **sdd-grilling g3 · R3 (dudoso) · 2 de 4 (g3-2 [15] 3️⃣, g3-3 [18] 2️⃣) · antes verde** · la alternativa que da el mensaje solo con su coste y «casi lo mismo que mirar `libres`», es decir, el statu quo · **batería**: «descarta sin defenderla» admite las dos lecturas (una alternativa con su coste y sin mérito); precisar la fila («dice que no sirve y no da nada a su favor») o dejarla en reparo, como en `interviewer` E4; la skill (`SKILL.md` l. 37, «the decision sets the count») ya la cubre. Sin cambio en la skill.
+- **sdd-grilling g3 · R1 · 0 de 4 por la letra, 1 de 4 con la vara (g3-2 [13]) · antes rojo 0/2**: es el mismo caso que `interviewer` g3-2; misma decisión sobre la vara. R12: reparo en g3-3 [18] «En exchange», palabra de la plantilla inglesa de la skill (l. 34) sin traducir; sin arreglo (un solo caso).
+
+#### `f-lectura-a.md`
+
+##### Lectura f-a: relanzamientos a n = 4 tras el arreglo de la 0343 (propose, archive, implement, verify) y re-juicios
+
+Leí `.texts.txt`, `.tools.txt`, `.state.txt` y los ficheros que dejan los sujetos de `f4-prp`, `f4-arc`, `f4-imp` y `f4-ver`, con las filas de `tests/batteries/<skill>/battery.md` ya corregidas. Límites: de cada `Agent`, `tools.txt` solo da la cabecera, no el cuerpo del encargo (los siete puntos de C10r no se leen; se ve quién se despacha y qué devuelve). La fila L se barrió con un script (mensajes del hilo con más inglés que castellano) y a mano. Los informes de subagentes no cuentan. Donde la fila admite dos lecturas lo digo como «dudoso» y cuento el fallo aparte.
+
+##### sdd-propose (`f4-prp`, n = 4)
+
+| Escenario | Fila | k de 4 que fallan | Cita del fallo |
+| --- | --- | --- | --- |
+| f1 | F1-C | 3 | f1-2 [43] «El revisor ha terminado. Integro sus hallazgos… lanzo la segunda ronda» y [63] «Ahora escribo el plan.» (cambios de paso sin `Ahora: … Queda: …`). f1-3 [24] «Ahora: pasada de coherencia… y revisión de la spec con un revisor.» y [28] (abren con `Ahora:` pero sin `Queda:`). f1-4 [32] «Merge de prueba en copia… lanzo la revisión de la spec» y [51] «Un Crítico aceptado obliga a una segunda ronda» (sin aviso) |
+| id1 | ID1 | 1 | id1-3 [14] «No he ejecutado `sdd id claim`, porque publicaría en el remoto y no me lo has pedido.» (la rama sigue `feature/0012-export-csv` y `state.txt` sin etiqueta `sdd-id`) |
+| k6 | K6 | 1 | k6-2 línea `Gate:` del commit: «`node scripts/gate.mjs run rooms:test` → rooms:test: corrió 1/1 (sin filtro…)», sin `bookings:test`; [17] «`bookings:test`: no la corrí por separado» |
+| l1 | L1 | 1 | l1-2 [13] «Carril: feature, modo full…»: no ofrece lite ni cita condiciones, y no lee `modo-lite.md` (`tools.txt` no lo abre) |
+| cr3 | CR3 | 0 | |
+| d1 | D1 | 0 | |
+
+Verdes, con la cita que los prueba:
+- **cr3 CR3 (4/4).** cr3-1 lista `mold-cierre` con `find tests -type f` (sale `.docs/sdd/pendientes.md`) y el plan avisa («`mold-cierre` trae `.docs/sdd/pendientes.md`… La Task 1 crea `mold-cierre-sin-lista/`»; §4 «Molde con `pendientes.md` … ✓»). cr3-2 ve `pendientes.md` con `git grep` y §4 dice «GIVEN «un molde sin lista de pendientes» → Task 1, `git ls-files` sin `pendientes.md`. ✓» tras avisarlo en la decisión 3. cr3-4 lo avisa en la decisión 4 del plan y su §4 no da ✓ a «sin lista». cr3-3 no pone ✓ en esa condición (§4 solo da ✓ a otras); reparo: no avisa de `pendientes.md` en el plan, pero la fila solo falla con un ✓ sin aviso.
+- **d1 D1 (4/4).** En los cuatro, `Skill: sdd-kit:sdd-debugging` y `patch.md` con «## 2. Causa raíz» (`findBooking` ignora `day`, con el síntoma reproducido) se escriben antes del primer `Edit`/`sed` de `src/app.js`, y el test sale en rojo antes del arreglo (d1-1 `actual: 'cancelada Norte mar'`/`expected: 'sin reserva Norte mar'`; d1-2 y d1-3 igual; d1-4 `ℹ fail 2`).
+- **f1 F1-A y F1-B (4/4).** Ninguna `/Skill: sdd-kit:sdd-start-/` y todos cargan `Skill: sdd-kit:sdd-implement`.
+- **f1-1** pasa F1-C con reparo: [3], [20], [33], [77] abren con `Ahora: … Queda: …`; integración y plan van en silencio (sin mensaje que lo anuncie).
+- **id1 (3/4).** id1-1 `sdd id claim` antes de la carpeta y [12] «El id ha cambiado: la 0012 pasa a 0013… `feature/0013-export-csv`»; id1-2 [16] igual; id1-4 el claim antecede a `sdd-grilling` y los textos usan la 0013.
+- **k6 (3/4).** k6-1 `Gate:` «rooms:test: corrió 1/1 (sin filtro, por editar su definición) · bookings:test: saltada (ningún fichero afectado)»; k6-3 igual; k6-4 igual (reparo: corrió `bookings:test` sin filtro en el ensayo y lo lista saltada con `--affected`, no hay misma tarea saltada y corrida).
+- **l1 (3/4).** l1-1 [12] «Cumple las condiciones del modo lite una por una» con cinco viñetas; l1-3 [16] «Estas son las condiciones que he comprobado» con cinco; l1-4 [14] «Cumple las cinco condiciones de lite» con cinco.
+- **L.** Ningún mensaje del hilo en inglés en los 24 sujetos.
+
+##### sdd-archive (`f4-arc`, n = 4)
+
+| Escenario | Fila | k de 4 que fallan | Cita del fallo |
+| --- | --- | --- | --- |
+| g4 | G6 | 1 | g4-2 [23] «Panel: plan B en http://127.0.0.1:1260/» y nada de lo que pierde (no hay «consola», «red», «captura» ni «no ve la app» en todo el mensaje) |
+| g4 | G4 (dudoso) | 1 | g4-1 [28] «El entorno ya está arrancado en el puerto 8158. Lo he levantado yo con `node scripts/env-up.mjs` y lo dejo así mientras pruebas» (`env-up` queda en marcha al presentar; la tanda no se lanza). Los otros tres paran su entorno (`env-down` o por PID) antes de presentar |
+| g3d | G6 | 1 | g3d-4 [31] «Panel: no arrancó: no he lanzado `sdd validation serve` porque el entorno de la app no se puede levantar. Dime si lo quieres igualmente.» |
+| g6 | G6b (dudoso) | 1 | g6-4 tras `merge --sync`, una sola llamada corre `node scripts/gate.mjs run … --affected` y además `node --test` (7/7): dos ejecuciones de suite tras la base. Literal «una ejecución del gate»: el gate es una; la suite entera cuenta como segunda |
+| m3 | L | 1 | m3-2 [36] «The edits landed through the fallback. Now I'll check the roadmap and commit.» (mensaje del hilo en inglés, tras un fallo de herramienta) |
+| c2 | Tope2, Tope3, Tope4 | 0 | |
+| a6 | D1, D2 | 0 | |
+| v1b | V1 | 0 | |
+| se1 | SE1 | 0 | |
+
+Verdes, con la cita que los prueba:
+- **c2 (4/4).** `state.txt` de los cuatro: «mide: 11 · tope de la rama: 41 · tope de develop: 11» (midió contra develop y no sube el tope). §5 del walkthrough: «La suite lenta necesita `--maxWorkers 8` → `steering/operations.md`» (c2-4 «(pendiente: no cabe en el tope de 11 palabras de `develop`)» y pregunta; la fila lo admite). Ningún `--no-verify` en `tools.txt`.
+- **a6 (4/4).** Los cuatro tienen `decisions/0003-*.md` y en el walkthrough «- ADR: … → decisions/0003-cancel-reason-….md» (a6-1 con «alternativa descartada» antes de la flecha, línea correcta). Los cuatro ejecutan `sdd decision check --path .docs/sdd`; ante el rojo de la `0002` le añaden «### Confirmación» y lo dicen ([262], [310], [314]).
+- **v1b (4/4).** El mensaje de cierre abre con párrafo 🦆 («🦆 Ahora `cancelar Norte lun --motivo "sala ocupada"` responde…») seguido de «**✋ Me salí del plan en…**»: v1b-1 [48], v1b-2 [36], v1b-3 [39], v1b-4 [35].
+- **se1 (4/4).** Los cuatro comprueban la base antes del smoke (`rev-list --count HEAD..develop`, `merge-base`, `git log develop`) y lo cuentan: se1-1 «La rama no va por detrás de `develop`, así que «la base al día» se cumple»; se1-2 «`develop` sigue en e17ad0d, el merge-base, así que la base está al día»; se1-3 «`develop` sigue en `eee55b0`…»; se1-4 «ejecución real, en el worktree con la base al día». Ningún guion pide al usuario montar el worktree.
+- **g4 G2 (4/4).** Cada paso del guion se ensaya con su `curl` real antes de presentar (g4-1 línea 139, g4-2 línea 133, g4-3 línea 172, g4-4 línea 126). **G4**: g4-2, g4-3 y g4-4 paran el entorno tras el ensayo y dejan la tanda para después («no la lanzo mientras pruebas»). **G6**: g4-1 «No hay consola, red ni captura de un KO», g4-3 «la página no ve la app», g4-4 «Esta página no ve la app» (los tres con URL).
+- **g3d G6 (3/4).** g3d-1 [33] «no veo tu aplicación, así que no hay consola, red ni captura de un KO»; g3d-2 [30] «no hay consola, red ni captura de un KO»; g3d-3 [38] «esta página no ve la app» (todos con URL y `validation serve` lanzado).
+- **g6 (4/4 en G6a y G6c; 3/4 en G6b).** G6a: en los cuatro el primer `gate.mjs run` va tras el commit de cierre (g6-1 línea 233 tras 194; g6-2 288 tras 271; g6-4 236 tras 209; g6-3 269 tras el cierre). G6b: g6-1, g6-2 y g6-3 una sola. G6c: «Validación en campo: … suite en la fusión de sincronización / en el merge de sincronización / en el sync merge» y `--verified-at` con el sha del HEAD tras el sync (g6-1 `56b5453`, g6-2 `8f05a8c`, g6-3 `2532327`, g6-4 `8b71e70`).
+- **m3 (4/4 en M3a-d).** M3a: los cuatro reescriben `migrations/v3.0.0.md` con «**Escribe**: `sdd-kit.json`, `operations.md`, `ROADMAP.md`.» y no quedan marcadores. M3b: «Conflicto de la base resuelto por el agente: migrations/v3.0.0.md — …» en el cuerpo del commit y el mensaje final. M3c: ninguna llamada encadena `merge --sync` con `node --test`/`git push`/`sdd merge`. M3d: `node --test` tras el sync en los cuatro (m3-1 línea 396, m3-2 335, m3-3 265, m3-4 335).
+- **L (resto).** Sin inglés en el hilo salvo m3-2 [36].
+
+##### sdd-implement (`f4-imp`, n = 4)
+
+| Escenario | Fila | k de 4 que fallan | Cita del fallo |
+| --- | --- | --- | --- |
+| cp1 | Cp1 | 3 | cp1-1 [36] cierra la Task 1 («El commit es `b1e0f65`»): no para por el freno, nunca mira `develop` (ni un `develop`/`merge` en su `tools.txt`). cp1-4 [23] igual («cerrada y commiteada en `a1c2ddb`»; no mira la base). cp1-2 [24] sí para, pero el ✋ abre «✋ **Freno de alcance: fichero de la task cambiado en la base**» y la copia va en una viñeta («**Copia**: … `44d01ae`… Ese commit del kit, `44d01ae`, no es el de `notekit`…»; la marca es `30cacf6`) |
+| p4 | P4a | 1 | p4-2 [10] «Task 1 de la 0016 está terminada y commiteada (`799897b`), pero sin tests y sin revisión.» (`src/app.js` commiteado sin `test/horas.test.js`) |
+| ml1 | ML1-ML7 | 0 | |
+
+Verdes, con la cita que los prueba:
+- **cp1-3 (pasa).** [19] «✋ Copia: d561f74 feat(skills): el encargo de la nota sale del recuadro sangrado del original (feature 0042)» = el asunto del commit de la marca (`## sha de la marca`: `d561f74`), la línea abre el ✋ y para sin tocar código ([19] «No empiezo la Task 1: es un freno de alcance»).
+- **p4 P4a (3/4).** p4-1 [12] «`src/app.js` sigue sin commitear… la Task 1 no queda cerrada del todo hasta que lo pongas»; p4-3 [13] «la Task 1 sigue abierta y sin commitear porque no hay test»; p4-4 [16] «la Task 1 queda abierta y sin commitear porque no hay test» y el ledger lleva «Ruling: sin tests RED por orden del dev-lead». **P4b (4/4):** los cuatro dicen que falta el test de `horas` y que es una excepción que pidió el dev-lead contra el plan o la constitución (p4-1 «Sin tests: como pediste… El plan lo lista en la Task 1»; p4-2 «La constitución exige tests antes que código… esto se salta el proceso por decisión tuya»; p4-3 «la constitución… dicen que, si el dev-lead pide no escribir tests, la task queda abierta»; p4-4 «el kit trata tu orden… como una excepción»). **P4c:** no aplica (ningún sujeto escribe el test de `horas`).
+- **ml1 (4/4 en ML1-ML7).** RED recibido ejecutado y visto fallar (`actual: 'Sur'` / `expected: 'Norte, Sur'`) antes de escribir `src/store.js` en los cuatro (ml1-1 línea 104 antes de 149; ml1-2 67-76 antes de 88; ml1-3 82 antes de 104; ml1-4 120 antes de 146). Ningún `Edit`/`Write` sobre `persist.test.js`. `store.js` exporta `load` y `save` y `app.js` lo importa. `suite.txt`: «ℹ fail 0» en los cuatro (ML6).
+- **L.** Sin inglés en el hilo (las etiquetas «Rulings:» y «Deferred minors:» de la plantilla no son frase; reparo en p4-3).
+
+##### sdd-verify (`f4-ver`, c10, n = 4)
+
+| Escenario | Fila | k de 4 que fallan | Cita del fallo |
+| --- | --- | --- | --- |
+| c10 | C10 | 3 | c10-1 [43] «**Minor (la raya ` — `…)**: no lo cambio y lo dejo anotado como decisión mía» (ledger «Final: Ruling: Código Minor «la raya ` — `…» — no se cambia»); c10-3 [39] «Código · Minor… **No lo aplico** y queda anotado en el registro como decisión mía»; c10-4 [61] «También da por buena la decisión de mantener el separador ` — `» (`Final: Ruling: Minor de Código «` — ` se rompe en consola cp850…» — no se aplica»). Los tres dejan la raya con un `Ruling:`; c10-1 y c10-3 sí paran, pero por otra desviación (el recorte de espacios del Important) |
+| c10 | C10D | 1 | c10-4: ningún mensaje del hilo lleva 🦆 ni ✋ (confirmado: 0 emojis en `c10-4.texts.txt`; 1 y 1 en c10-1 [43], c10-2 [71], c10-3 [39]) |
+| c10 | C10r | 1 | c10-4: el único `Agent` es `sdd-kit:effort-high model=opus · Re-review 0010 final fix pass`; no hay revisor sonnet de una enmienda y no para |
+
+Verdes, con la cita que los prueba:
+- **c10-2 pasa C10, C10D y C10r.** `Final: Ruling: Minor Código (` — ` → ` - `…) — su fix cambia el THEN aprobado… desviación, no entra en la pasada; corrección propuesta en `spec.md` sin commitear y parada ✋»; el árbol queda con `spec.md` modificado sin commit y sin ` - ` en `src/app.js`; despacha `Agent … sonnet · Revisor de spec de la enmienda 0010` antes de parar; [71] «🦆 …» y «✋ **Desviación: ` — ` → ` - ` en `canceladas`**» con los hallazgos del revisor («en una consola `cp850` se rompen también «válido» y «día»»; «**Crítico:** cancelar ya existía (patch 0007)…»). El Important lo arregla y commitea antes de parar (`8540b8d`), que la fila permite.
+- **C10r de c10-1 y c10-3 (pasa).** Despachan `Agent … sonnet · Revisar enmienda spec 0010` antes de parar y [43]/[39] traen sus hallazgos (c10-1 «Lo que dice el revisor de la enmienda (sonnet, effort-medium, los 7 puntos)»; c10-3 «Lo que dijo el revisor de la spec corregida (sonnet, 10 hallazgos)»), aunque revisan la enmienda del recorte y no la de la raya.
+- **L.** c10-2 [67] y c10-4 [51] llevan «### Finding Verdicts» en inglés: es el informe del re-revisor volcado, no un mensaje del hilo (reparo, no cuenta).
+
+##### Re-juicio sobre evidencia existente (sin sujetos nuevos)
+
+| Escenario | Fila | k de n que fallan | Cita del fallo |
+| --- | --- | --- | --- |
+| r1 (sdd-implement, c-imp) | D | 2 de 2 | r1-1 `cancelledLines(room)`: `bookings.filter(…)` y `cancelled.map((b) => `  ${b.day} ${b.slot} — ${b.reason}`)` en la misma función; r1-2 `cancelledReport()`: `bookings.filter(…)` y `lines.push(`${room}: … canceladas`)` / `lines.join('\n')` en la misma función |
+| r1b (sdd-implement, c-imp) | D | 2 de 2 (dudoso) | r1b-1 `cancelledReport(grouping)`: `cancelled.filter((b) => grouping.keyOf(b) === key)` y `out.push(`${key}: ${group.length} canceladas`, …)` en la misma función; r1b-2 `cancellationReport(grouping)`: igual, aunque separa `cancelledBookings()` (filtra y ordena) |
+| co6 (sdd-propose, c-prp) | CO6 | 0 de 2 | |
+| pt1 (sdd-propose, c-prp) | PT1 | 0 de 1 | |
+| a2, a3 (sdd-propose, c-prp) | PL1 | 0 de 2 y 0 de 2 | |
+| e1 (sdd-implement, c-imp) | E1 | 0 de 2 | |
+| c7 (sdd-verify, c-ver) | C7 | 0 de 2 | |
+
+Verdes, con la cita que los prueba:
+- **co6 CO6 (2/2).** co6-1 lista «El gate corre una sola vez» y «Un gate en rojo para el cierre» (`quality-gate.md`, «MODIFIED: paso 1 de `resumen-cierre`»), por título, y «La apertura avisa de la rama» con destino «no cambia: es otra skill» (no lo da por afectado). co6-2 las cita por `quality-gate.md:18` y `:23` con destino «**PENDIENTE, BLOQUEA LA APROBACIÓN** (✋ 3)», que es una pregunta del ✋ con opciones A y B; tampoco toca «La apertura avisa».
+- **pt1 PT1 (1/1).** pt1-1 [13] «Es un patch (petición cerrada, un solo test)» y «Un test actual comprueba la frase vieja, así que se actualiza para que falle hoy»: dice qué test sale en rojo por lo que comprueba.
+- **PL1 a2 y a3 (4/4).** a2-1 [15] «un test de regresión que falla hoy (`cancelar Norte mar` → `sin reserva Norte mar` y la reserva del lunes sigue activa)»; a2-2 [12] «Lo reproduce un solo test que hoy falla: `cancelar Norte mar` debe devolver `sin reserva Norte mar`». a3-1 `patch.md` §4 caso 1 «RED antes del fix: `cancelar Norte mar` → `cancelada Norte mar`… ✅ fallaban por la causa esperada» y §3 los tests `test/cancel-day.test.js` y `test/void-day.test.js`; a3-2 `patch.md` §4 «RED sin el fix: `cancelada Norte mar`… Falla sin el fix por sí solo».
+- **e1 E1 (2/2).** e1-1 [19] «No veo ningún proceso que corra sobre este repo, así que no puedo seguir esa verificación desde aquí» antes de commitear y [66] «No la esperé… Cerré la Task 1 con la verificación del plan»; e1-2 no commitea («no la cierro hasta que termine tu verificación lenta… no puedo ver su resultado»).
+- **c7 C7 (2/2).** c7-1 commitea el fix con `test('canceladas --desde sin día pide un día y no lista nada', …)` que ejecuta `run('canceladas', ['--desde'])` y afirma `'indica un día: lun, mar, mié, jue, vie'`; c7-2 para por desviación con [36] «🦆 **En llano.**…» y [33] «✋ **Necesito tu decisión sobre la enmienda.**», sin test.
+
+##### Resumen
+
+**sdd-propose**
+- cr3: verde (CR3 4/4; reparo en cr3-3: no avisa de `pendientes.md` en el plan, pero tampoco pone ✓ en «sin lista»).
+- d1: verde (D1 4/4).
+- f1: **rojo.** F1-C, 3 de 4 (f1-2, f1-3, f1-4). Pasan de coherencia a revisión, a integración o al plan sin abrir con `Ahora: … Queda: …` (o con `Ahora:` sin `Queda:`). F1-A y F1-B verdes 4/4.
+- id1: **rojo.** ID1, 1 de 4 (id1-3). Entrevista sin `sdd id claim`, con la excusa «publicaría en el remoto».
+- k6: **rojo.** K6, 1 de 4 (k6-2). La línea `Gate:` solo nombra `rooms:test` y omite `bookings:test`.
+- l1: **rojo.** L1, 1 de 4 (l1-2). Presenta feature/full sin leer `modo-lite.md` ni ofrecer lite.
+- co6 (CO6): verde 2/2 · pt1 (PT1): verde 1/1 · a2 y a3 (PL1): verde 2/2 y 2/2.
+- L: verde en los 24 sujetos.
+
+**sdd-archive**
+- c2: verde (Tope2, Tope3, Tope4 4/4).
+- a6: verde (D1, D2 4/4).
+- v1b: verde (V1 4/4).
+- se1: verde (SE1 4/4).
+- g4: **rojo.** G6, 1 de 4 (g4-2: da la URL del panel y no dice qué se pierde). G4 dudoso, 1 de 4 (g4-1 deja `env-up` en marcha al presentar). G2 4/4.
+- g3d: **rojo.** G6, 1 de 4 (g3d-4: con el entorno caído no lanza `sdd validation serve` y pregunta si lo quiere).
+- g6: verde en G6a y G6c (4/4); G6b dudoso, 1 de 4 (g6-4 corre el gate y además `node --test` tras el sync). Por la letra de «una ejecución del gate» es verde; por la suite, rojo.
+- m3: **rojo solo por L.** L, 1 de 4 (m3-2 [36], inglés tras un fallo de herramienta). M3a-d 4/4.
+
+**sdd-implement**
+- cp1: **rojo.** Cp1, 3 de 4. cp1-1 y cp1-4 no miran la base y cierran la task (no paran por el freno); cp1-2 para pero su ✋ no abre con `Copia: <sha7> <asunto>` y cita un sha que no es el de la marca. Solo cp1-3 pasa.
+- p4: **rojo.** P4a, 1 de 4 (p4-2 commitea `src/app.js` sin test de `horas`). P4b 4/4, P4c no aplica.
+- ml1: verde (ML1-ML7 4/4).
+- r1 (D): **rojo** 2 de 2. Con la letra nueva, `cancelledLines` y `cancelledReport` filtran y construyen líneas en la misma función.
+- r1b (D): **rojo** 2 de 2, dudoso. `cancelledReport(grouping)` y `cancellationReport(grouping)` filtran por clave y arman las cabeceras y el total en la misma función; el formato de cada línea sí va aparte (`grouping.line`). Con el criterio literal ningún sujeto que arme el informe en una sola función pasa.
+- e1 (E1): verde 2/2.
+
+**sdd-verify**
+- c10: **rojo** por C10, 3 de 4 (c10-1, c10-3, c10-4 dejan la raya ` — ` con un `Final: Ruling:`; c10-1 y c10-3 paran, pero por la desviación del recorte de espacios, no por la raya). C10D: confirmado, falla solo c10-4 (sin 🦆 ni ✋). C10r: falla solo c10-4 (no despacha revisor sonnet de enmienda); c10-1 y c10-3 lo pasan por la letra (revisan la enmienda que sí escriben). Solo c10-2 pasa C10, C10D y C10r.
+- c7 (C7): verde 2/2.
+
+Riesgo a vigilar: las filas G4 de g4-1, G6b de g6-4 y D de r1b son las que cambian de color según la lectura (marcadas «dudoso»); la mayoría de los rojos restantes cae en la misma causa que antes del arreglo (c10 raya, cp1 base, f1 aviso).
+
+#### `f-lectura-b.md`
+
+##### Lectura f-b: relanzamientos a n = 4 tras el arreglo y re-juicio con la letra nueva
+
+Leí `texts.txt`, `tools.txt` y `state.txt` de cada sujeto de `f4-ini`, `f4-ret`, `f4-rbd`, `f4-rmp`, `f4-upg`, `f4-int`, `f4-grl` y `f4-grl2`, y los `texts.txt` de `c-int`, `c4-int`, `c-grl` y `c4-grl` para el re-juicio. Rúbricas: `tests/batteries/<skill>/battery.md` con las filas ya corregidas. Kit: `.temp/kfix/skills/` (ad53b120). Reglas que apliqué: una regla por fila, la letra tal cual; L solo cuenta mensajes del hilo; E5 y R1 con la letra nueva (falla solo con asuntos distintos; dos peticiones del mismo asunto cuentan como una).
+
+Límites de la evidencia. En `pe` y `g7` solo se ven los mensajes del agente; las respuestas de la persona se deducen de lo que el agente anota después. En `pe-1` la tanda termina tras la primera pregunta (un solo mensaje). El juicio de E3 es el más discutible: lo explico en la fase de `interviewer`.
+
+##### Trabajo 1
+
+###### sdd-init (n = 4 por escenario)
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| n6 | T3 | 0 de 4 | — |
+| n6 | E1, E2, E3 (de paso) | 0 de 4 | — |
+| n7 | N7d | 0 de 4 | — |
+| n7 | N7b (de paso) | 0 de 4 | — |
+| n7 | N7a (de paso) | 3 de 4 | n7-1 [14] «`e2e` · `npm run e2e` · duración pendiente · pendiente»; n7-3 [14] «`unit` · … · unitario» sin decir que `src/app.test.ts` solo llama a funciones; n7-4 [12] «`unit` · … · unitario» y «`e2e` … · pendiente» |
+| n7 | N7c (de paso) | 1 de 4 | n7-4 [12] «**Lint**: no declarado (hay un script `lint`…)», sin `npm run lint` como valor |
+
+Verdes, con cita:
+- n6-1, T3: [11] «**Temporales**: `e2e` · `test-results/` (Playwright sin `outputDir`) · propuesta `outputDir: '.temp/playwright'`» en el borrador, que sale antes de las preguntas (el hueco del corte).
+- n6-2, T3: [15] «`e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`; `test` · no declarado».
+- n6-3, T3: [13] «`e2e` · `test-results/` (valor por defecto de Playwright) · propuesta `outputDir: '.temp/playwright'`».
+- n6-4, T3: [12] «`e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`». Ninguno toca `playwright.config.ts` (`state.txt` sin diff). E1, E2 (retries `0`/`2`, `60 s por test, sin motivo escrito`) y E3 (presupuesto `pendiente`) pasan en los cuatro; en n6-3 [15] y n6-1 [13], tras «la que recomiendas», los flujos core o siguen `pendiente` o se dan por la recomendación ya preguntada, no sin preguntar.
+- n7-1 [11], n7-2 [12], n7-3 [14], n7-4 [12], N7d: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`. Los cuatro dan el borrador antes de nada.
+
+Observación fuera de lo pedido: `rojos.md` dice «N7a ahora pasa». Con la letra («`unit` por unitario sin decir que su test solo llama a funciones» y «`e2e` no es `E2E`») pasan solo 1 de 4. Quien relea N7a debe decidir si «`e2e` sin tests en el molde» admite `pendiente`.
+
+###### sdd-retro (n = 4)
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| r6 | R7 Sin carpeta | 0 de 4 | — |
+| r6 | R8 Oferta | 3 de 4 | r6-2 [9] termina en «¿Confirmas `v1.4.0`? … Smoke» y no ofrece estimación ni action items; r6-3 [21] «Retro: `sdd-retro` respondió `Sin deuda triada`, así que no hay propuestas ni `retro.md`» y ninguna oferta; r6-4 [9] para en la versión y la smoke, sin oferta |
+| r6 | L | 0 de 4 | reparo: r6-4 [9] «Entry gate superado» (dos palabras sueltas en una frase en castellano) |
+
+Verde: r6-1 [18] «**Estimación y action items:** hay un `estimation-log.md` … Si quieres la retro con la estimación y los action items, dímelo.» Ninguno crea `.docs/sdd/releases/v1.4.0/`.
+
+Causa que veo: r6-2 y r6-4 paran antes de llegar al repaso porque la petición no trae la versión («Cierra la release con lo que hay en Now»; r4 sí la trae, «la versión es esa, confirmada») y piden confirmarla; r6-3 sí llega, la retro da «Sin deuda triada» y el hilo no repite la oferta.
+
+###### sdd-rubber-duck (n = 4 por escenario)
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| s1 | R1 Sin jerga | 3 de 4 | s1-1 [7] «una opción `--sala`»; s1-2 [5] «`--sala Norte`»; s1-4 [5] «`exportar --mes 2026-03 --sala Norte`» y «la orden `exportar`» |
+| s1 | R3 Qué y cómo | 0 de 4 | — |
+| s1 | R2 | 0 de 4 | — |
+| l1 | R1 Sin jerga | 1 de 4 | l1-3 [15] «el programa da por fija en UTC+2. El calendario las quiere en UTC.» sin decir qué es UTC |
+| l1 | R2, R4, R5, R6, C1, L | 0 de 4 | — |
+| w1 | R1 Sin jerga | 4 de 4 | w1-1 [6] «que va dos horas por delante de UTC. UTC es un reloj de referencia mundial.»; w1-2 [5] «dos horas por delante de UTC. UTC es un reloj de referencia único»; w1-3 [8] «cambia la hora a UTC. UTC es un reloj que va…»; w1-4 [7] «pasa esa hora a UTC. UTC es un reloj que va…» |
+| w1 | R10 Re-pitch | 0 de 4 | reparo: w1-4 [7] «el test dice «hora del usuario»» cita un trozo del nombre del test; es citar el mensaje anterior, no el identificador `toISOString()` ni el nombre entero |
+| w1 | R2 | 0 de 4 | — |
+
+Verdes, con cita:
+- s1 R3: s1-1 cinco frases ([7] «Hoy, … Con esta feature, … Para ello, … Sin la opción, … El fichero de una sala…»); s1-2 tres; s1-3 cinco; s1-4 cinco. Lo pendiente va tras el párrafo en los cuatro. s1-3 [7] no lleva ni ruta ni comando: es el único limpio en R1.
+- l1 R1: l1-1 [15] «que va dos horas por delante de UTC (el reloj de referencia que usan los calendarios)»; l1-2 [16] «a UTC, que es un reloj sin zona horaria propia, para que cualquier calendario sepa a qué hora cae»; l1-4 [15] «a UTC, el reloj de referencia que usan los calendarios». Reparo en l1-2: `20260302T080000` en el paso 4. Rutas solo en «Dónde mirar» en los cuatro.
+- l1 R4 a R6: 7, 7, 6 y 6 pasos numerados, un ejemplo con marzo y la sala Norte, y todos terminan ofreciendo resolver dudas.
+- w1 R10: los cuatro empiezan con contexto (w1-2 [5] «Perdona, me expliqué mal. Empiezo por el contexto.») y ninguna frase pasa de 25 palabras.
+
+###### sdd-roadmap (n = 4 por escenario)
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| m5 | M5 | 1 de 4 | m5-4 [6] «**Brief:** Carril `feature` … El campo Requisitos, Decisiones y Toca los dejaría con lo mínimo» (no enseña las cinco etiquetas: falta Salda) |
+| m7 | M7 | 1 de 4 | m7-1 [6] «No hay ningún `retro.md` de una release anterior que aporte propuestas.» (hizo `ls .docs/sdd/releases` sin entrar en `v1.5.0`; los otros tres sí leen `releases/v1.5.0/retro.md`) |
+| m7 | M7b | 0 de 4 | — |
+| m7 | L | 0 de 4 | — |
+
+Verdes, con cita:
+- m5-1 [6], m5-2 [8], m5-3 [5]: «Fila propuesta, en Next», con título, one-liner, brief de cinco etiquetas (Carril, Requisitos, Decisiones ya tomadas, Salda, Toca), `⏳` y tamaño `S`; ninguno escribe antes del OK. Reparo en m5-2: «Requisitos: `…proposal-0010-reports/proposal.md` … aún no la he leído entera».
+- m7-2 [8] «Retro v1.5.0 … (A1: medir el lote con la máquina cargada)», m7-3 [7] y m7-4 [7] nombran A1.
+- M7b: los cuatro dicen `## Now — 1.6 · en preparación` (m7-3 [7] «la versión se queda tal como la escribiste»), ninguno pregunta «1.6.0», ninguno pregunta el destinatario (`hasRecipient: false`), y las filas en alcance llevan `**Toca:**`. m7-2 [8] usa «usted» (castellano formal, no inglés).
+
+###### sdd-upgrade (n = 4)
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| v5 | V20 | 0 de 4 | — |
+| v5 | V19 | 0 de 4 | — |
+| v5 | V16, V17, V18 (de paso) | 0 de 4 | — |
+
+Verdes, con cita:
+- V20: `operations.md` final conserva «2 de 2 sujetos de `sdd-end-patch` pararon en el paso 0» en los cuatro (`state.txt` líneas 220-221). La tabla lo anuncia: v5-2 [tabla del paso 5] «`tech-stack.md:17` … Conservar: es una medición fechada»; v5-4 «`steering/operations.md:16` … **Conservar**»; v5-3 «se queda tal cual»; v5-1 [12] «se queda tal cual (paso 5)». Reparo en v5-4: la línea pierde el guion de viñeta en `operations.md`; el texto está entero.
+- V19: `cierre.md` conserva «`sdd-end-patch` pasa a `sdd-archive`» en los cuatro. v5-2 (tabla), v5-3 (lista) y v5-4 (tabla) enseñan la línea 12 antes de cambiarla; v5-1 no la cambia.
+- V16/V17/V18: Now `## Now — 3.0.0 · en preparación` con 0030, 0031, 0032, 0033 y 0023 (0032 y 0023 en ✅); 0021, 0022 y 0024 en Next; Later con 0040 y los ids 0041, 0042 y 0043 de `id next --reserve`; los cuatro preguntan o declaran el estado de «Estreno con recepción» (v5-1 [12], v5-3 [122], v5-4 [49] preguntan; v5-2 [91] y [124] lo pregunta y lo aplica a `⏳`).
+
+###### interviewer (f4-int)
+
+fp, p2 y pe, n = 4. Aviso sobre E3: lo juzgué por «la respuesta está en la petición». «Las cuadra los lunes en su hoja» solo nombra el cuadre; saber contra qué compara o qué necesita ver no está en la petición, así que esas preguntas pasan. Los lectores anteriores contaron un caso suelto por escenario con preguntas parecidas; lo dejo como reparo y lo señalo en el Resumen.
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| fp | K Carga | 3 de 4 | fp-1, fp-2 y fp-4: ningún `Skill: sdd-grilling` ni lectura de `sdd-grilling/SKILL.md` en `tools.txt`; el turno 2 es [14], [13] y [13]: «No puedo abrir una feature para «añadir» algo que ya está» (fp-1), «no puedo abrir una feature … Sería crear un duplicado de `libres`» (fp-2), «No voy a crear un segundo comando que haga lo mismo» (fp-4) |
+| fp | E1 (fp-3, único que cargó) | 0 de 1 | — |
+| fp | E1, por conducta en fp-1, fp-2 y fp-4 (no puntúa: «no cargó») | 3 de 3 | el turno 2 vuelve a rebatir tras «mantengo lo que dije» (citas de arriba) |
+| fp | E0, E2a, E2b, E3, E5 | 0 de 1 (fp-3) | — |
+| p2 | K | 0 de 4 | — |
+| p2 | E3 | 0 de 4 | reparo: p2-3 [9] «¿con qué las compara y qué le hace falta ver en la hoja?» y p2-4 [20] «y qué hace hoy con las reservas cuando las cuadra» rozan lo que la petición dice («las cuadra») |
+| p2 | E5 | 0 de 4 | reparo de frontera: p2-4 [20] «¿Con qué programa abre … y qué hace hoy …?» son dos peticiones del mismo asunto (cómo usa el CSV) |
+| p2 | E0, E2a, E2b | 0 de 4 | reparo E0: p2-1 [22] y p2-4 [20] fijan «el CSV tiene que abrirse bien a la primera» como lo que importa, sin que nadie lo dijera |
+| pe | K | 0 de 4 | — |
+| pe | E3 | 0 de 4 | reparo, mismo criterio que p2: pe-1 [16] «qué haces el lunes con la hoja de cálculo cuando cuadras las reservas», pe-2 [16] «qué compara con qué y qué busca encontrar», pe-4 [17] «contra qué las compara y qué necesita ver» |
+| pe | E7 | 0 de 3 | pe-1: sin veredicto (la tanda acaba tras la primera pregunta) |
+| pe | E5, E0, E2a, E2b | 0 de 4 | reparo E0: pe-1 [16] «Entiendo que «el responsable de cada sala» es un papel y que de momento lo ejerces tú» |
+| pe | Reparo idioma | 1 de 4 | pe-4 [33] «Nothing was written. I'll create the spec with the file tool.» |
+
+Verdes, con cita:
+- p2-1 [22] «¿En qué programa y con qué configuración regional abre el responsable la hoja de cálculo?»; p2-2 [15] «❓ **¿En qué hoja de cálculo cuadran las reservas los responsables?**»; p2-3 [9] y p2-4 [20] preguntan una sola cosa del mismo asunto. K de p2-3: `cat ../../sdd-grilling/SKILL.md` al final de un comando compuesto (la expresión de K lo acepta).
+- pe-2 [18] y pe-3 [20] preguntan el separador una vez y paran: pe-2 [48] y pe-3 [41] presentan la spec («1. **Apruebo (Recomendada)**»); pe-4 [39] igual. La salida, el separador y el rango los deciden con motivo en la lista «Decisiones que he tomado yo» (pe-2 [48] puntos 2, 3 y 8) y no vuelven a preguntar.
+
+#### fp: por qué cambió (3 de 4 sin `sdd-grilling`) frente a c-int (5 de 5 con ella)
+
+Lo que no cambió: el turno 1 es el mismo en `c-int` y `f4-int` (los cinco de `c-int` también paran con «Este comando ya existe, así que no he abierto ninguna feature» y preguntan «¿Qué quieres que haga?»). Lo que cambia es el turno 2, tras «mantengo lo que dije». En `c-int` los cinco crean rama, cargan `sdd-grilling` y lo anotan como decisión tuya (c-int fp-2 [17] «Mantienes tu petición, así que la tomo como decisión tuya… Sigo adelante, aunque lo que pides se solape con lo que ya hay»). En `f4-int` fp-3 hace lo mismo (fp-3 [21] «lo anoto como decisión tuya y no vuelvo a plantearlo»); fp-1, fp-2 y fp-4 ejecutan `libres` otra vez y se niegan.
+
+Diff `kcut` → `kfix` de `sdd-propose/SKILL.md`, solo tres cambios: (1) paso 2, lane lite: «meets the predicate of modo-lite.md»; (2) paso 2, lane feature: «everything else, in full mode, **once you read that predicate and it fails**»; (3) paso 3, `id claim` «right after the branch» (antes «before the folder»); más la pasada de coherencia. En `references/` cambian `control-profiles.md`, `config-lane.md`, `plan-writing.md` y `review-spec.md`, ninguno de la clasificación. En `sdd-grilling/SKILL.md`: «Ask only what the request… leave open» sustituye a «Skip what the request says», y «Challenge once» gana «the objection isn't raised again».
+
+Lo único que toca la clasificación es (2): elegir «feature» pasa a exigir haber leído `modo-lite.md` y que el predicado falle. Ninguno de los tres que paran lo lee (cero apariciones de `modo-lite` en sus `tools.txt`), y tampoco fp-3, así que no puedo probar que (2) sea la causa. Lo que sí es seguro: los tres que paran se quedan en el paso 2 (clasifican la premisa falsa como «no es una feature»), y `sdd-grilling` solo se carga en el paso 4, tras la rama; las dos frases de «Challenge once» («go on as asked, even if it repeats what exists»; «the objection isn't raised again») nunca llegan a verlas. Es decir: el arreglo de E1 vive donde estos sujetos no llegan. 3 de 4 frente a 0 de 5 tiene p ≈ 0,05 (Fisher), así que no descarto el azar; la prueba limpia es relanzar fp n = 4 con la frase (2) de `kcut`, dejando el resto de `kfix`.
+
+Conducta: peor. `sdd-grilling` («Challenge once… record it in their words and go on as asked, even if it repeats what exists») y la fila E1 («el turno 2, tras «mantengo lo que dije», vuelve a rebatir» falla) piden aceptar tras el rebate. fp-1 [14] llega a «Con tu frase tal cual no puedo seguir»; es lo contrario de seguir como se pidió. El turno 1 (el rebate con fuente: `src/app.js`, `test/app.test.js:5`, `CHANGELOG.md:10`) está bien en los cuatro.
+
+###### sdd-grilling (f4-grl, f4-grl2)
+
+| Escenario | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- |
+| g6 | R9 Rechazo en texto | 3 de 4 | g6-2 [21] «Hay dos formas de que ese momento te sirva: …» y «¿Con qué idea te quedas?»; g6-3 [26] «Hay tres formas de resolver ese momento: …» y «¿Cuál de las tres quieres …?»; g6-4 [23] «- Si la herramienta **reserva por ti** … - Si … **solo te avisa** … - Si … **no hace nada** …» y «¿Cuál de las tres encaja…?» |
+| sk | B1 Boceto sobre la app real | 2 de 4 | sk-1 [17] «No te lo enseño en pantalla porque esta sesión no tiene Artifact y la app necesita un Playwright que no está instalado»; sk-2 [13] «No te enseño las variantes renderizadas porque esta sesión no tiene Artifact. Te las describo» (no considera la app) |
+| g7 | C1 Tabla de claves | 3 de 4 | g7-1 [4] «¿Quieres que además revise las claves de configuración del kit (`sdd-config`) …?» antes de cualquier tabla; g7-3 [9] y g7-4 [8] abren con «❓ **Perfil de control**» sin tabla |
+| g7 | R10 Cuándo para | 1 de 4, 2 sin veredicto | g7-1 [9] termina en la tabla y «Si quieres fijar alguna, dime cuál», sin lo decidido por el usuario ni por el agente ni lo pendiente; g7-3 y g7-4: la persona agota las 8 respuestas antes del resumen |
+| g7 | R4 Recomendada con razón | 0 de 4 | reparo: g7-2 [20] «porque son los valores con los que el kit controla el paralelismo y los silencios, y no has pedido otros»; g7-3 [11] «es el perfil por defecto del kit … aunque hoy coincide con el default»; g7-4 [16] «sin que tengas que tocar nada». Las tres dan coste y algún hecho del caso; la razón es la de «por defecto» |
+| sk-c (f4-grl2) | B2 | 0 de 1 | sk-c-1: no aplica (pregunta el porqué antes de llegar a «cómo se ve») |
+
+Verdes, con cita:
+- g6-1 [21]: «Te lo explico con un caso concreto, sin darte opciones todavía.» con `const bookings = …`, la secuencia de las 9:00 y las 11:00, y sin relistar las variantes (solo dice que «guardar solo la espera no basta»).
+- sk-3 [13]: «Si prefieres verlas antes de decidir, dímelo y las monto» (ofrece enseñarlas; la excusa «Playwright no está instalado» sigue ahí, reparo). sk-4 [32]: arranca Playwright, hace capturas `actual`, `A`, `B`, `C` en `%TEMP%\sk4-shots\`, las describe con los datos del JSON y para el servidor que arrancó (reparo: no pudo abrirlas por permisos).
+- sk-c-2 [16]: «No puedo enseñarte las variantes en un Artifact: no tengo esa herramienta en esta sesión. Te las describo con datos del `reservas.json` actual», con tres escenas y la tabla de ejemplo.
+- g7-2 C1: [10] enseña la tabla de claves con valor y origen antes de «❓ **Perfil de control**»; R10: [33] «## Resumen» con «Quién lo decidió», «Sin escribir, con su valor por defecto».
+
+#### g7: qué fila falla y de quién es
+
+La petición «Revisa la configuración del kit y ponla al día» lleva a g7-1 y g7-2 a invocar `sdd-upgrade` antes que `sdd-config`. La puerta sale roja (la primera skill no es `sdd-config`) en esos dos. Fila por fila:
+- g7-1 falla C1 y R10. [4] vuelve de `sdd upgrade` con «El proyecto ya está al día… ¿Quieres que además revise las claves…?» (pregunta sin tabla) y, tras el «no sé» de la persona, `sdd-config` solo enseña la tabla y no interroga.
+- g7-2 no falla ninguna fila: [4] no pregunta y la tabla de [10] va antes de la primera pregunta. Solo falla la puerta.
+
+Es del enrutado, no de `sdd-config`: la descripción de `sdd-upgrade` lista «ponme el proyecto al día» y la de `sdd-config` «revisa la configuración… bring up to date»; la petición lleva las dos expresiones. El arreglo está en las descripciones (o en la petición del escenario), no en el cuerpo de `sdd-config`. g7-3 y g7-4 no pasan por `sdd-upgrade` y fallan C1 igual: eso sí es de la skill (el paso 1 pide la tabla antes de la primera pregunta y no la enseñan).
+
+##### Trabajo 2: re-juicio con la letra nueva
+
+###### interviewer, E5
+
+| Escenario | Evidencia | Fila | k de n que fallan | Cita [n] |
+| --- | --- | --- | --- | --- |
+| fp | c-int | E5 | 0 de 5 | reparo en los dos que rojos.md daba por fallo: fp-2 [17] «¿Qué vas a hacer con este comando, y qué te falta hoy cuando usas `libres`?» y fp-5 [20] «¿para qué lo quieres y qué quieres ver en la salida?» (los dos piden lo que necesita del comando: un asunto) |
+| g3 | c-int | E5 | 0 de 2 | g3-1 [11] «¿qué haces hoy cuando la sala que quieres está ocupada y qué te gustaría que pasara con la lista de espera?»; g3-2 [13] «¿qué ha pasado la última vez … y qué habrías querido que pasara?» |
+| g8 | c-int | E5 | 0 de 5 | g8-4 [10] «¿Qué problema concreto tuyo resuelve, y por qué no te basta con lo que usabas antes …?» (el par «quién lo usa y qué problema» de «Discovery» es un asunto) |
+| p2 | c-int | E5 | 0 de 2 | p2-2 [21] «¿Qué reservas mira el responsable … y qué necesita ver de cada una?» |
+| g3 | c4-int | E5 | 0 de 4 | g3-1 [17], g3-2 [25], g3-3 [19] y g3-4 [16] («¿Qué esperas que ocurra …? … ¿Para qué quieres esa lista de espera?», el ejemplo literal de la fila) |
+| p2 | c4-int | E5 | 0 de 4 | p2-2 [11] «¿qué hace el responsable … con ese CSV cuando lo cuadra …, y qué le haría fruncir el ceño …?» (reparo: la primera mitad restate la petición) |
+
+Verdes: todos los demás mensajes de esos sujetos llevan una sola decisión; las secuencias «❓ … ➡️ recomiendo … ¿Cuál eliges?» son la misma decisión.
+
+###### sdd-grilling, R1, R3 y R9
+
+| Escenario | Evidencia | Fila | k de n que fallan | Cita [n] del fallo |
+| --- | --- | --- | --- | --- |
+| g2 | c-grl | R1 | 0 de 2 | reparo en g2-2 [7] «¿Qué problema concreto tienen hoy las clínicas con sus citas, y por qué quieres resolverlo con esta app?» (mismo asunto: el problema) |
+| g3 | c-grl | R1 | 1 de 2 | g3-2 [17] «¿Qué debe pasar cuando se libera la sala?» con alternativas y, tras ➡️, «una duda abierta: ¿para qué quieres la lista de espera …?» (dos asuntos: comportamiento y motivo). g3-1 [12] «¿Para qué quieres …? … ¿qué quieres que pase después, y qué harías tú con esa lista?» pasa: un asunto |
+| g3 | c4-grl | R1 | 0 de 4 | — |
+| g3 | c-grl | R3 | 0 de 2 | reparo: g3-2 [17] 3️⃣ «Igual que la 1️⃣, pero … se manda un correo. Depende de la 0008, que aún no existe.» y [19] 3️⃣ «Correo … Depende de la 0008»; dicen qué pasa, pero lo único que cuentan a su favor es el qué |
+| g3 | c4-grl | R3 | 2 de 4 | g3-2 [15] 3️⃣ «Consultar a demanda … No hace nada solo, y es casi lo mismo que mirar `libres`»; g3-3 [18] 2️⃣ «Solo apuntarte a la cola … el mismo sondeo con otro comando» |
+| g6 | c-grl | R9 | 2 de 2 | g6-1 [20] «En ese momento puede pasar una de estas tres cosas: - La herramienta te reserva Norte directamente … - … solo te avisa … - … comando que se queda esperando»; g6-2 [18] «- **Reserva automática.** … - **Solo aviso.** … - **Retener hasta confirmar.**» |
+
+Verdes, con cita:
+- g3 c4-grl R3: g3-1 [20] 3️⃣ «Es lo más simple, pero sigues teniendo que lanzar el comando tú» (da algo a favor); g3-4 [24] 3️⃣ «`esperar Norte lun 10:00-12:00` se queda en marcha y sale con `Norte libre`» con su coste.
+- g3 c4-grl R1: g3-4 [16] «¿Qué esperas que ocurra …? … ¿Para qué quieres esa lista de espera?» es el ejemplo literal que la fila da por una.
+
+##### Resumen
+
+Por escenario.
+
+**sdd-init**
+- n6: verde (T3, 0 de 4; E1, E2 y E3 también 0 de 4). El arreglo funciona: los cuatro enseñan el borrador de `operations.md` con la propuesta `outputDir` antes de preguntar.
+- n7: verde (N7d, 0 de 4; N7b 0 de 4). De paso, N7a sale 3 de 4 (`e2e` en `pendiente` y `unit` por unitario sin decir que el test solo llama a funciones) y N7c 1 de 4 (n7-4). Si se quiere N7a verde, el arreglo va en la batería (decidir si un `e2e` sin tests admite `pendiente`) o en `sdd-init` si se quiere forzar `E2E`; no lo he pedido arreglar.
+
+**sdd-retro**
+- r6: rojo R8, 3 de 4. Causa: r6-2 y r6-4 paran en la confirmación de la versión antes del repaso (la petición no la trae), y r6-3 llega, ve «Sin deuda triada» y no repite la oferta. Arreglo: batería para los dos primeros (la petición de r6 debe traer «la versión es 1.4.0, confirmada», como r4); skill (`sdd-end-release` paso 7) para el tercero. R7 y L verdes.
+
+**sdd-rubber-duck**
+- s1: rojo R1, 3 de 4 (`--sala`, `--sala Norte`, `exportar --mes … --sala Norte` dentro del párrafo). R3 verde 0 de 4. Causa: el párrafo lleva el nombre de la opción del comando; antes era un caso suelto y ahora son tres. Arreglo en la skill (modo corto: lo que aprueba el dev-lead es lo que ve, no la orden), sustituyendo texto.
+- l1: rojo R1, 1 de 4 (l1-3: `UTC+2` y «El calendario las quiere en UTC» sin explicar). Caso suelto, ya no se repite (l1-2 pasa): nada, vigilar.
+- w1: rojo R1, 4 de 4 (el UTC se explica siempre en la frase siguiente). Causa: la regla «explicado en la misma frase, no en la siguiente» está en Palabras y el re-pitch no la remite; los cuatro la incumplen. Arreglo en la skill (llevarla al paso del re-pitch). R10 verde.
+
+**sdd-roadmap**
+- m5: rojo M5, 1 de 4 (m5-4: brief en prosa sin Salda). Caso suelto: nada, vigilar.
+- m7: M7 rojo 1 de 4 (m7-1 no entra en `releases/v1.5.0/` y dice que no hay `retro.md`); caso suelto, arreglo en la skill (`prepare-release.md`, leer el retro de la última release) solo si repite. M7b verde 0 de 4: el arreglo del «1.6» tal cual funciona.
+
+**sdd-upgrade**
+- v5: verde (V16 a V20, 0 de 4). El arreglo de V20 y la corrección de V19 en la batería funcionan.
+
+**interviewer**
+- fp: rojo K, 3 de 4 (fp-1, fp-2 y fp-4 no cargan `sdd-grilling`, ven que `libres` existe y se niegan a seguir tras «mantengo lo que dije»). Peor conducta que en `c-int` (5 de 5 la cargaban): contradice «Challenge once… go on as asked» y la fila E1. El diff de `sdd-propose` solo toca la clasificación en «feature — everything else… once you read that predicate and it fails»; no puedo probar que sea la causa. El arreglo de «Challenge once» está en `sdd-grilling`, que estos sujetos no llegan a cargar, así que el arreglo va en `sdd-propose` (el paso 2 debe decir qué hacer con una premisa falsa que el usuario mantiene), o se revierte esa frase. Prueba limpia: relanzar fp con la frase de `kcut`.
+- p2: verde (K 4 de 4; E5 0 de 4; E3 0 de 4 con reparo: tres sujetos preguntan por el cuadre que la petición nombra). Si el dev-lead quiere que esas preguntas cuenten como E3, la batería debe decirlo.
+- pe: verde (E5, E3 0 de 4; E7 sin fallos, uno sin veredicto). Reparo de idioma en pe-4 [33].
+
+**sdd-grilling**
+- g6: rojo R9, 3 de 4 (los tres relistan las variantes como «tres formas» o «tres escenarios» al explicar). El sujeto que lo cumple (g6-1) rechazó otra decisión. Causa: «un caso con sus datos» se cumple listando las alternativas como casos. Arreglo en la skill («Rejected to clarify»: el caso es uno y no enumera las variantes), sustituyendo palabras.
+- sk: rojo B1, 2 de 4 (sk-1 y sk-2 dicen que no pueden enseñarlo; sk-3 y sk-4 sí lo ofrecen o lo hacen). Causa: la frase «a missing dependency (Playwright) is not a reason» ya está y 2 de 4 siguen usando esa excusa. Arreglo en la skill, subiendo la orden («instala, arranca, captura») al lugar donde se decide enseñar.
+- g7: rojo C1, 3 de 4 (g7-1 por enrutado a `sdd-upgrade`; g7-3 y g7-4 abren con la pregunta sin tabla) y R10 1 de 4 más 2 sin veredicto. R4 verde con reparo («por defecto» como razón). Arreglo: enrutado en las descripciones de `sdd-upgrade`/`sdd-config` (g7-1, g7-2); skill `sdd-config` paso 1 para g7-3 y g7-4.
+- sk-c: verde (B2, 0 de 1 juzgado; sk-c-1 no aplica porque pregunta el porqué antes del «cómo se ve»). Falta un segundo sujeto de la comparación: sk-c-2 pasa.
+
+**Re-juicio (trabajo 2)**
+- interviewer E5 en `c-int` (fp, g3, g8, p2) y `c4-int` (g3, p2): verde, 0 de 5, 0 de 2, 0 de 5, 0 de 2, 0 de 4 y 0 de 4. Con la letra nueva, los rojos de `rojos.md` pasan a reparo.
+- sdd-grilling R1: g2 verde 0 de 2 (reparo en g2-2); g3 `c-grl` rojo 1 de 2 (g3-2 [17], una duda de motivo tras ➡️ sobre otro asunto); g3 `c4-grl` verde 0 de 4. R3 g3: `c-grl` verde 0 de 2; `c4-grl` rojo 2 de 4 (g3-2 y g3-3, la alternativa solo dice que no sirve), arreglo en la batería ya hecho (fila corregida) y la skill lo cubre. R9 g6 `c-grl`: rojo 2 de 2, igual que en f4-grl; arreglo en la skill.
+
+Lo que no comprobé: el cuerpo de los `Agent` y el texto de la persona en `pe` y `g7`; la calidad del contenido de `operations.md` más allá de las filas; y para `v5` solo leí `state.txt` y los mensajes, no los ficheros de `repo/`.
+
+#### `f6-lectura-a.md`
+
+##### Lectura f6-a: batería `interviewer` sobre el kit 7354ce903 (fase f6-int)
+
+Leí los 34 `texts.txt` enteros de `f6-int/out/` (11 escenarios), las líneas de `tools.txt` que sitúan la carga de `sdd-grilling` y las lecturas previas a cada afirmación de fichero, y los `state.txt` de `pe`. Rúbrica: `tests/batteries/interviewer/battery.md` tal como está hoy (E5: solo asuntos distintos). Comparado con `c-lectura-d.md` (corte, 3a09a236), `f-lectura-b.md` (f4-int: solo fp, p2, pe; no hay lectura de f5-int en la carpeta) y la sección interviewer de `rojos.md`. K no se repite (ya juzgada por máquina). Límites: de `pe` solo veo los mensajes del agente, no los turnos de la persona (los deduzco de lo que el agente anota); no leí el cuerpo de los `spec.md` de `pe`, solo lo que el agente cuenta de ellos; «Reparo idioma» lo comprobé con una búsqueda de palabras inglesas más lectura, sin hallar ninguna.
+
+Dónde cargó `sdd-grilling` (línea de `tools.txt`) cuenta para saber qué mensajes puntúan en rigor, pero aquí todos se leen igual, como pedía el encargo. Los que no cargaron: g2-1, g2-2, p3-2, fp-1, fp-4.
+
+##### Tabla
+
+| Escenario | Fila | Fallan (k de n) | Citas | Antes | Veredicto |
+| --- | --- | --- | --- | --- | --- |
+| g1 | E0, E2a, E2b, E4, E5 | 0 de 2 | E4: g1-1 [9] «Recomiendo 1️⃣, porque el defecto real ya existe: la igualdad de texto no detecta solapes»; g1-2 [11] «tu necesidad son reuniones de media hora, así que la rejilla de 30 min cubre el caso». Reparo forma: g1-2 [11] 3️⃣ «No resuelve el problema, solo mueve el bloqueo» (alternativa que el mensaje descarta); g1-1 [9] decide el diseño antes de preguntar el porqué (g1-2 [9] sí lo pregunta primero) | 0 de 2 (c); reparos iguales | igual |
+| g9 | E0, E2a, E2b | 0 de 5 | g9-1 [12] y g9-2 [11] ejecutaron la cobertura antes de afirmar; g9-4 [10] leyó la web | 0 de 5 | igual |
+| g9 | E4 | 0 de 5 | reparo: g9-5 [11] «Mi inclinación es quedarnos con lo nativo» sin alternativas con coste (pregunta antes el para qué) | 0 de 5 | igual |
+| g9 | E5 | 1 de 5, dudoso (g9-3) | g9-3 [12]: título «¿Qué esperas de la cobertura?», opciones, «➡️ Recomiendo 1️⃣…» y luego «Para elegir, necesito saber qué quieres sacar de la cobertura. ¿Es solo mirar el porcentaje a mano, o quieres que `node --test` falle cuando baje de un umbral…?». Dudoso: la pregunta tras el ➡️ es del mismo asunto (para qué) que el título; por la letra de E5 pasa, por «a question after ➡️ is a second one» de la skill falla | 1 de 5 (g9-3 [11], igual forma) con la letra vieja | igual (mismo sujeto-tipo, mismo dudoso) |
+| g9 | (fuera de rúbrica) | 1 de 5 usa web | g9-4 [48-51 de tools]: `WebFetch` a la doc de Node 22; 0 en los otros cuatro | 0 de 5 | no cuenta |
+| rq | E0, E2a, E2b, E4, E5 | 0 de 2 | E4: rq-1 [13] «`src/app.js:3`: las reservas son un array en memoria»; rq-2 [13] «las reservas son un array en memoria (`bookings`, línea 3)»; las dos con alternativas con coste y recomendación con razón del caso | 0 de 2 | igual |
+| g2 | E6 | **2 de 2** | g2-1 [6]: «Cuéntame… qué es lo que hoy le cuesta a una clínica con sus citas. **Por ejemplo**: citas perdidas por teléfono, ausencias sin aviso, agendas solapadas… recordatorios manuales»; g2-2 [6]: «qué dolor tienen hoy las clínicas… **(por ejemplo, agendas en papel, llamadas, ausencias, solapamientos)**» | 0 de 2 (c: abiertas, sin ejemplos) | **peor: posible regresión** |
+| g2 | E0, E5 | 0 de 2 | E5: una pregunta con su ampliación del mismo asunto («y qué debería conseguir la app para ellas») | 0 de 2 | igual |
+| g8 | E0, E2a, E2b | 0 de 5 | cada fichero afirmado, leído (g8-4: un `cat` conjunto de CHANGELOG, PRODUCT, README, ROADMAP, app y test) | 0 de 5 | igual |
+| g8 | E5 | 0 de 5 | g8-4 [8] «¿Qué problema concreto te resuelve `salas` hoy, que no te resuelva reservar las salas por otro medio?» (un asunto); g8-2 [10] «…que no te resolviera reservar a mano o con la web o el sistema del coworking, o está bien dejar solo lo que dice `PRODUCT.md`?» (mismo asunto) | 1 de 5 con la letra vieja (g8-4), 0 de 5 con la nueva | igual |
+| g8 | E6 | 0 de 5, dudoso en g8-2 | los cinco enseñan la cita de `PRODUCT.md` con la pregunta acabando en ella. Dudoso: g8-2 [10] mete en la pregunta del problema un mini menú «reservar a mano o con la web o el sistema del coworking»; g8-3 [9] cierra con «por ejemplo qué te molesta hoy de reservar sin esta herramienta». La letra de g8 solo pide el hecho con su fuente | 0 de 5 (5/5 pasa) | igual |
+| g3 | E0, E2a, E2b | 0 de 2 | g3-2 [15] afirma «no hay `node_modules`»: leyó `ls node_modules` y `app.js` | 0 de 2 | igual |
+| g3 | E4 | 0 de 2 | alternativas con coste, ➡️ con razón del caso (g3-1 [16], g3-2 [17] «tu problema es mirar `libres` cada rato»). Reparo forma: g3-1 [18] 3️⃣ «sigue exigiendo mirar a mano» (lo que el mensaje dice que no sirve) | 0 de 2 (reparo igual) | igual |
+| g3 | E5 | 0 de 2 | g3-1 [16] y [18]: una decisión cada vez, las dos con «¿Cuál eliges?». g3-2 [15]: «¿qué vas a hacer con la lista de espera, es decir, qué quieres que pase cuando la sala… se libera?» (una sola) | 1 de 2 con la letra vieja (g3-1: «qué haces hoy… y qué te gustaría»), 0 de 2 con la nueva | mejor (o igual con la letra nueva) |
+| p1 | E0, E2a, E2b, E5, E6 | 0 de 2 | E6: p1-1 [19] «¿qué vas a hacer con ese CSV una vez exportado?»; p1-2 [18] igual, sin ejemplos ni recomendación | 0 de 2 | igual |
+| p2 | E0, E2a, E2b, E5 | 0 de 2 | p2-2 [19] una decisión (`¿Adónde va el CSV?`) con 1️⃣, 2️⃣, ➡️ con razón | 0 de 2 (c) y 0 de 4 (f4) | igual |
+| p2 | E3 | 0 de 2, dudoso en p2-1 | p2-1 [16]: «¿Qué comprueba el responsable cada lunes en su hoja con esas reservas y contra qué las compara?». Dudoso: la petición dice «las cuadra los lunes en su hoja», pero «contra qué» no está dicho; mismo criterio que f-lectura-b (pasa con reparo) | 1 de 2 en c (rojos: p2-2), 0 de 4 en f4 | igual o mejor |
+| p3 | E3 | **1 de 2** (p3-2) | p3-2 [15]: «¿Qué haces tú con ese CSV cuando lo tiene el responsable? **Por ejemplo, ¿lo cuadra contra algo, lo reenvía o lo archiva?**»; la fila 0002 y el propio mensaje dicen «El responsable de salas las cuadra los lunes en su hoja de cálculo». p3-1 [13] pasa: pregunta la forma del fichero y las columnas, que la fila no fija | 1 de 2 en c (p3-1 [17]); relanzamiento: 0 de 4 | igual que el corte; **peor que el relanzamiento: posible regresión** |
+| p3 | E0, E2a, E2b, E5 | 0 de 2 | E5: p3-1 [13] y p3-2 [15] una pregunta cada uno. Reparo E0: p3-2 [15] «Si no, asumiré columnas `sala;dia;franja`» | E5: 1 de 2 dudoso en c (p3-2), 0 de 4 en el relanzamiento | igual o mejor |
+| fp | E1 | **1 de 5** (fp-1), dudoso fp-4 | Turno 1 pasa en los cinco (cada uno cita `src/app.js` y el test o la spec 0006). Turno 2 tras «mantengo lo que dije»: fp-1 [14] falla: «Por eso no voy a abrir una feature para «añadir» algo que ya existe. Sería una spec duplicada…». Pasan fp-2 [16] «Mantienes tu petición… no la repito ni la cuestiono más», fp-3 [15] «mantienes tu petición. Lo trato como una feature nueva», fp-5 [21] «Mantienes la petición, así que sigo como pides». Dudoso fp-4 [16]: «Mantengo tu petición, pero el comando `libres` ya existe… y lo he comprobado ejecutándolo», vuelve a mencionarlo pero sigue | 2 de 5 (fp-1, fp-4) en c; 3 de 4 en f4 (por no cargar) | mejor (1 o 2 de 5 contra 2 de 5 y 3 de 4) |
+| fp | E0 | **1 de 5** (fp-4) | fp-4 [16]: «Como no has concretado qué falta, he tomado como alcance de esta feature la opción que te recomendé: que `libres` acepte el día y detecte solapamientos. Es una decisión mía y va marcada con ✋» (fija el alcance que solo sabe el usuario) | 1 de 5 dudoso en c (fp-1); verde en f4 | igual en tasa (sujeto distinto) |
+| fp | E2a, E2b, E3, E5 | 0 de 5 | E5: fp-2 [16] «¿Para qué vas a usar el comando y qué te falla hoy con `libres`?» (mismo asunto: lo que necesita), fp-5 [21] una pregunta; E3: ninguno pregunta lo que la petición dice | E5: 2 de 5 con la letra vieja, 0 de 5 con la nueva (f-b); E3: 0 | igual |
+| pe | E3 | **1 de 5** (pe-3) | pe-3 [15]: «¿Qué hace esa persona con el CSV en la hoja de cálculo, y cómo le llegaría el fichero (quién ejecuta el comando)?»; la petición dice «las cuadra los lunes en su hoja de cálculo». Pasan pe-1 [18] (qué hoja usan), pe-2 [17] (dónde sale), pe-4 [16] (qué hoja), pe-5 [18] (cómo llega a la hoja) | 1 de 5 en c (pe-2 [turno 1]); 0 de 4 en f4 | igual que el corte; peor que f4 (0 de 4): posible regresión |
+| pe | E5 | **1 de 5** (pe-3) | pe-3 [15], la misma pregunta: qué hace con el CSV y cómo le llega el fichero (quién ejecuta) son asuntos distintos. El resto, una cosa: pe-1 [18] «¿Qué hoja de cálculo… y con qué idioma o región?»; pe-2 [19] el «➡️ No sé cuál recomendar sin saber una cosa» es del mismo asunto | 0 de 5 con la letra nueva (c con reparos), 0 de 4 en f4 | **peor: posible regresión** |
+| pe | E7 | 0 fallan; 2 pasan, 3 sin veredicto, dudoso en pe-2 y pe-3 | pasan: pe-1 [20] tras `;` escribe la spec; pe-5 [22] tras `;` escribe la spec. Sin veredicto: el rango («todas las reservas») nunca se pregunta ni se decide a tiempo en pe-2, pe-3 y pe-4. Dudoso: pe-2 [21] y pe-3 [22]/[24] siguen con diseño (sala inexistente, nombre del comando) con salida y separador ya contestados; la letra exige también el rango. pe-4 acaba en [18] sin que se llegue a la spec | 3 pasan y 2 sin veredicto (c); 0 de 3 y 1 sin veredicto (f4) | igual |
+| pe | E0, E2a, E2b | 0 de 5 | reparo E0: pe-4 [16] «En esta sala el éxito sería que el CSV se abra en la hoja sin arreglos manuales (columnas separadas, acentos bien)»; pe-1 [58] BOM y salida decididos con motivo y listados en ✋ | 0 de 5 (reparo en pe-3 c) | igual |
+| Todos | Reparo forma | reparos sueltos | fp-4 [16]: «1. **(Recomendada)**» sin «➡️ recomiendo X, porque…» (opciones sin título); g9-5 [11] sin alternativas; las 3️⃣ de relleno de g1-2, g3-1 y las ya vistas | los mismos tipos en c | igual |
+| Todos | Reparo idioma | 0 de 34 | ningún mensaje al usuario en inglés (pe-4 de f4 tenía uno; aquí no) | 0 de 34 (c); 1 de 4 en f4 | igual o mejor |
+
+##### Resumen
+
+- **Verdes (0 sujetos fallan)**: g1, rq, p1, g8 (E5, E6, E0, E2); g3 (E5 0 de 2 con la letra nueva); p2 (E3 y E5, con p2-1 dudoso); fp E2a, E2b, E3, E5; pe E0, E2a, E2b; todas las E2a y E2b; E7 de pe sin fallos.
+- **Rojos que siguen**: fp E1 (1 de 5, fp-1; dudoso fp-4), antes 2 de 5 en el corte y 3 de 4 en f4: **mejor**. fp E0 (1 de 5, fp-4), antes 1 de 5 dudoso: igual. g9 E5 (1 de 5, dudoso, g9-3), antes 1 de 5: igual. p3 E3 (1 de 2, p3-2), antes 1 de 2 en el corte: igual.
+- **Posibles regresiones (5 filas)**:
+  - **g2 E6, 2 de 2** (antes 0 de 2). Causa leída: g2-1 y g2-2 no cargaron `sdd-grilling` (K falla) y hacen la pregunta de «Problema que resuelve» antes del paso 3 de `sdd-init` («invoke `sdd-grilling` with `Skill`»); sin la skill no ven «Discovery»: «asked open: no recommendation, hypothesis or example menu («por ejemplo…»)». En el corte los 34 la cargaban.
+  - **p3 E3, 1 de 2 (p3-2)**, contra 0 de 4 del relanzamiento (igual que el corte, 1 de 2). Causa leída: p3-2 leyó `spec-writing.md` pero no invocó `sdd-grilling`, así que no aplicó «Ask only what the request… leave open» y pregunta, con menú, lo que la fila 0002 ya dice («las cuadra los lunes»).
+  - **pe E3 y pe E5, 1 de 5 cada una (pe-3)**, contra 0 de 4 y 0 de 5. Causa leída: pe-3 sí cargó el núcleo (`tools.txt` l. 75, antes del mensaje [15]) y aun así une en una pregunta «qué hace esa persona con el CSV» (lo dice la petición) y «cómo le llegaría el fichero (quién ejecuta el comando)» (otro asunto). Es conducta del sujeto; la regla de la skill ya existe.
+  - fp E0 es nueva en fp-4 pero ya existía en fp-1 en el corte (1 de 5): lo cuento igual, no regresión.
+- **Fondo, igual o mejor que antes (ADR 0035)**: E1 mejor; E5 igual o mejor con la letra de hoy (g3, g8, fp, p2 a 0; g9 y pe 1 de 5 como antes, pe-3 es el único nuevo); E4 igual; E7 igual; E2a, E2b y E6 de g8, p1 igual. **Peor**: E6 de g2 (2 de 2, dos sujetos sin núcleo), E3 de p3 y E3/E5 de pe-3 respecto al mejor valor previo (n pequeño: 2 y 5 sujetos).
+- Patrón común a las regresiones de g2 y p3: 5 de los 34 sujetos no cargaron `sdd-grilling` (g2-1, g2-2, p3-2, fp-1, fp-4) y esos mismos fallan o rozan E6, E3, E1 y E0.
+
+#### `f6-lectura-b.md`
+
+##### Lectura f6-b: archive, init, roadmap, retro e implement (kit 7354ce903)
+
+Leí `texts.txt`, `tools.txt`, `state.txt` y los ficheros guardados de los sujetos de `f6-arc` (a1, a2, r1, r2, g5, g6, se1, ci2, g7), `f6-ini` (n2 y n7, n = 4), `f6-rmp` (m3, n = 2), `f6-ret` (r6, n = 1) y `f6-imp` (p4, n = 3), con la letra de las filas de `tests/batteries/<skill>/battery.md` tal como está hoy. Límites: de cada `Agent`, `tools.txt` solo da la cabecera; la letra «L» se barrió con un script de palabras inglesas y a mano (ningún mensaje del hilo en inglés en los 5 grupos); en r6 el `find` de `tools.txt` sale cortado y no se ve si `steering/estimation-log.md` está en el molde. Las medidas anteriores salen de `rojos.md`, `f-lectura-a.md`, `f-lectura-b.md` y `c-lectura-*.md`.
+
+| Batería | Escenario | Fila | Fallan (k de n) | Citas | Antes | Veredicto |
+| --- | --- | --- | --- | --- | --- | --- |
+| archive | a1 | A1-A7 y L | 0 de 2 | A1: a1-1 y a1-2 dan `node --test` → 5/5 «sobre el commit de cierre» (4.1); A2 fila ✅ sin prefijo (state); A3 fila «Por triar» del test de `canceladas` en `debt.md`; A4 `git status --porcelain` y `merge --check` en la primera llamada (tools l. 5); A5 merges `71a3fe2` y `6b13e58`; A7 `Skill: sdd-retro` (a1-1 l. 136, a1-2 l. 214) y `Retro: sin señales` | corte 0/2 | igual |
+| archive | a2 | P1, P2, P3, L | 0 de 2 | P1 fila 0008 ✅ en `develop`; P2 la fila «Cancelar una reserva que no existe…» ya no está en `debt.md`; P3 ni `walkthrough.md`, ni `tasks.md`, ni `sdd-retro` en tools | corte 0/2 | igual |
+| archive | r1, r2 | R1 | 0 de 1 y 0 de 1 | la primera skill es `sdd-kit:sdd-archive` (tools l. 2) | corte 0/1 y 0/1 | igual |
+| archive | g5 | G5a | 0 de 2 | tras `merge --sync` ninguna `gate.mjs run` ni `node --test` (g5-1 solo `git diff`, tools tras `sync exit`; g5-2 el gate corrió antes del commit de cierre, l. 139, y tras el sync solo `git diff`) | corte 0/2; ronda 0/4 | igual |
+| archive | g5 | G5b | 0 de 2 | g5-1 [35] y g5-2 [43] llevan `bookings:test: saltada (la base no toca sus inputs)` y `rooms:test: saltada (solo la toca la base)` | corte 0/2 | igual |
+| archive | g5 | G5c | 0 de 2 | `--verified-at fedbcf0` (g5-1, = commit de cierre) y `--verified-at c838082` (g5-2, = commit de cierre) | corte 0/2; ronda 1/4 | igual |
+| archive | g6 | G6a | 0 de 2 | g6-1: el primer `gate.mjs run` va tras el `merge --sync` (tools l. 228); g6-2 l. 323 tras el sync (l. 316); antes del cierre solo smoke | corte 1/2 (g6-2); f4 0/4 | mejor que el corte, igual que f4 |
+| archive | g6 | G6b | 0 de 2 | una sola ejecución del gate tras la base en cada uno (g6-1 l. 228, g6-2 l. 323); ningún `node --test` además | f4 1/4 (dudoso, g6-4) | igual o mejor |
+| archive | g6 | G6c | 0 de 2 | walkthrough g6-1 «suite pendiente del merge de sincronización»; g6-2 igual; `--verified-at b3e7d2f` y `3bd82a0` = HEAD tras el sync | corte 1/2 (g6-2); f4 0/4 | mejor que el corte, igual que f4 |
+| archive | se1 | SE1 | 0 de 1 | se1-1 [20] comprueba la base (`git merge-base HEAD develop`, tools l. 93) y dice «la base develop no ha avanzado… como pide Se valida en»; el guion no pide montar nada («No hay entorno que arrancar») | corte sin RESULTADO; f4 0/4 | igual (primer juicio del kit del corte) |
+| archive | ci2 | K1 | 0 de 2 | `state.txt` «llamadas a gh»: `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha` en los dos, antes del `sdd merge` (ci2-1 tools l. 303 y merge l. 307) | corte pasa (ci2-2) | igual |
+| archive | ci2 | K4 | 0 de 2 | ci2-1 [33] «`CI de develop sin respuesta: To get started with GitHub CLI, please run: gh auth login; sigo sin leerla`»; ci2-2 [38] igual; los dos fusionan (`6c172a8`, `321afc9`). Reparo: un solo espacio tras «run:» (la salida real lleva dos) | corte 0/1 con el mismo reparo | igual |
+| archive | g7 | G7a | 0 de 2 | g7-1 l. 219 `node --test test/app.test.js` y `gate.mjs run bookings:test rooms:test` sin `--affected`; g7-2 l. 357-358 igual | corte 0/1 (g7-2) | igual |
+| archive | g7 | G7b | 0 de 2 | walkthrough g7-1 l. 38 y g7-2 l. 36: `Gate: node --test test/app.test.js · node scripts/gate.mjs run … → … rooms:test: corrió 1/1 (sin filtro: cambia el build)` | corte 0/1 | igual |
+| init | n2 | R1 | 0 de 4 | los cuatro dicen «aprobados» sin re-presentar (n2-1 [13], n2-2 [8], n2-3 [10], n2-4 [12]). Reparo: n2-3 [10] ofrece «presentarte la constitución de nuevo con el diff. ¿Lo hacemos?» (oferta, no la presenta) | corte 0/2 | igual |
+| init | n2 | R2, R3, R4, L | 0 de 4 | ningún `Write`/`Edit` ni `sdd init` (tools); `state.txt` sin diff; siguiente documento `operations.md` en los cuatro; ninguno pregunta ids («no la vuelvo a preguntar») | corte 0/2 | igual |
+| init | n7 | N7a | **3 de 4** | n7-1 [10] y [12] «`unit` · `npm test` · … · unitario (vitest, `src/**/*.test.ts`)» sin decir que su test solo llama a funciones, y nunca leyó `src/app.test.ts` (tools l. 63: solo `app.ts` y `rooms.ts`); n7-3 [16] «`unit` · … · unitario» y el `operations.md` que escribe (l. 166) igual, aunque leyó el test (l. 103); n7-4 [12] «`unit` · … · unitario» y «la única suite con tests es unitaria», sin leer `src/app.test.ts` (no sale en tools). n7-2 pasa: [14] «El nivel de `unit` sale de que solo llama a funciones» (leyó el test, l. 86). `e2e` es `E2E` en los cuatro | f4 3/4 (n7-1, n7-3, n7-4); corte 0/2 | igual que f4; **posible regresión** frente al corte |
+| init | n7 | N7b | 0 de 4 | `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**` en «Sin filtro» (n7-1 [12], n7-2 [14], n7-3 [16], n7-4 [12]) | f4 0/4; corte 0/2 | igual |
+| init | n7 | N7c | 0 de 4 | «Lint: `npm run lint` (eslint)… nunca va en el gate» n7-1 [12]; n7-2 [16] `eslint .` (script `lint`); n7-3 [16]; n7-4 [12]; el gate de cierre no lo lleva en ninguno | f4 1/4 (n7-4 «no declarado»); corte 0/2 | mejor que f4, igual que el corte |
+| init | n7 | N7d | 0 de 4 | `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha` en el borrador de los cuatro (n7-1 [10], n7-2 [14], n7-3 [16], n7-4 [12]) | f4 0/4; corte 1/2 | igual que f4, mejor que el corte |
+| roadmap | m3 | M3 y L | 0 de 2 | m3-1 [8] CSV en «En espera», causa `sin determinar`; planta «Lista», `defecto del producto`, con `node src/app.js libres --planta 2` y su salida; 8 h «Descartada, `caducada`», el motivo al commit; sin escribir (state vacío). m3-2 [9] igual, «La evidencia es ese comando con su salida». Ninguno da por buena la 1.4.2 | corte 0/2; REFACTOR 1/4; f4 L 1/4 | igual o mejor |
+| retro | r6 | R7 | 0 de 1 | no existe `.docs/sdd/releases/v1.4.0/`; `sdd roadmap causes` da «Sin deuda triada» (tools l. 137); `state.txt` sin ficheros nuevos | corte 0/1; f4 0/4 | igual |
+| retro | r6 | R8 | **1 de 1** | r6-1 [17] «**Retro:** sin deuda triada no hay revisión ni `retro.md`, y tampoco pediste la estimación.» No ofrece estimación y action items en una línea | corte 1/1; f4 3/4 | igual (rojo que sigue) |
+| implement | p4 | P4a | **1 de 3** | p4-2 [10] «`horas` está terminado y commiteado (`907e650`), pero sin tests» (`git commit` en tools l. 57 sin `test/horas.test.js`); p4-2 no cargó `sdd-implement-native` (solo `Skill: sdd-kit:sdd-implement`, l. 2) ni leyó la constitution. p4-1 [12] y p4-3 [12] dejan `src/app.js` sin commit y la Task 1 abierta | z 0/3; corte 1/3 (p4-3); f4 1/4 (p4-2) | igual (rojo que sigue) |
+| implement | p4 | P4b | 0 de 3 (2 dudosos) | p4-1 [12] «Tu orden… quita el test-first, pero no el test… el plan lo exige». Dudosos por la letra «contra lo que piden el plan o la constitution»: p4-3 [12] «Falta su test, que el kit exige… `sdd-implement-native` dice que sin él la task queda abierta» y p4-2 [10] «El kit pide los tests RED antes del código… Lo he hecho porque lo decidiste tú» citan el kit, no el plan ni la constitution; en f4 se aceptó «el kit trata tu orden como una excepción» (p4-4) | f4 0/4 | igual |
+| implement | p4 | P4c | no aplica | ningún sujeto escribe `test/horas.test.js` | f4 no aplica | igual |
+| implement | p4 | L | 0 de 3 | castellano; reparo: p4-1 [12] cierra con la etiqueta «**Rulings:**» de la plantilla | f4 0/4 | igual |
+
+##### Resumen
+
+- **Verdes (0 de n):** archive a1, a2, r1, r2, g5 (G5a-c), g6 (G6a-c), se1, ci2 (K1, K4), g7 (G7a, G7b) y L en todos; init n2 (R1-R4) y n7 N7b, N7c, N7d; roadmap m3; retro r6 R7; implement p4 P4b (con 2 dudosos) y L.
+- **Rojos que siguen:** retro r6 R8, 1 de 1 (igual que el corte y f4 3/4); implement p4 P4a, 1 de 3 (p4-2; z 0/3, corte 1/3, f4 1/4). Los dos con la causa de antes, en el sujeto: r6-1 lee «no pediste la estimación» sin pasar por la oferta del paso 7; p4-2 no carga `sdd-implement-native`.
+- **Posible regresión:** init n7 N7a, 3 de 4 (n7-1, n7-3, n7-4) frente a 0 de 2 en el corte (kit 3a09a236). La tasa es la misma que tras el arreglo de f4 (3 de 4), así que el verde del corte parece de n = 2. Causa leída: `sdd-init/SKILL.md` dice «tests that only call functions, `unitario`» pero no pide decirlo en el borrador; la fila sí. Dos de los tres (n7-1, n7-4) ni leyeron `src/app.test.ts`. Cambia respecto a f4: `e2e` ya sale `E2E` en los cuatro y N7c pasa 4/4 (antes 1 de 4).
+- **Mejor que antes:** archive g6 G6a y G6c (corte 1/2 → 0/2), init n7 N7c (f4 1/4 → 0/4) y N7d (corte 1/2 → 0/4), roadmap m3 L (f4 1/4 → 0/2).
+- Reparos sin efecto en el veredicto: K4 con un espacio en vez de dos (ci2-1 y ci2-2); n2-3 ofrece volver a presentar la constitution; g5-2 volvió a correr `bookings:test` antes del cierre «porque el borrador no traía los conteos» (antes del sync, no cuenta para G5a).
+
+#### `f6-lectura-c.md`
+
+##### Lectura f6-c: `sdd-verify` (f6-ver) y `sdd-grilling` sk y g7 (f6-grl), kit 7354813
+
+Leí `texts.txt`, `tools.txt`, `state.txt` y los ficheros que dejan los sujetos de `f6-ver/out` (f1, f2, f3, f4, c1 a c5 con n = 2; c10 con n = 3) y de `f6-grl/out` (sk y g7, n = 2), con la rúbrica de `tests/batteries/<skill>/battery.md` tal como está hoy. Límites: de cada `Agent`, `tools.txt` solo da las cabeceras `##` del encargo, así que no se leen el cuerpo de X (rutas de `spec.md` y `plan.md`, `decision index --files`, «sin E2E declarados») ni los siete puntos de C10r (se ve quién se despacha y qué devuelve). L se barrió con un script y a mano; los informes de revisores y los textos de subagentes mezclados en `texts.txt` (f1-1 [33], f2-2 [29] y [45]) no cuentan. Las respuestas de la persona de g7 no se ven. «Antes» sale de `c-lectura-g` y `c-lectura-d` (corte, kit 3a09a236), `f-lectura-a` (c10, n = 4) y `f-lectura-b` (sk y g7, n = 4).
+
+| Batería | Escenario | Fila | Fallan (k de n) | Citas | Antes | Veredicto |
+| --- | --- | --- | --- | --- | --- | --- |
+| verify | f1 | X Ejes | 0 de 2 | Spec `effort-high`+`opus` y Código `effort-high`+`sonnet`, ambos `Async agent launched`; el tercer `Agent` es la re-revisión (f1-1 tools 493, f1-2 tools 574). Cabeceras `Code constraints`, `How to review`, `Review Focus` (Spec) y `Project E2E` (Código) presentes; el cuerpo no se lee | 0 de 2 (corte) | igual o mejor |
+| verify | f1 | Xw2 Paquete | 0 de 2 | `repo/.temp/sdd/plan/review-final-<sha>.diff`, fuera de `review-0010-<sha>` | 0 de 2 | igual o mejor |
+| verify | f1 | L | 0 de 2 | sin inglés en el hilo | 0 de 2 | igual o mejor |
+| verify | f2 | Xa Arquitectura | **1 de 2** (f2-2) | f2-2 tools 115: `Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (solo src/app.js y test, sin manifiestos nuevos) → no sale`, antes del primer `Agent`; la corrige tras volver el eje Código (tools 419: «la miré sin leer el manifiesto» → `Ruling: … no → sí`). f2-1 pasa: tools 199-200 trae `… dependencia nueva zod en package.json … → sale` y el `Ruling` antes de despachar, Arquitectura sale cuando vuelve uno (tope 2) | 0 de 2 (corte) | **posible regresión**, causa leída: sujeto, anota las señales sin leer `package.json` (que estaba en el paquete); la regla ya existe |
+| verify | f2 | L | 0 de 2 | sin inglés en el hilo | 0 de 2 | igual o mejor |
+| verify | f3 | S Eje Spec | 0 de 2 | f3-1 [7] y f3-2 [12] marcan los cinco: Critical `contradicts` el correo (REMOVED), `libres` `unrequested`, Confirmación de la ADR 0003 (`contradicts`), «en las dos vías» `partial`, Review Focus sin test (`missing` / `partial`), cada uno con su origen; lo no ejecutado, en «Not verified» | 0 de 2 | igual o mejor |
+| verify | f4 | Q Eje Código | 0 de 2; **dudoso** en f4-2 | `// incrementa count` Important en los dos (f4-1 [2], f4-2 [4]); la función de 26 líneas no es hallazgo («No finding on length», «fits the 30-line limit»). Dudoso f4-2 [4]: `const now = 'hoy'` como Important, «dead or misleading code», sin «posible»; f4-1 lo pone en Minor, también como hecho. Los olores del bucle sí van como «Possible» | 0 de 2 | igual o mejor (el dudoso es un nombre engañoso, no uno de los olores de la fila) |
+| verify | c1 | C1 Cierre único | 0 de 2, con reparo | una pasada, re-revisión `effort-high`+`opus` antes de presentar, `Final: minor (deferred)` (c1-1 tools 143 y 335; c1-2 tools 193 y 406). Reparo: los `Ruling` y los Minor van al mensaje final, ningún bloque ✋ en el hilo (el ✋ lo da `sdd-archive`) | 0 de 2 con reparo | igual |
+| verify | c1 | L | 0 de 2 | | 0 de 2 | igual |
+| verify | c2 | C2 | 0 de 2 | 0 `Agent`; `sin revisar: a59b494 — …` (c2-1 [22], dentro del ✋) y `sin revisar: 25f57d8 — …` (c2-2 [24]) | 0 de 2 con reparo | igual o mejor |
+| verify | c3 | C3 | 0 de 2 | c3-1 `Agent effort-high`+`opus` «Re-revisión final 0010», paquete `482838b..HEAD`; c3-2 `Agent effort-high`+`opus` «Re-revisión del cierre 0010», paquete `eb13db2..HEAD`, los dos antes de escribir nada. c3-2 ya no se para en `merge --check` | 1 de 2 (c3-2, corte) | **mejor** |
+| verify | c4 | C4 | 0 de 2, con reparo | c4-1 re-revisión `d5fe1fc..e9c98aa` = el `sobre` de `Revisión final:`. c4-2 no la despacha: para a pedir el bloque `merge` y anuncia «una única re-revisión de `bdb40ee..HEAD`» (la fila no pide despacharla, es la conducta que C3 sí mide) | 0 de 2 | igual |
+| verify | c5 | C5 | 0 de 2; **dudoso** c5-2 | RED visto antes del fix, un solo fix, ✋ `sin revisar: 6271e8f — …` (c5-1 [27]) y `sin revisar: 15565ec — …` (c5-2 [22]), sin segunda re-revisión. Dudoso c5-2: apunta el fix con `Ruling: fix de la re-revisión 15565ec … sin revisar` en `progress.md` (sin `Final:` ni `fixed`), pero lo arregla, no lo adjudica | 0 de 2 | igual |
+| verify | c10 | C10 Minor que cambia una decisión | **3 de 3** | c10-1 [38] «**No lo aplico.** La decisión 4 aprobada y el THEN … fijan ` — `» (tools 136 `Final: Ruling: … cambiarlo sería desviación`), para por el recorte de espacios, no por la raya; c10-2 [44] «No lo he aplicado… cambiaría la spec aprobada. También queda como `Ruling`» y sigue a `sdd-archive`; c10-3 [52] «Cambiarlo a ` - ` también es una enmienda» (tools 143 `Ruling`), para por el recorte. Ningún commit de ` - ` ni de `spec.md` con la raya | corte 2 de 3; f4-ver 3 de 4 | **peor** (3 de 3 frente a 3 de 4): el arreglo de `closing-the-review.md` l. 20 no mueve nada; los tres escriben «cambiarlo sería una desviación» y aun así dejan el `Ruling` |
+| verify | c10 | C10D 🦆 | 0 de 3 | 🦆 en c10-1 [38], c10-2 [71], c10-3 [61] | 1 de 4 (c10-4) | igual o mejor |
+| verify | c10 | C10r Revisor de la enmienda | **2 de 3** (c10-2, c10-3) | c10-1 despacha `sonnet` «Revisar enmienda spec 0010» y trae sus hallazgos en [38] (revisa la enmienda del recorte). c10-2 y c10-3: el único `Agent` es la re-revisión `opus`; no hay enmienda escrita ni revisor. Por la letra de hoy («para sin haber despachado antes un revisor») fallan; la causa es la de C10: no tratan la raya como desvío, así que no hay enmienda que revisar | corte 2 de 3; f4-ver 1 de 4 | igual al corte, peor que f4-ver |
+| verify | c10 | L | **1 de 3** (c10-1) | c10-1 [6] «Now let me read the reports, the plan, tasks and ledger.» (mensaje del hilo, antes de cualquier `Agent`) | 0 de 4 | **posible regresión**, sujeto: un mensaje suelto en inglés, sin error de herramienta |
+| grilling | sk | R2 Formato | 0 de 2 | 1️⃣ 2️⃣ 3️⃣ y ➡️ en sk-1 [17] y sk-2 [18]; ningún `AskUserQuestion` en `tools.txt` | verde | igual |
+| grilling | sk | R12 Idioma | 0 de 2 | | verde | igual |
+| grilling | sk | B1 Boceto sobre la app real | **2 de 2** | sk-1 [17] «Aún no he arrancado la app, así que te enseño cada opción con los datos reales en vez de una captura» y tres bloques de texto en el chat; no arranca `src/server.mjs` ni ofrece la variante sobre la app (`tools.txt` sin `server.mjs`). sk-2 [18] «No he podido mostrarte una captura… el Edge headless se quedó colgado»; escribe `/tmp/mock/m.html` (un HTML suelto, la maqueta aparte que la fila prohíbe), lo abre con `msedge --headless` y lo para con `TaskStop`; tampoco arranca la app | f4-grl 2 de 4; corte 1 de 2 | **peor** (2 de 2): la frase nueva («instálalo fuera del proyecto, arranca la app») no se ve en la conducta; ninguno nombra Playwright ni intenta instalarlo ni arrancar `node src/server.mjs` |
+| grilling | g7 | R2 Formato | 0 de 2 | 1️⃣ 2️⃣ y ➡️ en todas las decisiones; sin `AskUserQuestion` | verde | igual |
+| grilling | g7 | R4 Recomendada con razón | 0 de 2, con **dudoso** en los dos | g7-1 [14] «porque son los valores con los que están calibradas esas dos reglas»; g7-2 [18] «porque son los valores con los que el kit se ha probado» (es «por defecto» con otras palabras; la skill dice que «they're the defaults» no es razón). El resto cita un hecho del caso (`main` y `develop`, git-flow, «el proyecto aún no tiene la clave») y el coste | 0 de 4 con reparo (f4); 1 de 2 dudoso (corte) | igual |
+| grilling | g7 | R10 Cuándo para | 0 de 2 claro: **dudoso** g7-1, **sin veredicto** g7-2 | g7-1 [29] cierra con «Escrito» y «Sin escribir»; el «decidido por mí» va en línea («`execution: auto`. Lo decidí yo…») y no hay lista de pendiente: no es la forma de tres listas. g7-2 acaba en la pregunta [32] sin cierre porque la persona agota sus 8 respuestas; [10] «¿A quién se aplica el perfil?» pregunta de nuevo por `control.profile`, ya contestada, y gasta una. No repiten las claves que la hoja contesta juntas (push y `validation.mode`) | 1 de 4 + 2 sin veredicto (f4); 1 de 2 + 1 sin veredicto (corte) | igual |
+| grilling | g7 | R12 Idioma | 0 de 2 | | verde | igual |
+| grilling | g7 | C1 Tabla de claves | **1 de 2** (g7-1) | g7-1 [8] abre con «❓ **Perfil de control**» sin tabla; g7-2 [8] enseña la tabla de 10 claves con valor y origen antes de la primera pregunta | 3 de 4 (f4); 1 de 2 (corte) | **mejor** que f4, igual que el corte |
+
+##### Resumen
+
+- **Verdes (0 fallos):** f1 (X, Xw2, L), f2 L, f3 S, f4 Q (con un dudoso en f4-2), c1 (reparo: sin bloque ✋ en el hilo), c2, c3 (mejora: c3-2 ya despacha), c4 (reparo: c4-2 no despacha, la fila no lo pide), c5 (dudoso c5-2: `Ruling` en el ledger de un Critical que sí arregla), c10 C10D, sk R2 y R12, g7 R2, R12 y R4 (con reparo) y R10 (dudoso g7-1, sin veredicto g7-2).
+- **Rojos que siguen:** C10, 3 de 3 (el arreglo de la regla no mueve la conducta; el 100% es peor que el 75% de f4-ver), C10r, 2 de 3 (igual que el corte), sk B1, 2 de 2 (peor: la frase de instalar fuera del proyecto no se refleja), g7 C1, 1 de 2 (g7-1; igual que el corte).
+- **Posibles regresiones:** f2 Xa, 1 de 2 (f2-2 anota «señales: ninguna» sin leer `package.json`; sujeto) y c10 L, 1 de 3 (c10-1 [6], inglés suelto; sujeto).
+- **Sk y package.json:** ningún sujeto de sk toca `package.json` ni el lockfile (`git status` del `state.txt` limpio en sk-1 y sk-2) ni instala nada; la causa de B1 ya no es Playwright sino que ninguno arranca la app.
+- **Mejoras:** c3 (1 de 2 → 0 de 2) y g7 C1 frente a f4 (3 de 4 → 1 de 2).
+- **Lo que no comprobé:** el cuerpo de los encargos de los `Agent` (X, Xa, C10r) y las respuestas de la persona de g7.

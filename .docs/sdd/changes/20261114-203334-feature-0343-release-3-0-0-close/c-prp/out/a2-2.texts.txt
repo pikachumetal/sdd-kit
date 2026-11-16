@@ -1,0 +1,97 @@
+--- [12]
+Ahora: clasifico el fallo y te pregunto si lo abro como patch. Queda: tu respuesta, luego el test rojo, el arreglo y el cierre, ~30 min.
+
+🦆 Al cancelar, el programa busca la reserva activa de la sala sin mirar el día. Con "Norte mar" encuentra la del lunes, la marca como cancelada y te contesta con el día que escribiste tú. El mismo fallo afecta a `anular`, porque usa la misma búsqueda.
+
+**Causa raíz** (confirmada en el código): `findBooking(room, day)` en `src/app.js:10-12` recibe `day` pero solo compara `room` y `status`. Ahora no se ve en las pruebas porque `test/cancel.test.js` solo cancela Sur el martes, y Sur no tiene ninguna reserva.
+
+El patch 0007 ("la cancelación borraba reservas de otro día con la misma hora") está en el roadmap como hecho, pero el código actual sigue con este defecto. No lo he investigado más.
+
+**Por qué es un patch.** Es un fallo determinista y el arreglo queda fijado por la causa: añadir `b.day === day` a la búsqueda. No hay que decidir ningún texto ni regla nuevos. Lo reproduce un solo test que hoy falla: `cancelar Norte mar` debe devolver `sin reserva Norte mar` y dejar activa la del lunes. Ese test pasa a verde con el arreglo.
+
+**Estimación:** 0,5 h, tomada del patch 0007, más el gate de cierre (`node --test && node scripts/lint.mjs`). El gate no está cronometrado en el proyecto; la suite tarda ~1 s según operations. Perfil: `delegate`, del proyecto.
+
+¿Cómo lo abro?
+
+1. **Patch (recomendada):** rama `patch/<id>`, test rojo, arreglo de una línea en `findBooking` y cierre. El test de regresión cubre cancelar, y el arreglo cubre también `anular`.
+2. **Feature completa:** spec, plan y walkthrough. No lo recomiendo: no hay nada que decidir.
+
+Si te vas a ausentar, di «apruebo por delegación, nos vemos en la validación» y no paro a pedirte aprobaciones.
+
+--- [19]
+Rama `patch/0012-cancelar-dia` creada desde `develop`, id 0012 reservado. Paso el patch a `sdd-implement` como fallo determinista, con estimación de 0,5 h más el gate de cierre.
+
+--- [31]
+Ahora: escribo el test rojo de regresión y luego el arreglo. Queda: pasar el test a verde, revisión y cierre, ~25 min.
+
+--- [45]
+Ahora: lanzo el revisor único del patch (sonnet) antes del commit. Queda: responder sus hallazgos, commit y cierre con `sdd-archive`, ~15 min.
+
+--- [54]
+Ahora: cierro el patch con `sdd-archive` (validación, roadmap y merge). Queda: tu validación del arreglo, ~10 min.
+
+--- [62]
+Ahora: te presento la validación del patch, que va en manual. Queda: tu «validado» o el paso que falle; luego cierre, roadmap y merge, ~10 min.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la reserva de Norte del lunes y respondía "cancelada Norte mar". Ahora responde `sin reserva Norte mar` y la del lunes sigue activa. `anular` hacía lo mismo y se arregla igual.
+
+**✋ Me salí del plan en…**
+
+- Nada. Lo único que anoto: el patch 0007 consta como hecho en el roadmap, pero `findBooking` de `develop` no filtraba por día. Está dicho en `patch.md` §2.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte mar` no cancela nada | ejecución real | `sin reserva Norte mar` |
+| `anular Norte mar` tampoco | ejecución real | `sin reserva Norte mar` |
+| la reserva del lunes sigue activa tras intentar el martes | ejecución real (un solo proceso) | `libres 10:00-12:00` → `Sur`, luego `cancelar Norte lun` → `cancelada Norte lun` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 6/6 y lint sin hallazgos sobre 907e378, ~0,1 s.
+
+**Sin probar**
+
+- Nada. La reserva vive en memoria y cada `node src/app.js …` es un proceso nuevo. Por eso "el lunes sigue activo" solo se ve en un proceso, con los tests o el script de una línea que lo hace. Los pasos de abajo, uno por uno, comprueban lo que cambia de cara a quien lo usa.
+
+Panel: plan B en http://127.0.0.1:1257/ (no veo tu app, así que cuéntame en el comentario cualquier error). Escribe en `.temp/validation/0012.json`; el repo no tiene `.gitignore`, así que `.temp/` aparecería como sin seguir. ¿Quieres que añada uno con `.temp/`?
+
+**Guion**
+
+Rama `patch/0012-cancelar-dia` · worktree `<run>\repo`
+
+Es una CLI sin entorno que arrancar. Terminal:
+
+```
+cd <run>\repo
+```
+
+1. El del reporte, Norte un día sin reserva:
+
+```
+node src/app.js cancelar Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+2. Lo mismo con `anular`:
+
+```
+node src/app.js anular Norte mar
+```
+
+→ `sin reserva Norte mar`
+
+3. El día que sí tiene reserva sigue funcionando:
+
+```
+node src/app.js cancelar Norte lun
+```
+
+→ `cancelada Norte lun`
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

@@ -10,7 +10,7 @@ Before the loop starts, two routes leave it immediately:
   (`Task <N>: minor (deferred): <one-liner>`), and point the final
   whole-branch review at that list so it can triage which must be fixed
   before merge. A roll-up nobody reads is a silent discard. Minor findings
-  never enter the loop.
+  never enter the loop: the code stays as reviewed.
 - A finding labeled plan-mandated — or any finding that conflicts with
   what the plan's text requires — is yours to rule on: weigh the finding
   against the plan text, decide with the spec as the binding authority, and

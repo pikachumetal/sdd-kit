@@ -1,0 +1,76 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd/changes 2>/dev/null; grep -n -i -A8 "terminolog" .docs/sdd/PRODUCT.md PRODUCT.md 2>/dev/null | head -40
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+PRODUCT.md:18:## Terminology
+PRODUCT.md-19-
+PRODUCT.md-20-**Reserva**:
+PRODUCT.md-21-El uso de una sala en una franja de un día, a no
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md .docs/sdd/specs/*0012*/spec.md test/export.test.js src/export/ics.js package.json; npm test 2>&1 | tail -40
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+- **Dev**: desarrolla la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+-
+
+>>> Bash: cd "<run>/repo" && node --test test/ 2>&1 | head -40
+<<< ✔ solo exporta las reservas del mes que no están canceladas (2.4622ms)
+✖ exporta en la hora del usuario (5.0188ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 176.1319
+
+✖ failing tests:
+
+test at test\export.test.js:16:1
+✖ exporta en la hora del usuario (5.0188ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /DTSTART:20260302T100000/. Input:
+  
+  'BEGIN:VCALENDAR\r\n' +
+    'VERSION:2.0\r\n' +
+    'BEGIN:VEVENT\r\n' +
+    'SUMMARY:Sala Norte\r\n' +
+    'DTSTART:20260302T080000\r\n' +
+    'DTEND:20260302T100000\r\n' 
+
+=== RESULTADO (6 turnos, 0.1055976 $)
+🦆 Hoy un socio que importa su exportación ve la reserva de la sala Norte del 2 de marzo a las 08:00, y no a las 10:00 como la reservó. El fichero guarda la hora en UTC, un reloj dos horas por detrás del coworking, y no avisa de que es UTC, así que el calendario la muestra tal cual. Por eso falla una de las dos pruebas de la feature, la que exige que la franja salga en la hora del socio. La otra prueba pasa: solo salen las reservas del mes y las canceladas se quedan fuera. Sin esa hora correcta no se cumple lo que pide la spec, así que la feature 0012 no se puede cerrar.
+
+Falta decidir cómo debe escribirse la hora en la exportación.

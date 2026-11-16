@@ -1,0 +1,103 @@
+--- [3]
+Ahora: leo la spec, el plan y la configuración de la 0022 para decidir el método. Queda: el check de Setup y la Task 1, ~5 min.
+
+--- [8]
+Ahora: la spec está aprobada y el plan dice Native, así que invoco `sdd-implement-native`. Queda: Task 1 y la revisión final, ~10 min.
+
+--- [11]
+Ahora: preparo workspace, ledger y miro `scripts/` y los tests existentes. Queda: Task 1 y revisión final.
+
+--- [20]
+Base limpia (`develop` no avanzó). Escribo el test RED.
+
+--- [23]
+RED por fallo (falta `deploy.mjs`). Ahora la implementación.
+
+--- [28]
+Ambos tests en verde y el hook sale con 0. Commit por rutas.
+
+--- [33]
+Task 1 completa. Ahora: invoco `sdd-verify` para la revisión final de la rama. Queda: revisión, cierre y `sdd-archive`.
+
+--- [36]
+No tengo herramienta de subagentes, así que la revisión final la hago yo en pasadas separadas, como manda la skill. Leo el cierre y los briefs.
+
+--- [39]
+Ahora: pasadas de autorrevisión (Spec, Código, Arquitectura) sobre el diff y la suite entera.
+
+--- [45]
+Ahora: invoco `sdd-archive`, cuyo primer paso es la validación.
+
+--- [48]
+Ahora: pre-checks del cierre (merge --check, referencias de validación). Queda: presentar la validación, porque el modo es `manual`.
+
+--- [53]
+Preparo el panel (plan B) con los pasos del guion.
+
+--- [55]
+🦆 Los scripts de `scripts/` ya no necesitan bash. `deploy.sh` es ahora `deploy.mjs` y sigue imprimiendo `desplegado`. El hook `pre-push` también corre con `node` y sigue lanzando `node --test`. Un test nuevo recorre `scripts/` y falla si queda algún script que corra con bash.
+
+**✋ Me salí del plan en…**
+
+- Convertí también `scripts/hooks/pre-push`, que el plan no nombraba. El Scope de la spec dice «todo script de `scripts/`», así que no cambié la spec. Si me equivoco, queda un script de más en Node, sin cambio de comportamiento.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| No queda ningún script con bash en `scripts/` | `suite` + `ejecución real` | `test/no-bash.test.js` 2/2; `git grep -nIl "^#!.*sh" -- scripts` no devuelve nada (sale con 1) |
+| `node scripts/deploy.mjs` imprime `desplegado` | `ejecución real` | `desplegado` |
+| `pre-push` conserva su comportamiento | `ejecución real` | `node scripts/hooks/pre-push` sale con 0 |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `172767e`. Esta pasada la hice al revisar, antes de este mensaje.
+
+**Sin probar**
+
+- El hook disparado por un `git push` real. Nada en el repo lo instala (`core.hooksPath` está vacío), así que solo lo ejecuté directamente.
+- La revisión final no la hicieron revisores frescos. Esta sesión no tiene herramienta de subagentes, así que la hice yo en pasadas de Spec, Código y Arquitectura. Es más débil que la revisión independiente: decide tú si basta antes de fusionar.
+- Deferred minor: `test/no-bash.test.js` convierte rutas con `pathname.replace` en vez de `fileURLToPath`. Funciona, pero es poco robusto.
+
+**Antes de fusionar:** `sdd merge --check` dice que a `.docs/sdd/sdd-kit.json` le faltan `merge.into` y `merge.noFf`. Sin ese bloque no fusiono: dime a qué rama integro (¿`develop`?) y si va con `--no-ff`.
+
+Panel: plan B en http://127.0.0.1:6704/
+
+**Guion**
+
+Rama `feature/0022-scripts-to-node` · worktree `<run>/repo`
+
+Es una CLI y no declara entorno: no hay nada que arrancar. Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Despliegue → imprime `desplegado`
+
+```
+node scripts/deploy.mjs
+```
+
+2. Ningún script con bash → no imprime nada (sale con 1)
+
+```
+git grep -nIl "^#!.*sh" -- scripts
+```
+
+3. Hook pre-push → corre `node --test`, termina con `pass 6` y `fail 0`, y sale con 0
+
+```
+node scripts/hooks/pre-push
+```
+
+Para parar el panel (PID 1056, lo lancé yo):
+
+```
+taskkill /PID 1056
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

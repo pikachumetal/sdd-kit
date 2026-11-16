@@ -1,0 +1,97 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; find . -name gate.json -not -path "./node_modules/*"; ls node_modules 2>/dev/null | head -3
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+gate.json
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+./gate.json
+
+>>> Bash: cat gate.json; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md; cat package.json; ls scripts src
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+<<< {"tasks": {
+  "bookings:test": {"command": "node --test test/app.test.js test/cancel.test.js", "inputs": ["src/app.js", "test/app.test.js", "test/cancel.test.js"]},
+  "rooms:test": {"command": "node --test test/rooms.test.js", "inputs": ["src/rooms.js", "test/rooms.test.js"]}
+}}
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs determini
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: grep -n -i "glob\|\*\*\|inputs" scripts/gate.mjs | head -30; ls src/shared 2>&1 | head
+<<< 18:function globToRegExp(glob) {
+19:  const escaped = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+24:  const patterns = tasks[name].inputs.map(globToRegExp);
+65:  console.log(['Task: ' + name, 'Inputs:', ...tasks[name].inputs.map((input) => `  - ${input}`)].join('\n'));
+ls: cannot access 'src/shared': No such file or directory
+
+=== RESULTADO (9 turnos, 0.1368494 $)
+🦆 Esto no cambia nada de lo que ve quien usa salas. Solo cambia cuándo el gate de cierre decide que hay que pasar los tests de salas. Hoy los pasa solo si cambian `src/rooms.js` o su test. Con el cambio, también los pasará si cambia cualquier fichero de `src/shared/`. El gate ya admite patrones con `**`, así que basta con añadir una línea a la lista. Ojo: `src/shared/` no existe todavía, y el patrón no hará nada hasta que haya ficheros ahí.
+
+Es un cambio de configuración, sin spec ni plan. Editaría `gate.json`, correría el gate de cierre (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`) y haría un commit en `develop`, con la línea `Gate:` en el cuerpo.
+
+¿Lo hago así?
+
+1. **Sí, como carril config (Recomendada):** edito `gate.json`, corro el gate y hago un commit si sale en verde.
+2. **Sí, pero como feature con spec y plan:** solo tiene sentido si `src/shared/` es parte de un cambio mayor que quieras documentar.
+3. **No lo toques:** lo dejo como está.
+
+>>> Edit: <run>\repo\gate.json
+<<< The file <run>\repo\gate.json has been updated successfully.
+
+>>> Bash: node scripts/gate.mjs run rooms:test bookings:test 2>&1 | tail -20; echo ---; node scripts/gate.mjs run bookings:test rooms:test --affected --base develop 2>&1 | tail -20
+<<< ▪ rooms:test (1 passed, 0 failed)
+▪ bookings:test (4 passed, 0 failed)
+Tasks: 2 completed, 0 skipped
+---
+No tasks affected by changed files. Unable to execute action pipeline.
+
+>>> Bash: git add gate.json && git commit -q -F - <<'EOF'
+chore(gate): añade src/shared/** a los inputs de rooms:test
+
+Gate: `node scripts/gate.mjs run rooms:test bookings:test` → rooms:test: corrió 1/1 · bookings:test: corrió 4/4
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< 5c492ec chore(gate): añade src/shared/** a los inputs de rooms:test
+8a0bb40 feat: base del molde
+
+=== RESULTADO (4 turnos, 0.16464240000000002 $)
+He añadido `src/shared/**` a los inputs de `rooms:test` en `gate.json` y lo he commiteado en `develop` (`5c492ec`).
+
+Como edité la definición de `rooms:test`, corrí el gate sin filtro `--affected`. `rooms:test` pasó 1 de 1 y `bookings:test` pasó 4 de 4. Con `--affected --base develop` no se ejecutó ninguna tarea, porque no había ficheros cambiados que cuadraran con los inputs. El cuerpo del commit lleva la línea `Gate:` con las dos tareas.
+
+`src/shared/` no existe todavía, así que el patrón no hará nada hasta que haya ficheros ahí. No hice merge, porque `develop` no es una rama `feature/*`.

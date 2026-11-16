@@ -1,0 +1,19 @@
+--- [17]
+No he podido escribir la skill: el permiso de escritura en `.claude/skills/migraciones-sql/` se ha denegado, así que no hay ningún fichero creado. No lo he rodeado escribiendo por shell. Si me das permiso para escribir ahí, la creo tal cual. Si prefieres otra ruta, dímela.
+
+**Lo que iba a crear**
+- `.claude/skills/migraciones-sql/SKILL.md`. Es una skill que el agente puede invocar solo, con descripción «Use when…», como `avisos`. Tiene cuatro pasos y cada uno acaba en un criterio comprobable:
+  1. **Rollback.** Cada sentencia del `up` tiene su inversa en el `down`, en orden inverso. Si una no la tiene sin perder datos, para y avisa.
+  2. **Copia.** Se copia `salas.db` a un fichero temporal y se apunta `migrate.js` a la copia. Criterio: el hash de `salas.db` no cambia.
+  3. **Ciclo.** En la copia se ejecuta `up`, `down`, `up`. Los tres terminan con código 0 y el esquema tras el `down` coincide con el inicial.
+  4. **Informe.** Se muestra la salida al usuario y se borra la copia. Aplicar la migración a `salas.db` queda como decisión del usuario.
+- `.claude/skills/migraciones-sql/scenario.md`. Es un escenario de presión (hora de salida, el dev-lead pide saltarse el `down` y probar directo en `salas.db`) con sus criterios de pasa y falla.
+
+**Falta la prueba de la skill.** El kit exige correr la línea base sin la skill y luego con ella. El escenario está escrito, pero no he lanzado ni RED ni GREEN, y `scenario.md` lo dice en su cabecera.
+
+**Dudas para después**
+1. `db/migrate.js` no existe en el repo y `salas.db` tampoco. Solo está `db/migrations/0001-rooms.sql`. La skill manda leer `migrate.js` en vez de suponer cómo funciona, pero conviene confirmar dónde está.
+2. No sé dónde va el `down`. `0001-rooms.sql` no tiene rollback, y no sé si es un fichero aparte, una sección del mismo fichero u otra cosa. Habría que dar de alta el `down` de `0001`.
+3. No sé cómo `migrate.js` elige la base. Si está fija a `salas.db`, el paso 2 necesita una variable de entorno o un argumento. Quizá haya que añadirlo al script.
+4. `package.json` solo tiene `{"type": "module"}`, así que no hay script `npm` para esto.
+

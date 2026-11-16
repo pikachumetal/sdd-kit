@@ -1,0 +1,90 @@
+--- [29]
+Ahora: repaso de coherencia hecho (corrijo números de línea) y lanzo el revisor de la spec. Queda: integrar hallazgos, plan y commit de la Task 1, ~12 min.
+
+--- [40]
+El revisor de la spec sigue trabajando. Espero su resultado antes de integrar hallazgos y escribir el plan; todavía no hay commit de la Task 1.
+
+--- [41]
+1. Crítico · Delta «Cancelar exige un motivo de la lista» · el THEN «`Norte lun` deja de estar activa (`libres` ya no la cuenta como ocupada)» es contradictorio y no comprueba nada: si deja de estar activa, `libres` la contaría como libre, no como ocupada. Además `libres` no está definido en la spec y no hay capacidad que lo cubra · Reescribir el THEN con un efecto observable y concreto (p. ej. `libres` lista `Norte lun` tras cancelar y `cancelar Norte lun --motivo "otro"` responde `sin reserva Norte lun`), o dejar de citar `libres`.
+
+2. Crítico · Delta «Cancelar sin motivo válido no cancela» · el THEN «la reserva sigue activa» no dice cómo se comprueba. Es justo el caso que la propia sección de review señala (la respuesta sale bien sin que la reserva se compruebe) · Añadir un paso verificable tras el aviso: `libres` sigue sin listar la sala, o un segundo `cancelar` con motivo válido responde `cancelada …`. Hacerlo para los dos casos (sin motivo y motivo inválido).
+
+3. Crítico · Delta «Listado de canceladas» / Decisión 9 · el listado de anuladas no se prueba de verdad: el GIVEN no tiene ninguna reserva anulada, así que «no aparece» pasa también si `canceladas` está vacío. Tampoco hay ningún escenario con varias canceladas que demuestre «en el orden en que están las reservas» (decisión 8) · Poner en el GIVEN `Norte lun` cancelada y `Sur mar` anulada, y esperar que `canceladas` responda solo `Norte lun · sala ocupada`. Añadir un escenario con dos canceladas y un orden fijo.
+
+4. Importante · Delta (todo) · faltan los escenarios del borde de la regla de conflicto (decisión 6): `cancelar Sur mar` sin `--motivo` debería dar `falta el motivo…` y no `sin reserva…`. La regla está declarada en «Reglas de la capacidad», pero ningún THEN la prueba. Tampoco hay escenarios para: `--motivo` sin valor al final de la línea, motivo con distinta mayúscula o espacios (`"Otro"`), ni el caso de cancelar una reserva ya cancelada · Añadir un escenario «motivo antes que reserva» con sala inexistente y sin motivo. Decidir y escribir qué pasa con `--motivo` sin valor, con mayúsculas y con doble cancelación.
+
+5. Importante · «✋ Decisiones que he tomado yo» y Approach · decisiones tomadas en el cuerpo que no aparecen en la lista: (a) `--motivo` puede ir en cualquier posición, pero la sala y el día son «los dos primeros» (Approach); (b) la clave interna `reason` y el nombre `listCancelled`; (c) el motivo se compara literal (sensible a mayúsculas) · Añadir estas decisiones a la lista numerada, o quitarlas del cuerpo.
+
+6. Importante · «✋ Decisiones» punto 12 · dice «los cinco valores de abajo son los de lo ya existente (memoria, castellano)», pero «Reglas de la capacidad» ya los fija; no hay capacidad previa que lo respalde. Falta además un valor numérico en «Límites»: el motivo no tiene longitud máxima, y el listado no tiene tope ni paginación. «Avisos» repite el literal del texto inválido sin decir qué pasa con una comilla dentro de `<texto>` · Declarar en «Límites» «no aplica» para longitud y volumen (memoria, sin tope), o fijar un tope. Aclarar el escape en el aviso.
+
+7. Importante · Intent / Scope · la Intent dice «cada cancelación nueva queda con uno de los tres motivos», pero ningún escenario comprueba que el motivo se guarda por separado de la respuesta (sin `canceladas` no se verifica la persistencia en la reserva). Y «quien gestiona las salas» (Intent) choca con PRODUCT.md, donde el actor que cancela es el cliente y «quien gestiona» es el responsable de sala, que hace anulaciones · Alinear la Intent con los términos de PRODUCT.md (Cancelación = cliente). Añadir un THEN que enlace el motivo guardado con `canceladas` en el mismo escenario del cancelar.
+
+8. Importante · Scope / «Lo que se retira o cambia de forma» · la spec cambia un comportamiento existente (cancelar sin motivo ya no cancela). El Scope «No entra» menciona la regla de 24 h pero PRODUCT.md define Cancelación como «antes de 24 h», así que `cancelar` hoy admite cancelar tarde y esto no se declara como riesgo del término. Además, los números de línea (`src/app.js:22`, `:36`) son referencias a código que esta revisión no puede verificar y caducan · Citar los ficheros sin número de línea, o con el símbolo. Añadir a «Términos» una nota sobre la divergencia con PRODUCT.md (24 h).
+
+9. Menor · cabecera / Aprobaciones · `status: approved` y `approved_at` figuran con la review aún «Pendiente de la review.»; la aprobación por delegación se da antes de que pase el revisor. Además, «Validación: dev-lead» y el aprobador es «Fixture» · Poner `status: draft` hasta que la review termine, y registrar los hallazgos antes de aprobar.
+
+10. Menor · «✋ Decisiones» punto 13 y política de modelos · el punto 13 dice «la spec no estima porque el modo es full», sin plan enlazado. La línea de modelos se mezcla con la lista numerada como si fuera la decisión 14 (no lleva número) · Numerar la política de modelos o moverla fuera de la lista. Enlazar el plan o quitar la decisión 13.
+
+--- [43]
+El revisor ha terminado. Integro sus hallazgos en la spec (acepto los diez) y después lanzo la segunda ronda, porque acepté Críticos.
+
+--- [49]
+El segundo revisor está leyendo la spec. Espero su resultado antes de tocarla (la capacidad también avisa de que un requisito pasa de 500 caracteres y lo parto después).
+
+--- [55]
+1. Importante · Decisión 8 vs. escenario «Listado de canceladas» · La decisión dice que el listado va «en el orden en que están las reservas». El THEN dice «en el orden en que se cancelaron». Con el GIVEN actual (Norte lun cancelada antes que Sur mar, y reservadas en ese mismo orden) ambos órdenes dan el mismo resultado, así que el escenario no distingue el orden. · Elegir un único orden en la decisión 8 y en el THEN. Hacer que el GIVEN cancele en orden inverso al de creación de las reservas, para que el test lo detecte.
+
+2. Importante · «Cancelar exige un motivo de la lista», AND de `cambio de planes` y `otro` · Solo comprueba la respuesta con paréntesis. Una implementación que no guarde `reason`, o que lo guarde fijo, también lo cumpliría, porque `canceladas` solo se verifica con `sala ocupada`. · Añadir que `canceladas` muestre `Norte lun · cambio de planes` y `Norte lun · otro` (una cancelación por motivo, con reservas distintas).
+
+3. Importante · Decisión 13 y Approach (parseo de `--motivo`) · Hay casos de parseo sin cubrir: `--motivo ""` (¿falta o no válido?), `--motivo` seguido de otro `--flag`, parámetros sobrantes (`--motivo sala ocupada` sin comillas pasa `sala` como valor y deja `ocupada` suelto), `cancelar Norte --motivo otro` (sin día) y `--motivo` antes de sala y día. El orden «motivo antes que reserva» decide cuál de estos casos responde qué, y el texto no lo fija. · Añadir a la decisión 13 y a los escenarios al menos el valor vacío, el valor que empieza por `--` y los parámetros sobrantes. Fijar qué responde cada uno.
+
+4. Importante · Decisiones 8 y 13, escenario «Listado» · Si una reserva cancelada se vuelve a reservar (`libres` la devuelve como libre) y se cancela otra vez, no se dice si el listado repite la línea o sobrescribe `reason`. Tampoco se dice qué pasa si hay dos reservas de la misma sala y día cancelada y activa. · Declarar la decisión (una línea por cancelación o por reserva) y cubrirla con un escenario, o dejarla fuera de Scope.
+
+5. Importante · Frontmatter y «Aprobaciones» vs. Hallazgo 9 · El hallazgo 9 dice que `status` sigue `in-review` y que la aprobación se registra tras cerrar la review. Aun así el frontmatter (`approvers`/`approved_at`) y la tabla «Aprobaciones» ya la muestran como aprobada. Además, el autor y el aprobador son el mismo (Fixture). · Quitar `approved_at` y la fila de aprobación hasta que cierre la review. Registrar la delegación solo después.
+
+6. Menor · Decisión 5 · El literal está mal cerrado: `motivo no válido: "<texto>"; elige…` aparece con el `;` y el resto fuera del código y con un backtick suelto. Un implementador puede copiar un literal distinto del de «Avisos». · Reescribir el literal completo dentro de un solo bloque de código, idéntico al de «Reglas de la capacidad».
+
+7. Menor · Escenario «Cancelar sin motivo válido no cancela» · El GIVEN no dice que `Sur` esté libre en `10:00-12:00`, pero el THEN afirma que `libres` «sigue siendo `Sur`». · Copiar al GIVEN «con `libres 10:00-12:00` = `Sur`», igual que en el primer escenario.
+
+8. Menor · Intent y cabecera vs. PRODUCT.md · PRODUCT.md dice que la usa un único usuario, que además es el desarrollador. Intent habla de «quien cancela, y quien revisa después» como actores distintos, y la validación es por «dev-lead». PRODUCT.md define Cancelación como «antes de 24 h» y la spec lista como «cancelaciones» cualquier cancelación. La divergencia está anotada, pero queda sin decidir si el motivo y el listado valen para cancelaciones posteriores a 24 h. · Añadir en Términos o Scope que el listado incluye toda cancelación sin importar el plazo. Alinear el actor con PRODUCT.md.
+
+9. Menor · Ausencia en «✋ Decisiones» · Hay decisiones del cuerpo que no están numeradas: validación por dev-lead (solo en 🦆); que el contrato de `cancelBooking(room, day, reason)` cambie de firma y rompa a cualquier otro llamador; y que `canceladas` ignore argumentos extra. El contenido de la Task 1 no está definido, pero «parar en el commit de la Task 1» depende de él. · Numerar el cambio de firma y el tratamiento de argumentos extra. Definir qué incluye la Task 1.
+
+10. Menor · Capacidad `booking-cancellation` / `cancelBooking` / `reason` vs. PRODUCT.md · PRODUCT.md marca `booking` y `room` como términos a evitar. El slug y los símbolos de código los usan sin que se diga que la regla «Evitar» solo aplica a la interfaz. La decisión 10 solo justifica el slug en inglés. · Añadir en la decisión 10 o 13 que los términos «Evitar» valen para texto de usuario y que los identificadores internos quedan exentos.
+
+--- [63]
+Los avisos de longitud (514, 579 y 528 caracteres frente a 500) son orientativos y la capacidad valida. Los dejo así. Ahora escribo el plan.
+
+--- [69]
+Ahora: arranco la implementación en Native con la Task 1 (cancelar con motivo). Queda: tests RED, código y commit de la Task 1, donde paro, ~10 min.
+
+--- [80]
+RED confirmado: falla porque `resetBookings` no existe. Implemento.
+
+--- [90]
+Escribir en el directorio temporal del sistema no está permitido. Pongo el script en `.temp/` del repo, que ya queda excluido de git.
+
+--- [96]
+Paro aquí, como pediste: el commit de la Task 1 está hecho (`dd5a197`, `feat(0010): cancelar exige un motivo de la lista`) y no he empezado la Task 2.
+
+Los 8 tests de `test/cancel.test.js` pasan y el lint da `lint: sin hallazgos`. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` imprime `cancelada Norte lun (sala ocupada)`. Sin `--motivo` imprime `falta el motivo: elige cambio de planes, sala ocupada u otro`. No he corrido todavía el gate de cierre completo (`node --test && node scripts/lint.mjs`), solo la verificación de la task.
+
+La spec está en `.docs/sdd/changes/20261116-135858-feature-0010-motivo-cancelar/spec.md`, con la rama `feature/0010-motivo-cancelar`. La aprobé por delegación con tu frase y quedó registrada en «Aprobaciones».
+
+**Decisiones mías que conviene revisar** (están en «✋ Decisiones» de la spec):
+- El motivo es obligatorio: `cancelar` sin `--motivo` ya no cancela, a diferencia de hoy.
+- La forma es `--motivo "<texto>"`, con el texto literal de la lista, en minúsculas y comparado tal cual.
+- El listado nuevo se llama `canceladas` y muestra `<sala> <día> · <motivo>`. Excluye las reservas anuladas.
+- La capacidad nueva se llama `booking-cancellation`.
+- He exportado `resetBookings(list)` para poder probar sin que los tests compartan reservas.
+
+**Revisión de la spec:** dos rondas con un revisor Sonnet. La primera dio 3 Críticos y la segunda ninguno. Acepté todos los hallazgos y los dejé registrados en la spec. Quedan avisos de longitud (514, 579 y 528 caracteres, frente a un máximo aconsejado de 500) en tres requisitos que dejé sin partir.
+
+**Sobre las 24 h:** PRODUCT.md define Cancelación como «antes de 24 h», y la app hoy no lo comprueba. Lo dejé fuera de esta feature y anotado.
+
+**Pendiente:**
+- Para seguir con la Task 2 (el comando `canceladas`), dime «sigue».
+- En el commit de la Task 1 `tasks.md` pone «(en el commit de la task)» en vez del hash; el hash real lo apunta el commit siguiente.
+- `ROADMAP.md` sigue con la 0010 en ⏳.
+- `sdd task done` registró en el ledger `→ ℹ duration_ms…` como resultado, que no dice si pasó. La salida completa de `node --test test/cancel.test.js` sí es `pass 8 / fail 0`; el ledger usa la última línea de salida.
+

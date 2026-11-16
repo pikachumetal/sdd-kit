@@ -1,0 +1,75 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [19]
+Cierre parado en el paso 1: falta tu validación. La 0010 está en `manual`, y «ciérrala» es la orden de cerrar, no una prueba. Todavía no he escrito ningún registro ni he mergeado nada, y el árbol sigue limpio.
+
+**Pre-checks**
+- `merge --check` da `destino: listo`, con `develop` en un worktree temporal. `develop` no se ha movido desde `666ad8e`, así que el worktree ya tiene la base al día para el primer THEN.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved`, firmada por Laura.
+- La revisión final fue limpia sobre `d55c5f0`. Desde entonces `HEAD` solo avanzó con dos commits de documentación (`tasks.md` y una línea de `spec.md`), así que no hace falta otra re-revisión.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». `canceladas` enseña luego «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla si corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar … --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real, en el worktree con la base al día | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` responde «Norte lun — sala ocupada» | ejecución real, cancelar y listar en un mismo proceso | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test`: 5/5 sobre `e2b3a05`, 123 ms. Se vuelve a correr sobre el árbol que se fusione.
+
+**Sin probar**
+
+- `canceladas` lanzado como comando suelto, después de un `cancelar` en otro proceso: sale vacío. Las reservas viven en memoria hasta la 0014, como dice el Approach de la spec, y por eso el paso 4 usa un solo proceso.
+
+Panel: plan B en http://127.0.0.1:14188/ (no tengo las herramientas de Chrome. Esta página no ve la app: si un paso falla, cuéntame el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Es una CLI y el proyecto no declara entorno, así que no hay nada que arrancar ni parar. Terminal:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo vacaciones
+```
+
+3. Sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → `cancelada Norte lun (sala ocupada)` y, debajo, `Norte lun — sala ocupada`
+
+```
+node -e "import('./src/app.js').then(m=>{console.log(m.run('cancelar',['Norte','lun','--motivo','sala ocupada']));console.log(m.run('canceladas',[]))})"
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

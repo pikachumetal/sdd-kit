@@ -1,0 +1,89 @@
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261013-110000-feature-0023-cancelled-list\spec.md
+<<< 1	---
+2	id: 20261013-110000-feature-0023-cancelled-list
+3	feature: 0023
+4	title: Listado de canceladas
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-13
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Listado de canceladas
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `reports` — `canceladas` sustituye a `informe`.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. Cada línea del listado es «<sala> <día> — <motivo>».
+25	2. `informe` responde «usa canceladas».
+26	
+27	### Deci
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\reports.md
+<<< 1	# Capacidad — reports
+2	
+3	## Propósito
+4	
+5	los informes de la app de salas
+6	
+7	## Requisitos
+8	
+9	### El informe de canceladas agrupa por sala y da el total
+10	
+11	- GIVEN Norte lun cancelada con «sala ocupada» y Sur mar con «otro»
+12	- WHEN `informe`
+13	- THEN responde «Norte: lun (sala ocupada)», «Sur: mar (otro)» y «total: 2», en ese orden
+
+=== RESULTADO (5 turnos, 0.09793560000000001 $)
+1. Crítico · Delta de comportamiento, MODIFIED «El informe de canceladas agrupa por sala y da el total» · El requisito vivo se vacía por completo: pasa a responder «usa canceladas». Se pierde el agrupado por sala y el total, y el spec lo presenta como un MODIFIED con el mismo título. Eso es una retirada (REMOVED) disfrazada de modificación, y el título deja de describir el comportamiento. · Declarar `REMOVED — El informe de canceladas agrupa por sala y da el total` con su razón. Añadir un `ADDED — informe redirige a canceladas` para el mensaje, o dejar claro que `informe` queda como alias.
+
+2. Crítico · Delta ADDED «Canceladas lista sala, día y motivo» frente a la capacidad `reports` · `canceladas` es un segundo comando con la misma fixture y otro formato («Norte lun — sala ocupada» frente a «Norte: lun (sala ocupada)»). Al retirar `informe`, el agrupado por sala y el «total: 2» desaparecen sin decisión explícita. «Sustituye entero» (dev-lead) no autoriza perder el total. · Preguntar al dev-lead si el total y el agrupado se pierden. Si es así, declararlo como REMOVED en «Decisiones con el dev-lead». Si no, añadirlos al escenario de `canceladas`.
+
+3. Importante · Delta ADDED, escenario · El THEN solo comprueba dos líneas, sin orden ni total ni caso vacío. Con una implementación que devuelva las líneas en otro orden, el escenario se cumple igual, aunque el requisito vivo fijaba «en ese orden». Tampoco hay escenario de «sin canceladas». · Fijar el orden en el THEN («en ese orden»). Añadir un escenario sin canceladas (qué responde) o declararlo fuera de alcance.
+
+4. Importante · Terminología (PRODUCT.md) frente al spec · PRODUCT distingue **Cancelación** (la anula el cliente, antes de 24 h) de **Anulación** (la anula el responsable). El spec usa «canceladas» y «motivo» sin decir si el listado incluye anulaciones. El motivo «sala ocupada» suena a anulación del responsable, y «otro» a cualquiera de las dos. · Decir en Scope y en el escenario qué incluye `canceladas`: solo cancelaciones, o también anulaciones. Usar la terminología del producto. Si hay un término nuevo, añadirlo a PRODUCT.
+
+5. Importante · «✋ Decisiones» y Approach · La decisión 2 (`informe` responde «usa canceladas») aparece como del agente, pero el Approach dice «`informe` deja de listar» sin mencionar el mensaje. Además, «sustituye entero» del dev-lead choca con que `informe` siga existiendo como comando con mensaje. Sustituir entero sugiere borrarlo. · Aclarar si `informe` se elimina o queda como redirección. Alinear la decisión 2, el Approach y el Scope («la retirada de `informe`»).
+
+6. Importante · Delta, reglas de la capacidad (5 bis) · El delta trae un formato nuevo de línea, un texto de aviso («usa canceladas») y un orden, pero no hay sección «Reglas de la capacidad» ni «no aplica» para las cinco reglas (dónde vive el dato, idioma de los nombres, límites, avisos, conflicto). El mensaje «usa canceladas» es un aviso nuevo sin declarar. · Añadir «Reglas de la capacidad» con cada regla declarada o «no aplica». La constitución solo fija castellano (punto 4): citarlo para el idioma de los mensajes y el nombre `canceladas`.
+
+7. Menor · Scope · Entra «el comando canceladas y la retirada de informe», pero no lista los tests existentes de `informe` que habrá que borrar o cambiar, ni la ayuda o el README si mencionan `informe`. El gate es `node --test` entero en verde. Es un alcance oculto. · Listar en Scope la actualización o retirada de los tests de `informe` y de cualquier documentación del comando.
+
+8. Menor · «Dónde se prueba» · Dice «como `test/cancel.test.js`», sin precisar si es un archivo existente o nuevo, y no cubre el escenario MODIFIED de `informe`. Cada requisito del delta necesita su fila de batería. · Nombrar el archivo de test para cada escenario (`canceladas` e `informe`) y decir si se crea o se amplía.
+
+9. Menor · Frontmatter y Aprobaciones · `profile: delegate` y `author: agente con el dev-lead` con un único aprobador, Laura (dev-lead). PRODUCT.md dice que solo hay una persona que desarrolla y usa la herramienta, sin más desarrolladores. El rol y el nombre del aprobador no cuadran con el producto. · Confirmar que Laura existe como dev-lead. Si no, corregir el aprobador a la persona real.
+
+10. Menor · Ejemplos (regla 7) · Las fixtures «Norte lun / Sur mar», «sala ocupada» y «otro» usan las salas del producto (Norte, Sur) y no nombran clientes ni personas reales. Esto es aceptable. En cambio, «Laura» en approvers es un nombre de persona real en un artefacto que se publica. · Mantener las fixtures. Sustituir «Laura» por el rol o un nombre inventado si no es una persona del equipo.

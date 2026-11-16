@@ -1,0 +1,509 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md 2>/dev/null; cat .docs/sdd/steering/*.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+decisions/
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/decisions:
+0003-bookings-in-memory.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls src test; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat package.json; git branch -a
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\spec-writing.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references" && cat modo-lite.md patch-lane.md nombrado.md control-profiles.md | head -300
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< <persisted-output>
+Output too large (34.6KB). Full output saved to: <home>\.claude-gco\projects\C--code--workspaces-sdd-kit-feature-0342-interviewer-rewrite--temp-r43-c-prp-adr-c-1-repo\f154c67c-d5be-40dc-bebd-a530d380f7b5\tool-results\b2ku9a5um.txt
+
+Preview (first 2KB):
+## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references" && cat nombrado.md; echo ======; cat coherence-pass.md; echo ======; cat review-spec.md
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; git status --short; ls "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates"
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+# Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+SKILL.md
+templates/
+
+>>> Bash: cd "<run>/repo" && SDD="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; node "$SDD" id next --project-root "$PWD" --reserve
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/templates" && ls && cat spec-template.md
+<<< 0012
+<<< adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+patch-template.md
+plan-template.md
+PRODUCT-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+retro-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+validation-template.md
+walkthrough-template.md
+---
+id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+feature: <id>         # id del ges
+
+>>> Bash: cd "<run>/repo" && SDD="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; git checkout -b feature/0012-libres-planta && node "$SDD" id claim --project-root "$PWD"; git branch --show-current; date -u +%Y%m%d-%H%M%S; git config user.name
+<<< Switched to a new branch 'feature/0012-libres-planta'
+sin remoto: la 0012 vale (contador local)
+feature/0012-libres-planta
+20261115-194008
+Fixture
+
+>>> Bash: cd "<run>/repo" && git grep -niE "libres|planta|rooms|salas" -- . ':!.docs/sdd/specs' ; cat .docs/sdd/decisions/0003-bookings-in-memory.md; cat README.md | head -30; ls scripts
+<<< .docs/sdd/decisions/0003-bookings-in-memory.md:12:`salas` es una herramienta de terminal para una sola persona, que la arranca, reserva y la cierra. Hubo que decidir si las reservas se guardaban en algún sitio.
+.docs/sdd/steering/architecture.md:1:# Architecture — salas
+.docs/sdd/steering/constitution.md:1:# Constitution — salas
+.docs/sdd/steering/debt.md:1:# Deuda técnica — salas
+.docs/sdd/steering/estimation.md:1:# Método de estimación — salas
+.docs/sdd/steering/operations.md:1:# Operations — salas
+CHANGELOG.md:9:- Reserva recurrente semanal (`salas reservar --cada-semana`). [task 0005]
+
+>>> Write: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< File created successfully at: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && SDD="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "$SDD" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261115-194008-feature-0012-libres-planta/spec.md"; echo "exit=$?"; ls "$T/sdd/capabilities" 2>/dev/null; git status --short
+<<< room-availability.md: añadido «Libres por franja»
+room-availability.md: añadido «Libres filtra por planta»
+room-availability.md: añadido «Libres sin planta lista todas»
+room-availability.md: añadido «Planta desconocida»
+room-availability.md: añadido «Planta sin número»
+room-availability.md: regla «Dónde viven los datos» añadida
+room-availability.md: regla «Idioma de los nombres» añadida
+room-availability.md: regla «Límites» añadida
+room-availability.md: regla «Avisos» añadida
+room-availability.md: regla «Regla ante conflicto» añadida
+exit=0
+room-availability.md
+?? .docs/sdd/changes/
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión adversarial de la spec
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: ac1cd5cc52dc43da9 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< 1	---
+2	id: 20261115-194008-feature-0012-libres-planta
+3	feature: 0012
+4	title: Filtrar las salas libres por planta
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-15
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Filtrar las salas libres por planta
+16	
+17	🦆 Hoy `salas libres 10:00-12:00` enseña todas las salas libres en esa franja, estén en la planta que estén. Con esta feature, `salas libres 10:00-12:00 --planta 2` enseña solo las libres de la planta 2 (`Sur`), y sin `--planta` sigue enseñando todas, como hasta ahora. Par
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\steering\architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+
+>>> Bash: cd "<run>/repo/.docs/sdd/changes/20261115-194008-feature-0012-libres-planta" && python - <<'EOF'
+import re,io
+p='spec.md'
+s=open(p,encoding='utf-8').read()
+
+# decisions 5-7 and new ones
+s=s.replace("""5. **Planta que no existe o no es un número** (`--planta 3`, `--planta abc`): sale `planta desconocida: 3` / `planta desconocida: abc`. «Existe» = alguna sala tiene esa planta.
+6. **`--planta` sin número** (`libres 10:00-12:00 --planta`): sale `falta el número de planta`.
+7. **Sin ninguna sala libre en la planta**: la salida queda vacía, igual que hoy cuando no hay ninguna libre; no añado un mensaje nuevo (queda fuera, ver «No entra»).""",
+"""5. **Planta que no existe o no es un número** (`--planta 3`, `--planta abc`, `--planta 02`): sale `planta desconocida: 3` / `…: abc` / `…: 02`. «Existe» = el texto del valor es exactamente la planta de alguna sala (`1` o `2`); `02` o `2.0` no coinciden.
+6. **`--planta` sin número** (`libres 10:00-12:00 --planta`): sale `falta el número de planta`. El argumento que sigue a `--planta` es siempre su valor: `libres --planta 10:00-12:00` da `planta desconocida: 10:00-12:00`.
+7. **Sin ninguna sala libre en la planta**: la salida queda vacía, igual que hoy cuando no hay ninguna libre; no añado un mensaje nuevo (queda fuera, ver «No entra»).
+8. **Casos de borde que no valido**: sin franja (`libres --planta 2`) se comporta como hoy sin franja (ninguna reserva coincide, salen las de la planta); `--planta` repetido vale el último. Si hay un error de planta, sale el aviso y no se mira nada más. La franja sigue sin validarse (deuda ya anotada en `debt.md`).
+9. **`libres` ignora el día de la reserva** (hoy solo compara la franja): lo he comprobado leyendo `freeRooms` y el test actual, y los escenarios no nombran día. No lo cambio.""")
+s=s.replace("""8. **Capacidad nueva `room-availability`**""","""10. **Capacidad nueva `room-availability`**""")
+s=s.replace("""9. **Término nuevo: «planta»**""","""11. **Término nuevo: «planta»**""")
+s=s.replace("""10. **Enfoque**: cada sala pasa a ser `{ name, floor }` y `freeRooms` filtra por `floor` si se le pasa una planta, frente a un mapa `floors` aparte (ver Approach).
+11. **Pasada de coherencia**: delta probado en una copia de `.docs/sdd` con `sdd capability merge` → exit 0, 5 requisitos y 5 reglas añadidas en `room-availability.md`; `git grep` de lo que cambia de forma sin más sitios que `src/app.js` y `test/app.test.js`. Sin cambios en la spec por la pasada.""",
+"""12. **Enfoque**: cada sala pasa a ser `{ name, floor }` y `freeRooms` filtra por `floor` si se le pasa una planta, frente a un mapa `floors` aparte (ver Approach). El identificador `floor` está en inglés como el resto del código (`rooms`, `freeRooms`); lo que ve el usuario va en castellano.
+13. **Línea base verificada**: la salida actual es `libres 10:00-12:00` → `Sur` (test existente) y las salas se unen con `, ` (`Norte, Sur`, leído en `freeRooms`); el requisito «Libres por franja» la recoge tal cual.
+14. **Pasada de coherencia**: delta probado en una copia de `.docs/sdd` con `sdd capability merge` → exit 0 (resultado de la pasada final más abajo, tras la review); `git grep` de lo que cambia de forma sin más sitios que `src/app.js` y `test/app.test.js`.""")
+s=s.replace("el dato de cada sala; filtrando","")
+# Approach order
+s=s.replace("- Con planta válida, `freeRooms` descarta primero las ocupadas y luego las de otra planta.","- Con planta válida, `freeRooms` devuelve las libres de esa planta (el orden en que se aplican los dos filtros no cambia el resultado).")
+# scenarios
+start=s.index("### Capacidad: `room-availability`")
+end=s.index("## Aprobaciones")
+delta='''### Capacidad: `room-availability`
+
+> Los datos de los THEN dependen de la decisión 1 (Norte planta 1, Sur planta 2), pendiente de confirmar: si el reparto es otro, cambian los valores, no la forma.
+
+#### ADDED — Libres por franja
+
+- GIVEN salas `Norte` y `Sur`, y `Norte` con una reserva activa en 10:00-12:00
+- WHEN `salas libres 10:00-12:00`
+- THEN la salida es `Sur`
+
+#### ADDED — Libres sin planta lista todas
+
+- GIVEN `Norte` en la planta 1 y `Sur` en la planta 2, sin reservas en 14:00-16:00
+- WHEN `salas libres 14:00-16:00` sin `--planta`
+- THEN la salida es `Norte, Sur` (las de todas las plantas)
+
+#### ADDED — Libres filtra por planta
+
+- GIVEN `Norte` en la planta 1, `Sur` en la planta 2, y `Norte` con una reserva activa en 10:00-12:00
+- WHEN `salas libres 14:00-16:00 --planta 1`
+- THEN la salida es `Norte`
+- AND con `salas libres 10:00-12:00 --planta 2` la salida es `Sur`
+- AND con `salas libres 10:00-12:00 --planta 1` la salida está vacía (`Norte` está ocupada y `Sur` es de otra planta)
+- AND `salas libres --planta 2 14:00-16:00` da `Sur`, igual que con la opción al final
+
+#### ADDED — Planta desconocida
+
+- GIVEN las mismas salas, solo con plantas 1 y 2
+- WHEN `salas libres 14:00-16:00 --planta 3`
+- THEN la salida es `planta desconocida: 3`
+- AND con `--planta abc` la salida es `planta desconocida: abc`
+- AND con `--planta 02` la salida es `planta desconocida: 02`
+- AND `salas libres --planta 14:00-16:00` da `planta desconocida: 14:00-16:00`
+
+#### ADDED — Planta sin número
+
+- GIVEN las mismas salas
+- WHEN `salas libres 14:00-16:00 --planta`
+- THEN la salida es `falta el número de planta`
+
+#### Reglas de la capacidad — room-availability
+
+- **Dónde viven los datos**: en memoria del proceso, la planta de cada sala en la constante de salas de `src/app.js` (ADR 0003, `.docs/sdd/decisions/0003-bookings-in-memory.md`).
+- **Idioma de los nombres**: castellano (`--planta`, `planta desconocida`).
+- **Límites**: las plantas válidas son solo las que tiene alguna sala (hoy 1 y 2).
+- **Avisos**: `planta desconocida: <valor>` · `falta el número de planta`.
+- **Regla ante conflicto**: no aplica: varias salas en una planta no se excluyen entre sí.
+
+'''
+s=s[:start]+delta+s[end:]
+# Scope no entra
+s=s.replace("guardar las plantas fuera del código.","guardar las plantas fuera del código; validar la franja.")
+# review block
+s=s.replace("""- Mínimo razonable: sin review""","""- Mínimo razonable: sin review""")
+open(p,'w',encoding='utf-8').write(s)
+EOF
+grep -n "^[0-9]*\. \*\*" spec.md | cut -c1-70
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+31:1. **Planta de cada sala: `Norte` → planta 1, `Sur` → planta 2.
+32:2. **Motivo (supuesto mío, pendiente)**: nadie dijo para qué se q
+33:3. **Forma de la opción: `--planta <número>`**, con el número co
+34:4. **Orden libre de los argumentos**: `libres 10:00-12:00 --planta 
+35:5. **Planta que no existe o no es un número** (`--planta 3`, `--pl
+36:6. **`--planta` sin número** (`libres 10:00-12:00 --planta`): sale
+37:7. **
+
+>>> Write: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && SDD="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "$SDD" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261115-194008-feature-0012-libres-planta/spec.md"; echo "exit=$?"
+<<< room-availability.md: añadido «Libres por franja»
+room-availability.md: añadido «Libres sin planta lista todas»
+room-availability.md: añadido «Libres filtra por planta»
+room-availability.md: añadido «Planta desconocida»
+room-availability.md: añadido «Planta sin número»
+room-availability.md: regla «Dónde viven los datos» añadida
+room-availability.md: regla «Idioma de los nombres» añadida
+room-availability.md: regla «Límites» añadida
+room-availability.md: regla «Avisos» añadida
+room-availability.md: regla «Regla ante conflicto» añadida
+exit=0
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Segunda ronda de revisión de spec
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a93cbbd7cb5e899b4 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< 1	---
+2	id: 20261115-194008-feature-0012-libres-planta
+3	feature: 0012
+4	title: Filtrar las salas libres por planta
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-11-15
+9	author: Fixture
+10	approvers:
+11	  - name: TBD
+12	    approved_at: null
+13	---
+14	
+15	# Spec — Filtrar las salas libres por planta
+16	
+17	🦆 Hoy `salas libres 10:00-12:00` enseña todas las salas libres en esa franja, estén en la planta que estén. Con esta feature, `salas libres 10:00-12:00 --planta 2` enseña solo las libres de la planta 2 (`Sur`), y sin `--planta` sigue enseñando todas, como hasta ahora. Par
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\steering\architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && SDD="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"; T=$(mktemp -d) && cp -r .docs/sdd "$T/sdd" && node "$SDD" capability merge --path "$T/sdd" --artifact "$PWD/.docs/sdd/changes/20261115-194008-feature-0012-libres-planta/spec.md" | tail -3; echo "exit=${PIPESTATUS[0]}"
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md
+<<< room-availability.md: regla «Límites» añadida
+room-availability.md: regla «Avisos» añadida
+room-availability.md: regla «Regla ante conflicto» añadida
+exit=0
+<<< The file <run>\repo\.docs\sdd\changes\20261115-194008-feature-0012-libres-planta\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (20 turnos, 0.8974105 $)
+La revisión de la spec está en marcha con un revisor (sonnet). Espero su resultado para incorporar los hallazgos antes de presentarte la spec.
+
+=== RESULTADO (5 turnos, 0.8974105 $)
+La segunda revisión sigue en marcha. Espero su resultado antes de presentarte la spec.
+
+=== RESULTADO (10 turnos, 0.8974105 $)
+Ahora: presento la spec en el punto de aprobación. Queda: tu respuesta; con ella escribo el plan y paso a implementar, ~10 min.
+
+La spec está en `.docs/sdd/changes/20261115-194008-feature-0012-libres-planta/spec.md`, en la rama `feature/0012-libres-planta`. No he hecho commit.
+
+🦆 Hoy `salas libres 10:00-12:00` enseña todas las salas libres de esa franja, estén en la planta que estén. Con el cambio, `salas libres 10:00-12:00 --planta 2` enseña solo las de la planta 2 (`Sur`). Sin `--planta` sigue enseñando todas, como hasta ahora. Para filtrar, cada sala pasa a tener una planta, un dato que hoy no existe.
+
+**Carril y perfil:** feature, modo full, perfil `delegate`. Prevé 2 tasks, así que no propongo dividirla.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Planta de cada sala (pendiente de ti):** `Norte` en la planta 1 y `Sur` en la 2. Es un valor mío, porque la petición no lo dice y el código no lo guarda. Si es otro reparto, solo cambian los valores de los ejemplos. Aprobar sin corregirlo lo confirma.
+2. **Motivo (supuesto mío):** nadie dijo para qué sirve el filtro. Supongo que, al llegar a una planta, quieres ver lo que hay libre en ella.
+3. **Forma de la opción:** `--planta 2`, con el número aparte (no `--planta=2`). El orden de los argumentos es libre.
+4. **Avisos:**
+   - `--planta 3`, `--planta abc` y `--planta 02` dan `planta desconocida: <valor>`.
+   - `--planta` sin número da `falta el número de planta`.
+5. **Sin salas libres en la planta:** la salida queda vacía, como hoy. No añado mensaje nuevo.
+6. **Sin definir:**
+   - `--planta=2` se ignora en silencio.
+   - `--planta ""` y `--planta` repetido no están definidos.
+   - Sin franja, `libres --planta 2` se comporta como hoy sin franja.
+7. **Reglas que ya tenía el código y quedan escritas:** `libres` ignora el día de la reserva, y una reserva cancelada o anulada deja libre la sala.
+8. **Capacidad nueva `room-availability`**, porque el comportamiento de `libres` no está escrito en ningún sitio.
+9. **Término nuevo «planta»** para `PRODUCT.md`; lo escribe el cierre.
+10. **Enfoque:** cada sala pasa a ser `{ name, floor }`, frente a un mapa `floors` aparte. El mapa deja dos listas que mantener a la vez.
+
+**Review:** un revisor sonnet más una segunda ronda. Aceptó los 2 Críticos de la primera ronda y los Importantes. Rechacé dos puntos, con su motivo en la spec. La pasada de coherencia (delta fusionado en una copia de `.docs/sdd`) acabó con exit 0.
+
+**Dos cosas del entorno:**
+- La carpeta de trabajo que me indicó el entorno apuntaba a la del kit, no a este proyecto. Trabajé con rutas absolutas hacia el repo y no escribí nada en la carpeta del kit.
+- Reservé el id 0012 y no hay fila en `ROADMAP.md` para esta feature.
+
+Para aprobar o pedir cambios, elige una opción:
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajusto, por ejemplo el reparto de plantas.

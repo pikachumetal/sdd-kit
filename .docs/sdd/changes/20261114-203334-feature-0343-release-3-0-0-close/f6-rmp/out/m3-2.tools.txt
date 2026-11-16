@@ -1,0 +1,86 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: ls; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/debt.md; git branch --all; node "D:/code/.worktrees/sdd-kit/feature-0343-release-3-0-0-close/.temp/k7354/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat ROADMAP.md; cat package.json; find src test -type f | head -50; git log --oneline | head
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+# Roadmap — salas
+
+## Now
+
+Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala con una fila por reserva*<details><summary>Brief</summary>**Carril:** f
+
+>>> Bash: cat src/app.js test/app.test.js; node src/app.js 2>&1 | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.room},${b.day},${b.slot}`);
+  return ['sala,día,franja', ...rows].joi
+
+>>> Bash: node src/app.js exportar | od -c | head -3; node src/app.js exportar; node src/app.js libres --planta 2; git log --oneline -- src | head
+<<< 0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+Norte,lun,10:00-12:00
+Norte (planta 1)
+cea0c12 feat: base del molde
+
+=== RESULTADO (7 turnos, 0.1342021 $)
+Estoy triando las dos filas de «Por triar». Leí el informe de QA y el código, y reproduje los dos casos. Todavía no he escrito nada, porque en `delegate` primero te presento la propuesta.
+
+| Ítem | Qué pasó al reproducirlo | Propuesta |
+| --- | --- | --- |
+| `salas libres --planta 2` lista salas de la planta 1 | **Reproducido.** `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. `roomsOnFloor` en `src/app.js:10` filtra con `floors[room] <= floor` en vez de `===`. | **Lista**, con causa `defecto del producto`, remedio temporal `ninguno` y arreglo `—`. La evidencia es ese comando con su salida. El destino sería una fila nueva `S` en Now (parche de una línea más su test). |
+| La exportación a CSV pierde las tildes | **No reproducido.** `node src/app.js exportar` saca `sala,día,franja`, con la `í` en UTF-8 válido (bytes `303 255`). Es probable que el fallo esté en cómo Excel abre el archivo, porque no hay BOM. Es una hipótesis sin comprobar. | **En espera**, con causa `sin determinar` y falta `reproducirlo`. Pediría a QA el programa con el que abren el CSV. |
+| «Las reservas de más de 8 h no avisan al responsable» | Lleva en espera desde 2026-07-01 sin segundo caso. `roadmap check` avisa de que caduca. | **Descartar** con motivo `caducada`. La fila sale de `debt.md` y el motivo va en el cuerpo del commit. |
+
+Si lo apruebas, haría esto:
+1. Reservar un id con `sdd id next --reserve`.
+2. Escribir la fila nueva en Now, con **Carril:** patch, la evidencia y **Salda:** la fila de «Lista».
+3. Pasar `roadmap check`.
+4. Publicar con `roadmap publish`.
+5. Darte el prompt de lanzamiento.
+
+¿Apruebo los tres resultados tal cual, o quieres cambiar alguno? Con un «decide tú» lo escribo directamente.

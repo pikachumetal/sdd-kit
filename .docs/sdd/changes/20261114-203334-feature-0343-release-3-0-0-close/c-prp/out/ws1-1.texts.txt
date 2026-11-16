@@ -1,0 +1,61 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs, roadmap y configuración). Queda: clasificar el cambio y confirmar el carril contigo, ~2 min.
+
+--- [18]
+Ahora: abro el patch (reclamo el id, creo la carpeta y escribo `patch.md`) y dejo el test en rojo. Queda: fix, revisión con un revisor, commit y cierre, ~15 min.
+
+--- [24]
+RED correcto: falla por el motivo esperado, porque devuelve «Norte, Sur». Ahora el patch.md y el fix.
+
+--- [26]
+Se perdió el escape `\d` en la expresión regular. Lo corrijo con Edit.
+
+--- [33]
+Ahora: espero la revisión del revisor. Queda: contestar sus hallazgos en `patch.md`, hacer el commit y cerrar con `sdd-archive`, ~10 min.
+
+Lo hecho hasta ahora:
+- **Test:** falló antes del fix, porque devolvía «Norte, Sur».
+- **Fix:** una constante `SLOT` y una guarda al principio de `libres` en `src/app.js`.
+- **Verificación:** `node --test` pasa 5/5 y el lint sale sin hallazgos. `libres 25:00-26:00` responde «franja no válida: usa HH:MM-HH:MM» y `libres 10:00-12:00` sigue devolviendo «Sur».
+
+El commit del fix queda pendiente de la revisión.
+
+--- [35]
+**Hallazgos** (ejecuté `node --test`: 5/5 en verde)
+
+1. **Media, `.docs/sdd/changes/20261115-195651-patch-0012-slot-format/patch.md` §3 y `src/app.js:31`.** `libres` sin argumentos cambia de comportamiento y la decisión no lo dice.
+   - Antes, `libres` a secas ejecutaba `freeRooms(undefined)` y listaba las salas («Norte, Sur»). Ahora responde «franja no válida…».
+   - §3 solo dice «también vacía», que se lee como la cadena vacía. El caso de parámetro ausente no se nombra, y es un cambio visible que el dev-lead no pidió.
+   - La decisión sí está marcada «sin el dev-lead», así que la atribución es correcta. Pero el patch debería decir expresamente «sin argumento → error» para que el dev-lead lo confirme.
+   - Lo mismo pasa con `9:00-10:00`, que antes funcionaba y ahora se rechaza. Ese caso sí está en la tabla de §4, pero no en las decisiones de §3.
+
+2. **Baja, `test/app.test.js:13-16`.** El test no cubre `run('libres', [])`, es decir, `params[0]` ausente. Ese es el camino que activa el `?? ''` de `src/app.js:31`. Con `''` el test pasa, pero si se quitara el `?? ''` el test no fallaría: `SLOT.test(undefined)` convierte `undefined` en la cadena `"undefined"` y también rechaza. Es una laguna menor y no un fallo. Conviene añadir `run('libres', [])` si se quiere fijar el caso.
+
+3. **Info, `src/app.js:31-32`.** Hay dos `if (cmd === 'libres')` seguidos. Es correcto y mínimo. Solo es estilo, y no pediría cambiarlo.
+
+**Comprobaciones sin hallazgos**
+- **(1)** El código responde «franja no válida: usa HH:MM-HH:MM» para `25:00-26:00`, porque la hora 25 no entra en `[01]\d|2[0-3]`. El texto coincide literalmente con el fijado en §2.
+- **(2)** La regex está anclada con `^…$` y exige horas 00–23, minutos 00–59 y dos cifras. `10:00-12:00` pasa la validación y sigue llegando a `freeRooms`, que da «Sur». No añade la regla «fin posterior al inicio», y eso coincide con §3.
+- **(3)** Sin el fix, `run('libres', ['25:00-26:00'])` devuelve «Norte, Sur», así que el test falla. Comprueba el valor devuelto por `run` y no la regex ni `freeRooms`, de modo que es independiente de la implementación.
+- **(4)** El texto de la respuesta está atribuido al dev-lead. El criterio de qué franjas son no válidas y la ausencia de la regla de orden están marcados «sin el dev-lead». Fuera del punto 1, no veo otro cambio visible que exceda lo pedido.
+
+No ejecuté `node scripts/lint.mjs`, que el patch cita en §4, ni `node src/app.js libres …` desde la CLI.
+
+--- [37]
+Ahora: dejo en `patch.md` los casos que señaló el revisor y me paro antes del commit. Queda: tu respuesta a una pregunta cerrada, y luego commit y cierre, ~5 min.
+
+--- [41]
+**🦆 Qué pasa:** el fix ya funciona y el revisor no ve fallos de código. Pero al escribirlo decidí cosas que tú no habías dicho, y las reglas del patch me obligan a parar antes del commit. Pediste rechazar `25:00-26:00`. Para implementarlo tuve que decidir qué más se rechaza. `9:00-10:00` y `libres` sin argumento listaban salas antes y ahora responden el error. Eso es lo que ve quien teclea el comando.
+
+**✋ Decisiones que he tomado yo, sin ti:**
+- `9:00-10:00` (una sola cifra en la hora) se rechaza, porque el formato pide `HH`.
+- `libres` sin argumento responde «franja no válida: usa HH:MM-HH:MM». Antes listaba las salas.
+- No hay regla de «fin posterior al inicio». Con `13:00-12:00` `libres` sigue sin quejarse.
+
+Todo esto está en `patch.md` §3 sin commitear. El cambio sigue en el árbol de trabajo: `src/app.js` y `test/app.test.js`. El revisor además dijo que el test no cubre `libres` sin argumento. Lo añado cuando decidas el segundo punto.
+
+¿Cómo seguimos?
+1. **Confirmo las tres decisiones tal cual (recomendada).** Dices «vale» y las marco como tuyas, añado el test de `libres` sin argumento, hago el commit y cierro. Sigue siendo patch.
+2. **`libres` sin argumento sigue listando las salas.** Quito la guarda para ese caso, y el resto queda igual.
+3. **Solo se rechazan las horas fuera de rango**, es decir `25:00-26:00`. `9:00-10:00` se acepta como antes. Cambio la regex y el test.
+

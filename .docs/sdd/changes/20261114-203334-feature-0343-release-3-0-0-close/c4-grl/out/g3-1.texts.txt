@@ -1,0 +1,44 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (producto, roadmap, steering) para clasificar el cambio. Queda: clasificar y presentarte el entendimiento de la feature, ~3 min.
+
+--- [15]
+Ahora: reservo el id y creo la rama de la feature. Queda: presentarte lo que he entendido y la primera pregunta de diseño, ~2 min.
+
+--- [18]
+Ahora: te cuento lo que he entendido y te hago la primera pregunta de diseño. Queda: terminar la entrevista, escribir la spec y pararme en tu aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, por defecto del proyecto (`sdd-kit.json` no fija `control.profile`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `pair` para esta feature».
+
+He reservado el id 0010 y creado la rama `feature/0010-lista-espera`.
+
+**Lo que he entendido (corrígeme):**
+- Hoy `reservar` solo sirve si la sala está libre. Quieres poder apuntarte a una lista de espera de la sala que te interesa cuando esté ocupada.
+- Es una herramienta tuya, de línea de comandos, sin más usuarios (`PRODUCT.md`). Por eso no hay cuentas ni identidades. «Yo» es siempre la misma persona.
+- Hay dos salas, Norte y Sur. Una reserva es sala + día + franja (`src/app.js`).
+- Aún no sé qué esperas que pase cuando la sala se libere, y eso es lo que más condiciona el diseño.
+
+❓ **¿Qué quieres que ocurra cuando la sala por la que esperas quede libre?** Te lo pregunto abierto, porque solo lo sabes tú.
+
+--- [20]
+Entendido: feature full, perfil delegate, y la razón es que ahora vuelves a lanzar `libres` a mano cada rato mientras Norte está ocupada. Eso me sirve para orientar las opciones. Todavía no me has dicho qué debería pasar cuando Norte se libere, así que te lo planteo con las salidas que veo.
+
+Un dato del código que condiciona todo: `src/app.js` guarda las reservas en memoria y cada comando es un proceso que termina al imprimir. Hoy nada recuerda nada entre una ejecución y la siguiente, ni nadie vigila una sala. Cómo se guardaría la lista de espera lo decidiremos después. Depende de lo que elijas ahora.
+
+❓ **¿Cómo te enteras, o qué hace la herramienta, cuando Norte se libera?**
+
+1️⃣ **Comando `esperar` que se queda vigilando y reserva solo.**
+`esperar Norte lun 10:00-12:00` → `Norte ocupada; esperando…` y, cuando se libera: `Norte libre: reservada lun 10:00-12:00`.
+Sustituye tu «mirar libres cada rato» y funciona aunque quien libere la sala no use esta herramienta. A cambio, necesita una terminal abierta (o un proceso en tu servidor) y reserva sin preguntarte.
+
+2️⃣ **Lista de espera que se resuelve al cancelar.**
+`reservar Norte lun 10:00-12:00` → `Norte ocupada; en espera (1.º)`. Luego, `cancelar Norte lun` → `cancelada; reservada Norte lun 10:00-12:00 para el 1.º en espera`.
+No hace falta proceso vigilando, pero solo salta si la cancelación pasa por esta herramienta.
+
+3️⃣ **Solo aviso al consultar.**
+`libres 10:00-12:00` → `Sur · Norte libre (tenías espera)`.
+Es lo más simple, pero sigues teniendo que lanzar el comando tú. No quita el problema de fondo.
+
+➡️ **Recomiendo 1️⃣**, porque tu problema es tener que mirar a mano, y solo ese caso lo elimina sin depender de quién libere la sala. A cambio, hay que decidir cómo se guarda la espera y cómo se vigila, que será la siguiente pregunta.
+

@@ -1,0 +1,117 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y escribir la spec, ~5 min.
+
+--- [6]
+Sin dependencias externas (no hay `package-lock` ni deps), así que no hace falta instalar. Miro el código solo para clasificar.
+
+--- [16]
+Sigo trabajando sobre el repo del proyecto (ruta absoluta), que es donde está la tarea. Reservo el id y creo la rama.
+
+--- [28]
+Coherencia hecha: el delta se fusiona limpio en una copia y `git grep` no encuentra ningún `0012` en el repo. Corrijo dos frases de la spec y despacho la review.
+
+--- [30]
+Despacho el revisor único (sonnet, siete puntos).
+
+--- [32]
+La spec está escrita y la review está en marcha. Espero su resultado antes de presentártela, porque los hallazgos se incorporan a la spec antes del gate.
+
+--- [37]
+1. Crítico · Delta de comportamiento (ADDED «Libres sin filtro de planta»; «Planta sin salas libres») · Los GIVEN no fijan el estado completo. El primero no dice qué franja ocupa `Norte` ni que `Sur` está libre en otras franjas. El tercero no dice que `Sur` está libre o no, y el THEN vacío para planta 1 pasaría igual si el filtro devolviera siempre vacío. · Añadir un escenario donde la planta 1 está libre en la franja y se lista. Cerrar el estado de las salas en cada GIVEN.
+
+2. Crítico · Delta de comportamiento («Planta sin valor») · «GIVEN cualquier estado» no es un estado. `--planta` es el último argumento, y la regla de que la franja es el primer argumento que no es opción ni valor queda sin definir cuando `--planta` va seguido de otra opción o de la franja (`libres --planta 10:00-12:00` se leería como planta `10:00-12:00` y daría `sin planta 10:00-12:00`, no `indica una planta`). · Definir en una decisión cómo se decide que falta el valor. Añadir un escenario para `libres --planta 10:00-12:00` y otro para `libres --planta` sin franja.
+
+3. Importante · Decisión 3 / Delta · Faltan casos sin THEN. No hay escenario para `libres --planta 2` sin franja, ni para el comportamiento de hoy con una franja ausente o inválida, que Intent y Scope no mencionan. Tampoco hay escenario para `--planta` repetido, ni para `--planta 2.0`, `--planta 02` ni `--planta -1`. «Entero» no dice si `02` se acepta. · Aclarar cómo se analiza el valor (por ejemplo, `/^\d+$/` y comparación numérica) y cubrir con THEN, o declarar esos casos fuera de alcance en Scope.
+
+4. Importante · Decisiones vs. Approach · Hay decisiones tomadas en el cuerpo que no están en «✋». Son la firma `freeRooms(slot, planta)` con `undefined` como «no filtra», la comprobación de existencia contra las plantas de `rooms` y la validación de planta antes o después de la franja. Tampoco queda dicho qué pasa si hay planta inexistente y franja inválida (prioridad de errores). · Añadirlas a «✋», sobre todo el orden de validación entre planta y franja.
+
+5. Importante · Decisión 5 / Delta «Planta inexistente» · Rompe la regla de conflicto del orden de comprobación. Con `--planta 5` y una franja con la sala ocupada, la spec no define si gana el aviso o la lista. Además, `sin planta abc` repite lo que el usuario escribió sin límite de longitud ni saneado. · Fijar que el aviso de planta se evalúa antes que cualquier otra cosa, y poner un escenario con franja ocupada.
+
+6. Importante · Capacidades / Decisión 7 · `free-rooms` se declara «Nueva» pero recoge comportamiento ya existente de `libres` (franja y reservas ocupadas). Un ADDED que solo cubre el filtro hace que la capacidad nazca incompleta: el comportamiento «libre = sin reserva solapada» no queda como verdad viva. · Declarar el alcance parcial en la capacidad, o añadir un ADDED con la regla de libre/ocupada.
+
+7. Importante · Intent vs. Scope · El Scope incluye «una línea en el `CHANGELOG.md`», pero la spec no dice si ese fichero existe. La fila de ROADMAP y la entrada de `PRODUCT.md` («planta», decisión 9) se dejan «al cerrar» sin entrar en Scope. · Listar en Scope la actualización de `PRODUCT.md` y la fila de ROADMAP, o sacar el CHANGELOG si no existe.
+
+8. Importante · Lo que se retira o cambia de forma · Cambia la forma de `rooms` (cadenas a objetos). La spec afirma «único uso en `src/app.js:6`», pero `salas` también lista las salas, según la decisión 10. Si `salas` lee `rooms`, la afirmación es falsa. · Verificar el uso de `rooms` en `salas` y la tabla, y añadir un escenario de que `salas` no cambia.
+
+9. Menor · Decisión 4 / Decisión 5 · Los textos `indica una planta` y `sin planta N` no dicen cómo se comunican. No se indica si son salida normal o error, ni si cambia el código de salida. · Fijar canal y código de salida, o declarar que no cambian.
+
+10. Menor · Cabecera 🦆 / «✋» · «Review de spec propuesta» con un revisor sonnet se plantea como opción, y al mismo tiempo aparece una «Política de modelos» como decidida. No queda claro cuál se eligió. Falta también la regla de límites: `--planta 99999999999999999999` no tiene tope. · Marcar la opción elegida y fijar el tope del valor numérico.
+
+--- [39]
+El revisor ha devuelto 10 hallazgos. Los incorporo a la spec antes de presentártela. Este aviso no es una aprobación tuya, y el gate sigue abierto.
+
+--- [43]
+Se aceptaron dos Críticos, así que toca la segunda ronda: un revisor nuevo relee la spec corregida.
+
+--- [45]
+La segunda ronda de review está en marcha. Cuando termine, incorporo sus hallazgos y te presento la spec para el gate. Hasta entonces no hay nada que aprobar.
+
+--- [53]
+1. Importante · Decisiones 3, 11 y 14 · `libres --planta 2` (planta válida, sin franja) no tiene THEN. La decisión 14 dice que `libres` sin franja se queda «como hoy», pero el nuevo parseo deja `params[0]` indefinido de otra forma. La 11 solo cubre el caso en que `--planta` falla. · Añadir un escenario o una frase que fije la salida de `libres --planta 2` sin franja. Si es indefinida, declararlo como fuera de alcance con el comportamiento esperado, en vez de «como hoy».
+
+2. Importante · Decisión 3 · Una opción desconocida como `--otra` o `--cada-semana` no está definida. No se sabe si es opción con valor, opción sin valor o la franja. Con `libres --planta 2 --otra 10:00-12:00`, «primer argumento que no es opción» no decide nada. El THEN `libres --planta --otra` solo prueba que no es valor de planta. · Definir qué hace `libres` con opciones que no conoce: ignorarlas, avisar o tratarlas como franja. Declararlo en ✋ y cubrirlo con un THEN, o llevarlo a la decisión 14.
+
+3. Importante · Decisión 5 frente a Approach · La decisión 5 dice «Solo valen 1 y 2», pero el Approach dice que la existencia se comprueba contra las plantas de `rooms`, «no contra una lista fija». Son criterios distintos si se añade una sala en la planta 3. «Se compara como texto con el número de cada sala» tampoco fija el tipo del campo (número o cadena). · Quitar «Solo valen 1 y 2», que es un efecto de los datos actuales. Decir que el campo `planta` es un entero y que se compara con `String(planta)`.
+
+4. Menor · Decisiones 4 y 5, escenario «Planta inexistente» · `--planta ""` (cadena vacía) no tiene THEN. No queda claro si es «sin valor» o `sin planta ` con un espacio al final. Un valor con espacios tampoco está cubierto, aunque la salida «con el valor tal cual» lo resolvería. · Añadir un AND para `--planta ""`, o excluirlo de forma explícita en la decisión 14.
+
+5. Importante · Escenario «Planta sin valor» · El caso `libres --planta 10:00-12:00` (el valor se traga la franja) está en «Planta inexistente», pero es consecuencia directa de la decisión 4. Las dos decisiones y los dos escenarios se solapan, y un implementador puede dudar de si el orden es «valor ausente» o «sin franja». · Mover ese AND a «Planta sin valor», o añadir un GIVEN/WHEN propio que explique que la ausencia de franja no se comprueba antes que la planta (decisión 11).
+
+6. Menor · Escenario «Libres sin filtro de planta» · Pasa con el código de hoy: solo prueba que no hay regresión y no ejercita el comportamiento nuevo. Está bien como guarda, pero no demuestra la capacidad. · Reforzarlo con un AND que combine sin `--planta` y las dos plantas con ambas salas libres, para que un `rooms` mal convertido a objetos se note (por ejemplo, que salga `Norte`/`Sur` y no `[object Object]`).
+
+7. Menor · Decisión 5 y escenario «Planta inexistente» · `--planta -1` se salva por el matiz «empieza por `--`». Pero `--planta -` o `--planta -x` caen en la misma rama sin mencionarse. · Añadir una frase a la decisión 4 con el criterio exacto: solo `--` doble corta el valor.
+
+8. Menor · «✋ Decisiones» · La sección mezcla la política de revisores, los «Hallazgos de la review» y las decisiones, lo que oculta cuáles son las decisiones que hay que validar. Además, las dos viñetas «Único revisor» y «Mínimo razonable» parecen opciones sin elegir, aunque se dice que la review ya está hecha. · Separar «Hallazgos» de las decisiones y dejar una sola línea con la review realizada.
+
+9. Menor · Decisión 13 · «Los avisos salen por la salida normal, como los existentes» se apoya en `sin reserva Norte lun`, un comportamiento que no está en ninguna capacidad. Esa afirmación no se puede comprobar con ningún escenario. · Citar el test o la línea que respalda el estilo de aviso existente, o quitar la comparación.
+
+10. Menor · Capacidad `free-rooms`, decisiones 7 y 15 · La capacidad nace «parcial a propósito». Por eso la regla «libre = sin reserva activa» queda fuera del delta, aunque `libres` es su única función. El gate no puede validar un contrato que no está escrito. · Asumir el riesgo con una línea clara en el Intent, o añadir un ADDED que recoja la regla de libre y que ya cumple el código.
+
+--- [55]
+La segunda ronda no devuelve ningún Crítico, así que no hay tercera. Incorporo los demás hallazgos.
+
+--- [57]
+Una línea de relleno sin efecto abortó el script antes de escribir. No se aplicó nada. La quito y repito.
+
+--- [60]
+Ahora: espero tu aprobación de la spec. Queda: plan e implementación, ~25 min, cuando apruebes.
+
+# Spec 0012 — Filtrar libres por planta
+
+Está en `.docs/sdd/specs/20261115-192011-feature-0012-libres-planta/spec.md`, en la rama `feature/0012-libres-planta`. Todavía no la he commiteado.
+
+🦆 Hoy `libres 10:00-12:00` te dice qué salas están libres en esa franja, estén en la planta que estén. Con el cambio, `libres 10:00-12:00 --planta 2` solo te enseña las libres de la planta 2 (`Sur`). Sin `--planta` sigue saliendo todo igual que hoy (`Sur`). Para que el filtro sea posible, cada sala pasa a tener una planta en `src/app.js`. Esa asignación la he puesto yo y tienes que validarla.
+
+**Validación**: dev-lead. Ejecutas `libres` con y sin `--planta` en la terminal.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+La spec ha pasado una review de un revisor sonnet y una segunda ronda, porque se aceptaron dos Críticos. No hubo Críticos en la segunda. Las decisiones tuyas, que no cambié, son el nombre `--planta`, que sin `--planta` se listen todas las salas y el perfil delegate.
+
+1. **Plantas**: `Norte` en la planta 1 y `Sur` en la planta 2. Es un dato inventado para poder probar el filtro. Si la oficina real es distinta, dime la tabla.
+2. **El valor de la planta es un entero** (`1`, `2`), no un nombre.
+3. **Sintaxis**: `libres <franja> --planta <n>`, con un espacio entre la opción y el valor. La opción puede ir antes o después de la franja. La franja es el primer argumento que no empieza por `--` y no es el valor de `--planta`.
+4. **`--planta` sin valor** responde `indica una planta`. Solo un `--` doble corta el valor, así que `-1` cuenta como valor.
+5. **Planta que no existe** (`5`, `abc`, `02`, `-1`) responde `sin planta <valor>`. La planta se compara como `String(planta)` y la existencia se mira contra las plantas de `rooms`. No hay tope de longitud.
+6. **Planta existente sin salas libres** devuelve la cadena vacía, igual que hoy cuando no queda ninguna sala libre.
+7. **Capacidad nueva `free-rooms`**. Recoge la regla de qué es una sala libre y el filtro por planta.
+8. **Enfoque**: un campo `planta` en cada sala de `rooms`, frente a un mapa aparte o deducirla del nombre.
+9. **Término nuevo «planta»** para `PRODUCT.md`.
+10. **`salas`** no enseña la planta.
+11. **Orden de comprobación**: primero se valida `--planta`, y el aviso de planta gana siempre a la lista.
+12. **Firma interna**: `freeRooms(slot, planta)`, con `undefined` para no filtrar.
+13. **Canal de los avisos**: salen por `console.log`, como `sin reserva Norte lun`, y el código de salida no cambia.
+14. **Sin comportamiento definido**: `--planta` repetido, `--planta ""`, opciones desconocidas con valor, y `libres` sin franja (por ejemplo `libres --planta 2`).
+15. **Alcance de `free-rooms`**: incluye la regla «libre = sin reserva activa en la franja», que el código ya cumple.
+
+**Rechazado de la review**: el saneado y el tope de longitud del valor, porque es una herramienta local de una persona. Tampoco acepté tocar `salas`: no lee `rooms`.
+
+**Delta**: 6 requisitos ADDED en `free-rooms`, y se fusiona limpio en una copia de `.docs/sdd`.
+
+**Estimación**: unas 2 tasks, así que no propongo partirla.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a la implementación.
+2. **Cambios**: dime qué ajustar. Si la tabla de plantas es distinta, pásamela aquí.
+

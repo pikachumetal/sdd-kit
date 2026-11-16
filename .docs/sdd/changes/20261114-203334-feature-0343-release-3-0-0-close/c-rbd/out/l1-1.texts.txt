@@ -1,0 +1,46 @@
+--- [8]
+# Cómo viaja una exportación, de punta a punta
+
+Sigo un ejemplo: pides la exportación de **marzo de 2026**. En los datos de marzo hay cuatro reservas:
+
+- Norte, 2 de marzo, de 10:00 a 12:00.
+- Sur, 5 de marzo, de 16:00 a 17:00.
+- Norte, 12 de marzo, de 09:00 a 10:00, cancelada.
+- Norte, 19 de marzo, de 12:00 a 13:30.
+
+La reserva de abril también está en los datos, pero no entra.
+
+## Los pasos
+
+1. **Tú** escribes la orden de exportar con el mes `2026-03` en la terminal. La herramienta lee la orden y le pasa el mes al módulo de exportación.
+2. **La herramienta** abre la lista de reservas guardada. Ahí están las cinco reservas, de todos los meses y en cualquier estado.
+3. **La herramienta** se queda solo con las reservas de marzo que no están canceladas. La reserva del 12 de marzo se descarta por cancelada. La de abril se descarta por ser de otro mes. Quedan tres reservas.
+4. **La herramienta** ordena esas tres por día y por hora de inicio: el 2, el 5 y el 19.
+5. **La herramienta** convierte cada reserva en un evento de calendario. El evento se llama «Sala Norte» o «Sala Sur». Lleva la hora de inicio y la de fin.
+6. **La herramienta** cambia las horas a otro reloj. Parte de que el coworking va dos horas por delante del reloj universal (UTC) y resta esas dos horas. La franja del 2 de marzo, de 10:00 a 12:00, sale como 08:00 a 10:00.
+7. **La herramienta** junta los tres eventos en un único fichero de calendario.
+8. **La herramienta** crea la carpeta de exportaciones si no existe. Guarda el fichero con el nombre del mes, `2026-03`. Después te escribe en la terminal dónde ha quedado.
+
+## Fuera del código
+
+Tú abres ese fichero en Google Calendar o en Outlook. Con la importación, las tres reservas aparecen en tu calendario.
+
+## Dos cosas que he visto al leerlo
+
+- Las dos horas de diferencia están fijas. Eso es correcto con el horario de verano. Con el horario de invierno, la diferencia real es de una hora.
+- Las horas salen escritas sin la marca que indica «hora universal». Un calendario puede leerlas como horas de tu zona y no convertirlas.
+
+No he probado cómo las importa cada calendario. Lo anterior sale solo de leer el código.
+
+## Dónde mirar
+
+- Paso 1: `src/cli.js`
+- Pasos 2 y 8, la orden completa: `src/export/index.js`
+- Paso 2, la lista de reservas: `src/bookings/repository.js` y `data/bookings.json`
+- Pasos 3 y 4: `src/export/filter.js`
+- Pasos 5, 6 y 7: `src/export/ics.js`
+- Paso 8, el guardado: `src/export/writer.js`; el fichero queda en `exports/2026-03.ics`
+- Pruebas: `test/export.test.js`
+
+¿Quieres que te aclare algún paso?
+

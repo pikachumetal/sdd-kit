@@ -1,0 +1,140 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.local.json 2>/dev/null
+<<< Exit code 1
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/sdd-kit.json .docs/sdd/steering/*.md; cat .docs/sdd/specs/*patch-0007-cancel/patch.md; ls -R src test; cat package.json
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cat src/app.js; grep -n -i -B2 -A12 cancel test/app.test.js; ls node_modules 2>&1 | head -1; cat .docs/sdd/sdd-kit.local.json 2>&1
+<<< Exit code 1
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (comman
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\patch-lane.md
+<<< 1	## Is it really a patch?
+2	
+3	```dot
+4	digraph decision {
+5	    wt [label="Does it touch a feature whose walkthrough is still open?" shape=diamond];
+6	    failure [label="Is it a failure?" shape=diamond];
+7	    det [label="Deterministic, without interpreting requirements?" shape=diamond];
+8	    vis [label="A requested adjustment, not a failure? Presentation only or removal (predicate)?" shape=diamond];
+9	    closed [label="Do the ticket or the dev-lead fix what changes in what the user sees or can do?" shape=diamond];
+10	    appendix [label="'Post-release fixes' appendix in that feature's wa
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\modo-lite.md
+<<< 1	## Lite mode — observable predicate, activated by the user
+2	
+3	A feature **can** go in lite mode if it meets **all** these conditions:
+4	
+5	- The flow to change already exists in the repo and can be read.
+6	- It doesn't change public contracts (API, interfaces another module consumes).
+7	- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+8	- It fits in a single module or area.
+9	- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+10	
+11	Meeting
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge
+
+=== RESULTADO (9 turnos, 0.2095007 $)
+Ahora: he confirmado el fallo leyendo `src/app.js` y clasificado el cambio. Queda: tu respuesta sobre el carril; después, rama, spec corta y aprobación tuya, ~10 min.
+
+🦆 En `run`, `cancelar` devuelve siempre `cancelada <día> <hora>` sin mirar la lista `bookings`. Tampoco borra nada, así que el aviso salta aunque la reserva no exista (`src/app.js:12`). Reproducido: `cancelar mar 10:00` dice «cancelada», y el test `cancelar respeta el día` lo da por bueno (`test/app.test.js:13`).
+
+**No es un patch.** El fallo es determinista, pero el arreglo no está fijado. Habría que decidir tres cosas que se ven desde fuera:
+- el texto del mensaje cuando no existe la reserva;
+- cómo se identifica una reserva (las `bookings` guardan `slot: '10:00-12:00'` y `cancelar` recibe solo `día hora`);
+- si cancelar debe quitarla de la lista.
+
+Si decido yo el texto y la regla, es una feature aunque sea pequeña. Además el test actual tendría que cambiar.
+
+**Puede ir en lite.** Cumple las condiciones:
+- El flujo ya existe y se lee en `run`.
+- No cambia contratos públicos: la CLI solo cambia el texto de un caso de error.
+- No toca ningún esquema de datos.
+- Cabe en un solo módulo, `src/app.js`.
+- No hay `estimation.md`, así que esa condición no aplica.
+
+Perfil: `delegate`, el valor por defecto del proyecto (no hay `sdd-kit.local.json` ni `control.profile`). Las dependencias no hacen falta: es Node sin paquetes.
+
+¿Cómo lo llevamos?
+
+1. **Lite (recomendada):** spec corta, sin plan, con tu aprobación de la spec antes de tocar código. Te haré las preguntas de texto y regla en la entrevista.
+2. **Feature en modo full:** spec completa más plan. Es más ceremonia de la que pide un cambio de una función.
+3. **Otro perfil:** dime «perfil `pair` para esto» (o `unattended`) junto con la opción 1 o 2.
+
+Si vas a estar fuera, añade «apruebo la spec por delegación, nos vemos en la validación».

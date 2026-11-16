@@ -1,0 +1,179 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Grep: export|exporta|Export
+<<< Found 15 files
+test\export.test.js
+src\export\writer.js
+src\export\index.js
+src\export\ics.js
+src\export\filter.js
+src\cli.js
+src\bookings\repository.js
+ROADMAP.md
+README.md
+PRODUCT.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\architecture.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+
+>>> Glob: **/*
+<<< .docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\steering\architecture.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+data\bookings.json
+package.json
+src\bookings\repository.js
+src\cli.js
+src\export\filter.js
+src\export\ics.js
+src\export\index.js
+src\export\writer.js
+test\export.test.js
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commit-msg.sample
+.git\hooks\fsmonitor-watchman.sample
+.git\hooks\post-u
+
+>>> Read: <run>\repo\src\cli.js
+<<< 1	import { exportMonth } from './export/index.js';
+2	
+3	const [command, ...args] = process.argv.slice(2);
+4	
+5	if (command === 'exportar') {
+6	  const month = args[args.indexOf('--mes') + 1];
+7	  console.log(exportMonth(month));
+8	}
+9	
+
+>>> Read: <run>\repo\src\export\index.js
+<<< 1	import { loadBookings } from '../bookings/repository.js';
+2	import { bookingsBySlot } from './filter.js';
+3	import { toIcs } from './ics.js';
+4	import { writeExport } from './writer.js';
+5	
+6	export function exportMonth(month) {
+7	  return writeExport(month, toIcs(bookingsBySlot(loadBookings(), month)));
+8	}
+9	
+
+>>> Read: <run>\repo\src\export\filter.js
+<<< 1	export function bookingsBySlot(bookings, month) {
+2	  return bookings
+3	    .filter((booking) => booking.day.startsWith(month) && booking.status !== 'cancelled')
+4	    .sort((a, b) => `${a.day} ${a.slot}`.localeCompare(`${b.day} ${b.slot}`));
+5	}
+6	
+
+>>> Read: <run>\repo\src\export\ics.js
+<<< 1	const COWORKING_OFFSET = '+02:00';
+2	
+3	function toUtcStamp(day, time) {
+4	  const utc = new Date(`${day}T${time}:00${COWORKING_OFFSET}`).toISOString();
+5	  return utc.replace(/[-:]/g, '').slice(0, 15);
+6	}
+7	
+8	function toEvent(booking) {
+9	  const [start, end] = booking.slot.split('-');
+10	  return [
+11	    'BEGIN:VEVENT',
+12	    `SUMMARY:Sala ${booking.room}`,
+13	    `DTSTART:${toUtcStamp(booking.day, start)}`,
+14	    `DTEND:${toUtcStamp(booking.day, end)}`,
+15	    'END:VEVENT',
+16	  ].join('\r\n');
+17	}
+18	
+19	export function toIcs(bookings) {
+20	  return ['BEGIN:VCALENDAR', 'VERSION:2.0
+
+>>> Read: <run>\repo\src\export\writer.js
+<<< 1	import { mkdirSync, writeFileSync } from 'node:fs';
+2	
+3	export function writeExport(month, ics) {
+4	  mkdirSync('exports', { recursive: true });
+5	  const path = `exports/${month}.ics`;
+6	  writeFileSync(path, ics);
+7	  return path;
+8	}
+9	
+
+>>> Read: <run>\repo\src\bookings\repository.js
+<<< 1	import { readFileSync } from 'node:fs';
+2	
+3	const DATA = new URL('../../data/bookings.json', import.meta.url);
+4	
+5	export function loadBookings() {
+6	  return JSON.parse(readFileSync(DATA, 'utf8'));
+7	}
+8	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# exportes
+2	
+3	## Users
+4	
+5	- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+6	- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+7	- **Dev**: desarrolla la herramienta.
+8	
+9	## Product Purpose
+10	
+11	Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+12	
+13	## Capabilities and Constraints
+14	
+15	- **Es**: reservar, cancelar y exportar las 
+
+>>> Read: <run>\repo\data\bookings.json
+<<< 1	[
+2	  { "room": "Norte", "day": "2026-03-02", "slot": "10:00-12:00", "status": "confirmed" },
+3	  { "room": "Sur", "day": "2026-03-05", "slot": "16:00-17:00", "status": "confirmed" },
+4	  { "room": "Norte", "day": "2026-03-12", "slot": "09:00-10:00", "status": "cancelled" },
+5	  { "room": "Norte", "day": "2026-03-19", "slot": "12:00-13:30", "status": "confirmed" },
+6	  { "room": "Sur", "day": "2026-04-01", "slot": "10:00-11:00", "status": "confirmed" }
+7	]
+8	
+
+=== RESULTADO (13 turnos, 0.1292204 $)
+Sigo la exportación de marzo de 2026, con las cinco reservas que hay ahora en los datos.
+
+## El viaje, paso a paso
+
+1. **Pides la exportación.** Escribes en la terminal la orden de exportar con el mes `2026-03`. El programa recoge ese mes y lo pasa al resto de pasos.
+2. **Se leen las reservas.** El programa abre el fichero de datos y carga las cinco reservas: cuatro de marzo y una de abril.
+3. **Se eligen las del mes.** Se quedan las reservas cuyo día empieza por `2026-03` y que no están canceladas.
+   - La del 12 de marzo (sala Norte, 09:00-10:00) se descarta porque está cancelada.
+   - La del 1 de abril se descarta porque es de otro mes.
+   - Quedan tres: Norte el 2 (10:00-12:00), Sur el 5 (16:00-17:00) y Norte el 19 (12:00-13:30). Se ordenan por día y por franja.
+4. **Cada reserva pasa a ser un evento de calendario.** El evento se titula «Sala Norte» y lleva el inicio y el fin de la franja. El programa convierte las horas a UTC, el reloj de referencia que usan los calendarios. El coworking va dos horas por delante de UTC, así que la reserva del día 2 de las 10:00 sale como las 08:00.
+5. **Los eventos se juntan en un solo calendario.** Es un único bloque con los tres eventos dentro.
+6. **Se guarda el fichero.** El programa crea la carpeta de exportaciones si no existe y guarda ahí la exportación con el nombre del mes. Si ya había una de ese mes, la sobrescribe. Al terminar, la terminal te muestra dónde ha quedado.
+
+Después, fuera del programa, abres el fichero en tu calendario (Google Calendar u Outlook) y lo importas.
+
+## Un detalle que he visto
+
+Las horas salen en UTC pero sin la marca que lo indica. Por lo que leo en el código, un calendario podría tomarlas como hora local y mostrar el 08:00 donde debería salir el 10:00. No lo he ejecutado ni lo he probado con un calendario real, así que tómalo como sospecha.
+
+## Dónde mirar
+
+- Paso 1: `src/cli.js`
+- Pasos 1-6, el orden completo: `src/export/index.js`
+- Paso 2: `src/bookings/repository.js` y `data/bookings.json`
+- Paso 3: `src/export/filter.js`
+- Pasos 4 y 5: `src/export/ics.js`
+- Paso 6: `src/export/writer.js`; el fichero queda en `exports/2026-03.ics`
+
+¿Quieres que te aclare algún paso?

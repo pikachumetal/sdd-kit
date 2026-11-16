@@ -1,0 +1,61 @@
+--- [3]
+Ahora: leo spec, plan y tasks.md de la 0010 para ver la Task 2. Queda: decidir si el THEN de «quién canceló» es una desviación, ~2 min.
+
+--- [14]
+The edit went through (the node fallback ran). I'm checking the diff, then dispatching the reviewer.
+
+--- [21]
+🦆 La Task 2 pide que `canceladas` responda «Norte lun — sala ocupada — Ana». Para eso hace falta saber quién canceló, y la aplicación no lo sabe. Cada reserva guarda solo sala, día, franja y estado. `cancelar` no recibe ningún usuario y el código no lee ninguna variable de entorno. `PRODUCT.md` dice además que la usa una sola persona, así que no hay a quién atribuir la cancelación. No puedo cumplir ese THEN sin inventar un dato, y eso cambia la spec. Por eso paro aquí y no lo dejo como `Ruling:`.
+
+La petición de la roadmap solo habla de que el listado «enseñe el motivo». El «quién» lo añadí yo en la decisión 2.
+
+He dejado la corrección que recomiendo en `spec.md`, sin commitear. Lo que cambia:
+- **Decisión 2:** el listado enseña sala, día y motivo, y «quién canceló» queda fuera.
+- **Scope, «No entra»:** identificar a quien cancela, porque requiere usuarios o un dato de identidad que hoy no existe.
+- **THEN:** responde «Norte lun — sala ocupada», sin «— Ana», y el GIVEN pierde «por Ana».
+- **Enmiendas:** línea fechada y marcada `sin aprobar`.
+
+Como alternativa, se puede añadir un argumento `--por <nombre>` a `cancelar`. No lo recomiendo, porque inventa una interfaz que nadie ha pedido.
+
+**Revisión de la enmienda** (un revisor sonnet, siete puntos). Estos son sus hallazgos, ordenados por importancia:
+- **Crítico, la spec no está aprobada tal como queda.** La enmienda quita algo que Laura aprobó, así que la Task 2 queda bloqueada hasta que la apruebe.
+- **Crítico, sin verificar por mí.** Dice que no existe `.docs/sdd/capabilities/` para `bookings`. Además, `cancelar` sin `--motivo` hoy funciona y pasaría a fallar, lo que sería un MODIFIED sin declarar. Esto viene de la Task 1, ya cerrada, y no cambia con la enmienda.
+- **Importante:** habría que contrastar la premisa con `PRODUCT.md`, que dice que una reserva va «a nombre de quien la pide». Lo he hecho y la premisa se sostiene: eso es terminología y el dato no se guarda.
+- **Importante, ya fuera del alcance de la enmienda:**
+  - Faltan escenarios para sala o día sin reserva, para una reserva ya cancelada y para el estado vacío o el orden de `canceladas`.
+  - La regla de 24 h y la separación entre cancelaciones y anulaciones están sin declarar.
+  - No se dice qué pasa con las canceladas antiguas que no tienen motivo.
+- **Menor:** formato de los motivos (comillas, mayúsculas, si «otro» admite texto libre), si hace falta revisar de nuevo la decisión «sin review de spec», y un test por escenario.
+
+No he commiteado nada. `tasks.md` deja la Task 2 en `in_progress` y la Task 1 sigue `done`.
+
+✋ Necesito tu decisión, y la de Laura como dev-lead, antes de seguir con la Task 2:
+1. ¿Apruebas la enmienda recomendada (quitar «quién canceló» y dejarlo para una feature con identidad)? Si sí, la Task 2 implementa solo `canceladas` con sala, día y motivo.
+2. ¿Quieres que los hallazgos «Importante» que ya no dependen de la enmienda (escenarios vacío, orden, sin reserva, canceladas antiguas) entren en esta spec o los anoto en el roadmap? Mi recomendación es añadir solo el escenario de lista vacía y el de varias canceladas, porque la Task 2 los necesita para su test. El resto va al roadmap.
+
+--- [23]
+Apruebo registrado. Como la enmienda solo afecta a la Task 2, que está en curso, el trabajo sigue en ella. Ahora: cierro la enmienda en `spec.md` y la commiteo. Después escribo el test RED de la Task 2. Queda: implementar `canceladas`, verificar y commitear, ~5 min.
+
+--- [27]
+RED por fallo, con el motivo esperado: `canceladas` hoy cae en la respuesta por defecto. Ahora lo implemento.
+
+--- [33]
+The `\n` se convirtió en un salto de línea real dentro del literal. Lo arreglo con Edit.
+
+--- [38]
+La Task 2 está hecha y commiteada, con la enmienda aprobada. El árbol está limpio. Solo he ejecutado `node --test test/cancel.test.js` (3 de 3 pasan). El gate completo (`node --test`) y la revisión final no se han ejecutado.
+
+- **`073e4e2`:** commit de la enmienda en `spec.md`. El listado no enseña quién canceló, y las marcas `sin aprobar` pasan a «aprobada por el dev-lead».
+- **`8ab582c`:** la Task 2. `canceladas` responde «Norte lun — sala ocupada», una línea por reserva cancelada. El commit incluye `tasks.md`, que marca la Task 2 como `done` con la nota de la enmienda.
+- **Test:** lo escribí antes de implementar y falló como esperaba, porque `canceladas` caía en la respuesta por defecto. El test commiteado es idéntico a la copia RED que guardé fuera del repo. Importa el módulo con una query string para tener estado limpio y no depender del orden de los tests.
+- **Tropiezo:** mi primera edición de `src/app.js` dejó un salto de línea real dentro de un literal y rompió la sintaxis. Lo vi al lanzar la suite, lo corregí con Edit y no llegó a ningún commit.
+
+No he añadido los escenarios de lista vacía y de varias canceladas. Solo aprobaste la enmienda y mi recomendación sobre ellos sigue sin respuesta. El resto de hallazgos «Importante» del revisor está sin tratar:
+- Sala o día sin reserva.
+- Canceladas antiguas sin motivo.
+- La regla de 24 h.
+- Cancelaciones frente a anulaciones.
+- `cancelar` sin `--motivo`, que antes funcionaba y ahora falla.
+
+Quedan el gate de cierre (`node --test`) y la revisión final de la rama, que van con `sdd-implement-native` y `sdd-verify`. Dime si los lanzo ahora o prefieres decidir antes qué hacemos con esos hallazgos.
+

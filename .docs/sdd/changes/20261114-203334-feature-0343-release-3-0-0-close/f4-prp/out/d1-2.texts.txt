@@ -1,0 +1,50 @@
+--- [9]
+Dependencias: no hay `package.json` con deps (solo `engines`), así que no hay nada que instalar. Miro el código y el patch anterior (0007, parecido).
+
+--- [31]
+RED correcto: los dos tests fallan por la causa que investigué. Aplico el fix mínimo.
+
+--- [37]
+Verde: 5/5 tests y lint limpio. Ahora, como exige el flujo del patch, un revisor independiente mira la causa, el fix y el test antes del commit.
+
+--- [46]
+El shell rompió las comillas del `patch.md`, así que reescribo la sección 4 con Edit.
+
+--- [49]
+Commit del fix hecho. Cierro con `sdd-archive`.
+
+--- [55]
+Arreglado y commiteado, pero el cierre está parado: falta que lo valides tú.
+
+🦆 Antes, `cancelar Norte mar` cancelaba la primera reserva activa de Norte, la del lunes, y respondía con el día que habías pedido. Ahora, si no hay reserva ese día, responde `sin reserva Norte mar` y la del lunes sigue viva.
+
+**Causa raíz:** `findBooking(room, day)` en `src/app.js:9` recibía `day` y no lo comparaba. `anular` usa la misma función y tenía el mismo fallo, así que queda arreglado también.
+
+**Fix:** una condición, `b.day === day`, más un test de regresión en `test/cancel.test.js`. Commit `3438c7f` en `feature/0012-cancel-ignora-dia`.
+
+**Verificado por mí:**
+- **RED:** antes del fix fallaban 2 tests, por la causa descrita.
+- **Gate:** `node --test && node scripts/lint.mjs` da 5/5 tests y lint limpio.
+- **Revisión:** un revisor independiente confirmó causa, fix y test. Le rechacé dos observaciones: la dependencia del orden entre tests, y que `anular` no tenga test propio.
+- **Ejecución real:** el comando de abajo da `sin reserva Norte mar` y `cancelada Norte lun`.
+
+**✋ Me salí del plan en…** nada.
+
+**Para validar:** desde la raíz del repo, en un solo proceso porque las reservas viven en memoria:
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','mar'])); console.log(run('cancelar',['Norte','lun']))"
+```
+
+Debe imprimir `sin reserva Norte mar` y, después, `cancelada Norte lun`. Si el segundo dice `sin reserva Norte lun`, el fallo sigue.
+
+**Dime qué has probado y que funciona** (vale un «validado») **o difiere la validación.** Cuando lo hagas, hago lo que queda del cierre:
+- completar el `patch.md`;
+- la fila del roadmap;
+- el log de estimación;
+- el commit de cierre.
+
+**Pendiente además:** `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`. `sdd merge --check` se queja de eso, así que el merge a `develop` te lo presentaré para confirmar aunque el perfil sea `delegate`.
+
+**No terminado.** Falta tu validación y el merge. No borres el worktree `<run>\repo`.
+

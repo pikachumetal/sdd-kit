@@ -1,0 +1,62 @@
+--- [19]
+Ya he leído el paquete, la spec, el plan, la ADR 0003, las capacidades y los tests. El hallazgo principal: el aviso por correo sigue saliendo al anular. Este es el informe del eje Spec.
+
+## Revisión final: eje Spec (`dff3ae7`)
+
+Lo he revisado en una sola pasada. El diff tiene 8 líneas añadidas y 5 borradas.
+
+### Lo que está bien
+- `anular` sigue respondiendo «anulada <sala> <día>» (`src/app.js:19`). Así se respeta la decisión ✋ 1 y el requisito vigente «Anular una reserva» de `bookings`.
+- `anular-todas` (`src/app.js:22-26`) sigue igual, como pide el Scope.
+- `src/` no importa `node:fs` ni ningún paquete de base de datos. Se cumple la Confirmación de la ADR 0003.
+- `test/void.test.js` existe y pasa por el comando `anular`, como pide «Dónde se prueba».
+
+### Problemas
+
+#### Críticos (hay que arreglarlos)
+
+**1. El aviso eliminado (REMOVED) sigue enviándose.** `src/app.js:18`
+- **Qué falla:** el commit solo borra `formatMail` y cambia la forma del mensaje. `voidBooking` todavía mete `{ to: 'responsable', body: 'anulada … …' }` en `outbox`.
+- **Cómo se ve:** después de `anular Norte lun`, el comando `salida` (`src/app.js:29`, `:36`) devuelve «responsable: anulada Norte lun». El responsable sigue recibiendo el aviso. Solo han desaparecido el asunto y el sufijo «(enviado por correo)».
+- **Por qué importa:** la spec pide exactamente lo contrario: «REMOVED — Avisar por correo» y «`anular` deja de preparar el aviso».
+- **Cómo arreglarlo:** quitar el `outbox.push` de `voidBooking`.
+- **Tipo de hueco:** `contradicts`.
+- **Origen:** el REMOVED de `bookings` y el Approach de la spec.
+
+#### Importantes (deberían arreglarse)
+
+**2. La decisión del dev-lead solo está cubierta a medias.** `src/app.js:18`
+- **La decisión:** «El aviso por correo al anular desaparece: el responsable avisa en persona».
+- **Lo que queda fuera:** la regla del diff quita el formato de correo, pero el aviso sigue llegando a «responsable» por la `outbox`.
+- **Cómo arreglarlo:** se resuelve con el mismo cambio que el problema 1.
+- **Tipo de hueco:** `partial`.
+- **Origen:** las decisiones tomadas con el dev-lead.
+
+**3. El test no comprueba que no haya aviso.** `test/void.test.js:5-7`
+- **Qué falla:** el test se llama «anular responde sin aviso», pero solo comprueba la respuesta de `anular`. Esa respuesta ya era la misma antes del cambio, así que el test pasa tanto con aviso como sin él. Por eso no detectó el problema 1.
+- **Cómo arreglarlo:** comprobar también que `outbox` no tiene entradas tras anular, o que `run('salida', [])` devuelve `''`.
+- **Tipo de hueco:** `missing`.
+- **Origen:** la línea «Anular sin aviso» de «Dónde se prueba».
+
+#### Menores
+Ninguno.
+
+ADR propuesta, no se exige: ninguna. La única ADR del alcance, la 0003, está aceptada y se cumple.
+
+### Fuera de lo que he juzgado
+- **`outbox`, `pending()` y el comando `salida` siguen en el código.** Cuando se quite el aviso, `salida` siempre saldrá vacío. La spec no dice si `salida` se queda o se quita, y es una decisión de alcance para el ejecutor.
+- **`test/app.test.js:9` y `test/cancel.test.js` llaman a comandos que `run` no tiene.** Son `reservar`, `cancelar` e `informe`, y la capacidad `reports` también habla de `informe`. Con este `src/app.js`, esos tests deberían fallar. Ya era así antes del diff y no lo toca, así que queda fuera del eje Spec. Lo apunto para quien ejecute la suite completa.
+
+### Sin verificar
+- **Resultado real de `node --test test/void.test.js`:** no verificado, porque no hay informe de task con evidencia y el brief me prohíbe ejecutar la suite.
+
+### Recomendaciones
+- Ejecutar la suite completa en el hilo principal, sobre todo por `cancel.test.js` y `app.test.js`.
+- Después del arreglo, añadir una comprobación de `salida` vacía tras `anular`.
+
+### Valoración
+
+**¿Se puede fusionar?** No.
+
+**Motivo:** el comportamiento que el delta elimina, el aviso al responsable al anular, se sigue ejecutando. El cambio solo modifica la forma del mensaje, y el test asociado no puede detectarlo.
+

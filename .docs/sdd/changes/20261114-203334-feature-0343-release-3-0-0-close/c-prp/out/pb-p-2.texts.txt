@@ -1,0 +1,49 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs, no código). Queda: clasificar, anunciar y escribir la spec, hasta tu aprobación, ~5 min.
+
+--- [15]
+Corrijo el anuncio: pediste perfil `pair`, así que rige para esta feature y no el `delegate` del proyecto. Lo dejo escrito en la spec (`profile: pair`).
+
+Ahora: entrevista, enfoques de construcción. Queda: tu elección de enfoque, el diseño por secciones (5 tasks), la spec con revisión y tu aprobación, ~10 min.
+
+**Lo que he entendido (corrígeme):** un comando `informes` con cuatro vistas, ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado, más `--sala <nombre>`, que filtra las cuatro. La salida es una tabla de texto. Sin reservas, cada vista dice «sin reservas». El plan sale en 5 tasks: una por vista y otra para `--sala`.
+
+Rama `feature/0012-informes` creada con el id 0012 (reservado y comprobado). Las reservas viven en memoria y `src/app.js` es el único fichero de entrada.
+
+❓ **¿Cómo se construye?**
+Hoy `src/app.js` tiene `bookings` con `room`, `day`, `slot` y `status`, y `run(cmd, params)` despacha los comandos. `architecture.md` dice «un solo fichero de entrada».
+
+1️⃣ **Una función por vista en `src/app.js`, con dos ayudantes compartidos (`countBy` y `table`).** Cada task añade su vista y reutiliza los ayudantes; `--sala` filtra la lista de reservas antes de cualquier vista. Cuesta crecer `app.js`, pero mantiene la estructura que describe `architecture.md`.
+2️⃣ **Un fichero nuevo `src/informes.js`, importado por `app.js`.** Separa el código, pero hay que exportar `bookings` y `rooms` y ampliar la arquitectura. `app.js` ejecuta `console.log` al importarse, lo que complica los tests.
+3️⃣ **Vistas declarativas: una tabla de configuración (clave de agrupación, cabecera) y un único renderizador.** Hay menos código, pero «salas que nadie ha reservado» no es un recuento sino un complemento, así que no encaja y quedaría como excepción.
+
+➡️ **Recomiendo 1️⃣**, porque respeta «un solo fichero de entrada» y cada vista queda como una task independiente. A cambio, `app.js` se hace más largo.
+
+¿Qué enfoque eliges?
+
+--- [17]
+Sigo con el enfoque 1️⃣. Es el valor central de la spec y quedará en su Approach. Como hay 5 tasks previstas, presento el diseño por secciones, una por mensaje.
+
+Ahora: diseño por secciones, sección 1 de 3. Queda: dos secciones más, la spec con revisión y tu aprobación, ~8 min.
+
+**Sección 1: el comando y la ocupación por sala**
+
+Para quien lo usa, `node src/app.js informes` imprime las cuatro vistas una tras otra, cada una con su título y su tabla de texto. La primera es la ocupación por sala. Con los datos de hoy (una reserva de Norte el lunes de 10:00 a 12:00):
+
+```text
+Ocupación por sala
+sala   reservas
+Norte  1
+Sur    0
+```
+
+Es lo que propongo yo, y lo anoto como decisión mía:
+- «Ocupación» es el número de reservas activas. Las canceladas y las anuladas no cuentan, porque la sala quedó libre.
+- Salen todas las salas, también las de 0 reservas, en el orden de `rooms`.
+- No hay porcentaje, porque el producto no define una capacidad por sala.
+- Con 0 reservas activas en total, la vista imprime solo su título y «sin reservas», sin tabla.
+
+Con `--sala Norte` la vista solo trae la fila de Norte.
+
+¿Va bien así la sección 1?
+

@@ -256,5 +256,5 @@ Then invoke `sdd-archive` with `Skill`: its first step is the validation.
 | "Tests should pass, the change was trivial" | "Should" is not evidence. The contract requires the command and its output. |
 | "Subagents are slow and expensive, I'll skip the final review too" | Inline already removed the per-task reviewers. One review of the whole branch is the floor, not the ceiling. |
 | "The reviewer said Minor, so it's Minor" | The label graded the spec's silence. Grade what the person gets. Re-grade, then gate. |
-| "The fix is obvious, no need for a failing test first" | The failing test is the only proof the finding was real and is now gone. Without it you have a diff and a hope. |
+| "The dev-lead said no tests, so I commit and close the task" | Their order lifts the test-first rule of `sdd-tdd`, not the test: without its test the task stays uncommitted and open, and your message says the test is missing. |
 | "I'll fix the minors too while I'm in there" | Every minor you fix is a test, a fix, and a suite run that only the final review's `review.minors: fix` asks for; otherwise, ledger them. |

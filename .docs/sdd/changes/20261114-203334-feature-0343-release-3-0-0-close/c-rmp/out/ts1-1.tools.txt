@@ -1,0 +1,304 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: git branch --all; ls; cat .docs/sdd/steering/debt.md; cat .docs/sdd/sdd-kit.json; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< * develop
+  main
+CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres, ni qué da sin número | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+
+
+>>> Bash: cat docs/qa/2026-10-12-informe.md; cat ROADMAP.md; cat docs/ayuda.md; ls -R src test; cat package.json; cat .docs/sdd/steering/debt-template.md 2>/dev/null | head -5; git log --oneline
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-templates\templates\debt-template.md
+<<< 1	# Deuda técnica — <proyecto>
+2	
+3	> Documento de estado de la deuda técnica: dice dónde está cada ítem hoy, no su historia. Lo escribe `sdd-roadmap`, al triar, y los cierres (`sdd-archive`), que quitan de «Lista» lo que saldan; lo leen `sdd-roadmap`, `sdd-debugging`, los cierres y `sdd roadmap check`. Borra los bloques de ayuda (`>`) al redactar. Solo ingeniería: las peticiones de producto van a Later de `ROADMAP.md`.
+4	>
+5	> **Las tres secciones y sus cabeceras van literales**, en este orden. Una celda vacía se escribe `—`. Un `|` dentro de una celda se escribe `\|`.
+6	>
+7	> **Fecha**: `AAA
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`. Arreglo propuesto: en `roomsOnFloor` de `src/app.js`, cambiar `<=` por `<`.
+3. `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres, ni qué da sin número. Arreglo propuesto: cambiar «`libres --planta <n>` lista las salas de la planta <n>» por «`libres --planta <n>` 
+
+>>> Bash: cat src/app.js; cat test/app.test.js; cat CHANGELOG.md; cat README.md | head -30; ls docs docs/*
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Oeste', 'Sur'];
+const floors = { Norte: 1, Oeste: 1, Sur: 3 };
+const occupiedNow = ['Oeste'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+function roomsOnFloor(floor) {
+  return rooms.filter((room) => floors[room] <= floor && !occupiedNow.includes(room)).map((room) => `${room} (planta ${floors[room]})`);
+}
+
+function exportCsv() {
+  const rows = bookings.map((b) => `${b.roo
+
+>>> Bash: node src/app.js libres --planta 2; echo; node src/app.js libres --planta; echo; node src/app.js exportar | od -c | head -3; node src/app.js exportar | head -1; node src/app.js exportar | iconv -f utf-8 -t ascii 2>&1 | head -1; git log --oneline -3 -- src
+<<< Norte (planta 1)
+
+Norte (planta 1), Sur (planta 3)
+
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+sala,d
+9fa9b29 feat: base del molde
+
+>>> Bash: node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" id next --project-root . --reserve --count 2; cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< 0014
+0015
+# Prompt de arranque — plantilla
+
+> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+>
+> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+>
+> - Cuenta lo que no encuentra mirando: cada decisión con su literal y su porqué. La constitution, el stack y el código los lee solo.
+> - En positivo: lo que tiene que hacer.
+> - Le
+
+>>> Bash: d=$(mktemp -d); cp -r src package.json "$d"/; sed -i 's/floors\[room\] <= floor/floors[room] === floor/' "$d/src/app.js"; node "$d/src/app.js" libres --planta 2; echo "|"; node "$d/src/app.js" libres --planta 1; echo "|"; sed 's/floors\[room\] === floor/floors[room] < floor/' "$d/src/app.js" > "$d/src/b.js"; node "$d/src/b.js" libres --planta 2
+<<< |
+Norte (planta 1)
+|
+Norte (planta 1)
+
+>>> Bash: python3 - <<'EOF'
+import re
+p='.docs/sdd/steering/debt.md'
+s=open(p,encoding='utf-8').read()
+a=s.index('## Por triar'); 
+new='''## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | sin determinar | `docs/qa/2026-10-12-informe.md` | Medio | reproducirlo | 2026-10-12 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `salas libres --planta 2` lista también salas de la planta 1 | defecto del producto | `docs/qa/2026-10-12-informe.md` | Medio | `node src/app.js libres --planta 2` → `Norte (planta 1)` | ninguno | — | 0014 |
+| `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres, ni qué da sin número | defecto del producto | `docs/qa/2026-10-12-informe.md` | Bajo | `node src/app.js libres --planta` → `Norte (planta 1), Sur (planta 3)`, y `docs/ayuda.md` dice «indica una planta» | ninguno | — | 0015 |
+'''
+open(p,'w',encoding='utf-8').write(s[:a]+new)
+
+p='ROADMAP.md'
+s=open(p,encoding='utf-8').read()
+rows='''| 0014 | — | **`libres --planta <n>` solo lista la planta pedida**<br>*Con `--planta 2` sale `Norte (planta 1)`*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `docs/qa/2026-10-12-informe.md`, hallazgo 2<br>**Decisiones ya tomadas:** en `roomsOnFloor` de `src/app.js`, `floors[room] <= floor` pasa a `floors[room] === floor`; el `<` que propone el informe no sirve, porque con la planta 2 sigue listando `Norte (planta 1)` (probado en una copia)<br>**Salda:** `salas libres --planta 2` lista también salas de la planta 1<br>**Toca:** `src/app.js`, `test/app.test.js`</details> | ⏳ | — | S |
+| 0015 | — | **La ayuda de `libres --planta` dice lo que hace**<br>*Solo las libres, y todas las plantas sin número*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** `docs/qa/2026-10-12-informe.md`, hallazgo 3<br>**Decisiones ya tomadas:** en `docs/ayuda.md`, la frase «`libres --planta <n>` lista las salas de la planta <n>; sin número, responde «indica una planta».» pasa a «`libres --planta <n>` lista las salas libres de la planta <n>; sin número, las libres de todas las plantas.»<br>**Salda:** `docs/ayuda.md` no dice que `libres --planta` lista solo las salas libres, ni qué da sin número<br>**Toca:** `docs/ayuda.md`</details> | ⏳ | — | S |
+'''
+i=s.index('## Next')
+s=s[:i].rstrip('\n')+'\n'+rows+'\n'+s[i:]
+open(p,'w',encoding='utf-8').write(s)
+EOF
+node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" roadmap check --path .docs/sdd
+node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" roadmap publish --project-root . --message "docs: triaje de la deuda
+
+Decidido en delegado:
+- CSV sin tildes: a «En espera» (falta reproducirlo; la salida de src es UTF-8 correcta).
+- libres --planta 2: a «Lista», fila 0014. El '<' del informe no arregla; vale '==='.
+- ayuda de libres --planta: a «Lista», fila 0015.
+- Descartada «reservas de más de 8 h no avisan al responsable»: caducada (en espera desde 2026-07-01, dos releases 1.3.0+ sin 2.º caso).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ROADMAP.md .docs/sdd/steering/debt.md; git log --oneline -2; git status --short
+<<< Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+debt.md: aviso: línea 15: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+Roadmap válido
+git commit falló en '<run>\repo': On branch develop
+nothing to commit, working tree clean
+9fa9b29 feat: base del molde
+
+>>> Bash: cat > /tmp/t.mjs <<'EOF'
+import fs from 'fs';
+let p='.docs/sdd/steering/debt.md';
+let s=fs.readFileSync(p,'utf8');
+const a=s.indexOf('## Por triar');
+const nw=`## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | sin determinar | \`docs/qa/2026-10-12-informe.md\` | medio | reproducirlo | 2026-10-12 |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| \`salas libres --planta 2\` lista también salas de la planta 1 | defecto del producto | \`docs/qa/2026-10-12-informe.md\` | medio | \`node src/app.js libres --planta 2\` → \`Norte (planta 1)\` | ninguno | — | 0014 |
+| \`docs/ayuda.md\` no dice que \`libres --planta\` lista solo las salas libres, ni qué da sin número | defecto del producto | \`docs/qa/2026-10-12-informe.md\` | bajo | \`node src/app.js libres --planta\` → \`Norte (planta 1), Sur (planta 3)\`, y \`docs/ayuda.md\` dice «indica una planta» | ninguno | — | 0015 |
+`;
+fs.writeFileSync(p,s.slice(0,a)+nw);
+p='ROADMAP.md'; s=fs.readFileSync(p,'utf8');
+const rows=`| 0014 | — | **\`libres --planta <n>\` solo lista la planta pedida**<br>*Con \`--planta 2\` sale \`Norte (planta 1)\`*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** \`docs/qa/2026-10-12-informe.md\`, hallazgo 2<br>**Decisiones ya tomadas:** en \`roomsOnFloor\` de \`src/app.js\`, \`floors[room] <= floor\` pasa a \`floors[room] === floor\`; el \`<\` que propone el informe no sirve, porque con la planta 2 sigue listando \`Norte (planta 1)\` (probado en una copia)<br>**Salda:** \`salas libres --planta 2\` lista también salas de la planta 1<br>**Toca:** \`src/app.js\`, \`test/app.test.js\`</details> | ⏳ | — | S |
+| 0015 | — | **La ayuda de \`libres --planta\` dice lo que hace**<br>*Solo las libres, y todas las plantas sin número*<details><summary>Brief</summary>**Carril:** patch<br>**Requisitos:** \`docs/qa/2026-10-12-informe.md\`, hallazgo 3<br>**Decisiones ya tomadas:** en \`docs/ayuda.md\`, la frase «\`libres --planta <n>\` lista las salas de la planta <n>; sin número, responde «indica una planta».» pasa a «\`libres --planta <n>\` lista las salas libres de la planta <n>; sin número, las libres de todas las plantas.»<br>**Salda:** \`docs/ayuda.md\` no dice que \`libres --planta\` lista solo las salas libres, ni qué da sin número<br>**Toca:** \`docs/ayuda.md\`</details> | ⏳ | — | S |
+`;
+const i=s.indexOf('## Next');
+fs.writeFileSync(p,s.slice(0,i).replace(/\n+$/,'\n')+rows+'\n'+s.slice(i));
+EOF
+node /tmp/t.mjs
+S="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"
+node "$S" roadmap check --path .docs/sdd
+node "$S" roadmap publish --project-root . --message "docs: triaje de la deuda
+
+Decidido en delegado:
+- CSV sin tildes: a «En espera» (falta reproducirlo; la salida de src es UTF-8 correcta).
+- libres --planta 2: a «Lista», fila 0014. El '<' del informe no arregla; vale '==='.
+- ayuda de libres --planta: a «Lista», fila 0015.
+- Descartada «reservas de más de 8 h no avisan al responsable»: caducada (en espera desde 2026-07-01, dos releases X.Y.0 sin 2.º caso).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ROADMAP.md .docs/sdd/steering/debt.md; git log --oneline -2; git status --short
+<<< ROADMAP.md: línea 11: fila fuera de una tabla con cabecera y separador
+ROADMAP.md: línea 12: fila fuera de una tabla con cabecera y separador
+destino con cambios: ROADMAP.md en <run>\repo
+9fa9b29 feat: base del molde
+ M .docs/sdd/steering/debt.md
+ M ROADMAP.md
+
+>>> Bash: sed -n 5,16p ROADMAP.md | cut -c1-60
+<<< Perfil de control: delegate
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0012 | — | **Exportar a Excel**<br>*Una hoja por sala co
+
+| 0014 | — | **`libres --planta <n>` solo lista la planta 
+| 0015 | — | **La ayuda de `libres --planta` dice lo que h
+
+## Next
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+
+>>> Bash: sed -i '10{/^$/d}' ROADMAP.md
+S="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"
+node "$S" roadmap check --path .docs/sdd
+node "$S" roadmap publish --project-root . --message "docs: triaje de la deuda
+
+Decidido en delegado:
+- CSV sin tildes: a «En espera» (falta reproducirlo; la salida de src es UTF-8 correcta).
+- libres --planta 2: a «Lista», fila 0014. El '<' del informe no arregla; vale '==='.
+- ayuda de libres --planta: a «Lista», fila 0015.
+- Descartada «reservas de más de 8 h no avisan al responsable»: caducada (en espera desde 2026-07-01, dos releases X.Y.0 sin 2.º caso).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" ROADMAP.md .docs/sdd/steering/debt.md; git log --oneline -2; git status --short
+<<< ROADMAP.md: aviso: línea 17: la 0013 y la 0014 (línea 10) tocan `src/app.js` sin «tras» entre ellas
+Roadmap válido
+destino con cambios: ROADMAP.md en <run>\repo
+9fa9b29 feat: base del molde
+ M .docs/sdd/steering/debt.md
+ M ROADMAP.md
+
+>>> Bash: sed -i '/^| 0013 /s/| ⏳ | 0012 | M |$/| ⏳ | 0012, 0014 | M |/' ROADMAP.md
+S="C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js"
+node "$S" roadmap check --path .docs/sdd
+git add ROADMAP.md .docs/sdd/steering/debt.md && git commit -q -F - <<'EOF'
+docs: triaje de la deuda
+
+Decidido en delegado:
+- CSV sin tildes: a «En espera» (falta reproducirlo; la salida de src es UTF-8 correcta).
+- libres --planta 2: a «Lista», fila 0014. El '<' del informe no arregla; vale '==='.
+- ayuda de libres --planta: a «Lista», fila 0015.
+- Descartada «reservas de más de 8 h no avisan al responsable»: caducada (en espera desde 2026-07-01, dos releases X.Y.0 sin 2.º caso).
+- 0013 pasa a ir tras 0014: ambas tocan src/app.js.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+EOF
+git log --oneline -2; git status --short
+<<< Roadmap válido
+warning: in the working copy of '.docs/sdd/steering/debt.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'ROADMAP.md', LF will be replaced by CRLF the next time Git touches it
+8b62ee3 docs: triaje de la deuda
+9fa9b29 feat: base del molde
+
+=== RESULTADO (15 turnos, 0.28343399999999996 $)
+He triado la deuda: las 3 filas de «Por triar» tienen destino, y la fila vieja de «En espera» se descartó. Está commiteado en `develop` (8b62ee3) y `sdd roadmap check` pasa sin avisos.
+
+Hice el commit con `git commit` directo porque `sdd roadmap publish` se negó: `develop` estaba en este worktree y reportó cambios en el destino. El commit lleva solo `ROADMAP.md` y `debt.md`.
+
+| Ítem | Resultado |
+| --- | --- |
+| `libres --planta 2` lista también la planta 1 | **«Lista»**, fila 0014 (patch, S). Lo reproduje: `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`. |
+| `docs/ayuda.md` no dice que solo lista las libres, ni qué da sin número | **«Lista»**, fila 0015 (patch, S). Reproducido: sin número devuelve `Norte (planta 1), Sur (planta 3)`, y la ayuda dice «indica una planta». |
+| CSV pierde las tildes | **«En espera»**, falta `reproducirlo`. La salida de `exportar` es UTF-8 correcta (`sala,día,franja`), así que el `?` del informe parece del terminal o del programa que abre el CSV. |
+| Reservas de más de 8 h no avisan al responsable | **Descartada** por caducada. Estaba en espera desde 2026-07-01 y ya hay dos releases `X.Y.0` desde entonces (1.3.0 y 1.4.0) sin segundo caso. |
+
+- **El arreglo del informe no sirve:** el hallazgo 2 propone cambiar `<=` por `<` en `roomsOnFloor`. Lo probé en una copia y con `<` la planta 2 sigue listando `Norte (planta 1)`. Lo que arregla es `===`, y así lo dejé en el brief de la 0014.
+- **Filas separadas:** no las junté porque el cambio es distinto.
+- **Orden:** el validador avisó de que la 0013 y la 0014 tocan `src/app.js` sin «tras», así que puse la 0013 tras `0012, 0014`.
+
+Va primero la 0014. Este es su prompt de arranque:
+
+### *🩹 0014 — `libres --planta <n>` solo lista la planta pedida*
+***Nombre:*** `feature/0014-floor-filter-exact`  
+***Base:*** `develop`  
+***Carril:*** `patch`
+
+***Prompt***
+
+```
+Arranca la 0014 con sdd-propose, carril patch: `libres --planta 2` lista también salas de la planta 1 (devuelve `Norte (planta 1)`); debe listar solo las de la planta pedida.
+
+Alcance:
+- `roomsOnFloor` de `src/app.js`: `floors[room] <= floor` pasa a `floors[room] === floor`
+- un test en `test/app.test.js` que pida la planta 2 y no devuelva `Norte (planta 1)`
+
+Fuera de alcance:
+- la ayuda de `docs/ayuda.md`: 0015
+
+Decisiones ya tomadas:
+- Se usa `===` y no el `<` que propone el informe, porque con `<` la planta 2 sigue listando `Norte (planta 1)` (probado en una copia)
+
+Antes de diseñar, lee:
+- docs/qa/2026-10-12-informe.md, hallazgo 2
+
+Salda la fila de deuda «`salas libres --planta 2` lista también salas de la planta 1».
+
+Está hecho cuando `node src/app.js libres --planta 2` no lista `Norte (planta 1)` y `node src/app.js libres --planta 1` sí lo lista.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

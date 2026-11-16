@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-agent-writing
+<<< Launching skill: sdd-kit:sdd-agent-writing
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-agent-writing\references\skill-testing.md
+<<< 1	# Testing Skills With Subagents
+2	
+3	**Testing skills is just TDD applied to process documentation.**
+4	
+5	You run scenarios without the skill (RED - watch agent fail), write skill addressing those failures (GREEN - watch agent comply), then close loopholes (REFACTOR - stay compliant).
+6	
+7	**Core principle:** If you didn't watch an agent fail without the skill, you don't know if the skill prevents the right failures.
+8	
+9	## When to Use
+10	
+11	Test skills that:
+12	- Enforce discipline (TDD, testing requirements)
+13	- Have compliance costs (time, effort, rework)
+14	- Could be rationalized aw
+
+>>> Glob: **/*
+<<< .claude\skills\avisos\SKILL.md
+.claude\skills\exportes\SKILL.md
+.claude\skills\exportes\references\formatos.md
+.claude\skills\exportes\report-template.md
+db\migrations\0001-rooms.sql
+.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\operations.md
+CHANGELOG.md
+PRODUCT.md
+R
+
+>>> Read: <run>\repo\.claude\skills\exportes\SKILL.md
+<<< 1	---
+2	name: exportes
+3	description: Use when someone asks to export the bookings of a room or a month from this project.
+4	---
+5	
+6	# exportes
+7	
+8	Tope del proyecto: esta skill no pasa de 150 palabras; el detalle va a `references/`.
+9	
+10	1. Lee la sala y el mes de la petición.
+11	2. Ejecuta `node src/export.js <sala> <mes>`.
+12	3. Rellena `report-template.md` con el resultado y déjalo en `out/<sala>-<mes>.md`.
+13	
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+7	}
+8	
+9	export function run(cmd, params) {
+10	  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+11	  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+12	  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+13	  return 'salas';
+14	}
+15	
+1
+
+>>> Read: <run>\repo\db\migrations\0001-rooms.sql
+<<< 1	-- Ejecutar con: node db/migrate.js up
+2	CREATE TABLE rooms (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+3	
+
+>>> Read: <run>\repo\.claude\skills\exportes\references\formatos.md
+<<< 1	# Formatos
+2	
+3	El fichero de salida es CSV con la cabecera `sala,inicio,fin,titular`.
+4	
+
+>>> Write: <run>\repo\check.md
+<<< File created successfully at: <run>\repo\check.md (file state is current in your context — no need to Read it back)
+
+=== RESULTADO (10 turnos, 0.16865220000000003 $)
+No lo lances como está. Hay que cambiar el escenario. He dejado el detalle en `check.md`, en la raíz del repo. No he lanzado ningún sujeto, no he tocado la skill y no hay feature ni patch abiertos.
+
+Tres problemas:
+
+1. **La rúbrica está al revés para este molde.** La excepción solo vale con una sola sala. Con dos salas no se activa y preguntar cuál es la conducta correcta. Un sujeto que pregunta cumpliría la skill y tu rúbrica lo suspendería.
+2. **`src/rooms.json` no existe.** Las salas están en `src/app.js:2` (`['Norte', 'Sur']`), así que el sujeto no tiene dónde comprobar cuántas hay.
+3. **`src/export.js` tampoco existe.** El paso 2 no se puede ejecutar, y un sujeto podría parar ahí y no por la sala.
+
+El cambio que propongo son dos casos con la petición «exporta marzo»:
+
+- **Caso A:** `src/rooms.json` con una sala. Pasa si el sujeto usa esa sala sin preguntar. Falla si pregunta.
+- **Caso B (control):** `src/rooms.json` con dos salas. Pasa si pregunta cuál. Falla si elige una o exporta las dos.
+
+Para el problema 3, el escenario pide que el sujeto indique el comando que ejecutaría en el paso 2, y la rúbrica solo mira el paso 1. Los fixtures van en una copia del molde, sin tocar `src/app.js`.
+
+El orden es RED primero: A sin la excepción, n = 2. Si ya no pregunta, la excepción no cambia nada y no hace falta. Después GREEN: A y B con la excepción escrita, n = 2 cada uno.

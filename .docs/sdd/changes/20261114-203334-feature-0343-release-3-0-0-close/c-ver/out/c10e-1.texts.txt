@@ -1,0 +1,73 @@
+--- [5]
+Leo los informes y el estado del workspace.
+
+--- [16]
+Los dos tests nuevos fallan en RED, como debe ser. Ahora arreglo el código: recorto el motivo y cambio la raya por un guion.
+
+--- [22]
+Diff limpio y 6/6 en verde. Commit del fix pass y registro en el ledger.
+
+--- [36]
+Ahora: la re-revisión única del fix pass (opus + high) está en marcha en segundo plano. Queda: leer su veredicto y pasar a la validación, ~5 min, ~0,5 $.
+
+Mientras tanto, esto es lo hecho:
+
+- **Informes leídos**, cada eje por separado:
+  - Spec: lista para fusionar, con 1 Minor (el test de `canceladas` dependía del orden).
+  - Código: con arreglos, con 1 Important (`reasonOf` no recortaba los espacios del motivo) y 1 Minor (la raya de `canceladas` sale rota en cp850).
+- **Eje Arquitectura:** no sale. Lo dice el plan y el diff no trae módulo, dependencia, contrato ni datos nuevos. Quedó en el ledger.
+- **Pasada de fix**, en un solo commit (`bc47862`), con `review.minors: fix`:
+  - Escribí primero los tests y vi fallar los dos nuevos.
+  - El motivo se recorta antes de validarlo.
+  - `canceladas` separa con ` - `.
+  - Cada test carga el módulo en limpio.
+  - Suite: 6/6 en verde.
+- **`tasks.md`:** añadí `Revisión final:` y `Pasada de fix:`. Corregí también el commit de la Task 1, que decía `3acc752` y es `4650e37`.
+
+✋ **Enmienda sin aprobar:** el THEN de `canceladas` en `spec.md` decía «Norte lun — sala ocupada». Lo cambié a ` - `, porque la decisión del dev-lead en «Decisiones tomadas con el dev-lead» ya lo fijaba por la consola cp850. Queda en «Enmiendas» marcada `sin aprobar`. Si Laura no la aprueba, hay que volver a la raya y a la consola rota.
+
+--- [41]
+### Finding Verdicts
+
+1. **`reasonOf` keeps the spaces around the reason** — ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`, so `cancelBooking` checks the trimmed value against the list and stores it trimmed. The optional chaining keeps the case of `--motivo` with no value after it: the reason is `undefined` and the answer is «motivo no válido: …», as before. The new test `test/cancel.test.js:12-15` ('cancelar acepta el motivo con espacios alrededor') passes `'sala ocupada '` and expects «cancelada Norte lun (sala ocupada)». It loads its own copy of the module, so the Norte lun booking is active and the test checks only the trim.
+
+2. **The ` — ` of `canceladas` breaks on a cp850 console** — ADDRESSED. `src/app.js:36` now joins with `` `${b.room} ${b.day} - ${b.reason}` ``. The spec's THEN was changed at `spec.md:63` to «Norte lun - sala ocupada», which matches the dev-lead decision at `spec.md:29`. That decision is outside the diff, so it was already in the spec before the fix. The change is recorded in «Enmiendas» at `spec.md:67` and marked `(sin aprobar)`. The code (`src/app.js:36`), the test assertion (`test/cancel.test.js:20`) and the amended THEN now give the same string.
+
+3. **The `canceladas` test depended on test order** — ADDRESSED. `test/cancel.test.js:4-5` adds a `load()` that imports `../src/app.js?test=${fresh++}`. Each query string gives Node ESM a separate module instance, and `bookings` lives in that module (`src/app.js:4`), so every test starts from a fresh array. The `canceladas` test (`test/cancel.test.js:17-21`) now cancels Norte lun itself before listing, so it no longer needs the `cancelar` test to have run first.
+
+### New Breakage in the Fix Diff
+
+None. On the constraint about modifying RED tests: the assertion change in `test/cancel.test.js:20` (raya to ` - `) and the new setup line in the same test are what findings 2 and 3 require, and they match the amended THEN. They don't weaken any check. The other two existing tests changed only how they load the module (`async` plus `load()`); their names, data and assertions are the same. All user-facing text is still in Spanish.
+
+### Out-of-Scope Observations
+
+- **Process, to settle before archive:** the amendment at `spec.md:67` is still `sin aprobar`. The front matter still says `status: approved`, and the «Aprobaciones» table (`spec.md:71-73`) still shows only the 2026-10-08 approval. The amended THEN has a basis in the dev-lead's recorded decision, but Laura still has to approve the amendment, or the record has to say it is covered by that decision.
+- `spec.md:24-25`: the list «Decisiones que he tomado yo» goes from 1 to 3, with no item 2. This is cosmetic and was already there.
+- `spec.md:58`: the AND for running without `--motivo` has no test in `test/cancel.test.js`. The gap was there before the fix.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [44]
+La re-revisión salió limpia y la revisión final de la 0010 está cerrada. Paro aquí en ✋ por la enmienda sin aprobar, que no puedo aprobar yo.
+
+**Re-revisión (`3acc752..bc47862`, opus + high):** los tres hallazgos quedaron resueltos y no hay roturas nuevas. Quité el worktree de revisión. En `tasks.md` está la línea `Re-revisión:`. El commit del fix pass (`bc47862`) quedó revisado por esa re-revisión.
+
+**Qué hay en el árbol:**
+- **Suite:** 6/6 en verde en mi última ejecución, antes del commit. No la he vuelto a lanzar tras la re-revisión: el gate de cierre completo lo corre la validación.
+- **`tasks.md`:** sigue sin versionar (`??`).
+
+✋ **Enmienda sin aprobar:** el THEN de `canceladas` pasa de «Norte lun — sala ocupada» a «Norte lun - sala ocupada». Se apoya en la decisión del dev-lead sobre la consola cp850, pero Laura tiene que aprobarla antes del archive. Por eso el `status: approved` y la tabla de aprobaciones siguen como estaban. Si no la aprueba, se vuelve a la raya y a la consola rota.
+
+**Observaciones de la re-revisión, fuera del diff:**
+- El AND de «sin `--motivo`» no tiene test propio. Lo dejé como `Final: Ruling:` porque no hay segunda pasada. El código ya lo cubre, y si falla ese camino, una regresión pasaría sin test.
+- La lista «Decisiones que he tomado yo» salta del 1 al 3. Es cosmético y ya estaba así.
+
+**Siguiente paso:** con tu OK a la enmienda, sigo con `sdd-archive` (validación, walkthrough y fusión). El walkthrough y el delta de `capabilities/` aún no están escritos.
+
+--- [45]
+Era el aviso de que terminó el vigilante de silencio de la re-revisión. No dice nada nuevo, y la re-revisión ya la di por leída arriba.
+
+Sigo parado en ✋. La enmienda del THEN de `canceladas` (` - ` en vez de la raya) sigue sin aprobar y no la voy a dar por buena yo. Cuando Laura la apruebe, o me digas cómo seguir, continúo con `sdd-archive`.
+

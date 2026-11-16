@@ -1,0 +1,112 @@
+--- [3]
+Ahora: termino el paso 4 con el pase de coherencia y la revisión de la spec. Queda: presentarte la spec para aprobar, ~5 min.
+
+--- [19]
+Sigo con la revisión de la spec: el merge del delta sobre una copia ya pasa, y ahora lanzo los dos revisores.
+
+--- [28]
+Los dos revisores (dominio en Opus, técnica en Sonnet) están corriendo en paralelo. Cuando terminen, integro sus hallazgos en la spec y te la presento para aprobar.
+
+--- [35]
+1. Crítico · Delta «Solo el responsable de la sala anula…» y Dependencia · El escenario presupone «Ana como responsable de Norte», pero la capacidad `room-managers` y su fichero los define la 0009, que no está construida, y la spec no declara ningún fixture ni forma de datos. No se puede escribir ni ejecutar el test, y el gate (`node --test`) fallaría o dependería de datos inventados. · Declarar la precondición de la 0009 como bloqueante en el frontmatter y el ROADMAP, o fijar en el escenario el contrato mínimo que se consume (función o formato del fichero) y cómo el test lo sustituye (stub o fixture).
+
+2. Crítico · Delta «Solo el responsable…» · Un solo escenario mezcla dos comportamientos: rechazo con `Luis` y éxito con `Ana`. El AND final es un segundo WHEN disfrazado. El escenario de éxito pasa sin comprobar el estado, porque «queda anulada» no dice cómo se observa. · Separar en dos escenarios (rechaza a no responsable; anula al responsable) y expresar el estado observable, por ejemplo que un `listar` posterior no muestra la reserva o que una segunda anulación responde X.
+
+3. Importante · Delta, todos los escenarios · «La reserva sigue activa» y «queda anulada» no tienen observable definido. Las reservas viven en memoria (`operations.md`) y cada invocación de `node src/app.js` es un proceso nuevo, así que el estado no persiste entre comandos. Un test por CLI no puede verificar el estado tras el rechazo. · Decir contra qué se prueba, por ejemplo llamando a `run`/`voidBooking` en el mismo proceso, e indicar la consulta de estado (comando o función) que confirma «sigue activa».
+
+4. Importante · Delta, GIVEN de los tres escenarios · «La reserva activa de Norte del lunes» y «la sala Oeste con reserva del lunes» no dicen cómo se crean. Falta el fixture, es decir, si el test reserva primero con el comando `reservar` y qué argumentos usa, o si siembra el estado en memoria. Oeste puede no existir como sala. · Indicar en cada GIVEN el paso de preparación (`reservar Norte lun ...`) y confirmar que Oeste es una sala válida sin responsable.
+
+5. Importante · Delta, textos de respuesta · Los textos literales («solo Ana anula reservas de Norte», «falta --como y el nombre», etc.) son un contrato, pero no se dice si salen por stdout o stderr, ni el código de salida en los rechazos. Un test puede pasar con cualquier canal o código. · Fijar canal y exit code de rechazo y de éxito en los escenarios.
+
+6. Importante · Approach / Delta · Hay casos sin escenario ni decisión. Son `--como` presente sin valor (`anular Norte lun --como`), nombre con distinta capitalización («ana»), reserva inexistente o ya anulada, y sala inexistente. El orden de comprobaciones pone «sin responsable» antes de «reserva inexistente», pero nada lo prueba. · Añadir escenarios, o declarar en «Decisiones» que quedan fuera, para `--como` sin valor, comparación sensible o no a mayúsculas, y reserva inexistente o ya anulada.
+
+7. Importante · Decisiones, punto 2 vs Intent · El Intent dice «reservas de otras personas», pero la decisión 2 cambia la regla a «solo el responsable anula, también las propias». Eso es una divergencia del Intent y no figura como tal. Tampoco declara que el responsable no puede cancelar con `anular` su propia reserva de forma distinta. · Reescribir el Intent para que coincida con la regla real, o marcar la decisión 2 como cambio de alcance a validar de forma explícita.
+
+8. Importante · Approach / Scope · El orden de comprobaciones («falta `--como` → sala sin responsable → no es el responsable») es una decisión de diseño que no está en «Decisiones». Afecta a qué mensaje ve el usuario cuando se combinan fallos, y ningún escenario cubre una combinación (por ejemplo Oeste sin `--como`). · Añadirlo como decisión numerada y un escenario de combinación que fije el orden.
+
+9. Menor · Scope / Delta · El contrato CLI cambia, porque `anular` pasa de 2 a 3 argumentos y el flag `--como` es nuevo, pero no se documenta ni se dice dónde. `operations.md` solo lista «Arrancar». Falta indicar si `--como` se acepta en otros comandos o solo en `anular`, y qué pasa con el uso antiguo `anular Norte lun`, que ahora rompe. · Declarar el cambio incompatible del comando y actualizar la documentación de comandos, o decirlo en Scope.
+
+10. Menor · Decisiones, punto 3 y cabecera · La spec afirma que el merge del delta «se vuelve a pasar tras la review», pero esa verificación no está hecha y el gate no la cubre. Además `status: draft` con «Resultado del merge» sin evidencia. · Pasar el merge antes de la aprobación y registrar el resultado, o quitar la afirmación.
+
+--- [37]
+Ha vuelto el revisor técnico. Falta el de dominio, así que no toco la spec hasta tener los dos. Es un aviso automático, no una respuesta tuya, y la spec sigue sin aprobar.
+
+--- [39]
+1. Crítico · Decisiones (2) / Delta `bookings` · Dice que «las reservas no guardan quién las hizo», pero `PRODUCT.md` define la Reserva como «a nombre de quien la pide». Así cae la base de la decisión y el «de otras personas» del ROADMAP (0011) queda sin cubrir: no se sabe si el responsable anula también la suya ni si la reserva propia sigue yendo por `cancelar`. · Corregir la premisa con la terminología: o se usa el nombre de la reserva para separar «propia» de «de otra persona», o se declara de forma explícita que ese dato se ignora y por qué, con un escenario del responsable anulando su propia reserva.
+2. Crítico · Delta / Approach (franja) · `PRODUCT.md` define la Reserva como sala + día + franja, pero `anular Norte lun` no lleva franja. Si en Norte hay dos reservas el lunes, el comando es ambiguo. Es la misma clase de fallo que el patch 0007 (misma hora, otro día). · Añadir la franja a la sintaxis de `anular` o declarar qué pasa cuando hay varias reservas ese día, con su escenario.
+3. Importante · Scope / Intent · El Intent promete que «solo el responsable» quite reservas ajenas, pero `cancelar` queda fuera y «sigue igual». Cualquiera puede seguir quitando la reserva de otra persona con `cancelar`, y el control se esquiva. · Decir de forma explícita qué hace `cancelar` con una reserva que no es tuya: o se acota como riesgo aceptado en «No entra», o se mete en el Scope con su escenario.
+4. Importante · Capacidades / Delta (nombres) · Los ids `bookings` y `room-managers` usan justo los términos que `PRODUCT.md` manda evitar («booking», «room»), y la constitución (4) pide documentos en castellano. · Renombrarlos a `reservas` y `responsables-sala`, o dejar escrito que los ids de capacidad no están sujetos a la regla 4. En el caso de `room-managers`, alinearlo con lo que fije la 0009.
+5. Importante · Decisiones (1) / Scope · La dependencia de la 0009 se decide en la spec, pero en el ROADMAP la fila 0011 sigue con «Tras: —» y el Scope no incluye actualizarla. Además, el brief de la 0009 («qué puede hacer» el responsable) ya promete definir sus permisos, y anular podría ser uno de ellos. Eso es un solape sin declarar. · Añadir al Scope el cambio de la fila 0011 (Tras: 0009). Dejar dicho que el permiso de anular es de la 0011 y no de la 0009, o mover el requisito a la 0009.
+6. Importante · Delta (5 bis) · Entran datos nuevos (el nombre en `--como`, los mensajes) y una condición de conflicto (que el nombre coincida), pero no se declaran las cinco reglas por nombre. **Dónde vive el dato**: no consta, ni siquiera un «lo define la 0009». **Idioma de los nombres**: no consta. **Límites**: nombre vacío, mayúsculas («ana» frente a «Ana»), espacios. **Avisos**: la decisión 3 admite que «cualquiera puede escribir el nombre», pero no se avisa al usuario. **Regla en conflicto**: ¿qué pasa si una sala tiene varios responsables o el nombre coincide solo en parte? · Añadir un bloque con las cinco reglas, cada una declarada o con «no aplica», y un escenario para el límite de mayúsculas y espacios.
+7. Importante · Delta (complemento) · No se cubren los rechazos a otros roles y estados. Falta el responsable de Sur intentando anular en Norte. Falta qué pasa al anular una reserva inexistente, ya anulada o cancelada, y ese caso no está en el orden de comprobaciones del Approach. · Añadir escenarios para «responsable de otra sala» y «no hay reserva activa», y meter ese paso en el orden de comprobaciones.
+8. Menor · Delta (complemento: qué no ve) · El rechazo «solo Ana anula reservas de Norte» enseña el nombre del responsable a quien no lo es, y la spec no dice si eso está permitido. · Declarar que el nombre del responsable es visible para cualquiera, o cambiar el mensaje para no mostrarlo.
+9. Menor · Intent frente a `PRODUCT.md` (Product Purpose) · El producto dice que lo usa una sola persona y que «no hay más usuarios», y esta feature introduce roles (el responsable frente a los demás). La decisión 3 lo menciona, pero no deja claro que esto cambia el propósito vivo. · Decir si `PRODUCT.md` debe pasar a recoger varios usuarios (sería un MODIFIED sin declarar de la verdad viva) o justificar por qué no cambia.
+
+--- [41]
+Han vuelto los dos revisores. Hay Críticos aceptados, así que integro los hallazgos y lanzo la segunda ronda.
+
+--- [45]
+El merge sobre la copia pasa con los 5 requisitos. Lanzo la segunda ronda: un revisor en Sonnet que relee la spec corregida.
+
+--- [47]
+Ya integré los hallazgos de la primera ronda en la spec, y el merge del delta sobre una copia pasa. La segunda ronda de revisión está corriendo. Cuando termine, integro lo que salga y te presento la spec con su 🦆 y las decisiones para aprobar. Todavía no está aprobada.
+
+--- [55]
+1. Crítico · Decisión 1 / Scope / ROADMAP · La spec dice que la 0011 espera a la 0009 y que el ROADMAP se cambia con `Tras: 0009`. Pero hoy la 0009 y la 0011 están las dos en Now con `Tras: —`, y la 0009 es solo una fila sin spec ni contrato. Los tests de la 0011 no se pueden escribir ni ejecutar hasta que exista el contrato de responsables (dónde está el fichero, su formato, su API). El Approach lo da por hecho, y «cómo se siembran» queda para el plan. · Hacer del cambio de `Tras` el primer paso, previo a la implementación, y dejar la spec en `draft` hasta que la 0009 tenga contrato. Si no, reducir el contrato mínimo que la 0011 asume (función o fichero que devuelve el responsable de una sala) y nombrarlo en la spec.
+
+2. Crítico · Delta, escenario «Una sala sin responsable no se anula» · El GIVEN dice «responsables que solo dan Norte» (Ana en Norte), pero eso contradice la decisión 5, «una sala, un responsable (0009)», y no dice cómo se prepara. El THEN solo comprueba «la reserva de Sur sigue activa» y no dice con qué comando. Los demás escenarios usan `libres 10:00-12:00`, y aquí no se indica franja ni que Sur ofrezca o no esté ocupada. · Fijar la franja de la reserva de Sur y observarla con `libres`. Decir en el GIVEN que Sur no tiene responsable definido en el contrato de la 0009.
+
+3. Importante · Delta, escenario «Anular exige decir quién anula» · Agrupa dos casos (sin `--como` y con `--como` sin valor) en un solo WHEN con «o». Un test puede pasar con solo uno de los dos. Además, `--como` sin valor puede quedar tragado por el parser («anular Norte lun --como» frente a `--como` seguido de otro argumento). No se dice cuál es el comportamiento. · Separar en dos escenarios, o dejar explícito que el test cubre las dos entradas. Precisar qué cuenta como «sin nombre» (fin de argumentos y cadena vacía).
+
+4. Importante · Decisión 6 / Delta · El orden de comprobaciones afirma que un rechazo por permiso no revela si la reserva existe. Pero ningún escenario lo prueba: haría falta que Luis anule Norte mar (sin reserva) y reciba «solo Ana…» y no «sin reserva…». Es una exigencia del spec sin escenario. · Añadir un escenario: GIVEN Ana responsable de Norte sin reserva el martes, WHEN `anular Norte mar --como Luis`, THEN «solo Ana anula reservas de Norte».
+
+5. Importante · Decisión 5 (límites) / Delta · Dice que el nombre se compara exacto y sensible a mayúsculas, pero no hay escenario (`--como ana` frente a Ana rechazado). La review lo marcó como aceptado («mayúsculas (decisión 5)») y no se añadió. Tampoco se cubre nombre con espacios o vacío. · Añadir el escenario de `--como ana`, o quitar la afirmación de mayúsculas.
+
+6. Importante · Decisión 5 (avisos) / Delta · El mensaje «solo Ana anula reservas de Norte» publica el nombre del responsable a cualquiera. Se declara aceptado, pero entra en tensión con la decisión 3 (la identidad es solo una declaración): el rechazo le dice a un impostor exactamente qué nombre escribir para saltarse el control. La decisión 9 no recoge ese riesgo. · Añadirlo a los riesgos aceptados de la decisión 9, o no nombrar al responsable en el rechazo. En cualquier caso, decidirlo y ponerlo a la vista de Laura.
+
+7. Importante · Intent / Scope · El Intent y la fila 0011 del ROADMAP dicen «anular reservas de otras personas» o «de quien sean», pero la decisión 2 hace que el responsable también anule la suya y que nadie más pueda, aunque sea el dueño. El texto «de otros» del título y de la fila no coincide con lo que se implementa. No hay propietario en los datos, así que el cambio queda en «solo el responsable anula». · Ajustar el título, o añadir a Scope el cambio de redacción de la fila 0011 del ROADMAP, que hoy solo se toca para `Tras`.
+
+8. Menor · Scope / contratos · No dice nada sobre `docs/config.md` ni sobre la ayuda o uso del CLI (mensaje de uso con `anular`). Hay un flag nuevo de CLI, un contrato público, y `operations.md` y `docs/config.md` no se actualizan. El documento de operaciones describe el arranque como `node src/app.js <comando> <argumentos>`. · Decir en el Scope si el texto de uso o la documentación se tocan, o que no hay ninguno.
+
+9. Menor · Decisión 7 / Delta · «Los tests llaman a `run` en el mismo proceso» pero el Scope solo menciona `run` y `voidBooking`, sin la función que lee `--como`. No se dice si `run` devuelve cadena o hace `console.log`; los THEN de «responde» dependen de eso. · Fijar en la decisión 7 que `run` devuelve el texto como cadena, o decir que el test captura la salida.
+
+10. Menor · Decisión 8 / Capacidades · La capacidad `reservas` se abre con un único requisito de anulación y las reservas ya existentes (reservar, cancelar, libres) quedan sin capacidad. La línea del merge habla de «los tres requisitos», pero el delta tiene cinco ADDED. La afirmación «sin rechazos» no se corresponde con lo escrito. · Corregir a cinco requisitos y repetir el merge, como dice la propia spec.
+
+--- [59]
+Python no está instalado, así que los cambios no se aplicaron. Los repito con Node.
+
+--- [63]
+Ahora: presento la spec al gate. Queda: tu aprobación, y después el plan.
+
+La spec de la 0011 está en `.docs/sdd/specs/20261008-110000-feature-0011-void-others/spec.md`, en `draft`, sin aprobar. He pasado el pase de coherencia y dos rondas de revisión (dominio en Opus, técnica en Sonnet, y una segunda de Sonnet). El merge del delta sobre una copia de `.docs/sdd` pasa y añade `reservas.md` con 8 requisitos.
+
+## 🦆 En llano
+
+Hoy cualquiera puede anular cualquier reserva con `anular Norte lun`. La spec hace que solo el responsable de la sala pueda anular. Para saber quién ejecuta el comando, `anular` pasa a pedir `--como Ana`. Si falta el nombre, la sala no tiene responsable o el nombre no coincide, rechaza y la reserva sigue activa.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **La 0011 va después de la 0009.** El borrador creaba aquí los responsables y `data/managers.json`. Pero la fila 0009 del ROADMAP y `docs/config.md` ya le asignan esa capacidad y su fichero. Recomiendo que la 0011 espere a la 0009 (`Tras: 0009`), y que el plan no arranque la Task 1 hasta que exista su contrato. La alternativa es absorber la 0009 aquí, que hace la feature más grande y obliga a cerrar esa fila.
+2. **Solo el responsable ejecuta `anular`, sea de quien sea la reserva, incluida la suya.** El código no guarda quién hizo cada reserva, y añadir propietario sería otra feature.
+3. **`--como` es una declaración, no una autenticación.** Cualquiera puede escribir el nombre del responsable.
+4. **`anular` sin `--como` pasa a rechazarse.** Es un cambio incompatible, pero es el pedido.
+5. **Orden de comprobaciones:** falta `--como`, luego sala sin responsable, luego no es el responsable, luego no hay reserva activa, y entonces anula.
+6. **Los tests llaman a `run` en el mismo proceso** y observan el estado con `libres 10:00-12:00`.
+7. **`bookings` pasa a llamarse `reservas`**, porque la constitución pide castellano.
+
+**Riesgos que dejo a la vista:**
+- `cancelar` no comprueba de quién es la reserva, así que el control se puede esquivar con él. Queda fuera porque es de la 0010.
+- `anular` identifica la reserva por sala y día, no por franja, como hoy.
+- El rechazo nombra al responsable, así que le dice a un impostor qué nombre escribir.
+
+**Política de modelos:** la sesión implementa en Native y no hay tasks que exijan otro modelo.
+
+**Hallazgos de la review:** de 31 hallazgos aceptados en total, rechacé 3 (escenario del responsable de otra sala, propósito de `PRODUCT.md` y título «de otros»). Están con su motivo en la spec, en «Hallazgos de la review».
+
+Los escenarios de la 0011 no se pueden ejecutar hasta que la 0009 defina su contrato, porque sacan de ahí los responsables. Por eso la decisión 1 es la que más te pido mirar.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

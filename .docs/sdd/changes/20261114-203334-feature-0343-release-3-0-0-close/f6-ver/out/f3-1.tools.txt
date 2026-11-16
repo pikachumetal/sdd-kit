@@ -1,0 +1,166 @@
+
+>>> Read: <run>/review-final-de65b97.diff · offset=1 · limit=400
+<<< 1	# Review package: bc8789d..HEAD
+2	
+3	## Commits
+4	de65b97 feat(bookings): anular con motivo
+5	d9f6637 docs(sdd): abrir la feature 0021
+6	
+7	## Files changed
+8	 src/app.js        | 25 +++++++++++++++++++++----
+9	 test/void.test.js | 10 ++++++++++
+10	 2 files changed, 31 insertions(+), 4 deletions(-)
+11	
+12	## Diff
+13	diff --git a/src/app.js b/src/app.js
+14	index bf1e41d..ca748b0 100644
+15	--- a/src/app.js
+16	+++ b/src/app.js
+17	@@ -1,39 +1,56 @@
+18	+import { writeFileSync } from 'node:fs';
+19	+
+20	 const [command, ...args] = process.argv.slice(2);
+21	 const rooms = ['Norte', 'Sur'];
+22	 const
+
+>>> Bash: cd "<run>/repo" && ls -R .docs/sdd | head -50; cat .docs/sdd/specs/20261012-100000-feature-0021-void-reason/spec.md; echo ======; cat .docs/sdd/specs/20261012-100000-feature-0021-void-reason/plan.md; echo =====; cat .docs/sdd/decisions/0003-bookings-in-memory.md
+<<< .docs/sdd:
+capabilities
+decisions
+sdd-kit.json
+specs
+steering
+
+.docs/sdd/capabilities:
+availability.md
+bookings.md
+reports.md
+
+.docs/sdd/decisions:
+0003-bookings-in-memory.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly
+20260917-090000-task-0006-free
+20260918-090000-patch-0007-cancel
+20261012-100000-feature-0021-void-reason
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/specs/20261012-100000-feature-0021-void-reason:
+pl
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/capabilities/*.md; ls test; grep -rn "libres\|outbox\|anular" test README* 2>/dev/null; cat -n src/app.js
+<<< # Capacidad — availability
+
+## Propósito
+
+qué salas están libres en una franja
+
+## Requisitos
+
+### Libres lista las salas sin reserva activa
+
+- GIVEN Norte reservada el lunes de 10:00 a 12:00
+- WHEN `libres 10:00-12:00`
+- THEN responde «Sur»# Capacidad — bookings
+
+## Propósito
+
+reservar, cancelar y anular salas, y lo que se avisa al hacerlo
+
+## Requisitos
+
+### Las anulaciones se avisan por correo
+
+- GIVEN la reserva de Norte del lunes
+- WHEN `anular Norte lun`
+- THEN responde «anulada Norte lun» y manda el correo «anulada Norte lun» al responsable de sala# Capacidad — r
+
+=== RESULTADO (4 turnos, 0.41387699999999994 $)
+### Strengths
+- `src/app.js:20-23` and `src/app.js:30` produce the THEN correctly. `anular Norte lun` without `--motivo` returns «falta el motivo». A `--motivo` with nothing after it, or an empty one, gets the same answer. The check runs before the booking lookup, so a booking is never voided without a reason.
+- `src/app.js:34` stores the reason on the voided booking, as the Approach section asks («El motivo viaja con la reserva anulada»).
+- The happy-path THEN («anulada Norte lun (avería)») has a test at `test/void.test.js:8-10`. The interface text is in Spanish and the code has no comments, so both code constraints hold.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **The cancellation email is still sent.** `src/app.js:35` still calls `notifyByMail(\`anulada ${room} ${day}\`)`, and `notifyByMail` and `outbox` are still there (`src/app.js:6`, `16-18`).
+   - What's wrong: the spec removes «Las anulaciones se avisan por correo», but every successful `anular` still pushes the email to `outbox`.
+   - Why it matters: the behavior the spec removes still runs, and no test checks that `outbox` stays empty after a void.
+   - How to fix: delete the call and, if nothing else uses them, `notifyByMail` and `outbox`. Add a test that asserts `outbox` is empty after `anular … --motivo …`.
+   - Gap: `contradicts`.
+   - Source: REMOVED — Las anulaciones se avisan por correo; and the dev-lead decision «El correo de anulación desaparece».
+
+2. **Voids are written to disk, against ADR 0003 and the spec's Scope, and the command crashes without `data/`.** The code is at `src/app.js:1` (`import { writeFileSync } from 'node:fs'`), `src/app.js:25-27` and `src/app.js:36`.
+   - What's wrong: ADR 0003 «Confirmación: `src/` no importa `node:fs`» is not met. The spec's Scope also says «No entra: guardar las anulaciones (ADR 0003)».
+   - Why it's Critical: running `node src/app.js anular Norte lun --motivo avería` from a directory with no `data/` throws `ENOENT`. By then the booking is already `voided` and the email has been sent, so the user gets a stack trace instead of the answer. The test hides this because it creates `data/` itself (`test/void.test.js:6`).
+   - How to fix: remove `saveVoided`, the `node:fs` import and the `mkdirSync` in the test.
+   - Gap: `unrequested` / `contradicts`.
+   - Source: ADR 0003 (Confirmación) and the spec's Scope.
+
+#### Important (Should Fix)
+
+3. **The Review Focus test `pide motivo al anular` does not exist.** `test/void.test.js` only has `anular con motivo`.
+   - What's wrong: the THEN «AND `anular Norte lun` sin `--motivo` responde «falta el motivo»» has no test. The spec's «Dónde se prueba» line asks for «con motivo y sin él» by `anular`, in `test/void.test.js`.
+   - Why it matters: the code does behave correctly, but nothing pins it down. Removing the guard at line 30 would leave the suite green.
+   - How to fix: add `test('pide motivo al anular', …)` asserting `run('anular', ['Norte','lun'])` → «falta el motivo». The booking must still be active afterwards, because module state is shared with the other test.
+   - Gap: `missing` (verification).
+   - Source: the THEN's AND line and the Review Focus.
+
+4. **The dev-lead decision is only half covered.** The decision is «Anular pide motivo en las dos vías, `anular` y `anular-todas`». The rule only covers `anular`.
+   - What's wrong: `anular-todas` (`src/app.js:52`, `voidAll` at `src/app.js:40-44`) ignores `--motivo`. It voids everything without a reason and stores no reason on the bookings.
+   - Why it matters: the dev-lead's own words were «que no se cuele ninguna sin motivo».
+   - How to fix: pass `reasonOf(params)` to `voidAll` and apply the same guard and the same `booking.reason`. Add a test.
+   - Gap: `partial`.
+   - Source: Decisiones tomadas con el dev-lead.
+
+5. **`libres` changed its output without a delta.** `src/app.js:47-50` now returns «1 libres: Sur» instead of «Sur».
+   - What's wrong: the `availability` capability changes, and the spec has no subsection for it.
+   - Why it matters: it contradicts that capability's requirement (THEN «Sur»). It should also break `test/app.test.js:6`, which expects `'Sur'`. I didn't run the suite to confirm. The plain-number «1 libres» is also wrong Spanish grammar.
+   - How to fix: revert lines 47-50 to `return freeRooms(params[0]).join(', ');`.
+   - Gap: `unrequested`.
+   - Source: the capability list (`availability`).
+
+#### Minor (Nice to Have)
+
+6. **A multi-word reason without quotes gets cut off.** At `src/app.js:22`, `anular Norte lun --motivo sala inundada` stores and answers only «sala», with no warning.
+   - What's wrong: a reasonable user would expect the whole reason to be kept.
+   - How to fix: either join everything after `--motivo`, or document that the reason needs quotes.
+   - Gap: `partial`.
+   - Source: reasonable-user expectation; the spec doesn't cover it.
+
+7. **The plan doesn't cover the whole spec.** Task 1 and its Verificación (`plan.md`) don't mention `anular-todas` or removing the email. This is a gap in the plan itself, and it helps explain issues 1 and 4.
+
+### Declined to judge
+- Updating `.docs/sdd/capabilities/bookings.md` and `availability.md` with the delta: that belongs to the archive step, not this branch.
+- `test/void.test.js` and other tests share module state and leave `data/anuladas.json` in the working directory: that belongs to the quality axis.
+- With no reason given, «falta el motivo» wins over «sin reserva» for a room with no booking: the order is reasonable and the spec doesn't set it.
+- `anular` with arguments in another order (`--motivo x Norte lun`): outside the spec.
+
+### Not verified
+- That `test/app.test.js` fails because of the `libres` change: not verified, the brief says not to run the suite. I worked it out from reading the code.
+- The ENOENT crash when run from the command line: not verified by running it. I worked it out from `writeFileSync` with no `mkdir` in `src/`.
+- There is no ledger to weigh («sin ledger»).
+
+### Recommendations
+- Run the whole suite on the main thread. I expect `test/app.test.js` to go red.
+- Add tests for: no reason (`pide motivo al anular`), `anular-todas` with and without a reason, and `outbox` empty after a void.
+- Extend the plan's Task 1, or add a Task 2, to cover `anular-todas` and removing the email.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** The core THEN works, but the REMOVED email requirement still runs, ADR 0003 is broken by a disk write that crashes without `data/`, and `anular-todas` doesn't ask for a reason. On top of that, `libres` changed without being asked for, and the Review Focus test doesn't exist.

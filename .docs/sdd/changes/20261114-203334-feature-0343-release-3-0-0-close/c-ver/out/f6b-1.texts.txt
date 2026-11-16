@@ -1,0 +1,66 @@
+--- [3]
+### Strengths
+- The change is small and isolated: one new exported function, with no edits to existing code.
+- `saveRefund` is 3 lines, well under the 30-line limit.
+- No UI text was added, so the Spanish-interface constraint isn't touched.
+
+### Issues
+
+#### Critical (Must Fix)
+- **`src/app.js:29`: `saveRefund` truncates `iban` as if it were an amount.**
+  - **What's wrong:** `Math.trunc(iban)` is applied to a parameter named `iban`. An IBAN is an alphanumeric string such as `ES91...`, so `Math.trunc` returns `NaN`. The comment on line 28 talks about céntimos, which would be the amount, not the IBAN. Either the parameter is misnamed and should be an amount (`importe`), or the amount is missing and the IBAN is being mangled.
+  - **Failure scenario:** `saveRefund('A1', 'ES9121000418450200051332')` returns `{ room: 'A1', iban: NaN }`. The refund is saved with no usable IBAN, and nothing validates the input or raises an error.
+  - **Fix:** Take both an `importe` and an `iban`. Truncate only the amount and keep the IBAN as a string. Validate that the amount is a finite number.
+
+#### Important (Should Fix)
+- **`src/app.js:28`: the comment cites a document, `capabilities/refunds.md`.**
+  - **What's wrong:** "Code constraints" forbids this, and the citation goes stale if that file changes or moves. It is a confirmed candidate, not a false positive.
+  - **Fix:** Drop the citation and keep only the reason: `// el banco rechaza los céntimos, así que se descartan`.
+  - **Related:** the comment says "no admite céntimos", but the code truncates silently rather than rejecting the value. Make the behaviour and the wording match.
+- **`src/app.js:27`: `saveRefund` is not wired into `run` and has no test.**
+  - **What's wrong:** Nothing calls it, and the diff has no test for it. It is also named "save" but only builds an object and persists nothing.
+  - **Why it matters:** the commit says "guardar la devolución", but no storage happens. If persistence is meant to be added later, the function name misleads. This is possibly a gap in what the branch delivers, which the Spec axis can judge.
+  - **Fix:** Add a test covering amounts with céntimos and a string IBAN.
+- **`src/app.js:26-30`: the function is defined after the `if (command) console.log(...)` line.**
+  - **What's wrong:** Module side effects run before the exports are declared. The declaration is hoisted, so it works, but the order is confusing. Possible Clean Code issue: the code doesn't read top to bottom.
+  - **Fix:** Put `saveRefund` above the CLI entry line.
+
+#### Minor (Nice to Have)
+- **`src/app.js:29`: `Math.trunc` handling of negative or non-numeric amounts.** Decide whether those should be rejected. A negative amount currently passes through.
+
+### Declined to judge
+- Whether `saveRefund` should persist anywhere, and how: this depends on the spec and architecture, so I'm leaving it to the Spec and Architecture axes. I only flagged the naming mismatch.
+- The refund rule itself (céntimos rejected by the bank): its business correctness belongs to the Spec axis.
+- E2E: none are declared in the project, so no E2E rule applies.
+
+### Recommendations
+- Fix the signature before anything else; the rest follows from knowing what the function receives.
+- Add a unit test next to the fix.
+- I didn't run the suite, the build or the lint, per the review brief.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** `saveRefund` turns an IBAN into `NaN`, apparently by applying the céntimos rule to the wrong parameter. The comment also cites `capabilities/`, which the project's code constraints forbid.
+
+--- [6]
+I sent that last report with no findings by mistake. Here it is again with the findings from my review.
+
+--- [8]
+I reviewed `8a43ca8` and my verdict is not ready to merge. I didn't run the suite, the build or the lint.
+
+My first `ReportFindings` call went out with an empty list by mistake. I re-sent it with the 4 findings below, so the host should show those and not the empty one.
+
+- **Critical, `src/app.js:29`:** `saveRefund` applies `Math.trunc` to a parameter called `iban`. An IBAN is a string, so the result is `NaN`. The céntimos rule belongs to the amount, which the function never receives. A call with a real IBAN saves the refund with `iban: NaN`.
+- **Important, `src/app.js:28`:** the comment cites `capabilities/refunds.md`, which the code constraints forbid. It also says refunds "no admite" céntimos while the code silently truncates them. Keep only the reason: the bank rejects céntimos.
+- **Important, `src/app.js:27`:** nothing calls `saveRefund` and there is no test for it. Despite the commit title "guardar", it only builds an object and stores nothing.
+- **Minor, `src/app.js:26`:** the function sits after the `if (command) console.log(...)` entry line. It works because function declarations are hoisted, but it reads out of order.
+
+**Declined to judge:**
+- **Persistence:** whether `saveRefund` should store the refund, and where, is for the Spec and Architecture axes. I only flagged that the name doesn't match what it does.
+- **Bank rule:** whether rejecting céntimos is the right business rule is for the Spec axis.
+- **E2E:** the project declares none, so no E2E rule applies.
+
+**Strengths:** the change is small and self-contained. The function is 3 lines, well under the 30-line limit, and it adds no interface text.
+

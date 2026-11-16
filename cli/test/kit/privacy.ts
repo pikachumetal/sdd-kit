@@ -32,7 +32,7 @@ export function machineUserPattern(env: NodeJS.ProcessEnv = process.env): RegExp
 
 // Toda subcarpeta de una tarea: campaign/, ab/, micro/… también son salidas de sujetos.
 export function selectEvidencePath(paths: string[]): string[] {
-  return paths.filter((path) => /^\.docs\/sdd\/specs\/[^/]+\/[^/]+\/|^tests\/[^/]+-(red|green)\.md$/i.test(path));
+  return paths.filter((path) => /^\.docs\/sdd\/(specs|changes)\/[^/]+\/[^/]+\/|^tests\/[^/]+-(red|green)\.md$/i.test(path));
 }
 
 // Sin limpiar el entorno de git: dentro del hook, GIT_INDEX_FILE dice qué índice se está commiteando.

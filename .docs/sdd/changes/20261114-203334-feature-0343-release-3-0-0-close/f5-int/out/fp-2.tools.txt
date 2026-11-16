@@ -1,0 +1,109 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; ls node_modules 2>&1 | head -2; node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< .
+..
+.docs
+.git
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src
+test
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+# salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json; ls src test; cat src/*.js | head -150; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md; cat test/app.test.js; git log --oneline; grep -n -i libres README.md CHANGELOG.md
+<<< # Walkthrough — free
+
+Implementado, smoke ejecutado y validado por el dev-lead. Suite verde.
+
+## Tiempo
+
+- Esfuerzo real: 1h
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cance
+
+=== RESULTADO (6 turnos, 0.1324892 $)
+No hay nada que añadir: el comando ya existe, así que no abro rama, spec ni carpeta.
+
+- **Código:** `src/app.js` tiene `libres <franja>`, que devuelve las salas sin reserva en esa franja (`freeRooms`).
+- **Test:** `test/app.test.js` lo cubre con «libres excluye la sala reservada en la franja».
+- **Historial:** es la task 0006 (`.docs/sdd/specs/20260917-090000-task-0006-free/`), con estado `done`, walkthrough y entrada en `CHANGELOG.md` (`salas libres 10:00-12:00`).
+
+Puede que lo que echas en falta sea una ampliación. Por lo que veo en el código, hay dos huecos posibles:
+
+1. **`libres` no distingue el día.** Las reservas guardan `day`, pero `freeRooms` solo compara sala y franja. Una reserva del lunes 10:00-12:00 deja la sala «ocupada» también el martes. Es la misma clase de fallo que arregló el patch 0007 en `cancelar`. Sería un patch si el comportamiento esperado está claro, o una feature si hay que decidir cómo se pasa el día. Es lo que te recomiendo.
+2. **No se valida el formato de la franja.** Ya está en `debt.md` como «Por triar».
+
+¿Cuál de estas es la que querías, o era otra cosa distinta? Si era una de las dos, dime cuál y sigo desde ahí con el carril que corresponda.
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kfix2/skills/sdd-propose/references" && head -60 control-profiles.md; grep -n -i "aviso\|merge.push" control-profiles.md | head
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge, which fo
+
+=== RESULTADO (4 turnos, 0.1848648 $)
+Ahora: te presento el anuncio y lo que he entendido, y te hago la primera pregunta de diseño. Queda: la entrevista, la spec y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del proyecto (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido.** Quieres una feature, en modo full, con un comando nuevo que muestre qué salas están libres en una franja. Ya te dije que `salas libres <franja>` existe: `src/app.js`, el test de `test/app.test.js` y la task 0006. Lo mantienes, así que lo anoto como decisión tuya y no te lo vuelvo a discutir. Las dos cosas que no sé son qué comando sería el nuevo y en qué se distingue del que ya hay. Sin eso no puedo escribir la spec sin inventármela. Corrígeme si he entendido mal.
+
+❓ **¿Qué debe hacer el comando nuevo que `salas libres 10:00-12:00` no hace hoy?** Hoy `libres` recibe solo la franja y devuelve los nombres de las salas sin reserva en ella, sin mirar el día (`src/app.js`, `freeRooms`).

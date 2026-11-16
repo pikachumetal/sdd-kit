@@ -1,0 +1,71 @@
+--- [3]
+Voy a revisar el estado de la init en el repo.
+
+--- [12]
+Retomo la init en el punto en que se cortó: la lectura del repo ya está hecha y falta `operations.md`.
+
+**Estado (según `init.approved`)**
+- Aprobados: `PRODUCT.md` y `.docs/sdd/steering/constitution.md`.
+- Ya respondido y guardado en `init.config`: ids por secuencia, perfil `delegate`, ejecución `auto`, validación manual. No lo vuelvo a preguntar.
+- Modo: con código. Si esto es un template recién instanciado, dímelo y sigo sin código.
+- Pendiente, por orden: `operations.md`, `architecture.md`, `ROADMAP.md`, `debt.md`, `estimation.md`, `CHANGELOG.md` (si quieres), `CLAUDE.md`, y luego git y el cierre.
+
+Hay un `CLAUDE.md` previo y un `PRODUCT.md` ya aprobado. El `CLAUDE.md` lo trato con su diff cuando le toque.
+
+## Borrador de `operations.md`
+Sale solo de lo que muestra el repo. Lo que no se puede verificar queda como `pendiente` o `no declarado`.
+
+```markdown
+# Operations — Reservas
+
+## Comandos
+- **Build**: no declarado (no hay script `build` en package.json)
+- **Arrancar**: `npm run dev` (vite)
+
+## Testing
+- **Suites**:
+  - `unit` · `npm test` (vitest run, `src/**/*.test.ts`) · duración pendiente · unitario
+  - `e2e` · `npm run e2e` (Playwright, `testDir: ./e2e`) · duración pendiente · pendiente (la carpeta `e2e/` no existe, aún no hay tests)
+- **Lo afectado**: no declarado
+- **Gate de cierre**: `npm test`
+- **Gate de merge**: `npm test`
+- **Sin filtro**: `package.json`, `package-lock.json`, `vitest.config.*`, `playwright.config.*`, `tests/helpers/**`
+- **Lint**: no declarado (hay un script `lint`, pero no hay config de eslint ni pre-commit; no entra en el gate)
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch main -L 1 --json conclusion,headSha`
+- **Acceso a la aplicación**: pendiente
+- **Motor de producción**: no aplica (los datos viven en memoria, según la constitución)
+- **Temporales**: `e2e` · `test-results/` (el valor por defecto de Playwright, porque no fija `outputDir`) · propuesta: `outputDir: '.temp/playwright'`
+```
+
+No hay E2E tests todavía, así que van sin los campos E2E. No hay `## Frontend` ni `## Entornos` hasta que respondas lo de la interfaz y los worktrees.
+
+## Discrepancias detectadas
+- El `CLAUDE.md` dice «puerto 3000», pero ninguna config lo fija. Vite usa 5173 por defecto.
+- `playwright.config.ts` apunta a `./e2e`, que no existe.
+- El script `lint` existe, pero no hay config de eslint.
+- El CI corre `npm test` en cada push, sin rama de integración distinta de `main`.
+
+## Preguntas (una por turno, empiezo por la que bloquea)
+1. **Rama de integración**: el repo solo tiene `main`. ¿Mantenemos `main` como base, o prefieres git-flow (`develop` + `feature/<id>`)? Recomiendo git-flow. Esto cambia la rama de «CI de la base» y el gate de merge.
+
+Cuando me respondas, voy con el resto del borrador: puerto, duraciones, acceso, la propuesta de temporales, interfaz y worktrees. Cuando des el «sí» al documento, lo escribo y lo registro con `sdd init --approved`.
+
+--- [14]
+Anotado: git-flow, con `main` estable, `develop` como integración y `feature/<id>` saliendo de `develop`. Cambia dos campos del borrador:
+
+- **CI de la base**: `.github/workflows/ci.yml` · `gh run list --workflow ci.yml --branch develop -L 1 --json conclusion,headSha`. Hoy el workflow corre en cualquier `push`, así que cubre `develop`.
+- **Gate de merge**: `npm test`, sobre la base integrada (`develop`).
+
+Como la rama de integración ya difiere de la estable, `sdd-config` todavía tiene que preguntarte la política de merge y push, los frenos, qué hacer con los Minors de la revisión final y la tabla de precios. Lo hago después de los documentos, para no mezclarlo con este.
+
+Sigo con lo que queda de `operations.md`, una pregunta por turno:
+
+**¿El proyecto tiene interfaz (pantallas que alguien ve en un navegador)?** Hoy solo hay `src/app.ts` con la función `reserve`, sin HTML ni framework de UI. Vite y Playwright sugieren que sí la tendrá.
+
+- **Si sí**: añado `## Frontend`. Recomiendo impeccable como detector y Playwright como runner. Te pediría la URL, el acceso y los viewports. Mientras la UI no exista, esos campos quedan `pendiente`.
+- **Si no, o aún no**: la sección no se escribe y se añadirá cuando exista.
+
+Recomiendo **«aún no»**. Declarar un detector sobre una UI que no existe sería inventarlo.
+
+Después de esta, quedan por responder: la duración de `unit`, el puerto real (¿3000 de verdad o el 5173 de Vite?), el acceso del agente a la app, la propuesta de mover los temporales de Playwright a `.temp/`, y si trabajas con worktrees.
+

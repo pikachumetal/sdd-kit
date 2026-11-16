@@ -1,0 +1,70 @@
+--- [3]
+Ahora: cierro la revisión final con `sdd-verify`. Queda: leer los dos informes y aplicar su cierre, ~5 min.
+
+--- [18]
+Ahora: arreglo el hallazgo Important del eje Código (`canceladas --desde` sin día), primero con un test en RED. Queda: fix, suite, ledger y re-revisión, ~10 min.
+
+--- [20]
+RED confirmado (falla el test nuevo). Ahora el fix.
+
+--- [25]
+Ahora: despacho la única re-revisión del fix. Queda: leer los briefs, lanzarla y cerrar con su veredicto, ~8 min.
+
+--- [38]
+Los dos informes de la revisión final están cerrados y la re-revisión del fix está en marcha. Hasta que vuelva, no sé su veredicto.
+
+- **Spec** (listo para merge): sin Critical ni Important. Un Minor, que el test de `canceladas` depende de que `cancelar` corra antes. Va al ledger como `minor (deferred)`, porque `sdd-kit.json` no tiene `review.minors: fix`.
+- **Código** (con arreglos): un Important, `canceladas --desde` sin día no filtraba ni avisaba y listaba todo. Lo arreglé en `d3c9592`.
+  - **RED→GREEN:** el test nuevo falló antes del fix y pasa después. `node --test` da 6/6.
+  - **Ampliación mía:** un día que no sea lun–vie también se trata como faltante, porque tenía el mismo efecto. El re-revisor valora si eso es lectura razonable del hallazgo o un cambio de spec.
+- **Eje Arquitectura:** no sale. El plan dice `no` y el diff no trae módulo, dependencia, contrato ni datos nuevos.
+
+Dejé escritas en el ledger (`progress.md`) las líneas `Final:` y en `tasks.md` las de `Revisión final:` y `Pasada de fix:`. `tasks.md` sigue sin commitear.
+
+La re-revisión (`opus` + high) cubre `9a63d9e..d3c9592` en un worktree aparte, con su vigilancia de silencio. Cuando termine, anoto el veredicto en `tasks.md` como `Re-revisión:`. Una vez anotado, adjudico lo que quede abierto y retiro el worktree `review-0010-d3c9592`. Después sigo al cierre.
+
+--- [41]
+### Finding Verdicts
+- **[Code, Important] `parseSince` never sets `missing`, so `canceladas --desde` without a day lists everything** — ADDRESSED.
+  - `src/app.js:20-25` (at d3c9592): `parseSince` now returns `{ since: undefined, missing: false }` when there is no `--desde`. Otherwise it returns `missing: !days.includes(since)`, so `['--desde']` gives `since = undefined` and `missing: true`.
+  - `src/app.js` `run`, the `canceladas` branch (diff hunk `@@ -43,16 +45,19 @@`): when `missing` is true it returns `` `indica un día: ${days.join(', ')}` ``. With `days` (`src/app.js:4`) that gives exactly «indica un día: lun, mar, mié, jue, vie», which is the message the fix asked for. It doesn't call `cancelledList`, so nothing is listed. The text is in Spanish, so the code constraint holds.
+  - Test `test/cancel.test.js:78-80` checks that exact output. The RED claim holds up from reading the code. At 9a63d9e, `canceladas --desde` went to `cancelledList(undefined)`, which returns the list of cancellations or an empty string, never the message. The expected text is constant, so the new test doesn't depend on the state left by earlier tests. No existing test was changed; the diff only adds lines.
+  - **Invalid day treated as `missing`:** this is a reasonable reading of the finding, not a spec change. Before the fix, an unknown value made `days.indexOf(since)` return `-1` in `cancelledList` (`src/app.js:44`), so `from = -1` and every cancellation was listed. That is the same defect the finding describes: the option is silently ignored. The fix applies the spec's own pattern for `--motivo`, where an invalid value and a missing one get the same answer (spec.md:53-54). The spec has no scenario for `--desde` at all; scope at spec.md:33 only says «para listar desde ese día». So nothing approved is contradicted.
+
+### New Breakage in the Fix Diff
+- **Minor**, `test/cancel.test.js:78-80`: only the "no day" case is tested. The other branch the fix added, `--desde` with a value outside `days` (for example `canceladas --desde domingo`), has no test. Today it only works because the same expression covers both cases.
+- **Minor**, `src/app.js:24`: the name `missing` now also means "invalid day". Something like `invalid` or `needsDay` would match what it does. This is cosmetic.
+
+### Out-of-Scope Observations
+- The spec's behaviour section (spec.md:45-59) has no `--desde` scenario, even though scope includes it (spec.md:33). The message «indica un día: …» and the rejection of invalid days only exist in the review finding. Consider adding them to the spec's Amendments section (Enmiendas) when the feature closes.
+- The happy path `canceladas --desde <day>` (actual filtering from a valid day) still has no test. It is code from before the fix.
+- Deferred Minor, still open: the existing tests depend on run order (`test/cancel.test.js:13`).
+- I did not run the suite or count its tests, so the 6/6 claim in the ledger is unverified.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [44]
+La revisión final de la 0010 está cerrada y el fix pasó su única re-revisión. El arreglo está en `d3c9592` y `node --test` da 6/6. Esa cifra la corrí yo antes de commitear. La re-revisión no volvió a correr la suite.
+
+- **Spec:** sin Critical ni Important.
+- **Código:** el Important era que `canceladas --desde` sin día listaba todo sin avisar. Ahora responde «indica un día: lun, mar, mié, jue, vie» y no lista nada. El test nuevo pasó de RED a GREEN.
+- **Día inválido:** el fix trata también un día que no sea lun–vie como faltante, porque tenía el mismo defecto. El re-revisor lo ve como lectura razonable del hallazgo y no como cambio de spec.
+- **Re-revisión (`opus` + high):** hallazgo resuelto y sin Critical ni Important nuevos.
+
+**Minors diferidos** (cada uno tiene su línea en el ledger):
+- Los tests de `canceladas` dependen del orden respecto a `cancelar`.
+- Falta test para `--desde` con un día inválido.
+- El nombre `missing` ahora cubre también «día inválido».
+
+Dos cosas se quedan pendientes:
+- **Spec:** no tiene escenario para `--desde` (el aviso y el día inválido). Lo dejé como ruling y recomiendo recogerlo en «Enmiendas» al cerrar. No lo he escrito yo.
+- **`tasks.md`:** sigue sin commitear. Ya tiene las líneas `Revisión final:`, `Pasada de fix:` y `Re-revisión:`. El worktree de la re-revisión ya está retirado.
+
+Siguiente paso: la validación y el cierre con `sdd-archive`. Si quieres, sigo con eso ahora.
+
+--- [45]
+El watch de silencio de la re-revisión terminó con exit 0, sin avisos. No cambia nada de lo anterior.
+
+Queda pendiente lo mismo que dije antes: `tasks.md` sin commitear y la validación y el cierre con `sdd-archive`. No he empezado ninguno de los dos y espero tu confirmación para seguir.
+

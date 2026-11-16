@@ -1,0 +1,26 @@
+--- [9]
+Antes de proponer nada, miré el repo. Esto es lo que hay:
+
+- `src/app.js:1-5`: un hueco (`slot`) es un texto libre como `'10:00-12:00'`. `freeRooms` decide si una sala está libre comparando ese texto con igualdad exacta.
+- `reservar` solo existe como stub para `--cada-semana`. No hay reserva real que valide horas.
+- `PRODUCT.md` dice que solo la usas tú, en CLI. Por eso no planteo ni usuarios ni concurrencia.
+
+Con esa comparación, permitir media hora no basta con aceptar `10:30`. `10:00-10:30` y `10:00-12:00` son textos distintos, así que el sistema diría que la sala Norte está libre aunque se solape. La decisión que condiciona las demás es cómo se representa y se compara el tiempo.
+
+❓ **¿Cómo representamos y comparamos los huecos?**
+Escena: Norte tiene `lun 10:00-12:00`. Intentas reservar `lun 11:30-12:30`.
+
+1️⃣ **Intervalos con solape.** Se interpreta el hueco como inicio y fin, que deben ser múltiplos de 30 min. Hay conflicto si los intervalos se solapan.
+   - Escena: `Norte ocupada (solapa 11:30-12:00)`.
+   - Coste: hay que parsear y validar las horas, y cambiar `freeRooms`.
+   - Ventaja: admite reservas de 30 min, 1 h, 1 h 30, etc.
+2️⃣ **Rejilla fija de medias horas.** Una reserva es un conjunto de celdas de 30 min (`10:00, 10:30, 11:00, 11:30`). Hay conflicto si comparten alguna celda.
+   - Escena: `Norte ocupada (11:30)`.
+   - Coste: cambia el modelo de datos de `bookings`.
+   - Ventaja: es muy simple de razonar. Cuesta más si algún día quieres horas que no sean de 30 min.
+3️⃣ **Mantener el texto y añadir huecos de 30 min.** Se siguen comparando con igualdad exacta.
+   - Escena: `Norte libre`, y se crea un solape sin que nadie avise.
+   - Coste: bajo. Pero deja el fallo de doble reserva que quieres evitar.
+
+➡️ **Recomiendo 1️⃣**, porque hoy ya tienes huecos de 2 h (`10:00-12:00`). Con intervalos conviven con los de 30 min sin migrar nada. La rejilla (2️⃣) obliga a convertir los existentes. A cambio, tendrás que escribir el parseo y la validación del formato.
+

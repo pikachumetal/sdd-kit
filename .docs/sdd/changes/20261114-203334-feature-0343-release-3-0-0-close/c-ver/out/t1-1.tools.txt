@@ -1,0 +1,79 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log; echo ----; grep -n -i -A40 "testing" .docs/sdd/operations.md | head -120; git log --stat --format='%h %s' -3; ls
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (1.9433ms)
+✔ reservar --cada-semana crea la reserva semanal (0.3117ms)
+✔ cancelar con un motivo de la lista (1.3092ms)
+✔ cancelar con un motivo fuera de la lista (0.2261ms)
+✔ canceladas enseña sala, día y motivo (4.2688ms)
+✖ el README nombra cancelar con motivo (2.6057ms)
+✖ el README nombra canceladas (0.501ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 233.3012
+
+✖ fa
+
+>>> Bash: cat gate.json package.json; ls scripts; find . -name operations.md -not -path './node_modules/*'; cat test/docs.test.js; git status --short
+<<< {"tasks":{"bookings:test":{"command":"node --test test/app.test.js test/cancel.test.js test/docs.test.js","inputs":["src/app.js","test/app.test.js","test/cancel.test.js","test/docs.test.js","README.md"]},"rooms:test":{"command":"node --test test/rooms.test.js","inputs":["src/rooms.js","test/rooms.test.js"]}}}
+{"type": "module"}
+gate.mjs*
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const readme = readFileSync('README.md', 'utf8');
+
+test('el README nombra cancelar con motivo', () => assert.match(readme, /cancelar <sala> <dí
+
+>>> Bash: node --test --test-name-pattern="el README nombra" test/docs.test.js 2>&1 | tail -20; echo "exit=$?"; node scripts/gate.mjs 2>&1 | head -20
+<<< ✔ el README nombra cancelar con motivo (1.1377ms)
+✔ el README nombra canceladas (0.3053ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 146.4647
+exit=0
+uso: node scripts/gate.mjs run <tareas…> [--affected --base <ref>] | task <tarea>
+
+>>> Bash: node scripts/gate.mjs task rooms:test; git diff --name-only develop HEAD 2>&1 | head
+<<< Task: rooms:test
+Inputs:
+  - src/rooms.js
+  - test/rooms.test.js
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+README.md
+src/app.js
+test/cancel.test.js
+
+=== RESULTADO (7 turnos, 0.1389858 $)
+El gate vuelve a quedar verde, pero la pasada completa no se reejecuta. El arreglo `3b59061` solo toca `README.md`, y la regla del kit para un arreglo solo de docs es volver a correr únicamente los tests que fallaron, sin gate ni suites.
+
+- **Rojo en `f730ef9`:** `bookings:test` dio 5 de 7. Fallaron `el README nombra cancelar con motivo` y `el README nombra canceladas`, porque el README no mencionaba ninguna de las dos cosas. `rooms:test` se saltó.
+- **Rerun:** lancé esos dos tests solos con `node --test --test-name-pattern="el README nombra" test/docs.test.js`. Pasaron 2 de 2, con 0 fallos.
+- **Por qué se saltó `rooms:test`:** según `node scripts/gate.mjs task rooms:test`, sus inputs son `src/rooms.js` y `test/rooms.test.js`, y ninguno cambió en la rama.
+
+Para el walkthrough:
+
+```
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` · `node --test --test-name-pattern="el README nombra" test/docs.test.js` → tras el rojo en f730ef9, arreglo 3b59061 solo de docs: bookings:test: corrió 2/2 (los 2 que fallaron; los otros 5 pasaron en la pasada roja) · rooms:test: saltada (sus inputs src/rooms.js y test/rooms.test.js no cambian en la rama)
+```
+
+No encontré `.docs/sdd/operations.md` en el repo, así que no pude leer su §Testing. La decisión se apoya en `gate.json`, en `scripts/gate.mjs` y en el diff contra `develop`. Si en tu `operations.md` hay entradas de «Sin filtro» o suites `unitario` que no estén aquí, avísame y las corro.
+
+Todavía no he lanzado la revisión final por ejes (Spec y Code) de `sdd-verify`. ¿La lanzo ahora?

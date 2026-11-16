@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; echo ---; ls -la . .docs/sdd .docs/sdd/steering 2>&1; echo ---; cat CLAUDE.md 2>&1 | head -50
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-init\references\generation.md
+<<< 1	# Generating the anchor documents — detail
+2	
+3	## Order and gate
+4	
+5	One document per turn, each presented before it is written and recorded with `sdd init --approved <path>` after its «sí»:
+6	
+7	1. `PRODUCT.md` — who uses it and with which roles, what problem it solves (with code: what the system does TODAY), what it is and what it leaves out, and the glossary in `## Terminology`.
+8	2. `.docs/sdd/steering/constitution.md` — what is non-negotiable; with code, the observed conventions AS PROPOSALS plus the golden rules below; «Reglas de producto» with the five rules by name, each answered, 
+<<< {"init": {"approved": ["PRODUCT.md", ".docs/sdd/steering/constitution.md", ".docs/sdd/steering/operations.md", ".docs/sdd/steering/architecture.md", "ROADMAP.md", ".docs/sdd/steering/debt.md", ".docs/sdd/steering/estimation.md"], "config": {"ids": {"mode": "sequence"}, "control": {"profile": "delegate", "maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto", "validation": {"mode": "manual"}}}}
+---
+.:
+total 13
+drwxr-xr-x 1 <user> 197609   0 Nov 14 22:51 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 14 22:51 ../
+drwxr-xr-x 1 <user> 197609   0 Nov 14
+
+>>> Bash: for f in package.json PRODUCT.md ROADMAP.md README.md .docs/sdd/steering/*.md; do echo "=== $f"; cat "$f"; echo; done; find src .github -type f | head -30; grep -rniE "utc|3000|port" src package.json .github | head
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-init\references\structure.md
+<<< === package.json
+{
+  "name": "reservas",
+  "scripts": { "dev": "vite", "test": "vitest run", "e2e": "playwright test" },
+  "devDependencies": { "vite": "^7.0.0", "vitest": "^4.0.0", "@playwright/test": "^1.55.0" }
+}
+
+=== PRODUCT.md
+# Product — Reservas
+
+## Users
+
+El equipo de oficina reserva salas.
+
+## Product Purpose
+
+Reservar salas por franja.
+
+=== ROADMAP.md
+# Roadmap — Reservas
+
+## Now
+
+## Next
+
+## Later
+
+=== README.md
+# Reservas de salas
+
+=== .docs/sdd/steering/architecture.md
+# Architecture — Reservas
+
+Una SPA con Vite.
+
+=== .docs/sdd/steering/constitution.md
+# Constitution — Reservas
+
+#
+<<< 1	# Target structure — the kit fixes it, it isn't redesigned
+2	
+3	```text
+4	/
+5	├── PRODUCT.md                (traces PRODUCT-template.md)
+6	├── ROADMAP.md                (traces now-next-later-template.md)
+7	├── CHANGELOG.md              (optional, per the interview · traces changelog-template.md)
+8	├── CLAUDE.md                 (short: pointers + 3-5 critical rules; through its gate)
+9	├── .claude/settings.json, hooks/sdd-kit-loaded.mjs   (by `sdd init --finish`, merged with what it already has)
+10	├── .gitignore                (+ `.playwright-mcp/`, `.superpowers/`, `.docs/sdd/sdd-kit.local
+
+=== RESULTADO (7 turnos, 0.1368261 $)
+Retomo la init. Están aprobados los siete documentos y solo falta `CLAUDE.md`. No he escrito nada todavía, porque el `CLAUDE.md` también pasa por su «sí».
+
+**Lo que verifiqué del `CLAUDE.md` actual**
+
+| Afirmación | Resultado |
+| --- | --- |
+| `npm run dev` | Verificada: `package.json` tiene `"dev": "vite"`. |
+| Puerto 3000 | **No verificada.** Vite usa el 5173 por defecto y no hay `vite.config` ni `--port`. |
+| Las fechas van en UTC | **No verificada.** `src/app.ts` solo tiene `reserve(room, slot)` y no hay código de fechas. |
+
+El «puerto 3000» también está en el `operations.md` que ya aprobaste. Es una discrepancia: ese documento afirma algo que el código no confirma.
+
+Las dos afirmaciones sin verificar no pasan al nuevo archivo como reglas. La de UTC puede ser una regla de producto que te interese fijar. Si es así, dime y la propongo para la constitución, o la apunto como pendiente.
+
+**Borrador de `CLAUDE.md`** (sustituye al actual, de 76 bytes):
+
+```markdown
+# Reservas
+
+Reserva de salas por franja para el equipo de oficina. El contexto vive en los documentos, no aquí:
+
+- Producto: `PRODUCT.md`
+- Roadmap: `ROADMAP.md`
+- Reglas y convenciones: `.docs/sdd/steering/constitution.md`
+- Comandos y testing: `.docs/sdd/steering/operations.md`
+- Arquitectura: `.docs/sdd/steering/architecture.md`
+- Deuda: `.docs/sdd/steering/debt.md`
+- Estimación: `.docs/sdd/steering/estimation.md`
+
+## Reglas críticas
+
+- Los datos viven en memoria (constitución, «Reglas de producto»): no introduzcas persistencia sin cambiar antes esa regla.
+- Antes de dar algo por terminado, pasa el gate de cierre: `npm test`.
+- Cualquier cambio entra por el flujo SDD (`sdd-kit`), aunque sea pequeño.
+```
+
+Quedan dos temas de la entrevista sin responder, y los dos van a este archivo:
+
+1. **¿Usáis un tracker de tickets** (Azure DevOps, Jira…)? Si sí, ¿cuál?
+2. **¿Trabajáis con worktrees?** Si sí, ¿el entorno de cada uno necesita algo más que instalar dependencias (BD, puertos, servicios)?
+
+¿Apruebas el borrador tal cual, o lo ajusto con esas respuestas y con lo que decidas sobre el puerto y UTC? Con tu «sí» lo escribo, lo registro con `sdd init --approved`, y sigo con el log de estimación, git y el cierre.

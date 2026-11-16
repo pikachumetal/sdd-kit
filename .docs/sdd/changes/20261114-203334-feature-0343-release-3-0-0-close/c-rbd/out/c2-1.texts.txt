@@ -1,0 +1,31 @@
+--- [3]
+Voy a ver qué documentación y código hay sobre la exportación.
+
+--- [13]
+## Cómo funciona la exportación
+
+Lo que sigue está leído del código (`src/export/`, `src/cli.js`), salvo lo que marco como lo que dicen los docs.
+
+**Uso:** `node src/cli.js exportar --mes 2026-03`. Escribe `exports/2026-03.ics` e imprime esa ruta.
+
+**Flujo** (`exportMonth` en `src/export/index.js:6`):
+1. **Carga:** `loadBookings()` lee las reservas de `data/bookings.json` a través de `src/bookings/repository.js`.
+2. **Filtro** (`filter.js`): se quedan las reservas cuyo `day` empieza por el mes pedido y cuyo `status` no es `cancelled`. Salen ordenadas por día y franja.
+3. **Conversión a ICS** (`ics.js`): se genera un `VCALENDAR` con un `VEVENT` por reserva.
+   - El `SUMMARY` es `Sala <room>`.
+   - `booking.slot` tiene la forma `"HH:MM-HH:MM"`. Se parte en inicio y fin.
+   - Las horas se interpretan con el desfase fijo `+02:00` (`COWORKING_OFFSET`) y se pasan a UTC para `DTSTART` y `DTEND`.
+4. **Escritura** (`writer.js`): crea la carpeta `exports/` si falta y escribe `exports/<mes>.ics`.
+
+**Cosas que conviene saber:**
+- **Desfase fijo:** `+02:00` no tiene en cuenta el cambio horario. Es horario de verano, así que en invierno las horas saldrían una hora desplazadas. Es una inferencia mía y no lo he comprobado con datos.
+- **Sin validación del mes:** `cli.js` toma lo que venga después de `--mes`. Sin la bandera, `indexOf` devuelve -1 y `month` sería `args[0]`, que es `'exportar'` o `undefined`.
+- **Eventos mínimos:** los `VEVENT` no llevan `UID` ni `DTSTAMP`. Algunos clientes de calendario son estrictos con eso. Tampoco lo he verificado.
+
+**Lo que dicen los docs:**
+- `architecture.md` solo ubica la exportación en `src/export/`.
+- Hay una spec en borrador, `feature-0013-export-by-room` (`status: draft`), que añade `--sala` y un fichero por sala. Todavía no está implementada: el código actual no tiene ese parámetro.
+- También existe la spec `feature-0012-ics-export`, que no he abierto.
+
+¿Quieres que mire la 0012 o los tests (`test/export.test.js`)? Si alguno de los puntos de arriba te parece un problema que arreglar, dímelo y lo llevo al roadmap.
+

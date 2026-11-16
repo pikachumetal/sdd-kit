@@ -1,0 +1,79 @@
+
+>>> Skill: sdd-kit:sdd-init
+<<< Launching skill: sdd-kit:sdd-init
+
+>>> Bash: cd "<run>/repo" && ls -la && cat .docs/sdd/sdd-kit.json 2>/dev/null; find .docs -type f 2>/dev/null | head -50; grep -rl "sdd-template: pending" . --include=*.md 2>/dev/null | grep -v node_modules | head
+<<< total 11
+drwxr-xr-x 1 <user> 197609  0 Nov 14 23:20 ./
+drwxr-xr-x 1 <user> 197609  0 Nov 14 23:20 ../
+drwxr-xr-x 1 <user> 197609  0 Nov 14 23:20 .docs/
+drwxr-xr-x 1 <user> 197609  0 Nov 14 23:20 .git/
+-rw-r--r-- 1 <user> 197609 20 Nov 14 19:50 package.json
+-rw-r--r-- 1 <user> 197609 49 Nov 14 23:20 PRODUCT.md
+-rw-r--r-- 1 <user> 197609 62 Nov 14 19:50 README.md
+drwxr-xr-x 1 <user> 197609  0 Nov 14 23:20 src/
+drwxr-xr-x 1 <user> 197609  0 Nov 14 23:20 test/
+{"init": {"approved": ["PRODUCT.md"]}}
+.docs/sdd/sdd-kit.json
+
+>>> Bash: cd "<run>/repo" && for f in package.json PRODUCT.md README.md; do echo "== $f"; cat $f; echo; done; find src test -type f; git branch -a; git log --oneline | head
+<<< == package.json
+{"type": "module"}
+
+== PRODUCT.md
+# Salas
+
+## Users
+
+- **Oficina**: reserva salas.
+
+== README.md
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+
+src/app.js
+test/app.test.js
+* develop
+  main
+f75ef2e feat: base del molde salas
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; echo ======; cat test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if (command) console.l
+
+=== RESULTADO (6 turnos, 0.122316 $)
+Retomo la init de ayer. Está en curso: `sdd-kit.json` tiene la clave `init`, y el único documento aprobado es `PRODUCT.md`. No te lo vuelvo a presentar. El resto (constitución, operaciones, arquitectura, roadmap…) sigue sin escribir.
+
+**Modo: con código.** Hay un `package.json` y archivos `.js`. Si esto es un template recién instanciado, dímelo y sigo sin código.
+
+**Inventario del código**
+- **Stack:** Node, ESM (`"type": "module"`), sin dependencias. Los tests usan `node:test`.
+- **Código:** un solo archivo, `src/app.js`. Es una CLI con tres comandos: `libres <franja>`, `reservar … [--cada-semana]` y `cancelar <día> <hora>`.
+- **Datos:** las salas (`Norte`, `Sur`) y las reservas están en memoria, escritas a mano en el código.
+- **Tests:** `test/app.test.js`, 3 tests unitarios.
+- **No hay:** scripts en `package.json`, CI, lint ni remoto.
+- **Ramas:** `main` y `develop` (actual).
+- **Comportamiento incompleto:** `reservar --cada-semana` y `cancelar` devuelven solo un texto. No tocan `bookings`.
+
+**Siguiente paso: constitución.** `PRODUCT.md` ya está aprobado, así que sigo con las reglas de producto. Esta es la primera pregunta, la de dónde viven los datos:
+
+1. **Dónde viven los datos.** Hoy están en memoria, con salas y reservas fijas en el código, y se pierden al terminar el proceso.
+   - **Mi recomendación:** declararlo así como estado actual y dejar la persistencia como decisión abierta. Decidir ahora un fichero JSON o una base de datos sería inventarlo.
+   - **¿Confirmas «en memoria, sin persistencia por ahora», o ya tienes decidido dónde deben guardarse?**
+
+Cuando me contestes, paso a las otras cuatro reglas: idioma de los nombres, límites, avisos y regla de conflicto.

@@ -124,10 +124,10 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | T1 Punteros a otra fila | t1 | el Scope de `spec.md` no nombra `docs/config.md`, ni dice por qué queda fuera, y el mensaje no menciona su puntero a la 0009 («quién es cada uno y su fichero los define la 0009»); ver el solape solo en el roadmap no basta: el puntero se queda |
 | SP1 Huecos de la spec | sp1 | `spec-new.md` no lleva la tabla de topes con `docs/guia.md` (42 / 60); o «Lo que se retira o cambia de forma» no nombra `README.md` y `docs/guia.md` para `anular`, ni la fila 0012 con `docs/guia.md`; o el renombrado no va como `REMOVED` de «Cancelar una reserva propia» más `ADDED` de «Cancelar una reserva»; o `tools.txt` no ejecuta `capability merge` con un `--path` fuera del molde; o el ✋ no lleva `Política de modelos`; o «Aprobaciones» lleva la columna «Rol» |
 | PL2 Plan por cláusula | pl2 | §4 de `plan-new.md` no tiene una línea para el THEN y otra para el AND de «Cancelar pide un motivo de la lista», cada una con su task y su test; o no tiene las dos filas del anexo, «sin reserva…» con su task y el test que la busca en `cancelar`, y «la reserva de otra persona no se toca» con su task y su test o marcada «sin observar» con su motivo (el molde no tiene dueños de reserva: `plan-writing.md` lo admite); o una «Verificación» no dice la línea de resumen que imprime su comando (`ℹ fail 0` o la que corresponda), literal |
-| PL1 Patch con su test | pl1 | abre rama, carpeta o `patch.md` de patch; o no ofrece lite citando sus condiciones; y en `a2` y `a3`, la pregunta o el `patch.md` no nombran el test que hoy sale en rojo |
+| PL1 Patch con su test | pl1 | abre rama, carpeta o `patch.md` de patch; o no ofrece lite citando sus condiciones; y en `a2` y `a3`, la pregunta o el `patch.md` no dicen qué test sale hoy en rojo, por su nombre o por lo que comprueba |
 | PB-L Secciones en llano | pb-p | la primera sección abre con un nombre de código, un fichero o un campo interno (`active`, `rooms`, `src/app.js`) antes de decir qué ve quien usa `informes`, con un ejemplo con datos |
 | PL3 Verificación por nivel | pl3 | la «Verificación» de alguna task de `plan-new.md` corre `test/store.test.js` (la suite `store`, de integración) sin que esa task escriba o cambie ese fichero; o una task que escribe o cambia `test/store.test.js` no lo corre |
-| PT1 Texto literal | pt1 | no lo clasifica como patch (lo ofrece como lite o feature), o la pregunta no nombra el test que hoy sale en rojo |
+| PT1 Texto literal | pt1 | no lo clasifica como patch (lo ofrece como lite o feature), o la pregunta no dice qué test sale hoy en rojo, por su nombre o por lo que comprueba |
 | ID1 Reclamar el id | id1, id4 | no ejecuta `sdd id claim` antes de crear la carpeta de la spec o del patch; o la carpeta, la rama o el mensaje siguen con la 0012 como id de la tarea (el remoto ya tiene otra 0012: el claim da «la 0012 pasa a 0013» y la rama `feature/0013-…`) |
 | ID2 El id de la rama | id2 | la carpeta del patch o el mensaje usan un id distinto de 0016 (reserva otro con `sdd id next --reserve`, o renombra la rama) |
 | WS Entorno antes del primer test | ws1, ws2, ws3 | en `tools.txt`, el primer `node --test` (o el gate) corre antes de un `pnpm install`; o una salida lleva `ERR_MODULE_NOT_FOUND` o `Cannot find package 'fecha'`; o instala con `npm install` y sigue sin `node_modules/fecha` |
@@ -138,7 +138,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | CO2P-C Cuenta el párrafo | co2p | `tools: /^(?=[\s\S]*(wc -w\|split\())(?=[\s\S]*pizarra)/` ausente |
 | CO2P-M Origen en la fila | co2p | `file: spec-new.md /^[\|].*docs.plantillas.*(→\|->\|sin medir)/` |
 | CO5 `cli` en el delta | co5 | `spec.md` no lleva `cli` como subsección del delta (`### Capacidad: \`cli\``); decirlo en «Capacidades», en el ✋ o en el mensaje sin esa subsección falla |
-| CO6 Pasos de lo retirado | co6 | «Lo que se retira o cambia de forma» de `spec.md` no lista «El gate corre una sola vez» y «Un gate en rojo para el cierre» con su destino; o lista como afectado «La apertura avisa de la rama», que cita el paso 2 de otra skill («El resumen va al final» sí cambia: el fixture le da un paso 3) |
+| CO6 Pasos de lo retirado | co6 | «Lo que se retira o cambia de forma» de `spec.md` no lista «El gate corre una sola vez» y «Un gate en rojo para el cierre» con su destino (vale como destino una pregunta en el ✋, y citarlas por título o por `fichero:línea`); o lista como afectado «La apertura avisa de la rama», que cita el paso 2 de otra skill («El resumen va al final» sí cambia: el fixture le da un paso 3) |
 | A3-L Lee el carril del patch | a3 | `tools: /patch-lane\.md/` ausente |
 | CO7 Cada forma del literal | co7 | «Lo que se retira o cambia de forma» de `spec.md` no nombra `test/config.test.js`, que fija el valor suelto `'.'`, ni el mensaje lo señala |
 | CO8 El caso contra su THEN | co8 | ni `spec.md` ni el mensaje señalan que el THEN de «Ver las salas libres» no atrapa `libres 10:00-10:00`, el caso de la decisión 1; vale cambiar el THEN, añadir un AND o preguntarlo |
@@ -175,6 +175,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | F1-C Aviso de fase | f1 | los mensajes no abren con `Ahora: … Queda: …` al cambiar de paso |
 | F1-A Sin skill intermedia | f1 | `tools: /Skill: sdd-kit:sdd-start-/` presente |
 | F1-B Entrega a implement | f1 | `tools: /Skill: sdd-kit:sdd-implement/` ausente |
+| TP Plantillas | sp1, co4, p2 | `tools: /^>>> (Skill: \S*sdd-templates(\s\|$)\|Read: [^\n]*sdd-templates[\\/](SKILL\|templates[\\/][\w-]+-template)\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*sdd-templates[\\/](SKILL\|templates[\\/][\w-]+-template)\.md(?![\w.])[^;&\|\n]*([;&\n]\|$\|[\|] *head -(n )?(2[1-9]\d\|[3-9]\d\d\|\d{4,})(?!\d)))/` ausente |
 
 ## Procedencia de las reglas
 
@@ -183,6 +184,7 @@ Cada regla de `skills/sdd-propose/SKILL.md`, de dónde viene y qué escenario la
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Spec y plan cargan `sdd-templates` (paso 4 y paso 5: «traced from `spec-template.md` / `plan-template.md` of the `sdd-templates` skill») | feature 0343, decisión 8: carga de la skill de plantillas en la batería del corte; RED, `sp1`, `co4` y `p2` de la fase `z-prp` de la 0152 releídos con TP | sp1, co4, p2 |
 | `coherence-pass.md` (antes, paso 4): al retirar algo con pasos numerados, `grep` de esos pasos | ticket de la feature 0206 §4 (feature 0281): RED `co6` 1/3; GREEN y REFACTOR 1 1/2, buscando solo el nombre; REFACTOR 2, la orden con su `grep`, 2/2 (`tests/coherence-pass-0281-green.md`) | co6 |
 | Paso 4 (sin regla propia): lo que el Scope añade y una capacidad describe entra en el delta | ticket de la feature 0116 §1 (feature 0281): RED `co5` limpio 6/6 en dos moldes (`tests/coherence-pass-0281-red.md`); el caso de campo fue en una sesión larga | co5 (control) |
 | `plan-writing.md`, sin regla propia: un paso de RED limpio remite a la marca, y §4 abre el molde que da por cubierto un THEN | tickets de las features 0276 §2, 0277 §5 y 0282 §2 (feature 0271): RED `cr2` y `cr3` limpios 3/3, salen con un ruling; CR2B, posible falso negativo en sesión larga | cr2, cr3 (control) |

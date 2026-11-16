@@ -1,0 +1,44 @@
+--- [9]
+Esto es lo que he encontrado leyendo `PRODUCT.md`, `ROADMAP.md`, `src/app.js` y `debt.md`. Lo que dicen los documentos y lo que deduzco van por separado.
+
+**Lo que dicen los documentos y el código**
+- `PRODUCT.md`: la herramienta es de línea de comandos y la usas solo tú. No hay más usuarios.
+- `src/app.js:2`: una franja es un texto libre como `10:00-12:00`. No se valida nada.
+- `src/app.js:5`: una sala está libre si ninguna reserva tiene exactamente el mismo texto de franja.
+- `debt.md`, «Por triar»: «Sin validación del formato de franja horaria».
+- `ROADMAP.md`: la 0008 (avisos por correo) está en curso. La 0009 (.ics) está en Later y le afectaría cualquier cambio de franjas.
+
+**Lo que deduzco**
+- Escribir `10:00-10:30` ya funciona hoy, porque es solo otro texto. Lo que no existe es la noción de solapamiento.
+- Las franjas se comparan como texto, así que `10:00-12:00` y `10:30-11:00` se consideran distintas y las dos salas quedarían libres. Con medias horas habría dobles reservas.
+- Este solapamiento es la decisión que más condiciona el resto. Sin ella, validar el formato, decidir cuánto dura la reserva más corta y la forma del .ics se pueden contestar, pero todo queda frágil.
+
+❓ **Cómo decide el sistema que dos reservas chocan**
+
+1️⃣ **Rejilla fija de bloques de 30 min.** Una reserva es una lista de bloques (`10:00`, `10:30`…). Reservar `10:00-11:00` ocupa dos bloques, y el choque es que compartan algún bloque. Resuelve de paso la validación: solo valen horas en punto y medias, y `10:15` se rechaza. Cuesta convertir el formato actual, y las reservas de otros minutos dejan de caber.
+   - `reservar Norte lun 10:00-11:00` → `Norte ocupada 10:00 y 10:30`
+   - `reservar Norte lun 10:30-11:00` → `Norte ocupada; choca con 10:30`
+
+2️⃣ **Intervalos con comparación de rangos.** Se conserva `HH:MM-HH:MM` y se pasa a minutos. Dos reservas chocan si `inicio < fin_ajeno` y `fin > inicio_ajeno`. Admite cualquier duración, pero la media hora se convierte en una convención que nadie hace cumplir, salvo que se añada una regla de múltiplos de 30.
+   - `reservar Norte lun 10:30-11:00` con `10:00-12:00` ya reservada → `Norte ocupada; choca con 10:00-12:00`
+   - `reservar Norte lun 10:15-10:45` → `Norte reservada` (queda fuera de la rejilla)
+
+3️⃣ **Mantener la igualdad de texto** y solo permitir franjas de 30 min. No resuelve el solapamiento. `10:00-12:00` y `10:30-11:00` conviven, y `libres` mentiría.
+   - `reservar Norte lun 10:30-11:00` con `10:00-12:00` ya reservada → `Norte reservada` (doble reserva)
+
+➡️ **Recomiendo 2️⃣ con regla de múltiplos de 30**, porque ya tienes reservas con duración libre (`10:00-12:00`) y el formato actual sigue sirviendo. La comparación de rangos arregla el fallo real y la regla de 30 min saldda la deuda de validación. A cambio, la regla de 30 min es una validación más que mantener, y tendrás que decidir qué hacer con reservas antiguas fuera de rejilla.
+
+¿Cuál eliges?
+
+--- [11]
+Gracias, eso cambia el planteamiento. Si el problema es que una reunión corta bloquea las dos horas, lo que hace falta es **detectar solapamientos**, no solo admitir franjas de 30 min. Con eso descarto 3️⃣, que dejaría seguir las dobles reservas, y entre 1️⃣ y 2️⃣ me quedo con 2️⃣.
+
+Esta es la escena con tus datos. La reserva existente es `Norte lun 10:00-12:00` y quieres reunirte media hora:
+
+- **Hoy:** `libres lun 10:00-10:30` dice que Norte está libre, porque el texto no coincide. Si la reservas, hay una doble reserva sin aviso. Si la franja completa se considera ocupada, pierdes las dos horas.
+- **Con 2️⃣:** reservas `10:00-10:30` en Norte. Después `libres lun 10:30-12:00` devuelve `Norte, Sur`, y la reunión de otra persona puede entrar a las `10:30`.
+
+2️⃣ encaja con lo que ya tienes porque conserva el formato `HH:MM-HH:MM` y las reservas largas siguen valiendo. La regla de múltiplos de 30 min salda de paso la deuda «Sin validación del formato de franja horaria». A cambio, hay que decidir qué hacer con una reserva antigua fuera de rejilla. Hoy solo hay una (`10:00-12:00`) y encaja, así que de momento no cuesta nada.
+
+¿Vamos con 2️⃣, comparación de rangos con la regla de múltiplos de 30 min?
+

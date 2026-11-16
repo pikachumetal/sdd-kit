@@ -4,7 +4,7 @@
 
 - **Critical and Important** enter the fix pass.
 - A **«no verificado»**: verify it yourself before the validation, or adjudicate it with `Final: Ruling:`.
-- **Minor**, with `"review": {"minors": "fix"}` in `sdd-kit.json`, enters the fix pass with them, without asking, and its ledger line is the one of «Native» below. Any other value, or no key, it goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors»: deferred Minors never enter the fix pass, and never become rulings — a ruling is a decision about a conflict, not a note that you declined a polish suggestion.
+- **Minor**, with `"review": {"minors": "fix"}` in `sdd-kit.json`, enters the fix pass with them, without asking, and its ledger line is the one of «Native» below. Any other value, or no key, it goes to the ledger as `Final: minor (deferred): <one-liner>` and to your final message under «Deferred minors»: deferred Minors never enter the fix pass, and never become rulings.
 
 **Native:** fix the Critical and Important findings of every axis, and the Minor ones with `review.minors: fix`, yourself — you are the implementer here — in ONE pass. Each fix is verified by TDD —write the test that reproduces the finding, watch it fail, make it pass, then run the whole suite— or, when no test can reproduce it (a Minor: a name, a wording), by the whole suite alone, and goes to the ledger as `Final: fixed <finding> — <test name> RED→GREEN, suite <N>/<N>` or, without a test, `Final: fixed <finding> — suite <N>/<N>`. A suite that is not green after the pass means the pass is not over. A finding you decide not to fix is a ruling — `Final: Ruling: <finding> — <why the code stands> — <cost if wrong>` — and reaches the user in the rulings list. There is no second fix pass.
 
@@ -17,7 +17,7 @@ In both, the reproduce-before-fixing rule of the [fix loop](../../sdd-implement-
 **What it leaves open:**
 
 - **A Critical, or an Important the fix pass brought in (its lines, or the re-review says so), is never adjudicated.** Fix it yourself: the test that reproduces it fails first, then the whole suite. It reaches ✋ as `sin revisar: <sha> — <what it fixes>`. If fixing it changes the spec, it is a deviation: stop (`sdd-implement`, «Deviations and rulings»).
-- Any other Important or Minor: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the presentation and walkthrough.
+- Any other Important or Minor whose fix and whose standing leave every approved decision as it is: adjudicate it with `Final: Ruling: <finding> — <why it stands or waits> — <cost if wrong>`, and it reaches ✋ in the presentation and walkthrough; otherwise it is a deviation: stop, as above.
 
 **A re-review never opens another.** A commit after it —a fix the validation asked for— is reviewed in the thread if `sdd-implement`'s «Every commit of yours» allows it (`revisado en el hilo: <sha> · <files> · <n> líneas`); any other goes to ✋ as `sin revisar: <sha> — <what it changes>`, in any profile and with any `validation.mode`. If no re-review went out yet (a clean review, no fixes), that commit opens it, and it is the only one. While a `sin revisar` or a «no verificado» is unresolved, neither the `Validación en campo:` line nor the walkthrough says the review was clean: they say how many are left («…, 1 sin revisar»).
 

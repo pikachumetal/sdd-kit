@@ -1,0 +1,96 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [30]
+Aún no puedo cerrar: con `validation.mode: manual` la validación la tiene que dar usted, y «cierra» es la orden de cerrar, no una validación. No he escrito ningún registro ni he fusionado nada. El árbol sigue limpio.
+
+Los pre-checks están bien. `merge --check` da «destino listo» (`develop`) y no hay otras ramas abiertas. La spec está `approved`, firmada por Laura. La revisión final es limpia y está hecha sobre `02af98f`. `HEAD` solo añadió `tasks.md`, que es documentación, así que no hace falta otra revisión.
+
+🦆 Al cancelar ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o ninguno, se rechaza. El comando `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Si se cambia el orden de los tests o se ejecuta solo, falla. Lo apunto como deuda en el cierre.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real + suite | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real (con «me aburro») + suite | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real + suite | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | ejecución real (mismo proceso) + suite | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `2934c59`, 0,12 s.
+- `node e2e/run.mjs`: **no corre**. Necesita `node scripts/env-up.mjs`, y ese script falla con `Error: no arranca: falta data/seed.json`. El commit `eeb2804`, anterior a la 0010, lo sustituyó por un `exit 1`. No es un fallo de esta rama.
+
+**Sin probar**
+
+- La suite E2E, incluido el flujo core «cancelar una reserva con su motivo», por lo del entorno. No voy a tocar `env-up.mjs` dentro del cierre: es otro cambio y la revisión final no lo cubrió. Dos opciones:
+  - Lo registro como deuda, con el error literal, y el cierre sigue con la unitaria.
+  - Paro y se arregla antes por un patch.
+
+  Recomiendo la deuda, porque el fallo es independiente de la 0010. La decisión es suya.
+- El estado vive en memoria. Por eso el guion usa un único proceso: con `node src/app.js canceladas` suelto la lista sale vacía. Es lo que dice la spec hasta la 0014.
+
+Panel: plan B en http://127.0.0.1:10281/ (no tengo Chrome; esta página no ve la app, así que si algo falla, cuénteme el error en el comentario).
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay entorno que arrancar: el entorno declarado (`env-up`) no arranca, como se ha dicho arriba. La CLI se prueba en local.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+2. Sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+node src/app.js cancelar Norte lun
+```
+
+3. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+4. El listado, cancelando y listando en el mismo proceso. Salen cuatro líneas: las dos primeras son los rechazos, la tercera la cancelación y la última `Norte lun — sala ocupada`.
+
+```
+node .temp/guion.mjs
+```
+
+Para parar el panel, cuando acabe: Ctrl+C en su terminal, o dígame «listo» y lo paro yo.
+
+Si no puede ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dígame «validado» o qué paso falla, y si la E2E va como deuda o por un patch previo.
+
+--- [32]
+Esa notificación es solo del proceso en segundo plano que lanzó el panel. No es una respuesta suya y no cuenta como validación. Compruebo si el panel sigue arriba.
+
+--- [34]
+El panel sigue respondiendo en http://127.0.0.1:10281/.
+
+El cierre sigue parado en el paso 1, esperando su respuesta. No he validado nada por usted ni he escrito ningún registro. Tampoco he tocado la rama ni he fusionado.
+
+Necesito de usted dos cosas:
+
+1. **La validación.** Pruebe el guion del mensaje anterior y dígame «validado» o qué paso falla. Si no puede ahora, use la línea `Diferir:` con un uso concreto y un responsable.
+2. **Qué hago con la E2E.** `scripts/env-up.mjs` falla desde el commit `eeb2804`, anterior a la 0010, así que la suite E2E no puede correr. Recomiendo registrarlo como deuda con el error literal y cerrar con la suite unitaria, que pasa 5/5. La alternativa es parar el cierre y arreglar `env-up` antes por un patch.
+
+Cuando responda sigo con los registros: walkthrough, tasks, retro, capacidad `bookings`, deuda y roadmap. Después vienen el commit de cierre, la sincronización con la base y el merge a `develop`.
+

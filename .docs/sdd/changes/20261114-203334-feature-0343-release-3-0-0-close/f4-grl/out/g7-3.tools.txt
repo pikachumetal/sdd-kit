@@ -1,0 +1,161 @@
+
+>>> Skill: sdd-kit:sdd-config
+<<< Launching skill: sdd-kit:sdd-config
+
+>>> Bash: cd "<run>/repo"; ls -a .docs/sdd 2>&1; echo ---; cat .docs/sdd/sdd-kit.json 2>&1; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1; echo ---; cat .gitignore 2>&1
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kfix\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec, the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration branch's after the closing's merge
+<<< Exit code 1
+.
+..
+sdd-kit.json
+specs
+steering
+---
+{"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+cat: .gitignore: No such file or directory
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.15535110000000002 $)
+❓ **Perfil de control**
+Es la primera de las 9 claves que faltan. El proyecto no declara `control.profile`, así que hoy rige `delegate`.
+1️⃣ **`delegate`**: para en la spec, en las desviaciones y en la validación. No tiene parada en el plan.
+2️⃣ **`pair`**: para en todas las puertas, también en el plan y después de cada tarea.
+3️⃣ **`unattended`**: no para hasta el fin de la release. El merge a `main`, el tag y cualquier acción hacia fuera siguen siendo de una persona.
+➡️ **Recomiendo 1️⃣**, porque ahorra la puerta del plan y mantiene las paradas que importan: spec, desviaciones y validación. A cambio, no revisas el plan antes de que se ejecute.
+
+¿Qué perfil quieres?
+
+=== RESULTADO (1 turnos, 0.16488860000000002 $)
+Anotado: `delegate`.
+
+1️⃣ **Para todo el equipo** (`sdd-kit.json`): lo fija el proyecto y lo hereda cualquiera que trabaje en él.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`): queda fuera de git y no cambia lo que hace el resto.
+➡️ **Recomiendo 1️⃣**, porque el proyecto aún no declara la clave y es el perfil por defecto del kit. Si el equipo quiere otro después, se cambia en un sitio. A cambio, se lo impones a quien trabaje aquí, aunque hoy coincide con el default.
+
+¿Para quién lo escribo?
+
+=== RESULTADO (1 turnos, 0.17479840000000002 $)
+Anotado: `control.profile: delegate` en `sdd-kit.json`.
+
+Sigue el merge de cierre. El repo usa `develop` para integración y `main` como rama estable.
+
+1️⃣ **Sí**: se hace merge a `develop` con `--no-ff` y borrar el worktree queda para una persona (`merge: {into: develop, noFf: true, removeWorktree: false}`).
+2️⃣ **No**: no se declara `merge` y el cierre de cada feature lo pregunta.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature en un solo commit que se revierte de golpe, y borrar un worktree con cambios sin commitear no tiene vuelta atrás. A cambio, la limpieza del worktree la haces tú a mano.
+
+¿Declaro esa política de merge?
+
+=== RESULTADO (1 turnos, 0.18399630000000003 $)
+Anotado: `merge` completo hacia `develop`.
+
+Ahora el push. Como `main` es la rama estable y `develop` la de integración, esta pregunta aplica.
+
+1️⃣ **Sí**: tras el merge a `develop`, hago push de esa rama sin preguntar (`merge.push: true`). La rama estable, los tags y cualquier otro push siguen siendo tuyos.
+2️⃣ **No**: el cierre no hace push (`merge.push: false`).
+➡️ **Recomiendo 1️⃣**, porque `develop` es compartida y un merge sin push no lo ve nadie más. A cambio, un merge malo llega al remoto antes de que lo revises.
+
+¿Hago push de `develop` tras el merge del cierre?
+
+=== RESULTADO (1 turnos, 0.19360650000000004 $)
+Anotado: `merge.push: true` y `validation.mode: manual`.
+
+Siguen los frenos. Por defecto son hasta 3 agentes en paralelo, un aviso tras 8 minutos de silencio entre pasos y otro tras 20 en un comando largo.
+
+1️⃣ **Sí, valen**: se escriben esos valores en `sdd-kit.json` (`maxParallelAgents: 3`, `betweenStepsMinutes: 8`, `longCommandMinutes: 20`).
+2️⃣ **Otros números**: me dices los que prefieres.
+➡️ **Recomiendo 1️⃣**, porque `sdd-parallel-agents` y el vigilante de silencio ya funcionan con esos valores. A cambio, si tu máquina o tus comandos tardan más, saltarán avisos de falsa alarma.
+
+¿Te valen los frenos por defecto?
+
+=== RESULTADO (1 turnos, 0.20299050000000005 $)
+Anotado: frenos por defecto, escritos en `sdd-kit.json`.
+
+Sigue el método de ejecución de los planes.
+
+1️⃣ **`auto`**: cada plan recomienda su método. Native es lo más barato, y los subagentes se reservan para planes largos o con revisión por tarea.
+2️⃣ **`native`**: todo se ejecuta en la sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes.
+➡️ **Recomiendo 1️⃣**, porque el handoff de `plan-writing.md` pesa cada plan y elige el método que le conviene. A cambio, el método cambia de un plan a otro.
+
+¿Qué valor de `execution` escribo?
+
+=== RESULTADO (1 turnos, 0.21207740000000005 $)
+Anotado: `execution: auto`.
+
+Ahora los hallazgos Minor de la revisión final.
+
+1️⃣ **`defer`**: los Minor van al ledger como diferidos. Un Minor no cambia lo que recibe quien usa el producto, y cada arreglo alarga la pasada de fix.
+2️⃣ **`fix`**: los Minor entran en la pasada de fix y se cierran en cada feature.
+➡️ **Recomiendo 1️⃣**, porque mantiene corta la pasada de fix y deja los Minor registrados. A cambio, pueden acumularse en el ledger si nadie los tria.
+
+¿Qué valor de `review.minors` escribo?
+
+>>> ToolSearch: {"query":"select:WebFetch","max_results":1}
+<<< 
+
+>>> WebFetch: {"url":"https://platform.claude.com/docs/en/about-claude/pricing","prompt":"List every current Claude Opus, Sonnet and Haiku model in the model pricing table, by API model id (e.g. claude-sonnet-5-5), with its prices in USD per million tokens: base input, 5m cache write, 1h cache write, cache read (cache hits), and output. Give exact numbers from the page, and say if a model is deprecated/legacy."}
+<<< <persisted-output>
+Output too large (54.2KB). Full output saved to: <home>\.claude-gco\projects\C--code--workspaces-sdd-kit-feature-0342-interviewer-rewrite--temp-r43-f4-grl-g7-3-repo\b508d84e-8778-4130-987c-9718c9b7acd2\tool-results\toolu_01VpbuRuScq38pSspXaRdFZC.txt
+
+Preview (first 2KB):
+---
+title: Pricing
+url: https://platform.claude.com/docs/en/about-claude/pricing
+description: Learn about Anthropic's pricing structure for models and features
+---
+
+This page provides detailed pricing information for Anthropic’s models and features. All prices are in USD.
+
+For the most current pricing inform
+
+>>> Grep: ^\| Claude (Opus|Sonnet|Haiku|Fable|Mythos)
+<<< 17:| Claude Fable 5.2                                                                                                                                                       | $8 / MTok             | $10 / MTok      | $16 / MTok      | $0.20 / MTok<sup>1</sup> | $40 / MTok             |
+18:| Claude Mythos 5.2 ([limited availability](https://support.claude.com/en/articles/14604842))                                                                            | $8 / MTok             | $10 / MTok      | $16 / MTok      | $0.20 / MTok<sup>1</sup> | $40 / MTok             |
+19:| Claude Fable 5.1       
+
+=== RESULTADO (4 turnos, 0.26504360000000005 $)
+Leí la página de precios y propongo esta tabla, en USD por millón de tokens, con los modelos actuales por id de API:
+
+| Modelo | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+- **Haiku 5.5:** la página da un segundo tramo para prompts de más de 100.000 tokens (input 0.50, output 2.50). La tabla lleva el tramo de hasta 100.000.
+- **Cabecera:** `pricing.source` sería la URL de la página y `pricing.updated` sería `2026-11-16`.
+
+1️⃣ **Sí**: escribo esa tabla en `sdd-kit.json` y el cierre da el coste de la sesión.
+2️⃣ **No**: no escribo `pricing` y el cierre dice «sin precio».
+➡️ **Recomiendo 1️⃣**, porque son precios leídos hoy de la fuente oficial y le dan coste real al cierre. A cambio, la tabla caduca cuando cambien los precios y hay que releer la página para actualizarla.
+
+¿Escribo la tabla de precios?
+
+=== RESULTADO (1 turnos, 0.27981300000000003 $)
+Anotado: no escribo `pricing` y el cierre dará «sin precio».
+
+Queda una pregunta, personal, que va a `sdd-kit.local.json` y no cambia nada para el equipo.
+
+1️⃣ **No**: no arranco el entorno antes del guion de prueba (`validation.startEnvironment: false`). La validación ya dice cómo arrancarlo y nada corre mientras no pruebas.
+2️⃣ **Sí**: arranco el entorno antes de darte el guion, para que lo encuentres funcionando (`true`).
+➡️ **Recomiendo 1️⃣**, porque no deja procesos en marcha sin que estés probando. A cambio, arrancas tú el entorno cuando te toque validar.
+
+¿Arranco el entorno antes del guion de validación?
+
+=== RESULTADO (8 turnos, 0.29867934 $)
+conversación con persona: 8 respuestas

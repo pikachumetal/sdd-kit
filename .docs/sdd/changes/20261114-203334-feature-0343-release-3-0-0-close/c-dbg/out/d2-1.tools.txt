@@ -1,0 +1,71 @@
+
+>>> Skill: sdd-kit:sdd-debugging
+<<< Launching skill: sdd-kit:sdd-debugging
+
+>>> Bash: cat .docs/sdd/steering/debt.md 2>&1 | head -50; echo ---PKG; cat package.json; echo ---LS; ls -la; echo ---RUN; npm run informe 2>&1 | head -30
+<<< # Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| El listado de ocupación no sale tras limpiar el repo | herramienta del kit | [ticket](../../../docs/tickets/2026-10-12-informe.md), [ticket](../../../docs/tickets/2026-10-19-informe.md) | medio | los dos tickets | recrea la carpeta de la caché | compro
+
+>>> Bash: cat scripts/informe.mjs; echo ---; ls -la scripts; cat .gitignore 2>&1; git log --oneline -5 -- scripts; git check-ignore -v .cache; ls docs/tickets; cat docs/tickets/*informe.md
+<<< import { writeFileSync } from 'node:fs';
+
+writeFileSync('.cache/informes/ocupacion.csv', 'sala,ocupacion\nNorte,80\n');
+---
+total 5
+drwxr-xr-x 1 <user> 197609   0 Nov 14 22:58 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 14 22:58 ../
+-rw-r--r-- 1 <user> 197609 123 Nov 14 19:50 informe.mjs
+cat: .gitignore: No such file or directory
+a1475a3 feat: base del molde
+2026-10-12-informe.md
+2026-10-19-informe.md
+# El listado de ocupación no sale
+
+Tras limpiar el repo, el listado de ocupación da un error de fichero. Perdí 30 minutos. Recrear la carpeta de la caché lo resolvió.
+# Un worktree nuevo no saca 
+
+=== RESULTADO (5 turnos, 0.1118819 $)
+## Causa raíz
+
+`npm run informe` falla porque `scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` y **la carpeta `.cache/informes/` no existe**. Nada en el script la crea.
+
+`writeFileSync` crea ficheros pero no directorios intermedios. Si falta alguno de los tramos de la ruta, lanza `ENOENT`. El script entero es una sola línea que da por hecho que la carpeta ya está ahí.
+
+## Evidencia
+
+- **Error reproducido:** el stack trace apunta a `open '...\repo\.cache\informes\ocupacion.csv'`, llamado desde `informe.mjs:3:1`. Es la llamada a `writeFileSync`.
+- **Estado del repo:** `ls -la` no muestra ningún `.cache/`. No hay `.gitignore`.
+- **Historial:** `scripts/` solo tiene el commit base (`a1475a3`). No hay ningún cambio reciente que lo haya roto: nunca ha funcionado sin la carpeta.
+- **Qué la hacía existir antes:** nada versionado la crea. Solo estaba si alguien la había creado a mano o una ejecución anterior la había dejado. Un repo limpio o un worktree nuevo no la tienen.
+
+## Deuda existente
+
+La fila **«El listado de ocupación no sale tras limpiar el repo»** de `.docs/sdd/steering/debt.md` cubre este fallo. Sus dos tickets (`2026-10-12` y `2026-10-19`) describen el mismo síntoma: tras limpiar el repo o en un worktree nuevo, el listado no sale, y recrear la carpeta de la caché lo resuelve.
+
+- **Remedio temporal de la fila:** recrear la carpeta de la caché.
+- **Cómo cuadra con la causa:** el remedio funciona porque lo que falta es justo esa carpeta. Eso confirma la causa. No es el arreglo.
+- **Discrepancia:** la fila atribuye el origen a «herramienta del kit». Por lo que veo en el código, el fallo está en el script del propio proyecto (`scripts/informe.mjs`), que no crea su directorio de salida. No he encontrado nada del kit implicado.
+- **Estado de la fila:** sigue abierta. Su arreglo previsto es una «comprobación automática», pero esa fila no tiene destino todavía.
+
+## Qué no he hecho
+
+No he tocado nada, como pediste. No he creado la carpeta ni modificado el script. Tampoco he escrito un `patch.md`, porque no hay un patch abierto: eso lo decide `sdd-propose` si quieres arreglarlo.
+
+## Siguiente paso
+
+Cuando quieras arreglarlo, el cambio entra por `sdd-propose`. La opción más pequeña sería que el script cree `.cache/informes/` antes de escribir. Eso ataca el origen y no depende de que alguien recuerde recrear la carpeta.

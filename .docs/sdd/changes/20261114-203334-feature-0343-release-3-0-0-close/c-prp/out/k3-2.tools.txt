@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering 2>&1; cat package.json; cat .docs/sdd/sdd-kit.local.json 2>&1 | head -30
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-propose\references\config-lane.md
+<<< 1	## Config lane
+2	
+3	1. With the lane confirmed, make the change. If it turns out to change what the product's user sees or can do, the lane goes up (step 2 of `sdd-propose`).
+4	2. Run the `Build` of `operations.md` if it declares one and its §Testing `Gate de cierre`; without that gate, the constitution's, as «Running a gate» of `sdd-verify` says. With no gate anywhere, ask what to run: never invent a command.
+5	3. Gate red → don't commit; say what failed.
+6	4. Gate green → one commit on the current branch, whose body carries the `Gate:` line of `sdd-verify`, one entry per task of the gate: 
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"type": "module", "engines": {"node": ">=20"}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; cat .docs/sdd/steering/operations.md; git branch --show-current; ls node_modules 2>&1 | head -1; grep -rn "20\|engines" README.md | head
+<<< {"version": "3.0.0", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **Lo afectado**: `node --test <fichero de test>`
+- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+- **Gate de merge**: `node --test && node scripts/lint.mjs`
+- **Acceso a la aplicación**: `sin login`
+- **Motor de producción**: sin base de datos; las reservas
+
+=== RESULTADO (6 turnos, 0.1190801 $)
+Esto entra por el carril **config**: es un cambio de ajustes que no altera lo que ve o puede hacer el usuario del producto. Antes de tocar nada, necesito tu confirmación.
+
+🦆 Voy a cambiar una sola línea: en `package.json`, `engines.node` pasa de `>=20` a `>=22.18`. Antes de guardarlo correré el gate de cierre del proyecto (`node --test && node scripts/lint.mjs`). Si sale verde, lo dejo en un solo commit. No hay spec, plan ni entrada de roadmap.
+
+Dos cosas que debes saber:
+- Estás en `main`, la rama estable. En config no commiteo ahí: tendría que parar y preguntarte.
+- No hay `node_modules`. El proyecto no declara dependencias, así que no hace falta instalar nada. Si resultara necesario, lo haría antes de correr el gate.
+
+¿Cómo seguimos? (perfil actual: `delegate`, del proyecto)
+
+1. **Rama `config/node-22-18` desde `main`, cambio, gate y commit en ella (Recomendada).** Así no se commitea en `main`, y luego tú decides cómo integrarla.
+2. **Cambio y gate en `main`, sin commit.** Te dejo el diff y tú lo commiteas.
+3. **No hacerlo.**
+
+>>> Bash: git checkout -b config/node-22-18 && sed -i 's/">=20"/">=22.18"/' package.json && cat package.json && node --test 2>&1 | tail -12 && node scripts/lint.mjs; echo lint=$?
+<<< Switched to a new branch 'config/node-22-18'
+{"type": "module", "engines": {"node": ">=22.18"}}
+✔ libres excluye la sala reservada en la franja (0.7224ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1217ms)
+✔ cancelar una reserva activa (0.6764ms)
+✔ cancelar sin reserva lo dice (0.1162ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 131.3592
+lint: sin hallazgos
+lint=0
+
+>>> Bash: git commit -qam "chore: sube la versión mínima de node a 22.18 en engines
+
+Gate: \`node --test && node scripts/lint.mjs\` → unit: corrió 4/4 · lint: corrió sin hallazgos
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -2
+<<< warning: in the working copy of 'package.json', LF will be replaced by CRLF the next time Git touches it
+1badf2d chore: sube la versión mínima de node a 22.18 en engines
+9211112 feat: base del molde
+
+=== RESULTADO (3 turnos, 0.1405896 $)
+Hecho. `engines.node` en `package.json` pasa de `>=20` a `>=22.18`.
+
+- **Gate:** `node --test && node scripts/lint.mjs` salió verde. Los tests pasaron 4/4 y el lint no dio hallazgos.
+- **Commit:** `1badf2d` en la rama `config/node-22-18`. El cuerpo lleva la línea `Gate:`.
+- **Merge:** no la he fusionado. No es una rama `feature/*`, así que `main` queda como estaba. Integrarla es decisión tuya.

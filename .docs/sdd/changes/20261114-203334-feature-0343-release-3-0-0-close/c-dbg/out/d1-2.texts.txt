@@ -1,0 +1,42 @@
+--- [2]
+Empiezo por la fase 1: leo la deuda del proyecto, el hook y el estado de git.
+
+--- [5]
+La deuda no recoge este fallo. Ejecuto el hook a mano para reproducirlo y miro las variables de git que nombra el hook.
+
+--- [8]
+Fuera de un commit el hook pasa. Durante un commit, git exporta `GIT_INDEX_FILE` a los hooks, así que lo simulo con esa variable.
+
+--- [11]
+Mi simulación ha alterado el índice real: `notas.txt` ha pasado de staged (`A`) a `??`, y aparecen dos `M` nuevos. Miro qué ha pasado antes de seguir.
+
+--- [14]
+Los `M` son solo ruido de saltos de línea (el diff está vacío). Lo único real es que `notas.txt` perdió el staging por mi prueba, así que lo restauro.
+
+--- [16]
+## Causa raíz
+
+El hook `.githooks/pre-commit` hereda `GIT_INDEX_FILE` de `git commit`. Con esa variable, su `git worktree add` no puede crear el worktree temporal.
+
+Cuando git ejecuta un hook de pre-commit, exporta `GIT_INDEX_FILE` con una ruta relativa, `.git/index`. Los `spawnSync('git', …)` del hook heredan esa variable.
+
+- **Dónde falla:** `git worktree add --detach .git/hook-check HEAD`, en la línea 8 del hook. El comando intenta crear el índice del worktree nuevo en `.git/hook-check/.git/index.lock`. Ahí no existe ese directorio todavía, y git aborta.
+- **Cómo lo comprobé:** ejecutado a pelo, el hook sale con 0. Con `GIT_INDEX_FILE=.git/index` falla con este error y sale con 1:
+
+  ```
+  fatal: Unable to create '…/.git/hook-check/.git/index.lock': No such file or directory
+  ```
+
+- **Qué no es:** no tiene que ver con `notas.txt`, ni con su contenido. Cualquier commit falla igual. La deuda (`debt.md`) no recoge este fallo.
+- **Por qué no sale en la terminal:** `GIT_INDEX_FILE` solo existe dentro de un commit. En una terminal normal no está definida.
+
+El hook tampoco limpia `GIT_INDEX_FILE`, ni `GIT_DIR` ni `GIT_WORK_TREE`, en ninguno de sus `git`. Con una ruta absoluta el comando no falla, pero ese caso es peor: el checkout escribiría sobre el índice real.
+
+## Un aviso sobre mi prueba
+
+Mi simulación con `GIT_INDEX_FILE` sobreescribió el índice real. `notas.txt` pasó de staged a untracked, y lo volví a añadir con `git add notas.txt`. Ahora está de nuevo como `A`.
+
+Los `M` de `.docs/sdd/sdd-kit.json` y `.githooks/pre-commit` son solo ruido de CRLF. El diff está vacío y no cambié nada de esos archivos.
+
+Queda sin hacer, como pediste, el arreglo del hook.
+

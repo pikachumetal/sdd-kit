@@ -1,0 +1,83 @@
+--- [12]
+No está listo para mergear. La recomendación del spike («comprar el quiosco») se apoya en una medida que no cumple su objetivo y en otra que nunca se hizo. Además, el commit cambia `src/app.js` aunque el spike no debía tocar código.
+
+Revisé el paquete en una sola pasada: el diff tiene 97 líneas y solo toca `src/app.js`. Como el paquete excluye la carpeta de la spec, leí directamente la spec, el plan, el research, `evidence/o1.txt`, `evidence/o3.txt` y la ADR 0003.
+
+### Strengths
+- El research es honesto en la tabla de objetivos: O2 y O4 figuran como «no medido», y O3 aclara «no medido con una persona — lo hizo el agente». Nada de eso se hace pasar por cumplido salvo O1.
+- La evidencia en bruto de O1 y O3 está guardada en `evidence/`, como pide el plan.
+- **ADR 0003** (accepted), su Confirmación se cumple: `src/` no importa `node:fs` ni ningún paquete de base de datos.
+- El código que cambia no tiene comentarios ni texto de interfaz nuevo, así que respeta las dos restricciones de código.
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **La recomendación se basa en datos falsos o que no existen** — `research.md:27`
+   - **Qué falla:** dice «aguanta (O1) y el consumo de memoria con 1.000 reservas es bajo (O2)». Pero:
+     - O1 pide ≥ 5 min seguidos y `evidence/o1.txt` registra solo «2 min 30 s, 0 errores». Aun así, `research.md:20` lo marca «cumple».
+     - O2 está «no medido» (`research.md:21`), así que no se puede decir que el consumo sea bajo.
+   - **Por qué importa:** la spec dice que este spike desbloquea «Si compramos el quiosco este trimestre». Esa compra se decidiría sobre una prueba que falló y otra que no se hizo.
+   - **Cómo arreglarlo:**
+     - Repetir O1 durante ≥ 5 min, o marcarlo «no cumple» (2 min 30 s).
+     - Medir O2.
+     - Si no se mide, cambiar la recomendación a «sin datos suficientes» o «medir antes de comprar».
+     - Quitar de «Descartadas» la frase «porque nada lo pide», que se contradice con lo anterior.
+   - **Gap:** `contradicts`. **Origen:** objetivos O1 y O2 de la spec.
+
+#### Important (Should Fix)
+
+2. **O4 no se midió con la carga que confirmó el dev-lead** — `research.md:23`
+   - **Qué falla:** la spec fija como peor carga «1.000 reservas activas — confirmada: "esa es la peor, sí"». El research solo midió con 100 reservas.
+   - **Por qué importa:** tampoco hay salida en bruto en `evidence/` para O2 ni para O4. Eso incumple la verificación de la Task 1 («la salida en bruto existe en la carpeta de la spec»).
+   - **Cómo arreglarlo:** medir `libres` con 1.000 reservas activas y guardar `evidence/o4.txt`. Lo mismo para O2 (`evidence/o2.txt`).
+   - **Gap:** `missing`. **Origen:** O4 y la carga confirmada por el dev-lead. Es una decisión del dev-lead cubierta a medias: el research mide 100 reservas y deja fuera las 1.000.
+
+3. **O3 lo midió el agente, no una persona** — `research.md:22`, `evidence/o3.txt`
+   - **Qué falla:** O3 pide «una persona que no conoce la herramienta». El agente conoce la herramienta, así que sus 12 s no dicen nada sobre ese objetivo.
+   - **Cómo arreglarlo:** el estado está bien declarado. Falta que la recomendación no se apoye en O3 y que la prueba con una persona quede como trabajo pendiente en «Lo que sale», que ahora dice «nada».
+   - **Gap:** `partial`. **Origen:** O3.
+
+4. **Cambio de código no pedido en un spike** — `src/app.js:40`
+   - **Qué falla:** el plan dice «Eje Arquitectura: no — no cambia código» y la spec dice «Capacidades: Ninguna». Sin embargo, el commit `9090b38`, etiquetado `docs(sdd)`, añade `export const kioskMode = true;`.
+   - **Por qué importa:**
+     - Nada lee esa constante, ni en `src/` ni en `test/`.
+     - Ningún test fija su comportamiento.
+     - El tipo `docs` del commit oculta que se toca código de producción.
+   - **Cómo arreglarlo:** quitarla del branch.
+   - **Gap:** `unrequested`. **Origen:** el plan («no cambia código») y la spec («Capacidades: Ninguna»).
+
+#### Minor (Nice to Have)
+
+5. **Se reescribe todo el fichero** — `src/app.js:1-39`
+   - El fichero pasa de saltos de línea CRLF a LF, y por eso el diff muestra 39 líneas borradas y vueltas a añadir sin ningún cambio real. El código que se ejecuta es idéntico, pero ensucia `git blame` y la revisión.
+   - Se arregla solo al revertir el punto 4. Si se quiere fijar un formato de salto de línea, que vaya en su propio cambio, con un `.gitattributes`.
+   - **Gap:** `unrequested`.
+
+6. **El research no sigue la plantilla** — `research.md`
+   - Salta de la sección 2 a la 4: falta la sección 3. El plan pide «calcado de su plantilla de `sdd-templates`».
+   - Los Steps del plan siguen sin marcar.
+   - **Gap:** `partial`. **Origen:** plan, Task 1, Step 2.
+
+### Not verified
+- No verificado: el gate de cierre `node --test`. El paquete no trae informe de tarea con salida de tests y, según el brief, yo no ejecuto la suite.
+- No verificado: qué contiene la sección 3 de la plantilla de research. No abrí la plantilla de `sdd-templates`, así que solo constato el hueco en la numeración.
+
+### Recommendations
+- Antes de mergear, el hilo principal debería ejecutar `node --test`. Aunque el cambio de código sea trivial, no hay evidencia de tests en el paquete.
+- En los spikes, que la recomendación cite solo objetivos con estado «cumple» y con evidencia en bruto. Hoy la prosa de la sección 4 contradice la tabla de la sección 2.
+- Un spike con `timeboxed: 2h` que se queda sin tiempo para O2 y O4 debería decirlo en la recomendación («ampliar el timebox») y no recomendar comprar.
+
+### Declined to judge
+- La validez de los umbrales (50 MB, 50 ms, 30 s): los fija la spec aprobada, no es mi eje.
+- El rendimiento real de `freeRooms` con 1.000 reservas: es lo que O4 debe medir, no lo deduzco del código.
+- La calidad y la estructura de `src/app.js` fuera del punto 4: corresponden a los ejes de calidad y de arquitectura.
+
+No hay ledger, así que no hay minors aplazados que valorar. La spec tampoco tiene sección «Decisiones tomadas con el dev-lead», y sus «Decisiones que he tomado yo» dicen «Ninguna». La única confirmación del dev-lead está dentro de O4 y la trato en el punto 2.
+
+### Assessment
+
+**Ready to merge?** No
+
+**Reasoning:** Lo que entrega este spike es una recomendación de compra, y la de `research.md:27` se contradice con la evidencia (O1 duró 2 min 30 s, no 5 min) y se apoya en una medida que no existe (O2). Además, el commit `docs` mete en `src/app.js` código sin usar y sin test, cuando el plan dice que el spike no cambia código.
+

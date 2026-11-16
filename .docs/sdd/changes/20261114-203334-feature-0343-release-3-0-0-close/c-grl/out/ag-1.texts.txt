@@ -1,0 +1,74 @@
+--- [11]
+Ahora: leo las reglas de redacción de la spec para clasificar y arrancar. Queda: nota de entendimiento, spec, revisión y aprobación, ~10 min.
+
+--- [14]
+Ahora: clasifico (feature, modo full), reservo el id y creo la rama. Queda: nota de entendimiento, spec con su revisión y la parada de aprobación, ~10 min.
+
+--- [24]
+Ahora: repaso de coherencia, probando el delta sobre una copia. Queda: revisión de la spec con un revisor y la parada de aprobación, ~6 min.
+
+--- [43]
+Ahora: aplico los hallazgos de la review a la spec (un Crítico aceptado, así que después va una segunda ronda con un revisor). Queda: segunda revisión y la parada de aprobación, ~5 min.
+
+--- [49]
+Siguiente bloque: alcance, pruebas, escenarios y reglas.
+
+--- [65]
+Delta válido tras los cambios. Lanzo la segunda ronda (un revisor, una sola relectura), porque se aceptó un Crítico.
+
+--- [72]
+Sin tercera ronda. Incorporo los hallazgos de la segunda y cierro el repaso.
+
+--- [84]
+Verifico el delta una última vez y confirmo que solo hay cambios de documentación sin commitear.
+
+--- [93]
+Ahora: la spec está escrita y revisada, y espera tu aprobación. Queda: tu respuesta; con ella escribo el plan y paso a implementar, ~15 min.
+
+Carril: feature, modo full · Perfil: delegate, por defecto (`sdd-kit.json` no fija ninguno y no hay `sdd-kit.local.json`).
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación».
+Para otro perfil: «perfil `<otro>` para esta feature».
+
+Como pediste empezar ya, no hice entrevista. Cada valor que no era tuyo está en ✋ y lo valida tu gate.
+
+Rama `feature/0010-lista-espera`. Spec: `.docs/sdd/changes/20261114-225148-feature-0010-lista-espera/spec.md`, sin commitear hasta que apruebes.
+
+## 🦆 Qué cambia
+
+Hoy, si la sala que quieres está reservada, nada recuerda que la querías. Con esto:
+
+- `esperar Norte lun 10:00-12:00` responde `Norte ocupada lun 10:00-12:00: apuntada en la lista de espera`.
+- `espera` te enseña la lista.
+- `dejar-espera Norte lun 10:00-12:00` quita una entrada.
+
+La lista se guarda en `espera.json`. Cada comando del CLI es un proceso nuevo, y en memoria la lista se perdería entre un comando y el siguiente. Cuando se cancela una reserva, la lista **no** actúa sola: eso queda fuera de esta feature.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. **Enfoque**: comando explícito `esperar` y lista en un fichero. Descarté enganchar `reservar` (hoy solo hace `--cada-semana`) y la lista solo en memoria (`espera` saldría siempre vacía).
+2. **Qué es la lista**: combinaciones sala + día + franja ocupadas que quieres. Sin posiciones ni nombres, porque lo usas solo tú.
+3. **Comandos**: `esperar`, `espera` y `dejar-espera`, con los textos exactos en la spec. Elegí `dejar-espera` para no chocar con `cancelar`.
+4. **Dónde se guarda**: `espera.json` en el directorio actual, o la ruta de la variable `SALAS_ESPERA`. Es la primera persistencia del producto.
+5. **Orden de comprobaciones de `esperar`**: fichero legible → argumentos → sala desconocida → libre → ya estaba → apuntar. Los nombres se comparan sin normalizar mayúsculas.
+6. **Una entrada cuya reserva se liberó se queda**: `esperar` de nuevo responde «libre» y no la toca.
+7. **Sin tope ni caducidad**, y sin protección ante escrituras simultáneas.
+8. **No entra la promoción al cancelar.** Hoy `cancelar` es un texto fijo que no modifica nada, así que hacerlo real es otra feature. Es lo que más vas a echar de menos. Te propongo una fila en `Later`.
+9. **No entra validar el formato de la franja.** Ya está en la deuda.
+10. **Fichero ilegible**: aviso `espera.json no es válido: corrígelo o bórralo` y no se escribe. Ausente cuenta como lista vacía.
+11. **`.gitignore` nuevo con `espera.json`**, `SALAS_ESPERA` documentada en `operations.md` y sin ADR (se deshace borrando el fichero).
+12. **Tests**: usan las salas y reservas que ya tiene `src/app.js`; para varias entradas, el test escribe antes `espera.json`.
+13. **Capacidad nueva**: `room-waitlist`, con 10 requisitos y 5 reglas. Probé el delta sobre una copia y salió válido.
+
+Validación: dev-lead, porque es salida de un comando que lee una persona.
+
+**Review**: dos rondas con un revisor en Sonnet cada una.
+
+- La primera dio un Crítico que acepté. La prueba de persistencia habría pasado con una caché en memoria. Ahora un test comprueba el contenido del fichero y otro lanza el CLI como proceso hijo dos veces.
+- La segunda no dio ningún Crítico que quedara abierto. Aceptó cambios menores y rechacé dos hallazgos, con su motivo en la spec.
+- En total aceptamos 15 hallazgos y rechacé 3, con sus motivos en «Hallazgos de la review».
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué ajusto, por ejemplo meter la promoción al cancelar.
+

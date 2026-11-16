@@ -1,0 +1,102 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [21]
+Estoy ensayando el guion yo mismo contra el entorno antes de dártelo: ya lo he levantado y ahora compruebo que responde.
+
+--- [26]
+Antes del guion, dos avisos: no he lanzado la tanda, y el worktree está limpio.
+
+**Pre-checks**
+- Worktree limpio y `sdd merge --check` listo: `develop` irá en un worktree temporal.
+- Abiertas a la vez: ninguna otra rama.
+- La spec está `approved` y firmada. La revisión final está limpia sobre `cce0b5e`. `HEAD` solo añade `tasks.md`, que es documentación, así que no repito la revisión.
+
+**Sobre la tanda de las tres pasadas**: no la he lanzado ahora y la lanzo en cuanto me contestes. Corre contra el mismo servidor (puerto 11786) que vas a usar tú. El `env-up` de la suite lo reinicia, y mientras pruebas la tanda te cortaría la sesión o te escribiría datos. Por eso no corre mientras pruebas. Así no esperas ahora, y en cuanto me contestes la lanzo.
+
+Esta es la tanda que lanzaré. Solo toca `e2e/cancel.e2e.mjs`, porque `free.e2e.mjs` no cambia respecto a `develop`:
+
+```
+# Tanda: 3 tests nuevos o cambiados de cancel.e2e.mjs ×3 + los otros 2 de ese fichero ×1 = 11 ejecuciones · ~1,4 min (6 s por paso × 14 pasos ÷ 1 worker)
+```
+
+Usaré la traza completa. No usaré el truco `E2E_TRACE=light` del README, porque el gate es el que declara `operations.md`. Tampoco lanzo todavía el gate de cierre completo, que también usa el servidor. Corre después de tu respuesta, junto con la tanda.
+
+🦆 `cancelar` ahora exige un motivo de la lista: cambio de planes, sala ocupada u otro. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o ninguno, se rechaza. El nuevo comando `canceladas` lista lo cancelado con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround, y si ese test corre solo o en otro orden, falla. Lo registraré como deuda en el cierre.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | `ejecución real` + `suite` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` + `suite` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» (ningún test lo cubre) |
+| `canceladas` enseña el motivo | `ejecución real` + `suite` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `6231f30`, ~0,3 s.
+- E2E y gate de cierre (`node --test test/ && node e2e/run.mjs`): pendientes, tras tu respuesta, por lo del servidor.
+
+**Sin probar**
+
+- La suite E2E, hasta que me contestes.
+- Cada sesión de `x-session` tiene su propio estado, así que el guion no deja datos tuyos que restaurar. Yo he usado sesiones `ensayo-*`, ya descartadas, y he parado el entorno que levanté.
+
+Panel: plan B (sin las herramientas de Chrome), pendiente de lanzar `sdd validation serve`. No lo he arrancado todavía, porque quiero que el guion te llegue ya. Si prefieres marcar los pasos en un panel, dímelo y lo lanzo. Si no, contéstame en texto.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2 (la sesión `validacion` es tuya, distinta de las de los tests):
+
+```
+cd <run>/repo
+```
+
+1. Cancelar con un motivo de la lista → responde «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G http://localhost:11786/run -H "x-session: validacion" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Ver las canceladas, en la misma sesión → responde «Norte lun — sala ocupada»
+
+```
+curl -s -G http://localhost:11786/run -H "x-session: validacion" --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+3. Un motivo fuera de la lista, en otra sesión → responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G http://localhost:11786/run -H "x-session: validacion-2" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+4. Sin `--motivo`, en otra sesión → responde lo mismo: «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G http://localhost:11786/run -H "x-session: validacion-3" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

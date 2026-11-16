@@ -1,0 +1,87 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [19]
+Los pre-checks y el smoke ya están hechos. Falta levantar el panel de validación y presentarte el mensaje.
+
+--- [22]
+🦆 Cancelar pide un motivo de la lista. Si escribes `cancelar Norte lun --motivo "sala ocupada"`, responde «cancelada Norte lun (sala ocupada)», y `canceladas` lo lista como «Norte lun — sala ocupada». El último commit cambia otra cosa: con nada cancelado, `canceladas` responde «sin canceladas» en vez de una línea vacía.
+
+**✋ Me salí del plan en…**
+
+- La respuesta «sin canceladas» no está en la spec ni en su delta: la pidió el dev-lead después de aprobarla. Su commit `a59b494` no tiene test.
+- No hay `Enmiendas` ni escenario que la recoja. Propongo añadir un escenario ADDED al delta de `bookings` y un test al cerrar. No lo he tocado.
+- La revisión final y su re-revisión (`578c7f7..5920ed0`) están cerradas, pero nadie ha revisado `a59b494`. Ya hay `Re-revisión:` en `tasks.md`, así que no lanzo otra. El walkthrough llevará `sin revisar: a59b494 — canceladas sin resultados responde «sin canceladas»`.
+
+Abiertas a la vez: ninguna otra rama (`git worktree list` solo muestra esta).
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | `ejecución real` + `suite` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista responde «motivo no válido: …» | `ejecución real` + `suite` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` responde lo mismo | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña «Norte lun — sala ocupada» | `ejecución real` (mismo proceso) + `suite` | «Norte lun — sala ocupada» |
+| `canceladas` sin canceladas (el último commit) | `ejecución real` | «sin canceladas» |
+
+**Suites**
+
+- `node --test`: 6/6 sobre `a59b494`, 0,34 s. Es el gate de cierre del plan. No hay `operations.md`, así que no hay otras suites declaradas.
+
+**Sin probar**
+
+- La CLI guarda las reservas en memoria y cada `node src/app.js …` empieza de cero. Por eso el paso «cancelar y luego `canceladas`» solo lo vi en un mismo proceso (con `run` importado) y en la suite. Por la CLI, `canceladas` siempre responde «sin canceladas».
+- No existe `.docs/sdd/capabilities/bookings.md`, aunque la spec declara `bookings` como modificada. `capability merge` y `capability check` pueden fallar en el cierre.
+
+**Antes de merge, para cuando valides**
+
+- `sdd merge --check` dice: «falta `merge.into` o `merge.noFf`» en `sdd-kit.json`. El bloque `merge` está incompleto, así que presentaré el merge y esperaré tu confirmación. Propongo `into: develop`, porque `main` es de hotfix, y `noFf: true`.
+- Faltan por hacer el walkthrough, el cierre de `tasks.md`, la fila del roadmap (no hay `ROADMAP.md` bajo `.docs/sdd/`) y la retro.
+- No hay `estimation.md`, así que no hay tiempo real que registrar.
+- Aún no he escrito nada ni he commiteado. El árbol está limpio.
+
+Panel: plan B en http://127.0.0.1:55030/
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+No hay entorno que arrancar: es una CLI sin comando de arranque declarado. El panel de arriba solo recoge tus marcas y no ve la app.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Cancela con un motivo de la lista → responde «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancela con un motivo fuera de la lista → responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Cancela sin motivo → responde «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Pide el listado sin nada cancelado, que es lo que pidió el dev-lead → responde «sin canceladas»
+
+```
+node src/app.js canceladas
+```
+
+Para parar el panel, dímelo y lo paro. No hay otro proceso en marcha.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

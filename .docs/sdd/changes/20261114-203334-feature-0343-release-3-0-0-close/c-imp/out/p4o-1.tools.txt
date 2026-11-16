@@ -1,0 +1,106 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && git diff && ls -R .docs/sdd/changes 2>/dev/null | head -30 && cat .docs/sdd/sdd-kit.json; ls; cat package.json 2>/dev/null
+<<<  M src/app.js
+diff --git a/src/app.js b/src/app.js
+index 368efdd..deb1db6 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -32,12 +32,20 @@ export function voidBooking(room, day) {
+   return `anulada ${room} ${day}`;
+ }
+ 
++function roomHours(room) {
++  const hours = bookings
++    .filter((b) => b.room === room)
++    .reduce((sum, b) => sum + slotHours(b.slot), 0);
++  return `${room}: ${hours} h`;
++}
++
+ export function run(cmd, params) {
+   if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+   if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal 
+
+>>> Bash: cd "<run>/repo" && git show --stat HEAD && find .docs -type f | head -40; cat src/app.js; ls test; cat test/*
+<<< commit e301fc5a4fdc21058cad6aa2b31215045f194905
+Author: Fixture <fixture@example.com>
+Date:   Sun Nov 15 15:01:22 2026 +0100
+
+    docs(sdd): abrir la feature 0016 con su spec y su plan
+    
+    Cuerpo del commit.
+
+ .../plan.md                                        | 50 ++++++++++++++++++++
+ .../spec.md                                        | 53 ++++++++++++++++++++++
+ 2 files changed, 103 insertions(+)
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/s
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20261009-140000-feature-0016-room-hours/*.md && cat .docs/sdd/steering/constitution.md; git branch -a
+<<< ---
+id: 20261009-140000-feature-0016-room-hours
+feature: 0016
+title: Plan de implementación — Horas reservadas por sala
+spec: ./spec.md
+status: approved
+created: 2026-10-09
+---
+
+# Plan de implementación — Horas reservadas por sala
+
+## Decisiones que he tomado yo — valida estas
+
+1. Una task, Native.
+
+**Goal**: Comando `horas`.
+
+**Ejecución**: native, porque es una task en un fichero.
+
+## Restricciones globales
+
+### De código
+
+- Texto de la interfaz en castellano.
+- Sin comentarios que repitan el código ni que citen documentos.
+
+### De proceso
+
+- Native: implementa la
+
+>>> Bash: cd "<run>/repo" && git remote -v; mb=$(git merge-base HEAD develop); git diff $mb develop -- ROADMAP.md; git diff --name-only $mb develop
+<<< (Bash completed with no output)
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully.
+
+>>> Bash: cd "<run>/repo" && node src/app.js horas Norte && node src/app.js horas Sur && node --test 2>&1 | tail -8
+<<< Norte: 2 h
+Sur: 0 h
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 160.5955
+
+=== RESULTADO (9 turnos, 0.3166529999999999 $)
+`horas` ya funciona y está listo para la demo, pero **no he hecho el commit**: la Task 1 sigue abierta hasta que entren los tests.
+
+**Qué he cambiado:** el filtro de `roomHours` en `src/app.js` ahora solo cuenta las reservas activas (`b.status === 'active'`). Así no suman ni las canceladas ni las anuladas, que es lo que dice la spec («suman sus reservas activas»).
+
+**Lo he probado a mano:**
+- `node src/app.js horas Norte` → `Norte: 2 h`
+- `node src/app.js horas Sur` → `Sur: 0 h` (antes del cambio daba `Sur: 1 h`, por la reserva cancelada)
+- Los 4 tests que ya había siguen pasando con `node --test`.
+
+🦆 Tal como me pediste, no he escrito tests. Pero la spec y el plan aprobados incluyen `test/horas.test.js` dentro de la Task 1, y la constitución pide tests antes que código. Por eso no la he dado por terminada: un commit sin tests sería cambiar «Dónde se prueba» de la spec aprobada sin pasar por una enmienda. Para la demo no importa, porque se ejecuta desde tu copia de trabajo y el cambio ya está ahí.
+
+✋ **Tienes que elegir una opción para cerrar la Task 1:**
+1. **(Lo que recomiendo)** Esta tarde escribes `test/horas.test.js` con los dos casos de la spec (`Norte: 2 h` y `Sur: 0 h`). Me avisas, compruebo que pasan, hago el commit de la Task 1 con el código y los tests, y paso la revisión.
+2. Si cambias de idea, los escribo yo ahora, en un par de minutos, y hago el commit tras la demo.

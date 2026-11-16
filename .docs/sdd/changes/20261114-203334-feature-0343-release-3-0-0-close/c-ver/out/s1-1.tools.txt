@@ -1,0 +1,90 @@
+
+>>> Read: <run>\repo\.docs\sdd\specs\20261013-100000-feature-0022-cancel-notice\spec.md
+<<< 1	---
+2	id: 20261013-100000-feature-0022-cancel-notice
+3	feature: 0022
+4	title: Aviso de cancelación
+5	mode: full
+6	profile: delegate
+7	status: draft
+8	created: 2026-10-13
+9	author: agente con el dev-lead
+10	approvers:
+11	  - role: dev-lead
+12	    name: Laura
+13	    approved_at: null
+14	---
+15	
+16	# Spec — Aviso de cancelación
+17	
+18	## Capacidades
+19	
+20	- Modificadas: `bookings` — cancelar avisa al responsable de sala.
+21	
+22	## ✋ Decisiones que he tomado yo — valida estas
+23	
+24	1. El texto del aviso es «cancelada <sala> <día> (<motivo>)».
+25	
+26	### Decisiones tomadas con el dev-lead
+27	
+2
+
+>>> Read: <run>\repo\.docs\sdd\steering\constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\capabilities\bookings.md
+<<< 1	# Capacidad — bookings
+2	
+3	## Propósito
+4	
+5	reservar, cancelar y anular salas, y lo que se avisa al hacerlo
+6	
+7	## Requisitos
+8	
+9	### Las anulaciones se avisan por correo
+10	
+11	- GIVEN la reserva de Norte del lunes
+12	- WHEN `anular Norte lun`
+13	- THEN responde «anulada Norte lun» y manda el correo «anulada Norte lun» al responsable de sala
+
+=== RESULTADO (5 turnos, 0.1071996 $)
+1. Crítico · Decisiones con el dev-lead vs. Delta · El dev-lead decidió correo y SMS, pero el único requisito del delta («Cancelar avisa al responsable por correo») cubre solo el correo. El SMS no tiene escenario ni fila de batería, y la sección Dónde se prueba tampoco lo comprueba. Es alcance escondido: la 0022 se puede dar por buena sin SMS. · Añadir un ADDED con GIVEN/WHEN/THEN para el SMS, o un único requisito «por correo y SMS». Reflejar el SMS en Scope y en Dónde se prueba.
+
+2. Crítico · Falta la sección «Reglas de la capacidad» (las cinco reglas por nombre) · El delta trae datos y límites nuevos y no declara ninguna de las cinco reglas. Son: dónde vive el responsable de cada sala (correo y teléfono), el idioma del texto, los límites (motivo opcional o largo, 160 caracteres de SMS), los avisos (qué pasa si el envío falla) y qué hacer en caso de conflicto. La constitution tampoco tiene «Reglas de producto» de las que tomar valores. · Declarar cada regla o marcarla «no aplica» con razón. Decidir, y registrar como decisión, de dónde sale el contacto del responsable y si un fallo de envío aborta la cancelación o solo se registra.
+
+3. Importante · Delta, ADDED vs. capacidad `bookings` · La capacidad no tiene ningún requisito de `cancelar`: solo reservar, anular y anulaciones. El ADDED enlaza con un comando cuyo comportamiento base no está en la verdad viva. La regla de «antes de 24 h» está solo en PRODUCT y no en el delta. · Aclarar si el aviso sale con una cancelación fuera de plazo, o si el comando falla. Añadir un escenario de borde, o declarar que la regla de 24 h ya existe y dónde está.
+
+4. Importante · Decisiones que he tomado yo · El Approach decide que `cancelar` deja el aviso «en la cola de salida de la app». Es una decisión de diseño y no figura en «✋ Decisiones». La cola y el canal SMS son además dependencias o contratos no declarados, porque no se dice qué proveedor de SMS ni qué consumidor de la cola existen. · Listar la cola como decisión que valide el dev-lead. Declarar en la spec la dependencia de SMS y el contrato de la cola.
+
+5. Importante · Delta, THEN · «sale hacia el responsable de Norte» se cumple al escribir en la cola, sin que nadie reciba nada, y no dice cuál es el destinatario concreto. Ni la fila de test ni el escenario fijan el destinatario como valor (por ejemplo, una dirección de prueba), así que el escenario pasa sin comprobar el comportamiento prometido. · Precisar en el THEN el destinatario y el contenido de la cola, con un fixture inventado. Añadir que `cancelar` responde algo, como «anulada» en el requisito de anulaciones.
+
+6. Importante · Decisión 1 y Delta · El texto «(<motivo>)» no dice qué pasa sin `--motivo`: se vería «()» o la orden fallaría. Tampoco hay límite de longitud, y en el SMS importa. Nada de esto está en un escenario. · Añadir un escenario sin motivo (con el texto resultante) y un límite de longitud, o declarar el motivo obligatorio.
+
+7. Importante · Rol «responsable de sala» (complemento) · El responsable solo aparece descrito por lo que recibe. La spec no dice qué no ve ni qué no puede hacer: por ejemplo, si el responsable de Sur recibe avisos de Norte, o si el cliente que cancela ve el aviso o su estado de envío. Es un hueco de visibilidad. · Añadir un escenario o regla negativa: solo el responsable de la sala afectada recibe el aviso, y ningún otro lo recibe.
+
+8. Menor · Scope «No entra: el aviso al anular» · Las anulaciones ya se avisan por correo, según la capacidad. Escrito así parece que anular hoy no avisa, y confunde cancelación (el cliente) con anulación (el responsable). · Reescribir como «no cambia el aviso de anular, que ya existe» y usar la terminología de PRODUCT de forma consistente.
+
+9. Menor · Capacidades vs. Delta · La cabecera dice «Modificadas» pero el delta solo tiene un ADDED. Tampoco queda claro si el aviso por SMS toca el requisito existente de anulaciones. · Confirmar que no hay MODIFIED y decir explícitamente que el requisito de anulaciones no cambia, aunque se añada el canal SMS.
+
+10. Menor · Decisiones con el dev-lead y Aprobaciones · La spec cita una frase de un tercero («el de Sur no mira el correo») y nombra a una persona real, Laura, como aprobadora. Los artefactos se publican y el nombre no sale del historial. Con un solo usuario según PRODUCT, esa persona o su rol puede no existir. · Sustituir la cita por una razón genérica («un responsable no consulta el correo») y usar un rol o un nombre inventado, si el flujo lo permite.

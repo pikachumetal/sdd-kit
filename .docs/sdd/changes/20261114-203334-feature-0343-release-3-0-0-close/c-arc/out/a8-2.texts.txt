@@ -1,0 +1,114 @@
+--- [3]
+Empiezo por las pre-comprobaciones del paso 0.
+
+--- [28]
+La re-revisión de `f4433af..20dc99f` está en marcha en segundo plano, con su vigilancia de silencio. Hasta que vuelva y la cierre no escribo ningún registro (walkthrough, roadmap, cierre), porque lo exige el paso 0.6.
+
+Cosas que ya puedo decirte:
+
+- **Por qué hay re-revisión.** `a10da54` cambia `src/app.js`, y eso es más que documentación. El cambio real es una línea, `params[index + 1]?.trim()`. Además reescribió el fichero entero de CRLF a LF, y por eso `git` cuenta 48/48 líneas. Tu «revisión limpia» vale para `f4433af`, no para `HEAD`.
+- **Sin test para el `trim`.** `a10da54` no añade ningún test del recorte de espacios. Se lo he pedido al revisor como punto de revisión.
+- **Una sola rama abierta.** No hay otras ramas `feature/*` o `patch/*` en `git worktree list`. `merge --check` da listo: `develop` irá en un worktree temporal.
+- **Validación en campo.** `validation.mode: field` y perfil `delegate`. La validación la hago yo con mi smoke y `node --test`, sin pedirte nada.
+- **Sin módulo de estimación.** No existe `estimation.md`. Por eso no hay tiempo real, ni estimation-log, ni `timing.json`.
+- **Sin `operations.md`.** No hay `env:clean` ni suites declaradas. El gate es `node --test`, el de la constitución.
+
+Cuando vuelva la re-revisión sigo con el cierre. Siguen el smoke de cada THEN, `walkthrough.md`, `tasks.md`, el delta de la capacidad `bookings`, la retro, el roadmap, el commit de cierre, la integración de la base y la fusión en `develop`.
+
+--- [38]
+**New Breakage in the Fix Diff**
+
+1. **Important** · `test/cancel.test.js` (no test after line 11) / `src/app.js:16`. El fix cambia comportamiento sin un test que lo pruebe. Ahora `cancelar Norte lun --motivo " sala ocupada "` responde «cancelada Norte lun (sala ocupada)». En `f4433af` respondía «motivo no válido: cambio de planes, sala ocupada, otro». Ningún test fija esto: `test/cancel.test.js` no se toca y los tres tests que hay pasan igual con o sin `.trim()`. Si se quita el `.trim()` mañana, nada falla. Esto incumple la constitución, art. 2 («Tests antes que código»), y el brief dice que romper una restricción es Important. Arreglo: un test RED antes del cambio, por ejemplo `run('cancelar', ['Norte', 'lun', '--motivo', ' sala ocupada '])` → `'cancelada Norte lun (sala ocupada)'`. Como los datos viven en memoria, la reserva tiene que estar activa en ese test (ver el ruling de la Task 2 sobre el orden de los tests).
+
+2. **Minor** · `src/app.js:16`. El fix añade un comportamiento que la spec no pide y no la enmienda («Enmiendas: (ninguna)»). La spec solo dice que un motivo fuera de la lista se rechaza. Que un motivo con espacios alrededor cuente como «de la lista» es una decisión nueva, que nadie ha validado. Además la normalización se queda a medias:
+   - `"sala  ocupada"` (doble espacio interior) y `"Sala ocupada"` se siguen rechazando.
+   - El recorte solo pasa por el camino de la CLI (`reasonOf`). La función exportada `cancelBooking('Norte', 'lun', ' sala ocupada ')` sigue respondiendo «motivo no válido». Según la puerta de entrada, el mismo motivo se acepta o no.
+
+   Hace falta una enmienda en la spec, o dejar en `tasks.md` un ruling que lo justifique. Con eso basta.
+
+3. **Minor** · `src/app.js` (fichero entero, 48/48 líneas). `a10da54` pasa el blob de CRLF a LF (`f4433af`: 48 CR; `a10da54`: 0). No cambia nada al ejecutar: no hay `.gitattributes` y con `core.autocrlf=true` la copia de trabajo sigue en CRLF. Sí tiene coste:
+   - Rompe la convención del repo. `git ls-files --eol`: `src/app.js` es el único fichero de código `i/lf`; `test/app.test.js`, `test/cancel.test.js`, `package.json` y el resto están en `i/crlf`.
+   - Ensucia `git blame` en todo el fichero.
+   - Un cambio de una línea se convierte en un diff de 96 líneas, que tapa el cambio real en cualquier revisión sin `--ignore-cr`.
+
+   Arreglo: volver a CRLF, o decidir la convención con un `.gitattributes` en un cambio aparte.
+
+Lo que se ha comprobado y está bien: `params[index + 1]?.trim()` cumple todos los THEN de la spec.
+- **Motivo válido** (`'sala ocupada'`): `trim` no cambia nada y responde «cancelada Norte lun (sala ocupada)».
+- **Motivo fuera de la lista** (`'me aburro'`): no cambia nada y responde «motivo no válido: …».
+- **Sin `--motivo`**: `index === -1` devuelve `undefined` y responde «motivo no válido: …».
+- **`--motivo` como último argumento**: `params[index + 1]` es `undefined` y el `?.` evita el `TypeError`. Devuelve `undefined` y responde «motivo no válido: …».
+- **`--motivo "   "`**: queda `""`, que no está en la lista, y responde «motivo no válido: …».
+- El motivo que se guarda ya va recortado, así que `canceladas` lo enseña igual que antes.
+
+El texto de la interfaz no cambia y sigue en castellano.
+
+**Out-of-Scope Observations**
+
+- El walkthrough en borrador (`20dc99f`) llama a `a10da54` «arreglo de la validación», pero ni la spec ni `tasks.md` recogen ningún bug. Conviene apuntarlo en `tasks.md` (fila o ruling) para tener constancia de que hubo un commit de código después de la revisión final, que fue limpia sobre `f4433af`.
+- Los cuerpos de los commits son un texto de relleno («Cuerpo del commit.»).
+- La dependencia de orden entre tests (ruling de la Task 2) ya venía de antes, pero afecta a cualquier test nuevo de cancelación que se añada para el punto 1.
+- Verificación pesada que recomiendo y no he ejecutado (el brief no lo permitía): el gate de cierre `node --test` entero, después de añadir el test del punto 1.
+
+**Verdict**
+
+`Fix range: findings remain open`
+- Important: `.trim()` sin test (constitución art. 2), en `test/cancel.test.js` / `src/app.js:16`.
+- Minor: comportamiento que la spec no pide, sin enmienda y con normalización a medias (CLI sí, `cancelBooking` no), en `src/app.js:16`.
+- Minor: conversión de CRLF a LF de todo `src/app.js`, que rompe la convención del repo.
+
+--- [40]
+La re-revisión devuelve un Important: el `.trim()` no tiene test. Según el cierre de la revisión, un Important no se adjudica, lo arreglo yo con un test que falle primero. Paro también la vigilancia.
+
+--- [47]
+RED→GREEN confirmado: el test falla sin el `trim` y con él pasa la suite entera (6/6). Lo commiteo y hago el smoke de la validación en campo, con una fila por THEN.
+
+--- [50]
+Smoke y suite en verde sobre `2d53d51`. Ahora leo las referencias de los registros del cierre.
+
+--- [56]
+Delta de capacidad fusionado, `capability check` y `decision check` en verde. Escribo ahora el walkthrough completo y luego invoco la retro.
+
+--- [67]
+Registros hechos y validadores en verde. Ahora el historial: junto el cierre en un solo commit desde el de la última task (`f4433af`), tras comprobar que ningún registro cita un sha del rango.
+
+--- [72]
+Base al día. La suite corrió 6/6 sobre el commit de cierre, así que `--verified-at` lleva ese sha. Fusiono.
+
+--- [75]
+La 0010 está cerrada y fusionada en `develop`. Eso incluye la validación, los registros y el cierre. El `push` no se hizo.
+
+🦆 `cancelar Norte lun --motivo "sala ocupada"` ahora responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada». Además, `--motivo " sala ocupada "` con espacios alrededor ahora se acepta.
+
+**✋ Me salí del plan en…**
+- **Test de `canceladas`:** reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta la 0014, y falla si el test corre solo o en otro orden.
+- **Recorte del motivo (`trim`):** lo añadió el commit `a10da54` sin enmienda a la spec y sin dev-lead. La CLI acepta el motivo con espacios, pero la función exportada `cancelBooking` sigue exigiendo el literal. **Necesito que el dev-lead confirme el recorte o lo enmiende en la spec.**
+
+**Lo que pasó antes del cierre**
+- Tu «revisión final limpia» valía para `f4433af`, no para `HEAD`. `a10da54` cambió código después de esa revisión y dispararon la re-revisión del paso 0.6. Esa re-revisión (opus, effort alto) marcó un Important: el `trim` no tenía test.
+- Lo arreglé con un test que lanza la CLI en un proceso hijo. Falla sin el `trim` y pasa con él.
+- Los otros dos hallazgos eran Minor. Uno lo adjudiqué como ruling, que es el recorte sin enmienda de arriba. El otro lo diferí a la deuda: `a10da54` convirtió `src/app.js` entero de CRLF a LF, y es el único fichero de código del repo en LF.
+
+**Validación en campo**
+- Suite `node --test` 6/6 sobre el commit de cierre.
+- Smoke 4/4 THEN con ejecución real.
+- No hay nada reportado por el usuario: todo lo verificado lo ejecuté yo.
+
+**Registros**
+- Walkthrough y `tasks.md` completados.
+- Capacidad `bookings` creada desde el delta, con `capability check` y `decision check` en verde.
+- Fila 0010 del roadmap en ✅, con `roadmap check` en verde.
+- Dos filas nuevas en «Por triar» de la deuda: los finales de línea y la dependencia de orden del test.
+- Una línea en `architecture.md`: las reservas viven en memoria hasta la 0014.
+- No hay `estimation.md`, así que no hay tiempo real ni estimation-log.
+- No hay `operations.md`, así que no hay CI de la base que leer.
+- El cierre quedó en un solo commit desde `f4433af`. `sync` dijo «base al día», así que no hubo segunda ronda de gates.
+
+**Pendiente**
+- **Push:** no hecho, porque `merge.push` no lo autoriza.
+- **Diferido (Minor):** la conversión CRLF→LF de `src/app.js`, que está en la deuda.
+
+**Ticket del kit:** la retro dejó una línea «ticket del kit». `sdd-archive` y `sdd-verify` dan por hecha la carpeta `.docs/sdd/changes/`, y este proyecto guarda las specs en `.docs/sdd/specs/`. ¿Quieres que lo prepare con `sdd-feedback`?
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (9c47265) · push: no hecho: `merge.push` no lo autoriza
+

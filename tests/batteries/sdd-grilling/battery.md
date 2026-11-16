@@ -38,15 +38,15 @@ Una fila por conducta. Se puntúa sobre el **último mensaje de cada turno** de 
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
-| R1 Una decisión por turno | g1, g2, g3, g8, g9 | el mensaje pide más de una decisión al usuario (dos preguntas, una lista numerada de preguntas, «y además…») |
+| R1 Una decisión por turno | g1, g2, g3, g8, g9 | el mensaje pide más de una decisión al usuario: preguntas de asuntos distintos (una lista numerada de preguntas, «y además…» sobre otra cosa). Dos peticiones del mismo asunto cuentan como una (dev-lead, 2026-11-16) |
 | R2 Formato | todos | una decisión de diseño sin alternativas marcadas ni recomendación separada, o con `AskUserQuestion` intentado en `tools.txt` |
-| R3 Alternativas reales | g3, g9 | una alternativa que el propio mensaje descarta sin defenderla, o que no cambia nada frente a otra |
+| R3 Alternativas reales | g3, g9 | una alternativa de la que el propio mensaje solo dice que no sirve, sin nada a su favor, o que no cambia nada frente a otra |
 | R4 Recomendada con razón | g3, g7, g9 | la recomendada no cita nada de este caso (un fichero, un hecho, un coste) o no dice qué cuesta |
 | R5 Descubrimiento sin ancla | g2, g5, g8 | una pregunta sobre lo que solo sabe el usuario (para quién, qué problema) lleva recomendación o hipótesis; en g8, no enseña el hecho del código con su fuente |
 | R6 Escena concreta | g3, g6 | una decisión sobre lo que ve el usuario de `salas` sin un ejemplo con datos (sala, franja, qué sale en la terminal) |
 | R7 Rebatir una vez | g4 | el turno 1 no rebate ninguna premisa de la petición que los documentos o el código desmienten (`--cada-semana` ya existe en `CHANGELOG.md` y `src/app.js`; el aviso por correo ya tiene la fila 0008); o el turno 2, tras «mantengo lo que dije», vuelve a rebatir |
 | R8 «Decide tú» | g5 | el turno 2 vuelve a preguntar una decisión de método, o decide por su cuenta para quién es la app en vez de dejarlo pendiente |
-| R9 Rechazo en texto | g6 | el turno 2 vuelve a presentar la misma decisión con alternativas marcadas en vez de explicarla en prosa |
+| R9 Rechazo en texto | g6 | el turno 2 vuelve a listar las alternativas de la misma decisión, marcadas o en prosa, en vez de explicar el caso con sus datos |
 | R10 Cuándo para | g7 | sigue preguntando tras la última clave, vuelve a preguntar una clave ya contestada (la hoja contesta dos juntas) o no devuelve lo decidido por el usuario, lo decidido por el agente y lo pendiente |
 | R11 Busca fuera | g9 | pregunta sin haber buscado en `WebSearch`/`WebFetch` (en `tools.txt`) cómo mide cobertura Node 22, o la pregunta no cita la fuente |
 | R12 Idioma | todos | algún mensaje al usuario en inglés |

@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && echo ---- && cat PRODUCT.md ROADMAP.md 2>&1 | head -80 && echo ---- && ls .docs/sdd .docs/sdd/steering 2>&1 && cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60 && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json && head -40 test/app.test.js && cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md README.md && cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-propose/references" && cat modo-lite.md && sed -n 1,60p patch-lane.md; cd - >/dev/null; cat "<run>/repo/.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md"; git -C "<run>/repo" branch --show-current
+<<< ## Lite mode — observable predicate, activated by the user
+
+A feature **can** go in lite mode if it meets **all** these conditions:
+
+- The flow to change already exists in the repo and can be read.
+- It doesn't change public contracts (API, interfaces another module consumes).
+- It doesn't change the data schema. A data-only migration, idempotent and reversible (adding or removing texts or catalog rows), doesn't rule it out, but the spec names it.
+- It fits in a single module or area.
+- If `.docs/sdd/steering/estimation.md` exists: the estimate is ≤ half a day.
+
+Meeting them **enable
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/estimation.md; cat test/cancel.test.js | head -30; cat "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/kcut/skills/sdd-rubber-duck/SKILL.md" | head -60
+<<< # Método de estimación — salas
+
+## Método
+
+- El `plan.md` de cada feature estima la implementación en horas, con base y confianza (alta · media · baja). En modo lite, el bloque va en la `spec.md`.
+- El `walkthrough.md` registra el tiempo real. Cuenta desde el arranque de la sesión que abre el trabajo, con la investigación previa; una espera a una respuesta del dev-lead va aparte, con su duración. En Claude Code lo mide `sdd session tokens`. Si la desviación supera el ±30 %, la causa es obligatoria. Un tiempo desconocido se aproxima y se marca como aproximado; nunca se deja en blanco.
+- L
+
+=== RESULTADO (7 turnos, 0.16878500000000002 $)
+Ahora: he clasificado el cambio y te pregunto el carril. Queda: la entrevista de diseño y la spec con su aprobación, ~10 min.
+
+🦆 Hoy `libres` solo mira la franja: `libres 10:00-12:00` dice qué salas no tienen reserva activa a esa hora, sea el día que sea. Con el cambio, `libres` también podrá recibir el día y solo contará las reservas de ese día, igual que ya hacen `cancelar` y `anular`. Se toca una función de `src/app.js` y sus tests. Antes hay que decidir el orden de los argumentos y qué pasa si no se da el día.
+
+**Carril.** No es patch: la petición no fija el orden de los argumentos ni qué pasa sin día, así que esas decisiones son mías o tuyas, no de un ticket. Sí cumple las condiciones de lite:
+
+- El flujo ya existe y se lee: `freeRooms` y `run('libres')` en `src/app.js`.
+- No cambia contratos públicos, siempre que `libres <franja>` siga funcionando como hoy. Si el día pasara a ser obligatorio sí cambiaría, y lo decidimos en la spec.
+- No cambia datos: las reservas ya tienen `day`.
+- Cabe en un solo módulo, `src/app.js`, más `test/app.test.js`.
+- La estimación es de unos 0,5 h, más el gate de cierre (`node --test && node scripts/lint.mjs`), muy por debajo de media jornada.
+
+Perfil actual: `delegate`, del proyecto (`sdd-kit.json`). Para otro perfil, dime «perfil `<otro>` para esta feature». Si te vas a ausentar, dime «apruebo la spec por delegación, nos vemos en la validación».
+
+¿Cómo lo llevo?
+
+1. **Lite (Recomendada):** spec corta con la estimación dentro, sin plan, con su gate de aprobación y su walkthrough.
+2. **Full:** spec y plan completos, con más ceremonia para un cambio de una función.

@@ -1,0 +1,82 @@
+
+>>> Read: <run>/review-final-e4bca64.diff · offset=0 · limit=400
+<<< 0	# Review package: 3711b35..HEAD
+1	
+2	## Commits
+3	e4bca64 test(invoices): e2e de recordar el filtro
+4	b78383e feat(invoices): la lista recuerda el último estado elegido
+5	
+6	## Files changed
+7	 e2e/0024-remember-filter.spec.ts | 16 ++++++++++++++++
+8	 e2e/helpers.ts                   |  5 +++++
+9	 playwright.config.ts             |  2 ++
+10	 server/api.js                    |  4 ++++
+11	 src/invoices/InvoiceList.tsx     | 14 +++++++++++---
+12	 5 files changed, 38 insertions(+), 3 deletions(-)
+13	
+14	## Diff
+15	diff --git a/e2e/0024-remember-filter.spec.ts b/e2e/0024-remember-filter.spec.ts
+1
+
+=== RESULTADO (2 turnos, 0.1154313 $)
+### Strengths
+- `InvoiceList` stays a function component with hooks, and the UI text is in Spanish, so both code constraints are met.
+- The change is small. `choose` names the user action, and the `Status` type alias removes the repeated `(typeof STATUSES)[number]`.
+- The new `/api/prefs` route follows the style of the existing routes, and the test helper follows the pattern of `cellValue` and `copiedRange`.
+- The first test checks the behaviour the user sees: the filter is still `cobrada` after navigating away and back.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`e2e/0024-remember-filter.spec.ts:24` and `:33` — the new E2E tests name no core flow.**
+   - The core flows are summing a column, exporting to PDF and marking an invoice as collected. Neither test covers one of them: one is about remembering the filter, the other counts `<option>` elements.
+   - What no core flow covers should be tested one layer down, with a component or unit test of `InvoiceList`.
+   - The four-options test is also a static check that doesn't need a browser.
+
+2. **`playwright.config.ts:8-9` — timeouts raised above the declared value.**
+   - `timeout: 90_000` and `expect: { timeout: 20_000 }` replace the default timeouts, and the project declares «por defecto».
+   - The package contains no reason written in `operations.md`.
+   - This looks like it hides slowness or a race instead of fixing it. It also lengthens every test in the suite, not only the new ones.
+   - Revert both lines, or document the reason in `operations.md`.
+
+3. **`e2e/0024-remember-filter.spec.ts:27` — API poll between two user actions, with no comment.**
+   - `expect.poll(() => savedStatus(request))` waits on server state the user doesn't see, between choosing the filter and navigating.
+   - If the PUT hasn't landed, that is the failure the test exists to catch. The wait hides it, and it probably explains the raised timeouts.
+   - Remove the poll and assert only what the user sees after navigating. If the wait is really needed, justify it in a comment.
+
+4. **`src/invoices/InvoiceList.tsx:114-116` — load race and no error handling.**
+   - The initial `fetch` has no `catch`. If the server is down, it causes an unhandled rejection.
+   - If the response arrives after the user has already picked a filter, it overwrites their choice.
+   - The saved value is not validated against `STATUSES`. Any truthy string is set as `status`, which makes `shown` empty and leaves the `<select>` with no matching option.
+   - Fix: add a `cancelled` flag in the effect cleanup, check `STATUSES.includes(saved.value)`, and add `.catch`.
+   - The PUT in `choose` (`:119`) also ignores failures silently.
+
+5. **`server/api.js:94-96` — the preference is global, not per user.**
+   - The clipboard and the other routes key their data by the `x-user` header. `prefs` is a single `Map` keyed only by the preference name.
+   - One user's filter therefore becomes every user's filter.
+   - `InvoiceList` also sends no `x-user` header, and neither does `savedStatus`.
+   - A reasonable person would expect «mi último filtro». Key the map by user, as `clipboard` does.
+
+#### Minor (Nice to Have)
+- `server/api.js:95`: the PUT stores any `value` without validating it. A malformed body would also crash through `JSON.parse` in `read`, which is an existing weakness that this route inherits.
+- `src/invoices/InvoiceList.tsx:114-120`: possible Clean Code «error handling separate from business logic». Extracting a `usePersistedStatus` hook would remove the fetch calls from the component.
+- `e2e/helpers.ts:53`: `savedStatus` becomes unnecessary if the poll is removed (point 3).
+
+### Recommendations
+- Keep a single E2E test at most, and only if it is added to a core flow. Move the "remember filter" and "four options" checks to component tests.
+- Revert the global timeouts.
+- Make the preference per user, validate it, and handle the fetch races and errors.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works on the happy path. It breaks the declared E2E rules: a non-core test, raised timeouts, and an internal-state poll. The preference is also global rather than per user, and the load race and unvalidated value in `InvoiceList` can leave the filter in a broken state.
+
+### Declined to judge
+- Server-side storage of the preference versus `localStorage`: this is a module-boundary and design decision, so it belongs to the Architecture axis.
+- Whether remembering the filter is what the spec asked for: this belongs to the Spec axis.
+- Whether `operations.md` already justifies the timeouts: the package excludes the spec folder and shows no change to that file. I assumed no reason is written, and the executor should confirm.

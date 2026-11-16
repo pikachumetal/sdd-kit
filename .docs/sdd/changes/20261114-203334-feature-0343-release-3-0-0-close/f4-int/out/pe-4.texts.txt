@@ -1,0 +1,87 @@
+--- [4]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar y presentarte el planteamiento, ~2 min.
+
+--- [17]
+Ahora: te presento cómo he clasificado el cambio y te hago la primera pregunta del diseño. Queda: la entrevista, los enfoques y la spec con su parada de aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json` no fija `control.profile`, rige el valor por defecto del kit)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+He abierto la rama `feature/0010-exportar-reservas-csv` desde `develop`. El id 0010 está reservado (no hay remoto, vale el contador local). No hay fila de roadmap para esto. Hay 3 tareas internas previstas o menos, así que no propongo dividirlo.
+
+**Lo que he entendido**
+- Quieres un comando nuevo de `salas` que escriba en CSV las reservas de una sala.
+- El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrar las reservas.
+- Hoy `src/app.js` guarda las reservas en memoria como `{ room, day, slot }`. No tienen fecha concreta, solo día de la semana y franja, y el comando se añadiría a `run()`.
+- Aún no sé qué significa «cuadrar» para ese responsable, y de eso dependen las columnas y qué reservas entran.
+
+❓ ¿Qué hace el responsable de sala los lunes con esas reservas en su hoja: contra qué las compara y qué necesita ver en cada fila para dar el cuadre por bueno?
+
+--- [19]
+Entonces lo dejo anotado como pendiente: no invento qué compara ni qué necesita ver. Las columnas serán las que ya tiene cada reserva (`sala`, `día`, `franja`), y el responsable las completa en su hoja si le falta algo.
+
+Hay un dato que sí cambia lo que ves al abrir el fichero y que solo sabes tú: el separador del CSV. Un Excel en castellano espera `;` y, si recibe `,`, mete cada fila entera en una sola celda.
+
+❓ **Separador del CSV**
+Con `salas exportar Norte` saldría esto en cada caso:
+1️⃣ **`;` (Excel en castellano)** → `sala;día;franja` / `Norte;lun;10:00-12:00`. En Excel en castellano se abre en columnas. En Google Sheets o LibreOffice puede abrirse todo en una columna, según la configuración regional.
+2️⃣ **`,` (estándar, Sheets/LibreOffice)** → `sala,día,franja` / `Norte,lun,10:00-12:00`. En Excel en castellano se abre todo en una sola celda.
+➡️ **Recomiendo 1️⃣**, porque el proyecto y su interfaz están en castellano y la hoja la abre una persona que, lo más probable, usa Excel con configuración española. A cambio, si usa Sheets en inglés tendrá que elegir el separador al importar.
+
+¿Qué usa el responsable de sala para abrir la hoja: Excel en castellano (1️⃣) o Sheets/LibreOffice (2️⃣)? Si no lo sabes, lo dejo como pendiente y elijo 1️⃣.
+
+--- [21]
+Ahora: escribo la spec con tus decisiones y lo que he decidido yo, y le paso la revisión. Queda: la spec con su parada de aprobación, ~8 min.
+
+--- [33]
+Nothing was written. I'll create the spec with the file tool.
+
+--- [35]
+Ahora: pruebo el delta sobre una copia fuera del repo, como pide el repaso de coherencia.
+
+--- [39]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación; después el plan y la implementación, ~15 min.
+
+🦆 Hasta ahora, el responsable de una sala no puede sacar sus reservas de la herramienta. Con `salas exportar Norte` obtendrá `sala;día;franja` y debajo `Norte;lun;10:00-12:00`, con `;` para que Excel en castellano lo abra en columnas y con los acentos bien. Por dentro es una función más en `src/app.js` que recorre las reservas de esa sala y las escribe como texto.
+
+La spec está en `.docs/sdd/changes/20261116-155032-feature-0010-exportar-reservas-csv/spec.md`. La validación la haces tú (dev-lead), abriendo el CSV en Excel.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Comando `exportar <sala>`.
+2. Imprime por pantalla y se redirige con `> norte.csv`. No escribe ficheros por su cuenta.
+3. Columnas `sala;día;franja`. Qué necesita ver el responsable para cuadrar quedó pendiente («no sé»).
+4. Entran todas las reservas de la sala. Hoy solo guardan el día de la semana, sin fecha, así que «las de la semana» y «todas» coinciden.
+5. El texto empieza con BOM UTF-8. Sin él, Excel en castellano muestra `dÃ­a`.
+6. Líneas separadas por `\n`, sin salto final.
+7. Una sala sin reservas devuelve solo la cabecera.
+8. Sala inexistente: `sala desconocida: Este`. Sin sala: `uso: exportar <sala>`.
+9. Capacidad nueva `booking-export`.
+10. Enfoque: una función en `src/app.js`. Descarto un módulo `src/csv.js` y un `--salida <fichero>`.
+11. Sin entrecomillado de celdas, porque hoy ninguna sala ni franja lleva `;` ni comillas.
+12. El delta se fusiona sin errores sobre una copia de `.docs/sdd`.
+
+**La review de la spec no se ha podido despachar.** Esta sesión no tiene herramienta para lanzar subagentes, así que solo hay una relectura mía, que no sustituye a una revisión independiente.
+
+**Riesgo abierto:** en Windows PowerShell 5.1, `>` reescribe el fichero en UTF-16 y el BOM no basta. No lo he probado en la máquina del responsable. Se mide en la validación.
+
+Tu decisión: ¿apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios
+
+--- [40]
+Vale, la spec queda en pausa y sin aprobar. No he escrito el plan ni he tocado código.
+
+**Estado**
+- Rama `feature/0010-exportar-reservas-csv`, con el id 0010 reservado en el contador local. No hay remoto.
+- Spec en `.docs/sdd/changes/20261116-155032-feature-0010-exportar-reservas-csv/spec.md`, en `status: draft`, con la aprobación en `pendiente`.
+- La spec está sin commitear. Para seguir, di «retoma la feature».
+
+**Lo que deberías mirar al volver**
+- Las 12 decisiones de la sección «✋ Decisiones que he tomado yo».
+- La review de la spec no se pudo despachar y solo hay mi relectura.
+- El riesgo del BOM en Windows PowerShell 5.1. Si el responsable usa ese shell, quizá haga falta otro enfoque.
+- Sigue pendiente qué necesita ver el responsable en cada fila. Las columnas actuales son las tres que ya tiene una reserva.
+
+Cuando la apruebes, escribo el plan y lo implemento.
+

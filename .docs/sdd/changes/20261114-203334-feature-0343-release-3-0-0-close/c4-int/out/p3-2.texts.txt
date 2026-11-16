@@ -1,0 +1,33 @@
+--- [3]
+Empiezo por el contexto: leo PRODUCT, ROADMAP y steering.
+
+--- [18]
+Ahora: entiendo la petición y te la cuento antes de diseñar. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto del kit (sdd-kit.json no fija control.profile)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Estoy en `feature/0002-exportar-csv`, desde `develop`. La fila 0002 no necesita dividirse: prevo 2 o 3 tasks sobre una sola superficie.
+
+**Lo que he entendido (corrígeme):**
+- Quieres un comando nuevo que exporte las reservas de **una sala**. El responsable las cuadra los lunes en su hoja de cálculo.
+- Formato CSV con **punto y coma** como separador, porque su Excel está en castellano.
+- La salida va por la **salida estándar**. Él la redirige a su fichero (`salas exportar Norte > norte.csv`), así que no escribimos ningún fichero.
+- Hoy cada reserva tiene tres datos: sala, día y franja. Con los datos de ejemplo, `exportar Norte` daría esto:
+
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+
+La cabecera, los nombres de columna y el nombre del comando `exportar` los propongo yo. Irán a «✋ Decisiones que he tomado yo» en la spec.
+
+❓ **¿Qué pasa si la sala pedida no existe o no tiene reservas?**
+Hoy `libres` no valida nada. `cancelar` tampoco.
+1️⃣ **Sala conocida sin reservas: solo la cabecera. Sala desconocida: error claro.** `exportar Oeste` → `Error: la sala Oeste no existe (salas: Norte, Sur)`, con código de salida 1. `exportar Sur` → `sala;dia;franja`. Así el responsable distingue «no hay reservas» de «escribí mal el nombre». Cuesta una validación más y un caso de test.
+2️⃣ **Ambas dan solo la cabecera, sin error.** `exportar Oeste` → `sala;dia;franja`. Es más simple y coherente con `libres`. Pero un fallo al escribir el nombre parece una sala vacía y puede llevar a cuadrar mal el lunes.
+➡️ **Recomiendo 1️⃣**, porque la salida va a un fichero que se redirige: un error en pantalla se ve, y una cabecera sola en `oeste.csv` pasa desapercibida. A cambio, hay un comportamiento más que probar y mantener.
+

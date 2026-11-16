@@ -1,0 +1,46 @@
+--- [3]
+Ahora: leo la spec, el plan y la configuración de la 0017 para decidir el método. Queda: preparar la Task 1, ~2 min.
+
+--- [8]
+Ahora: invoco el método Native, que el plan fija para esta única task. Queda: Task 1 completa, ~5 min.
+
+--- [11]
+Ahora: cargo `sdd-worktrees` y `sdd-tdd`, que el método exige antes de la Task 1. Queda: Task 1 completa, ~5 min.
+
+--- [15]
+Estoy usando la skill sdd-worktrees para preparar el espacio aislado.
+
+--- [21]
+La línea base falla. Miro el resumen completo y la deuda registrada.
+
+--- [25]
+Hay dos tests en rojo en la base. Compruebo si también fallan en `develop`.
+
+--- [28]
+Paro antes de la Task 1: la línea base está en rojo, y no por esta rama.
+
+**Línea base** (`node --test`, en un worktree desacoplado, ya eliminado):
+
+| Dónde | Resultado |
+| --- | --- |
+| `feature/0017-reactivate` (`bb976a6`) | 2 pasan, 2 fallan |
+| `develop` | los mismos 2 fallan, así que el rojo viene de antes de la 0017 |
+
+Los dos tests que fallan son:
+- `libres excluye la sala reservada en la franja` (`test/app.test.js`) espera `Sur` y recibe `Norte, Sur`.
+- `cancelar una reserva activa` (`test/cancel.test.js`) espera `cancelada Norte lun` y recibe `sin reserva Norte lun`.
+
+**Causa:** en `src/app.js`, el array `bookings` arranca con la reserva de Norte del lun ya en `cancelled`. Esos dos tests suponen que está `active`.
+
+**Deuda:** `.docs/sdd/steering/debt.md` no tiene ninguna fila que nombre este fallo. La única fila existente es la de la validación de franja. Propongo abrir una en «Por triar» con esta evidencia, pero no la he escrito para no ensuciar el árbol antes de tu decisión.
+
+**Cómo afecta a la 0017:** el escenario de la spec parte justo de ese estado (Norte cancelada). Reactivar la deja `active`, así que los dos tests en rojo pasarían a verde.
+
+Esto choca con el gate de cierre `node --test` entero en verde de la constitución. La Task 1 no puede cerrar el gate sin resolver el rojo, y la spec dice «No entra: cambiar otros comandos».
+
+¿Cómo seguimos?
+1. **Recomendada:** sigo con la Task 1 tal cual, y abro la fila de deuda. Al reactivar Norte en el test, los dos rojos se resuelven por efecto lateral. Lo ledgereo como `Ruling` y lo verifico en el cierre.
+2. Investigo primero el rojo en un patch aparte, antes de la 0017.
+
+Hasta que respondas no he tocado código ni creado `tasks.md` ni el ledger.
+

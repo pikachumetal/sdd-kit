@@ -1,0 +1,96 @@
+--- [13]
+Ahora: reservo el id 0010 y creo la rama de la feature. Queda: claim del id, entender el encargo y empezar la entrevista de la spec, ~5 min.
+
+--- [17]
+Ahora: entender el encargo y abrir la entrevista de la spec. Queda: unas pocas preguntas, el enfoque, la spec con su revisión y tu aprobación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido (corrígeme):** hace falta un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV. Quien responsable de cada sala las abre los lunes en su hoja de cálculo para cuadrarlas. He creado la rama `feature/0010-exportar-reservas-csv` (id 0010, sin remoto). Son 1–2 tasks sobre una sola superficie (`src/app.js` y su test), así que no propongo dividirla.
+
+Lo que he visto en el código: cada reserva tiene solo `room`, `day` (`lun`…) y `slot` (`10:00-12:00`); no hay fechas, y `run()` devuelve un texto que `app.js` imprime con `console.log`.
+
+❓ **¿Dónde sale el CSV?**
+1️⃣ **Por la salida estándar:** `salas exportar Norte` imprime el CSV y tú lo rediriges si quieres fichero (`salas exportar Norte > norte.csv`):
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Encaja con cómo funciona hoy `run()` y con un test sencillo; para el responsable, un paso extra de redirección.
+2️⃣ **A un fichero que crea el comando:** `salas exportar Norte` escribe `norte.csv` en la carpeta actual y responde `exportadas 1 reservas de Norte a norte.csv`. Es más cómodo de usar, pero toca el disco (sobrescribir, ruta, permisos) y añade decisiones y tests.
+3️⃣ **Ambas:** salida estándar por defecto y `--salida <fichero>` opcional. Cubre los dos usos, a costa de más superficie para un solo usuario.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto no escribe ficheros en ningún sitio y la redirección de la terminal ya resuelve el fichero, sin código de disco que probar. A cambio, quien lo use tiene que redirigir a mano.
+
+--- [19]
+Decidido: CSV por la salida estándar y tú lo rediriges.
+
+❓ **¿Qué separador usa el CSV?**
+Las hojas de cálculo en castellano (Excel o LibreOffice con configuración regional de España) suelen esperar `;` y, con `,`, meten cada fila entera en una sola columna. Con la configuración en inglés pasa al revés.
+1️⃣ **Coma (`,`)**, el CSV estándar:
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Lo abre bien cualquier herramienta con configuración inglesa. En una hoja en castellano hay que usar «Datos → Texto en columnas» o importarlo eligiendo el separador.
+2️⃣ **Punto y coma (`;`)**:
+```text
+sala;dia;franja
+Norte;lun;10:00-12:00
+```
+Se abre directamente en columnas en una hoja en castellano. En una configuración inglesa saldría en una sola columna.
+3️⃣ **Elegible con `--separador`**, con uno de los dos por defecto. Sirve para los dos casos, pero añade una opción que hay que validar y probar.
+
+➡️ **No sé cuál recomendar sin saber una cosa:** ¿tu hoja de cálculo (y la de quienes responsables de sala) está en castellano o en inglés? Con tu respuesta elijo 1️⃣ o 2️⃣ y no hace falta la opción 3️⃣.
+
+--- [21]
+Decidido: separador `;`.
+
+❓ **¿Qué pasa si la sala no existe?**
+Las salas son `Norte` y `Sur`. Una sala que existe pero no tiene reservas la trato yo como un CSV de solo cabecera. El caso abierto es un nombre que no es ninguna sala:
+1️⃣ **Error claro y sin CSV:** `salas exportar Oeste` → `sala desconocida: Oeste (salas: Norte, Sur)`. Si redirigiste a un fichero, el fichero queda vacío, y se ve que algo falló en vez de cuadrar una hoja que parece buena. Un error de tecleo se detecta en el momento.
+2️⃣ **CSV de solo cabecera**, igual que una sala sin reservas:
+```text
+sala;dia;franja
+```
+Ese `Oeste` o un `norte` en minúscula se parecería a una sala libre toda la semana. Tendrías que darte cuenta tú de que la hoja está vacía por un error de tecleo.
+
+➡️ **Recomiendo 1️⃣**, porque el uso es cuadrar reservas, y una hoja vacía por un nombre mal escrito se confunde con «no hay reservas». A cambio, el comando tiene un mensaje de error más que probar.
+
+--- [23]
+Ahora: escribir la spec con lo decidido, pasar la coherencia y la revisión. Queda: presentarte la spec para tu aprobación, ~10 min.
+
+--- [37]
+Ahora: paso la coherencia de la spec (prueba del delta sobre una copia). Queda: presentártela para aprobar, ~3 min.
+
+--- [41]
+Ahora: espero tu aprobación de la spec. Queda: plan, implementación en Native o con subagentes, y la validación, ~20 min.
+
+🦆 Hoy no hay forma de sacar las reservas de una sala a una hoja de cálculo. Con esto, `salas exportar Norte > norte.csv` deja en `norte.csv` la fila `Norte;lun;10:00-12:00` bajo la cabecera `sala;dia;franja`, con `;` para que tu hoja en castellano la abra ya en columnas. Si la sala no existe, como en `salas exportar Oeste`, el aviso sale por el canal de errores con código 1 y el fichero queda vacío. Por dentro, es una orden nueva en `src/app.js` y sus tests.
+
+La spec está en `.docs/sdd/changes/20261116-182946-feature-0010-exportar-reservas-csv/spec.md`. Se nota ya que la revisión por dos revisores no se pudo hacer: **esta sesión no tiene herramienta de subagentes**. En su lugar hice una lectura adversarial mía, con tres hallazgos aceptados y reflejados en la spec, y sin la independencia de un revisor. Si prefieres una revisión externa antes de aprobar, dímelo.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `salas exportar <sala>`.
+2. La cabecera es `sala;dia;franja`, siempre presente, y `dia` va sin tilde.
+3. Se exportan todas las reservas de la sala, sin filtrar por semana: las reservas solo guardan el día de la semana, no una fecha.
+4. Una sala que existe pero no tiene reservas (`Sur`) da solo la cabecera y código 0.
+5. El nombre de la sala se compara exacto: `norte` en minúscula es desconocida. El error es `sala desconocida: Oeste (salas: Norte, Sur)`, va por `stderr`, con código 1 y nada por la salida estándar. Lo de «error claro y sin CSV» lo elegiste tú. Lo de `stderr` y el código 1 lo decido yo, porque con `> fichero` un mensaje por la salida estándar acabaría dentro del CSV.
+6. Sin sala (`salas exportar`) falla igual, con `falta la sala: uso: salas exportar <sala>`.
+7. Formato: `\n`, sin BOM, sin comillas ni escapado. Los valores actuales no llevan `;`.
+8. Enfoque A, una función en `src/app.js` y no un módulo nuevo (el módulo está descartado y razonado en la spec).
+9. Capacidad nueva `booking-export`. Es la primera del proyecto y la crea el cierre.
+10. Las cinco reglas de la capacidad las fijo yo (la constitution no tiene «Reglas de producto»).
+11. El delta se probó sobre una copia y no dio rechazos.
+
+Decididas contigo: salida estándar, separador `;` y error sin CSV si la sala no existe.
+
+La validación final la haces tú, abriendo el CSV en tu hoja de cálculo.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

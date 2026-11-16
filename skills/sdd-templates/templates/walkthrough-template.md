@@ -18,6 +18,7 @@ created: <YYYY-MM-DD>
 ## 1. Cambios realizados
 
 - Resumen por área, con ficheros clave y commit hash.
+- Una línea por «ADR candidata» de la spec, literal: `ADR: <candidata> → decisions/NNNN-<slug>.md`.
 
 ## 2. Tiempo y coste: estimado vs real *(OBLIGATORIO si existe `.docs/sdd/steering/estimation.md` — no borrar)*
 

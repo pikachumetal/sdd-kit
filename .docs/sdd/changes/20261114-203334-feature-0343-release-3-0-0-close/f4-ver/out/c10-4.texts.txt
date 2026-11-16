@@ -1,0 +1,75 @@
+--- [3]
+Ahora: cierro la revisión final con los informes de los ejes. Queda: leer los informes y decidir el cierre, ~5 min
+
+--- [14]
+Los dos informes están leídos. Antes de tocar nada, compruebo las señales de arquitectura y reproduzco lo que dice el hallazgo Important.
+
+--- [21]
+El test del trim falla como se esperaba, y el del listado ya pasa ejecutado solo (antes fallaba). Ahora el arreglo en `src/app.js`:
+
+--- [24]
+Todo en verde: 5/5 en `cancel.test.js` y 7/7 en la suite completa. Actualizo el ledger y `tasks.md` (además, el commit de la Task 1 estaba mal: es `64caba8`, no `dd75ecd`) y hago el commit.
+
+--- [27]
+Ahora: lanzo la re-revisión única sobre `dd75ecd..afe3296`. Queda: preparar el encargo, el worktree y la vigilancia de silencio, ~5 min, ~$1
+
+--- [34]
+Escribo el informe de la pasada de fix (con las ejecuciones que lo prueban) para el re-revisor:
+
+--- [40]
+Escribo en `tasks.md` (sin commit) las líneas de la pasada de fix y de la re-revisión:
+
+--- [45]
+He aplicado la pasada de fix única sobre la revisión final de la 0010 y está en el commit `afe3296`. La re-revisión única de `dd75ecd..afe3296` sigue en marcha. Te aviso cuando vuelva; no hay que hacer nada mientras tanto.
+
+**Hallazgos de la revisión final:**
+- **Código, Important (arreglado):** un motivo con espacios alrededor, como `--motivo "sala ocupada "`, se rechazaba con «motivo no válido». Ahora el motivo se recorta antes de compararlo con la lista. El test nuevo falló antes del arreglo y pasa después.
+- **Spec, Minor (arreglado):** el test de `canceladas` solo pasaba si antes se ejecutaba el de `cancelar`; ejecutado solo daba una salida vacía. Ahora cada test parte de un estado limpio y ese test pasa también ejecutado solo. De paso he añadido el test que faltaba para «sin `--motivo`», que ya pedía la spec.
+- **Código, Minor (no aplicado, queda como ruling):** el revisor proponía cambiar el separador ` — ` por ` - ` porque en una consola cp850 de recepción se ve `ÔÇö`. No lo he cambiado por dos motivos:
+  - la decisión 4 de la spec y el THEN «Norte lun — sala ocupada», aprobados por Laura, fijan ` — `;
+  - según PRODUCT.md hay un único usuario, en su propio servidor, y ninguna recepción.
+
+  Cambiarlo sería modificar la spec, no corregir un fallo. Si alguien ve la salida en una consola cp850, se arregla con una enmienda.
+
+**Pruebas:** `node --test test/cancel.test.js` da 5/5 y la suite completa (`node --test`) da 7/7.
+
+**Registro:**
+- En `tasks.md` he corregido el commit de la Task 1, que es `64caba8` y no `dd75ecd`, y he añadido la línea de la revisión final; todo eso entró en el commit del fix.
+- Después he añadido, sin commit, las líneas de la pasada de fix y de la re-revisión.
+- El eje de Arquitectura no salió: el plan decía que no y el diff no toca módulos nuevos, dependencias ni datos.
+- Los rulings están en el ledger.
+
+Cuando vuelva la re-revisión, cierro su línea en `tasks.md`, quito su worktree y paso a `sdd-archive` para la validación y el cierre.
+
+--- [51]
+### Finding Verdicts
+- **Spec · Minor · `test/cancel.test.js:13`: the `canceladas` test only passes if the `cancelar` test runs first.** ADDRESSED. `test/cancel.test.js:4-5` adds `fresh()`, which loads a separate module instance for each test through `import('../src/app.js?instance=N')`. That gives each test its own `bookings` array. The listing test now creates its own GIVEN by running `cancelar Norte lun --motivo "sala ocupada"` at `test/cancel.test.js:29` before it asserts `'Norte lun — sala ocupada'` at `test/cancel.test.js:30`. It no longer depends on test order. The listing is still checked through the `canceladas` command output, which is what «Dónde se prueba» names.
+- **Code · Important · `src/app.js:14-17`: `reasonOf` keeps the spaces around the reason.** ADDRESSED. `src/app.js:16` now returns `params[index + 1]?.trim()`, so the reason is trimmed before the `reasons.includes` check at `src/app.js:20`. The edge cases still work. With no `--motivo`, or with `--motivo` and no value after it, the result is `undefined`, which is rejected as invalid. A reason made only of spaces becomes `''`, which is also rejected. The new test at `test/cancel.test.js:22-25` passes `'sala ocupada '` and expects `cancelada Norte lun (sala ocupada)`. The RED and GREEN runs in the report are claims; I did not re-run them.
+- **Code · Minor · `src/app.js:36`: ` — ` breaks on a cp850 console (ruling).** The code stands against the spec. Spec decision 4 and the THEN of «El listado de canceladas enseña el motivo» both require ` — ` (`Norte lun — sala ocupada`). `src/app.js:36` outputs exactly that, and `test/cancel.test.js:30` asserts it. `PRODUCT.md` confirms a single user on their own server. Changing it to ` - ` would break an approved THEN, so the finding is closed by the ruling. No code change is needed.
+
+### New Breakage in the Fix Diff
+- **Minor · `test/cancel.test.js:14`:** the fix commit changed a datum in an existing RED test. `cancelar con un motivo fuera de la lista` used `['Sur', 'mar', ...]` and now uses `['Norte', 'lun', ...]`. No finding asked for this, and the fix report does not mention it. Isolating the tests did not need it: the reason is checked before the booking is looked up, so `Sur mar` would still return «motivo no válido». In effect the test is stronger now, because it rejects an invalid reason on a booking that exists, which matches the spec's GIVEN. It still changes a datum without saying why.
+- **Minor · `test/cancel.test.js` (whole file):** the commit changed the file's committed line endings from CRLF (blob at dd75ecd) to LF (blob at afe3296). That makes the diff show all 15 old lines as removed and 31 lines as added. The datum change above is hidden inside that full-file rewrite. `src/app.js` and `test/app.test.js` were not normalised the same way.
+
+### Out-of-Scope Observations
+- `PRODUCT.md` defines **Cancelación** as one the client makes «antes de 24 h». Nothing in `cancelBooking` (`src/app.js:19-26`) checks that window. The spec does not ask for it either, so this is not a finding against 0010.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage. The cp850 finding is closed by the spec ruling. Two new Minors are open, both in `test/cancel.test.js`: the unreported datum change at line 14 and the CRLF-to-LF change.
+
+--- [61]
+La revisión de la 0010 está cerrada. La re-revisión de `dd75ecd..afe3296` confirma que los dos hallazgos que arreglé están resueltos y que el fix no rompe nada Critical ni Important. También da por buena la decisión de mantener el separador ` — `, porque así lo fija el THEN aprobado.
+
+**La re-revisión trajo dos Minor nuevos en `test/cancel.test.js`.** Los dejé como rulings, porque no hay segunda pasada de fix:
+- **Un dato cambiado sin avisar:** el test del motivo fuera de la lista usaba antes `Sur mar` y ahora `Norte lun`. Lo dejo así: ahora el test rechaza el motivo sobre una reserva que existe, que es lo que plantea la spec, así que el test es más fuerte.
+- **Finales de línea:** el fichero pasó de CRLF a LF. El repo no tiene `.gitattributes` y los tests no dependen de eso; normalizarlo ahora sería un commit sin revisar que no cambia nada.
+
+**Estado:**
+- La rama está en `afe3296`.
+- `tasks.md` tiene la línea de la re-revisión cerrada, todavía sin commit.
+- He quitado el worktree de la revisión.
+- La vigilancia de silencio está parada.
+- La última pasada de la suite fue de 7/7, antes de la re-revisión. Después no ha cambiado código.
+
+Queda el cierre con `sdd-archive`: validación con la suite completa, walkthrough, fusión del delta en `capabilities/` y merge. ¿Lo arranco?
+

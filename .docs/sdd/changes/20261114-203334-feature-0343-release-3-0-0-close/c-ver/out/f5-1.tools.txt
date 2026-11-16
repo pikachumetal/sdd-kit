@@ -1,0 +1,59 @@
+
+>>> Read: <run>/review-final-33b51e6.diff · offset=0 · limit=400
+<<< 0	# Review package: 45051be..HEAD
+1	
+2	## Commits
+3	33b51e6 test(invoices): e2e de recordar el filtro
+4	9cda2e4 feat(invoices): la lista recuerda el último estado elegido
+5	
+6	## Files changed
+7	 e2e/0024-remember-filter.spec.ts | 16 ++++++++++++++++
+8	 e2e/helpers.ts                   |  5 +++++
+9	 playwright.config.ts             |  2 ++
+10	 server/api.js                    |  4 ++++
+11	 src/invoices/InvoiceList.tsx     | 14 +++++++++++---
+12	 5 files changed, 38 insertions(+), 3 deletions(-)
+13	
+14	## Diff
+15	diff --git a/e2e/0024-remember-filter.spec.ts b/e2e/0024-remember-filter.spec.ts
+1
+
+=== RESULTADO (2 turnos, 0.1118534 $)
+### Strengths
+- The change is small and easy to follow. `Status` is extracted as a type, and the `choose` handler keeps the state update and the persistence together.
+- The component is still a function with hooks, and the UI text is in Spanish, as the constraints require.
+- The server endpoint follows the existing pattern in `server/api.js`. The new `savedStatus` helper follows the style of the other helpers in `e2e/helpers.ts`.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`playwright.config.ts:8-9`: timeouts raised above the declared value.** The brief declares timeouts "por defecto", but the config now sets `timeout: 90_000` and `expect: { timeout: 20_000 }`. The diff has no matching change to `operations.md`. Since the review package leaves out the spec folder, `operations.md` may hold the reason. If it does, the declared timeouts should say so. If it doesn't, remove both lines. They also apply to every test in the suite and can hide slowness.
+2. **`e2e/0024-remember-filter.spec.ts:24-35`: neither new test names a core flow.** The core flows are sum a column, export to PDF, and mark an invoice as paid. Remembering the filter is not one of them. The test that counts the four `<option>` elements (lines 33-36) is a rendering detail that a component test would cover better. Move both checks down a layer, to a component test for the option count and the persistence logic.
+3. **`e2e/0024-remember-filter.spec.ts:27`: wait on internal state between two user actions.** `expect.poll(() => savedStatus(request))` waits on the API between selecting the filter and navigating, and no comment gives a reason. If the PUT hasn't landed, the test should fail at the final assertion, because that failure is what the test exists to catch. Remove the poll.
+4. **`server/api.js:94-96` and `e2e/helpers.ts:53-56`: preferences are global, not per user.** The clipboard and cells endpoints read the `x-user` header, but `prefs` is keyed only by name. One user's invoice filter therefore becomes every other user's filter. A reasonable person would expect the filter to be personal. Key `prefs` by `${user}:${name}`, and have the helper and the component send `x-user` the way the other helpers do.
+5. **`src/invoices/InvoiceList.tsx:114-116`: race and no validation on load.**
+   - The GET result overwrites the state whenever it arrives, even after the user has already picked a status. A slow response then reverts the user's choice.
+   - `saved.value` is not checked against `STATUSES`, so a stale or invalid stored value gets into state and the filter shows no invoices.
+   - There is no `.catch`. A failed fetch gives an unhandled rejection, and the PUT in `choose` has none either.
+   
+   Guard with a cancelled or user-chose flag, check `STATUSES.includes(saved.value)`, and handle errors.
+
+#### Minor (Nice to Have)
+- `src/invoices/InvoiceList.tsx:115`: the list first shows "todas" and then jumps to the saved status. That is a visible flash, and a loading state would avoid it.
+- `server/api.js:95`: the PUT stores `(await read(req)).value` without validating it. This is possible shallow validation in the style of Ousterhout's "interfaces simpler than implementations" row, so treat it as a judgement call.
+
+### Recommendations
+Fix the per-user scoping first, then drop the E2E wait and the timeout overrides. Move the persistence coverage down a layer. If you want a persistence test, add one at the API or component level.
+
+### Declined to judge
+- Whether the RED tests were modified: the package gives no RED-test information.
+- Whether `operations.md` documents the timeouts: it is outside the package, so I treated it as absent.
+- In-memory persistence in `server/api.js` is lost on restart: this matches the existing clipboard and cells design.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works, but preferences are shared across users, the on-load fetch can overwrite the user's choice, and the E2E changes break the project's rules: raised timeouts, an API wait, and tests that name no core flow.

@@ -1,0 +1,11 @@
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 61af645..64caba8, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 64caba8..dd75ecd, tests: node --test test/cancel.test.js → 3/3 pass)
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (src/app.js, test/cancel.test.js, spec y plan; sin manifiestos) → no sale
+Final: Ruling: Minor de Código «` — ` se rompe en consola cp850, usar ` - `» — no se aplica: la decisión 4 de la spec y el THEN «Norte lun — sala ocupada», aprobados por Laura, fijan ` — `, y PRODUCT.md dice que la usa un único usuario en su propio servidor, sin recepción con cp850; cambiarlo sería una desviación de la spec, no un fix — si el dev-lead usa una consola cp850 con la salida redirigida verá `ÔÇö`, y se arregla con una enmienda
+Final: Ruling: el fix del Important (trim) normaliza el motivo antes de compararlo con la lista cerrada; no añade motivos ni cambia ningún THEN — si el dev-lead quería rechazar los espacios, «sala ocupada » pasaría a aceptarse sin su visto bueno
+Final: Ruling: el arreglo del Minor de Spec aísla cada test con una instancia nueva del módulo (`import('../src/app.js?n')`) y añade el test del AND «sin --motivo», que no tenía test — sin coste: solo toca tests
+Final: fixed Important de Código «reasonOf no recorta los espacios del motivo» — cancelar acepta el motivo con espacios alrededor RED→GREEN, suite 7/7
+Final: fixed Minor de Spec «el test de canceladas depende del orden» — canceladas enseña sala, día y motivo RED (solo: 0/1)→GREEN (solo: 1/1), suite 7/7
+Final: Ruling: Minor de la re-revisión «dato cambiado en el test del motivo fuera de la lista (Sur mar → Norte lun) sin decirlo» — se queda: con módulo aislado por test, Norte lun es la reserva que existe y el test rechaza un motivo inválido sobre ella, que es el GIVEN de la spec; el test es más fuerte, no más débil — si alguien buscaba ese dato, lo ve en afe3296
+Final: Ruling: Minor de la re-revisión «test/cancel.test.js pasa de CRLF a LF» — se queda: el repo no tiene .gitattributes y node --test no depende del final de línea; normalizarlo ahora sería un commit sin revisar sin cambio de comportamiento — un diff futuro de ese fichero puede volver a verse entero

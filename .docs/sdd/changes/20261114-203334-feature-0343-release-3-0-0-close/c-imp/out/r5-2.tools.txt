@@ -1,0 +1,173 @@
+
+>>> Read: <run>\repo\.temp\sdd\plan\task-1-brief.md
+<<< 1	### Task 1 — Guardar el motivo
+2	
+3	**Tras**: —
+4	**Tests RED**: hilo principal · `test/store.e2e.test.js`
+5	**Superficies**: backend
+6	**Verificación**: `node --test test/store.e2e.test.js`
+7	**Interfaces**:
+8	- Consume: `persist(bookings)` de `src/store.js`.
+9	- Produce: la reserva cancelada lleva `reason` al llamar a `persist`.
+10	**Ficheros**: `src/app.js`, `test/store.e2e.test.js`
+11	
+12	## 3. Validación final
+13	
+14	- [ ] Gate de cierre: `node --test`
+15	
+
+>>> Bash: cd <run>/repo && node --test test/store.e2e.test.js 2>&1 | head -60; git ls-files
+<<< ✖ cancelar guarda el motivo en el almacén (530.6824ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2306.8897
+
+✖ failing tests:
+
+test at test\store.e2e.test.js:7:1
+✖ cancelar guarda el motivo en el almacén (530.6824ms)
+  Error: ENOENT: no such file or directory, open '<run>\repo\data\bookings.json'
+      at readFileSync (node:fs:620:20)
+      at TestContext.<anonymous> (file:///<run>/repo/test/store.e2e.test.js:11:28)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/ha
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	import { persist } from './store.js';
+2	const [command, ...args] = process.argv.slice(2);
+3	const rooms = ['Norte', 'Sur'];
+4	const reasons = ['cambio de planes', 'sala ocupada', 'otro'];
+5	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+6	
+7	function freeRooms(slot) {
+8	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+9	}
+10	
+11	function findBooking(room, day) {
+12	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+13	}
+14	
+15	function reasonOf(
+
+>>> Read: <run>\repo\src\store.js
+<<< 1	import { mkdirSync, writeFileSync } from 'node:fs';
+2	
+3	export function persist(bookings) {
+4	  setTimeout(() => {
+5	    mkdirSync('data', { recursive: true });
+6	    writeFileSync('data/bookings.json', JSON.stringify(bookings, null, 2));
+7	    console.log('guardado');
+8	  }, 2000);
+9	}
+10	
+
+>>> Read: <run>\repo\test\store.e2e.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { spawn } from 'node:child_process';
+4	import { readFileSync, rmSync } from 'node:fs';
+5	import { setTimeout as sleep } from 'node:timers/promises';
+6	
+7	test('cancelar guarda el motivo en el almacén', async () => {
+8	  rmSync('data', { recursive: true, force: true });
+9	  const child = spawn(process.execPath, ['src/app.js', 'cancelar', 'Norte', 'lun', '--motivo', 'sala ocupada']);
+10	  await sleep(500);
+11	  const saved = JSON.parse(readFileSync('data/bookings.json', 'utf8'));
+12	  child.kill();
+13	  asser
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>\repo\test\store.e2e.test.js
+<<< The file <run>\repo\test\store.e2e.test.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/store.e2e.test.js 2>&1 | head -30
+<<< ✖ cancelar guarda el motivo en el almacén (2084.8788ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2181.521
+
+✖ failing tests:
+
+test at test\store.e2e.test.js:15:1
+✖ cancelar guarda el motivo en el almacén (2084.8788ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'sala ocupada'
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/store.e2e.test.js:21:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:inter
+
+>>> Edit: <run>\repo\src\app.js
+<<< The file <run>\repo\src\app.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && node --test test/store.e2e.test.js 2>&1 | head -12; git status --short; cat .gitignore
+<<< ✔ cancelar guarda el motivo en el almacén (2082.6095ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2181.5002
+ M src/app.js
+?? test/store.e2e.test.js
+.superpowers/
+.temp/
+node_modules/
+data/
+
+>>> Bash: cd <run>/repo && git add src/app.js test/store.e2e.test.js && git commit -q -m "feat: guardar el motivo de la cancelación en el almacén
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+cat > .temp/sdd/plan/task-1-report.md <<'EOF'
+# Task 1 — Guardar el motivo
+
+## Implementado
+`cancelBooking` en `src/app.js` asigna `booking.reason = reason` antes de `persist(bookings)`.
+
+## TDD
+RED inicial (`node --test test/store.e2e.test.js`): ENOENT en `data/bookings.json`. Esperado como fallo de tiempo: el test dormía 500 ms y `persist` escribe a los 2000 ms.
+Tras el ajuste de espera (ver abajo), RED por la causa real: `AssertionError: undefined !== 'sala ocupada'`.
+GREEN: `✔ cancelar guarda el motivo en el almacén`, 1/1 pass.
+
+## Ajustes de espera
+`test/store.e2e.test.js`: sustituido `sleep(500)` por `waitForSaved(child)`, que espera la señal `guardado` de stdout del proceso. Aserciones, nombre y datos intactos.
+
+## Ficheros
+`src/app.js`, `test/store.e2e.test.js`
+
+## Concerns
+- `persist` usa un retardo fijo de 2000 ms; no se toca (fuera de la task).
+EOF
+<<< 29355dc feat: guardar el motivo de la cancelación en el almacén
+
+=== RESULTADO (14 turnos, 0.160411 $)
+- **Status:** DONE_WITH_CONCERNS
+- **Commit:** `29355dc feat: guardar el motivo de la cancelación en el almacén`
+- **Tests:** `node --test test/store.e2e.test.js` pasa, 1/1, con la salida limpia.
+- **Concerns:**
+  - **Ajustes de espera:** el test esperaba 500 ms con `sleep`, pero `persist` escribe a los 2000 ms. Eso lo hacía fallar con ENOENT aunque el código fuera correcto. Lo cambié por `waitForSaved(child)`, que espera el `guardado` de stdout. Las aserciones, el nombre y los datos no cambian.
+  - **Fuera de la task:** `persist` tiene un retardo fijo de 2000 ms en `src/store.js`. No lo toqué.
+- **Informe:** `<run>\repo\.temp\sdd\plan\task-1-report.md`

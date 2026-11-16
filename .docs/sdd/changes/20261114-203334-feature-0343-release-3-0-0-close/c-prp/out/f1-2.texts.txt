@@ -1,0 +1,94 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, anunciar y entrevistar, ~5 min.
+
+--- [28]
+Ahora: repaso de coherencia de la spec (búsquedas y fusión del delta en una copia). Queda: revisión con 2 revisores, plan y Task 1, ~10 min.
+
+--- [39]
+Los dos revisores de la spec están en marcha (dominio y técnica, ambos en Sonnet). Espero sus resultados para incorporarlos antes de escribir el plan.
+
+--- [44]
+1. Crítico · Intent / decisión 2 / «Lo que se retira o cambia de forma» · `cancelar <sala> <día>` sin motivo deja de cancelar, y `cancelada Norte lun` pasa a `cancelada Norte lun (sala ocupada)`. Es cambio de comportamiento existente, pero el delta lo declara todo como `ADDED` (decisión 8), es decir, un `MODIFIED` no declarado. · Separar el comportamiento previo (`cancelar` con `sin reserva`) del nuevo. Si no existe capacidad, declarar la base documentada como `ADDED` y el cambio como `MODIFIED` explícito, o documentar en el delta el comportamiento «antes → ahora» para que `capability merge` no lo registre como original.
+
+2. Crítico · Cancelación vs Anulación (`PRODUCT.md`) / decisión 7 / Delta · La definición de Cancelación es «la reserva que anula el propio cliente antes de 24 h», pero la spec deja fuera la regla de las 24 h y `cancelar` cancela a cualquier hora. Además, `cancelar` y `anular` comparten un único estado `cancelled`, que es lo que decide el filtro de `canceladas`. La spec no dice cómo se distingue una anulada de una cancelada: el escenario «Las anuladas no son canceladas» no tiene mecanismo definido. · Declarar el estado propio de la anulada (p. ej. `annulled`) y que `anular` no lo pone en `cancelled`. Marcar la regla de las 24 h como brecha conocida, con la fila donde se resuelve, en vez de redefinir «cancelada» por omisión.
+
+3. Importante · Delta / complemento por rol y estado · La spec no dice qué pasa con estos casos: cancelar una reserva ya cancelada, cancelar una ya anulada, o `anular` sobre una cancelada. El delta solo cubre «reserva activa» y «sin reserva». Tampoco dice quién puede cancelar (el cliente) frente a quién anula (el responsable): ¿puede `cancelar` tocar una reserva ajena? · Añadir escenarios: cancelar una reserva ya cancelada o anulada (qué responde, y si conserva el motivo original), y declarar que `cancelar` solo actúa sobre reservas activas. Decir si el rol se comprueba o queda fuera del alcance.
+
+4. Importante · Decisión 7 / Scope · «`anular` no cambia y no pide motivo» choca con la Anulación de `PRODUCT.md` («por cualquier motivo»), y con «No entra: `anular` y sus motivos (fila 0011)», que sugiere que 0011 sí añadirá motivos. Una anulada no tiene `reason`, y `canceladas` ya no la lista, así que el motivo de las anuladas queda sin consulta posible. · Aclarar si `anular` seguirá sin motivo hasta 0011 y que eso es transitorio. Confirmar que el filtro `canceladas` no depende de que exista `reason`.
+
+5. Importante · Reglas de la capacidad / límites y avisos · La regla «Límites» solo cuenta los tres motivos. No declara qué pasa con mayúsculas (`Sala-Ocupada`), argumentos sobrantes (`cancelar Norte lun otro extra`), ni el orden de validación frente a sala o día desconocidos. El aviso lleva un único texto para ausente e inválido, y no hay aviso para sala o día mal escritos (`cancelar Oeste xyz otro`). · Declarar los valores: sensibilidad a mayúsculas, argumentos de más (error o ignorados), y la respuesta para sala o día no válidos distinta de `sin reserva`.
+
+6. Importante · Reglas de la capacidad / «Regla ante conflicto: no aplica» · Sí hay conflicto posible: dos reservas activas de la misma sala y día en franjas distintas (`cancelar Norte lun` es ambiguo), o una reserva cancelada y otra nueva en el mismo hueco. El comando identifica por sala+día, sin franja, y el listado enseña la franja. La regla dice «no aplica» sin justificar. · Justificar el «no aplica» (si una sala solo admite una reserva por día) o declarar la regla: cuál se cancela o error de ambigüedad.
+
+7. Menor · Reglas de la capacidad / idioma de los nombres · Dice «kebab-case sin espacios» pero el motivo `otro` es una sola palabra, y la correspondencia al texto («cambio de planes», «sala ocupada») queda implícita. La constitución exige el castellano en el texto de la interfaz, y los argumentos `cambio-de-planes` y `sala-ocupada` salen del dominio. · Dejar explícita la tabla argumento → texto mostrado, que es el dato que valida cada escenario.
+
+8. Menor · Decisión 6 / delta «Listar canceladas» · El orden «el de creación de las reservas» no es verificable con un único escenario con una reserva. Tampoco hay ejemplo con varias, ni con una cancelada de dos días. · Añadir un escenario con dos canceladas que fije el orden, o quitar la afirmación del orden.
+
+9. Menor · Revisión de spec (decisión «Mínimo razonable») / Intent · La sección dice que el revisor mínimo «deja sin mirar si la regla de negocio de motivo obligatorio contradice el glosario», cuando el glosario es justo lo que lo contradice (puntos 2 y 4). Esa es la señal de riesgo de dominio, no un riesgo asumible. · Retirar la opción «solo técnica» o justificar por qué el glosario no se toca, y reflejarlo en los hallazgos.
+
+10. Menor · Scope / Intent · El Intent habla de «quien revisa las canceladas» (un rol revisor), pero la Cancelación la hace el cliente y el responsable de sala solo anula. No se dice quién consulta `canceladas`, y el comando no tiene restricción de rol. · Declarar quién usa `canceladas` y, si es cualquiera, decirlo en el alcance.
+
+--- [46]
+Ha llegado la revisión de dominio. Espero la técnica antes de incorporar los hallazgos.
+
+--- [47]
+1. Crítico · Delta «Cancelar con motivo» y «Listar canceladas» · El scenario de listado dice `10:00-12:00` pero la franja solo está en el GIVEN de otro requisito. «Listar canceladas» no define la reserva (franja) ni cómo llegó a cancelada, así que el valor sale de «a ojo». «Cancelar con motivo» tampoco cubre `cambio-de-planes` ni `otro`: la conversión kebab→castellano (`cambio de planes`) solo se prueba con 2 de los 3 motivos. · Poner en el GIVEN de «Listar canceladas» la reserva completa («reserva Norte lun 10:00-12:00 cancelada con `cambio-de-planes`»). Añadir un scenario o una tabla que cubra los tres motivos en la respuesta de `cancelar` y en `canceladas`.
+
+2. Crítico · Delta «Listar canceladas» · No hay scenario con varias canceladas, ni con una cancelada y una activa. El orden «de creación» (decisión 6) y el filtro `status === 'cancelled'` pasarían con una sola reserva, o con un `return` que no filtre. · Añadir un scenario con 2 canceladas creadas en orden distinto al de cancelación (más una activa) y verificar el orden y la exclusión de la activa.
+
+3. Crítico · Delta «Motivo obligatorio y de la lista» · Un solo scenario agrupa dos WHEN (`cancelar Norte lun` y `cancelar Norte lun lluvia`). Además, la decisión 4 («motivo antes que reserva», `cancelar Sur mar` sin motivo da el error del motivo) no tiene scenario: el delta solo prueba «sin reserva» con motivo válido. Un orden invertido pasaría todos los scenarios. · Separar en dos scenarios y añadir uno con GIVEN sin reserva, WHEN `cancelar Sur mar`, THEN `motivo no válido: …`.
+
+4. Importante · Delta «Las anuladas no son canceladas» · El GIVEN usa `anular Norte lun`, un comando de la fila 0011 que la spec dice que no entra ni cambia. No dice si `anular` existe hoy ni qué `status` deja (la spec asume que no es `cancelled`). Si `anular` pone `cancelled`, `canceladas` las listaría y el scenario fallaría. Si no existe, el test no se puede escribir. · Decir qué `status` produce `anular` hoy y cómo se siembra la anulada en el test. Si `anular` marca `cancelled`, hace falta un atributo que distinga, y ese cambio es decisión nueva.
+
+5. Importante · Decisiones («✋») · Quedan en el cuerpo y sin declarar: (a) `canceladas` sin argumentos y qué pasa si se le pasan; (b) el formato de la línea con guion largo `—` y franja `10:00-12:00`; (c) volver a cancelar una reserva ya cancelada, cuyo resultado es indefinido (¿`sin reserva` o se sobrescribe el motivo?); (d) los argumentos extra en `cancelar` (`cancelar Norte lun otro x`); (e) el CHANGELOG entra en Scope sin decidirlo. · Añadir estas decisiones a la lista numerada, o dejarlas fuera del alcance con una regla explícita.
+
+6. Importante · Delta «Cancelar sin reserva» y regla «Avisos» · «Sin reserva activa» no cubre una reserva ya cancelada ni una anulada. No dice si `sin reserva` aplica a una reserva ya cancelada, y esto interactúa con `canceladas`. · Añadir un scenario de «cancelar dos veces» con el resultado esperado.
+
+7. Importante · «Lo que se retira o cambia de forma» / Approach · Se toca el contrato de `run(cmd, params)`: `params[2]` pasa a ser el motivo y se añade la rama `canceladas`. Si `params` no tiene tercer elemento (`undefined`), o si el parseo de la CLI separa los argumentos por espacios, no se dice cómo llega el motivo desde `process.argv` ni si hay un `default`/ayuda en `run` que liste los comandos. El mensaje de «comando desconocido» o la ayuda pueden quedar desactualizados con `canceladas`. · Declarar que se revisa el parseo de la CLI y el texto de ayuda o de comando desconocido, y añadir un scenario para ellos.
+
+8. Importante · Delta, requisito «Cancelar con motivo» · La respuesta usa «sala ocupada» (guiones→espacios), pero la regla de conversión no está especificada: es una tabla o un `replace(/-/g, ' ')`. Con `otro` se convertiría igual. Si el implementador pone un mapa, el mensaje de error y la lista pueden desincronizarse. · Fijar una única fuente de verdad (la lista de tres motivos y su etiqueta) en la regla «Límites» de la capacidad.
+
+9. Menor · Delta «Listar canceladas» / Scope · El orden «el de creación» presupone que las reservas viven en un array en orden de inserción. La spec no dice cómo se siembra, ni si se pueden cancelar y recrear reservas (¿una cancelada y recreada cambia de posición?). · Aclarar el orden con un scenario de recreación, o dejarlo fuera del alcance.
+
+10. Menor · «Hallazgos de la review» / «Decisiones» · La política de revisión y «Mínimo razonable: solo técnica» son decisiones sobre el flujo. No es una regla de la spec, pero «Decisiones tomadas con el dev-lead» incluye «Parar tras el commit de la Task 1» (instrucción de proceso, no decisión de diseño) y mezcla ambos en el mismo bloque. · Mover la instrucción de proceso fuera de la spec, al plan o al estado de la sesión.
+
+--- [49]
+Los dos revisores han devuelto sus hallazgos. Los incorporo a la spec con aceptados y rechazados razonados.
+
+--- [55]
+Ahora: escribo el plan (2 tasks) y el registro de tasks. Queda: commit de apertura, Task 1 y su commit, ~8 min.
+
+--- [65]
+Ahora: paso a la implementación (Task 1) con `sdd-implement`. Queda: Task 1 con su commit y parada, ~5 min.
+
+--- [70]
+Ahora: preparo el workspace y arranco la Task 1 (tests RED primero). Queda: Task 1 con su commit y parada, ~5 min.
+
+--- [76]
+RED confirmado (falta el export `bookings`). Ahora la implementación mínima.
+
+--- [79]
+El escapado del shell lo ha roto; edito con la herramienta de edición.
+
+--- [83]
+Task 1 en verde. Commit de la task (añadiendo por ruta) y cierre con `sdd task done`.
+
+--- [86]
+Paro aquí, como pediste: tengo el commit de la Task 1 (`a06c6a3`). El motivo ya es obligatorio al cancelar, pero la Task 2 (el comando `canceladas`) no está hecha.
+
+- **Spec:** creada y aprobada por delegación con tu frase, y registrada así en la carpeta `.docs/sdd/changes/20261116-120120-feature-0010-motivo-cancelar/`. Entró con el plan en el commit de apertura `6b0b806`.
+- **Revisión de la spec:** dos revisores (dominio y técnica) dieron 20 hallazgos. Acepté los que añadían escenarios o decisiones que faltaban y rechacé los que no encajaban, cada uno con su motivo en la spec.
+- **Task 1:** `cancelar <sala> <día> <motivo>` acepta `cambio-de-planes`, `sala-ocupada` u `otro`.
+  - Con motivo válido responde `cancelada Norte lun (sala ocupada)` y la reserva guarda el motivo.
+  - Sin motivo, o con uno fuera de la lista, responde `motivo no válido: usa cambio-de-planes, sala-ocupada u otro` y no cancela. Esta comprobación va antes que la de si hay reserva.
+- **Verificación:** `node --test test/cancel.test.js` da 9 de 9 en verde. La suite entera da 11 de 11 y el lint no encuentra nada. El gate de cierre completo correrá una vez al final.
+- **Task 2 (pendiente):** el comando `canceladas` (el listado) y la entrada en `CHANGELOG.md`. Se retoma con «sigue con la Task 2».
+
+Decisiones mías que conviene que mires (están en «✋» de la spec):
+- **Nombres de los motivos:** los tecleas sin espacios, porque los argumentos se separan por espacios.
+- **Motivo obligatorio:** no es opcional, así que `cancelar Norte lun` a secas ya no cancela.
+- **Comando nuevo `canceladas`:** lo he inferido de la fila 0010 del roadmap («el listado de canceladas lo enseña»); tú no lo habías pedido de forma explícita.
+- **Estado de prueba:** `bookings` pasa a exportarse como costura de test para sembrar reservas.
+
+Quedan por delante la Task 2, la revisión final de la rama, la validación tuya y el cierre.
+

@@ -14,13 +14,13 @@ Explain for a reader who knows the product, not its code or the kit. Write every
 - If `PRODUCT.md` has a «Terminology» section, use its terms. A word under _Evitar_ never appears, even when the code uses it: the code says `invoice_line`, you say «línea de factura».
 - No file paths, function or variable names, commands, flags or kit jargon (RED, sha, worktree, subagent, THEN) in the explanation.
 - Short sentences in active voice, one idea each: ASD-STE100 Simplified Technical English.
-- A technical term the reader needs is explained in the same sentence, by its effect —in short sentences too: the term and its effect are one idea: «el banco manda las horas en UTC, un reloj dos horas por detrás del nuestro, así que un cobro de las 10:00 sale a las 08:00».
+- A technical term the reader needs is explained in the same sentence, by its effect, never in the next one: «el banco manda las horas en UTC, un reloj dos horas por detrás del nuestro, así que un cobro de las 10:00 sale a las 08:00».
 
 ## Short mode: the 🦆 of a stop
 
 The caller gives you the stop and its material: a spec, a blocker, a decision. Its technical wording (an Approach full of file names, a stack trace) is your input, not your output. Return one paragraph:
 
-- It starts with 🦆 and has five sentences at most.
+- It starts with 🦆 and has five sentences at most: count them before you return it.
 - First, what changes or happens for the product's user, with data; name only effects checked in the file.
 - Then how, in the product's words.
 - Return it to the caller without questions: the caller asks. What you did or what is left to decide goes after the paragraph, never as a sixth sentence, as a bare statement: «falta decidir el redondeo del IVA», not «falta decidir: por línea o por total; recomiendo por línea». The caller asks it with its options; listing them here makes the user answer twice.

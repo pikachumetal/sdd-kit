@@ -1,0 +1,104 @@
+
+>>> Skill: sdd-kit:sdd-roadmap
+<<< Launching skill: sdd-kit:sdd-roadmap
+
+>>> Bash: cd "<run>/repo" && ls -a && git branch --all && cat .docs/sdd/steering/debt.md && cat .docs/sdd/sdd-kit.json && git show develop:ROADMAP.md
+
+>>> Bash: cd "<run>/repo" && node "C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/.temp/k43a/cli/bin/sdd.js" roadmap check --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+docs/
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+* develop
+  main
+# Deuda técnica
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| La exportación a CSV pierde las tildes desde la 1.4.2 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+| `salas libres --planta 2` lista también salas de la planta 1 | `docs/qa/2026-10-12-informe.md` | 2026-10-12 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+| Las reservas de más de 8 h no avisan al responsable | sin determinar | un 
+<<< debt.md: aviso: línea 14: en espera desde 2026-07-01, dos releases sin 2.º caso: caduca
+Roadmap válido
+
+>>> Bash: cd "<run>/repo" && cat docs/qa/2026-10-12-informe.md; cat package.json; ls -R src test; cat src/*.js | head -150; git log --oneline -5
+<<< # Informe de QA — 2026-10-12
+
+Pruebas de la semana sobre la última versión publicada.
+
+## Hallazgos
+
+1. La exportación a CSV pierde las tildes desde la 1.4.2: la cabecera sale como `sala,d?a,franja`.
+2. `salas libres --planta 2` lista también salas de la planta 1: pide la planta 2 y devuelve `Norte (planta 1)`.
+{"type": "module"}
+src:
+app.js
+
+test:
+app.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const floors = { Norte: 1, Sur: 3 };
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  re
+
+>>> Bash: cd "<run>/repo" && node src/app.js libres --planta 2; echo ---; node src/app.js exportar | od -c | head -3; node src/app.js exportar; cat test/app.test.js | head -30; git log --all --oneline | head; ls docs
+<<< Norte (planta 1)
+---
+0000000   s   a   l   a   ,   d 303 255   a   ,   f   r   a   n   j   a
+0000020  \n   N   o   r   t   e   ,   l   u   n   ,   1   0   :   0   0
+0000040   -   1   2   :   0   0  \n
+sala,día,franja
+Norte,lun,10:00-12:00
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-seman
+
+=== RESULTADO (7 turnos, 0.136816 $)
+Hay tres filas que triar: las dos de «Por triar» y una de «En espera» que ha caducado. Como el perfil es `delegate`, no he escrito nada y espero tu decisión.
+
+**1. La exportación a CSV pierde las tildes: a «En espera», falta `reproducirlo`**
+- No lo reproduzco. `node src/app.js exportar` saca `sala,día,franja`, y `od -c` muestra los bytes UTF-8 correctos (`d 303 255 a`).
+- El `?` del informe parece venir de quien lo lee (consola o Excel con otra codificación) y no del CSV. Es una hipótesis, no está confirmada.
+- El informe de QA es el único caso. Pasa a «En espera» con «Causa» `sin determinar`, «Falta» `reproducirlo` y «Fecha» 2026-11-14.
+
+**2. `salas libres --planta 2` lista salas de otra planta: a «Lista»**
+- Lo reproduzco. `node src/app.js libres --planta 2` devuelve `Norte (planta 1)`.
+- La causa está en `src/app.js:12`: `roomsOnFloor` filtra con `floors[room] <= floor` y debería comparar con `===`.
+- Fila propuesta:
+  - **Causa:** `defecto del producto`
+  - **Impacto:** Medio (es una propuesta mía; dime si prefieres otro)
+  - **Evidencia:** el comando anterior con su salida
+  - **Remedio temporal:** `ninguno` (miré el informe y no cita ninguno)
+  - **Arreglo:** `—`, porque la causa es `defecto del producto`
+  - **Destino:** una fila nueva en Now, `**Carril:** patch`, tamaño `S`. Reservaría su id con `sdd id next --reserve` y su brief diría «solución por confirmar», porque no he ejecutado el cambio en una copia.
+
+**3. «Las reservas de más de 8 h no avisan al responsable»: descartar**
+- `sdd roadmap check` avisa de que lleva en espera desde 2026-07-01 y han pasado dos releases sin un 2.º caso. Se descarta con motivo `caducada`, que quedaría en el cuerpo del commit.
+- Si llega un nuevo caso, entra en «Por triar» como fila nueva.
+
+¿Lo escribo así? Si me dices «decide tú» o «adelante», reservo el id, actualizo `debt.md` y `ROADMAP.md`, ejecuto `roadmap check` y publico. Dime también si cambias algo, como el impacto de la fila 2.

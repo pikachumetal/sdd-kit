@@ -1,0 +1,134 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cd "<run>/repo" && git status --short && ls .docs/sdd/changes/ 2>/dev/null; find . -name "re-review.md" -not -path "./node_modules/*" 2>/dev/null; find .. -maxdepth 3 -name "re-review.md" 2>/dev/null
+<<< ./.temp/sdd/plan/re-review.md
+
+>>> Bash: cd "<run>/repo" && ls -la .temp/sdd/plan; cat .temp/sdd/plan/re-review.md; git ls-files | head -50; git check-ignore -v .temp
+<<< total 6
+drwxr-xr-x 1 <user> 197609   0 Nov 15 14:14 ./
+drwxr-xr-x 1 <user> 197609   0 Nov 15 14:14 ../
+-rw-r--r-- 1 <user> 197609  67 Nov 15 14:14 plan-path
+-rw-r--r-- 1 <user> 197609 284 Nov 15 14:14 progress.md
+-rw-r--r-- 1 <user> 197609 612 Nov 14 19:50 re-review.md
+## Re-review of the fix range
+
+### Findings of the review
+1. `reasonOf` keeps the spaces around the reason — ADDRESSED (`src/app.js:16`).
+
+### New breakage in the fix range
+1. **Critical · `src/app.js:20`: `cancelar` without `--motivo` cancels the booking.** The fix pass changed the check to `reason !== undefined && …`, so
+
+>>> Bash: cd "<run>/repo" && cat .temp/sdd/plan/plan-path .temp/sdd/plan/progress.md; D=.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason; cat $D/tasks.md; cat src/app.js; cat test/cancel.test.js; git log --stat -3 --format='%h %s'
+<<< .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 8213bf5..3f13c3e, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 3f13c3e..f78173a, tests: node --test test/cancel.test.js → 3/3 pass)
+---
+id: 20261008-100000-feature-0010-cancel-reason
+title: Tasks — Motivo al cancelar
+---
+
+# Tasks — Motivo al cancelar (registro vivo)
+
+| # | Task | Status | Commit | Notas |
+| --- | --- | --- | --- | --- |
+| 1 | Cancelar con motivo | done | f78173a | |
+|
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Read: C:\code\.workspaces\sdd-kit\feature-0342-interviewer-rewrite\.temp\kcut\skills\sdd-verify\references\closing-the-review.md
+<<< 1	# Closing the review
+2	
+3	**Sort the findings before you act on any of them.** The reviewer's severity labels are advice; the gate is yours. Its «Declined to judge» list is yours too: every line there is a ruling you make and ledger, exactly like a plan conflict — `Final: Ruling: <behavior the reviewer set aside> — <what a reasonable person using this software gets, and why that stands or why it is now a finding> — <cost if wrong>`. Re-grade first, inside each axis, by effect: the spec is a vision document, and a finding's grade is what a reasonable person using this software gets if it ship
+
+>>> Bash: cd "<run>/repo" && grep -n -i -B1 -A4 "motivo" .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md | head -60; cat package.json | grep -A3 scripts
+<<< 3-feature: 0010
+4:title: Motivo al cancelar
+5-mode: full
+6-profile: delegate
+7-status: approved
+8-created: 2026-10-08
+--
+15-
+16:# Spec — Motivo al cancelar
+17-
+18-## Capacidades
+19-
+20:- Modificadas: `bookings` — cancelar pide un motivo y el listado de canceladas lo enseña.
+21-
+22-## Decisiones que he tomado yo — valida estas
+23-
+24:1. La lista de motivos es cerrada: cambio de planes, sala ocupada, otro — decidido con el dev-lead en la entrevista.
+25-3. Sin review de spec: dos señales (MODIFIED, datos).
+26-
+27-## Intent
+28-
+29:Hoy cancelar no deja rastro: nadie sabe por qué se liberó una sala.
+
+>>> Bash: cd "<run>/repo" && python3 - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');let s=fs.readFileSync('test/cancel.test.js','utf8');
+const t=\`test('cancelar sin motivo no cancela', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'motivo no válido: cambio de planes, sala ocupada, otro');
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+\`;
+s=s.replace(\"test('cancelar con un motivo de la lista'\",t+\"test('cancelar con un motivo de la lista'\");fs.writeFileSync('test/cancel.test.js',s);"
+E
+node --test test/ 2>&1 | grep -E "^# (pass|fail)|not ok"
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/repo" && git diff --stat; node --test test/ 2>&1 | tail -30
+<<<  test/cancel.test.js | 5 +++++
+ 1 file changed, 5 insertions(+)
+    code: 'ERR_ASSERTION',
+    actual: 'sin reserva Norte lun',
+    expected: 'cancelada Norte lun (sala ocupada)',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at test\cancel.test.js:18:1
+✖ canceladas enseña sala, día y motivo (0.4464ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'Norte lun — undefined'
+  - 'Norte lun — sala ocupada'
+                 ^
+  
+      at TestContext.<anonymous> (file:///<run>/repo/test/cancel.test.js:19:10)
+      at Test.runInAsyncSc
+
+>>> Bash: cd "<run>/repo" && sed -i 's/if (reason !== undefined \&\& !reasons.includes(reason))/if (!reasons.includes(reason))/' src/app.js && sed -n 20p src/app.js && node --test test/ 2>&1 | grep -E "^# (tests|pass|fail)"
+<<<   if (!reasons.includes(reason)) return `motivo no válido: ${reasons.join(', ')}`;
+
+>>> Bash: cd "<run>/repo" && node --test test/ 2>&1 | grep -E "^ℹ (tests|pass|fail)|✖"
+<<< ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+
+>>> Bash: cd "<run>/repo" && git add src test && git commit -q -F - <<'E'
+fix(bookings): cancelar sin motivo responde motivo no válido
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+E
+S=$(git rev-parse --short HEAD); echo "Final: fixed re-review Critical (cancelar sin --motivo cancelaba) — 'cancelar sin motivo no cancela' RED→GREEN, suite 7/7 ($S, sin revisar)" >> .temp/sdd/plan/progress.md; echo $S
+<<< warning: in the working copy of 'src/app.js', LF will be replaced by CRLF the next time Git touches it
+1907581
+
+=== RESULTADO (15 turnos, 0.2374213 $)
+Arreglé el Critical de la re-revisión. Está en el commit `1907581` y sin revisar.
+
+- **Causa:** `cancelBooking` solo comprobaba el motivo si no era `undefined`. Por eso `cancelar Norte lun` sin `--motivo` cancelaba la reserva y respondía «(undefined)». Ahora comprueba siempre `reasons.includes(reason)`.
+- **Spec:** ya decía que sin `--motivo` responde «motivo no válido: cambio de planes, sala ocupada, otro» (`spec.md:54`). No hay desviación, solo se cumple la spec.
+- **RED→GREEN:** añadí `cancelar sin motivo no cancela` al principio de `test/cancel.test.js`, para que Norte lun siga activa. Antes del fix fallaba y rompía de rebote los tests de cancelar y de `canceladas`. Después, `node --test test/` da 7/7.
+- **Ledger:** la línea `Final: fixed …` está en `.temp/sdd/plan/progress.md`. No toqué `tasks.md`.
+
+El kit no permite una segunda re-revisión: `tasks.md` ya tiene su línea `Re-revisión:` y un Critical de esa pasada se arregla en el hilo y llega a ✋ sin revisar. Es un commit de 6 líneas que toca código, así que no entra en la excepción de los commits solo de docs.
+
+✋ sin revisar: `1907581` — cancelar sin `--motivo` ya no cancela y responde «motivo no válido». No he hecho la validación ni el cierre, y el cierre no puede decir que la revisión fue limpia: queda 1 sin revisar. ¿Sigues con `sdd-archive`?

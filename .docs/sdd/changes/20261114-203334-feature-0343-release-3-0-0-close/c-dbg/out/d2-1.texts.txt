@@ -1,0 +1,34 @@
+--- [2]
+Empiezo por la Fase 1: leo la deuda del proyecto, el script y reproduzco el error.
+
+--- [5]
+## Causa raíz
+
+`npm run informe` falla porque `scripts/informe.mjs:3` escribe en `.cache/informes/ocupacion.csv` y **la carpeta `.cache/informes/` no existe**. Nada en el script la crea.
+
+`writeFileSync` crea ficheros pero no directorios intermedios. Si falta alguno de los tramos de la ruta, lanza `ENOENT`. El script entero es una sola línea que da por hecho que la carpeta ya está ahí.
+
+## Evidencia
+
+- **Error reproducido:** el stack trace apunta a `open '...\repo\.cache\informes\ocupacion.csv'`, llamado desde `informe.mjs:3:1`. Es la llamada a `writeFileSync`.
+- **Estado del repo:** `ls -la` no muestra ningún `.cache/`. No hay `.gitignore`.
+- **Historial:** `scripts/` solo tiene el commit base (`a1475a3`). No hay ningún cambio reciente que lo haya roto: nunca ha funcionado sin la carpeta.
+- **Qué la hacía existir antes:** nada versionado la crea. Solo estaba si alguien la había creado a mano o una ejecución anterior la había dejado. Un repo limpio o un worktree nuevo no la tienen.
+
+## Deuda existente
+
+La fila **«El listado de ocupación no sale tras limpiar el repo»** de `.docs/sdd/steering/debt.md` cubre este fallo. Sus dos tickets (`2026-10-12` y `2026-10-19`) describen el mismo síntoma: tras limpiar el repo o en un worktree nuevo, el listado no sale, y recrear la carpeta de la caché lo resuelve.
+
+- **Remedio temporal de la fila:** recrear la carpeta de la caché.
+- **Cómo cuadra con la causa:** el remedio funciona porque lo que falta es justo esa carpeta. Eso confirma la causa. No es el arreglo.
+- **Discrepancia:** la fila atribuye el origen a «herramienta del kit». Por lo que veo en el código, el fallo está en el script del propio proyecto (`scripts/informe.mjs`), que no crea su directorio de salida. No he encontrado nada del kit implicado.
+- **Estado de la fila:** sigue abierta. Su arreglo previsto es una «comprobación automática», pero esa fila no tiene destino todavía.
+
+## Qué no he hecho
+
+No he tocado nada, como pediste. No he creado la carpeta ni modificado el script. Tampoco he escrito un `patch.md`, porque no hay un patch abierto: eso lo decide `sdd-propose` si quieres arreglarlo.
+
+## Siguiente paso
+
+Cuando quieras arreglarlo, el cambio entra por `sdd-propose`. La opción más pequeña sería que el script cree `.cache/informes/` antes de escribir. Eso ataca el origen y no depende de que alguien recuerde recrear la carpeta.
+

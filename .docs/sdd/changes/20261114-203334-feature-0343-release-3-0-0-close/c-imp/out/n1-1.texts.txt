@@ -1,0 +1,93 @@
+--- [3]
+Ahora: reviso el estado de la feature 0010 (spec, plan, configuración). Queda: preparar y ejecutar las tasks, ~unos minutos de lectura.
+
+--- [7]
+Spec y plan aprobados, perfil `delegate`, ejecución Native. Antes de lanzar el método compruebo la base (`develop`).
+
+--- [9]
+Base limpia: sin remoto, `develop` no ha cambiado desde el merge-base. Paso al método Native.
+
+--- [13]
+Uso la skill sdd-worktrees para preparar el espacio aislado.
+
+--- [18]
+Worktree listo en el propio checkout (rama `feature/0010-cancel-reason`).
+Gate: `node --test` → 4/4 en verde. Listo para implementar 0010.
+
+--- [22]
+Ahora: escaneo previo del plan contra la spec y el código. Queda: las dos tasks y la revisión final, ~15 min.
+
+--- [24]
+Escribo el ledger con el escaneo previo y `tasks.md`.
+
+--- [28]
+Ahora: tests RED de la Task 1 (tres casos del THEN/AND). Queda: implementar, cerrar Task 1 y luego la Task 2, ~10 min.
+
+--- [32]
+RED correcto: 3 fallan por falta del motivo; el de «sin reserva» ya pasaba (es el test existente adaptado, prueba una ruta que ya existe). Ahora el código.
+
+--- [37]
+Task 1 cerrada. Ahora: Task 2 (listado `canceladas`). Queda: Task 2 y la revisión final, ~8 min.
+
+--- [41]
+RED correcto (el comando no existe aún). Implemento `canceladas`.
+
+--- [46]
+Las dos tasks están cerradas. Ahora: revisión final de la rama con sdd-verify. Queda: la revisión, su cierre y los borradores de cierre, ~10 min.
+
+--- [56]
+Hago las pasadas de revisión yo mismo sobre el diff completo de la rama.
+
+--- [64]
+Ahora: borradores de cierre (walkthrough y merge del delta en `capabilities/`). Queda: rulings a `tasks.md`, borrar el workspace y pasar a sdd-archive, ~5 min.
+
+--- [73]
+Rulings copiados en `tasks.md`, que queda sin commitear para el commit de cierre. Borro el workspace del plan y paso a sdd-archive.
+
+--- [77]
+Ahora: comprobaciones previas del cierre. Queda: el mensaje de validación para ti (el cierre espera a que valides), ~3 min.
+
+--- [82]
+Valido como lo harías tú: ensayo cada paso del guion con los mismos comandos.
+
+--- [85]
+Ya están implementadas y en commit las dos tasks de la feature 0010 (Motivo al cancelar). El cierre está parado: falta que valides tú, porque el proyecto no tiene `validation.mode` y el kit me pide esperar tu prueba.
+
+🦆 Ahora para cancelar hay que dar un motivo de la lista: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo que no está en la lista, o sin motivo, responde «motivo no válido: cambio de planes, sala ocupada, otro». Y `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- **Worktree:** trabajé directamente en la rama `feature/0010-cancel-reason`, sin crear un worktree aparte, porque no estabas para autorizarlo.
+- **Tests existentes:** cambié los dos tests de `test/cancel.test.js`, porque la spec ya no deja cancelar sin motivo. El de «sin reserva» ahora lleva `--motivo otro`.
+- **Orden de comprobación:** el motivo se comprueba antes de buscar la reserva. Por eso `cancelar Sur mar` sin motivo responde «motivo no válido», no «sin reserva».
+- **Orden de los tests:** los tests comparten el estado del módulo y dependen del orden en que corren. Preferí eso a meter en el código de producción un reset solo para tests.
+- **`canceladas`:** solo lista las canceladas (no las anuladas, que son de la 0011), pone una por línea y, si no hay ninguna, responde vacío. Un texto como «sin canceladas» no está en la spec.
+- **Revisión final:** no hubo revisores frescos, porque este entorno no tiene subagentes. La revisé yo en tres pasadas (spec, código, arquitectura), y una revisión del propio autor vale menos. No encontré nada crítico ni importante. El eje de arquitectura no lo pasé: el único dato nuevo es un campo de la reserva en memoria.
+- **Lo que dejé sin cambiar:**
+  - Las cancelaciones no se guardan entre ejecuciones de la CLI. Ya pasaba antes y guardarlas es la 0014.
+  - Cuando no hay canceladas, la respuesta sale vacía.
+- **Fusión del delta en `capabilities/`:** `sdd capability merge` la rechaza. La spec dice que `bookings` es una capacidad «Modificada», pero ese fichero no existe; habría que poner `bookings` en «Nuevas». Es un cambio de una línea en la spec aprobada y lo dejo para el cierre contigo.
+- **Walkthrough:** no hice el borrador porque la plantilla que cita el kit, `walkthrough-template.md`, no existe.
+
+**Pendiente menor:** `test/cancel.test.js` pasó de saltos de línea CRLF a LF, así que el diff lo reescribe entero.
+
+**Estado:** el gate `node --test` pasa 7 de 7. Commits: `6480fc0` (Task 1) y `cdd81d3` (Task 2). `tasks.md` tiene cambios sin commitear (estado, revisión y rulings) y entrará en el commit de cierre.
+
+**Guion de validación**
+
+Panel: no lo arranqué. El panel alternativo es un servidor local que se quedaría encendido horas sin ti; lo levanto cuando vuelvas. No hay entorno que arrancar: se ejecuta con Node desde la raíz del repo. He ensayado todos los pasos.
+
+1. `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+2. `node src/app.js cancelar Norte lun --motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro»
+3. `node src/app.js cancelar Norte lun` → «motivo no válido: cambio de planes, sala ocupada, otro»
+4. El listado tiene que ir en el mismo proceso que la cancelación, porque la app no guarda las reservas entre ejecuciones:
+   `node --input-type=module -e "import { run } from './src/app.js'; console.log(run('cancelar', ['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas', []));"` → «cancelada Norte lun (sala ocupada)» y debajo «Norte lun — sala ocupada»
+
+Cuando vuelvas, respóndeme con:
+
+1. Qué probaste y si funciona, o «validado».
+2. Si te vale poner `bookings` como capacidad «Nueva» en la spec.
+3. Si fusiono en `develop`: el bloque `merge` de `sdd-kit.json` no tiene `into` ni `noFf`, así que la fusión te la presento y espero.
+
+**No terminado.** Falta tu validación, el walkthrough, la fusión de las capacidades, el commit de cierre y la fusión en `develop`.
+

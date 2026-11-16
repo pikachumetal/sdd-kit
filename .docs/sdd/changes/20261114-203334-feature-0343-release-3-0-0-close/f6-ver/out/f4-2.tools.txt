@@ -1,0 +1,78 @@
+
+>>> Read: <run>/review-final-8017047.diff · offset=0 · limit=400
+<<< 0	# Review package: 0842dde..HEAD
+1	
+2	## Commits
+3	8017047 feat(bookings): informe de ocupación
+4	
+5	## Files changed
+6	 src/app.js | 28 ++++++++++++++++++++++++++++
+7	 1 file changed, 28 insertions(+)
+8	
+9	## Diff
+10	diff --git a/src/app.js b/src/app.js
+11	index 10d99e4..5bb4288 100644
+12	--- a/src/app.js
+13	+++ b/src/app.js
+14	@@ -29,20 +29,48 @@ export function voidBooking(room, day) {
+15	   const booking = findBooking(room, day);
+16	   if (!booking) return `sin reserva ${room} ${day}`;
+17	   booking.status = 'voided';
+18	   return `anulada ${room} ${day}`;
+19	 }
+20	 
+21	 function cancelle
+
+>>> Bash: cd "<run>/repo" && git ls-files && git show --stat HEAD | head -20
+<<< .docs/sdd/capabilities/availability.md
+.docs/sdd/capabilities/bookings.md
+.docs/sdd/capabilities/reports.md
+.docs/sdd/decisions/0003-bookings-in-memory.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.gitignore
+CHANGELOG.md
+PROD
+
+=== RESULTADO (3 turnos, 0.104266 $)
+### Strengths
+- The change is small and additive. `occupancyReport` is 26 lines, so it fits the 30-line limit.
+- The interface text is in Spanish and the plural is handled (`reserva`/`reservas`).
+- It is wired into `run` as `ocupacion` without touching the existing commands.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+- **`src/app.js:34`**: the comment `// incrementa count` only repeats the line below it (`count++`). That is an Important finding under the comments rule. Delete it.
+- **`src/app.js:28,45`**: `const now = 'hoy'` is a constant string, not a date. The report prints `total: N (hoy)`, which adds no information and looks like a placeholder. The name `now` also misleads. Remove it, or use a real date if one is wanted. This is dead or misleading code, and I'm calling it Important because it ends up in user-facing output.
+- **Whole diff (no test changes)**: the commit adds a public function and a CLI command with no test. `test/` is untouched. The `canceladas` and `total === 0` branches, the singular/plural label and the `ocupacion` command are all uncovered. This is a test gap (Clean Code: "a test for every public method"). I can't tell from this package whether the spec called for tests, and the task reports aren't in the package.
+
+#### Minor (Nice to Have)
+- **`src/app.js:29-40`**: the nested loop with two `continue` guards is a hand-rolled filter and count. Possible Long Method / Clumsy Loop smell (Fowler). Something like `bookings.filter((b) => b.room === room && b.status === 'active').length` is shorter, and it matches how `cancelledList` is written (`src/app.js:21-23`).
+- **`src/app.js:46-48`**: `'sin reservas activas'` comes after a `total: 0` line. It is redundant, though harmless.
+- **`src/app.js:41-44`**: the `cancelled` count is computed with the same filter pattern as `cancelledList`. It's a small duplication, not worth abstracting.
+
+### Recommendations
+Add tests for the report: with active bookings, with singular and plural counts, with cancellations, and with none. Then simplify the loop.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The logic is correct and within the length limit. The pointless `now = 'hoy'` and the redundant comment need removing, and the new command needs tests before merge.
+
+### Declined to judge
+- Whether the occupancy report matches the spec and `.docs/sdd/capabilities/reports.md`. I left this to the Spec axis.
+- Whether the report belongs in `src/app.js` rather than another module, and whether `rooms` and `bookings` should be accessed that way. I left this to the Architecture axis.
+- E2E rules. There are none declared, so they don't apply.
+- Comments that cite documents. None are listed, and I found none in the diff.

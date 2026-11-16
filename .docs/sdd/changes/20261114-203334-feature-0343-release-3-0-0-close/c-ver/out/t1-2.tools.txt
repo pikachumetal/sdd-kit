@@ -1,0 +1,63 @@
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .temp/gate-red.log | head -80; echo ----; ls .docs/sdd; grep -n -i -A25 "testing" .docs/sdd/operations.md | head -80; git diff --stat 52e343f dad6591
+<<< $ node scripts/gate.mjs run bookings:test rooms:test --affected --base develop
+▪ rooms:test skipped
+▪ bookings:test (5 passed, 2 failed)
+✔ libres excluye la sala reservada en la franja (1.4592ms)
+✔ reservar --cada-semana crea la reserva semanal (0.2845ms)
+✔ cancelar con un motivo de la lista (1.2763ms)
+✔ cancelar con un motivo fuera de la lista (0.2235ms)
+✔ canceladas enseña sala, día y motivo (1.4026ms)
+✖ el README nombra cancelar con motivo (2.3162ms)
+✖ el README nombra canceladas (0.4396ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 5
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 175.9559
+
+✖ f
+
+>>> Bash: find .docs -name "operations.md" ; cat test/docs.test.js; cat package.json; ls scripts
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const readme = readFileSync('README.md', 'utf8');
+
+test('el README nombra cancelar con motivo', () => assert.match(readme, /cancelar <sala> <día> --motivo/));
+test('el README nombra canceladas', () => assert.match(readme, /canceladas/));
+{"type": "module"}
+gate.mjs*
+
+>>> Bash: git rev-parse --short HEAD; git status --short; node --test --test-name-pattern="el README nombra" test/docs.test.js; echo "exit=$?"
+<<< dad6591
+✔ el README nombra cancelar con motivo (1.0499ms)
+✔ el README nombra canceladas (0.2025ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 133.4608
+exit=0
+
+=== RESULTADO (6 turnos, 0.1232344 $)
+Los dos tests que fallaron en 52e343f pasan ahora, con el árbol limpio en dad6591 y salida 0. No he vuelto a pasar el gate completo, porque dad6591 solo cambia `README.md` (3 líneas) y la skill no lo pide en ese caso.
+
+Esta es la línea para el walkthrough:
+
+```
+Gate: `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop` · `node --test --test-name-pattern="el README nombra" test/docs.test.js` → tras el rojo en 52e343f, arreglo dad6591 solo de docs: bookings:test: corrió 2/2 (los que fallaron; la pasada roja dio 5/7) · rooms:test: saltada (la pasada roja la saltó con `--affected`; el arreglo solo toca README.md)
+```
+
+- **`rooms:test`:** su motivo de salto sale del log del gate (`▪ rooms:test skipped`), no de `moon task`, que este proyecto no usa. Si el walkthrough exige el porqué de la herramienta, habría que sacarlo del gate.
+- **Falta `operations.md`:** no existe en `.docs/sdd/`, así que no pude leer «Suites» ni «Sin filtro». La decisión de solo docs no depende de ellos.

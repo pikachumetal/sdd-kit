@@ -1,0 +1,185 @@
+--- [3]
+Ahora: leo la spec aprobada y la guía de escritura del plan. Queda: escribir `plan.md` y pasar a la implementación, ~5 min.
+
+--- [15]
+Sigo con el plan del spike 0031: ya leí la spec y la guía, ahora escribo `plan.md` (una task, Native).
+
+--- [18]
+Ahora: commit de la apertura (spec + plan) y paso a la implementación. Queda: ejecutar la Task 1 y cerrar, ~15 min.
+
+--- [22]
+Ahora: paso a la ejecución Native de la Task 1 (medir `libres`). Queda: script, medidas, `research.md` y revisión final, ~15 min.
+
+--- [25]
+Ahora: preparo el workspace y arranco la Task 1. Queda: script, medidas, `research.md` y revisión final, ~12 min.
+
+--- [36]
+Medidas hechas (máx. 0,055 ms, O1 cumple) y `research.md` escrito; ahora commit de la Task 1 y cierre con `sdd task done`.
+
+--- [42]
+Ahora: revisión final de la rama con `sdd-verify`. Queda: revisión por ejes y cierre, ~10 min.
+
+--- [45]
+Ahora: revisión final del spike (solo eje Spec). Queda: armar el paquete, lanzar el revisor y cerrar, ~10 min.
+
+--- [53]
+I'll start by reading the review package and the spike files.
+
+--- [55]
+El plan del spike 0031 está escrito y la Task 1 hecha, pero la revisión final está pendiente: el revisor del eje Spec sigue en marcha y no sé aún qué dirá. No he llegado a `sdd-archive`.
+
+**Plan.** `plan.md` tiene una sola task, en Native. Quedó en el commit `e801d0c` (confirmación del hash sobre la apertura).
+
+**Task 1.** El script `measure-libres.mjs` sembró 1.000 reservas activas en `10:00-12:00` y cronometró `libres` en 10 repeticiones:
+
+- **Resultado:** máximo 0,055 ms, mediana 0,017 ms y heap estable (5,29–5,53 MB). O1 (< 50 ms) cumple con mucho margen.
+- **Recomendación de `research.md`:** no añadir caché antes de abrir `libres` a toda la oficina. Se apoya en una sola máquina, Node 26, con dos salas y en memoria.
+- **Commit:** `dd98915`. Tocó solo la carpeta de la spec: `src/` y `test/` quedan intactos.
+- **Gate de cierre:** `node --test` sin fallos y `node scripts/lint.mjs` sin hallazgos.
+
+**Decisiones que tomé yo y conviene validar (están en el plan):**
+- **Dónde carga la seed:** `bookings` no se exporta de `src/app.js`, y un spike no deja código de producción. Por eso el script mide una copia temporal de `src/app.js` con las 1.000 reservas ya puestas.
+- **Dónde caen las 1.000 reservas:** todas en la sala `Sur`, para que consultar `Norte` recorra las 1.000. Repartidas entre `Norte` y `Sur` la búsqueda cortocircuitaría y mediría menos.
+
+**Revisión final.** Al ser spike, solo sale el eje Spec: lanzado en segundo plano con Opus y effort alto, sobre `dd98915`. El paquete de revisión sale vacío porque nada cambia fuera de la carpeta de la spec, que es justo lo esperado.
+
+**Pendiente cuando vuelva el revisor:** cerrar la revisión con `sdd-verify`, quitar el worktree temporal `review-0031-dd98915` y pasar a `sdd-archive`.
+
+Dos cosas que ya sé, aunque el revisor tenga la última palabra:
+- La línea `reservas activas en la franja: 1000` de la evidencia es una constante impresa, no un recuento de la copia sembrada.
+- Reejecutar el script reescribe `evidencia/libres-1000.txt` con tiempos distintos. Restauré el fichero commiteado para que coincida con la tabla de `research.md`.
+
+--- [59]
+Now the production source the script measures, and the template if available.
+
+--- [62]
+Let me check product/architecture context for how `libres` is used, and look for the kit's research template.
+
+--- [70]
+### Fortalezas
+
+- No cambia código de producción. El paquete de revisión está vacío como se esperaba, y `git diff --name-status f947ac0 dd98915` solo muestra cinco ficheros añadidos, todos bajo `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/`. `src/` y `test/` no se tocan.
+- La forma de la peor carga (decisión 4 del plan, punto candidato a) es correcta y además conservadora. `freeRooms` (`src/app.js:6`) filtra solo por sala, franja y `status`, no por día. Con dos salas y `.some`, poner las 1.000 en `Sur` hace que la comprobación de `Norte` recorra las 1.000. Ninguna otra forma de repartir 1.000 activas en la misma franja recorre más (unas 1.001 comparaciones como máximo). Cualquier reparto entre salas cortocircuita antes y mide menos. Encaja con «1.000 reservas activas en la misma franja» de `spec.md:31`.
+- Se mide el `run('libres', …)` real y no una réplica. El script falla si no encuentra la línea que tiene que sustituir (`measure-libres.mjs:16-19`). Además, la comprobación `result !== 'Norte'` (`:34`) demuestra que la sustitución se aplicó: sin ella, la reserva original de `Norte` (`src/app.js:3`) haría devolver `Sur`.
+- Las cifras cuadran con la evidencia. Las 10 filas de `research.md:28-37` coinciden con `evidencia/libres-1000.txt:1-10`. He recalculado el máximo (0,055), la mediana ((0,017+0,017)/2 = 0,017), el rango de tiempo (0,008–0,055) y el de heap (5,29–5,53), y todo coincide. El research cita el fichero confirmado en el commit (punto candidato b, sin problema).
+- `research.md` sigue la plantilla vigente del kit (`skills/sdd-templates/templates/research-template.md`): §1 pregunta, §2 fila O1 con estado, detalle y evidencia, §3 carga y 10 repeticiones con el recurso acumulado, §4 «Elegida/Por qué» y «Descartadas» con su límite, §5 con el formato `→ nada`. Se han borrado los bloques de ayuda. El §4 solo cita la fila O1 y el §3, que son filas medidas.
+- Foco de revisión 2: el estado `cumple` es honesto con los datos. Ninguna repetición llega a 50 ms y el heap no crece de forma sostenida (5,53 en la primera, luego 5,29–5,30). El script aplica el umbral estricto `ms >= LIMIT_MS` (`:36`), igual que el `< 50 ms` de O1. Si se supera, guarda la evidencia antes de `process.exit(1)` (`:44-48`), como pide el Step 2.
+- Foco de revisión 1, en el código: `mkdtempSync` crea un directorio nuevo en cada ejecución (`:21`) y `rmSync` lo borra dentro de un `finally` (`:40-42`). Cada ejecución es además un proceso nuevo, así que no hay caché de módulos compartida entre ejecuciones.
+
+### Problemas
+
+#### Críticos
+Ninguno.
+
+#### Importantes
+Ninguno.
+
+#### Menores
+
+1. **La verificación del foco 1 no comprueba lo que promete**
+   - **Dónde:** `plan.md:53`, `plan.md:133`, `measure-libres.mjs:21,41`.
+   - **Qué:** la verificación que se nombra para «no deja ficheros tras medir» es `git status --short`. Pero el directorio temporal vive en `os.tmpdir()`, fuera del repositorio, y `git status` no puede ver si quedó algo. El comportamiento lo da el `finally` (lo he comprobado leyendo el código), pero ninguna verificación lo fija. Además, el ledger (`progress.md:2`) solo apunta la última línea de la salida. No apunta ni el código de salida 0 ni el resultado de `git status --short`.
+   - **Por qué importa:** una línea del foco de revisión sin verificación que la sostenga es un hallazgo según el propio encargo.
+   - **Arreglo:** que el script compruebe `!existsSync(dir)` tras el `rmSync` y falle si no, o añadir a la Verificación un listado de `libres-*` en `os.tmpdir()`. Y apuntar en el ledger el código de salida y la salida de `git status --short`.
+   - **Gap:** partial. **Origen:** plan.
+
+2. **La línea `reservas activas en la franja: 1000` es una constante (punto candidato c)**
+   - **Dónde:** `measure-libres.mjs:39`, frente a `plan.md:108` y `plan.md:175`.
+   - **Qué:** el script imprime `${BOOKINGS}`; no cuenta las reservas de la copia sembrada. Sin embargo, la mitigación del riesgo dice «escribe en la salida cuántas reservas activas tiene la copia», y tanto el Self-review como la Verificación usan esa línea para dar por fijada la peor carga. Esa línea no puede fallar.
+   - **Efecto:** bajo. La comprobación de `Norte` sí demuestra que la sustitución se aplicó, y el número 1.000 sale de la misma constante que la siembra.
+   - **Arreglo:** añadir a la copia temporal (no a `src/`) algo como `export const activasEn = (s) => bookings.filter((b) => b.slot === s && b.status === 'active').length;` e imprimir `activasEn(SLOT)`.
+   - **Gap:** partial. **Origen:** implementación.
+
+3. **El estado `cumple` de O1 no dice qué alcance se midió**
+   - **Dónde:** `research.md:20`, `research.md:44`.
+   - **Qué:** `libres` es un comando de terminal (`PRODUCT.md`, `src/app.js:35`). Cada invocación real paga el arranque de Node, la carga del módulo y una llamada en frío. Lo medido es la llamada en proceso, ya calentada. El tiempo de la llamada de calentamiento ni se apunta. El §3 sí dice que hay calentamiento, pero la fila O1 y el límite del §4 no aclaran que el arranque y la llamada en frío quedan fuera.
+   - **Efecto:** no cambia la recomendación, porque una caché no acorta el arranque y un recorrido en frío de 1.000 objetos se queda muy por debajo del milisegundo. Pero quien lea «`libres` … responde en < 50 ms: cumple» puede entender que el comando completo tarda menos de 50 ms.
+   - **Arreglo:** acotar el Detalle de O1 («llamada a `run` en proceso, sin arranque de Node») y apuntar el tiempo de la llamada en frío en la evidencia.
+   - **Gap:** partial. **Origen:** plan (la decisión 5 fija esa métrica).
+
+4. **Falta identificar la máquina y el research no menciona Node 22**
+   - **Dónde:** `research.md:24`, `research.md:44`.
+   - **Qué:** la mitigación de `plan.md:110` promete que `research.md` «anota la versión de Node y la máquina». Solo se anota Node v26.10.0, y ese dato no aparece en el fichero de evidencia, así que no se puede contrastar. `architecture.md` fija Node 22 como entorno del proyecto, y el research no dice que se midió en otra versión.
+   - **Arreglo:** apuntar la máquina (CPU y sistema), escribir `node -v` en la evidencia y añadir una línea sobre Node 22.
+   - **Gap:** partial. **Origen:** implementación.
+
+### Sin verificar
+
+- Que el script terminara con código 0 y que `git status --short` quedara limpio en la sesión que implementó. El ledger no lo recoge; mi worktree de revisión sí está limpio.
+- Que Node v26.10.0 fuera la versión real de la medida. No está en la evidencia.
+- Que el dev-lead validara la decisión 4 del plan. El plan está en `status: draft` y no tiene tabla de aprobaciones. Aun así, la interpretación es sólida (ver Fortalezas).
+- No he ejecutado el script, la suite, el build ni el lint, como se pedía.
+
+### Recomendaciones
+
+- En `research.md:20`, «tres órdenes de magnitud de margen» exagera un poco: 50 / 0,055 ≈ 909, así que es mejor «casi tres órdenes».
+- Si el script lanza una excepción (por ejemplo, si no sale `Norte`), no reescribe la evidencia y el fichero anterior queda como si fuera actual. Convendría borrar o marcar la evidencia al empezar cada ejecución.
+
+### Fuera de lo que juzgo
+
+- Que `libres` ignore el día (`src/app.js:6`): es comportamiento de producto, fuera del spike.
+- La calidad del script (todo a nivel de módulo, sin funciones), y si la expresión regular aguanta finales de línea CRLF: corresponden al eje de calidad, no al de Spec.
+- La metodología del heap (sin forzar la recolección de basura) y si 10 repeticiones bastan: el plan lo define así y la plantilla pide ≥ 10.
+- Que la evidencia se sobrescriba al volver a ejecutar el script (punto candidato b): el plan lo prevé (§1.1, «salida en bruto de la última ejecución»).
+- Escalar a más salas o a persistencia en base de datos: el §4 lo declara como límite, y la spec no lo pide.
+- El `status: draft` de `plan.md` y `research.md`: corresponde al proceso de cierre (`sdd-archive`).
+- El gate `node --test && node scripts/lint.mjs`: se pidió no ejecutarlo.
+
+### Valoración
+
+**¿Listo para hacer merge?** Sí.
+
+O1 se mide contra < 50 ms, en 10 repeticiones, con la peor carga confirmada y una forma de repartirla que de verdad es la peor. El estado `cumple` es honesto con la evidencia. Las cifras de §2 y §3 coinciden exactamente con `evidencia/libres-1000.txt`. El §4 responde a la decisión que desbloquea (no hace falta caché) citando solo filas medidas, y no cambia nada fuera de la carpeta de la spec.
+
+Los cuatro hallazgos son menores. Tres son de trazabilidad: la verificación que no llega al directorio temporal, la línea de reservas que es una constante y la máquina sin identificar. El otro es de alcance de lo medido. Ninguno cambia la conclusión. Conviene corregirlos o apuntarlos antes de `sdd-archive`.
+
+Ficheros revisados (en `<run>/review-0031-dd98915/`):
+- `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/spec.md`
+- `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/plan.md`
+- `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/research.md`
+- `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/measure-libres.mjs`
+- `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/evidencia/libres-1000.txt`
+- `src/app.js`
+
+Plantilla de contraste: `C:/code/.workspaces/sdd-kit/feature-0342-interviewer-rewrite/skills/sdd-templates/templates/research-template.md`
+
+--- [72]
+Ahora: cierro la revisión (el eje Spec volvió sin Críticos ni Importantes). Queda: ledger de menores, limpieza del worktree y paso a `sdd-archive`, ~5 min.
+
+--- [76]
+Ahora: borro el workspace del plan y paso a `sdd-archive` (validación y cierre del spike).
+
+--- [80]
+Ahora: cierro el spike con `sdd-archive`. Queda: comprobaciones previas, validación por agente, walkthrough, cierre y merge, ~15 min.
+
+--- [94]
+Cierre commiteado (`444f326`). Ahora: sincronizo con la base y compruebo si el merge está autorizado.
+
+--- [96]
+Tengo el plan escrito, la medición hecha y el spike cerrado en la rama, pero **no he fusionado**. `sdd-kit.json` no tiene `merge.into` ni `merge.noFf`, y el kit exige ese bloque o tu confirmación para fusionar. Tampoco ha corrido el sync con la base, que falla por lo mismo.
+
+**Resultado del spike:** `libres` aguanta las 1.000 reservas. O1 cumple: máximo 0,055 ms, mediana 0,017 ms, con el heap estable. La recomendación de `research.md` es no añadir caché antes de abrirlo a toda la oficina.
+
+- **Plan:** una sola task en Native (`e801d0c`).
+- **Medida:** `measure-libres.mjs` mide una copia sembrada de `src/app.js` (`dd98915`). `src/` y `test/` quedan intactos.
+- **Validación:** `Validación por el agente` (mide el agente, así lo marca la spec). El gate de cierre da `node --test` 4/4 y lint sin hallazgos, aunque la rama solo toca `.docs/`.
+- **Revisión final:** solo el eje Spec, por ser spike. Dijo que está listo para fusionar, con 0 críticos, 0 importantes y 4 menores.
+- **Cierre:** walkthrough, fila 0031 en Now con ✅, `estimation-log` y `timing.json` van en el commit `444f326`.
+
+**Decisiones que tomé yo sin ti:**
+- **Dónde caen las 1.000 reservas:** todas en la sala `Sur`, para que `Norte` recorra las 1.000. La spec solo dice «misma franja»; si las querías repartidas entre salas, se mediría menos y habría que repetir.
+- **Cifras que verifiqué yo:** que el script salió con código 0, que `git status` quedó limpio y que la versión de Node fue la 26.10.0. Las tres están en el walkthrough.
+- **Fila 0031 en el roadmap:** no existía ninguna para el spike, así que la añadí en Now ya cerrada, con tamaño S.
+
+**Menores que dejo diferidos:**
+- La verificación no ve el directorio temporal, porque `git status` no mira `os.tmpdir()`.
+- La línea `reservas activas en la franja: 1000` imprime una constante, no un recuento.
+- El «cumple» mide la llamada en proceso, sin el arranque de Node.
+- `research.md` no identifica la máquina, y Node 26 difiere del Node 22 de `architecture.md`.
+
+**Qué necesito de ti:** ¿añado a `sdd-kit.json` un bloque `merge` con `into: develop` y `noFf: true` (propuesta mía), o prefieres otro destino? Con eso hago el sync y la fusión. Después puedes borrar el worktree.
+
+**No terminado.** Falta la fusión de `feature/0031-free-rooms-load` en `develop`; no borres el worktree `<run>/repo` todavía.
+
+Si quieres el ticket de mejora del kit con `sdd-feedback`, dímelo; la retro no encontró señales, así que no hay nada que obligue a abrirlo.
+

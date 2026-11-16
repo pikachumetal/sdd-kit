@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-rubber-duck
+<<< Launching skill: sdd-kit:sdd-rubber-duck
+
+>>> Bash: git ls-files | head -100; ls .docs 2>/dev/null
+
+>>> Grep: export
+<<< Found 15 files
+test\export.test.js
+src\export\writer.js
+src\export\index.js
+src\export\ics.js
+src\export\filter.js
+src\cli.js
+src\bookings\repository.js
+ROADMAP.md
+README.md
+PRODUCT.md
+.docs\sdd\steering\debt.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\architecture.md
+.docs\sdd\specs\20261005-090000-feature-0013-export-by-room\spec.md
+.docs\sdd\specs\20260928-090000-feature-0012-ics-export\spec.md
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260928-090000-feature-0012-ics-export/spec.md
+.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+data/bookings.json
+package.json
+src/bookings/repository.js
+src/cli.js
+src/export/filter.js
+src/export/ics.js
+src/export/index.js
+src/export/writer.js
+test/export.test.js
+sdd/
+
+>>> Bash: cat PRODUCT.md src/cli.js src/export/*.js src/bookings/repository.js; head -c 600 data/bookings.json; cat .docs/sdd/steering/architecture.md
+<<< # exportes
+
+## Users
+
+- **Socio del coworking**: reserva salas y se lleva sus reservas a su calendario.
+- **Responsable del coworking**: mantiene la herramienta; hace de dev-lead: decide qué entra y aprueba las specs, pero no lee el código.
+- **Dev**: desarrolla la herramienta.
+
+## Product Purpose
+
+Reservar las dos salas de reuniones del coworking desde la terminal y llevarse las reservas de un mes al calendario de cada uno (Google Calendar, Outlook) con un fichero que se importa.
+
+## Capabilities and Constraints
+
+- **Es**: reservar, cancelar y exportar las reservas de un mes.
+-
+
+=== RESULTADO (6 turnos, 0.1030417 $)
+Here is how the March export travels, using the real flow in the code.
+
+**Example:** you ask for the export of March 2026. The coworking has four reservations that month. One of them is cancelled.
+
+1. **You ask.** You run the export command and give it the month, "2026-03".
+2. **The tool reads the month.** It passes the month on to the part that builds the export.
+3. **It loads all reservations.** It reads the saved list of reservations, for every month. The list holds five entries: four in March and one in April.
+4. **It keeps the ones you need.** It drops April and the cancelled reservation (Norte, 12 March, 09:00-10:00). Three remain. It puts them in date and time order: Norte 2 March, Sur 5 March, Norte 19 March.
+5. **It turns each reservation into a calendar entry.** Each entry is titled "Sala Norte" or "Sala Sur" and has a start and an end time. The coworking keeps its own time, two hours ahead of UTC. Calendars expect UTC, so the tool converts the times. The Norte reservation on 2 March, 10:00-12:00, becomes 08:00-10:00 UTC. Your calendar then shows it at the right local time.
+6. **It wraps the entries in one calendar file.** The three entries go inside one calendar envelope, in the standard format that Google Calendar and Outlook both read.
+7. **It saves the file.** It creates the exports folder if it is missing. It saves the file there under the month's name, "2026-03". If you export March again, the new file replaces the old one.
+8. **It tells you where the file is.** The tool prints the location of the file on screen.
+
+After the tool finishes, you open that file in Google Calendar or Outlook and import it. The three March reservations then appear in your calendar. This step happens outside the tool. The export is a one-time copy, so later changes to reservations do not reach your calendar. You must export and import again.
+
+Some limits you may meet:
+- If you give a month with no reservations, you get a valid file with no entries.
+- The time conversion uses the coworking's current two-hour offset as a fixed value. It does not adjust for daylight saving changes.
+- The roadmap has an "export by room" feature with a spec. The tool does not do it yet: it always exports both rooms.
+
+**Where to look**
+- Step 1: `src/cli.js`
+- Step 2: `src/export/index.js`
+- Step 3: `src/bookings/repository.js` (data in `data/bookings.json`)
+- Step 4: `src/export/filter.js`
+- Steps 5 and 6: `src/export/ics.js`
+- Steps 7 and 8: `src/export/writer.js`; the file lands in `exports/2026-03.ics`
+
+Do you want me to go deeper on any step, or answer a question about it?

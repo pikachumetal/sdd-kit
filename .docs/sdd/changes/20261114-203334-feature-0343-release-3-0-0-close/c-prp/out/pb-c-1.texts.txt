@@ -1,0 +1,83 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs, no código) para poder escribir la spec. Queda: clasificar, rama, spec y su revisión hasta la aprobación, ~5 min.
+
+--- [24]
+Ahora: la revisión de la spec está en marcha con un revisor (Sonnet). Queda: integrar sus hallazgos y presentarte la spec para aprobarla, ~3 min.
+
+Espero su resultado antes de seguir.
+
+--- [31]
+1. Importante · «Lo que se retira o cambia de forma» · Las referencias de línea no cuadran con `src/app.js`. `freeRooms` se define en la línea 5 (la 4 está en blanco) y se llama en la 28. La fila 1 cita `:5` para `freeRooms`, pero el cambio real está en la línea 6, que no aparece en la tabla. · Corregir a `:2`, `:5-6` y `:28`.
+
+2. Crítico · Approach A y tabla de cambios · «Un cambio de dos líneas» es falso. Con `rooms` como objetos, el filtro de la línea 6 compara `b.room === room`, que pasa a ser un objeto contra un nombre. Hay que cambiarlo a `room.name`, y `.join` ahora une objetos. Sin tocar esas piezas `libres` devuelve `[object Object]` o vacío. · Decir que el cambio toca `freeRooms`, su filtro y la salida, y ajustar el tamaño «~30 líneas».
+
+3. Importante · Scope vs Intent y Approach · La reescritura del parseo de argumentos no está en el Scope. Entre `run` (línea 28) y `freeRooms`, hoy `params[0]` es la franja. Aceptar `--planta` antes de la franja exige extraer la opción, y eso está solo en el Approach. · Añadirlo al «Entra» y a la tabla de cambios.
+
+4. Importante · Delta, escenario «Una planta mal escrita» · Faltan casos límite que el revisor dice cubrir. `--planta 2.5`, `--planta -1`, `--planta 02` y `--planta` repetida no tienen salida definida. Tampoco `libres --planta 10:00-12:00` (el valor se come la franja): da «planta no válida» o franja ausente, sin decidir. · Fijar «entero ≥ 0, solo dígitos» en la decisión 5 y añadir un escenario por cada caso, o declararlo fuera de alcance.
+
+5. Importante · Delta, primer ADDED · El GIVEN incluye «el lun» y el WHEN no lleva día. `libres` ignora el día y solo mira la franja, así que el escenario describe un comportamiento que no existe. Una reserva de otro día también ocuparía la sala. · Quitar «lun» del GIVEN o aclarar que el día no entra en `libres`.
+
+6. Menor · Delta, primer ADDED · Mezcla un requisito nuevo (filtro) con una regresión (`libres` sin `--planta` da `Sur`) y la declara ADDED en una capacidad que no existe. Esa fila pasa hoy sin el cambio, así que no prueba nada nuevo. Además cambia el comportamiento de `libres`, que ya existía. · Separar el escenario de regresión como requisito propio, o marcarlo como línea de control.
+
+7. Menor · «✋ Decisiones» y «Términos y ADR» · «Términos resueltos: planta» no actualiza `PRODUCT.md`, que no lo define. Tampoco aparece en el Scope. Una decisión del cuerpo queda sin base en `PRODUCT.md`. · Añadir «Planta» a Terminology en `PRODUCT.md` y listarlo en el Scope, o quitar la afirmación.
+
+8. Menor · Decisión 9 · Afirma resultados ya obtenidos («añadido ×2», «sin rechazos», `git grep` sin resultados) en una spec en `draft`, sin evidencia. Los «dos» añadidos no coinciden con una sola capacidad. · Pasar a «a ejecutar antes de aprobar» o adjuntar la salida real.
+
+9. Menor · «Reglas de la capacidad» · «Límites: no aplica» no es cierto del todo. `--planta` acepta un rango de enteros y no hay un máximo declarado (`--planta 9` funciona como «sin salas»). La regla «Idioma» enuncia castellano para el nombre de la opción, pero la constitución solo lo exige al texto de la interfaz. · Declarar el límite (entero ≥ 0) y citar el punto 4 de la constitución para el idioma.
+
+10. Menor · Scope vs constitución · No lista las pruebas, que según el punto 2 de la constitución van antes del código, ni el cambio en `test/app.test.js`. Solo aparecen en «Dónde se prueba». El gate (`node --test`) no figura. · Añadir las pruebas al «Entra» y citar el gate `node --test`.
+
+--- [39]
+Ahora: segunda ronda de revisión de la spec, porque acepté un hallazgo Crítico. Queda: integrar lo que salga y presentarte la spec en la parada de aprobación, ~2 min.
+
+Espero su resultado.
+
+--- [49]
+1. Importante · Decisión 9 vs Scope («Entra») · La pasada de coherencia exige que `git grep planta` fuera de `changes/` dé «sin resultados». Tras implementar, `src/app.js`, `test/app.test.js`, `CHANGELOG.md` y `PRODUCT.md` contendrán «planta», así que esa comprobación falla siempre. · Decir que es una comprobación previa a implementar (la misma que la de la fila del roadmap), o cambiarla por «`git grep` solo da resultados en los ficheros del Scope».
+2. Importante · Decisión 2 vs escenarios (Delta) · `--planta` repetida solo se prueba con dos valores válidos. No se define qué pasa con `--planta abc --planta 2` ni con `--planta 2 --planta abc`: ¿se valida cada aparición o solo la última? Ese hueco es una causa probable de que el aviso no salte, que es justo el fracaso que nombra el Intent. · Añadir un escenario por cada orden y fijar la regla en la decisión 2 («se valida solo la última» o «cualquier valor inválido avisa»).
+3. Importante · Decisión 2 vs Delta · `02` vale 2 solo figura en la decisión 2. No hay escenario ni regla para `--planta 02`, ni para `--planta ""` (cadena vacía), que es un valor presente pero vacío. Un test no puede derivarlo. · Añadir `--planta 02` → `Sur` y `--planta ""` → aviso en el escenario de planta mal escrita, o quitar `02` de la decisión.
+4. Importante · «Política de modelos» (decisión 9, última línea) · Dice «sin otros despachos en paralelo» y a continuación «en paralelo hasta `control.maxParallelAgents`». Las dos frases se contradicen, y la segunda parece un resto de plantilla pegado. · Dejar una sola política de paralelismo y sacar esa línea de la numeración de la decisión 9, porque no es una decisión de la pasada de coherencia.
+5. Importante · Delta, escenario «libres --planta 10:00-12:00» · El GIVEN, «cualquier estado de reservas», es válido, pero el caso mezcla dos cosas. El valor de la opción es `10:00-12:00`, así que no queda franja. El spec no dice qué precede, si el aviso de planta o la franja ausente, y `libres --planta 2` sin franja tampoco tiene THEN. Con `app.js` actual, `freeRooms(undefined)` devuelve todas las salas filtradas. · Declarar que el aviso de planta se evalúa antes de leer la franja, y añadir o descartar explícitamente `libres --planta 2` (sin franja) en «No entra».
+6. Importante · Scope vs «Dónde se prueba» · El Scope y la tabla nombran `test/app.test.js` y el test existente de `libres` está ahí, pero existe también `test/cancel.test.js`. El spec no dice que las tareas no deban tocar `cancel.test.js`. Con `rooms` en objetos, `cancelBooking` sigue pasando nombres y no se ve afectado, pero el spec no lo garantiza. · Añadir al «No entra» o a Approach que `findBooking`, `cancelBooking` y `voidBooking` no cambian, y que `bookings[].room` sigue siendo el nombre.
+7. Menor · Decisión 9 vs hallazgos · Una dice «un requisito añadido por cada ADDED del delta y las cinco reglas». Los hallazgos hablan de «3 requisitos y 5 reglas». El número cambia con cualquier edición del delta y no hay forma de comprobar el recuento. · Quedarse con la fórmula sin números («por cada ADDED y cada regla») y dejar los números solo en el hallazgo.
+8. Menor · «Límites» y «Avisos» (Reglas de la capacidad) · «Límites» no cubre el desborde ni los números muy grandes (`--planta 99999999999999999999`), y deja `0` como válido sin decirlo. La salida vacía de la decisión 4 lo cubre en parte, pero no queda escrito. · Una línea en «Límites»: `0` y números grandes son válidos y dan salida vacía.
+9. Menor · «Idioma de los nombres» · Se cita el art. 4 para `--planta`, pero el objeto propuesto es `{ name, planta }`, que mezcla inglés y castellano, igual que el código actual (`room`, `slot`). La regla es ambigua: ¿cuenta el identificador? · Aclarar que la regla cubre solo el texto de la interfaz, o usar `{ name, planta }` conscientemente en el Approach.
+10. Menor · Decisión 3 vs Intent · La decisión 3 reinterpreta «lista todas las salas» como «todas las libres». Los textos de «Decisiones tomadas con el dev-lead», del 🦆 y del Intent no marcan que esa interpretación está sin validar, aunque el 🦆 sí lo hace con las plantas. · Repetir en el 🦆 la advertencia de la decisión 3.
+
+--- [56]
+Ahora: la spec está lista y revisada en dos rondas, y espero tu aprobación. Queda: plan e implementación, que arrancan en cuanto apruebes, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`). Rama `feature/0012-libres-por-planta`, spec en `.docs/sdd/changes/20261115-192533-feature-0012-libres-por-planta/spec.md`.
+
+## 🦆 Qué cambia
+Hoy `salas libres 10:00-12:00` te dice qué salas están libres en esa franja, sin mirar la planta. Con esta feature podrás añadir `--planta 2`: `salas libres 10:00-12:00 --planta 2` dará `Sur`. Sin `--planta` todo sigue como hasta ahora. Para eso cada sala pasa a saber su planta: Norte en la 1 y Sur en la 2. Esos valores son míos y están sin validar.
+
+## ✋ Decisiones que he tomado yo, para que las valides
+1. **Plantas**: Norte en la 1 y Sur en la 2. Hoy el código no guarda la planta y no me dijiste cuál es cuál.
+2. **Valor de `--planta`**:
+   - Solo dígitos: `02` vale 2, y `2.5`, `-1` y vacío no valen.
+   - Puede ir antes o después de la franja.
+   - Si se repite, cualquier valor no válido avisa y, si todos valen, vale el último.
+3. **«Sin `--planta`, lista todas las salas»**: lo interpreto como todas las salas libres de la franja, que es lo que hace hoy. Si querías decir todas aunque estén ocupadas, dímelo.
+4. **Planta sin salas libres o sin salas** (`--planta 9`): salida vacía, igual que hoy cuando no queda ninguna libre.
+5. **Planta mal escrita**: `planta no válida: usa --planta <número>`.
+6. **Capacidad nueva `room-availability`**: solo con los requisitos nuevos, sin volcar el comportamiento anterior de `libres`.
+7. **Enfoque**: guardar la planta junto al nombre de cada sala, frente a un mapa aparte o deducirla del nombre.
+8. **Documentos**: una línea en `CHANGELOG.md` y «Planta» en la terminología de `PRODUCT.md`. El README no se toca.
+
+La spec no toca cancelar ni anular. La validación la haces tú, ejecutando `libres` con y sin `--planta`.
+
+**Revisión de la spec**: un revisor (Sonnet) encontró 10 hallazgos, uno Crítico: yo había dicho que el cambio era de dos líneas y son tres puntos de `src/app.js`. Los acepté todos. Una segunda ronda por el Crítico no encontró ninguno más y también acepté sus 10 hallazgos. El detalle está en la spec, en «Hallazgos de la review».
+
+**¿Apruebas la spec?**
+1. Apruebo (Recomendada)
+2. Cambios
+
+--- [57]
+Ese aviso es del comando en segundo plano que se colgó, y no es una respuesta tuya. Lo paró el límite de tiempo. Se quedó esperando entrada por un `cat` que sobraba. Los cambios que necesitaba ya están aplicados en la spec: los hice después con otras dos ediciones.
+
+La spec sigue pendiente de tu aprobación y no avanzo con el plan ni con el código hasta tenerla:
+
+1. Apruebo (Recomendada)
+2. Cambios
+

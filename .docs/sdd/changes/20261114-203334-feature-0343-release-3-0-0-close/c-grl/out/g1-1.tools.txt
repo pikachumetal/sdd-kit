@@ -1,0 +1,68 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && ls .docs/sdd 2>/dev/null
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+sdd-kit.json
+specs
+steering
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md src/app.js .docs/sdd/steering/*.md; cat .docs/sdd/specs/*0006*/spec.md .docs/sdd/specs/*0007*/patch.md; head -40 test/app.test.js
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+=== RESULTADO (7 turnos, 0.1248688 $)
+Antes de preguntarte, leí `PRODUCT.md`, `ROADMAP.md`, `src/app.js`, los tests y la deuda técnica. Esto es lo que dicen y lo que deduzco:
+
+**Lo que dicen los documentos y el código**
+- Una franja hoy es un texto libre, como `'10:00-12:00'`. `freeRooms` la compara por igualdad exacta (`b.slot === slot`), en `src/app.js`.
+- `reservar` todavía no guarda nada. Solo contesta `reserva semanal creada`. `bookings` es una constante con una única reserva.
+- La deuda «Sin validación del formato de franja horaria» sigue en *Por triar*. Hoy `10:15-10:45` entra igual que cualquier otra.
+- El producto lo usas solo tú. No hay roadmap row para esto: 0008 es el correo y 0009 el `.ics`.
+
+**Lo que deduzco**
+Con medias horas, la igualdad exacta deja de bastar. Hoy una reserva `10:00-11:00` no bloquea `10:00-12:00`, porque son textos distintos. Al permitir `10:30` aparecen más solapes parciales. La decisión que más cambia el resto es cómo decide el sistema que dos reservas chocan.
+
+❓ **¿Cómo se decide que dos franjas chocan?**
+1️⃣ **Intervalos reales que no deben solaparse.** Se interpreta `HH:MM-HH:MM` y se comprueba que los intervalos se crucen. Es lo único que acepta tanto `10:30-11:00` como `10:00-12:00` sin trucos.
+   - Escena: con `Norte lun 10:00-12:00` reservada, `reservar Norte lun 11:30-12:30` da `Norte ocupada de 10:00 a 12:00`. `reservar Norte lun 12:00-12:30` se acepta.
+   - Coste: hay que parsear horas y también cerrar la deuda de validación, porque ya no vale cualquier texto.
+2️⃣ **Rejilla fija de bloques de 30 min.** Una reserva ocupa N bloques (`10:00`, `10:30`…). Choca si comparte algún bloque.
+   - Escena: `Norte lun 10:00-12:00` ocupa 4 bloques. `11:30-12:30` choca en el bloque de `11:30`. `12:00-12:30` no choca.
+   - Coste: es el mismo resultado que 1️⃣, con más estructura. Solo compensa si luego quieres listar o dibujar huecos por bloques.
+3️⃣ **Mantener la igualdad exacta y solo permitir `:30` en el texto.**
+   - Escena: `Norte lun 10:00-12:00` reservada y `11:30-12:30` entra como libre, así que la sala queda reservada dos veces.
+   - Coste: es lo más barato, pero deja un fallo de doble reserva que el producto existe para evitar.
+
+➡️ **Recomiendo 1️⃣**, porque `freeRooms` ya devuelve un resultado equivocado con las franjas que acepta hoy y las medias horas lo empeoran. Un solape se comprueba con una sola comparación (`inicio < fin_otro && inicio_otro < fin`). A cambio, esta feature arrastra la validación de formato de la deuda, y conviene decidir si la cierras aquí o la dejas aparte.
+
+¿Qué eliges: 1️⃣, 2️⃣ o 3️⃣?
