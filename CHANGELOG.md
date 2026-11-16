@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-11-16
+
+smoke: pendiente
+
 ### Added
 
 - **Feature 0311** — Una copia incluye una regla de `includes/` dentro de un bloque del kit, y `kit:own`, `kit:skill-size` y `kit:copies` corren en el pre-commit (`kit:copies`, si el commit toca `skills/`, `includes/` o `upstream.json`) y en la CI. → [ref](.docs/sdd/specs/20261109-143437-feature-0311-includes-and-checks/)
@@ -75,6 +79,14 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Feature 0144** — Plantillas de los documentos de la 3.0.0: `PRODUCT-template.md` (para quién y para qué, con los encabezados del `PRODUCT.md` de impeccable y `## Terminology` con el formato de glosario de Matt), `operations-template.md` (comandos, testing con suites, lo afectado y los gates de cierre y de merge, frontend y entornos; sin versiones) y `adr-template.md`. Verbos `sdd decision check` (forma de las ADR) y `sdd decision index` (las ADR vigentes que gobiernan unos ficheros, por sus `rutas`). ADR 0012. → [ref](.docs/sdd/specs/20261008-151724-feature-0144-docs-structure/)
 - **Feature 0143** — CLI `sdd` en TypeScript sin build (Node ≥ 22.18.0, sin dependencias de runtime) dentro del plugin: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <sustantivo> <verbo>`. Sustituye los 12 scripts PowerShell (`capability index|check|merge`, `roadmap check`, `id next`, `merge`, `estimation log`, `session tokens`, `watch subagent|command`) con la misma salida, comprobada con tests de paridad; el hook de sesión (`hook session-start`, en forma exec), y los bash de superpowers que usa el kit (`task start|done|brief`, `review package`, `workspace`), que ahora corren desde cualquier shell y registran la task aunque la verificación no imprima nada. Nuevos: `roadmap publish` publica la reserva en la rama de integración con el cerrojo del merge, y `ledger rulings` cosecha los rulings y los minors diferidos antes de borrar el workspace. `--json` en los verbos de datos. ADR 0011.
 - **Feature 0128** — `sdd-grilling`, el método de preguntas del kit, adaptado de `grilling` de Matt Pocock (MIT, aviso en su `NOTICE`), y primera skill en inglés: una decisión por turno, la recomendada con una razón del caso, el descubrimiento sin ancla, la búsqueda fuera antes de preguntar y el cierre en tres listas; `sdd-consult`, `sdd-roadmap`, las dos init, `sdd-config` y el diseño de `sdd-start-feature` la invocan en lugar de su propia regla de preguntas. → [ref](.docs/sdd/specs/20261002-141929-feature-0128-sdd-grilling/)
+- **Feature 0182** — Verbo `sdd review comments`: lista los comentarios del diff que citan documentos, para el eje Código de la revisión final. → [ref](.docs/sdd/specs/20261101-175259-feature-0182-doc-citing-comments/)
+- **Feature 0277** — Skill `sdd-retro`: señales del cierre de una feature y repaso por causa de la deuda en cada release. → [ref](.docs/sdd/specs/20261101-191641-feature-0277-sdd-retro/)
+- **Patch 0278** — Un test del proyecto compara los títulos de los E2E con «Flujos core»: un E2E sin flujo core no se queda en la suite. → [ref](.docs/sdd/specs/20261101-164101-patch-0278-e2e-titles-core-flows/)
+- **Feature 0282** — El test de títulos E2E se adopta con ratchet y lee `playwright test --list`. → [ref](.docs/sdd/specs/20261101-171153-feature-0282-e2e-titles-ratchet/)
+- **Patch 0298** — `moon run kit:skill-size` pone la release en rojo con un `SKILL.md` de 20.000 bytes o más. → [ref](.docs/sdd/specs/20261103-115014-patch-0298-skill-size-gate/)
+- **Feature 0116** — Arranque de sesión sin skills del kit cargadas y retomar una feature en pausa desde su ledger. → [ref](.docs/sdd/specs/20261101-150956-feature-0116-session-start-and-resume/)
+- **Feature 0341** — Spike: el entrevistador del kit elegido entre `grilling`, `brainstorming`, `explore` y `sdd-grilling`, medido con su batería. → [ref](.docs/sdd/specs/20261113-131112-feature-0341-interviewer-spike/)
+- **Feature 0162** — Spike del panel de validación, fuera de la 3.0.0. → [ref](.docs/sdd/specs/20261009-082930-feature-0162-validation-panel-spike/)
 
 ### Changed
 
@@ -153,6 +165,16 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Patch 0132** — La plantilla de la pregunta de `sdd-grilling` numera las alternativas de 1 a N en lugar de enseñar exactamente 🅰️ y 🅱️, que anclaba la forma «dos más una híbrida». → [ref](.docs/sdd/specs/20261003-113240-patch-0132-grilling-template-count/)
 - **Patch 0323** — `sdd task done` sale con 1 sin lanzar nada si un `vitest` sin `--test-timeout` va a correr algún `*.slow.test.ts`, y nombra los ficheros. → [ref](.docs/sdd/specs/20261109-115826-patch-0323-task-done-unlaunchable-verification/)
 - **Patch 0324** — `debt.md` guarda solo lo vivo: sin «Descartadas», una fila descartada o caducada sale del fichero con su motivo en el cuerpo del commit, la migración v3.0.0 no pasa las `**Descartada**`, `sdd roadmap check` da esa sección por fuera de la plantilla y `sdd roadmap causes` pierde su columna. → [ref](.docs/sdd/specs/20261109-134853-patch-0324-debt-keeps-only-live/)
+- **Feature 0233** — El gate de cierre del repo tarda como mucho 5 min, y `cli:test-min` corre al cortar la release.
+- **Feature 0240** — El cerrojo de suites sale del gate: solo `cli:test-min` lo pide.
+- **Feature 0242** — Los hooks de git del repo, en Node, con un test que vigila que no haya `.sh` ni `.ps1`.
+- **Feature 0223** — El gate del kit pasa de ~40 min a minutos.
+- **Proposal 0131** — Lienzo de la 3.0.0: los carriles repensados desde cero, repartidos en las features de la release. → [ref](.docs/sdd/specs/20261007-144256-proposal-0131-kit-rework/)
+- **Feature 0300** — Las skills se construyen desde una fuente intermedia a `dist/`, sin las tripas del kit. → [ref](.docs/sdd/specs/20261103-173149-feature-0300-skill-source-build-dist/)
+- **Feature 0312** — Las copias del kit, anotadas contra su fuente. → [ref](.docs/sdd/specs/20261104-103810-feature-0312-annotate-real-copies/)
+- **Feature 0152** — Coherencia de los documentos, humo de todas las skills y batería entera de release. → [ref](.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/)
+- **Feature 0342** — El entrevistador del kit, aligerado: un núcleo corto en `sdd-grilling` y el territorio de cada entrevista en la skill que pregunta. → [ref](.docs/sdd/specs/20261113-193506-feature-0342-interviewer-rewrite/)
+- **Feature 0343** — Arreglos de los rojos de la batería del corte de la 3.0.0 en doce skills, medidos sobre el texto que se publica, y una fila de bug por skill para lo que sigue rojo. → [ref](.docs/sdd/changes/20261114-203334-feature-0343-release-3-0-0-close/)
 
 ### Removed
 - **Feature 0311** — `kitBudget`, el tope de palabras del kit entero: quedan los topes por skill. → [ref](.docs/sdd/specs/20261109-143437-feature-0311-includes-and-checks/)
@@ -161,6 +183,7 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Feature 0156** — `sdd-init-greenfield`, `sdd-init-brownfield` y las plantillas `mission-template.md`, `tech-stack-template.md` y `environments-template.md`; la pregunta del changelog de cliente en la init. → [ref](.docs/sdd/specs/20261017-143533-feature-0156-sdd-init/)
 - **Feature 0149** — `sdd-end-feature` y `sdd-end-patch`: los sustituye `sdd-archive`. → [ref](.docs/sdd/specs/20261016-105021-feature-0149-archive/)
 - **Feature 0143** — Los scripts PowerShell de `skills/sdd-templates/scripts/`, el hook bash `hooks/session-start` y el canal de instalación `npx skills add` (no instala `cli/`).
+- **Feature 0206** — Retiradas `sdd-start-feature` y `sdd-start-patch`: el cambio entra por `sdd-propose`. → [ref](.docs/sdd/specs/20261101-115344-feature-0206-retire-start-skills/)
 
 ### Fixed
 
@@ -193,6 +216,9 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 - **Feature 0161** — Las `description` de `sdd-start-feature` y `sdd-start-patch` llevaban «: » sin comillas: el frontmatter no parseaba y las dos skills cargaban sin metadatos (`claude plugin validate` en rojo). → [ref](.docs/sdd/specs/20261009-153540-feature-0161-explore-launch-prompt/)
 - **`sdd roadmap check`, `sdd estimation log` y `sdd capability merge` traen los arreglos de la 2.3.3** — la CLI arrastraba los dos fallos de los scripts PowerShell que sustituye. `roadmap check` y `estimation log` deciden lo publicado por ascendencia en git respecto al tag `v<versión>` de la release, y `capability merge` solo marca como hueco los `<…>` literales de `spec-template.md` ([patch 0153](.docs/sdd/specs/20261008-125035-patch-0153-same-day-release-ancestry/patch.md), [patch 0154](.docs/sdd/specs/20261008-125035-patch-0154-template-literal-gaps/patch.md))
 - **`sdd merge` trae los arreglos del patch 0155** — une los conflictos en los que los dos lados solo añaden líneas en cualquier fichero, no solo en los tres registros, y una verificación que falla por un fichero en uso sale como `bloqueado: '<fichero>' lo tiene abierto <proceso>`, no como `verificación:` ([patch 0155](.docs/sdd/specs/20261008-132135-patch-0155-merge-append-only-and-locked-files/patch.md))
+- **Patch 0256** — Un test de verificación afirma el efecto que se pide, no un indicador.
+- **Feature 0285** — Los tests de `cli:test` no vencen a 5 s porque la máquina esté cargada. → [ref](.docs/sdd/specs/20261102-120757-feature-0285-load-test-timeouts/)
+- **Patch 0293** — El pre-commit lanza las comprobaciones sin las variables `GIT_*` del commit. → [ref](.docs/sdd/specs/20261102-193802-patch-0293-precommit-clean-git-env/)
 
 ## [2.3.4] - 2026-10-10
 
