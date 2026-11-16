@@ -1,7 +1,7 @@
 // Sujeto de la batería de sdd-implement: un paso de la implementación, con los artefactos de ese punto ya escritos,
 // o el encargo de un implementador como petición. Lo lanza tests/headless/battery.mjs run.
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scenarioCell, subjectCell } from '../../headless/battery.mjs';
@@ -506,6 +506,8 @@ keepIf('Tests.cs', 'Tests.cs');
 const gateOf = { cs1: ['dotnet', ['run', '--nologo'], 'gate.txt'], ml1: [s.NODE, ['--test'], 'suite.txt'] }[s.SC];
 if (gateOf) {
   const [command, args, name] = gateOf;
+  // ml1: data/ está ignorado y lo deja la pasada del gate del sujeto; la suite se mide como en un checkout limpio (corte de la 0343).
+  if (s.SC === 'ml1') rmSync(join(s.R, 'data'), { recursive: true, force: true });
   const gate = spawnSync(command, args, { cwd: s.R, env: s.env, encoding: 'utf8', timeout: 120000 });
   writeFileSync(join(s.RUN, name), `${gate.stdout ?? ''}${gate.stderr ?? ''}salida ${gate.status}\n`);
   s.keep(join(s.RUN, name), name);

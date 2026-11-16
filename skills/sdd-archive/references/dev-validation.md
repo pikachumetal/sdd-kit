@@ -9,11 +9,11 @@ Each step is a numbered action in the app with the scenarios' data and its expec
 1. **The report's steps first**, literal and in their order: the symptom of `patch.md` or the ticket. «I check `libres 10:00-12:00`, it says «Sur»; then `cancelar mie 10:00` says «cancelada mie 10:00»» opens the script with `node src/app.js libres 10:00-12:00` → «Sur» and `node src/app.js cancelar mie 10:00` → «no hay reserva mie 10:00».
 2. Then one step per line «Se prueba en la aplicación» of the tasks; without it, one per THEN of the spec.
 
-**Run every step yourself before presenting it**, as the person will: same command, request or clicks, same data. Use your own access —the agent's user of «Acceso a la aplicación» in `operations.md`— and leave data you didn't create untouched: after a step that writes, put the data back, or say what state the person starts from. A step you added that fails when you run it leaves the script («reserve Wednesday and cancel it» in an app that keeps no bookings between processes). A THEN you can't observe (a screen with no detector, a `Se valida en:`) stays, marked `no ensayado: <motivo>`, with the check you did make.
+**Run every step yourself before presenting it**, as the person will: same command, request or clicks, same data. Use your own access —the agent's user of «Acceso a la aplicación» in `operations.md`— and leave data you didn't create untouched: after a step that writes, put the data back, or say what state the person starts from. A step you added that fails when you run it leaves the script. A THEN you can't observe (a screen with no detector, a `Se valida en:`) stays, marked `no ensayado: <motivo>`, with the check you did make.
 
 ## 2. The environment
 
-The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd/sdd-kit.local.json` it must be up: if nothing you started answers (a closing gate that doesn't raise it), raise it with `env:setup` of `## Entornos` in `operations.md` if the section exists, otherwise «Arrancar»; check it answers, and open with its URL or port and the command that stops it. Without the key, or `false`, stop what you started (`sdd-implement`, «Processes you start») and open with how to start it. With no command declared, say so. An app you also run from the CLI still has one if «Arrancar» declares it.
+The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd/sdd-kit.local.json` it must be up: if nothing you started answers (a closing gate that doesn't raise it), raise it with `env:setup` of `## Entornos` in `operations.md` if the section exists, otherwise «Arrancar»; check it answers, and open with its URL or port and the command that stops it. Without the key, or `false`, stop what you started (`sdd-implement`, «Processes you start») and open with how to start it. With no command declared, say so. Up or down, the panel of §4 goes up. An app you also run from the CLI still has one if «Arrancar» declares it.
 
 ## 3. Hands off
 
@@ -28,7 +28,7 @@ Panel: Chrome sobre <url de la app>
 Panel: plan B en http://127.0.0.1:<port>/
 ```
 
-Without the Chrome tools it's the second, CLI apps included: launch `sdd validation serve` (§6) before presenting. «Sin panel» is not an option, also with the app's environment down; only if that command fails, the line is `Panel: no arrancó: <su error>`.
+Without the Chrome tools it's the second, CLI apps included: launch `sdd validation serve` (§6) and see its URL answer before presenting. «Sin panel» is not an option, also with the app's environment down; only if that command fails, the line is `Panel: no arrancó: <su error>`.
 
 ## 5. The panel in Chrome
 

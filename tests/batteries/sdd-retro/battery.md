@@ -36,7 +36,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=
 | R4 Resumen | r4 | el mensaje del corte no nombra las propuestas |
 | R5 Sin parar | r4 | hace una pregunta por el repaso |
 | R6 Orden | r4 | `retro.md` no entra en el commit del corte |
-| R9 Changelog | r4 | `tools: /^>>> (Skill: \S*add-to-changelog(\s\|$)\|Read: [^\n]*add-to-changelog[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*add-to-changelog[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$))/` ausente |
+| R9 Changelog | r4 | `tools: /^>>> (Skill: \S*add-to-changelog(\s\|$)\|Read: [^\n]*add-to-changelog[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*add-to-changelog[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$\|[\|] *head -(n )?([5-9]\d\|\d{3,})(?!\d)))/` ausente |
 | R7 Sin carpeta | r6 | existe `.docs/sdd/releases/v1.4.0/` |
 | R8 Oferta | r6 | la propuesta no ofrece la estimación y los action items en una línea |
 | L Idioma | todos | algún mensaje al usuario en inglés |

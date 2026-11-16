@@ -194,6 +194,8 @@ Los escenarios sin medida previa llevan el precio medio de su batería (lo dice 
 
 ## Enmiendas
 
+- **2026-11-16 — los rojos de la batería del corte se arreglan antes del corte** (dev-lead, «si haces una pasada infernal salen errores los resolvemos y luego la volvemos a pasar»; aprobado con «ok» al plan de seis pasos). Sustituye la decisión 6 para los rojos de la batería del corte: (1) se leen las fases pendientes; (2) la lista de rojos, cada uno con su skill, qué falla y si el arreglo va en la skill o en la batería, se presenta al dev-lead, que decide qué entra; (3) un arreglo por skill, que cubre todos sus rojos, y los de batería aparte; (4) se relanzan solo esos escenarios a n = 4, umbral 4/4, sin repetir la batería entera; (5) lo que siga rojo se presenta al dev-lead: otro intento o fila de bug; (6) el corte, como en la decisión 11. Los relanzamientos sin arreglo de la decisión 6 se retiran (los de `interviewer` y `sdd-grilling` ya corrieron). La decisión 14 queda sustituida por (4): el riesgo de que un arreglo rompa otro escenario de su skill se acepta. Previsión: ~10 $ de lectores y ~45 $ de relanzamientos (~100 sujetos a 0,44 $), dentro de `COST_CAP`.
+
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |
