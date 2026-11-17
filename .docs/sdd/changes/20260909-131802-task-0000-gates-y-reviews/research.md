@@ -3,7 +3,7 @@
 > Documento de entrada para el agente que mantiene `sdd-kit`. Reúne la evidencia de los dos retos
 > (SifAcademy, julio 2026; SifRest, septiembre 2026) y del experimento encadenado del 9 de septiembre,
 > y propone una decisión sobre las tres reviews que hoy conviven: review de spec, review de código y
-> review adversarial multi-lente. Fecha: 2026-09-09. Fuentes: walkthroughs de `SifAcademy/.docs/sdd/specs/`,
+> review adversarial multi-lente. Fecha: 2026-09-09. Fuentes: walkthroughs de `SifAcademy/.docs/sdd/changes/`,
 > `SifRest/.docs/sdd/estimation-log.md` y `SifRest/.docs/initial/presentacion/experimento-auth/resultados.md`.
 
 ## 1. Decisión propuesta, en tres líneas

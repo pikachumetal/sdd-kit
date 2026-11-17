@@ -60,7 +60,7 @@ created: 2026-09-25
 
 - `tests/VisualCheck.Tests.ps1` — literales de los pasos 2, 6 y 7 y de la racionalización.
 - `tests/visual-check-green.md` — evidencia del GREEN.
-- `.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/green/out/` — salidas de los sujetos del GREEN.
+- `.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/green/out/` — salidas de los sujetos del GREEN.
 
 **Modificar**:
 

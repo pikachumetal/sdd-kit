@@ -62,7 +62,7 @@ created: 2026-11-03
 
 ### 1.1 Estructura de ficheros
 
-**Crear** (en `.docs/sdd/specs/20261103-130212-feature-0299-own-skills-audit/`):
+**Crear** (en `.docs/sdd/changes/20261103-130212-feature-0299-own-skills-audit/`):
 
 - `scripts/rules.mjs` — candidatos mecánicos con su blame.
 - `out/exceptions.md`, `out/shared.md`, `out/tickets.md` — salidas en bruto del script.

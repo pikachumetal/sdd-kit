@@ -61,7 +61,7 @@ created: 2026-09-23
 - `skills/sdd-end-task/references/merge-recipe.md` — la receta: cuándo se aplica, worktree temporal, merge según la política, suite, retirada, conflicto en el log y denegación.
 - `tests/merge-close-red.md` — RED del delta: resume `red/README.md` de la spec y enlaza su evidencia.
 - `tests/merge-close-green.md` — GREEN con los mismos escenarios y su veredicto contra cada fallo del RED.
-- `.docs/sdd/specs/20260923-120510-task-0009-merge-close/tasks.md` — registro vivo.
+- `.docs/sdd/changes/20260923-120510-task-0009-merge-close/tasks.md` — registro vivo.
 
 **Modificar**:
 
@@ -71,7 +71,7 @@ created: 2026-09-23
 - `skills/sdd-start-task/references/overrides-superpowers.md` — fila de `finishing-a-development-branch`.
 - `.docs/sdd/constitution.md` — Art. IV.
 - `tests/ControlProfiles.Tests.ps1` — anclas.
-- `.docs/sdd/specs/20260923-120510-task-0009-merge-close/red/run.sh` y `subject.sh` — escenario R6 y salida del GREEN.
+- `.docs/sdd/changes/20260923-120510-task-0009-merge-close/red/run.sh` y `subject.sh` — escenario R6 y salida del GREEN.
 
 **NO se tocan**:
 
@@ -111,7 +111,7 @@ Ninguna.
 
 **Ficheros**: crear `tests/merge-close-red.md`; modificar `tests/ControlProfiles.Tests.ps1`.
 
-- [ ] **Step 1**: escribir `tests/merge-close-red.md`: escenarios, veredictos, lo que pasa sin guidance y el hueco de superpowers, enlazando `../.docs/sdd/specs/20260923-120510-task-0009-merge-close/red/README.md` sin duplicar sus tablas.
+- [ ] **Step 1**: escribir `tests/merge-close-red.md`: escenarios, veredictos, lo que pasa sin guidance y el hueco de superpowers, enlazando `../.docs/sdd/changes/20260923-120510-task-0009-merge-close/red/README.md` sin duplicar sus tablas.
 - [ ] **Step 2**: añadir a `ControlProfiles.Tests.ps1`:
 
 ```powershell

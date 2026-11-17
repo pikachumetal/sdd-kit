@@ -63,7 +63,7 @@ Commit `fd250e0` (rama `master`), 33 ficheros.
 ### 4.3 Residuales / deuda generada
 
 - ~40 nombres de fichero internos siguen en castellano y no los vigila ningún test: `skills/*/references/*.md` (`versionado.md`, `generacion.md`, `estructura.md`, `nombrado.md`, `priorizacion.md`, `acta-y-retro.md`, `encargo-revision.md`, `modo-lite.md`, `aprendizajes-skills.md`, `notas-y-roadmap.md`, `roadmap-fuente.md`, `email-entrega.md`), la evidencia de `tests/` (`*-red.md`, `*-green.md`) y los fixtures (`roto/`, `sinplan/`, `notas-sueltas/`). → tabla de deuda del roadmap.
-- Los slugs de `.docs/sdd/specs/` históricas siguen en castellano. El Art. IV los declara convención de cambio mayor; esta task usó slug inglés como excepción puntual sin reabrirla.
+- Los slugs de `.docs/sdd/changes/` históricas siguen en castellano. El Art. IV los declara convención de cambio mayor; esta task usó slug inglés como excepción puntual sin reabrirla.
 
 ### 4.4 Code-review (obligatorio: la ejecución fue en línea)
 

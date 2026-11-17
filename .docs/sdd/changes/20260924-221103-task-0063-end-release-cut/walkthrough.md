@@ -93,6 +93,6 @@ created: 2026-09-25
 - Una oferta opcional atada a un paso posterior («se hace si la pide, antes del paso 4») coincidió con que el cierre no avanzara con el usuario ausente (1/2). Sin la atadura, 5/5. → `tech-stack.md` (sujetos headless)
 - La causa de una diferencia se cita del sujeto que falló. La primera redacción de la evidencia citaba a t-a2-2, que no falló, y lo vio la revisión final. → `tech-stack.md` (sujetos headless)
 - `task-done` de `executing-plans` con Pester en color deja en el ledger «Binary file … matches» en vez del resultado. Con `-CI` y `NO_COLOR=1`, la línea sale limpia; `-CI` deja un `testResults.xml` en la raíz que hay que borrar. → `tech-stack.md` (entorno)
-- Copiar ficheros del molde conservando su ruta (`<etiqueta>/.docs/sdd/specs/<carpeta>/walkthrough.md`) supera el límite de 140 caracteres; el lanzador aplana. → `tech-stack.md` (ya estaba la regla de rutas cortas; se añade el caso)
+- Copiar ficheros del molde conservando su ruta (`<etiqueta>/.docs/sdd/changes/<carpeta>/walkthrough.md`) supera el límite de 140 caracteres; el lanzador aplana. → `tech-stack.md` (ya estaba la regla de rutas cortas; se añade el caso)
 
 ## 6. Adendas

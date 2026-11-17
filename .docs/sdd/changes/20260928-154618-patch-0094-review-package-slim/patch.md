@@ -28,7 +28,7 @@ La receta hace `git diff -U10 "$MERGE_BASE" HEAD -- . "${EXCLUDE[@]}"` con `EXCL
 ## 3. Fix
 
 - **Fichero(s)**: `skills/sdd-start-feature/references/encargo-revision.md`, `tests/FinalReviewPackage.Tests.ps1`, `.docs/sdd/capabilities/feature-flow.md` (al cerrar).
-- **Cambio**: `EXCLUDE` suma `':(exclude,glob).docs/sdd/specs/<carpeta de la feature>/**'`; el diff lleva `--diff-filter=d` y una sección «Ficheros borrados» con `git diff --name-only --diff-filter=D`; «Cómo revisar» pide leer en tramos de 400 líneas con `offset` y `limit`. El modelo del revisor y la exención de re-revisión no se tocan (van en otra feature).
+- **Cambio**: `EXCLUDE` suma `':(exclude,glob).docs/sdd/changes/<carpeta de la feature>/**'`; el diff lleva `--diff-filter=d` y una sección «Ficheros borrados» con `git diff --name-only --diff-filter=D`; «Cómo revisar» pide leer en tramos de 400 líneas con `offset` y `limit`. El modelo del revisor y la exención de re-revisión no se tocan (van en otra feature).
 
 ## 4. Verificación
 
@@ -55,7 +55,7 @@ Decisión tomada sin el dev-lead: la guía de los tramos de 400 líneas se escri
 ### Capacidad: `feature-flow`
 
 **ADDED — El paquete del revisor final deja fuera los borrados y la carpeta de la feature**
-- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/specs/`
+- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/changes/`
 - WHEN el hilo prepara el paquete del revisor final
 - THEN el paquete no contiene el cuerpo de los ficheros borrados ni ningún fichero de la carpeta de la feature
 - AND lista los borrados por nombre en su sección «Ficheros borrados»

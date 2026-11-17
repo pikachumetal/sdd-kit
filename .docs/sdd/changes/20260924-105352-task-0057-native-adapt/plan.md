@@ -75,7 +75,7 @@ created: 2026-09-24
 - `skills/sdd-end-task/SKILL.md` — pasos 1 y 9.
 - `skills/sdd-templates/templates/plan-template.md` — línea `Ejecución`.
 - `.docs/sdd/constitution.md` — Art. IV.
-- `.docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/subject.sh` y `mold.sh` — escenarios del GREEN.
+- `.docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/subject.sh` y `mold.sh` — escenarios del GREEN.
 
 **NO se tocan**:
 
@@ -208,7 +208,7 @@ Ninguna.
 **Modelo**: sujetos Sonnet (`claude -p`), como el RED
 **Tests RED**: no aplica (es la medición)
 **Superficies**: docs (evidencia)
-**Verificación**: `KIT_DIR=<copia de HEAD> RUNS_DIR=<scratchpad>/runs OUT_NAME=green SCENARIOS=… SUBJECTS=… bash .docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/run.sh`
+**Verificación**: `KIT_DIR=<copia de HEAD> RUNS_DIR=<scratchpad>/runs OUT_NAME=green SCENARIOS=… SUBJECTS=… bash .docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/run.sh`
 
 **Interfaces**:
 - Consume: los textos de las Tasks 1–4 en `HEAD`; la frase de la cabecera de la Task 4.

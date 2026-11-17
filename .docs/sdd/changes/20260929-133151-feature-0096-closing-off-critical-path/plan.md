@@ -62,7 +62,7 @@ created: 2026-09-29
 
 - `tests/ClosingOffCriticalPath.Tests.ps1` — literales de las tasks 2-4.
 - `tests/closing-off-critical-path-red.md`, `tests/closing-off-critical-path-green.md` — evidencia.
-- `.docs/sdd/specs/20260929-133151-feature-0096-closing-off-critical-path/red/` y `green/` — `subject.sh`, moldes propios y `out/`.
+- `.docs/sdd/changes/20260929-133151-feature-0096-closing-off-critical-path/red/` y `green/` — `subject.sh`, moldes propios y `out/`.
 
 **Modificar**:
 
@@ -107,7 +107,7 @@ Ninguna.
 **Se prueba en la aplicación**: no, porque es evidencia: mide el fallo antes de escribir la guía
 
 **Interfaces**:
-- Consume: `tests/headless/run.sh` y `lib.sh`; molde `pedidos` (`.docs/sdd/specs/20260929-073733-feature-0099-frontend-verification/red/mold.sh`, `features.sh`); molde `salas` y `deny-agent.mjs` (`.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/`).
+- Consume: `tests/headless/run.sh` y `lib.sh`; molde `pedidos` (`.docs/sdd/changes/20260929-073733-feature-0099-frontend-verification/red/mold.sh`, `features.sh`); molde `salas` y `deny-agent.mjs` (`.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/`).
 - Produce: `red/subject.sh` con los escenarios `c1`, `c2` y `c3`, reutilizado por la task 5; los criterios de cada escenario, que la task 5 repite.
 
 **Ficheros**: crear `red/subject.sh`, `red/out/`, `tests/closing-off-critical-path-red.md`

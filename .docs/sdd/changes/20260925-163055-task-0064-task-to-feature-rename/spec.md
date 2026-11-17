@@ -48,7 +48,7 @@ Review de spec propuesta: dos revisores — señales: contrato público (nombres
 
    El walkthrough lista cada título renombrado y el texto final de esos cinco requisitos.
 10. **Docs vivos de este repo** que se reescriben: `CLAUDE.md`, `README.md`, `hooks/router.md`, `constitution.md` (el patrón del Art. IV pasa a `(feature|patch|proposal)` con `task` como legado), `mission.md`, `architecture.md`, las secciones no cronológicas de `tech-stack.md` y `.docs/workflow/greenfield.md` y `brownfield.md`. **Histórico intacto**: `specs/`, `field-reports/`, `tests/*-red.md`/`*-green.md`/`*-ab.md`, las entradas cerradas del changelog, el roadmap (salvo la fila 0064 al cerrar), «Aprendizajes por task» de `tech-stack.md` y las migraciones anteriores a la v2.0.0.
-11. **Guarda de no regresión**: un test Pester nuevo falla si queda `sdd-start-task` o `sdd-end-task` en el repo fuera de esta lista blanca: `.docs/sdd/specs/`, `field-reports/`, `releases/`, `changelog.md`, `roadmap.md`, `tech-stack.md` (por sus aprendizajes cronológicos), `estimation-log.md`, los `.md` de `tests/` a cualquier profundidad (`tests/fixtures/` incluida, porque versiona texto real de artefactos), `migrations/` y el propio test. Así, lo que se escape del barrido lo caza la suite y no un dev el lunes.
+11. **Guarda de no regresión**: un test Pester nuevo falla si queda `sdd-start-task` o `sdd-end-task` en el repo fuera de esta lista blanca: `.docs/sdd/changes/`, `field-reports/`, `releases/`, `changelog.md`, `roadmap.md`, `tech-stack.md` (por sus aprendizajes cronológicos), `estimation-log.md`, los `.md` de `tests/` a cualquier profundidad (`tests/fixtures/` incluida, porque versiona texto real de artefactos), `migrations/` y el propio test. Así, lo que se escape del barrido lo caza la suite y no un dev el lunes.
 12. **La fila del roadmap nombraba `Invoke-SddMerge` como lector del patrón**: no lo lee (no contiene «task» ni el patrón de carpeta), así que la lectura doble va solo en los otros dos scripts.
 13. **La carpeta de esta spec** lleva `-task-`: se creó con el kit vigente antes del renombrado. Los scripts la leen como legado, y es la primera prueba real de la decisión 4.
 14. **Campaña (Art. I: renombrar una skill es editarla)**. Se reproduce el enrutado de entrada tras el renombrado, un sujeto Sonnet por escenario, con los moldes y peticiones de `tests/auto-routing-green.md`:
@@ -152,7 +152,7 @@ Renombrado mecánico en dos capas. Los **lectores** (scripts) aceptan los dos no
 
 - GIVEN un proyecto en modo `sequence` con la fila 0081 «Avisos de reserva» pendiente en el roadmap
 - WHEN `sdd-start-feature` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
-- THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
+- THEN la carpeta es `.docs/sdd/changes/20261001-091500-feature-0081-booking-reminders/`
 - AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
 
 **ADDED — Una carpeta `-task-` se cierra como legado**

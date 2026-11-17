@@ -78,7 +78,7 @@ created: 2026-09-28
 
 - `tests/VisualPatch.Tests.ps1`: literales del predicado y del cierre.
 - `tests/visual-patch-red.md` y `tests/visual-patch-green.md`: la evidencia narrada.
-- `.docs/sdd/specs/20260928-210002-feature-0098-visual-patch-lane/red/` y `green/`: `mold.sh`, `subject.sh` y `out/`.
+- `.docs/sdd/changes/20260928-210002-feature-0098-visual-patch-lane/red/` y `green/`: `mold.sh`, `subject.sh` y `out/`.
 
 **Modificar**:
 

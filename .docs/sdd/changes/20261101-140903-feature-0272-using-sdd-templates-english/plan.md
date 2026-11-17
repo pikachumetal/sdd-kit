@@ -72,7 +72,7 @@ created: 2026-11-01
 
 **Crear**:
 
-- `.docs/sdd/specs/20261101-140903-feature-0272-using-sdd-templates-english/green/` — evidencia de sujetos.
+- `.docs/sdd/changes/20261101-140903-feature-0272-using-sdd-templates-english/green/` — evidencia de sujetos.
 - `tests/english-using-templates-green.md` — resumen de la medición.
 
 **NO se tocan**:

@@ -171,7 +171,7 @@ run c2-rename-2 "Renombra la variable bookings a reservations en src/app.js."
 
 ```bash
 SP=/c/Users/pikac/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0014/17246d75-4781-4035-8f17-f3eff7199541/scratchpad
-SPEC=/d/code/.worktrees/sdd-kit/0014/.docs/sdd/specs/20260921-162213-task-0014-auto-routing/red
+SPEC=/d/code/.worktrees/sdd-kit/0014/.docs/sdd/changes/20260921-162213-task-0014-auto-routing/red
 export RUNS_DIR=$SP/runs
 bash $SPEC/run-controls.sh $SP/kit $SPEC/out-controls-red
 ```
@@ -275,7 +275,7 @@ Describe 'hooks/session-start' {
 
 ```powershell
 $env:SDD_KIT_ROOT = 'D:\code\.worktrees\sdd-kit\0014'
-pwsh -NoProfile -Command "Invoke-Pester -Path '.docs/sdd/specs/20260921-162213-task-0014-auto-routing/red/Hook.Tests.ps1' -Output Detailed"
+pwsh -NoProfile -Command "Invoke-Pester -Path '.docs/sdd/changes/20260921-162213-task-0014-auto-routing/red/Hook.Tests.ps1' -Output Detailed"
 ```
 
 Esperado: los 5 fallan porque `hooks/` no existe (no encuentra `hooks.json`, `router.md` ni el script), no por un error del test.
@@ -353,7 +353,7 @@ printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    
 - [ ] **Step 7: Mover el test y verificar en verde**
 
 ```powershell
-git mv .docs/sdd/specs/20260921-162213-task-0014-auto-routing/red/Hook.Tests.ps1 tests/Hook.Tests.ps1
+git mv .docs/sdd/changes/20260921-162213-task-0014-auto-routing/red/Hook.Tests.ps1 tests/Hook.Tests.ps1
 pwsh -NoProfile -Command "Invoke-Pester -Path tests -Output Detailed"
 ```
 
@@ -475,7 +475,7 @@ bash "$BASE/subject.sh" molde "$KIT" t1-templates "Invoca la skill sdd-kit:sdd-t
 
 ```bash
 SP=/c/Users/pikac/AppData/Local/Temp/claude/D--code--worktrees-sdd-kit-0014/17246d75-4781-4035-8f17-f3eff7199541/scratchpad
-SPEC=/d/code/.worktrees/sdd-kit/0014/.docs/sdd/specs/20260921-162213-task-0014-auto-routing/red
+SPEC=/d/code/.worktrees/sdd-kit/0014/.docs/sdd/changes/20260921-162213-task-0014-auto-routing/red
 export RUNS_DIR=$SP/runs
 bash $SPEC/run-red.sh $SP/kit-green $SPEC/out-green
 bash $SPEC/run-green.sh $SP/kit-green $SPEC/out-green
@@ -494,7 +494,7 @@ Total: 6 + 7 + 4 = 17 sujetos, ≈ 4,3 $. `run-red.sh` es el mismo lanzador de l
 - [ ] **Step 7: Commit** de `red/` (moldes, lanzadores, salidas):
 
 ```bash
-git add .docs/sdd/specs/20260921-162213-task-0014-auto-routing/red
+git add .docs/sdd/changes/20260921-162213-task-0014-auto-routing/red
 git commit -m "docs(sdd): evidencia RED y GREEN del auto-enrutado (task 0014)" -m "Moldes, lanzadores y streams de los sujetos de la campaña; las copias por run se quedan en el scratchpad." -m "Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ```
 

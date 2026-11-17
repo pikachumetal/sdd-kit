@@ -26,7 +26,7 @@ Ticket de la feature 0277, §3, y fila 0288: en `rc2` de la batería de `sdd-arc
 failed to determine base repo: no git remotes found
 ```
 
-`## llamadas a gh` dice `ninguna` y `K6` falla 2/2, también con el kit de la base (`.docs/sdd/specs/20261101-191641-feature-0277-sdd-retro/green/out/rc2-1.tools.txt` y `base-ctl/out/`). Ese mensaje es del `gh` real: el falso (`fixtures/gh/gh.mjs`) solo escribe lo de `gh.json`.
+`## llamadas a gh` dice `ninguna` y `K6` falla 2/2, también con el kit de la base (`.docs/sdd/changes/20261101-191641-feature-0277-sdd-retro/green/out/rc2-1.tools.txt` y `base-ctl/out/`). Ese mensaje es del `gh` real: el falso (`fixtures/gh/gh.mjs`) solo escribe lo de `gh.json`.
 
 Medido además: en la 0277, `rc1` también dice `ninguna` en los cuatro sujetos (green y base-ctl); en la 0177 (2026-10-31, misma versión de Claude Code, 2.1.316), `rc1` y `rc2` registran la llamada.
 

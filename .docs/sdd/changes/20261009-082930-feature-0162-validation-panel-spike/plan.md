@@ -105,7 +105,7 @@ Ninguna.
 **Modelo**: hilo principal (Native).
 **Evidencia**: `probe/evidence/o1-read.md`, en lugar de tests RED.
 **Superficies**: docs.
-**Verificación**: `node --check .docs/sdd/specs/20261009-082930-feature-0162-validation-panel-spike/probe/panel.js`
+**Verificación**: `node --check .docs/sdd/changes/20261009-082930-feature-0162-validation-panel-spike/probe/panel.js`
 **Se prueba en la aplicación**: el dev-lead ve el panel flotante en su app con 3 pruebas, marca 2 OK y 1 KO con comentario y dice «listo».
 
 **Interfaces**:
@@ -126,7 +126,7 @@ Ninguna.
 **Modelo**: hilo principal (Native).
 **Evidencia**: `probe/evidence/o2-reloads.md` y `probe/evidence/o3-ko-context.md`.
 **Superficies**: docs.
-**Verificación**: `node --check .docs/sdd/specs/20261009-082930-feature-0162-validation-panel-spike/probe/panel.js`
+**Verificación**: `node --check .docs/sdd/changes/20261009-082930-feature-0162-validation-panel-spike/probe/panel.js`
 **Se prueba en la aplicación**: el dev-lead hace 10 F5 y una redirección con el panel marcado, y marca un KO tras provocar un error.
 
 **Interfaces**:

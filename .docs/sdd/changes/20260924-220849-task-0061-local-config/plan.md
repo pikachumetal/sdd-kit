@@ -69,7 +69,7 @@ created: 2026-09-25
 - `tests/LocalConfig.Tests.ps1`: la forma del fichero local, la precedencia y la línea de `.gitignore`.
 - `tests/SddConfig.Tests.ps1`: la anatomía de `sdd-config` y que sea la fuente única.
 - `tests/sdd-config-red.md` y `tests/sdd-config-green.md`.
-- `.docs/sdd/specs/20260924-220849-task-0061-local-config/tasks.md`.
+- `.docs/sdd/changes/20260924-220849-task-0061-local-config/tasks.md`.
 
 **Modificar**:
 

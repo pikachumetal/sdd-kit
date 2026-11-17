@@ -48,7 +48,7 @@ Review de spec propuesta: ninguna — señales: `MODIFIED` (un requisito de `ver
    - `#`, precedido de espacio o al inicio de línea: py, rb, sh, bash, yml, yaml, toml, ps1 (y `<# #>`), `Dockerfile`, `Makefile`.
    - `--` y `/* */`: sql.
    - `<!-- -->`: html, xml, csproj; también `@* *@` en cshtml y razor.
-7. Qué no se lee: Markdown (`.md`, `.mdx`) y `.json`, en silencio, y `.docs/sdd/specs/**` y `.docs/sdd/changes/**`, que son evidencia con moldes de código. Cualquier otra extensión sale en `sin leer:`, para que el revisor sepa que no se miró.
+7. Qué no se lee: Markdown (`.md`, `.mdx`) y `.json`, en silencio, y `.docs/sdd/changes/**` y `.docs/sdd/changes/**`, que son evidencia con moldes de código. Cualquier otra extensión sale en `sin leer:`, para que el revisor sepa que no se miró.
 8. Límites del lexer, que quedan en el código como `shortcut:`: no entiende los literales regex de JS (una comilla dentro abre una cadena hasta el fin de línea, y un comentario detrás se pierde); un docstring de Python es una cadena y no se lista; el `<script>` de un `.html` no se lee. El revisor sigue pudiendo marcarlos. Se lee el fichero entero y se cruza con las líneas añadidas, porque un `/* */` o una cadena de varias líneas pueden abrirse fuera del hunk.
 9. El texto nuevo del eje Código, literal, en «Approach». Con un bloque «De código» que prohíbe citar documentos, como el Art. X de este repo, manda ese bloque: el encargo ya dice que incumplirlo es Important, así que aquí un motivo propio no salva la cita a `capabilities/`.
 10. Pago del saldo: frases de evidencia de `encargo-revision.md` que se quedan en su `tests/*.md` o en su ticket; no quitan ninguna instrucción, así que no llevan RED propio. Cuentas en «Topes de palabras».
@@ -180,7 +180,7 @@ Each `file:line` line of «Comentarios que citan documentos» is a candidate, no
 
 #### ADDED — `sdd review comments` dice qué no ha leído
 
-- GIVEN una rama que añade `a.vue`, `b.json`, `c.md` y `.docs/sdd/specs/x/red/m.ts` con `// Task 4`
+- GIVEN una rama que añade `a.vue`, `b.json`, `c.md` y `.docs/sdd/changes/x/red/m.ts` con `// Task 4`
 - WHEN se ejecuta `node sdd.js review comments --base develop`
 - THEN escribe `sin leer: a.vue` antes de la línea de cierre, y no lista los otros tres
 - AND con `--json`, `unread` es `["a.vue"]`

@@ -181,7 +181,7 @@ Todo lo que dice «`patch-flow.md`» es el mismo texto, traducido y sin cambiar 
 | Nombres en los tests de la CLI | `battery.test.ts`:22, 44, 53, 78 | Scope; son datos de juguete |
 | Peticiones `Invoca … sdd-start-feature y sigue` | baterías `sdd-implement` ×13, `sdd-archive` ×1, `sdd-verify` ×2, `sdd-grilling` ×5 | Scope |
 | Sustitución `sdd-propose` → `sdd-start-feature` en el RED | `tests/batteries/sdd-propose/subject.mjs`:19 | Scope: se quita |
-| Fixture `roadmap-0fc231e-parent.md`, `migrations/v0.4.0.md` y `v2.0.0.md`, `tests/*.md`, `.docs/sdd/specs/`, `field-reports/`, `changelog.md`, ADR | historia | se quedan |
+| Fixture `roadmap-0fc231e-parent.md`, `migrations/v0.4.0.md` y `v2.0.0.md`, `tests/*.md`, `.docs/sdd/changes/`, `field-reports/`, `changelog.md`, ADR | historia | se quedan |
 
 - Filas que implementa: 0206 → `roadmap.md`, filas 0263, 0198, 0152 y 0116 la citan como orden: sin cambio; la fila de deuda del patch 0232, (b) «mirar en la 0206»: mirado, lo cerró el patch 0248 en el paso 2 de `sdd-propose`, y se anota en el cierre.
 

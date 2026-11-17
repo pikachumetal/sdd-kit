@@ -178,7 +178,7 @@ Ninguna.
 **Ejecución**: en línea: el hilo lanza la campaña con el techo común de `red/run.sh` y lee los veredictos contra el RED
 **Tests RED**: no aplica (es la medición)
 **Superficies**: docs (evidencia)
-**Verificación**: `KIT_DIR=<copia de HEAD> RUNS_DIR=<scratchpad>/runs OUT_NAME=green SCENARIOS="g1 g2 g3 g4" SUBJECTS="1 2" bash .docs/sdd/specs/20260924-082516-task-0055-native-default/red/run.sh`; luego las entrevistas de init y la migración, un sujeto cada una
+**Verificación**: `KIT_DIR=<copia de HEAD> RUNS_DIR=<scratchpad>/runs OUT_NAME=green SCENARIOS="g1 g2 g3 g4" SUBJECTS="1 2" bash .docs/sdd/changes/20260924-082516-task-0055-native-default/red/run.sh`; luego las entrevistas de init y la migración, un sujeto cada una
 
 **Interfaces**:
 - Consume: los textos de las Tasks 1–3 en `HEAD`.

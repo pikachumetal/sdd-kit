@@ -75,8 +75,8 @@ created: 2026-11-04
 
 **Crear**:
 
-- `.docs/sdd/specs/20261104-103810-feature-0312-annotate-real-copies/real-copies/annotate.mjs` — el borrador de anotación arreglado.
-- `.docs/sdd/specs/20261104-103810-feature-0312-annotate-real-copies/real-copies/compare-dist.mjs` — la comparación de `dist/` con `develop`.
+- `.docs/sdd/changes/20261104-103810-feature-0312-annotate-real-copies/real-copies/annotate.mjs` — el borrador de anotación arreglado.
+- `.docs/sdd/changes/20261104-103810-feature-0312-annotate-real-copies/real-copies/compare-dist.mjs` — la comparación de `dist/` con `develop`.
 - `skills/sdd-agent-writing/references/discovery.md`, `flowcharts.md`, `bulletproofing.md` y `persuasion-principles.md` — copias de superpowers v7.0.2 (Task 4).
 
 **Modificar**:
@@ -94,7 +94,7 @@ created: 2026-11-04
 **NO se tocan**:
 
 - `tests/copies/annotated.ts` y `check.ts` — la maquinaria de la 0302 vale tal cual; si no aguanta el texto real, es un desvío y se para.
-- `.docs/sdd/specs/20261103-201153-feature-0302-annotated-copies/real-copies/` — evidencia de la 0302.
+- `.docs/sdd/changes/20261103-201153-feature-0302-annotated-copies/real-copies/` — evidencia de la 0302.
 - Las entradas `pending` de 0296, 0297, 0305 y 0306, y los conceptos de 0313 y 0314.
 
 ### 1.6 Dependencias
@@ -131,7 +131,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: la sesión (Native).
 **Tests RED**: hilo principal · `cli/test/kit/notices.test.ts`, escritos antes de tocar las skills y sin commitear.
 **Superficies**: tooling · docs (skills).
-**Verificación**: `moon run cli:typecheck cli:test` → `Tests  <n> passed (<n>)`; `moon run kit:copies` → solo líneas con ` → <fila>`; `node .docs/sdd/specs/20261104-103810-feature-0312-annotate-real-copies/real-copies/compare-dist.mjs <ficheros de dist/ de la task>` → solo la palabra de la versión y la cabecera de `sdd-worktrees`.
+**Verificación**: `moon run cli:typecheck cli:test` → `Tests  <n> passed (<n>)`; `moon run kit:copies` → solo líneas con ` → <fila>`; `node .docs/sdd/changes/20261104-103810-feature-0312-annotate-real-copies/real-copies/compare-dist.mjs <ficheros de dist/ de la task>` → solo la palabra de la versión y la cabecera de `sdd-worktrees`.
 
 **Interfaces**:
 - Consume: `checkCopy`, `outputOf` y `keptShare` de `tests/copies/annotated.ts`; `readRegistry` de `build/sources.ts`; `listSources` de `build/dist.ts`.

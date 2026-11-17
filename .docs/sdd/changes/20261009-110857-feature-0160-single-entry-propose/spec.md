@@ -418,7 +418,7 @@ Una fila por paso, red flag y racionalización de las skills que pierden texto. 
 
 - GIVEN un proyecto en modo `sequence` con la fila 0081 «Avisos de reserva» pendiente en el roadmap
 - WHEN `sdd-propose` crea la carpeta de la spec el 2026-10-01 a las 09:15:00 UTC
-- THEN la carpeta es `.docs/sdd/specs/20261001-091500-feature-0081-booking-reminders/`
+- THEN la carpeta es `.docs/sdd/changes/20261001-091500-feature-0081-booking-reminders/`
 - AND el frontmatter de `spec.md` lleva `id: 20261001-091500-feature-0081-booking-reminders` y `feature: 0081`
 
 **MODIFIED — Una migración solo de datos no descarta el modo lite** (antes: lo citaba la primera pregunta de `sdd-start-feature`)

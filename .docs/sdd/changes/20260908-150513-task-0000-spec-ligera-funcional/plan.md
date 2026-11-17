@@ -66,7 +66,7 @@ Copiadas de la spec y la constitution. Toda task las hereda; **quien despacha la
 
 **NO se tocan**:
 
-- Las specs ya escritas en `.docs/sdd/specs/` (registro histórico).
+- Las specs ya escritas en `.docs/sdd/changes/` (registro histórico).
 - `walkthrough-template.md` (decisión 7 de la spec).
 - La `description` de ninguna skill.
 

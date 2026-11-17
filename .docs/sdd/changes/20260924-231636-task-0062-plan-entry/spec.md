@@ -169,7 +169,7 @@ Una skill de proceso nueva, con la forma que pide cada fallo (Art. II): contrato
 - AND, decidido, escribe `## Release 1.3` con la cabecera `| id | Task | Origen | Ficheros que toca | Estado |` y el estado «en preparación», salvo que el usuario diga que está comprometida
 
 **Reglas de la capacidad**
-- **Dónde viven los datos**: el índice, en `.docs/sdd/roadmap.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/specs/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap.
+- **Dónde viven los datos**: el índice, en `.docs/sdd/roadmap.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap.
 - **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `task` y `patch`. El texto va en castellano.
 - **Límites**: `sdd-roadmap` no crea ramas, carpetas de task ni specs. Una propuesta no tiene walkthrough ni cierre.
 - **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve.

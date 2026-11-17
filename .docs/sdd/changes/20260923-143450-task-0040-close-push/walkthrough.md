@@ -84,7 +84,7 @@ Validación diferida: 2026-09-23 · «pues merge a develop y cierro el worktree�
 - Claude Code puede matar un comando en segundo plano por falta de memoria, y los procesos hijos (los `claude -p` de una campaña) siguen vivos: antes de relanzar, se buscan con `Get-CimInstance Win32_Process` → `tech-stack.md`, «Sujetos headless».
 - Un `rm -rf a b && <recrear a>` que falla en `b` deja `a` borrado y la cadena cortada. El lanzador comprueba que la copia del kit existe antes de lanzar → `tech-stack.md`, «Sujetos headless».
 - El `sed` que oculta la ruta de la campaña tiene que cubrir la forma Windows (`cygpath -m`), no solo la de Git Bash → `tech-stack.md`, «Sujetos headless».
-- El paquete de revisión sin evidencia se genera con `git diff -- . ':(exclude,glob).docs/sdd/specs/**/red/**'`: sin `glob`, el `*` no cruza `/` y no excluye nada (423 KB frente a 94 KB) → `tech-stack.md`, «Sujetos headless».
+- El paquete de revisión sin evidencia se genera con `git diff -- . ':(exclude,glob).docs/sdd/changes/**/red/**'`: sin `glob`, el `*` no cruza `/` y no excluye nada (423 KB frente a 94 KB) → `tech-stack.md`, «Sujetos headless».
 - Lo que el mensaje final tiene que decir, el agente lo lee de su memoria si no se le pide abrir el fichero: «relee» dio 7/8, y «abre ahora y no lo resumas de memoria» 2/2 → `tech-stack.md`, «Sujetos headless» (junto al aprendizaje del patch 0037).
 - El delta de la spec se fusiona en `capabilities/control-profiles.md`, `onboarding.md` y `migration.md`.
 

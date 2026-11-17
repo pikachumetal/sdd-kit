@@ -87,7 +87,7 @@ App de las medidas: Vite + React desechable en `http://127.0.0.1:3456/`, levanta
 
 ### Comprobaciones para Claude Desktop en Mac (para un compañero)
 
-Desde la rama `feature/0162-validation-panel-spike` (o `develop`, tras el merge), carpeta `.docs/sdd/specs/20261009-082930-feature-0162-validation-panel-spike/`. Apunta cada resultado en un fichero `probe/evidence/mac.md` de esa carpeta, con la forma de `o1-read.md` (paso → resultado → hora), y devuélvelo en un ticket de `sdd-feedback`.
+Desde la rama `feature/0162-validation-panel-spike` (o `develop`, tras el merge), carpeta `.docs/sdd/changes/20261009-082930-feature-0162-validation-panel-spike/`. Apunta cada resultado en un fichero `probe/evidence/mac.md` de esa carpeta, con la forma de `o1-read.md` (paso → resultado → hora), y devuélvelo en un ticket de `sdd-feedback`.
 
 1. En Claude Desktop, ¿la sesión de código tiene las herramientas `claude-in-chrome`? Apunta la versión de Claude Desktop y la de la extensión (en `chrome://extensions`).
 2. `list_connected_browsers` devuelve tu Chrome con `osPlatform` de Mac e `inUse: true`. Si devuelve `[]`, apunta qué hiciste para conectarlo.

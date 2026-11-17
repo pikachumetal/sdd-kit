@@ -112,7 +112,7 @@ Ninguna.
 
 **Modelo**: hilo principal (Opus 5, el de la sesión).
 **Ejecución**: en línea. Los tests del paso 6 los escribe el hilo; las dos ediciones de docs son de una línea.
-**Tests RED**: `.docs/sdd/specs/20260922-133931-task-0025-scope-brake/ScopeBrake.Tests.ps1`.
+**Tests RED**: `.docs/sdd/changes/20260922-133931-task-0025-scope-brake/ScopeBrake.Tests.ps1`.
 
 **Interfaces**:
 - Consume: nada.
@@ -127,7 +127,7 @@ Ninguna.
   - `SKILL.md` no contiene la cadena `3.º fix`: el valor vive en la referencia.
   - `tasks-template.md` contiene `## Fixes adicionales` y, en esa misma línea, `freno de alcance`.
   - `overrides-superpowers.md` contiene `frenos de alcance`.
-- [ ] **Step 2: Ejecutarlo contra el working tree**: `pwsh -NoProfile -Command "Invoke-Pester -Path .docs/sdd/specs/20260922-133931-task-0025-scope-brake/ScopeBrake.Tests.ps1"`. Esperado: FAIL en todas las anclas de la guía.
+- [ ] **Step 2: Ejecutarlo contra el working tree**: `pwsh -NoProfile -Command "Invoke-Pester -Path .docs/sdd/changes/20260922-133931-task-0025-scope-brake/ScopeBrake.Tests.ps1"`. Esperado: FAIL en todas las anclas de la guía.
 - [ ] **Step 3: `CLAUDE.md` regla 6**: la delegación no quita las paradas del perfil `delegate`; el agente para en la spec, en los desvíos y en la validación, y decide solo el método.
 - [ ] **Step 4: Fila 0019**: añadir que la columna «Ficheros que toca» del `roadmap-template` es suya, con el origen en la 0025 (decisión 7 de la spec).
 - [ ] **Step 5: Commit** por ruta (test aparcado, `CLAUDE.md`, roadmap) con la suite en verde.

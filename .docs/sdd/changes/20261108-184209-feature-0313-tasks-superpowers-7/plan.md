@@ -78,7 +78,7 @@ created: 2026-11-08
 - `cli/src/tasks/repo.ts` — dónde trabajan los verbos de tasks: `-C` y el repo del directorio actual, con o sin commit.
 - `cli/test/tasks/repo.slow.test.ts` — `-C`, la parada fuera de un repo o sin commits y el `.gitignore`, con el binario.
 - `cli/test/tasks/task-ids.slow.test.ts` — los ids nuevos y los inválidos en `task start|brief|done`, y el aviso del bloque en stderr, con el binario.
-- `.docs/sdd/specs/20261108-184209-feature-0313-tasks-superpowers-7/tasks.md` — registro vivo.
+- `.docs/sdd/changes/20261108-184209-feature-0313-tasks-superpowers-7/tasks.md` — registro vivo.
 
 **Modificar**:
 

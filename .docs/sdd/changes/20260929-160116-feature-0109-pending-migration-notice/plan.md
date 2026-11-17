@@ -61,7 +61,7 @@ created: 2026-09-29
 **Crear**:
 
 - `skills/sdd-init-brownfield/references/migrations/v2.1.0.md` — migración «sin cambios en el proyecto».
-- `.docs/sdd/specs/<esta carpeta>/red/`, `green/` — `subject.sh`, molde y salidas de la campaña.
+- `.docs/sdd/changes/<esta carpeta>/red/`, `green/` — `subject.sh`, molde y salidas de la campaña.
 - `tests/pending-migration-notice-red.md`, `tests/pending-migration-notice-green.md` — evidencia.
 
 **Modificar**:

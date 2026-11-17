@@ -60,7 +60,7 @@ created: 2026-09-22
 **Crear**:
 
 - `tests/init-control-keys-green.md` — evidencia GREEN.
-- `.docs/sdd/specs/20260922-141616-task-0020-init-control-keys/green/` — personas, moldes y salidas del GREEN.
+- `.docs/sdd/changes/20260922-141616-task-0020-init-control-keys/green/` — personas, moldes y salidas del GREEN.
 
 **Modificar**:
 

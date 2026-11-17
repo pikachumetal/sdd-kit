@@ -59,7 +59,7 @@ created: 2026-09-22
 
 - `tests/ProportionalReview.Tests.ps1` — anclas de los cuatro cambios.
 - `tests/proportional-review-green.md` — evidencia GREEN.
-- `.docs/sdd/specs/20260922-211605-task-0021-proportional-review/green/` — lanzadores y salida de los sujetos.
+- `.docs/sdd/changes/20260922-211605-task-0021-proportional-review/green/` — lanzadores y salida de los sujetos.
 
 **Modificar**:
 

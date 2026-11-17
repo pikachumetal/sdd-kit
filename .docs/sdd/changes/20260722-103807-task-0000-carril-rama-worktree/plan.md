@@ -63,7 +63,7 @@ created: 2026-07-22
 **NO se tocan** (histórico — sería falsificar):
 
 - `.docs/sdd/changelog.md` — entradas de releases publicadas.
-- `.docs/sdd/specs/2026...` (specs/walkthroughs/tasks.md cerradas) — excepto esta carpeta.
+- `.docs/sdd/changes/2026...` (specs/walkthroughs/tasks.md cerradas) — excepto esta carpeta.
 - `.docs/sdd/releases/v0.x/` — actas y notes.
 - `tests/sdd-*-hotfix-*.md` (v0.1.0) y otras evidencias con "hotfix" histórico.
 - `.docs/flux/*` — documentos del equipo en catalán, otro ámbito.

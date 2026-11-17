@@ -147,7 +147,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 **Ficheros**: `skills/add-to-changelog/SKILL.md`, `skills/sdd-archive/SKILL.md`, `references/records.md`, `skills/sdd-start-feature/SKILL.md`, `references/nombrado.md`, `references/commit-milestones.md`.
 
-- [ ] **Step 1: `add-to-changelog`** — en inglés; invocada por el corte en 3.0.0 y por el cierre en 2.x; recibe la tabla de categorías del patch (`Fixed` fallo, `Changed` ajuste de presentación, `Added` o `Changed` petición cerrada, `Removed` retirada); enlace `.docs/sdd/changes/<carpeta>/` o `.docs/sdd/specs/<carpeta>/`; sin «changelog de cliente».
+- [ ] **Step 1: `add-to-changelog`** — en inglés; invocada por el corte en 3.0.0 y por el cierre en 2.x; recibe la tabla de categorías del patch (`Fixed` fallo, `Changed` ajuste de presentación, `Added` o `Changed` petición cerrada, `Removed` retirada); enlace `.docs/sdd/changes/<carpeta>/` o `.docs/sdd/changes/<carpeta>/`; sin «changelog de cliente».
 - [ ] **Step 2: Cierres** — `sdd-archive` paso 4: «Changelog» solo con `.docs/sdd/changelog.md`, y una frase: con `ROADMAP.md` `CHANGELOG.md` no se toca. `records.md`, «Roadmap 3.0.0»: un cambio sin fila gana una en Now con su brief. `sdd-start-feature` paso 7, `nombrado.md` y `commit-milestones.md`: el borrador de entrada solo en 2.x.
 - [ ] **Step 3: Verificación** — sujeto `h`: `CHANGELOG.md` sin cambios y fila 0021 ✅; batería.
 - [ ] **Step 4: Commit de la task** — `feat(sdd-archive): dejar el changelog al corte en la forma 3.0.0`.

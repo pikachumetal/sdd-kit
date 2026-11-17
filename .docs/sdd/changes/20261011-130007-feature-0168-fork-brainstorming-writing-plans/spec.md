@@ -242,7 +242,7 @@ Superpowers 7.0.0. Una fila por paso, red flag y racionalización de las dos ski
 | Several independent projects → one at a time | Paso 2 de `sdd-propose`, partir |
 | «If it grows mid-task, stop, say so, and step up a size» | `sdd-propose`, «el carril solo sube» (`routing`) |
 | The Written Design: intent, goals, constraints, how decided, left to builder | `spec-template.md` (Intent, Scope, Approach, ✋, «Decisiones tomadas con el dev-lead») |
-| Where it goes: `docs/superpowers/specs/` | Descartada: `.docs/sdd/specs/<carpeta>/spec.md` |
+| Where it goes: `docs/superpowers/specs/` | Descartada: `.docs/sdd/changes/<carpeta>/spec.md` |
 | Builder check y `builder-check-prompt.md` | Descartada: `review-spec.md` (0 de 6 lo despacharon en el 0167) |
 | Builder check: tres montones (respondido, menor, del usuario) | ✋ (lo menor que decide el agente) y «Decisiones tomadas con el dev-lead» |
 | HARD-GATE: nada se construye sin aprobar | Gate de la spec del paso 4 de `sdd-propose` |

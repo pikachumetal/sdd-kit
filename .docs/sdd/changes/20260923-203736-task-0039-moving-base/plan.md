@@ -76,7 +76,7 @@ created: 2026-09-23
 - `tests/FileOverlap.Tests.ps1` — anclas del frente B (Task 2).
 - `tests/file-overlap-red.md` — RED de sujetos del frente B y control de `git status` (Task 2).
 - `tests/sync-merge-green.md` y `tests/file-overlap-green.md` — veredictos del GREEN (Task 3).
-- `.docs/sdd/specs/20260923-203736-task-0039-moving-base/green/` — molde, lanzador y salidas (Task 3).
+- `.docs/sdd/changes/20260923-203736-task-0039-moving-base/green/` — molde, lanzador y salidas (Task 3).
 
 **Modificar**:
 

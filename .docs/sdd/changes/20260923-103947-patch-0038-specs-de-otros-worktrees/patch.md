@@ -13,7 +13,7 @@ commit: d3a40f9
 
 ## 1. Síntoma
 
-Del dev-lead: «Get-WorktreeRoadmapIds lee del disco de cada worktree el roadmap, pero no los nombres de carpeta de .docs/sdd/specs/, y un patch reserva su id con la carpeta, no con una fila. Cuarta colisión: el patch 0036 creó su carpeta sin commitear, la 0006 se partió y reservó la 0036 en develop, y el patch tuvo que renumerarse a 0037 (ticket del patch 0037 §1).»
+Del dev-lead: «Get-WorktreeRoadmapIds lee del disco de cada worktree el roadmap, pero no los nombres de carpeta de .docs/sdd/changes/, y un patch reserva su id con la carpeta, no con una fila. Cuarta colisión: el patch 0036 creó su carpeta sin commitear, la 0006 se partió y reservó la 0036 en develop, y el patch tuvo que renumerarse a 0037 (ticket del patch 0037 §1).»
 
 ## 2. Causa raíz
 

@@ -115,7 +115,7 @@ Hoy el eje Spec de la revisión final recibe un `REMOVED` con solo su título y 
 | `pending: '0297'` en un registro de juguete | `cli/test/kit/notices.test.ts:86` | se queda: es un dato de test, no la entrada real |
 | «OpenSpec 1.14.1» como origen de la regla del eje Spec | `tests/batteries/sdd-verify/battery.md`, «Procedencia de las reglas» | se queda (es el origen de esa regla); la regla medida tiene su fila con la v1.16.1, marcada «(no escrita)» |
 
-- Filas que implementa: 0297 → `roadmap.md:157`, la cierra `sdd-archive`; la fila de deuda «OpenSpec 1.14.2: el eje Spec busca un `REMOVED` solo por su título» (`roadmap.md:252`, «Actuar → 0152») → la salda esta feature, y la cierra `sdd-archive`. Las menciones de 0297 en las filas 0312 (✅), 0319, 0311, 0198 y 0152 son «tras 0297» o ejemplos, y no cambian: comprobado con `git grep -n "0297" -- . ':!.docs/sdd/specs/' ':!.docs/sdd/field-reports/' ':!tests/*.md' ':!dist/'`.
+- Filas que implementa: 0297 → `roadmap.md:157`, la cierra `sdd-archive`; la fila de deuda «OpenSpec 1.14.2: el eje Spec busca un `REMOVED` solo por su título» (`roadmap.md:252`, «Actuar → 0152») → la salda esta feature, y la cierra `sdd-archive`. Las menciones de 0297 en las filas 0312 (✅), 0319, 0311, 0198 y 0152 son «tras 0297» o ejemplos, y no cambian: comprobado con `git grep -n "0297" -- . ':!.docs/sdd/changes/' ':!.docs/sdd/field-reports/' ':!tests/*.md' ':!dist/'`.
 
 ## Approach
 

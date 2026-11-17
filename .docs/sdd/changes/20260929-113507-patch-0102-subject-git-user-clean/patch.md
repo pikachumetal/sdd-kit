@@ -19,7 +19,7 @@ commit: d0e01810
 
 Fila de deuda del roadmap «`extract.mjs` no limpia el `user.name` que llega al sujeto por el contexto de la sesión» ([ticket de la feature 0086](../../field-reports/20260927-135601-feature-0086-spec-review-weight.md) §4 y, segundo caso, [ticket de la feature 0099](../../field-reports/20260929-091515-feature-0099-frontend-verification.md) §1): tres salidas de un escenario llevaban el `user.name` de git de la máquina. Pasaron los siete `pre-commit` de la rama y el gate completo, y solo lo vio `SubjectOutputPrivacy.Tests.ps1` en el `pre-merge-commit`. El ticket suponía que el `pre-commit` no ejecuta ese test.
 
-Medido, y difiere del reportado: el `pre-commit` **sí** ejecuta `SubjectOutputPrivacy.Tests.ps1` (no lleva la etiqueta `Slow`), pero pasa con la fuga dentro. Con un fichero sin commitear en `.docs/sdd/specs/zz-leak-probe/red/spec.md` que contenía el `user.name` real, lanzado como lo lanza el hook (`pwsh -NoProfile` desde `sh`): `Passed=7 Failed=0`. El mismo test con `[Console]::OutputEncoding` en UTF-8: `Passed=6 Failed=1`. Además, `extract.mjs clean` deja el nombre tal cual (`grep -c` del nombre en su salida: `1`).
+Medido, y difiere del reportado: el `pre-commit` **sí** ejecuta `SubjectOutputPrivacy.Tests.ps1` (no lleva la etiqueta `Slow`), pero pasa con la fuga dentro. Con un fichero sin commitear en `.docs/sdd/changes/zz-leak-probe/red/spec.md` que contenía el `user.name` real, lanzado como lo lanza el hook (`pwsh -NoProfile` desde `sh`): `Passed=7 Failed=0`. El mismo test con `[Console]::OutputEncoding` en UTF-8: `Passed=6 Failed=1`. Además, `extract.mjs clean` deja el nombre tal cual (`grep -c` del nombre en su salida: `1`).
 
 ## 2. Causa raíz
 

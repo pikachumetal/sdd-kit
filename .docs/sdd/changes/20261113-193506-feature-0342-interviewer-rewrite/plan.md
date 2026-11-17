@@ -74,8 +74,8 @@ created: 2026-11-13
 **Crear**:
 
 - `cli/test/kit/interviewer-transcript.test.ts` — `transcript.mjs` y `extract.mjs`: no cortan lecturas y enseñan el rango de `Read`.
-- `.docs/sdd/specs/20261113-193506-feature-0342-interviewer-rewrite/tasks.md` — registro vivo.
-- `.docs/sdd/specs/20261113-193506-feature-0342-interviewer-rewrite/{red,green}/` — evidencia de las tandas (transcripts, lecturas, totales).
+- `.docs/sdd/changes/20261113-193506-feature-0342-interviewer-rewrite/tasks.md` — registro vivo.
+- `.docs/sdd/changes/20261113-193506-feature-0342-interviewer-rewrite/{red,green}/` — evidencia de las tandas (transcripts, lecturas, totales).
 
 **Modificar**:
 

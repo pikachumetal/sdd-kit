@@ -43,7 +43,7 @@ Review de spec propuesta: ninguna — señales: contrato público (la API de lib
 12. **Objetivo de tiempo**: `kit:test-headless` por debajo de 60 s sin carga; el walkthrough da el antes (262,6 s sin carga, ~740 s con carga, del roadmap) y el después medido.
 13. **Se borran**: `tests/headless/lib.sh`, los 14 `subject.sh`, `cli/test/kit/bash.ts`, `cli/test/kit/bash.slow.test.ts`, `findGitBash` y la rama `.sh` de `real-deps.mjs`, `bash`, `runLib`, `serverLaunch` y `fakeClaude` de `cli/test/kit/headless/campaign.ts` si nadie más los usa. En `moon.yml`, la entrada `/cli/test/kit/bash.ts` de `kit:test-headless`.
 14. **Se quedan, a propósito**: `tests/headless/no-claude/claude` (bash) y `claude.cmd`, porque no los ejecuta el repo, sino la herramienta Bash o PowerShell del sujeto, y sin ellos un sujeto podría lanzar su propio `claude` sin que se viera su coste. El `"shell": "bash"` del hook de `.claude/settings.json`, que es configuración del harness y lanza `node`. La consulta a `pwsh` de la línea de órdenes de los procesos en `real-deps.mjs`. Los `pwsh` del producto (`cli/src/merge/verify.ts`) y de otros tests de la CLI.
-15. **Documentos**: en `tech-stack.md`, las líneas de método que nombran `lib.sh`, `subject.sh` o sus funciones como herramienta pasan a `lib.mjs` y `subject.mjs` (p. ej. «Un lanzador nuevo se escribe sobre `tests/headless/lib.sh`»); las lecciones fechadas que los citan como contexto no se reescriben. `architecture.md` (las 2 líneas de `subject.sh`), los 14 `battery.md` donde nombran `subject.sh` o una función de `lib.sh`, el comentario de `battery.mjs` y la cabecera de `run.mjs`. Las `subject.sh` de las campañas cerradas en `.docs/sdd/specs/` se quedan como evidencia, aunque ya no corren.
+15. **Documentos**: en `tech-stack.md`, las líneas de método que nombran `lib.sh`, `subject.sh` o sus funciones como herramienta pasan a `lib.mjs` y `subject.mjs` (p. ej. «Un lanzador nuevo se escribe sobre `tests/headless/lib.sh`»); las lecciones fechadas que los citan como contexto no se reescriben. `architecture.md` (las 2 líneas de `subject.sh`), los 14 `battery.md` donde nombran `subject.sh` o una función de `lib.sh`, el comentario de `battery.mjs` y la cabecera de `run.mjs`. Las `subject.sh` de las campañas cerradas en `.docs/sdd/changes/` se quedan como evidencia, aunque ya no corren.
 - `sdd capability merge` sobre una copia de `.docs/sdd`: «Sin delta que fusionar».
 - Política de modelos: sin revisores de la spec · revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sin sujetos: no toca texto de skill, así que no pide RED (Art. I) · en paralelo hasta `control.maxParallelAgents` (3) — al aprobar la spec, esta línea es la confirmación de paralelizar los ejes de la revisión final.
 
@@ -61,7 +61,7 @@ Hoy los moldes y su biblioteca son bash: `kit:test-headless` tarda ~740 s con ca
 ## Scope
 
 - Entra: `lib.mjs` y sus tests en proceso; los 14 `subject.mjs`; el e2e con `claude` falso; el test de moldes en seco con el de cierre vivo; la carrera (c); el tope de tiempo que mata el árbol; la parada por puertos con `netstat`; `SUBJECT_SH` solo `.mjs`; borrar lo de la decisión 13; documentos (decisión 15). Por la enmienda del 2026-10-28: la suite del lanzador en verde también en el CI de Linux, los tests rápidos del lanzador de vuelta en `cli:test`, un tope por sujeto por omisión y el tope de longitud de `RUNS_DIR`.
-- No entra: la consulta de procesos por línea de órdenes en Windows (se queda en `pwsh`); `no-claude/claude`; el hook de `.claude/settings.json`; reescribir la evidencia cerrada de `.docs/sdd/specs/` y `tests/*.md`; lanzar campañas reales en Linux o macOS (solo su suite corre en el CI de Linux); cambiar texto de ninguna skill.
+- No entra: la consulta de procesos por línea de órdenes en Windows (se queda en `pwsh`); `no-claude/claude`; el hook de `.claude/settings.json`; reescribir la evidencia cerrada de `.docs/sdd/changes/` y `tests/*.md`; lanzar campañas reales en Linux o macOS (solo su suite corre en el CI de Linux); cambiar texto de ninguna skill.
 
 ## Lo que se retira o cambia de forma
 
@@ -87,7 +87,7 @@ La lógica de `lib.sh` pasa a un módulo de Node con sus dependencias inyectadas
 - `SUBJECT_SH` con `.sh`: `campaign.test.ts`, en proceso.
 - El cableado real (spawn de `claude`, PATH con `no-claude/`, marcador del molde, petición con «» y tildes intacta): `subject.test.ts`, el único e2e.
 - Cada clase de molde se construye, y los de cierre pasan `sdd capability check` con la versión del kit: `molds.test.ts`, en seco.
-- Ningún test lanza bash ni duerme con reloj fijo: `git grep` de `bash`, `sleep` y `setTimeout` en `cli/test/kit/headless/` en la verificación de la task, y `git ls-files '*.sh'` vacío fuera de `.githooks/` y `.docs/sdd/specs/`.
+- Ningún test lanza bash ni duerme con reloj fijo: `git grep` de `bash`, `sleep` y `setTimeout` en `cli/test/kit/headless/` en la verificación de la task, y `git ls-files '*.sh'` vacío fuera de `.githooks/` y `.docs/sdd/changes/`.
 - Tiempo de `kit:test-headless`: medido sin carga en el cierre.
 
 ## Términos y ADR
@@ -112,7 +112,7 @@ Sin delta: no toca comportamiento de ninguna capacidad.
   1. La suite de `test/kit/headless/` en verde en el CI de `develop` (`ubuntu-latest`, run 40725241939). Los tests de la 0216 (`battery.test.ts`, `campaign.test.ts`) usan rutas neutras construidas con `path`, como `lib.test.ts`. En Linux, `real-deps.mjs` lee los procesos de `/proc` (el contenedor `ubuntu:24.04` no trae `ps`) y para por PID con `process.kill`, porque `pwsh` y `taskkill` son de Windows.
   2. `cli/vitest.config.ts` (0233) solo deja fuera de `cli:test` los tests que lanzan procesos (`run.test.ts`, `subject.test.ts`, `molds.test.ts`); los rápidos vuelven al pre-commit.
   3. Del ticket de la 0230: `SUBJECT_TIMEOUT` vale 1800 s por omisión (la propuesta del ticket, 30 min); `0` sigue quitando el tope. `run.mjs` y `battery.mjs run` abortan antes del primer sujeto con un `RUNS_DIR` de más de 100 caracteres (80 hasta el ajuste de abajo): `RUNS_DIR de <n> caracteres (máximo 100): <ruta>; usa .temp/<corto> del worktree`. La parte de `settings.slow.test.ts` ya no aplica: la Task 3 lo borró.
-  4. El repo sin `.sh` fuera de `.githooks/` y `.docs/sdd/specs/`: ya estaba en la Task 5.
+  4. El repo sin `.sh` fuera de `.githooks/` y `.docs/sdd/changes/`: ya estaba en la Task 5.
   — aprobada: «sí, manda lo que sea necesario» (dev-lead, 2026-10-28, transmitida por la sesión `develop`)
 
 ## Aprobaciones

@@ -69,7 +69,7 @@ created: 2026-10-20
 **Crear**:
 
 - `tests/sdd-config-0178-red.md` y `tests/sdd-config-0178-green.md` — evidencia de `cf1` y `cf2`.
-- Salidas de los sujetos en `.docs/sdd/specs/20261020-112618-feature-0178-sdd-config-english/runs/`.
+- Salidas de los sujetos en `.docs/sdd/changes/20261020-112618-feature-0178-sdd-config-english/runs/`.
 
 **Modificar**:
 

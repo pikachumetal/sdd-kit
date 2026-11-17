@@ -58,7 +58,7 @@ Solo la carpeta del spike; ninguna skill, plantilla ni test cambia.
 
 ### 4.1 Builds
 
-- Gate: la rama solo toca `.docs/` y `*.md` (los scripts del spike viven en `.docs/sdd/specs/…/scripts/`): no corre nada («Running a gate» de `sdd-verify`, punto 1). Los scripts se ejecutaron en la sesión y reproducen sus salidas commiteadas (`rules.mjs`, `render.mjs`, `low-summary.mjs`, `ticket-verdicts.mjs`).
+- Gate: la rama solo toca `.docs/` y `*.md` (los scripts del spike viven en `.docs/sdd/changes/…/scripts/`): no corre nada («Running a gate» de `sdd-verify`, punto 1). Los scripts se ejecutaron en la sesión y reproducen sus salidas commiteadas (`rules.mjs`, `render.mjs`, `low-summary.mjs`, `ticket-verdicts.mjs`).
 
 ### 4.2 Smoke / tests
 

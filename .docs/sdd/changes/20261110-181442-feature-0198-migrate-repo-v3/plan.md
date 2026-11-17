@@ -46,7 +46,7 @@ created: 2026-11-10
 ## Review Focus
 
 - Fila ✅ cuyo `walkthrough.md` ninguna etiqueta contiene → Now · Task 1, fila de `v5`
-- Enlace `](specs/…)` del changelog → `](.docs/sdd/specs/…)` en `CHANGELOG.md` · Task 1 y Task 4, test de enlaces
+- Enlace `](specs/…)` del changelog → `](.docs/sdd/changes/…)` en `CHANGELOG.md` · Task 1 y Task 4, test de enlaces
 - Proyecto en 3.0.0 con kit 2.3.4 que trae `v3.0.0.md` → sin aviso · Task 3
 
 ---

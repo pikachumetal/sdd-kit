@@ -64,7 +64,7 @@ created: 2026-09-23
 - `skills/sdd-templates/scripts/Invoke-SddMerge.ps1` — el script.
 - `tests/Invoke-SddMerge.Tests.ps1` — Pester, escrito por el hilo.
 - `tests/merge-script-red.md`, `tests/merge-script-green.md` — evidencia del Art. I.
-- `.docs/sdd/specs/20260923-145338-task-0042-merge-script/red/`, `green/` — molde, lanzador y salida de los sujetos.
+- `.docs/sdd/changes/20260923-145338-task-0042-merge-script/red/`, `green/` — molde, lanzador y salida de los sujetos.
 
 **Modificar**:
 

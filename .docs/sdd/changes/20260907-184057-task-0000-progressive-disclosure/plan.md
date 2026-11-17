@@ -52,7 +52,7 @@ Copiadas literalmente de la spec y de la constitution. Toda task las hereda.
 
 **Crear**:
 
-- `.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/tasks.md` — registro vivo (status + commit hash por task), porque el plan tiene 5 tasks.
+- `.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/tasks.md` — registro vivo (status + commit hash por task), porque el plan tiene 5 tasks.
 - `tests/<skill>-ab.md` × 11 — evidencia por skill: cortes probados, aceptados, descartados y por qué.
 - `skills/<skill>/references/<tema>.md` — **solo donde el A/B acepte el corte**. Cuántos y cuáles no se puede saber antes de medir; ese es el objeto de la task. Cero ficheros es un desenlace válido.
 

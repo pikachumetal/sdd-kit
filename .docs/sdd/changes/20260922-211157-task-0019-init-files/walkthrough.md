@@ -55,7 +55,7 @@ created: 2026-09-23
 ### 4.1 Builds
 
 - `Invoke-Pester tests` tras la última integración: «Tests Passed: 347, Failed: 0, Skipped: 6» (hook `pre-commit` del merge `bbf768f`). `tests/MigrationInitParity.Tests.ps1`: 23/23.
-- `Build-EstimationLog.ps1` sobre un proyecto con `.docs/sdd/specs/` vacía, antes y después de integrar la 0010: exit 0, cabecera `<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) …` y 0 filas.
+- `Build-EstimationLog.ps1` sobre un proyecto con `.docs/sdd/changes/` vacía, antes y después de integrar la 0010: exit 0, cabecera `<!-- AUTO-GENERADO por Build-EstimationLog.ps1 (sdd-kit) …` y 0 filas.
 
 ### 4.2 Smoke / tests
 

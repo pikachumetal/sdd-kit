@@ -78,7 +78,7 @@ created: 2026-10-08
 - `tests/batteries/sdd-start-feature/subject.sh` — monta `mold-reservas` y el punto del flujo de cada escenario.
 - `tests/batteries/sdd-start-feature/mold-reservas/` — molde (Task 1).
 - `tests/sdd-start-feature-0146-red.md`, `tests/sdd-start-feature-0146-green.md` — evidencia.
-- `.docs/sdd/specs/20261008-193241-feature-0146-propose-spec-and-plan/red/out/`, `green/out/` — salidas versionadas.
+- `.docs/sdd/changes/20261008-193241-feature-0146-propose-spec-and-plan/red/out/`, `green/out/` — salidas versionadas.
 
 **Modificar**:
 

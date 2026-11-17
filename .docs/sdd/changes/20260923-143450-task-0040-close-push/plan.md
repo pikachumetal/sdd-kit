@@ -61,8 +61,8 @@ created: 2026-09-23
 
 - `tests/close-push-red.md` — RED del delta: resume `red/README.md` de la spec y enlaza su evidencia.
 - `tests/close-push-green.md` — GREEN con sus escenarios y el veredicto contra cada fallo del RED.
-- `.docs/sdd/specs/20260923-143450-task-0040-close-push/tasks.md` — registro vivo.
-- `.docs/sdd/specs/20260923-143450-task-0040-close-push/green/` — lanzador y salidas del GREEN (solo lo que cambie respecto a `red/`).
+- `.docs/sdd/changes/20260923-143450-task-0040-close-push/tasks.md` — registro vivo.
+- `.docs/sdd/changes/20260923-143450-task-0040-close-push/green/` — lanzador y salidas del GREEN (solo lo que cambie respecto a `red/`).
 
 **Modificar**:
 

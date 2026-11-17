@@ -16,12 +16,12 @@ commit: f59754c
 Del dev-lead: «la ruta más larga del repo tiene 165 caracteres y rompe la instalación del plugin en Windows; acorta la evidencia de la task 0002 por debajo de 140 y añade un test que lo vigile». Detalle en la fila de deuda «El plugin distribuye el repo entero» del roadmap:
 
 ```
-fatal: cannot create directory at '.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/evidencia-red/moldes/molde-cliente/.docs/sdd/specs/…': Filename too long
+fatal: cannot create directory at '.docs/sdd/changes/20260920-220741-task-0002-sdd-feedback/evidencia-red/moldes/molde-cliente/.docs/sdd/changes/…': Filename too long
 ```
 
 ## 2. Causa raíz
 
-Las campañas RED/GREEN versionan dentro de la carpeta de la spec un proyecto simulado con su propio `.docs/sdd/specs/<timestamp>-task-…/`, así que la ruta anida dos nombres de spec completos. Medido con `git ls-files` sobre la rama (que ya integra `develop`): **65 rutas de 140 caracteres o más**, no solo las de la 0002:
+Las campañas RED/GREEN versionan dentro de la carpeta de la spec un proyecto simulado con su propio `.docs/sdd/changes/<timestamp>-task-…/`, así que la ruta anida dos nombres de spec completos. Medido con `git ls-files` sobre la rama (que ya integra `develop`): **65 rutas de 140 caracteres o más**, no solo las de la 0002:
 
 - **Task 0002** (7 rutas, máx. 165): los moldes en `evidencia-red/moldes/molde-*/` y tres tickets GREEN copiados con el nombre completo que les dio el sujeto (`E2-green-2--20260921-064137-task-0007-implementer-dispatch-and-learning-destination.md`).
 - **Task 0013** (58 rutas, máx. 152): cada sujeto copia su `.docs/` entera a `red/out/<etiqueta>/` y `green/out/<etiqueta>/`. Entró en `develop` después de escribir la fila del roadmap, por eso la fila solo nombra la 0002.

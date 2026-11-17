@@ -83,12 +83,12 @@ created: 2026-10-25
 - `tests/headless/battery.mjs` — `cualquiera`.
 - `tests/HeadlessLauncher.Tests.ps1`, `tests/SubjectOutputPrivacy.Tests.ps1`, `tests/DenyKillHook.Tests.ps1`, `tests/Battery.Tests.ps1` — casos.
 - `tests/batteries/sdd-implement/battery.md` — `t1b` a `cualquiera`.
-- 8 salidas con fugas: `.docs/sdd/specs/20260923-070206-patch-0037-disparador-vago/campaign/out/{green-1/walkthrough.md,green-2/roadmap.md,green-2/walkthrough.md,green2-2/roadmap.md,green2-2/t2.txt,green2-2/walkthrough.md}` y `.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/green/out/{x4-1,x4-2}.tools.txt`.
+- 8 salidas con fugas: `.docs/sdd/changes/20260923-070206-patch-0037-disparador-vago/campaign/out/{green-1/walkthrough.md,green-2/roadmap.md,green-2/walkthrough.md,green2-2/roadmap.md,green2-2/t2.txt,green2-2/walkthrough.md}` y `.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/green/out/{x4-1,x4-2}.tools.txt`.
 - `.docs/sdd/tech-stack.md` — líneas 60, 95, 133, 162, 210 y 211.
 
 **NO se tocan**:
 
-- `.docs/sdd/specs/20260925-180248-feature-0036-closing-verification/green/` — campaña cerrada, conserva su lanzador.
+- `.docs/sdd/changes/20260925-180248-feature-0036-closing-verification/green/` — campaña cerrada, conserva su lanzador.
 - `tests/headless/run.sh` — es de la 0213.
 
 ### 1.6 Dependencias

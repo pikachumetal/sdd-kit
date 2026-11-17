@@ -73,7 +73,7 @@ created: 2026-11-01
 
 **NO se tocan**:
 
-- `tests/*.md`, `.docs/sdd/specs/`, `field-reports/`, `changelog.md`, ADR, `migrations/v0.4.0.md` y `v2.0.0.md`, `cli/test/fixtures/` — historia.
+- `tests/*.md`, `.docs/sdd/changes/`, `field-reports/`, `changelog.md`, ADR, `migrations/v0.4.0.md` y `v2.0.0.md`, `cli/test/fixtures/` — historia.
 - `skills/using-sdd/SKILL.md` y el castellano de `skills/sdd-templates/SKILL.md` — son de la 0272.
 
 ### 1.6 Dependencias

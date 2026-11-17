@@ -65,7 +65,7 @@ created: 2026-09-25
 - `skills/sdd-templates/scripts/CapabilitySections.ps1` — lectura de secciones y del propósito.
 - `skills/sdd-templates/scripts/Get-CapabilityIndex.ps1` — el índice.
 - `tests/Get-CapabilityIndex.Tests.ps1` — sus tests.
-- `.docs/sdd/specs/<carpeta>/red/`, `green/` — arnés y salidas de la campaña.
+- `.docs/sdd/changes/<carpeta>/red/`, `green/` — arnés y salidas de la campaña.
 - `tests/capabilities-index-red.md`, `tests/capabilities-index-green.md` — evidencia.
 
 **Modificar**:

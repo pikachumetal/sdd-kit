@@ -31,7 +31,7 @@ created: 2026-09-09
 - **Art. III** — nombres de skill y de fichero en inglés kebab-case; texto humano en castellano con ortografía correcta.
 - **Art. VIII** — las plantillas viven SOLO en `skills/sdd-templates/templates/`; ninguna copia en ningún sitio.
 - **Art. X, calidad de código** (literal): *Sin comentarios que repitan el código* — un comentario existe solo si sin él la línea no se entiende, y antes de escribirlo se intenta que el nombre o una extracción lo hagan innecesario; lo que se conserva es el *porqué* no deducible. El bloque de ayuda de `Get-Help` no es un comentario. *Sin comentarios que citen documentos* — un comentario nunca referencia la constitution, una spec, una task, un requisito ni la carpeta de capacidades. Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación, sin alias de PowerShell. Texto humano (mensajes, warnings, ayuda) en castellano con tildes.
-- **Histórico sellado intocable**: `.docs/sdd/specs/`, `.docs/sdd/releases/`, `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md`.
+- **Histórico sellado intocable**: `.docs/sdd/changes/`, `.docs/sdd/releases/`, `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md`.
 - **`.docs/sdd/capabilities/*.md` no se editan a mano** en esta task: su contenido lo fusiona `sdd-end-task`.
 
 ---
@@ -67,7 +67,7 @@ created: 2026-09-09
 
 **NO se tocan**:
 
-- `.docs/sdd/specs/**`, `.docs/sdd/releases/**`, `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` — histórico sellado; describen lo entregado.
+- `.docs/sdd/changes/**`, `.docs/sdd/releases/**`, `.docs/sdd/changelog.md`, `.docs/sdd/roadmap.md` — histórico sellado; describen lo entregado.
 - `.docs/sdd/capabilities/*.md` (contenido) — lo fusiona `sdd-end-task`.
 - `tests/*-red.md`, `tests/*-green.md`, `skills/*/references/` con nombre castellano propio, fixtures — deuda declarada (decisión 7 de la spec).
 

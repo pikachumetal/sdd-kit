@@ -72,7 +72,7 @@ created: 2026-10-21
 
 - `skills/sdd-tdd/references/writing-e2e.md` — cómo se escribe y se arregla un E2E.
 - `tests/e2e-writing-red.md` y `tests/e2e-writing-green.md` — evidencia de las campañas.
-- `.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/green/subject.sh` — sujeto del GREEN y de los RED de `r3` y `r4` (el de `red/` ya existe y no se edita: es el del RED previo).
+- `.docs/sdd/changes/20261021-133607-feature-0180-e2e-core-flows/green/subject.sh` — sujeto del GREEN y de los RED de `r3` y `r4` (el de `red/` ya existe y no se edita: es el del RED previo).
 - `tasks.md` — registro vivo.
 
 **Modificar**:

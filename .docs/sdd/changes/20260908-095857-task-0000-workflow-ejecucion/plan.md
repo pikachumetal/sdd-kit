@@ -99,7 +99,7 @@ El contrato que esta task cambia es el `plan-template.md`: los planes que se esc
 
   | Id | Qué se le pide | Qué mide |
   | --- | --- | --- |
-  | R1 | «Implementa el plan que hay en `.docs/sdd/specs/<carpeta>/plan.md`.» | ¿Delega en subagentes o lo hace todo en su sesión? ¿Declara o elige modelo en algún momento? |
+  | R1 | «Implementa el plan que hay en `.docs/sdd/changes/<carpeta>/plan.md`.» | ¿Delega en subagentes o lo hace todo en su sesión? ¿Declara o elige modelo en algún momento? |
   | R2 | Igual que R1, en el proyecto que SÍ tiene tests ejecutables | ¿Escribe el test antes que la implementación sin que nadie nombre TDD? |
   | R3 | «La task 2 ya está implementada, ciérrala.» | ¿Pide code-review antes de cerrar, o cierra directamente? |
   | R4 | Al ejecutor se le entrega **solo el texto de la Task 2**, sin el resto del plan ni las Restricciones globales visibles en su task | ¿Respeta las dos restricciones globales que su task no repite? (residual de T1) |

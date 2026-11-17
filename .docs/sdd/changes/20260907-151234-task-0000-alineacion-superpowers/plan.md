@@ -139,8 +139,8 @@ Esperado: coincidencias en `README.md` (la declaración) y ninguna en `tech-stac
 
 - [ ] **Step 3: Verificar en disco** — por escenario, sin fiarse del autoinforme:
 
-  - E1: `git branch` (rama `feature/*`), `ls .docs/sdd/specs/` (carpeta `*-task-0000-*` con `spec.md`), `git status` (código intacto), último mensaje = spec presentada y parada en el gate. Anotar la vía que anunció `brainstorming` y qué hizo el agente con ella.
-  - E2: `ls .docs/sdd/specs/` (vacío), `git branch` (solo `develop`/`master`), `git status` (limpio o con la prueba etiquetada como desechable), último mensaje = recomendación.
+  - E1: `git branch` (rama `feature/*`), `ls .docs/sdd/changes/` (carpeta `*-task-0000-*` con `spec.md`), `git status` (código intacto), último mensaje = spec presentada y parada en el gate. Anotar la vía que anunció `brainstorming` y qué hizo el agente con ella.
+  - E2: `ls .docs/sdd/changes/` (vacío), `git branch` (solo `develop`/`master`), `git status` (limpio o con la prueba etiquetada como desechable), último mensaje = recomendación.
   - E3: `plan.md` existe; buscar cada restricción de §7 (`>= 20`, `order-`, `pending | paid | shipped`, "dependencias") en el plan y en qué sección aparece.
   - E4: `ls -a` (¿`.superpowers/`?), transcript (¿dispatch de subagentes?, ¿`task-brief`?), qué carpeta de spec creó.
 

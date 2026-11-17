@@ -44,7 +44,7 @@ Review de spec propuesta: un revisor con los siete puntos — señales: zona sin
 6. **Secciones de `tech-stack.md` sin sitio en `operations-template.md`**: «Contenido y build», «Distribución» y «Referencias de vigilancia» → `steering/architecture.md` (~2.590 palabras), salvo lo que ya fija un manifest (`.prototools`, `package.json`), que sale por la regla «Tecnologías» del paso 2; «Cómo se testean las skills» (15.103), «Entorno de trabajo del equipo» y «Aprendizajes por task» (3.284) → `steering/operations.md`, tras `## Testing`, sin reescribir: la plantilla dice «se reescribe, no se le añade», pero reescribirlas no es migrar (desvío aceptado). Los campos nuevos de `## Testing` («Sin filtro», «Lint», nivel por suite, «Temporales» y `--include-relations` del gate), como dice el paso 2, en la tabla.
 7. **Topes de palabras**: el contenido se mueve sin crecer; cada tope sigue a su contenido (ver «Topes de palabras»). `anchorBudgets` de `cli/test/kit/word-budget.test.ts` pasa a rutas desde la raíz, para leer `PRODUCT.md`.
 8. **Herramientas del repo**, en el mismo commit que la marca: `CLAUDE.md` (reglas 2, 4, 5, 6 y 7, y el índice «Dónde está cada cosa»; el triaje de la regla 6 escribe en `ROADMAP.md` y `steering/debt.md`), `README.md`, los comentarios de `.github/workflows/ci.yml` y la tabla de documentos de `steering/architecture.md`. En `capabilities/` y `.docs/workflow/`, solo los enlaces del paso 4: allí los nombres de documento describen lo que hace el kit, y `.docs/workflow/` se relee entera en la 0152.
-9. **Art. V de la constitution**: su ruta `.docs/sdd/changelog.md` pasa a `CHANGELOG.md` (decisión 13 de la 0144). El Art. VII se queda: el kit sigue escribiendo en `.docs/sdd/specs/`. Sin ADR: cambia una ruta, no una regla.
+9. **Art. V de la constitution**: su ruta `.docs/sdd/changelog.md` pasa a `CHANGELOG.md` (decisión 13 de la 0144). El Art. VII se queda: el kit sigue escribiendo en `.docs/sdd/changes/`. Sin ADR: cambia una ruta, no una regla.
 10. **Las dos filas de deuda «Actuar → 0198»**: el aprendizaje del gate por partes va a `## Testing` de `operations.md`; la nota de la batería, si sigue viva tras pasar `run.sh` a Node (0238), va a «Cómo se testean las skills»; si no, sale de la deuda con su motivo.
 11. **Aviso de versión**: con la marca 3.0.0 y `plugin.json` en 2.3.4 hasta la 0152, cada sesión diría «actualiza con `claude plugin update`», que es falso. `versionWarning` de `cli/bin/session-start.js` no avisa si el kit cargado trae la migración de la versión que pide el proyecto; con su test.
 12. **`roadmap.md` congelado en `develop` mientras viva la rama**: ningún cierre ni triaje lo edita, porque chocaría con su borrado en la rama (modify/delete). Solo trabaja esta sesión, que es también la de coordinación: no hay a quién avisar. La migración corre en el worktree de `feature/0198-migrate-repo-v3`.
@@ -53,7 +53,7 @@ Review de spec propuesta: un revisor con los siete puntos — señales: zona sin
    - `subject.mjs` etiqueta en `main` el commit de la release del molde, que contiene el `patch.md` del 0017, y el del 0023 entra después en `develop`: el arreglo (b) decide lo mismo que hoy la fecha, y V2 y V3 siguen fijas;
    - una variante `v2x-release`, con escenario propio `v5`, lleva los casos de este repo: un enlace `specs/…` en una fila y en el changelog, «**Release 3.0.0**» en filas ✅ y ⏳, una fila ✅ sin prefijo con su walkthrough fuera de la etiqueta, el mismo id en «Patches» y en «Próximo», una fila del Backlog con id, una fila sin id en `🔄` y `capabilities/cierre.md`, una capacidad completa cuyo escenario dice «`sdd-end-patch` pasa a `sdd-archive`»;
    - `v2xReport` enseña además `CHANGELOG.md`, `.docs/sdd/capabilities/*.md` y `git tag`; `persona-v2x.md` contesta a la tabla de `capabilities/` («mantén la línea del cambio de nombre») y al estado de la fila `🔄` («`⏸️ aparcada: uso en campo`»); V5 deja de eximir `capabilities/`;
-   - una fila de rúbrica por arreglo, con una cadena exacta (`](.docs/sdd/specs/` en `ROADMAP.md` y en `CHANGELOG.md`);
+   - una fila de rúbrica por arreglo, con una cadena exacta (`](.docs/sdd/changes/` en `ROADMAP.md` y en `CHANGELOG.md`);
    - RED: `v5` con el kit de `develop`, n = 2. GREEN: `v5` con la rama, n = 2, y `v1`, n = 2, porque el texto que corre `v1` cambia.
    Este repo es además un caso real: los recuentos de la decisión 2, medidos con la migración de `develop`.
 15. **Validación: agente**, con la validación en campo de este repo. Delta probado en una copia: `migration.md`, cuatro sustituidos y cuatro añadidos.
@@ -202,7 +202,7 @@ La 3.0.0 cambia dónde viven los documentos de un proyecto, y la migración que 
 
 - GIVEN un `roadmap.md` 2.x cuya fila enlaza `[walkthrough](specs/x/walkthrough.md)`, un `changelog.md` que enlaza `[ref](specs/x/walkthrough.md)` y un `mission.md` que cita `[no es enlace](decisions/0001.md)` dentro de código
 - WHEN se aplica la v3.0.0 y el dev-lead aprueba las tablas
-- THEN `ROADMAP.md` y `CHANGELOG.md`, en la raíz, enlazan `.docs/sdd/specs/x/walkthrough.md`
+- THEN `ROADMAP.md` y `CHANGELOG.md`, en la raíz, enlazan `.docs/sdd/changes/x/walkthrough.md`
 - AND el texto dentro de código de `PRODUCT.md` no cambia
 
 #### ADDED — La v3.0.0 decide lo publicado por la etiqueta de la última release

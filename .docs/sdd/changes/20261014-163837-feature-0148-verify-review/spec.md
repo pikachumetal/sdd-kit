@@ -410,14 +410,14 @@ Los forks conservan el texto de su fuente. Cada pieza cambiada lleva su fila en 
 - AND el hilo retira el worktree con `git worktree remove` cuando han vuelto todos los ejes
 
 **ADDED — El paquete del revisor final sale del merge-base actual y sin evidencia**
-- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/specs/<carpeta>/red/out.jsonl` en su rama
+- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/changes/<carpeta>/red/out.jsonl` en su rama
 - WHEN el hilo prepara el paquete del revisor final
 - THEN la sección de diff del paquete no contiene `skills/otra/SKILL.md` ni ningún fichero bajo `red/` o `green/`
 - AND la sección de commits lista solo los de la feature y el merge
 - AND el paquete se genera a la primera, con `spec.md` como plan
 
 **ADDED — El paquete del revisor final deja fuera los borrados y la carpeta de la feature**
-- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/specs/`
+- GIVEN una rama que borra `docs/legacy-visual-spec.md` (500 líneas) y cinco fixtures, y trae `spec.md` y `plan.md` en su carpeta de `.docs/sdd/changes/`
 - WHEN el hilo prepara el paquete del revisor final
 - THEN el paquete no contiene el cuerpo de los ficheros borrados ni ningún fichero de la carpeta de la feature
 - AND lista los borrados por nombre en su sección «Ficheros borrados»

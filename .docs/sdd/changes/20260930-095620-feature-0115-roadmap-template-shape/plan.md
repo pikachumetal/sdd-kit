@@ -84,9 +84,9 @@ created: 2026-09-30
 - `tests/Test-Roadmap.Tests.ps1` — sus tests.
 - `skills/sdd-init-brownfield/references/migrations/v2.3.0.md` — la migración.
 - `tests/roadmap-shape-green.md` — evidencia del GREEN.
-- `.docs/sdd/specs/20260930-095620-feature-0115-roadmap-template-shape/green/subject.sh` y `green/out/` — lanzador y salidas.
-- `.docs/sdd/specs/20260930-095620-feature-0115-roadmap-template-shape/roadmap-before.md` — el roadmap anterior, literal.
-- `.docs/sdd/specs/20260930-095620-feature-0115-roadmap-template-shape/migration-gate.md` — la tabla de destinos que aprueba el dev-lead.
+- `.docs/sdd/changes/20260930-095620-feature-0115-roadmap-template-shape/green/subject.sh` y `green/out/` — lanzador y salidas.
+- `.docs/sdd/changes/20260930-095620-feature-0115-roadmap-template-shape/roadmap-before.md` — el roadmap anterior, literal.
+- `.docs/sdd/changes/20260930-095620-feature-0115-roadmap-template-shape/migration-gate.md` — la tabla de destinos que aprueba el dev-lead.
 
 **Modificar**:
 

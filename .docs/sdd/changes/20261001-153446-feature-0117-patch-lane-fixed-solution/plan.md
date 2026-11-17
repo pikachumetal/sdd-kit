@@ -72,7 +72,7 @@ created: 2026-10-01
 
 - `tests/PatchLane.Tests.ps1` — aserciones de texto de las tres tasks.
 - `tests/patch-lane-red.md`, `tests/patch-lane-green.md` — evidencia (Art. I).
-- `.docs/sdd/specs/<esta>/green/subject.sh` — escenarios GREEN sobre `red/mold.sh`.
+- `.docs/sdd/changes/<esta>/green/subject.sh` — escenarios GREEN sobre `red/mold.sh`.
 
 **Modificar**:
 

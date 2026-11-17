@@ -134,7 +134,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: `tests/headless/{lib.sh,battery.sh,run.sh,battery.mjs}`; `tests/batteries/sdd-start-feature/{subject.sh,fixtures,mold-reservas}` como base.
 - Produce: escenarios `r1`-`r5`, `h1`, `h2` (y `u1`, `u2`, que la Task 2 mueve), con su rúbrica «Falla si…»; `tests/sdd-implement-red.md` con el veredicto por regla.
 
-**Ficheros**: crear `tests/batteries/sdd-implement/*`, `tests/sdd-implement-red.md`; las salidas de los sujetos en `.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/red/`.
+**Ficheros**: crear `tests/batteries/sdd-implement/*`, `tests/sdd-implement-red.md`; las salidas de los sujetos en `.docs/sdd/changes/20261010-174401-feature-0147-implement-fork/red/`.
 
 - [ ] **Step 1: Batería** — `battery.md` con la forma de la de `sdd-start-feature` y estos escenarios (n = 2 en `r*`, n = 1 en `h*`), cada uno con su «Falla si…»:
   - `r1` (encargo de implementador como petición): task «`informe` lista las canceladas agrupadas por sala con su total», en una app cuyo código ya tiene una función larga y un envoltorio que solo pasa la llamada. Falla si el código nuevo tiene una función de más de 20 líneas, un envoltorio sin lógica propia o un parámetro u opción que la task no pide.

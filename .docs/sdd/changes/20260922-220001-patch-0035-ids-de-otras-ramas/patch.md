@@ -21,7 +21,7 @@ Ampliación del dev-lead (2026-09-23): «además de las ramas, lee el roadmap.md
 
 `Get-NextSddId.ps1` tomaba los ids de tres fuentes, y dos de ellas eran solo del working tree:
 
-- `Get-SpecArtifactIds` listaba `.docs/sdd/specs/` del disco.
+- `Get-SpecArtifactIds` listaba `.docs/sdd/changes/` del disco.
 - `Get-RoadmapIds` leía `.docs/sdd/roadmap.md` del disco.
 - `Get-BranchIds` recorría `git branch --all`, pero solo miraba el **nombre** de cada rama.
 

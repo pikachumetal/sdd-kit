@@ -69,7 +69,7 @@ created: 2026-11-08
 
 **Crear**:
 
-- `.docs/sdd/specs/20261108-144153-feature-0310-init-explore-release-feedback-rework/green/` y `refactor/` — veredictos y salidas de los sujetos.
+- `.docs/sdd/changes/20261108-144153-feature-0310-init-explore-release-feedback-rework/green/` y `refactor/` — veredictos y salidas de los sujetos.
 
 **Modificar**:
 

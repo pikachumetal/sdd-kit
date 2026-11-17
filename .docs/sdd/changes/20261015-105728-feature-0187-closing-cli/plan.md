@@ -99,7 +99,7 @@ created: 2026-10-15
 - `cli/src/merge/verbs.ts` — opciones `check`, `verified-at`, `into`, `order`, `tag`.
 - `cli/test/merge/failures.slow.test.ts`, `verify.slow.test.ts`, `lock-and-base.slow.test.ts`, `usage.test.ts`.
 - `.docs/sdd/roadmap.md` — fila 0191 y la 0187 sin el punto (f) (commit de apertura).
-- `.docs/sdd/specs/20261007-144256-proposal-0131-kit-rework/proposal.md` — enmienda del reparto (commit de apertura).
+- `.docs/sdd/changes/20261007-144256-proposal-0131-kit-rework/proposal.md` — enmienda del reparto (commit de apertura).
 
 **NO se tocan**:
 

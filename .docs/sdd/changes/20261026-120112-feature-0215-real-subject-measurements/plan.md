@@ -68,9 +68,9 @@ created: 2026-10-26
 
 **Crear**:
 
-- `.docs/sdd/specs/20261026-120112-feature-0215-real-subject-measurements/perfil/subject.sh` — molde y sonda del perfil y del hook.
-- `.docs/sdd/specs/20261026-120112-feature-0215-real-subject-measurements/paralelo/subject.sh` — molde con el patch 0013 y su pregunta.
-- `.docs/sdd/specs/20261026-120112-feature-0215-real-subject-measurements/{perfil,paralelo}/out/` — salidas de `subject_save`.
+- `.docs/sdd/changes/20261026-120112-feature-0215-real-subject-measurements/perfil/subject.sh` — molde y sonda del perfil y del hook.
+- `.docs/sdd/changes/20261026-120112-feature-0215-real-subject-measurements/paralelo/subject.sh` — molde con el patch 0013 y su pregunta.
+- `.docs/sdd/changes/20261026-120112-feature-0215-real-subject-measurements/{perfil,paralelo}/out/` — salidas de `subject_save`.
 
 **Modificar**:
 
@@ -145,7 +145,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 **Ficheros**: crear `paralelo/subject.sh`; modificar `.docs/sdd/tech-stack.md`.
 
-- [ ] **Step 1: subject.sh** — `subject_init "$1" "$2" "$4" sdd-explore`; molde con `g init`, `put_kit_marker '"ids": {"mode": "sequence"}'`, `.docs/sdd/roadmap.md` mínimo y `.docs/sdd/specs/20260901-100000-patch-0013-<etiqueta>/patch.md` con un título que lleva la etiqueta del sujeto (`Patch 0013 — ajuste <etiqueta>`); commit; `MODEL=sonnet`; petición «¿Qué hay en el patch 0013 de este proyecto? Dime su título literal.»; `subject_save`.
+- [ ] **Step 1: subject.sh** — `subject_init "$1" "$2" "$4" sdd-explore`; molde con `g init`, `put_kit_marker '"ids": {"mode": "sequence"}'`, `.docs/sdd/roadmap.md` mínimo y `.docs/sdd/changes/20260901-100000-patch-0013-<etiqueta>/patch.md` con un título que lleva la etiqueta del sujeto (`Patch 0013 — ajuste <etiqueta>`); commit; `MODEL=sonnet`; petición «¿Qué hay en el patch 0013 de este proyecto? Dime su título literal.»; `subject_save`.
 - [ ] **Step 2: Dos tandas** — `run.sh` con `PHASE=paralelo SCENARIOS="a b" MAX_PARALLEL=2 SUBJECT=1`, y otra con `SUBJECT=2`. Esperado medido: cada sujeto cita el título con su propia etiqueta. Se reproduce si alguno dice que no hay patch 0013 o lee rutas del kit (`tools.txt`).
 - [ ] **Step 3: Si se reproduce** — parar: desvío; `sdd-debugging` antes de tocar nada; la decisión vuelve al dev-lead.
 - [ ] **Step 4: tech-stack.md** — una frase en la línea de `subject_launch`/`mold_is_repo`: 0 de 4 con `lib.sh` (o lo que salga), feature 0215.

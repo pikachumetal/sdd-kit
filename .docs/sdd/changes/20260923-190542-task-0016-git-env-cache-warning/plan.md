@@ -124,7 +124,7 @@ Ninguna.
 
 **Ficheros**: crear `tests/Clear-GitEnv.ps1`; mover `red-tests/*.Tests.ps1` → `tests/`; modificar los cuatro tests, `architecture.md`, `tech-stack.md`.
 
-- [ ] **Step 1: Mover los tests RED** — `git mv .docs/sdd/specs/20260923-190542-task-0016-git-env-cache-warning/red-tests/Clear-GitEnv.Tests.ps1 tests/` y lo mismo con `GitEnvConvention.Tests.ps1`. Ejecutarlos: fallan (el helper no existe; los cuatro tests no lo usan).
+- [ ] **Step 1: Mover los tests RED** — `git mv .docs/sdd/changes/20260923-190542-task-0016-git-env-cache-warning/red-tests/Clear-GitEnv.Tests.ps1 tests/` y lo mismo con `GitEnvConvention.Tests.ps1`. Ejecutarlos: fallan (el helper no existe; los cuatro tests no lo usan).
 - [ ] **Step 2: Helper** — `tests/Clear-GitEnv.ps1`:
 
 ```powershell
@@ -174,7 +174,7 @@ function Restore-GitEnv([hashtable]$Saved) {
 
 **Ficheros**: crear `.claude/hooks/Test-KitSessionSource.ps1`; mover `red-tests/KitSessionSource.Tests.ps1` → `tests/`; modificar `Start-KitSession.ps1`, `.claude/settings.json`, `CLAUDE.md`.
 
-- [ ] **Step 1: Mover el test RED** — `git mv .docs/sdd/specs/20260923-190542-task-0016-git-env-cache-warning/red-tests/KitSessionSource.Tests.ps1 tests/`. Ejecutarlo: falla.
+- [ ] **Step 1: Mover el test RED** — `git mv .docs/sdd/changes/20260923-190542-task-0016-git-env-cache-warning/red-tests/KitSessionSource.Tests.ps1 tests/`. Ejecutarlo: falla.
 - [ ] **Step 2: Hook** — `.claude/hooks/Test-KitSessionSource.ps1`. Textos exactos:
   - `systemMessage` sin variable: `Las skills del kit de esta sesión no salen de la rama: se cargaron desde la caché del plugin. Si no lanzaste la sesión con ./Start-KitSession.ps1, sal y relánzala con él.`
   - `systemMessage` con otra carpeta: `Las skills del kit de esta sesión no salen de la rama: la sesión se lanzó con Start-KitSession.ps1 desde <SDD_KIT_SESSION_ROOT>, pero el proyecto es <carpeta del proyecto>. Relánzala con ./Start-KitSession.ps1 desde el proyecto.`

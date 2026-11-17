@@ -59,7 +59,7 @@ created: 2026-09-27
 
 - `tests/init-over-template-red.md` — evidencia del RED (4 sujetos, tabla por frente).
 - `tests/init-over-template-green.md` — evidencia del GREEN.
-- `.docs/sdd/specs/<carpeta>/green/` — salida de los sujetos GREEN.
+- `.docs/sdd/changes/<carpeta>/green/` — salida de los sujetos GREEN.
 
 **Modificar**:
 

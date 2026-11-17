@@ -61,8 +61,8 @@ created: 2026-09-27
 
 - `tests/PostFinalReview.Tests.ps1` — anclas de las tres piezas.
 - `tests/post-final-review-red.md`, `tests/post-final-review-green.md` — evidencia de las tres piezas, una sección por task.
-- `.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/{red,green}/subject.sh` — el sujeto de la campaña, con escenarios de las tres tasks.
-- `.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/deny-agent.mjs` — `PreToolUse` que deniega `Agent` con «Despacho no disponible en esta campaña: el encargo queda registrado.»; el GREEN lo usa desde `red/`.
+- `.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/{red,green}/subject.sh` — el sujeto de la campaña, con escenarios de las tres tasks.
+- `.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/deny-agent.mjs` — `PreToolUse` que deniega `Agent` con «Despacho no disponible en esta campaña: el encargo queda registrado.»; el GREEN lo usa desde `red/`.
 
 **Modificar**:
 

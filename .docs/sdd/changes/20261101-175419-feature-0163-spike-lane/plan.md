@@ -87,7 +87,7 @@ created: 2026-11-01
 
 - `skills/sdd-tdd/SKILL.md` — ya dice que el spike lleva «Evidencia».
 - `skills/sdd-implement/references/implementer-prompt.md` — el spike corre en Native.
-- `.docs/sdd/specs/20261009-082930-feature-0162-validation-panel-spike/` — histórico.
+- `.docs/sdd/changes/20261009-082930-feature-0162-validation-panel-spike/` — histórico.
 
 ### 1.2-1.5, 1.8, 1.9
 

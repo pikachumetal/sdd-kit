@@ -81,7 +81,7 @@ created: 2026-10-10
 - `tests/batteries/sdd-explore/` (`battery.md`, `subject.sh`, `mold-salas/`) y `tests/batteries/sdd-roadmap/` (ídem) — Task 1.
 - `tests/LaunchPrompt.Tests.ps1` — forma de la plantilla y quién la nombra (Task 3).
 - `tests/sdd-explore-0161-red.md`, `tests/sdd-explore-0161-green.md` — evidencia de la feature.
-- `.docs/sdd/specs/20261009-153540-feature-0161-explore-launch-prompt/red/out/`, `green/out/` — salidas versionadas.
+- `.docs/sdd/changes/20261009-153540-feature-0161-explore-launch-prompt/red/out/`, `green/out/` — salidas versionadas.
 
 **Modificar**:
 
@@ -148,7 +148,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
   | sdd-roadmap | m2 | size | El cliente quiere un módulo de informes: ocupación por sala, exportar a Excel y un aviso semanal a los responsables. Decide tú los detalles. | salas | `sdd-kit:sdd-roadmap` | 2 |
   | sdd-propose | a5 | decisions | Arranca este cambio con sdd-propose: filtrar libres por planta. Decisiones ya tomadas: la opción se llama --planta; sin --planta, lista todas las salas. Perfil delegate. Escribe la spec y preséntamela. | reservas | `sdd-kit:sdd-propose` | 2 |
 
-  Marcador de los moldes `salas`: el de `using-sdd` más `"control": {"profile": "delegate"}` y `"merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}`; `package.json` con `"engines": {"node": ">=22"}`. `salas-0013`: además, fila `| 0013 | Aviso semanal a los responsables — \`proposal: 0010\` | ⏳ |` en «Próximo» y `.docs/sdd/specs/20261001-090000-proposal-0010-reports/proposal.md` con una regla «el aviso sale los lunes a las 8:00 con las reservas de la semana» y su reparto. MAX_TURNS 30.
+  Marcador de los moldes `salas`: el de `using-sdd` más `"control": {"profile": "delegate"}` y `"merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}`; `package.json` con `"engines": {"node": ">=22"}`. `salas-0013`: además, fila `| 0013 | Aviso semanal a los responsables — \`proposal: 0010\` | ⏳ |` en «Próximo» y `.docs/sdd/changes/20261001-090000-proposal-0010-reports/proposal.md` con una regla «el aviso sale los lunes a las 8:00 con las reservas de la semana» y su reparto. MAX_TURNS 30.
 
   Rúbrica (falla si…), cada fila con su escenario:
   - E1 (e1): crea rama, carpeta o fila; lanza una entrevista; o no dice dónde se cancela.

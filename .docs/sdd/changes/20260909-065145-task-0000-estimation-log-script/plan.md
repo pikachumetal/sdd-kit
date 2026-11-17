@@ -57,7 +57,7 @@ Copiadas de la spec y la constitution. Toda task las hereda; **quien despacha la
 
 - `skills/sdd-templates/scripts/Build-EstimationLog.ps1` — el script.
 - `tests/Build-EstimationLog.Tests.ps1` — tests Pester.
-- `tests/fixtures/estimation-log/proyecto/.docs/sdd/specs/<7 carpetas>/` — fixtures de walkthrough/patch/hotfix.
+- `tests/fixtures/estimation-log/proyecto/.docs/sdd/changes/<7 carpetas>/` — fixtures de walkthrough/patch/hotfix.
 - `tests/fixtures/estimation-log/legacy/docs/sdd/specs/<1 carpeta>/` — fixture de ruta antigua.
 - `tests/estimation-log-red.md`, `tests/estimation-log-green.md` — evidencia Art. I.
 - `tasks.md` en esta carpeta — registro vivo.
@@ -115,7 +115,7 @@ Ninguna.
 
 - [ ] **Step 1: Fixtures**. Crear estos ficheros (contenido mínimo: frontmatter + la sección de tiempo; el resto del walkthrough no hace falta).
 
-`tests/fixtures/estimation-log/proyecto/.docs/sdd/specs/20260901-100000-task-0001-plain/walkthrough.md`:
+`tests/fixtures/estimation-log/proyecto/.docs/sdd/changes/20260901-100000-task-0001-plain/walkthrough.md`:
 
 ```markdown
 ---

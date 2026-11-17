@@ -24,7 +24,7 @@ created: 2026-10-12
    - Cumplir el THEN obliga a añadir una frase al README: el caso de la 0168.
 4. **Molde de `k2`**: `tests/batteries/sdd-implement/mold-kit/`, un repo mínimo con forma de kit.
    - Contiene `skills/sdd-avisos/SKILL.md`, una spec 0019 con un requisito ADDED y su THEN, y un plan Native de una task «editar la skill y pasar el humo».
-   - La salida del humo, ya fallado, va en `.docs/sdd/specs/…/green/h1.txt`: la skill avisa después de guardar, no antes.
+   - La salida del humo, ya fallado, va en `.docs/sdd/changes/…/green/h1.txt`: la skill avisa después de guardar, no antes.
    - La Task 1 está a medio hacer, con la edición sin commitear, y la petición es «el humo falló; haz la ronda de REFACTOR y cierra la task».
    - El arreglo natural añade una regla que exige un AND nuevo en el requisito: el caso de la 0165.
 5. **Kits del RED y del GREEN**: el RED, con el kit del commit de apertura (`git archive`), y `SUPERPOWERS_DIR` en la caché 7.0.0. El GREEN y los humos, con el kit de la rama.
@@ -158,7 +158,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: `tests/headless/{lib.sh,battery.sh,run.sh,battery.mjs}`; `tests/batteries/sdd-implement/{subject.sh,fixtures,mold-reservas}`.
 - Produce: los escenarios `k1` y `k2` con su rúbrica; `tests/sdd-deviations-red.md` y `-green.md`; los dos contraejemplos en `sdd-implement` si sus RED fallan.
 
-**Ficheros**: modificar `tests/batteries/sdd-implement/{battery.md,subject.sh}`, `skills/sdd-implement/SKILL.md`; crear las fixtures 0018 y 0019, `mold-kit/`, `tests/sdd-deviations-{red,green}.md`; las salidas de los sujetos van en `.docs/sdd/specs/20261012-104247-feature-0166-worktrees-and-parallel-agents/{red,green}/`.
+**Ficheros**: modificar `tests/batteries/sdd-implement/{battery.md,subject.sh}`, `skills/sdd-implement/SKILL.md`; crear las fixtures 0018 y 0019, `mold-kit/`, `tests/sdd-deviations-{red,green}.md`; las salidas de los sujetos van en `.docs/sdd/changes/20261012-104247-feature-0166-worktrees-and-parallel-agents/{red,green}/`.
 
 - [ ] **Step 1: Fixtures**:
   - **0018, «ayuda»** sobre `mold-reservas`:

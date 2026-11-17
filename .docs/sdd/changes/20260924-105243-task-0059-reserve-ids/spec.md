@@ -70,7 +70,7 @@ El escaneo se queda tal cual y pasa a ser la corrección del contador. El contad
 **MODIFIED — Una task no planificada obtiene su id con un script determinista** (antes: «devuelve … el mayor id encontrado … más uno» y «el script no escribe nada»)
 - GIVEN un proyecto en modo `sequence` y una task o patch sin fila en el roadmap
 - WHEN se invoca `Get-NextSddId.ps1 -Reserve` desde la raíz del proyecto
-- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en `.docs/sdd/specs/`, en `.docs/sdd/roadmap.md` y en los nombres de rama locales y remotos, más uno
+- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en `.docs/sdd/changes/`, en `.docs/sdd/roadmap.md` y en los nombres de rama locales y remotos, más uno
 - AND deja ese id consumido en el contador
 - AND no hace `git fetch`: lee las referencias tal como están en el repositorio
 - AND `0000` no cuenta como id ocupado: un proyecto cuyo histórico es todo `0000` recibe `0001`

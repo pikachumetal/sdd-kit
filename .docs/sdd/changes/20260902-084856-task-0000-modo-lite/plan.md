@@ -69,7 +69,7 @@ No aplica.
 
 ### 1.3 Migraciones
 
-Las cinco specs existentes en `.docs/sdd/specs/` no llevan `mode:`. `sdd-end-task` trata la ausencia del campo como `full` (retrocompatible por defecto, criterio brownfield del kit). No se editan retroactivamente.
+Las cinco specs existentes en `.docs/sdd/changes/` no llevan `mode:`. `sdd-end-task` trata la ausencia del campo como `full` (retrocompatible por defecto, criterio brownfield del kit). No se editan retroactivamente.
 
 ### 1.4 Contratos API
 

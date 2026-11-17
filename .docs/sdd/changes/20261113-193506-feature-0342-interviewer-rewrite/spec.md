@@ -52,7 +52,7 @@ Review de spec propuesta: dos revisores — señales: MODIFIED (seis requisitos 
 16. **`upstream.json`**: se quedan las dos entradas `concept` de `sdd-grilling` (de Matt queda el orden por dependencias; de `brainstorming`, pensar varias ideas y la regla de E0). La nota de `brainstorming` dice eso, y el porqué primero pasa a la entrada de `spec-writing.md`.
 17. **La tabla «Procedencia de las reglas» de `tests/batteries/sdd-grilling/battery.md` se reescribe** con las reglas del núcleo nuevo, su origen (spike 0341 y esta feature) y sus escenarios; las que bajan a un llamante dicen a cuál.
 18. **La fila de `README.md`** de `sdd-grilling` dice lo que hace el núcleo nuevo, con sus dos fuentes.
-19. **La carpeta va en `.docs/sdd/specs/`**, como la 0341: `changes/` empieza con el corte de la 3.0.0 (fila 0343), y `battery.mjs plan` busca los precios en `specs/`.
+19. **La carpeta va en `.docs/sdd/changes/`**, como la 0341: `changes/` empieza con el corte de la 3.0.0 (fila 0343), y `battery.mjs plan` busca los precios en `specs/`.
 20. **El delta, probado en una copia de `.docs/sdd`**: `sdd capability merge` → cinco requisitos sustituidos o añadidos y dos reglas sustituidas, sin rechazos (con la enmienda del 2026-11-14).
 21. **Topes de palabras**: el del núcleo baja de 900 a 886 (menos de 887, como pide el brief); los demás, sin cambio. Saldo de las skills tocadas, con `wc -w` frente a `50317a64`: 0 (núcleo −3, `sdd-explore` −1, `spec-writing.md` +4; `sdd-init`, `proposal.md`, `sdd-config` y la plantilla de spec, 0).
 22. **`THIRD_PARTY_NOTICES.md`** sale de `upstream.json` (`moon run kit:notices`): la nota de `brainstorming` cambia con la decisión 16, sin editarlo a mano.

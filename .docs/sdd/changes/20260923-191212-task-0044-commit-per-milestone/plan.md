@@ -82,7 +82,7 @@ created: 2026-09-23
 - `skills/sdd-start-task/references/commit-milestones.md`: la receta, las guardas, qué lleva cada hito, el hash en los artefactos y los RED sin commit.
 - `tests/CommitMilestones.Tests.ps1`: las anclas.
 - `tests/commit-milestones-red.md` y `tests/commit-milestones-green.md`: la evidencia de conducta.
-- `.docs/sdd/specs/<carpeta>/green/`: el molde, el lanzador y la salida de cada sujeto.
+- `.docs/sdd/changes/<carpeta>/green/`: el molde, el lanzador y la salida de cada sujeto.
 
 **Modificar**:
 
@@ -246,7 +246,7 @@ Ninguna.
 - Consume: las skills editadas por las tasks 1 y 2 (una copia limpia del worktree como `--plugin-dir`).
 - Produce: `tests/commit-milestones-green.md`.
 
-**Ficheros**: crear `tests/commit-milestones-green.md` y `.docs/sdd/specs/20260923-191212-task-0044-commit-per-milestone/green/` (molde, lanzador y salida).
+**Ficheros**: crear `tests/commit-milestones-green.md` y `.docs/sdd/changes/20260923-191212-task-0044-commit-per-milestone/green/` (molde, lanzador y salida).
 
 Escenarios (2 sujetos cada uno; cada molde es un repo git con `develop`, `feature/<id>` y los commits del estado que se describe):
 

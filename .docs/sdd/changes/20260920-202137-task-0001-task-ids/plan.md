@@ -86,7 +86,7 @@ created: 2026-09-20
 **NO se tocan**:
 
 - `.docs/sdd/capabilities/*` — los escribe `sdd-end-task` al fusionar el delta.
-- Carpetas de `.docs/sdd/specs/` ya existentes, `changelog.md`, `releases/` — histórico sellado.
+- Carpetas de `.docs/sdd/changes/` ya existentes, `changelog.md`, `releases/` — histórico sellado.
 - `skills/sdd-templates/scripts/Build-EstimationLog.ps1` y `tests/Build-EstimationLog.Tests.ps1` — el formato del log no entra (task 0010).
 - `skills/sdd-end-task/SKILL.md`, `skills/sdd-end-patch/SKILL.md` — el cierre no decide ids.
 
@@ -116,7 +116,7 @@ param([string] $ProjectRoot = '.')
 - Salida estándar: el id, cuatro dígitos con ceros (`0007`), y nada más.
 - Salida de error + ningún id: proyecto en modo `tracker`; id duplicado entre artefactos.
 - Código de salida: 0 con id; 1 sin id.
-- Fuentes de ids ocupados: nombres de carpeta de `.docs/sdd/specs/` con `-(task|patch)-(\d{4})-`; primera columna de tabla de `.docs/sdd/roadmap.md` (`| 0007 |`); segmento de nombre de rama local o remota (`feature/0007`, `hotfix/0007-slug`). `0000` nunca cuenta.
+- Fuentes de ids ocupados: nombres de carpeta de `.docs/sdd/changes/` con `-(task|patch)-(\d{4})-`; primera columna de tabla de `.docs/sdd/roadmap.md` (`| 0007 |`); segmento de nombre de rama local o remota (`feature/0007`, `hotfix/0007-slug`). `0000` nunca cuenta.
 
 ### 1.5 UX
 

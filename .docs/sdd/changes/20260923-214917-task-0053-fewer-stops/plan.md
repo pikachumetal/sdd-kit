@@ -203,7 +203,7 @@ Ninguna.
 **Ejecución**: en línea — el hilo lanza la campaña con el techo compartido de `red/run.sh`, y lee los veredictos contra el RED
 **Tests RED**: no aplica (es la medición)
 **Superficies**: docs
-**Verificación**: `KIT_DIR=<copia limpia del working tree> RUNS_DIR=<scratchpad>/runs OUT_NAME=green SCENARIOS="s1 s2 s3 s4 s5 s6 s7" bash .docs/sdd/specs/20260923-214917-task-0053-fewer-stops/red/run.sh`, y luego `SUBJECTS=1 SCENARIOS="c2 c4 c5"` con la misma línea
+**Verificación**: `KIT_DIR=<copia limpia del working tree> RUNS_DIR=<scratchpad>/runs OUT_NAME=green SCENARIOS="s1 s2 s3 s4 s5 s6 s7" bash .docs/sdd/changes/20260923-214917-task-0053-fewer-stops/red/run.sh`, y luego `SUBJECTS=1 SCENARIOS="c2 c4 c5"` con la misma línea
 
 **Interfaces**:
 - Consume: los textos de T1 y T2.

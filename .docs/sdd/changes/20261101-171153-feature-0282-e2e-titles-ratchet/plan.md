@@ -69,7 +69,7 @@ created: 2026-11-01
 **Crear**:
 
 - `tests/e2e-titles-ratchet-red.md`, `tests/e2e-titles-ratchet-green.md` — evidencia, solo recuentos.
-- `.docs/sdd/specs/20261101-171153-feature-0282-e2e-titles-ratchet/{red,green}/subject.mjs` — lanzadores.
+- `.docs/sdd/changes/20261101-171153-feature-0282-e2e-titles-ratchet/{red,green}/subject.mjs` — lanzadores.
 
 **Modificar**:
 

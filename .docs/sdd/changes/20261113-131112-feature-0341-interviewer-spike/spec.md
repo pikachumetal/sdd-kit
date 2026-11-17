@@ -58,7 +58,7 @@ Validación: dev-lead — la salida del spike es su elección entre los candidat
 14. **Condiciones para la 0342, escritas en `research.md`**: núcleo escrito de cero, menos de 887 palabras, reglas en positivo (una prohibición solo como guardarraíl, junto a su positivo), y lo que se trae de los insumos sustituye una regla, nunca se suma. El territorio de cada sitio va en su skill (hipótesis que la 0342 confirma con un RED).
 15. **La fila 0338 se funde en la 0342** con `sdd-roadmap`, en el commit de apertura.
 16. **Copias de las fuentes**: los núcleos van en `cores/` con `cores/NOTICE.md`, que lleva la fuente, el sha del clon (`mattpocock-skills` 49dd158, `superpowers` bb92a77, `OpenSpec` 9111a765), la línea de copyright de cada `LICENSE` y el texto del permiso MIT.
-17. **Carpeta en `.docs/sdd/specs/`**: la que usan las features recientes (0152, 0198); `changes/` no existe aún en este repo.
+17. **Carpeta en `.docs/sdd/changes/`**: la que usan las features recientes (0152, 0198); `changes/` no existe aún en este repo.
 18. **Repaso de coherencia**: sin delta, no hay `sdd capability merge` que probar; nada retirado (`git grep` de 0338 y 0341 fuera de la evidencia: solo `ROADMAP.md`); las líneas citadas del molde (`src/app.js:3`, `:5`, `:10`, `CHANGELOG.md:10`) comprobadas.
 - Política de modelos (solo en `delegate`): revisores de la spec, uno en Fable a petición del dev-lead y la segunda ronda en Sonnet · ejes de la revisión final: según el plan · otros despachos en paralelo: sujetos Sonnet de la batería (persona Haiku en `pe`), lectores Sonnet con effort medium, por tandas · en paralelo hasta `control.maxParallelAgents` (3) — al aprobar la spec, esta línea es la confirmación de paralelizar que piden tus instrucciones.
 

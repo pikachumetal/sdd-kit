@@ -63,7 +63,7 @@ created: 2026-09-25
 
 **Crear**:
 
-- `.docs/sdd/specs/20260924-225741-task-0058-session-model-policy/red/` — `run.sh`, `subject.sh`, `tools.mjs`, `texts.mjs` y `out/` de la campaña.
+- `.docs/sdd/changes/20260924-225741-task-0058-session-model-policy/red/` — `run.sh`, `subject.sh`, `tools.mjs`, `texts.mjs` y `out/` de la campaña.
 - `tests/session-model-red.md` y `tests/session-model-green.md` — evidencia.
 - `tests/SessionModel.Tests.ps1` — literales de la guía.
 

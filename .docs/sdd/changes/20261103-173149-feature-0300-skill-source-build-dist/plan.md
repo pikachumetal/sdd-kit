@@ -90,7 +90,7 @@ created: 2026-11-03
 - `.ignore` — `dist/`.
 - `cli/test/kit/dist.test.ts`, `cli/test/kit/dist.slow.test.ts`, `cli/test/kit/notices.test.ts`.
 - `.docs/sdd/decisions/0023-dist-committed.md` — la ADR.
-- `.docs/sdd/specs/<carpeta>/install/` — `githttp.mjs`, `install.mjs` e `install.md`.
+- `.docs/sdd/changes/<carpeta>/install/` — `githttp.mjs`, `install.mjs` e `install.md`.
 
 **Modificar**:
 
@@ -339,7 +339,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Tests RED**: no aplica: es la medida de instalación y una comprobación de una vez, con su evidencia en `install/install.md` y en el walkthrough.
 **Superficies**: tooling · docs
 **Verificación**:
-- `node .docs/sdd/specs/20261103-173149-feature-0300-skill-source-build-dist/install/install.mjs` → escribe `install.md` con las tres filas de la tabla de «Dónde se prueba» de la spec, y sale con 0 si las dos instalaciones con `dist/` cumplen:
+- `node .docs/sdd/changes/20261103-173149-feature-0300-skill-source-build-dist/install/install.mjs` → escribe `install.md` con las tres filas de la tabla de «Dónde se prueba» de la spec, y sale con 0 si las dos instalaciones con `dist/` cumplen:
   - en la caché, solo las entradas de la lista blanca, más `.in_use/` de Claude Code;
   - ninguna línea `<!-- kit:`;
   - la 2.3.4 con `.orphaned_at`;

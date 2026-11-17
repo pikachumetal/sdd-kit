@@ -64,8 +64,8 @@ created: 2026-09-25
 **Crear**:
 
 - `skills/sdd-end-release/references/retro.md` — la retro opcional (por `git mv` desde `acta-y-retro.md`).
-- `.docs/sdd/specs/20260924-221103-task-0063-end-release-cut/ab/run.sh` y `ab/subject.sh` — lanzador de la campaña.
-- `.docs/sdd/specs/20260924-221103-task-0063-end-release-cut/ab/overlay/` — ficheros que el escenario añade al molde.
+- `.docs/sdd/changes/20260924-221103-task-0063-end-release-cut/ab/run.sh` y `ab/subject.sh` — lanzador de la campaña.
+- `.docs/sdd/changes/20260924-221103-task-0063-end-release-cut/ab/overlay/` — ficheros que el escenario añade al molde.
 
 **Modificar**:
 

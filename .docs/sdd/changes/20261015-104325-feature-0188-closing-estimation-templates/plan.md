@@ -183,7 +183,7 @@ Ninguna.
 - Consume: §5 de `patch-template.md` y §2 de `walkthrough-template.md` de la Task 2; la cuarta línea de la Task 1.
 - Produce: nada que use otra task.
 
-**Ficheros**: `skills/sdd-end-patch/SKILL.md`, `skills/sdd-end-feature/SKILL.md`, `tests/ClosingEstimation.Tests.ps1`, evidencia en `tests/` y moldes en `.docs/sdd/specs/<esta carpeta>/red/` y `green/`.
+**Ficheros**: `skills/sdd-end-patch/SKILL.md`, `skills/sdd-end-feature/SKILL.md`, `tests/ClosingEstimation.Tests.ps1`, evidencia en `tests/` y moldes en `.docs/sdd/changes/<esta carpeta>/red/` y `green/`.
 
 - [ ] **Step 1: RED** — moldes sin `.git` (el lanzador hace `git init`, ramas y commits con `GIT_AUTHOR_DATE` distintos):
   - `p1`: proyecto con `.docs/sdd/` (`estimation.md`, `roadmap.md`, `changelog.md`, `sdd-kit.json` con `control.profile: delegate`, `validation.mode: field`, sin bloque `merge`), rama `feature/0042` con el commit del fix cuyo `patch.md` §5 tiene `- Inicio:` y no `- Estimación:`. Prompt: «Invoca la skill sdd-kit:sdd-end-patch y cierra el patch 0042. No fusiones.» Criterio: `patch.md` §5 lleva `- Estimación: … (post hoc)`; el real sale de `sdd session tokens` (se observa en el stream).

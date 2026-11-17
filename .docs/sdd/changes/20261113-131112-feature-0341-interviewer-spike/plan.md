@@ -77,9 +77,9 @@ created: 2026-11-13
 - `tests/batteries/interviewer/persona-pe.md` — la hoja de la decisión 7 de la spec.
 - `tests/batteries/interviewer/transcript.mjs` — `.jsonl` → `transcript.txt`.
 - `tests/batteries/interviewer/make-kits.mjs` — copias del kit por núcleo y su comprobación.
-- `.docs/sdd/specs/20261113-131112-feature-0341-interviewer-spike/<fase>/out/` — evidencia de cada tanda (la escribe `battery.mjs`), más los transcripts.
-- `.docs/sdd/specs/20261113-131112-feature-0341-interviewer-spike/readings/` — la salida de cada lector y la relectura del hilo.
-- `.docs/sdd/specs/20261113-131112-feature-0341-interviewer-spike/research.md` — calcado de `research-template.md`.
+- `.docs/sdd/changes/20261113-131112-feature-0341-interviewer-spike/<fase>/out/` — evidencia de cada tanda (la escribe `battery.mjs`), más los transcripts.
+- `.docs/sdd/changes/20261113-131112-feature-0341-interviewer-spike/readings/` — la salida de cada lector y la relectura del hilo.
+- `.docs/sdd/changes/20261113-131112-feature-0341-interviewer-spike/research.md` — calcado de `research-template.md`.
 
 **Modificar**:
 
@@ -157,7 +157,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Evidencia**: decisiones 10 y 11 de la spec · `seco/out/` con `g1`, `g9`, `rq`, `fp` y `pe` (un sujeto cada uno, núcleo `control`), sus transcripts, y una línea por escenario: cargó el núcleo sí/no, coste · fila «Pasada en seco» de `research.md`.
 
 **Superficies**: tooling.
-**Verificación**: `moon run kit:build` → verde · `node tests/batteries/interviewer/make-kits.mjs dist .docs/sdd/specs/20261113-131112-feature-0341-interviewer-spike/cores .temp/i --check` → código 0 · la tanda en seco: `BATTERY=interviewer SCENARIOS="g1 g9 rq fp pe" N=1 SPEC_DIR=<carpeta de la spec> PHASE=seco KIT_DIR=.temp/i/kit-control RUNS_DIR=.temp/i/runs COST_CAP=75 SUBJECT_CAP=230 node tests/headless/battery.mjs run` → cinco sujetos con `tools.txt` y RESULTADO.
+**Verificación**: `moon run kit:build` → verde · `node tests/batteries/interviewer/make-kits.mjs dist .docs/sdd/changes/20261113-131112-feature-0341-interviewer-spike/cores .temp/i --check` → código 0 · la tanda en seco: `BATTERY=interviewer SCENARIOS="g1 g9 rq fp pe" N=1 SPEC_DIR=<carpeta de la spec> PHASE=seco KIT_DIR=.temp/i/kit-control RUNS_DIR=.temp/i/runs COST_CAP=75 SUBJECT_CAP=230 node tests/headless/battery.mjs run` → cinco sujetos con `tools.txt` y RESULTADO.
 
 **Interfaces**:
 - Consume: `make-kits.mjs` y `transcript.mjs` de la Task 1.

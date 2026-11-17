@@ -70,8 +70,8 @@ created: 2026-09-21
 
 - `tests/ReleaseFlow.Tests.ps1` — anclas del campo y guarda de regresión (lo escribe el hilo en `red/`; lo mueve el implementador).
 - `tests/release-flow-red.md` y `tests/release-flow-green.md` — evidencia de las campañas.
-- `.docs/sdd/specs/20260921-074701-task-0004-release-without-client/red/` — moldes `m1`–`m4`, lanzadores `run.sh` y `subject.sh`, y salidas `out/`.
-- `.docs/sdd/specs/20260921-074701-task-0004-release-without-client/green/` — lanzador y salidas del GREEN (reutiliza los moldes de `red/`).
+- `.docs/sdd/changes/20260921-074701-task-0004-release-without-client/red/` — moldes `m1`–`m4`, lanzadores `run.sh` y `subject.sh`, y salidas `out/`.
+- `.docs/sdd/changes/20260921-074701-task-0004-release-without-client/green/` — lanzador y salidas del GREEN (reutiliza los moldes de `red/`).
 
 **Modificar**:
 

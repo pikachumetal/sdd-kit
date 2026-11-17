@@ -54,7 +54,7 @@ created: 2026-09-22
 **Crear**:
 
 - `tests/init-interview-green.md` — evidencia GREEN.
-- `.docs/sdd/specs/20260922-090037-task-0012-init-interview/green/` — moldes nuevos y salidas del GREEN.
+- `.docs/sdd/changes/20260922-090037-task-0012-init-interview/green/` — moldes nuevos y salidas del GREEN.
 
 **Modificar**:
 

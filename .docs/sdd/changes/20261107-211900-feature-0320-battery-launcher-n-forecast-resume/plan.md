@@ -197,7 +197,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: Native, esta sesión
 **Tests RED**: hilo principal · `cli/test/kit/headless/battery.test.ts`
 **Superficies**: tooling · docs
-**Verificación**: `pnpm --dir cli exec vitest run test/kit/headless/battery.test.ts` → `Tests  <n> passed (<n>)`; real: `node tests/headless/battery.mjs verdict tests/batteries/sdd-propose/battery.md .docs/sdd/specs/20261105-161645-feature-0306-propose-rework/control/out` → la línea de `c1` empieza por `c1 · 2/2 · umbral 2/2`
+**Verificación**: `pnpm --dir cli exec vitest run test/kit/headless/battery.test.ts` → `Tests  <n> passed (<n>)`; real: `node tests/headless/battery.mjs verdict tests/batteries/sdd-propose/battery.md .docs/sdd/changes/20261105-161645-feature-0306-propose-rework/control/out` → la línea de `c1` empieza por `c1 · 2/2 · umbral 2/2`
 **Se prueba en la aplicación**: no, porque herramienta del repo
 
 **Interfaces**:

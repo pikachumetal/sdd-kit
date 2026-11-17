@@ -62,14 +62,14 @@ El revisor final lee un paquete que hace hoy `review-package` de superpowers. Es
 
 ## Approach
 
-En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con la receta en Git Bash. `MERGE_BASE=$(git merge-base HEAD <integración>)` con la rama de integración de la constitution, las dos exclusiones `':(exclude,glob).docs/sdd/specs/**/red/**'` y `…/green/**`, y la salida en `$(bash <ruta de sdd-workspace> <PLAN_FILE>)/review-final-<head7>.diff`, con las secciones Commits, Files changed y Diff (`-U10`). Detrás va una línea con el porqué medido y otra que dice que en lite `PLAN_FILE` es `spec.md`. «Cómo revisar» pasa a nombrar «la ruta del paquete». La fila de overrides dice que el revisor final lee el paquete del kit. El campo `Modelo` del plan gana la frase del techo. Primero el RED con la guía vigente, después la edición y el GREEN.
+En «Revisor final», antes de «Cómo revisar», va un bloque «Paquete» con la receta en Git Bash. `MERGE_BASE=$(git merge-base HEAD <integración>)` con la rama de integración de la constitution, las dos exclusiones `':(exclude,glob).docs/sdd/changes/**/red/**'` y `…/green/**`, y la salida en `$(bash <ruta de sdd-workspace> <PLAN_FILE>)/review-final-<head7>.diff`, con las secciones Commits, Files changed y Diff (`-U10`). Detrás va una línea con el porqué medido y otra que dice que en lite `PLAN_FILE` es `spec.md`. «Cómo revisar» pasa a nombrar «la ruta del paquete». La fila de overrides dice que el revisor final lee el paquete del kit. El campo `Modelo` del plan gana la frase del techo. Primero el RED con la guía vigente, después la edición y el GREEN.
 
 ## Delta de comportamiento
 
 ### Capacidad: `feature-flow`
 
 **ADDED — El paquete del revisor final sale del merge-base actual y sin evidencia**
-- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/specs/<carpeta>/red/out.jsonl` en su rama
+- GIVEN una feature lite, sin `plan.md`, que tras su primer commit integró `develop` con un merge que trae los commits de otra feature (`skills/otra/SKILL.md`), y con `.docs/sdd/changes/<carpeta>/red/out.jsonl` en su rama
 - WHEN el hilo prepara el paquete del revisor final
 - THEN la sección de diff del paquete no contiene `skills/otra/SKILL.md` ni ningún fichero bajo `red/` o `green/`
 - AND la sección de commits lista solo los de la feature y el merge

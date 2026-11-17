@@ -69,7 +69,7 @@ created: 2026-09-25
 - `tests/fixtures/session-tokens/` — transcripts sintéticos: `base/s1.jsonl`, `base/s1/subagents/agent-x1.jsonl` y `.meta.json`, `other-branch/s2.jsonl`, `fast/s3.jsonl`.
 - `tests/SessionTokensClose.Tests.ps1` — literales del paso del cierre y de la plantilla.
 - `tests/session-tokens-red.md`, `tests/session-tokens-green.md` — evidencia de la campaña.
-- `.docs/sdd/specs/20260924-230945-task-0068-session-tokens/red/` — `run.sh`, `subject.sh`, `mold.sh` y `out/`, y `green/out/`.
+- `.docs/sdd/changes/20260924-230945-task-0068-session-tokens/red/` — `run.sh`, `subject.sh`, `mold.sh` y `out/`, y `green/out/`.
 
 **Modificar**:
 

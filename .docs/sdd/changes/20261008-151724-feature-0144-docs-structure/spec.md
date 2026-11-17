@@ -80,7 +80,7 @@ Review de spec: dos revisores, hechos — señales: capacidad nueva (`decisions`
 
 ## Intent
 
-La 3.0.0 reparte los documentos por lector: lo que lee la persona, en la raíz (`PRODUCT.md`, compartido con impeccable; `ROADMAP.md` y `CHANGELOG.md`), y lo que lee el agente, en `.docs/sdd/` (`steering/`, `decisions/`, `capabilities/`, `changes/` y `releases/`), con una pregunta por documento. Hoy no hay plantillas para esa estructura (ni `PRODUCT.md` ni `operations.md` ni ADR), y la CLI solo sabe leer `.docs/sdd/specs/` y `.docs/sdd/roadmap.md`. Esta feature deja las plantillas, la constitution y la CLI preparadas para que `sdd-init` (0156) cree la estructura nueva y `sdd-upgrade` (0157) lleve a ella los proyectos existentes, sin que los proyectos aún en la 2.x dejen de funcionar.
+La 3.0.0 reparte los documentos por lector: lo que lee la persona, en la raíz (`PRODUCT.md`, compartido con impeccable; `ROADMAP.md` y `CHANGELOG.md`), y lo que lee el agente, en `.docs/sdd/` (`steering/`, `decisions/`, `capabilities/`, `changes/` y `releases/`), con una pregunta por documento. Hoy no hay plantillas para esa estructura (ni `PRODUCT.md` ni `operations.md` ni ADR), y la CLI solo sabe leer `.docs/sdd/changes/` y `.docs/sdd/roadmap.md`. Esta feature deja las plantillas, la constitution y la CLI preparadas para que `sdd-init` (0156) cree la estructura nueva y `sdd-upgrade` (0157) lleve a ella los proyectos existentes, sin que los proyectos aún en la 2.x dejen de funcionar.
 
 ## Scope
 
@@ -155,7 +155,7 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 - THEN escribe `roadmap.md: línea <n>: fila saldada el 2026-09-10, no posterior a la v1.2.0 (2026-09-20): sale en el corte` y la misma línea para la del 2026-09-20, y sale con 1
 - AND la fila del 2026-09-25 no da fallo, ni una fila `parcial` de cualquier fecha
 - AND sin ninguna subsección en «Releases cerradas», ninguna fila saldada da fallo
-- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza el artefacto da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo. El enlace cuenta igual si es `specs/<carpeta>/…`, `changes/<carpeta>/…` o, desde `ROADMAP.md`, `.docs/sdd/changes/<carpeta>/…` o `.docs/sdd/specs/<carpeta>/…`
+- AND con el tag `v1.2.0` en git, una fila saldada del 2026-09-20 que enlaza el artefacto da el fallo solo si el commit que añadió ese fichero es ascendiente del tag; fusionada tras el corte del mismo día, no da fallo. El enlace cuenta igual si es `specs/<carpeta>/…`, `changes/<carpeta>/…` o, desde `ROADMAP.md`, `.docs/sdd/changes/<carpeta>/…` o `.docs/sdd/changes/<carpeta>/…`
 
 **MODIFIED — Un patch publicado sale de «Patches» en el corte** (antes: el último AND solo reconocía el enlace `specs/<carpeta>/patch.md`)
 - GIVEN una fila de «Patches» con fecha `2026-09-20`, otra con `2026-09-22`, y `### v1.2.0 — 2026-09-20` como primera subsección de «Releases cerradas»
@@ -185,7 +185,7 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 ### Capacidad: `estimation`
 
 **MODIFIED — El estimation-log se genera desde los artefactos de cierre** (antes: «`<docs>/estimation-log.md`», y solo leía `specs/`)
-- GIVEN un proyecto con `estimation.md` en `.docs/sdd/steering/` (3.0.0) o en `.docs/sdd/` (2.x) y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo en `.docs/sdd/changes/` o en `.docs/sdd/specs/`
+- GIVEN un proyecto con `estimation.md` en `.docs/sdd/steering/` (3.0.0) o en `.docs/sdd/` (2.x) y al menos un `walkthrough.md` o `patch.md` con bloque de tiempo en `.docs/sdd/changes/` o en `.docs/sdd/changes/`
 - WHEN se ejecuta `sdd estimation log --root <proyecto>`
 - THEN `estimation-log.md` se regenera entero, en la carpeta de `estimation.md`, con una fila por artefacto (fecha, id, tipo, estimado, real, ratio, tokens del hilo, tokens de subagentes, sujetos ($), sesión ($), carpeta), ordenado por carpeta
 - AND un proyecto con `specs/20260920-100000-feature-0079-b/walkthrough.md` y `changes/20261010-090000-feature-0160-c/walkthrough.md` tiene las dos filas, `0079` y `0160`
@@ -214,12 +214,12 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 
 ### Capacidad: `feature-ids`
 
-**MODIFIED — Una feature no planificada obtiene su id con un script determinista** (antes: solo `.docs/sdd/specs/` y `.docs/sdd/roadmap.md`)
+**MODIFIED — Una feature no planificada obtiene su id con un script determinista** (antes: solo `.docs/sdd/changes/` y `.docs/sdd/roadmap.md`)
 - GIVEN un proyecto en modo `sequence` y una feature o patch sin fila en el roadmap
 - WHEN se invoca `sdd id next --reserve` desde la raíz del proyecto
-- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en las carpetas de `.docs/sdd/changes/` y `.docs/sdd/specs/` y en los dos roadmaps (`ROADMAP.md` de la raíz y `.docs/sdd/roadmap.md`) del working tree; en esos mismos roadmaps y carpetas de cada rama local y remota, y en su nombre salvo el de la rama actual; y en esos roadmaps y carpetas del disco de cada worktree de `git worktree list`, más uno
+- THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en las carpetas de `.docs/sdd/changes/` y `.docs/sdd/changes/` y en los dos roadmaps (`ROADMAP.md` de la raíz y `.docs/sdd/roadmap.md`) del working tree; en esos mismos roadmaps y carpetas de cada rama local y remota, y en su nombre salvo el de la rama actual; y en esos roadmaps y carpetas del disco de cada worktree de `git worktree list`, más uno
 - AND cada rama y cada worktree se leen con lo que tengan: una rama con solo `ROADMAP.md` y `changes/` cuenta igual que una con solo `.docs/sdd/roadmap.md` y `specs/`
-- AND con `.docs/sdd/specs/20260920-100000-feature-0079-b/`, `.docs/sdd/changes/20261010-090000-feature-0081-c/`, la fila `0083` en `ROADMAP.md` y la fila `0085` en `.docs/sdd/roadmap.md`, sin contador ni ramas con un id mayor, propone `0086`
+- AND con `.docs/sdd/changes/20260920-100000-feature-0079-b/`, `.docs/sdd/changes/20261010-090000-feature-0081-c/`, la fila `0083` en `ROADMAP.md` y la fila `0085` en `.docs/sdd/roadmap.md`, sin contador ni ramas con un id mayor, propone `0086`
 - AND lo que otro worktree tiene reservado sin fusionar cuenta aunque no esté en ninguna rama: una fila de un roadmap en *staged* o una carpeta de `changes/` o `specs/` sin commitear
 - AND deja ese id consumido en el contador
 - AND no hace `git fetch`: lee las referencias tal como están en el repositorio

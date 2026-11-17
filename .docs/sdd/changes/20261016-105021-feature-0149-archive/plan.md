@@ -77,7 +77,7 @@ created: 2026-10-16
 - `skills/sdd-archive/references/estimation.md` y `references/aprendizajes-skills.md` — movidos de `sdd-end-feature/references/`.
 - `tests/batteries/sdd-archive/` — movida de `tests/batteries/sdd-end-patch/` y ampliada con los escenarios de la previsión.
 - `tests/ArchiveSkill.Tests.ps1` — anatomía, literales y retirada de nombres.
-- `.docs/sdd/specs/20261016-105021-feature-0149-archive/red/` y `green/` — evidencia de los sujetos.
+- `.docs/sdd/changes/20261016-105021-feature-0149-archive/red/` y `green/` — evidencia de los sujetos.
 
 **Modificar**:
 

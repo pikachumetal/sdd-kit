@@ -80,7 +80,7 @@ created: 2026-10-09
 - `skills/sdd-propose/SKILL.md` — la entrada (Tasks 2-5).
 - `tests/batteries/sdd-propose/battery.md`, `subject.sh`, `mold-reservas/`, `fixtures/` — batería completa (Task 1; controles en la Task 2).
 - `tests/sdd-propose-0160-red.md`, `tests/sdd-propose-0160-green.md` — evidencia.
-- `.docs/sdd/specs/20261009-110857-feature-0160-single-entry-propose/red/out/`, `green/out/` — salidas versionadas.
+- `.docs/sdd/changes/20261009-110857-feature-0160-single-entry-propose/red/out/`, `green/out/` — salidas versionadas.
 - `cli/test/estimation/` — un caso con `patch.md` en la forma nueva (Task 4).
 
 **Modificar**:

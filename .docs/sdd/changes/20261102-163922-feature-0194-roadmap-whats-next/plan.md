@@ -133,7 +133,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: nada
 - Produce: nada
 
-**Ficheros**: `tests/batteries/sdd-roadmap/battery.md`; `.docs/sdd/specs/20261102-163922-feature-0194-roadmap-whats-next/ctl/`.
+**Ficheros**: `tests/batteries/sdd-roadmap/battery.md`; `.docs/sdd/changes/20261102-163922-feature-0194-roadmap-whats-next/ctl/`.
 
 - [ ] **Step 1: Implementación** — Lanzar las dos; en `battery.md`, «Ocho moldes» pasa a once con sus nombres, fila de procedencia de la entrada, y bloque «Retirado (feature 0194, para pagar el saldo)» con lo que sale y su control `id3`, `m3`, `m3b`, `m1`, `m4`.
 - [ ] **Step 2: Build** — no hay build.

@@ -67,8 +67,8 @@ created: 2026-09-22
 
 - `tests/MigrationInitParity.Tests.ps1` — paridad migración–init y los tests estructurales por THEN de esta task.
 - `tests/init-files-red.md`, `tests/init-files-green.md` — evidencia Art. I.
-- `.docs/sdd/specs/20260922-211157-task-0019-init-files/green/` — molde, lanzador y salidas de la GREEN.
-- `.docs/sdd/specs/20260922-211157-task-0019-init-files/tasks.md` — registro vivo.
+- `.docs/sdd/changes/20260922-211157-task-0019-init-files/green/` — molde, lanzador y salidas de la GREEN.
+- `.docs/sdd/changes/20260922-211157-task-0019-init-files/tasks.md` — registro vivo.
 
 **Modificar**:
 

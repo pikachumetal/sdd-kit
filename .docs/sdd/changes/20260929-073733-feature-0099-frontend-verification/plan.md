@@ -100,7 +100,7 @@ created: 2026-09-29
 - `skills/sdd-start-feature/references/frontend-verification.md`: el método.
 - `tests/FrontendVerification.Tests.ps1`: los literales de las puertas, el contrato de `§Frontend` y las filas de las init.
 - `tests/frontend-verification-red.md` y `tests/frontend-verification-green.md`: la evidencia narrada.
-- `.docs/sdd/specs/20260929-073733-feature-0099-frontend-verification/red/` y `green/`: `mold.sh`, `subject.sh` y `out/`.
+- `.docs/sdd/changes/20260929-073733-feature-0099-frontend-verification/red/` y `green/`: `mold.sh`, `subject.sh` y `out/`.
 
 **Modificar**:
 

@@ -91,7 +91,7 @@ created: 2026-10-28
 
 - El resto de `lib.sh`, `extract.mjs`, `deny-kill.mjs`, los `subject.sh` salvo su cabecera — 0238.
 - `moon.yml` — `kit:test-headless` ya corre `test/kit/headless` entero.
-- La evidencia de `tests/*.md` y `.docs/sdd/specs/` que cita `run.sh` — artefactos de evento.
+- La evidencia de `tests/*.md` y `.docs/sdd/changes/` que cita `run.sh` — artefactos de evento.
 
 ### 1.6 Dependencias
 

@@ -63,7 +63,7 @@ created: 2026-09-24
 
 - `tests/TestableTasks.Tests.ps1` — contrato de literales de las cuatro piezas.
 - `tests/testable-tasks-red.md`, `tests/testable-tasks-green.md` — evidencia.
-- `.docs/sdd/specs/20260924-204639-task-0060-testable-tasks/green/out/` — salidas del GREEN.
+- `.docs/sdd/changes/20260924-204639-task-0060-testable-tasks/green/out/` — salidas del GREEN.
 
 **Modificar**:
 

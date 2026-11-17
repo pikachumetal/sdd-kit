@@ -76,7 +76,7 @@ created: 2026-09-30
 
 **Crear**:
 
-- `.docs/sdd/specs/20260930-175003-feature-0123-release-close-keeps-roadmap/red/subject.sh` — molde `salas` y los cinco escenarios.
+- `.docs/sdd/changes/20260930-175003-feature-0123-release-close-keeps-roadmap/red/subject.sh` — molde `salas` y los cinco escenarios.
 - `tests/release-close-roadmap-red.md` y `tests/release-close-roadmap-green.md` — evidencia de la campaña, una sección por escenario.
 
 **Modificar**:

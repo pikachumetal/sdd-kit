@@ -61,7 +61,7 @@ created: 2026-09-27
 **Crear**:
 
 - `.docs/workflow/usage-guide.md` — la guía de uso, siete secciones.
-- `.docs/sdd/specs/20260927-182418-feature-0092-usage-guide/tasks.md` — registro vivo.
+- `.docs/sdd/changes/20260927-182418-feature-0092-usage-guide/tasks.md` — registro vivo.
 
 **Modificar**:
 

@@ -100,7 +100,7 @@ created: 2026-11-05
 - `skills/sdd-verify/`, `skills/sdd-worktrees/`, `skills/sdd-debugging/` — K26, K30 y la parte compartida de K28 son de la 0311.
 - `skills/sdd-propose/references/control-profiles.md` — la frase repetida de `:28` es de la 0311.
 - `tests/*.md` que nombran `aprendizajes-skills.md` — evidencia histórica.
-- `.docs/sdd/specs/20261016-105021-feature-0149-archive/spec.md` — el anexo de procedencia sigue donde está.
+- `.docs/sdd/changes/20261016-105021-feature-0149-archive/spec.md` — el anexo de procedencia sigue donde está.
 
 ### 1.2 Modelo de datos
 

@@ -83,8 +83,8 @@ created: 2026-10-14
 
 - `tests/upstream/check.ts` — el check: lee la tabla, encuentra clones, hace fetch y compara tags.
 - `tests/UpstreamWatch.Tests.ps1` — Pester `Slow` del check, con orígenes y clones de juguete.
-- `.docs/sdd/specs/20261014-122606-feature-0181-upstream-watch/provenance-scan.mjs` — barrido de procedencia, de un solo uso, que se queda como evidencia.
-- `.docs/sdd/specs/20261014-122606-feature-0181-upstream-watch/upstream-review.md` — procedencia de las skills y revisión de cada fuente.
+- `.docs/sdd/changes/20261014-122606-feature-0181-upstream-watch/provenance-scan.mjs` — barrido de procedencia, de un solo uso, que se queda como evidencia.
+- `.docs/sdd/changes/20261014-122606-feature-0181-upstream-watch/upstream-review.md` — procedencia de las skills y revisión de cada fuente.
 
 **Modificar**:
 

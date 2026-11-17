@@ -93,7 +93,7 @@ created: 2026-10-28
 
 **Borrar**: `tests/headless/lib.sh`, 14 `tests/batteries/*/subject.sh`, `cli/test/kit/bash.ts`, `cli/test/kit/bash.slow.test.ts`, `cli/test/kit/headless/{lib,identity-and-show,paths-and-cleanup,ports,settings}.slow.test.ts`.
 
-**NO se tocan**: `extract.mjs`, `deny-kill.mjs`, `no-claude/`, `.claude/settings.json`, la evidencia de `tests/*.md` y `.docs/sdd/specs/`.
+**NO se tocan**: `extract.mjs`, `deny-kill.mjs`, `no-claude/`, `.claude/settings.json`, la evidencia de `tests/*.md` y `.docs/sdd/changes/`.
 
 ### 1.6 Dependencias
 
@@ -220,7 +220,7 @@ En orden, sin paralelo.
 **Modelo**: la sesión (Native)
 **Tests RED**: — (retirada y documentos)
 **Superficies**: tooling, docs
-**Verificación**: `git ls-files '*.sh' ':!:.docs/sdd/specs/**'` vacío; `git grep -n -E "lib\.sh|subject\.sh|bash\.ts|findGitBash" -- tests/headless tests/batteries cli moon.yml` vacío; `pnpm --dir cli exec vitest run test/kit/headless` → `passed`; `pnpm --dir cli exec tsc --noEmit` limpio; `node cli/bin/sdd.js roadmap check --path .docs/sdd` → `Roadmap válido`.
+**Verificación**: `git ls-files '*.sh' ':!:.docs/sdd/changes/**'` vacío; `git grep -n -E "lib\.sh|subject\.sh|bash\.ts|findGitBash" -- tests/headless tests/batteries cli moon.yml` vacío; `pnpm --dir cli exec vitest run test/kit/headless` → `passed`; `pnpm --dir cli exec tsc --noEmit` limpio; `node cli/bin/sdd.js roadmap check --path .docs/sdd` → `Roadmap válido`.
 
 - [ ] **Step 1: Borrar** `lib.sh`, `cli/test/kit/bash.ts`, `bash.slow.test.ts`; la línea de `moon.yml`.
 - [ ] **Step 2: Documentos**:

@@ -75,7 +75,7 @@ created: 2026-09-24
 
 - `tests/SuperpowersCompat.Tests.ps1`: anclas de las dos filas y de la versión validada.
 - `tests/superpowers-641-red.md` y `tests/superpowers-641-green.md`: evidencia.
-- `.docs/sdd/specs/20260923-220402-task-0026-superpowers-641/green/`: salidas del GREEN.
+- `.docs/sdd/changes/20260923-220402-task-0026-superpowers-641/green/`: salidas del GREEN.
 
 **Modificar**:
 

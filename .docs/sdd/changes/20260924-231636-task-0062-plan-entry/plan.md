@@ -183,7 +183,7 @@ Ninguna. El Art. IV (naming) necesita `(task|patch|proposal)`, pero es de la 005
 
 **Interfaces**:
 - Consume: `skills/sdd-roadmap/SKILL.md` (Task 3), que debe contener `hasRecipient`, `sequence`, `-Reserve -Count`, «Ficheros que toca» y «nunca «por definir»».
-- Produce: ninguna mención viva a `sdd-start-release` fuera de `tests/*-ab.md`, `tests/*-red.md`, `.docs/sdd/specs/`, `field-reports/`, `releases/`, `changelog.md`, `roadmap.md` y `sdd-end-release/SKILL.md` (pendiente de la 0063).
+- Produce: ninguna mención viva a `sdd-start-release` fuera de `tests/*-ab.md`, `tests/*-red.md`, `.docs/sdd/changes/`, `field-reports/`, `releases/`, `changelog.md`, `roadmap.md` y `sdd-end-release/SKILL.md` (pendiente de la 0063).
 
 **Ficheros**: borrar `skills/sdd-start-release/`; modificar `README.md`, `skills/sdd-consult/SKILL.md`, `.docs/sdd/architecture.md`, `.docs/sdd/mission.md`, `.docs/workflow/greenfield.md`, `.docs/workflow/brownfield.md`, `skills/sdd-init-brownfield/references/migrations/v1.2.0.md`, `tests/TaskIds.Tests.ps1`, `tests/ReleaseFlow.Tests.ps1`, `tests/MigrationInitParity.Tests.ps1`, `tests/WorkflowDocs.Tests.ps1`.
 
@@ -223,7 +223,7 @@ Ninguna. El Art. IV (naming) necesita `(task|patch|proposal)`, pero es de la 005
 - Consume: el kit en el commit de la Task 5.
 - Produce: `tests/sdd-roadmap-green.md` y `green/out/`.
 
-**Ficheros**: crear `tests/sdd-roadmap-green.md`, `.docs/sdd/specs/20260924-231636-task-0062-plan-entry/green/out/`.
+**Ficheros**: crear `tests/sdd-roadmap-green.md`, `.docs/sdd/changes/20260924-231636-task-0062-plan-entry/green/out/`.
 
 - [ ] **Step 1** — `git archive HEAD skills hooks .claude-plugin agents README.md` a `scratchpad/kit-green`.
 - [ ] **Step 2** — dos lotes, `OUT_NAME=green`, `SCENARIOS="p1 p2 p3 p4 p5"` y `"p6 p7 p8 p8b p9 p10"`, `SUBJECT=1` y `2`. p6 ya no necesita `KIT_DIR_P6`.

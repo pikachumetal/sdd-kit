@@ -89,7 +89,7 @@ created: 2026-11-05
 
 - `build/notices.ts`, `build/sources.ts` — `kit:upstream` usa lo que ya exportan (spec, decisión 9).
 - `skills/` — la feature no cambia texto de skills.
-- `.docs/sdd/specs/20261104-103810-feature-0312-annotate-real-copies/real-copies/compare-dist.mjs` — historia (spec, decisión 5).
+- `.docs/sdd/changes/20261104-103810-feature-0312-annotate-real-copies/real-copies/compare-dist.mjs` — historia (spec, decisión 5).
 
 ### 1.6 Dependencias
 

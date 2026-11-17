@@ -77,7 +77,7 @@ created: 2026-10-22
 - `cli/src/validation/server.ts` — `parseSteps`, `startValidationServer`.
 - `cli/src/validation/verbs.ts` — `validationServeVerb`.
 - `cli/test/validation/serve.test.ts` — tests del verbo y del servidor.
-- `.docs/sdd/specs/<carpeta>/verification/panel.md` — evidencia de la Task 3.
+- `.docs/sdd/changes/<carpeta>/verification/panel.md` — evidencia de la Task 3.
 - `tests/dev-validation-green.md` — evidencia del GREEN.
 
 **Modificar**:
@@ -196,7 +196,7 @@ Ninguna.
 - Consume: `validation-panel.js`
 - Produce: `verification/panel.md`
 
-**Ficheros**: crear `.docs/sdd/specs/20261022-140232-feature-0208-dev-validation-script/verification/panel.md`
+**Ficheros**: crear `.docs/sdd/changes/20261022-140232-feature-0208-dev-validation-script/verification/panel.md`
 
 - [ ] **Step 1** — levantar `probe/app`, conectar el navegador e inyectar el panel con `mount('0208', [3 pasos])`, más `read_network_requests` y `read_console_messages` con `clear: true`.
 - [ ] **Step 2** — marcar 2 OK y 1 KO con comentario; 3 recargas con reinyección y `mount('0208')`; leer con `read()`.

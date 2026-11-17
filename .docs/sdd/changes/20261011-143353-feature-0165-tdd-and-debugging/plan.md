@@ -150,7 +150,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Consume: `tests/headless/{lib.sh,battery.sh,run.sh,battery.mjs}`; `tests/batteries/sdd-implement/{subject.sh,compose.mjs,fixtures,mold-reservas}`.
 - Produce: los escenarios `t1a`, `t1b`, `t2`, `t3`, `t5a`, `t5b` y su rúbrica «Falla si…»; `tests/sdd-tdd-red.md` con el veredicto de `t2`, `t3`, `t4` (leído en `t2` y `t3`) y `t5`.
 
-**Ficheros**: modificar `tests/batteries/sdd-implement/{battery.md,subject.sh}`; crear las fixtures 0016, 0017, `red-writer-brief.md` y `tests/sdd-tdd-red.md`; las salidas de los sujetos van en `.docs/sdd/specs/20261011-143353-feature-0165-tdd-and-debugging/red/`.
+**Ficheros**: modificar `tests/batteries/sdd-implement/{battery.md,subject.sh}`; crear las fixtures 0016, 0017, `red-writer-brief.md` y `tests/sdd-tdd-red.md`; las salidas de los sujetos van en `.docs/sdd/changes/20261011-143353-feature-0165-tdd-and-debugging/red/`.
 
 - [ ] **Step 1: Fixtures**:
   - **0016, «horas por sala»**:

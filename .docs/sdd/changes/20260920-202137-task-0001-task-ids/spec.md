@@ -100,7 +100,7 @@ El modo de ids es un **dato del proyecto**, no una decisión del agente: se preg
 **ADDED — Una task no planificada obtiene su id con un script determinista**
 - GIVEN un proyecto en modo `sequence` y una task o patch sin fila en el roadmap
 - WHEN se invoca `Get-NextSddId.ps1` desde la raíz del proyecto
-- THEN devuelve por salida estándar el siguiente id libre en cuatro dígitos: el mayor id encontrado en `.docs/sdd/specs/`, en `.docs/sdd/roadmap.md` y en los nombres de rama locales y remotos, más uno
+- THEN devuelve por salida estándar el siguiente id libre en cuatro dígitos: el mayor id encontrado en `.docs/sdd/changes/`, en `.docs/sdd/roadmap.md` y en los nombres de rama locales y remotos, más uno
 - AND el script no escribe nada y no hace `git fetch`: lee las referencias tal como están en el repositorio
 - AND `0000` no cuenta como id ocupado: un proyecto cuyo histórico es todo `0000` recibe `0001`
 

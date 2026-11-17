@@ -13,7 +13,7 @@ created: 2026-09-25
 
 1. **Ejecución Native** en esta sesión (Opus 5.5, el modelo de la sesión) — las 4 tasks tocan los mismos ficheros en serie y el trabajo es sobre todo clasificar menciones con el contexto de la spec ya cargado; un subagente por task recargaría ese contexto cuatro veces. El dev-lead aprobó la spec sin la opción de bajar la sesión a gama media.
 2. **Revisor final de rama**: `sdd-kit:effort-high` + `model: opus`, el techo por defecto del Art. IV para Native.
-3. **Sujetos de la campaña**: Sonnet, con el lanzador de referencia `tests/headless/run.sh` y los moldes de la task 0014 (`.docs/sdd/specs/20260921-162213-task-0014-auto-routing/red/molde*`), con `SUBJECT_CAP=15` y `COST_CAP=4`, los de la spec.
+3. **Sujetos de la campaña**: Sonnet, con el lanzador de referencia `tests/headless/run.sh` y los moldes de la task 0014 (`.docs/sdd/changes/20260921-162213-task-0014-auto-routing/red/molde*`), con `SUBJECT_CAP=15` y `COST_CAP=4`, los de la spec.
 4. **Orden lectores → escritores**: la Task 1 hace que los scripts lean `feature` antes de que nada lo escriba; así ningún commit intermedio deja una carpeta `-feature-` que un script no reconozca.
 5. **El RED de `m1` va dentro de la Task 3, antes de escribir el paso de migración** — Art. I: el baseline se mide sin la guía. Corre sobre una copia del kit en `HEAD` de ese momento (`git archive`), que aún no tiene el paso.
 6. **El test guarda va en la Task 3**, la última que toca texto vivo: antes de ella fallaría por los docs que aún no se han reescrito.
@@ -42,7 +42,7 @@ created: 2026-09-25
 - Nombres nuevos, exactos: `sdd-start-feature`, `sdd-end-feature`; carpeta `<yyyyMMdd-HHmmss>-feature-<id>-<slug>`; frontmatter `feature: <id>`; columna del estimation-log `Id`; cabecera de `roadmap-template.md` `| id | Feature |`.
 - Se quedan como están: «Task N», `tasks.md`, `tasks-template.md` y su cabecera `| # | Task | Status | Commit | Notas |`, `task-start`/`task-done`, «revisión de task»; `task:` en `patch-template.md` y `kit-feedback-template.md`; los slugs `task-flow` y `task-ids`; la rama `feature/<id>-<slug>`.
 - Cada mención de «task» se clasifica: unidad del kit → feature; task del plan → se queda. Nunca sustitución ciega con `sed` o `-replace` sobre un fichero entero.
-- Histórico intacto: `.docs/sdd/specs/`, `field-reports/`, `releases/`, `changelog.md` (salvo `[Unreleased]` en el cierre), `roadmap.md`, `estimation-log.md`, «Aprendizajes por task» de `tech-stack.md`, los `.md` de `tests/` a cualquier profundidad y `migrations/` anteriores a `v2.0.0.md`.
+- Histórico intacto: `.docs/sdd/changes/`, `field-reports/`, `releases/`, `changelog.md` (salvo `[Unreleased]` en el cierre), `roadmap.md`, `estimation-log.md`, «Aprendizajes por task» de `tech-stack.md`, los `.md` de `tests/` a cualquier profundidad y `migrations/` anteriores a `v2.0.0.md`.
 - Las `description` de las skills renombradas conservan «tarea» y «cierra la tarea» como frases de disparo.
 
 ### De proceso

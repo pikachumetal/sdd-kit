@@ -25,7 +25,7 @@ Con la CI de la base en `ubuntu-latest`, medido en un contenedor `ubuntu:24.04` 
 
 ## 2. Causa raíz
 
-1. `machineUserPattern()` de `cli/test/kit/privacy.ts` toma la última carpeta del home (`USERPROFILE ?? HOME`) y la busca como palabra en las salidas de sujetos. En el contenedor es `root`, y en el runner de GitHub, `/home/runner`: `git grep -l -i -w runner` sobre `.docs/sdd/specs/*/*/*` de `origin/develop` da 187 ficheros, con texto corriente («el runner de migraciones», «el test runner nativo»). No es una fuga: el usuario de esa máquina es una palabra del idioma.
+1. `machineUserPattern()` de `cli/test/kit/privacy.ts` toma la última carpeta del home (`USERPROFILE ?? HOME`) y la busca como palabra en las salidas de sujetos. En el contenedor es `root`, y en el runner de GitHub, `/home/runner`: `git grep -l -i -w runner` sobre `.docs/sdd/changes/*/*/*` de `origin/develop` da 187 ficheros, con texto corriente («el runner de migraciones», «el test runner nativo»). No es una fuga: el usuario de esa máquina es una palabra del idioma.
 2. Los dos tests de `publish-failures` escriben `.git/hooks/pre-commit` con `exit 1` usando `writeFileSync`, sin bit de ejecución. Git en Linux ignora un hook que no es ejecutable, el commit no falla y `sdd roadmap publish` sale con 0. En Windows git no mira ese bit. Hasta el config de la CI de hoy pasaban también en Linux por casualidad: el commit fallaba por falta de identidad de git.
 
 ## 3. Fix
