@@ -1,6 +1,6 @@
 # RED — lo previsto de «Topes de palabras» lleva su origen (feature 0326)
 
-Escenario `co2p` de la [batería de `sdd-propose`](batteries/sdd-propose/battery.md), n = 2, sonnet, con el kit de `develop` (`git archive origin/develop:dist`) y la batería de la rama. Molde `reservas-tope-carpeta`: `docs/plantillas/` mide 52 palabras con un tope de 60; la petición trae un párrafo de 42 palabras para `aviso.md`, así que lo previsto decide el tope propuesto (52 + 42 + 20 = 114). Salidas en [`red-co2p/out/`](../.docs/sdd/specs/20261109-223338-feature-0326-orphans-eol-and-forecast/red-co2p/out/).
+Escenario `co2p` de la [batería de `sdd-propose`](batteries/sdd-propose/battery.md), n = 2, sonnet, con el kit de `develop` (`git archive origin/develop:dist`) y la batería de la rama. Molde `reservas-tope-carpeta`: `docs/plantillas/` mide 52 palabras con un tope de 60; la petición trae un párrafo de 42 palabras para `aviso.md`, así que lo previsto decide el tope propuesto (52 + 42 + 20 = 114). Salidas en [`red-co2p/out/`](../.docs/sdd/changes/20261109-223338-feature-0326-orphans-eol-and-forecast/red-co2p/out/).
 
 | Sujeto | Turnos | $ | Celda «Tope propuesto» | `CO2P-C` | `CO2P-M` | `CO2P` |
 | --- | --- | --- | --- | --- | --- | --- |

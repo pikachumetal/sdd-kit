@@ -1,6 +1,6 @@
 # Evidencia RED — migración de proyectos consumidores (2026-09-09)
 
-Baseline de la task [migracion-consumidores](../.docs/sdd/specs/20260909-105650-task-0000-migracion-consumidores/spec.md) (T10). **Primera campaña con el método headless de T9**: cada sujeto es una sesión `claude -p` (Sonnet) con el kit instalado deshabilitado y el working tree del kit cargado por `--plugin-dir`, así que ve la versión sin publicar de las skills **y** los ficheros de migración recién escritos, sin pegar nada por prompt. Estado final verificado en disco con `verify-migracion.py` (checklist (a)–(j) del plan) y el resultado final del sujeto leído del JSON de salida.
+Baseline de la task [migracion-consumidores](../.docs/sdd/changes/20260909-105650-task-0000-migracion-consumidores/spec.md) (T10). **Primera campaña con el método headless de T9**: cada sujeto es una sesión `claude -p` (Sonnet) con el kit instalado deshabilitado y el working tree del kit cargado por `--plugin-dir`, así que ve la versión sin publicar de las skills **y** los ficheros de migración recién escritos, sin pegar nada por prompt. Estado final verificado en disco con `verify-migracion.py` (checklist (a)–(j) del plan) y el resultado final del sujeto leído del JSON de salida.
 
 ## Método (flags finales)
 

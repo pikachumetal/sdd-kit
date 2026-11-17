@@ -1,6 +1,6 @@
 # RED — desvíos, freno por regiones, aviso de fase, esperas, `tasks.md` y oferta (feature 0186)
 
-Sujetos headless en Opus, n = 1 por frente, en serie, superpowers 7.0.0, kit del commit `9f807d14`. Salidas en [`red/out/`](../.docs/sdd/specs/20261031-182430-feature-0186-implement-deviations-and-brakes/red/out/). Escenarios en las baterías de [`sdd-implement`](batteries/sdd-implement/battery.md) y [`sdd-propose`](batteries/sdd-propose/battery.md).
+Sujetos headless en Opus, n = 1 por frente, en serie, superpowers 7.0.0, kit del commit `9f807d14`. Salidas en [`red/out/`](../.docs/sdd/changes/20261031-182430-feature-0186-implement-deviations-and-brakes/red/out/). Escenarios en las baterías de [`sdd-implement`](batteries/sdd-implement/battery.md) y [`sdd-propose`](batteries/sdd-propose/battery.md).
 
 | Frente | Sujeto | Qué hizo | Veredicto |
 | --- | --- | --- | --- |

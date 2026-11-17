@@ -1,6 +1,6 @@
 # Evidencia GREEN — las cinco reglas que el agente decide al azar (2026-09-09)
 
-Verificación de la task [reglas-de-capacidad](../.docs/sdd/specs/20260909-180422-task-0000-reglas-de-capacidad/spec.md) (T17) tras el [RED](reglas-capacidad-red.md).
+Verificación de la task [reglas-de-capacidad](../.docs/sdd/changes/20260909-180422-task-0000-reglas-de-capacidad/spec.md) (T17) tras el [RED](reglas-capacidad-red.md).
 
 ## Método
 

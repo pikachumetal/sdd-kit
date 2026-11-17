@@ -2,14 +2,14 @@
 
 RED previo a la spec (Art. I y `tech-stack.md`), sobre `feature/0057` en `33d32d1` (= `develop`) con superpowers **6.4.1** instalado.
 
-**Previsión y techo**: los comunes a las tasks 0055, 0057 y 0058, unos 50 $ con **techo en 65 $** (dev-lead, 2026-09-24). La parte de esta task se declaró en el chat antes del primer sujeto: unos 20 sujetos, unos 30 $ y unas 3 h. El lanzador común, [`red/run.sh`](../.docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/run.sh), es una copia del de la 0055: suma el coste de las carpetas de las tres tasks y para al llegar al techo o si existe el fichero `stop`.
+**Previsión y techo**: los comunes a las tasks 0055, 0057 y 0058, unos 50 $ con **techo en 65 $** (dev-lead, 2026-09-24). La parte de esta task se declaró en el chat antes del primer sujeto: unos 20 sujetos, unos 30 $ y unas 3 h. El lanzador común, [`red/run.sh`](../.docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/run.sh), es una copia del de la 0055: suma el coste de las carpetas de las tres tasks y para al llegar al techo o si existe el fichero `stop`.
 
 ## Método
 
-- **Punto de partida**: la tabla de lectura de superpowers 6.4.1 de la 0055, [`lectura-superpowers-641.md`](../.docs/sdd/specs/20260924-082516-task-0055-native-default/red/lectura-superpowers-641.md), filas E1–E15, T1, S2, S3, S5 y C1. No se rehace.
-- **Sujetos**: Sonnet headless (`claude -p`) sobre el molde `salas` de la 0044, con un `pre-commit` que corre `node --test` sobre el árbol, ficheros sin seguimiento incluidos. El molde de la 0057, [`red/mold.sh`](../.docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/mold.sh), añade el hook, un plan con `Ejecución: native`, un plan de cuatro tasks y el estado de las Tasks 1 y 2 hechas con su ledger. Lanzadores: [`red/subject.sh`](../.docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/subject.sh) (Native) y [`red/subject-sdd.sh`](../.docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/subject-sdd.sh) (SDD). Salidas en `red/out/`.
+- **Punto de partida**: la tabla de lectura de superpowers 6.4.1 de la 0055, [`lectura-superpowers-641.md`](../.docs/sdd/changes/20260924-082516-task-0055-native-default/red/lectura-superpowers-641.md), filas E1–E15, T1, S2, S3, S5 y C1. No se rehace.
+- **Sujetos**: Sonnet headless (`claude -p`) sobre el molde `salas` de la 0044, con un `pre-commit` que corre `node --test` sobre el árbol, ficheros sin seguimiento incluidos. El molde de la 0057, [`red/mold.sh`](../.docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/mold.sh), añade el hook, un plan con `Ejecución: native`, un plan de cuatro tasks y el estado de las Tasks 1 y 2 hechas con su ledger. Lanzadores: [`red/subject.sh`](../.docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/subject.sh) (Native) y [`red/subject-sdd.sh`](../.docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/subject-sdd.sh) (SDD). Salidas en `red/out/`.
 - **Copia del kit**: `HEAD` con `agents/` para `n1`, `n4`, `s1` y `s2`, y sin `agents/` para `n2`. En `n2` la sesión no tiene los tipos `sdd-kit:effort-*`.
-- **Sonda E15**, sin sujeto: `task-start` en Git Bash sobre el plan Native del molde, [`red/sonda-task-start.txt`](../.docs/sdd/specs/20260924-105352-task-0057-native-adapt/red/sonda-task-start.txt).
+- **Sonda E15**, sin sujeto: `task-start` en Git Bash sobre el plan Native del molde, [`red/sonda-task-start.txt`](../.docs/sdd/changes/20260924-105352-task-0057-native-adapt/red/sonda-task-start.txt).
 - **Por texto**: el paso 9 y el paso 1 de `sdd-end-task`, leídos contra lo que hace `executing-plans`.
 
 ## Escenarios

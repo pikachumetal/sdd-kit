@@ -1,6 +1,6 @@
 # GREEN — el contraste de un rojo corre primero el fichero que falla (feature 0230)
 
-Misma batería que el [RED](red-contrast-0230-red.md), con el kit de la rama copiado sin `.docs/` ni `tests/` en `.temp/k30` y los sujetos en `.temp/r30` (ruta corta: en el RED, la del scratchpad dio `Filename too long`). Sujetos headless Sonnet, superpowers 7.0.0, n recortado por la enmienda del 2026-10-28: `a3a`, `a8` y `g4` ×2; `a3r`, `g5` y `g3d` ×1. Salidas en `.docs/sdd/specs/20261028-131603-feature-0230-red-contrast-failing-file-first/green/out/`.
+Misma batería que el [RED](red-contrast-0230-red.md), con el kit de la rama copiado sin `.docs/` ni `tests/` en `.temp/k30` y los sujetos en `.temp/r30` (ruta corta: en el RED, la del scratchpad dio `Filename too long`). Sujetos headless Sonnet, superpowers 7.0.0, n recortado por la enmienda del 2026-10-28: `a3a`, `a8` y `g4` ×2; `a3r`, `g5` y `g3d` ×1. Salidas en `.docs/sdd/changes/20261028-131603-feature-0230-red-contrast-failing-file-first/green/out/`.
 
 | Escenario | Fila | Resultado | Evidencia |
 | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # sdd-propose rehecha (feature 0306) — RED estructural, GREEN y controles
 
-Spec: [`.docs/sdd/specs/20261105-161645-feature-0306-propose-rework/spec.md`](../.docs/sdd/specs/20261105-161645-feature-0306-propose-rework/spec.md). Batería: [`tests/batteries/sdd-propose/battery.md`](batteries/sdd-propose/battery.md).
+Spec: [`.docs/sdd/changes/20261105-161645-feature-0306-propose-rework/spec.md`](../.docs/sdd/changes/20261105-161645-feature-0306-propose-rework/spec.md). Batería: [`tests/batteries/sdd-propose/battery.md`](batteries/sdd-propose/battery.md).
 
 ## RED estructural
 

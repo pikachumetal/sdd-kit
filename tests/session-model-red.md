@@ -1,6 +1,6 @@
 # RED — modelo y effort de la sesión que ejecuta en Native (task 0058)
 
-Kit: copia del working tree en `3924330`, antes de la guía. Molde `salas` (tasks 0044, 0055 y 0057). Lanzador y sujetos en `.docs/sdd/specs/20260924-225741-task-0058-session-model-policy/red/`, salidas en `red/out/`.
+Kit: copia del working tree en `3924330`, antes de la guía. Molde `salas` (tasks 0044, 0055 y 0057). Lanzador y sujetos en `.docs/sdd/changes/20260924-225741-task-0058-session-model-policy/red/`, salidas en `red/out/`.
 
 | Escenario | Qué mide | Sesión del sujeto |
 | --- | --- | --- |

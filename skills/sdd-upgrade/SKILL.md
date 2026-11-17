@@ -9,7 +9,7 @@ description: Use when a project with .docs/sdd/sdd-kit.json asks to update to th
 
 Bring an initialized project up to the loaded kit by applying, in order, the migrations it hasn't applied.
 <!-- kit: incluye user-language -->
-Each file of [references/migrations/](references/migrations/) is one version's changes, as steps that start with a checkable predicate. You migrate only after the user's «sí» (their request, or their answer to the session's offer), you never move content in bulk, and you ask before deleting or restructuring anything. Every `sdd <verb>` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
+Each file of [references/migrations/](references/migrations/) is one version's changes, as steps that start with a checkable predicate. You migrate only after the user's «sí» (their request, or their answer to the session's offer), you ask before deleting, moving or restructuring anything a step doesn't mark «no gate». Every `sdd <verb>` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`.
 
 ## Steps
 
@@ -17,7 +17,7 @@ Each file of [references/migrations/](references/migrations/) is one version's c
 2. **Apply each file in order, step by step.** Each step starts with a predicate: if it doesn't hold, skip it and say so. Steps without a **gate** mark (a text substitution, renaming a table) run without asking: they're reversible and the user reviews them in the diff. A step marked **gate** is presented to the user before it runs (a mass rename, a deletion, an `estimation-log.md` diff).
 3. **A step without a mark that deletes or restructures is a gate too**: if it deletes a file, a whole section or a JSON key, or changes a file's path (moving, splitting or merging included), present it and wait for the «sí», even if the migration doesn't mark it. Rewriting without deleting (substituting a name, adding a section) isn't. A step its migration marks «no gate» runs without asking: the mark wins over this rule.
 4. **A gate nobody answers stays pending**: with the user away, don't run it on your own — not executed, not staged «for review». Pending means untouched, with the exact command listed in the report.
-5. **What isn't migrating**: regenerating anchor documents, dumping `capabilities/`, splitting a legacy functional document, touching historical specs or walkthroughs, deleting project scripts that aren't the kit's, and moving content in bulk (the `specs/` folders stay where they are).
+5. **What isn't migrating**: regenerating anchor documents, dumping `capabilities/`, splitting a legacy functional document, rewriting historical specs or walkthroughs beyond a step's paths, and deleting project scripts that aren't the kit's.
 6. **Closing each version**: run the file's «Verification», then `sdd upgrade --root "<root>" --mark <versión>`, which writes `version`, `channel` and `updated` and keeps the other keys, and make one commit `chore(sdd): migrar al kit vX.Y.Z` once its gates are resolved. With a gate pending: no commit and no marker for that version or the later ones; leave the applied changes in the working tree and the pending list in the report.
 7. **Report**: what each version changed, what was skipped and why, and each pending gate with its command, closing the turn with its question: the answer resumes. If you came from the session's offer, then go back to what the user had asked.
 

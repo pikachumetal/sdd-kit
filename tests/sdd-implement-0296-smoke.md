@@ -1,6 +1,6 @@
 # Humos y control de enrutado de `sdd-implement` (feature 0296, Task 5)
 
-Escenarios `h1`, `h2`, `g1`, `d1` y `rt1` de la batería de [`sdd-implement`](batteries/sdd-implement/battery.md), un sujeto cada uno (`h1`, `h2` y `rt1` en Sonnet; `g1` y `d1` en Opus, como dice su fila), sin superpowers. Kit del commit `f684b98b` (`dist/` de `HEAD`). Salidas en [`smoke/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/smoke/out/). `rt1` es nuevo: el control de «retoma la feature» (la 0010 con la Task 1 commiteada y su `tasks.md`; la petición no nombra ninguna skill), con la procedencia «feature 0296: el name y la description enrutan (architecture.md)».
+Escenarios `h1`, `h2`, `g1`, `d1` y `rt1` de la batería de [`sdd-implement`](batteries/sdd-implement/battery.md), un sujeto cada uno (`h1`, `h2` y `rt1` en Sonnet; `g1` y `d1` en Opus, como dice su fila), sin superpowers. Kit del commit `f684b98b` (`dist/` de `HEAD`). Salidas en [`smoke/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/smoke/out/). `rt1` es nuevo: el control de «retoma la feature» (la 0010 con la Task 1 commiteada y su `tasks.md`; la petición no nombra ninguna skill), con la procedencia «feature 0296: el name y la description enrutan (architecture.md)».
 
 | Escenario | Sujeto | Veredicto | Frase o llamada que lo decide | Coste |
 | --- | --- | --- | --- | --- |
@@ -37,7 +37,7 @@ Coste de `h2-2`: 1,73 $. Total de la tanda de humos: 6,05 $ (seis sujetos).
 
 ## Tras la pasada de fix
 
-Kit de la pasada de fix de la revisión final (juntada en el cierre) (`dist/` de `HEAD`), Sonnet, 2 sujetos por escenario, sin superpowers. Salidas en [`postfix/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/postfix/out/). La tanda va con otro `SPEC_DIR` (`SUBJECT_CAP=8`, `COST_CAP=10`): el de la spec ya había llegado a los 18 sujetos de su previsión.
+Kit de la pasada de fix de la revisión final (juntada en el cierre) (`dist/` de `HEAD`), Sonnet, 2 sujetos por escenario, sin superpowers. Salidas en [`postfix/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/postfix/out/). La tanda va con otro `SPEC_DIR` (`SUBJECT_CAP=8`, `COST_CAP=10`): el de la spec ya había llegado a los 18 sujetos de su previsión.
 
 **Arreglo del molde de `o1`.** Con `dist/` como copia del kit (feature 0300), `formRules()` no encontraba `.docs/sdd/constitution.md` en `s.KIT` y `o1` moría antes de lanzar (`sin el Art. II en la copia del kit`; sujeto perdido sin coste). `subject.mjs` lee ahora la constitution y el `tech-stack.md` del repo desde el que se lanza (`REPO_DOCS`), como el resto de fixtures.
 
@@ -62,7 +62,7 @@ Ocho sujetos: 5,99 $ (`h2` 3,76 $, `rt1` 1,07 $, `w1` 0,73 $, `o1` 0,43 $).
 
 ## Tras el anuncio en la puerta
 
-Kit con la frase del anuncio en la puerta (juntada en el cierre) (`dist/` de `HEAD`; su Overview dice que el primer mensaje, nuevo o retomado, lleva la línea `Workspace del plan: <ruta> — …`). Sonnet, 2 sujetos de `h2` y 2 de `rt1`, con la petición y el molde de su fila, en la carpeta normal de la spec tras la enmienda de la previsión (30 sujetos, 27,5 $). Salidas en [`postfix2/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/postfix2/out/).
+Kit con la frase del anuncio en la puerta (juntada en el cierre) (`dist/` de `HEAD`; su Overview dice que el primer mensaje, nuevo o retomado, lleva la línea `Workspace del plan: <ruta> — …`). Sonnet, 2 sujetos de `h2` y 2 de `rt1`, con la petición y el molde de su fila, en la carpeta normal de la spec tras la enmienda de la previsión (30 sujetos, 27,5 $). Salidas en [`postfix2/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/postfix2/out/).
 
 | Escenario | Sujeto | W | Frase que lo decide | Coste |
 | --- | --- | --- | --- | --- |
@@ -83,7 +83,7 @@ Cuatro sujetos: 4,82 $ (`h2` 3,87 $, `rt1` 0,96 $).
 
 ## Línea base (develop 9d03a521)
 
-Kit de `develop` en `9d03a521`, antes de la 0296: `dist/` de ese commit (`git worktree add --detach`, copia de `dist/`, worktree retirado), con `sdd-implement` entera y sin copias. Batería y molde de `HEAD`; `h2`, Sonnet, 2 sujetos, con su petición, en la carpeta normal de la spec (previsión enmendada a 32 sujetos). El kit viejo no necesitó nada más de `subject.mjs`. Salidas en [`baseline/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/baseline/out/).
+Kit de `develop` en `9d03a521`, antes de la 0296: `dist/` de ese commit (`git worktree add --detach`, copia de `dist/`, worktree retirado), con `sdd-implement` entera y sin copias. Batería y molde de `HEAD`; `h2`, Sonnet, 2 sujetos, con su petición, en la carpeta normal de la spec (previsión enmendada a 32 sujetos). El kit viejo no necesitó nada más de `subject.mjs`. Salidas en [`baseline/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/baseline/out/).
 
 | Sujeto | W | Frase que lo decide | Coste |
 | --- | --- | --- | --- |

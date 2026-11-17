@@ -1,6 +1,6 @@
 # GREEN — los diez arreglos de `sdd-propose` y de las plantillas de spec y plan (feature 0185)
 
-Mismo método que el [RED](sdd-propose-0185-red.md): sujetos Sonnet (`mp1` en Opus) con `SUPERPOWERS_DIR` (superpowers 7.0.0), kit de la rama copiado al scratchpad. Lo que dejó cada sujeto, en [`green/out/`](../.docs/sdd/specs/20261017-220801-feature-0185-propose-fixes/green/out/) y [`refactor/out/`](../.docs/sdd/specs/20261017-220801-feature-0185-propose-fixes/refactor/out/).
+Mismo método que el [RED](sdd-propose-0185-red.md): sujetos Sonnet (`mp1` en Opus) con `SUPERPOWERS_DIR` (superpowers 7.0.0), kit de la rama copiado al scratchpad. Lo que dejó cada sujeto, en [`green/out/`](../.docs/sdd/changes/20261017-220801-feature-0185-propose-fixes/green/out/) y [`refactor/out/`](../.docs/sdd/changes/20261017-220801-feature-0185-propose-fixes/refactor/out/).
 
 ## Task 1 — plantilla de spec y repaso de coherencia
 

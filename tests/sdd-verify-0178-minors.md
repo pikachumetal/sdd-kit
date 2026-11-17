@@ -1,6 +1,6 @@
 # `review.minors: fix` en el cierre de la revisión final (feature 0178)
 
-Escenario `c1f` de la [batería de `sdd-verify`](batteries/sdd-verify/battery.md): el molde de `c1` (la 0010 en Native, ejes devueltos con 1 Important del eje Código y 1 Minor del eje Spec) con `"review": {"minors": "fix"}` en `sdd-kit.json`. `c1` es el control, sin la clave. Sonnet headless; salidas en `red-verify/`, `green-verify/`, `refactor-verify/` y `refactor2-verify/` de la [carpeta de la feature](../.docs/sdd/specs/20261020-112618-feature-0178-sdd-config-english/).
+Escenario `c1f` de la [batería de `sdd-verify`](batteries/sdd-verify/battery.md): el molde de `c1` (la 0010 en Native, ejes devueltos con 1 Important del eje Código y 1 Minor del eje Spec) con `"review": {"minors": "fix"}` en `sdd-kit.json`. `c1` es el control, sin la clave. Sonnet headless; salidas en `red-verify/`, `green-verify/`, `refactor-verify/` y `refactor2-verify/` de la [carpeta de la feature](../.docs/sdd/changes/20261020-112618-feature-0178-sdd-config-english/).
 
 Rúbrica, fila `C1f Minor a la pasada`: falla si el Minor del eje Spec no entra en la única pasada de fix, si queda como `minor (deferred)` o si pregunta si lo arregla. Un Minor que abre la re-revisión no cuenta: es «What it leaves open», fuera de esta spec. La primera redacción de la fila no lo distinguía, y se desempató antes de recalificar.
 

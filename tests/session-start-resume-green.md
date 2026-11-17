@@ -1,6 +1,6 @@
 # GREEN — feature 0116: arrancar sin el kit y retomar
 
-Salidas de los sujetos en `.docs/sdd/specs/20261101-150956-feature-0116-session-start-and-resume/green/`, `green-entera/` y `fix/`. Los smokes del hook no guardaron salida: su evidencia es esta tabla.
+Salidas de los sujetos en `.docs/sdd/changes/20261101-150956-feature-0116-session-start-and-resume/green/`, `green-entera/` y `fix/`. Los smokes del hook no guardaron salida: su evidencia es esta tabla.
 
 ## Hook de arranque
 

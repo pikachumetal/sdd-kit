@@ -1,6 +1,6 @@
 # RED — la migración v3.0.0 contra un proyecto como este repo (feature 0198)
 
-Escenario `v5` de la [batería de `sdd-upgrade`](batteries/sdd-upgrade/battery.md), molde `v2x-release`, n = 2, sonnet, con el kit de `develop` (`git archive origin/develop:dist`). El molde lleva lo que destapó este repo: filas «**Release 3.0.0**», una fila ✅ sin prefijo cerrada tras la etiqueta `v1.2.0`, el mismo id en «Patches» y en «Próximo», una fila del Backlog con id, un hito sin id en `🔄`, enlaces `specs/…` en el roadmap y en el changelog, y `capabilities/cierre.md` con un escenario que cita el cambio de nombre. Salidas en [`red/out/`](../.docs/sdd/specs/20261110-181442-feature-0198-migrate-repo-v3/red/out/).
+Escenario `v5` de la [batería de `sdd-upgrade`](batteries/sdd-upgrade/battery.md), molde `v2x-release`, n = 2, sonnet, con el kit de `develop` (`git archive origin/develop:dist`). El molde lleva lo que destapó este repo: filas «**Release 3.0.0**», una fila ✅ sin prefijo cerrada tras la etiqueta `v1.2.0`, el mismo id en «Patches» y en «Próximo», una fila del Backlog con id, un hito sin id en `🔄`, enlaces `specs/…` en el roadmap y en el changelog, y `capabilities/cierre.md` con un escenario que cita el cambio de nombre. Salidas en [`red/out/`](../.docs/sdd/changes/20261110-181442-feature-0198-migrate-repo-v3/red/out/).
 
 | Sujeto | $ | V15 Enlaces | V16 Lo publicado | V17 Release por prefijo | V18 Ids del Backlog | V19 Nombres en capabilities |
 | --- | --- | --- | --- | --- | --- | --- |

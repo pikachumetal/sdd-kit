@@ -7,7 +7,7 @@ source: hallazgos del hackaton del equipo (2026-09-09) y dos consultas del dev-l
 
 # Acta de release — v1.0.0 (2026-09-09)
 
-Fuente: los dos documentos del hackaton del equipo, archivados al lado — [research-hackaton.md](research-hackaton.md) (hallazgos sobre dos retos reales, SifAcademy y SifRest) y la propuesta de reviews que vive como [`research.md` de T11](../../specs/20260909-131802-task-0000-gates-y-reviews/research.md)— más las consultas del dev-lead del 2026-09-07 (alineación con superpowers, progressive disclosure, workflow) y del 2026-09-09 (gates, disparo de skills). Sin demo ni cliente externo: el cliente del kit es el propio equipo.
+Fuente: los dos documentos del hackaton del equipo, archivados al lado — [research-hackaton.md](research-hackaton.md) (hallazgos sobre dos retos reales, SifAcademy y SifRest) y la propuesta de reviews que vive como [`research.md` de T11](../../changes/20260909-131802-task-0000-gates-y-reviews/research.md)— más las consultas del dev-lead del 2026-09-07 (alineación con superpowers, progressive disclosure, workflow) y del 2026-09-09 (gates, disparo de skills). Sin demo ni cliente externo: el cliente del kit es el propio equipo.
 
 **Versión.** La release se planificó y se trabajó como **v0.6.0, RC hacia 1.0.0**. En el cierre, el dev-lead decidió cerrarla directamente como **1.0.0**, contra la recomendación del agente (`versionado.md` reserva 1.0.0 para la puesta en producción y el kit sigue local-only). Los artefactos históricos (specs, walkthroughs, evidencia de tests) conservan el nombre v0.6.0 con el que se escribieron; los documentos vivos, el marcador y el fichero de migración pasan a 1.0.0.
 

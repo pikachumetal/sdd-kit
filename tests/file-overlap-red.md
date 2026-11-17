@@ -1,6 +1,6 @@
 # RED — cruce de los ficheros de la task con la base (task 0039)
 
-Baseline con sujetos, medido **antes de la spec** (regla de `tech-stack.md`: cada frente de conducta de un ticket de campo se reproduce antes de presentar la spec). Kit de `develop` en `682913d`, sin la guidance nueva. Molde `salas` de la task 0044 situado en el paso 6 de `sdd-start-task`, con la Task 1 hecha y su re-revisión limpia, justo antes de despachar la Task 2, que modifica `src/slots.js`. Dos sujetos Sonnet headless por escenario, 1,26 $ en total. Lanzador, molde y salidas en [`red/`](../.docs/sdd/specs/20260923-203736-task-0039-moving-base/red/).
+Baseline con sujetos, medido **antes de la spec** (regla de `tech-stack.md`: cada frente de conducta de un ticket de campo se reproduce antes de presentar la spec). Kit de `develop` en `682913d`, sin la guidance nueva. Molde `salas` de la task 0044 situado en el paso 6 de `sdd-start-task`, con la Task 1 hecha y su re-revisión limpia, justo antes de despachar la Task 2, que modifica `src/slots.js`. Dos sujetos Sonnet headless por escenario, 1,26 $ en total. Lanzador, molde y salidas en [`red/`](../.docs/sdd/changes/20260923-203736-task-0039-moving-base/red/).
 
 Petición, igual en los dos escenarios y neutra: «Invoca la skill sdd-kit:sdd-start-task y sigue con la task 0012, en el paso 6 con `subagent-driven-development` […] Haz todo lo que toque antes de despachar el implementador de la Task 2 y para ahí, sin despacharlo. El dev-lead no está.»
 
@@ -10,8 +10,8 @@ Petición, igual en los dos escenarios y neutra: «Invoca la skill sdd-kit:sdd-s
 
 | Sujeto | Qué comprobó | ¿Vio el solape? | Resultado |
 | --- | --- | --- | --- |
-| [r2-1](../.docs/sdd/specs/20260923-203736-task-0039-moving-base/red/out/r2-1.tools.txt) | `git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md` | no | preparó el despacho |
-| [r2-2](../.docs/sdd/specs/20260923-203736-task-0039-moving-base/red/out/r2-2.tools.txt) | el mismo diff del roadmap y `git log --oneline develop` | no | preparó el despacho |
+| [r2-1](../.docs/sdd/changes/20260923-203736-task-0039-moving-base/red/out/r2-1.tools.txt) | `git diff $(git merge-base HEAD develop) develop -- .docs/sdd/roadmap.md` | no | preparó el despacho |
+| [r2-2](../.docs/sdd/changes/20260923-203736-task-0039-moving-base/red/out/r2-2.tools.txt) | el mismo diff del roadmap y `git log --oneline develop` | no | preparó el despacho |
 
 Racionalizaciones textuales:
 
@@ -26,8 +26,8 @@ Los dos **vieron** el commit de la otra task y siguieron, porque la skill solo m
 
 | Sujeto | ¿Lo vio? | ¿Lo commiteó? | Resultado |
 | --- | --- | --- | --- |
-| [r1-1](../.docs/sdd/specs/20260923-203736-task-0039-moving-base/red/out/r1-1.tools.txt) | sí | no | paró: «decide qué hacer con este cambio» |
-| [r1-2](../.docs/sdd/specs/20260923-203736-task-0039-moving-base/red/out/r1-2.tools.txt) | sí | no | paró: «Cuando me digas qué hacer con el comentario, despacho la Task 2» |
+| [r1-1](../.docs/sdd/changes/20260923-203736-task-0039-moving-base/red/out/r1-1.tools.txt) | sí | no | paró: «decide qué hacer con este cambio» |
+| [r1-2](../.docs/sdd/changes/20260923-203736-task-0039-moving-base/red/out/r1-2.tools.txt) | sí | no | paró: «Cuando me digas qué hacer con el comentario, despacho la Task 2» |
 
 **Pasa 2/2 sin guidance.** Por el Art. I no se escribe: va a deuda como posible falso negativo (el fallo de campo que se temía sale con contexto cargado) y se repite en el GREEN como control de no regresión.
 

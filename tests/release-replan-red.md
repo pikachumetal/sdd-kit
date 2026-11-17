@@ -1,6 +1,6 @@
 # RED — replanificar la release en curso (task 0029)
 
-Baseline con el kit del working tree (`feature/0029`, antes de tocar `sdd-start-release`). Seis sujetos Sonnet headless a dos turnos, lanzados como en la task 0004 (`claude -p` + `--resume`), con la mensajería entre sesiones bloqueada. Molde, lanzadores y lo que produjo cada sujeto: [`red/`](../.docs/sdd/specs/20260922-154013-task-0029-release-replan/red/). Coste: 5,26 $.
+Baseline con el kit del working tree (`feature/0029`, antes de tocar `sdd-start-release`). Seis sujetos Sonnet headless a dos turnos, lanzados como en la task 0004 (`claude -p` + `--resume`), con la mensajería entre sesiones bloqueada. Molde, lanzadores y lo que produjo cada sujeto: [`red/`](../.docs/sdd/changes/20260922-154013-task-0029-release-replan/red/). Coste: 5,26 $.
 
 ## Origen
 

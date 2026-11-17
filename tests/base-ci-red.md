@@ -1,6 +1,6 @@
 # RED — La release y el merge leen la CI de la base (feature 0257)
 
-Kit de `develop` en el merge-base `1aa1105f`, sonnet, n = 1, 2026-10-29. Escenarios `ci1`, `ci2`, `rc1` y `rc2` de [la batería de `sdd-archive`](batteries/sdd-archive/battery.md), con un `gh` falso delante en el `PATH` que apunta cada llamada. Salidas en [`red/out/`](../.docs/sdd/specs/20261029-171538-feature-0257-release-merge-read-base-ci/red/out/). Coste: 1,34 $.
+Kit de `develop` en el merge-base `1aa1105f`, sonnet, n = 1, 2026-10-29. Escenarios `ci1`, `ci2`, `rc1` y `rc2` de [la batería de `sdd-archive`](batteries/sdd-archive/battery.md), con un `gh` falso delante en el `PATH` que apunta cada llamada. Salidas en [`red/out/`](../.docs/sdd/changes/20261029-171538-feature-0257-release-merge-read-base-ci/red/out/). Coste: 1,34 $.
 
 | Escenario | K1 Lee la CI | Resto | Lectura |
 | --- | --- | --- | --- |

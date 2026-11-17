@@ -1,6 +1,6 @@
 # GREEN — `sdd-worktrees` y `sdd-parallel-agents` (feature 0166)
 
-Humos de las dos skills nuevas, sujetos Sonnet headless con el kit de la rama y superpowers 7.0.0. Salidas en [`green/out/`](../.docs/sdd/specs/20261012-104247-feature-0166-worktrees-and-parallel-agents/green/out/); las de `w1` antes de la enmienda, en `green-w1r0/` (primera tanda) y `green-w1r1/` (ronda 1).
+Humos de las dos skills nuevas, sujetos Sonnet headless con el kit de la rama y superpowers 7.0.0. Salidas en [`green/out/`](../.docs/sdd/changes/20261012-104247-feature-0166-worktrees-and-parallel-agents/green/out/); las de `w1` antes de la enmienda, en `green-w1r0/` (primera tanda) y `green-w1r1/` (ronda 1).
 
 ## w1 — `sdd-worktrees` desde la preparación de `sdd-implement`
 

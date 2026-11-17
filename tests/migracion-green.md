@@ -41,7 +41,7 @@ Balance de la campaña completa (RED 4 + GREEN 6 = 10 sujetos, ~7,9 $): fuga de 
 
 ## Contaminación del método (anotación para `tech-stack.md`)
 
-`--plugin-dir D:/code/git/sdd-kit` expone el **repo entero** del kit, no solo `skills/`: E2 leyó `.docs/sdd/specs/` del kit, encontró la carpeta de T10 y escribió «su fixture de referencia es literalmente Alybo-corto — este proyecto». No cambió su conducta (siguió el README de migraciones igual), pero un sujeto que puede leer la spec de la task que lo mide no es un sujeto limpio. Remedio para la próxima campaña: `--plugin-dir` sobre una **copia del kit sin `.docs/`** (o solo `skills/` + `.claude-plugin/`), que es además lo que instala el canal CLI.
+`--plugin-dir D:/code/git/sdd-kit` expone el **repo entero** del kit, no solo `skills/`: E2 leyó `.docs/sdd/changes/` del kit, encontró la carpeta de T10 y escribió «su fixture de referencia es literalmente Alybo-corto — este proyecto». No cambió su conducta (siguió el README de migraciones igual), pero un sujeto que puede leer la spec de la task que lo mide no es un sujeto limpio. Remedio para la próxima campaña: `--plugin-dir` sobre una **copia del kit sin `.docs/`** (o solo `skills/` + `.claude-plugin/`), que es además lo que instala el canal CLI.
 
 ## Positivos que se conservan
 

@@ -1,6 +1,6 @@
 # Evidencia RED — changelog de cliente (2026-09-09)
 
-Baseline de la task [changelog-cliente](../.docs/sdd/specs/20260909-194633-task-0000-changelog-cliente/spec.md) (T18): si el proyecto tiene `changelog-cliente.md`, ¿`sdd-end-release` lo actualiza al cerrar una release con la sección derivada de las release notes, sin que la skill lo diga?
+Baseline de la task [changelog-cliente](../.docs/sdd/changes/20260909-194633-task-0000-changelog-cliente/spec.md) (T18): si el proyecto tiene `changelog-cliente.md`, ¿`sdd-end-release` lo actualiza al cerrar una release con la sección derivada de las release notes, sin que la skill lo diga?
 
 ## Método
 

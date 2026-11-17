@@ -2,7 +2,7 @@
 
 Se repiten los escenarios del RED (`tests/release-flow-red.md`) con los mismos moldes, peticiones y lanzador, sobre una copia limpia del kit con la Task 2 aplicada (`cce63e7`, `789d508`).
 
-- Salidas en `.docs/sdd/specs/20260921-074701-task-0004-release-without-client/green/out/`.
+- Salidas en `.docs/sdd/changes/20260921-074701-task-0004-release-without-client/green/out/`.
 - Coste: 8,61 $ en E1–E5 (10 sujetos), más E5-bis (abajo), que se ejecutó en los dos brazos.
 
 ## Veredicto por fallo del RED

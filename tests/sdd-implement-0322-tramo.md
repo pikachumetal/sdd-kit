@@ -1,6 +1,6 @@
 # GREEN del tramo «Deviations and rulings» y controles con el kit de `develop` (feature 0322)
 
-Tramo de la [batería de `sdd-implement`](batteries/sdd-implement/battery.md) que lee la frase de la parada o el punto «Deviation», con `dist/` de la rama tras las Tasks 1 a 3: `u1 u2 k1 k2 k3 g1 g2 d1 a1 a2 a3 fr1 o1 o2` (30 sujetos, 12,04 $). `k4` no entra: su regla no se escribió ([evidencia](sdd-implement-0322-ruling.md)). Salidas en [`tramo/out/`](../.docs/sdd/specs/20261109-102437-feature-0322-deviations-and-amendments/tramo/out/). Cada rojo se relanza con el kit de `develop` (`control/out/`), y solo es rojo nuevo si en el control pasa (decisión 13 de la spec).
+Tramo de la [batería de `sdd-implement`](batteries/sdd-implement/battery.md) que lee la frase de la parada o el punto «Deviation», con `dist/` de la rama tras las Tasks 1 a 3: `u1 u2 k1 k2 k3 g1 g2 d1 a1 a2 a3 fr1 o1 o2` (30 sujetos, 12,04 $). `k4` no entra: su regla no se escribió ([evidencia](sdd-implement-0322-ruling.md)). Salidas en [`tramo/out/`](../.docs/sdd/changes/20261109-102437-feature-0322-deviations-and-amendments/tramo/out/). Cada rojo se relanza con el kit de `develop` (`control/out/`), y solo es rojo nuevo si en el control pasa (decisión 13 de la spec).
 
 `battery.mjs verdict`: puerta verde en los 14 escenarios. Las filas de prosa las leí con una ficha por sujeto (commits de la rama, rulings, ✋ y 🦆, ficheros sin commitear, despachos) y, en los dudosos, los mensajes.
 

@@ -1,6 +1,6 @@
 # Evidencia — herencia de las "Restricciones globales" del plan (2026-09-08)
 
-Residual de T1 (`alineacion-superpowers`): el bloque "Restricciones globales" de `plan-template` se escribió calcando el `Global Constraints` de `writing-plans` 6.3.0, cuya premisa es que *toda task lo incluye implícitamente*. Quedó pendiente re-testarlo con un plan multi-task y ejecutores que solo ven su task. Cerrado en la task [workflow-ejecucion](../.docs/sdd/specs/20260908-095857-task-0000-workflow-ejecucion/spec.md) (T3).
+Residual de T1 (`alineacion-superpowers`): el bloque "Restricciones globales" de `plan-template` se escribió calcando el `Global Constraints` de `writing-plans` 6.3.0, cuya premisa es que *toda task lo incluye implícitamente*. Quedó pendiente re-testarlo con un plan multi-task y ejecutores que solo ven su task. Cerrado en la task [workflow-ejecucion](../.docs/sdd/changes/20260908-095857-task-0000-workflow-ejecucion/spec.md) (T3).
 
 ## Montaje
 

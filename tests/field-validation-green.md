@@ -1,6 +1,6 @@
 # GREEN — validación en campo como modo del proyecto (feature 0118)
 
-Mismos escenarios y molde que el [RED](field-validation-red.md), con la copia del kit de este worktree tras cada task. Salidas en `green/out/` de la [carpeta de la spec](../.docs/sdd/specs/20260930-211302-feature-0118-field-validation-mode/). Sonnet headless, `delegate`, sin `AskUserQuestion`.
+Mismos escenarios y molde que el [RED](field-validation-red.md), con la copia del kit de este worktree tras cada task. Salidas en `green/out/` de la [carpeta de la spec](../.docs/sdd/changes/20260930-211302-feature-0118-field-validation-mode/). Sonnet headless, `delegate`, sin `AskUserQuestion`.
 
 ## Task 1 — `control-profiles.md`, paso 7 de `sdd-start-feature` y plantillas
 

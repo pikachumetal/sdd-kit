@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. La previsión de coste de la spec usó un precio por sujeto que `tech-stack.md` ya corregía
 
 - **Qué pasó**: la spec estimó ~11 $ con 0,31 $ por sujeto, el de una feature anterior. `tech-stack.md` dice que un sujeto de `sdd-archive` cuesta ~0,70 $ porque cierra una feature entera. Al escribir el plan salieron ~17 $; el tope subió dos veces con el dev-lead (de 15 $ a 22 $ y a 25 $), y la campaña cerró en 23,78 $.
-- **Fuente**: `.docs/sdd/specs/20261029-082734-feature-0236-project-gate-levels/spec.md`, decisión 21 y «Enmiendas»; `.docs/sdd/tech-stack.md`, «Entrega de la skill al sujeto» («Un sujeto de `sdd-archive` cuesta ~0,70 $»); walkthrough §2.
+- **Fuente**: `.docs/sdd/changes/20261029-082734-feature-0236-project-gate-levels/spec.md`, decisión 21 y «Enmiendas»; `.docs/sdd/tech-stack.md`, «Entrega de la skill al sujeto» («Un sujeto de `sdd-archive` cuesta ~0,70 $»); walkthrough §2.
 - **Dónde en el kit**: `skills/sdd-propose/SKILL.md` paso 4 (Art. I: la previsión de coste se declara antes del primer sujeto); en este repo, el método vive en `tech-stack.md`.
 - **Por qué el kit no lo evitó**: la regla del precio existía y no la apliqué; la previsión no pide desglosar por batería.
 - **Coste**: dos paradas al dev-lead por dinero y ~8,8 $ por encima de lo aprobado en la spec (walkthrough §2).

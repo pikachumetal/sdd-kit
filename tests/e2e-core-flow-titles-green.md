@@ -1,6 +1,6 @@
 # GREEN — un test del proyecto compara los títulos con «Flujos core» (patch 0278)
 
-Mismo molde y lanzador que el [RED](e2e-core-flow-titles-red.md), con el texto del patch (`writing-e2e.md`, regla 1, y `operations-template.md`). Tres sujetos Sonnet, 0,71 $. Salidas: [`green/`](../.docs/sdd/specs/20261101-164101-patch-0278-e2e-titles-core-flows/green/).
+Mismo molde y lanzador que el [RED](e2e-core-flow-titles-red.md), con el texto del patch (`writing-e2e.md`, regla 1, y `operations-template.md`). Tres sujetos Sonnet, 0,71 $. Salidas: [`green/`](../.docs/sdd/changes/20261101-164101-patch-0278-e2e-titles-core-flows/green/).
 
 | Escenario | Qué dejó | Resultado |
 | --- | --- | --- |

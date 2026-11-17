@@ -1,6 +1,6 @@
 # RED — el cierre que mantiene el roadmap en la forma de la plantilla (feature 0123)
 
-Baseline con el kit de `develop` (`1c4b6054`, 2.2.0 más la plantilla y el validador de la 0115), 2026-09-30. Mide qué hacen `sdd-end-release`, `sdd-roadmap`, `sdd-end-feature` y `sdd-end-patch` con el roadmap cuando ninguna skill ejecuta `Test-Roadmap.ps1`. Molde `salas` sintético en [red/subject.sh](../.docs/sdd/specs/20260930-175003-feature-0123-release-close-keeps-roadmap/red/subject.sh); salidas en `red/out/` de la misma carpeta.
+Baseline con el kit de `develop` (`1c4b6054`, 2.2.0 más la plantilla y el validador de la 0115), 2026-09-30. Mide qué hacen `sdd-end-release`, `sdd-roadmap`, `sdd-end-feature` y `sdd-end-patch` con el roadmap cuando ninguna skill ejecuta `Test-Roadmap.ps1`. Molde `salas` sintético en [red/subject.sh](../.docs/sdd/changes/20260930-175003-feature-0123-release-close-keeps-roadmap/red/subject.sh); salidas en `red/out/` de la misma carpeta.
 
 ## Previsión de la campaña (Art. I)
 

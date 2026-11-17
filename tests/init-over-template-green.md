@@ -1,6 +1,6 @@
 # GREEN — `sdd-init-greenfield` sobre un proyecto instanciado desde el template (feature 0089)
 
-Kit de la rama tras la Task 1 (`116cc68`): la lista del paso 1 gana la pregunta 4 (fuera de alcance → «Qué es y qué no es») y la 5 (términos del dominio → «Dominio»). Mismo molde, misma petición y misma respuesta fija que el [RED](init-over-template-red.md); lanzador y salidas en [`green/`](../.docs/sdd/specs/20260927-165923-feature-0089-greenfield-init-template/green/). `.claude/` sigue bloqueado en headless: los dos sujetos pararon a pedir el permiso y siguieron sin él.
+Kit de la rama tras la Task 1 (`116cc68`): la lista del paso 1 gana la pregunta 4 (fuera de alcance → «Qué es y qué no es») y la 5 (términos del dominio → «Dominio»). Mismo molde, misma petición y misma respuesta fija que el [RED](init-over-template-red.md); lanzador y salidas en [`green/`](../.docs/sdd/changes/20260927-165923-feature-0089-greenfield-init-template/green/). `.claude/` sigue bloqueado en headless: los dos sujetos pararon a pedir el permiso y siguieron sin él.
 
 ## Resultados
 

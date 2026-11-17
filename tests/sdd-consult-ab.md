@@ -1,6 +1,6 @@
 # Evidencia A/B — `sdd-consult` (2026-09-07) · **corte DESCARTADO**
 
-Campaña de no-regresión del Art. I. Ola 2 de la task [progressive-disclosure](../.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/spec.md). Es la primera skill del kit cuyo recorte **no se publica**: la evidencia de por qué está aquí para que la próxima campaña no repita el experimento.
+Campaña de no-regresión del Art. I. Ola 2 de la task [progressive-disclosure](../.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/spec.md). Es la primera skill del kit cuyo recorte **no se publica**: la evidencia de por qué está aquí para que la próxima campaña no repita el experimento.
 
 ## Corte probado y descartado
 

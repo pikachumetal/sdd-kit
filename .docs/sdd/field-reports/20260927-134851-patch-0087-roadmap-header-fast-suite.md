@@ -30,7 +30,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. Un sujeto headless lanzado en paralelo acaba en el repo del kit y no en el molde
 
 - **Qué pasó**: 2 de 5 sujetos (`red-1` y `green-2`, lanzados en paralelo con otro) leyeron el working tree del kit como su proyecto. Pararon con «Repo actual es sdd-kit […] No hay patch 0013». Los lanzados solos cerraron el patch del molde. Cada uno costó una tanda más o un resultado de menos: el GREEN quedó en 1/1 válido y la campaña pasó del techo (3,07 $ de 3 $).
-- **Dónde en el kit**: el lanzador del patch (`.docs/sdd/specs/20260927-131408-patch-0087-roadmap-header-fast-suite/red/subject.sh`), copiado del de la 0075, frente a `subject_init` de `tests/headless/lib.sh`. No está localizado si la causa es el `--add-dir` del kit, el `cd` o la concurrencia.
+- **Dónde en el kit**: el lanzador del patch (`.docs/sdd/changes/20260927-131408-patch-0087-roadmap-header-fast-suite/red/subject.sh`), copiado del de la 0075, frente a `subject_init` de `tests/headless/lib.sh`. No está localizado si la causa es el `--add-dir` del kit, el `cd` o la concurrencia.
 - **Por qué el kit no lo evitó**: ni `tech-stack.md` ni `sdd-start-patch` dicen que el lanzador de un patch sale de `lib.sh`. Lo más cerca era el lanzador de un patch anterior, y se copió ese.
 - **Coste**: 0,61 $ de ruido y un GREEN incompleto.
 - **Propuesta**: reproducir con `lib.sh` y dos sujetos en paralelo. Si sale, separar el `cd` y el `--add-dir` del kit, o darle al sujeto una ruta de kit que no parezca un proyecto. Y decir en `tech-stack.md` que un lanzador nuevo se escribe sobre `lib.sh`.

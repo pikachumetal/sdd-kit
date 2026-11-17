@@ -1,6 +1,6 @@
 # RED — los diez arreglos de `sdd-propose` y de las plantillas de spec y plan (feature 0185)
 
-Baseline con el kit de la rama en `c04fc5c7` (develop antes de la 0185), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 7.0.0, sin el `CLAUDE.md` del dev-lead), batería de `sdd-propose` sobre el molde `reservas`. Lo que dejó cada sujeto, en [`red/out/`](../.docs/sdd/specs/20261017-220801-feature-0185-propose-fixes/red/out/). Total: 4 sujetos, 1,29 $.
+Baseline con el kit de la rama en `c04fc5c7` (develop antes de la 0185), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 7.0.0, sin el `CLAUDE.md` del dev-lead), batería de `sdd-propose` sobre el molde `reservas`. Lo que dejó cada sujeto, en [`red/out/`](../.docs/sdd/changes/20261017-220801-feature-0185-propose-fixes/red/out/). Total: 4 sujetos, 1,29 $.
 
 ## Conducta
 

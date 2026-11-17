@@ -1,6 +1,6 @@
 # RED — los dos desvíos de `sdd-implement` (feature 0166)
 
-Escenarios `k1` y `k2` de la batería de `sdd-implement` ([battery.md](batteries/sdd-implement/battery.md)), sujetos Sonnet headless, kit del commit de apertura de la 0166 (`bc0ff4ef`) y superpowers 7.0.0. Salidas en [`red/out/`](../.docs/sdd/specs/20261012-104247-feature-0166-worktrees-and-parallel-agents/red/out/) y, del primer molde de `k1`, en [`red-k1v1/out/`](../.docs/sdd/specs/20261012-104247-feature-0166-worktrees-and-parallel-agents/red-k1v1/out/). Origen: tickets de las features [0168 §3](../.docs/sdd/field-reports/20261011-160014-feature-0168-fork-brainstorming-writing-plans.md) y [0165 §4](../.docs/sdd/field-reports/20261011-182122-feature-0165-tdd-and-debugging.md).
+Escenarios `k1` y `k2` de la batería de `sdd-implement` ([battery.md](batteries/sdd-implement/battery.md)), sujetos Sonnet headless, kit del commit de apertura de la 0166 (`bc0ff4ef`) y superpowers 7.0.0. Salidas en [`red/out/`](../.docs/sdd/changes/20261012-104247-feature-0166-worktrees-and-parallel-agents/red/out/) y, del primer molde de `k1`, en [`red-k1v1/out/`](../.docs/sdd/changes/20261012-104247-feature-0166-worktrees-and-parallel-agents/red-k1v1/out/). Origen: tickets de las features [0168 §3](../.docs/sdd/field-reports/20261011-160014-feature-0168-fork-brainstorming-writing-plans.md) y [0165 §4](../.docs/sdd/field-reports/20261011-182122-feature-0165-tdd-and-debugging.md).
 
 ## k1 — tocar lo que la spec deja en «No entra»
 

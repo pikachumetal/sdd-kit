@@ -32,7 +32,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Fuente**: `cli/test/kit/word-budget.test.ts:12` → `slack = 1.25`; `wc -w skills/sdd-roadmap/SKILL.md` → 3692.
 - **Dónde en el kit**: `skills/sdd-propose/SKILL.md` paso 5 y `cli/test/kit/word-budget.test.ts`.
 - **Por qué el kit no lo evitó**: el test deja pasar lo que la spec promete no hacer, y ningún paso pide medir contra el tope nominal antes del commit de la task. Yo tampoco medí contra él.
-- **Coste**: una pasada de fix y la re-medición `green-fix`, 2,78 $ ([walkthrough](../specs/20261101-163507-feature-0276-triage-by-cause/walkthrough.md) §2).
+- **Coste**: una pasada de fix y la re-medición `green-fix`, 2,78 $ ([walkthrough](../changes/20261101-163507-feature-0276-triage-by-cause/walkthrough.md) §2).
 - **Propuesta**: que `sdd task done` avise si una skill editada pasa de su tope nominal, aunque quepa en el margen.
 - **Verificada**: sin verificar.
 - **Criterio de aceptación**: GIVEN una skill con 3.692 palabras y tope 3.600 WHEN corre `sdd task done` THEN escribe el aviso con las dos cifras.

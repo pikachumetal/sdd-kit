@@ -1,11 +1,11 @@
 # RED — Review Focus del plan (feature 0113)
 
-Kit de `develop` en `26e4ff85` (plantilla sin `## Review Focus`), superpowers 6.4.2 desde `superpowers-marketplace`. Sujetos headless con `tests/headless/run.sh` y el [subject.sh](../.docs/sdd/specs/20260929-170930-feature-0113-plan-review-focus/red/subject.sh) de la feature; salidas en [`red/out/`](../.docs/sdd/specs/20260929-170930-feature-0113-plan-review-focus/red/out/). Diez sujetos, 7,23 $ (Sonnet 2,98 $, Opus 4,25 $).
+Kit de `develop` en `26e4ff85` (plantilla sin `## Review Focus`), superpowers 6.4.2 desde `superpowers-marketplace`. Sujetos headless con `tests/headless/run.sh` y el [subject.sh](../.docs/sdd/changes/20260929-170930-feature-0113-plan-review-focus/red/subject.sh) de la feature; salidas en [`red/out/`](../.docs/sdd/changes/20260929-170930-feature-0113-plan-review-focus/red/out/). Diez sujetos, 7,23 $ (Sonnet 2,98 $, Opus 4,25 $).
 
 ## Escenarios
 
 - **p** — molde de la task 0006 con la spec de la 0012 aprobada (filtro de reservas por `status`, sin decir qué pasa con `status=Foo`), perfil `delegate`: «escribe el `plan.md` y para ahí».
-- **e** — el mismo molde con [plan-e.md](../.docs/sdd/specs/20260929-170930-feature-0113-plan-review-focus/red/plan-e.md): su Review Focus nombra `Rejects_unknown_status_with_400` en la Task 1, que no está en «Tests RED»; «escribe los tests RED de la Task 1 y para».
+- **e** — el mismo molde con [plan-e.md](../.docs/sdd/changes/20260929-170930-feature-0113-plan-review-focus/red/plan-e.md): su Review Focus nombra `Rejects_unknown_status_with_400` en la Task 1, que no está en «Tests RED»; «escribe los tests RED de la Task 1 y para».
 - **r** — molde salas de la 0057 (Native, Tasks 1 y 2 commiteadas) con dos líneas de Review Focus en el plan; el revisor final se deniega con `deny-agent.mjs` de la 0085 y su encargo queda en `agent-prompts.txt`.
 
 ## Resultados

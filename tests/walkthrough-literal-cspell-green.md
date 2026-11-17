@@ -4,8 +4,8 @@ Mismo lanzador, molde y escenario w2 que el [RED](walkthrough-literal-cspell-red
 
 | Fase | Sujeto | Línea de la plantilla | (a) | (b) | (c) |
 | --- | --- | --- | --- | --- | --- |
-| GREEN | [w2-1](../.docs/sdd/specs/20260929-170710-patch-0114-walkthrough-literal-cspell/green/out/w2-1.tools.txt) | «excluye sus palabras en este fichero al escribirlo» | ❌ | ✅ | ✅ |
-| REFACTOR | [w2-1](../.docs/sdd/specs/20260929-170710-patch-0114-walkthrough-literal-cspell/refactor/out/w2-1.tools.txt) | «… todas las palabras de la frase, no solo las que te parezcan erratas» | ✅ | ✅ | ✅ |
+| GREEN | [w2-1](../.docs/sdd/changes/20260929-170710-patch-0114-walkthrough-literal-cspell/green/out/w2-1.tools.txt) | «excluye sus palabras en este fichero al escribirlo» | ❌ | ✅ | ✅ |
+| REFACTOR | [w2-1](../.docs/sdd/changes/20260929-170710-patch-0114-walkthrough-literal-cspell/refactor/out/w2-1.tools.txt) | «… todas las palabras de la frase, no solo las que te parezcan erratas» | ✅ | ✅ | ✅ |
 
 ## Veredicto
 

@@ -2,7 +2,7 @@
 
 ## Rojos de develop (0311 §5 y §6), n = 3, kit de develop (6418f13e)
 
-Lectura de las salidas de `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`. Criterio: el umbral de cada escenario es «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3; por debajo, «rojo, se repite». «Ruido» es un rojo de la 0311 que ahora sale 3/3 verde. Las filas en prosa las leyó una sola persona, sin segundo lector.
+Lectura de las salidas de `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`. Criterio: el umbral de cada escenario es «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3; por debajo, «rojo, se repite». «Ruido» es un rojo de la 0311 que ahora sale 3/3 verde. Las filas en prosa las leyó una sola persona, sin segundo lector.
 
 **Aviso de alcance.** La spec (§4, punto «los rojos que la 0311 vio en develop») atribuyó mal varias baterías: el ticket de la 0311 §5 nombra la batería solo en `pt1`, `c1`, `n1`, `d1` (de `sdd-debugging`), `f1` (de `sdd-propose`) y `m5`; `u1`, `h1` y `h2` son de `sdd-implement` (sus filas `U1`, `U1r`, `W` y `A` solo existen allí). Las fases `b-use`, `b-upg` y el `d1` de `b-imp` midieron otros escenarios con el mismo id (`using-sdd:u1` y `f1`, `sdd-upgrade:h1` y `h2`, `sdd-implement:d1`). Salen en la tabla, pero **no re-miden los rojos de la 0311**. Sin medir con n = 3: `sdd-implement:u1` (U1, U1r), `sdd-implement:h1` y `h2` (W, A), `sdd-debugging:d1` (C) y `sdd-propose:f1` (F1-C).
 
@@ -115,7 +115,7 @@ Todos los sujetos de los dos kits invocan `sdd-kit:sdd-roadmap`, dan el prompt c
 
 ## GREEN de los rojos de develop (kit 47a91cc6), n = 3
 
-Lectura de `g-imp`, `g-ver`, `g-rmp` y `g-dbg` en `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit de la rama (`47a91cc6`) y los moldes en la forma 3.0.0. Rúbrica de `battery.md` actual. Las filas de máquina (`tools:`, `file:`, `text:`, `state:`) las aplicó la tanda y no se repiten; aquí van las de prosa (`U1`, `U1r`, `U2`, `W`, `A`, `N`, `S`, `PT-D`, `C1`, `M5`, `E1`, `C`, `L`). Umbral de cada escenario: «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3. `L` mira solo los mensajes del hilo; los de implementadores y revisores (p. ej. `h2-2` [34] a [93], `h2-3` [43], [112], [123]) no cuentan. Un solo lector, sin segundo. `PT-A`, `PT-B` y `PT-C` de `pt1` son de máquina y no se releen.
+Lectura de `g-imp`, `g-ver`, `g-rmp` y `g-dbg` en `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit de la rama (`47a91cc6`) y los moldes en la forma 3.0.0. Rúbrica de `battery.md` actual. Las filas de máquina (`tools:`, `file:`, `text:`, `state:`) las aplicó la tanda y no se repiten; aquí van las de prosa (`U1`, `U1r`, `U2`, `W`, `A`, `N`, `S`, `PT-D`, `C1`, `M5`, `E1`, `C`, `L`). Umbral de cada escenario: «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3. `L` mira solo los mensajes del hilo; los de implementadores y revisores (p. ej. `h2-2` [34] a [93], `h2-3` [43], [112], [123]) no cuentan. Un solo lector, sin segundo. `PT-A`, `PT-B` y `PT-C` de `pt1` son de máquina y no se releen.
 
 | Batería:escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
 | --- | --- | --- | --- | --- | --- |
@@ -168,7 +168,7 @@ Resumen: 2 escenarios verdes (`m5`, `d1`) más `pt1` en las filas de prosa; 4 si
 
 ## GREEN 2 y mediciones de la fila (kit d5dc6963)
 
-Lectura de `g2-imp`, `g2-ver`, `m-imp`, `m-dbg`, `m-arc`, `m-prp` y `m-upg` en `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit `d5dc6963`. Solo filas de prosa (las de máquina no se repiten: `P4a`, `W` de `h1` y `h2`, etc.). Para `u1` leí también los `.jsonl` de `.temp/r52/g2-imp/` (el encargo de cada `Agent` sale de ahí). `L` mira solo los mensajes del hilo, no los de revisores ni implementadores. Un solo lector. Umbral: el de la tabla de escenarios (3/3 con n = 3; 1/1 en `p4o`; 4/4 en `d1`; 2/2 en `v5`).
+Lectura de `g2-imp`, `g2-ver`, `m-imp`, `m-dbg`, `m-arc`, `m-prp` y `m-upg` en `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit `d5dc6963`. Solo filas de prosa (las de máquina no se repiten: `P4a`, `W` de `h1` y `h2`, etc.). Para `u1` leí también los `.jsonl` de `.temp/r52/g2-imp/` (el encargo de cada `Agent` sale de ahí). `L` mira solo los mensajes del hilo, no los de revisores ni implementadores. Un solo lector. Umbral: el de la tabla de escenarios (3/3 con n = 3; 1/1 en `p4o`; 4/4 en `d1`; 2/2 en `v5`).
 
 | Batería:escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
 | --- | --- | --- | --- | --- | --- |
@@ -1802,7 +1802,7 @@ Ruta: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-
 
 # Lectura GREEN final (feature 0152)
 
-Criterio: verde = los sujetos que pasan todas sus filas llegan al umbral del escenario. «Sujeto 1/2» = `<id>-1` / `<id>-2`. Todas las salidas viven en `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`.
+Criterio: verde = los sujetos que pasan todas sus filas llegan al umbral del escenario. «Sujeto 1/2» = `<id>-1` / `<id>-2`. Todas las salidas viven en `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`.
 
 ## GREEN: sdd-archive (kit 2e6a36e0, fase y2-arc)
 

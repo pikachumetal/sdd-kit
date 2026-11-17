@@ -1,6 +1,6 @@
 # GREEN — la review de la spec pesa el delta, respeta el paralelismo y busca cada MODIFIED (feature 0086)
 
-Kit: working tree de `feature/0086-spec-review-weight` con la guía nueva (copia de `skills`, `.claude-plugin` y `agents`), superpowers 6.4.2. Mismo molde y lanzador que el RED ([`red/subject.sh`](../.docs/sdd/specs/20260927-125612-feature-0086-spec-review-weight/red/subject.sh)); salida en `green/out/` y `refactor/out/`. 9 sujetos Sonnet en el GREEN y en el REFACTOR, 7,72 $; con el RED, 13 sujetos y 9,65 $, frente a una previsión de 11 y ~7 $ y un techo de 13 y 9 $. El techo de coste se pasó en 0,65 $ porque el lanzador lo mira antes de cada sujeto: la tanda de REFACTOR arrancó con 7,36 $.
+Kit: working tree de `feature/0086-spec-review-weight` con la guía nueva (copia de `skills`, `.claude-plugin` y `agents`), superpowers 6.4.2. Mismo molde y lanzador que el RED ([`red/subject.sh`](../.docs/sdd/changes/20260927-125612-feature-0086-spec-review-weight/red/subject.sh)); salida en `green/out/` y `refactor/out/`. 9 sujetos Sonnet en el GREEN y en el REFACTOR, 7,72 $; con el RED, 13 sujetos y 9,65 $, frente a una previsión de 11 y ~7 $ y un techo de 13 y 9 $. El techo de coste se pasó en 0,65 $ porque el lanzador lo mira antes de cada sujeto: la tanda de REFACTOR arrancó con 7,36 $.
 
 Escenarios nuevos respecto al RED:
 - **s** — paso 4 sin delegar, con contrato público + datos + `MODIFIED` y un Scope de dos líneas (`db/002-site.sql`, `src/api.js`).

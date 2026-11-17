@@ -1,6 +1,6 @@
 # RED — tickets de `sdd-feedback` con menos ruido (feature 0050)
 
-Baseline con la skill y la plantilla de la rama antes de editarlas (`18001d0b`, 2.2.0 más lo cerrado de la 2.3.0), 2026-10-01. Molde sintético de un proyecto de notas con nombre de cliente y de interlocutora, `tech-stack.md` con un lint de docs (`tools/lint-docs.sh`, MD013 a 200) y `session-log.md` con lo que pasó en la sesión: [red/subject.sh](../.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/red/subject.sh). Salidas en [red/out/](../.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/red/out/).
+Baseline con la skill y la plantilla de la rama antes de editarlas (`18001d0b`, 2.2.0 más lo cerrado de la 2.3.0), 2026-10-01. Molde sintético de un proyecto de notas con nombre de cliente y de interlocutora, `tech-stack.md` con un lint de docs (`tools/lint-docs.sh`, MD013 a 200) y `session-log.md` con lo que pasó en la sesión: [red/subject.sh](../.docs/sdd/changes/20261001-125120-feature-0050-feedback-less-noise/red/subject.sh). Salidas en [red/out/](../.docs/sdd/changes/20261001-125120-feature-0050-feedback-less-noise/red/out/).
 
 ## Previsión de la campaña (Art. I)
 

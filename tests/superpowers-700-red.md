@@ -17,7 +17,7 @@ Las demás skills que invoca el kit cambian en detalles que no tocan su texto: `
 
 ## Sujetos
 
-Molde de la task 0006 (reservas, perfil `delegate`, `ids.mode: sequence`), con el marcador en 2.3.3 y la primera pregunta del paso 2 contestada en la petición. Lanzador: [`subject.sh`](../.docs/sdd/specs/20261010-195847-patch-0167-superpowers-7-compat/red/subject.sh), con `tests/headless/run.sh`, Sonnet, `MAX_TURNS=40`. El kit es `git archive` de `HEAD`.
+Molde de la task 0006 (reservas, perfil `delegate`, `ids.mode: sequence`), con el marcador en 2.3.3 y la primera pregunta del paso 2 contestada en la petición. Lanzador: [`subject.sh`](../.docs/sdd/changes/20261010-195847-patch-0167-superpowers-7-compat/red/subject.sh), con `tests/headless/run.sh`, Sonnet, `MAX_TURNS=40`. El kit es `git archive` de `HEAD`.
 
 - `n` — feature normal (0011, avisos por correo), modo full; el segundo turno da la descripción que pide brainstorming.
 - `s` — feature pequeña (0013, que la lista diga cuántas reservas hay), modo lite; un turno.

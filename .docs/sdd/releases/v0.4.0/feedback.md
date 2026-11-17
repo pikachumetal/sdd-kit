@@ -11,7 +11,7 @@ Fuente: trabajo interno del kit. **Sin demo ni feedback de cliente** — no hay 
 
 ## 1. Inventario y triage
 
-No aplica: sin sesión de feedback externo. El único ítem de la release es la task `carril-rama-worktree`, decidida y aprobada por el usuario en la propia sesión ([task](../../specs/20260722-103807-task-0000-carril-rama-worktree/)).
+No aplica: sin sesión de feedback externo. El único ítem de la release es la task `carril-rama-worktree`, decidida y aprobada por el usuario en la propia sesión ([task](../../changes/20260722-103807-task-0000-carril-rama-worktree/)).
 
 ## 2. Cambios de requisito detectados
 

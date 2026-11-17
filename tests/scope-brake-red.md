@@ -1,6 +1,6 @@
 # Evidencia RED — freno de alcance en ejecución (2026-09-22)
 
-Baseline de la task [0025](../.docs/sdd/specs/20260922-133931-task-0025-scope-brake/spec.md), medido **antes de la spec** (regla de `tech-stack.md`). Ocho sujetos Sonnet headless sobre una copia limpia del kit de `feature/0025` sin cambios, situados a mitad del paso 6 con dos fixes ya registrados en `tasks.md`; 12,91 $. Molde por etapas, lanzador, veredictos con citas y lo que produjo cada sujeto: [`red/`](../.docs/sdd/specs/20260922-133931-task-0025-scope-brake/red/README.md).
+Baseline de la task [0025](../.docs/sdd/changes/20260922-133931-task-0025-scope-brake/spec.md), medido **antes de la spec** (regla de `tech-stack.md`). Ocho sujetos Sonnet headless sobre una copia limpia del kit de `feature/0025` sin cambios, situados a mitad del paso 6 con dos fixes ya registrados en `tasks.md`; 12,91 $. Molde por etapas, lanzador, veredictos con citas y lo que produjo cada sujeto: [`red/`](../.docs/sdd/changes/20260922-133931-task-0025-scope-brake/red/README.md).
 
 | Frente | Pasa si | Resultado |
 | --- | --- | --- |

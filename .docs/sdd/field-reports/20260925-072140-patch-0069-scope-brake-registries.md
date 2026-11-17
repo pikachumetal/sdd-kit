@@ -38,7 +38,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 2. Las salidas de los sujetos guardan el nombre de usuario y la ruta del home
 
 - **Qué pasó**: el lanzador de sujetos (`subject.sh` de la 0039, que llama a `tools.mjs` de la 0009) sustituye `$RUN` por `<run>`, pero no el home del usuario. Las salidas de este patch traían `/c/Users/<usuario>/.claude/plugins`, una ruta `AppData\Local\Temp` y el usuario en los listados de `ls -l`. Las limpié con `sed` antes del commit. Medido en la rama: 110 ficheros de `red/out` o `green/out` de 12 carpetas de `specs/`, entre las tasks 0005 y 0061, llevan el nombre de usuario de la máquina.
-- **Dónde en el kit**: `.docs/sdd/specs/20260923-120510-task-0009-merge-close/red/tools.mjs`, que reutilizan los lanzadores posteriores, y el método de test de skills de `tech-stack.md`. No es una skill.
+- **Dónde en el kit**: `.docs/sdd/changes/20260923-120510-task-0009-merge-close/red/tools.mjs`, que reutilizan los lanzadores posteriores, y el método de test de skills de `tech-stack.md`. No es una skill.
 - **Por qué el kit no lo evitó**: el saneado solo cubre la carpeta del run. Ni un test ni el pre-commit buscan rutas del home en la evidencia.
 - **Coste**: bajo por ahora: es un dato personal del mantenedor en un repo que se publica, y no del dominio de ningún cliente. Crece con cada RED.
 - **Propuesta**: `tools.mjs` sustituye también `$HOME` y el usuario (`<home>`, `<user>`). Un test del repo falla si hay rutas `C:\Users\…` o `/c/Users/…` en `specs/*/red|green/out`. Las 110 salidas existentes se sanean en un commit aparte.

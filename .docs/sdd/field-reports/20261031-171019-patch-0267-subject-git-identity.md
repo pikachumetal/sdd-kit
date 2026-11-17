@@ -58,8 +58,8 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ### 4. El contexto del sujeto trae también el email de la cuenta, y `extract.mjs` no lo mira
 
-- **Qué pasó**: en la sonda, 4 de 4 sujetos Haiku nombraron el `userEmail` de la cuenta al preguntarles, también con `--setting-sources ""`. En esta máquina no coincide con `user.email`, así que `extract.mjs` no lo pararía. Ningún fichero de `.docs/sdd/specs/` lo lleva hoy, y ningún stream de `g1` de esta tanda.
-- **Fuente**: salida de la sonda; búsqueda del dominio en `.docs/sdd/specs/` y en los streams, 0 resultados
+- **Qué pasó**: en la sonda, 4 de 4 sujetos Haiku nombraron el `userEmail` de la cuenta al preguntarles, también con `--setting-sources ""`. En esta máquina no coincide con `user.email`, así que `extract.mjs` no lo pararía. Ningún fichero de `.docs/sdd/changes/` lo lleva hoy, y ningún stream de `g1` de esta tanda.
+- **Fuente**: salida de la sonda; búsqueda del dominio en `.docs/sdd/changes/` y en los streams, 0 resultados
 - **Dónde en el kit**: `tests/headless/extract.mjs`, `identity`
 - **Por qué el kit no lo evitó**: la comprobación solo conoce la identidad de git
 - **Coste**: sin coste; riesgo de publicar el email en un repo público

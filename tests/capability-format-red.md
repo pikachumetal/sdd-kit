@@ -1,6 +1,6 @@
 # RED — formato de las capacidades (task 0070)
 
-Baseline con el kit de `develop` a 2026-09-25 (`bb11f59`), antes de la spec. Sujetos headless Sonnet sobre el repo de juguete `salas`, molde de la task 0067 más `mold-0070.sh`. Molde, lanzador y salidas: [red/](../.docs/sdd/specs/20260925-081130-task-0070-openspec-capabilities/red/). 8 sujetos, 3,32 $.
+Baseline con el kit de `develop` a 2026-09-25 (`bb11f59`), antes de la spec. Sujetos headless Sonnet sobre el repo de juguete `salas`, molde de la task 0067 más `mold-0070.sh`. Molde, lanzador y salidas: [red/](../.docs/sdd/changes/20260925-081130-task-0070-openspec-capabilities/red/). 8 sujetos, 3,32 $.
 
 Previsión común con el GREEN, declarada antes del primer sujeto: RED 4 sujetos, GREEN 7, REFACTOR 4, `SUBJECT_CAP=15` y `COST_CAP=16`. Ampliada a 17 sujetos con la tanda sin `(antes:)`, que aprobó el dev-lead.
 

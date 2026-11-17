@@ -1,6 +1,6 @@
 # GREEN — `sdd-config` con `review.minors` y `pricing` (feature 0178)
 
-Mismos escenarios que el [RED](sdd-config-0178-red.md), con el kit de la rama (Task 1): `sdd-config` en inglés, con las preguntas 9 (`review.minors`) y 10 (`pricing`). Salidas en `green/out/` y `green-init/out/` de la [carpeta de la feature](../.docs/sdd/specs/20261020-112618-feature-0178-sdd-config-english/).
+Mismos escenarios que el [RED](sdd-config-0178-red.md), con el kit de la rama (Task 1): `sdd-config` en inglés, con las preguntas 9 (`review.minors`) y 10 (`pricing`). Salidas en `green/out/` y `green-init/out/` de la [carpeta de la feature](../.docs/sdd/changes/20261020-112618-feature-0178-sdd-config-english/).
 
 **Gastado en la Task 1**: 7 sujetos (2 RED, 4 GREEN de `sdd-config` en dos rondas, 1 humo de `sdd-init`) y 1,18 $.
 

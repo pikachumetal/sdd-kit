@@ -1,6 +1,6 @@
 # RED — `sdd-propose`, feature 0160
 
-Baseline de las reglas nuevas de la entrada única con el kit del commit de apertura (`9b25ce29`, sin `sdd-propose`): batería `tests/batteries/sdd-propose/`, pasos `ceremony`, `config`, `spike` y `plan`, n=2, Sonnet, 2026-10-09. 16 sujetos, 4,42 $. Salidas en `.docs/sdd/specs/20261009-110857-feature-0160-single-entry-propose/red/out/`. La puerta («Esperado» `sdd-kit:sdd-propose`) sale roja en todos, como corresponde a una skill que no existe; el veredicto que cuenta es el de la conducta, por regla.
+Baseline de las reglas nuevas de la entrada única con el kit del commit de apertura (`9b25ce29`, sin `sdd-propose`): batería `tests/batteries/sdd-propose/`, pasos `ceremony`, `config`, `spike` y `plan`, n=2, Sonnet, 2026-10-09. 16 sujetos, 4,42 $. Salidas en `.docs/sdd/changes/20261009-110857-feature-0160-single-entry-propose/red/out/`. La puerta («Esperado» `sdd-kit:sdd-propose`) sale roja en todos, como corresponde a una skill que no existe; el veredicto que cuenta es el de la conducta, por regla.
 
 | Regla | Escenario | Resultado | Lectura |
 | --- | --- | --- | --- |

@@ -33,7 +33,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Por qué el kit no lo evitó**: el paso 1 habla de reproducir el fallo del código. Cuando lo que se arregla es la conducta de un agente, el fallo solo se reproduce con el RED, y la costumbre del repo es guardar el lanzador del RED en `red/` de la carpeta de la spec. Por eso la carpeta y el id llegan antes que la medida.
 - **Coste**: un id de la secuencia consumido para nada, un renombrado de rama deshecho y una carpeta borrada.
 - **Propuesta**: en este repo, cuando un patch edita una skill, el lanzador del RED vive en el scratchpad hasta que el RED reproduce el fallo; solo entonces se reserva el id y se copia el lanzador a `red/`. Una línea en `tech-stack.md` «Cómo se testean las skills», o en el paso 1 de `sdd-start-patch` si vale también para los proyectos que prueban prompts.
-- **Criterio de aceptación**: GIVEN una fila de deuda que pide editar una referencia de skill y un RED que sale 0 de 2, WHEN un sujeto sigue `sdd-start-patch` en el repo del kit, THEN no reserva id, no renombra la rama y no crea carpeta en `.docs/sdd/specs/`.
+- **Criterio de aceptación**: GIVEN una fila de deuda que pide editar una referencia de skill y un RED que sale 0 de 2, WHEN un sujeto sigue `sdd-start-patch` en el repo del kit, THEN no reserva id, no renombra la rama y no crea carpeta en `.docs/sdd/changes/`.
 
 ### 2. El triaje copió un comando de los tickets a una convención sin ejecutarlo
 

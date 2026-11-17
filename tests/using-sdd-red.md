@@ -1,10 +1,10 @@
 # Evidencia RED — `using-sdd`, la puerta de entrada al kit (2026-09-25)
 
-Baseline de la feature [using-sdd](../.docs/sdd/specs/20260925-180228-feature-0074-using-sdd/spec.md) (0074). Pregunta: un dev **sin el kit en su `CLAUDE.md`** escribe una frase vaga, en castellano, en un proyecto con el kit y superpowers. ¿Cae en la puerta correcta?
+Baseline de la feature [using-sdd](../.docs/sdd/changes/20260925-180228-feature-0074-using-sdd/spec.md) (0074). Pregunta: un dev **sin el kit en su `CLAUDE.md`** escribe una frase vaga, en castellano, en un proyecto con el kit y superpowers. ¿Cae en la puerta correcta?
 
 ## Método
 
-Sujetos Sonnet con `claude -p` y un máximo de 8 turnos, sobre el molde `molde-code` de la 0014 (app de salas con `.docs/sdd/`). Los lanza `tests/headless/run.sh` con [`red/subject.sh`](../.docs/sdd/specs/20260925-180228-feature-0074-using-sdd/red/subject.sh). El kit es una copia limpia de `develop` en `02a2e24`, con el hook y `hooks/router.md` vigentes.
+Sujetos Sonnet con `claude -p` y un máximo de 8 turnos, sobre el molde `molde-code` de la 0014 (app de salas con `.docs/sdd/`). Los lanza `tests/headless/run.sh` con [`red/subject.sh`](../.docs/sdd/changes/20260925-180228-feature-0074-using-sdd/red/subject.sh). El kit es una copia limpia de `develop` en `02a2e24`, con el hook y `hooks/router.md` vigentes.
 
 **Aislamiento nuevo** (`SUPERPOWERS_DIR` en `tests/headless/lib.sh`): el sujeto corre con `--setting-sources ""` y carga superpowers 6.4.1 con `--plugin-dir`. Así lleva los hooks de los dos plugins y nada de la configuración del dev-lead. Se comprobó con un sujeto sonda antes de la campaña. Con `--setting-sources project,local` el sujeto seguía viendo el `CLAUDE.md` de usuario. Ese fichero dice «Proyecto con `.docs/sdd/`: feature → `sdd-kit:sdd-start-task`», así que habría enrutado por el dev. Con la cadena vacía, el sujeto no lo ve y sí ve «You have superpowers» y el router del kit. Las campañas anteriores (0014 incluida) heredaban ese `CLAUDE.md`.
 

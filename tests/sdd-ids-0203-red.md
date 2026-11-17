@@ -1,6 +1,6 @@
 # RED — feature 0203, ids con una sola numeración
 
-Kit de `develop` (commit `e16f1329`, la apertura de la 0203, sin cambios en `skills/`), Sonnet, `SUPERPOWERS_DIR` en superpowers 7.0.0. Salidas en `.docs/sdd/specs/20261020-115102-feature-0203-single-id-sequence/red/out/`.
+Kit de `develop` (commit `e16f1329`, la apertura de la 0203, sin cambios en `skills/`), Sonnet, `SUPERPOWERS_DIR` en superpowers 7.0.0. Salidas en `.docs/sdd/changes/20261020-115102-feature-0203-single-id-sequence/red/out/`.
 
 ## id3 — Later numera con la secuencia (batería de `sdd-roadmap`, molde `salas-3`)
 

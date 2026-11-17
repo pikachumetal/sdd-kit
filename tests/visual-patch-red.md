@@ -1,6 +1,6 @@
 # RED — el carril patch acepta ajustes visuales (feature 0098)
 
-Baseline con el kit de la rama en `2e6bc37` (apertura de la 0098, sin guía nueva), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead) sobre el molde `ventas`: dos fichas estáticas (`pages/pedido-detalle.html`, `pages/albaran-detalle.html`) con Guardar, Cancelar y Borrar en la cabecera, `styles/ficha.css`, `app.js` y `.docs/sdd/` en `delegate`. Molde, lanzador y salidas en [`red/`](../.docs/sdd/specs/20260928-210002-feature-0098-visual-patch-lane/red/). Tope por sujeto: 25 turnos y 12 min en las puertas, 40 en los recorridos. Ninguno llegó al tope.
+Baseline con el kit de la rama en `2e6bc37` (apertura de la 0098, sin guía nueva), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead) sobre el molde `ventas`: dos fichas estáticas (`pages/pedido-detalle.html`, `pages/albaran-detalle.html`) con Guardar, Cancelar y Borrar en la cabecera, `styles/ficha.css`, `app.js` y `.docs/sdd/` en `delegate`. Molde, lanzador y salidas en [`red/`](../.docs/sdd/changes/20260928-210002-feature-0098-visual-patch-lane/red/). Tope por sujeto: 25 turnos y 12 min en las puertas, 40 en los recorridos. Ninguno llegó al tope.
 
 ## Puertas (Task 1)
 
@@ -36,7 +36,7 @@ Kit en `d6b4255`, con la guía de las puertas (Task 1) y sin la del recorrido.
 | Sujeto | Petición | Turnos | $ | Resultado | Veredicto |
 | --- | --- | --- | --- | --- | --- |
 | `f1-1` | `/sdd-start-patch` + la de v1 | 14 | 0,28 | sin `systematic-debugging`; §2 «Ajuste solo de presentación, sin causa raíz que investigar»; capturas en `%TEMP%\shots\`, y §4 dice «Falta la mirada de quien lo pidió» | ✅ intención · ✅ captura fuera de git con su ruta en §4 |
-| `f1-2` | ídem | 20 | 0,35 | sin `systematic-debugging`; §2 «No es un fallo, es un cambio de layout»; **4 PNG commiteados** en `.docs/sdd/specs/<patch>/capturas/` | ✅ intención · ❌ captura en git |
+| `f1-2` | ídem | 20 | 0,35 | sin `systematic-debugging`; §2 «No es un fallo, es un cambio de layout»; **4 PNG commiteados** en `.docs/sdd/changes/<patch>/capturas/` | ✅ intención · ❌ captura en git |
 | `f2-1-molde`, `f2-2-molde` | `/sdd-end-patch cierra el patch`, con la validación ya escrita en §4 | 6 y 4 | 0,16 y 0,15 | los dos paran en el paso 0: la frase escrita no es la del usuario | molde inválido: no llegan al changelog |
 | `f2-1` | `/sdd-end-patch Validado: lo he probado y funciona. He abierto las dos fichas en Chromium…` | 10 | 0,20 | changelog `### Fixed`, merge a `develop` | ❌ `Fixed` |
 | `f2-2` | ídem | 6 | 0,17 | changelog `### Fixed`, merge a `develop` | ❌ `Fixed` |

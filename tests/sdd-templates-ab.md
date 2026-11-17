@@ -1,6 +1,6 @@
 # Evidencia A/B — `sdd-templates` (2026-09-08) · **sin corte que probar**
 
-Ola 3 de la task [progressive-disclosure](../.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/spec.md). sdd-templates tiene **355 palabras**. Se examinó bloque a bloque contra el criterio de `architecture.md` §"Anatomía de una skill del kit" punto 6 — **(a)** aplica a un subconjunto de invocaciones y **(b)** se necesita después de decidir, no para decidir — y **ningún bloque cumple las dos**. No se corre A/B: el Art. I exige test para un cambio, y aquí no hay cambio que probar.
+Ola 3 de la task [progressive-disclosure](../.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/spec.md). sdd-templates tiene **355 palabras**. Se examinó bloque a bloque contra el criterio de `architecture.md` §"Anatomía de una skill del kit" punto 6 — **(a)** aplica a un subconjunto de invocaciones y **(b)** se necesita después de decidir, no para decidir — y **ningún bloque cumple las dos**. No se corre A/B: el Art. I exige test para un cambio, y aquí no hay cambio que probar.
 
 ## Bloques examinados
 

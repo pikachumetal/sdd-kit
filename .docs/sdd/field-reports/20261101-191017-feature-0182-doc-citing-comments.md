@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. `battery.mjs` da «verde» con una fila de la rúbrica en rojo
 
 - **Qué pasó**: `f6 · 1/1 · umbral 1/1 · verde` salió en las cinco tandas, y la fila Q6 falló en dos (GREEN y REFACTOR): el sujeto marcó el falso positivo como Minor. Lo vi por leer el informe; casi escribí Q6 1/1 en la evidencia, que llegó a decir «GREEN 1/1» antes de leerlo.
-- **Fuente**: `tests/sdd-verify-0182-comments.md`; `.docs/sdd/specs/20261101-175259-feature-0182-doc-citing-comments/green/out/f6-1.texts.txt`.
+- **Fuente**: `tests/sdd-verify-0182-comments.md`; `.docs/sdd/changes/20261101-175259-feature-0182-doc-citing-comments/green/out/f6-1.texts.txt`.
 - **Dónde en el kit**: `tests/headless/battery.mjs`, `verdict`; `.docs/sdd/tech-stack.md`, «Baterías por skill».
 - **Por qué el kit no lo evitó**: solo las filas con `tools:` se comprueban a máquina; el resto no sale en el veredicto, y la palabra «verde» se lee como del escenario entero.
 - **Coste**: sin el error de lectura, un Important real habría llegado a la revisión final. Dos sujetos, 0,22 $.

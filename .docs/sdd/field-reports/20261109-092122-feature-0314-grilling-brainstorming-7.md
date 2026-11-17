@@ -32,7 +32,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
   - La tanda siguiente (REFACTOR 1 y los controles con `develop`) se lanzó con `COST_CAP=2` y no lanzó ninguno: «techo de 2 $ alcanzado (7.22 $ gastados, 0 en curso…)».
   - En los dos casos, `sdd watch command -- node tests/headless/battery.mjs run` terminó con «salió con 0». Me di cuenta al leer el veredicto «sin tools.txt».
   - Es el segundo caso: la 0297 tuvo el mismo fallo con `PHASE=red2` (su walkthrough, §5).
-- **Fuente**: los logs de `.temp/sdd/watch/*.log`, que contienen «techo de 6 $ alcanzado (5.83 $ gastados, 2 en curso…)» y «techo de 2 $ alcanzado (7.22 $ gastados…)». También `.docs/sdd/specs/20261108-184606-feature-0314-grilling-brainstorming-7/walkthrough.md`, §5 y «Decisiones tomadas sin el dev-lead».
+- **Fuente**: los logs de `.temp/sdd/watch/*.log`, que contienen «techo de 6 $ alcanzado (5.83 $ gastados, 2 en curso…)» y «techo de 2 $ alcanzado (7.22 $ gastados…)». También `.docs/sdd/changes/20261108-184606-feature-0314-grilling-brainstorming-7/walkthrough.md`, §5 y «Decisiones tomadas sin el dev-lead».
 - **Dónde en el kit**: `tests/headless/campaign.mjs`, el control de `COST_CAP`, y `.docs/sdd/tech-stack.md`, «Baterías por skill». La regla («`COST_CAP` comunes a todas las fases») está escrita ahí.
 - **Por qué el kit no lo evitó**: la regla existía y no la apliqué. El lanzador lo avisa en una línea, entre otras, y sale con un código que la vigilancia lee como éxito.
 - **Coste**: una relanzada (2 tandas) y unos 15 min de diagnóstico. Lo respalda el walkthrough, §5.

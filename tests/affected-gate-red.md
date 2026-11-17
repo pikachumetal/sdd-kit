@@ -1,6 +1,6 @@
 # RED — el gate de cierre corre solo lo afectado (feature 0221)
 
-Kit de `develop` en `b999c87d` (`git archive b999c87d skills .claude-plugin cli hooks`), sujetos headless Sonnet, n = 1, superpowers 7.0.0. Salidas en `.docs/sdd/specs/20261026-172719-feature-0221-affected-closing-gate/red/out/`. Escenarios y rúbrica: `g5`, `g6`, `w2` en `tests/batteries/sdd-archive/battery.md`; `k6` en `tests/batteries/sdd-propose/battery.md`. El molde lleva un gate filtrado con los flags de moon (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`).
+Kit de `develop` en `b999c87d` (`git archive b999c87d skills .claude-plugin cli hooks`), sujetos headless Sonnet, n = 1, superpowers 7.0.0. Salidas en `.docs/sdd/changes/20261026-172719-feature-0221-affected-closing-gate/red/out/`. Escenarios y rúbrica: `g5`, `g6`, `w2` en `tests/batteries/sdd-archive/battery.md`; `k6` en `tests/batteries/sdd-propose/battery.md`. El molde lleva un gate filtrado con los flags de moon (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`).
 
 Una primera tanda (4 sujetos, 1,28 $) se descartó: la copia del kit no llevaba `cli/`, y los sujetos no podían ejecutar `sdd merge`.
 

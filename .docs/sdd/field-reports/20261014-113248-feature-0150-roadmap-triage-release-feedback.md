@@ -30,14 +30,14 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ### 1. La copia del kit de la campaña RED llevaba `.docs/`, y dos sujetos leyeron la spec que se estaba midiendo
 
-- **Qué pasó**: la copia del kit del RED salió de `git archive` del commit de apertura entero, con `.docs/` y `tests/`. m3-1 y m3-2 leyeron desde esa copia las secciones de triaje de la spec de esta feature (`grep -n -i "triar\|debt\|deuda" .docs/sdd/specs/<carpeta de la 0150>/spec.md`), así que su RED medía la regla ya escrita. Los aparté y relancé m3 con una copia sin `.docs/` ni `tests/`. `subject_init` comprueba que la skill medida está en la copia, pero no que falten la carpeta de specs y las pruebas.
+- **Qué pasó**: la copia del kit del RED salió de `git archive` del commit de apertura entero, con `.docs/` y `tests/`. m3-1 y m3-2 leyeron desde esa copia las secciones de triaje de la spec de esta feature (`grep -n -i "triar\|debt\|deuda" .docs/sdd/changes/<carpeta de la 0150>/spec.md`), así que su RED medía la regla ya escrita. Los aparté y relancé m3 con una copia sin `.docs/` ni `tests/`. `subject_init` comprueba que la skill medida está en la copia, pero no que falten la carpeta de specs y las pruebas.
 - **Fuente**: `tests/sdd-roadmap-0150-red.md:38` (la contaminación y el `grep` de los sujetos) y `:3` («10 sujetos válidos y 2 apartados»); el log de la campaña en el scratchpad → `sujetos de la campaña: 9 · coste acumulado: 1.98 $` antes del relanzamiento y `sujetos de la campaña: 11 · coste acumulado: 2.36 $` después; `tests/headless/lib.sh:34`, la única comprobación de la copia («sin la skill $4 en la copia del kit»); `.docs/sdd/tech-stack.md:86` (`git archive <commit ya revisado> skills .claude-plugin`).
 - **Dónde en el kit**: `.docs/sdd/tech-stack.md`, «Baterías por skill», línea 86, que da la forma `git archive … skills .claude-plugin` solo para el frente del GREEN que corre mientras se revisa otra task; y `tests/headless/lib.sh`, `subject_init`.
 - **Por qué el kit no lo evitó**: la forma correcta existía, pero en la regla de un caso concreto, y el lanzador no la comprueba. No la apliqué al RED.
 - **Coste**: 2 sujetos apartados y el relanzamiento de m3, 0,38 $ y ~3 min (walkthrough de la 0150, §3, «Decisiones tomadas sin el dev-lead»).
 - **Propuesta**: `subject_init` aborta si la copia del kit tiene `.docs/` o `tests/`, con un mensaje que dé la forma `git archive <commit> skills .claude-plugin`, y su caso en `tests/HeadlessLauncher.Tests.ps1`. La regla de la línea 86 pasa a valer para toda copia del kit de una campaña. Ya tiene fila de deuda en el roadmap, abierta en el cierre de la 0150.
 - **Verificada**: sin verificar (contrastado con `tests/headless/lib.sh:34`).
-- **Criterio de aceptación**: GIVEN una copia del kit con `.docs/sdd/specs/`, WHEN `subject_init` la recibe, THEN aborta antes del `claude -p` y nombra la forma correcta; hoy lanza el sujeto.
+- **Criterio de aceptación**: GIVEN una copia del kit con `.docs/sdd/changes/`, WHEN `subject_init` la recibe, THEN aborta antes del `claude -p` y nombra la forma correcta; hoy lanza el sujeto.
 
 ### 2. El delta de la spec no vio dos requisitos vivos que nombraban `ROADMAP.md` en un AND
 

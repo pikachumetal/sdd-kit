@@ -1,6 +1,6 @@
 # GREEN — tasks que se prueban, escenarios con datos y guion de pruebas (task 0060)
 
-Mismos escenarios que [`testable-tasks-red.md`](testable-tasks-red.md), con el kit de `a691c49` (Tasks 1 y 2) y, en la tanda de REFACTOR, con el cambio de `plan-template.md` §2 de la Task 3. Son 7 sujetos headless Sonnet y **3,33 $**. Salidas en `.docs/sdd/specs/20260924-204639-task-0060-testable-tasks/green/out/`; molde y lanzador, los de `red/`.
+Mismos escenarios que [`testable-tasks-red.md`](testable-tasks-red.md), con el kit de `a691c49` (Tasks 1 y 2) y, en la tanda de REFACTOR, con el cambio de `plan-template.md` §2 de la Task 3. Son 7 sujetos headless Sonnet y **3,33 $**. Salidas en `.docs/sdd/changes/20260924-204639-task-0060-testable-tasks/green/out/`; molde y lanzador, los de `red/`.
 
 **Campaña entera** (RED previo + GREEN + REFACTOR): 12 sujetos y **5,56 $**, frente a una previsión común de 13 sujetos y un techo de 8 $. La aplicaron `SUBJECT_CAP` y `COST_CAP` en `red/run.sh`.
 

@@ -1,6 +1,6 @@
 # RED — verificación por task (task 0006)
 
-Baseline previo a la spec, con el kit de `develop` en `5bdc35c` (`sdd-start-task`, `plan-template.md` y `encargo-revision.md` sin cambios de esta task). Molde, lanzador y salidas en [`.docs/sdd/specs/20260923-102746-task-0006-task-verification/red/`](../.docs/sdd/specs/20260923-102746-task-0006-task-verification/red/).
+Baseline previo a la spec, con el kit de `develop` en `5bdc35c` (`sdd-start-task`, `plan-template.md` y `encargo-revision.md` sin cambios de esta task). Molde, lanzador y salidas en [`.docs/sdd/changes/20260923-102746-task-0006-task-verification/red/`](../.docs/sdd/changes/20260923-102746-task-0006-task-verification/red/).
 
 ## Escenario
 

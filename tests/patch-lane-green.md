@@ -1,6 +1,6 @@
 # GREEN — el carril patch lo decide quién fijó la solución (feature 0117)
 
-Kit del working tree de la rama (copias en el scratchpad por ronda), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead). Molde `ventas` de [`red/`](../.docs/sdd/specs/20261001-153446-feature-0117-patch-lane-fixed-solution/red/) con `index.html` ([`green/subject.sh`](../.docs/sdd/specs/20261001-153446-feature-0117-patch-lane-fixed-solution/green/subject.sh)) y la batería de `using-sdd` (tramos `sdd-start-patch`, `sdd-start-feature` y `directa`). Techo de la campaña: 15 $ y 40 sujetos, subido a 50 y a 55 por el dev-lead en el REFACTOR de la Task 1.
+Kit del working tree de la rama (copias en el scratchpad por ronda), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead). Molde `ventas` de [`red/`](../.docs/sdd/changes/20261001-153446-feature-0117-patch-lane-fixed-solution/red/) con `index.html` ([`green/subject.sh`](../.docs/sdd/changes/20261001-153446-feature-0117-patch-lane-fixed-solution/green/subject.sh)) y la batería de `using-sdd` (tramos `sdd-start-patch`, `sdd-start-feature` y `directa`). Techo de la campaña: 15 $ y 40 sujetos, subido a 50 y a 55 por el dev-lead en el REFACTOR de la Task 1.
 
 ## Task 1 — criterio por quién fija la solución y petición cerrada
 

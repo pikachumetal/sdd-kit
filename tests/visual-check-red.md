@@ -1,6 +1,6 @@
 # RED — verificación visual con Playwright y variante de gama media en la delegación (task 0077)
 
-Baseline previo a la spec, con el kit de `develop` en `a5b4a0c`: el paso 6 de `sdd-start-task` ya dice «tras su revisión el hilo la mira en un navegador real (Playwright MCP o similar)… sin navegador disponible, la deja como «no probado»». Molde, lanzador y salidas en [`.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/red/`](../.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/red/), con el lanzador de referencia de `tests/headless/`.
+Baseline previo a la spec, con el kit de `develop` en `a5b4a0c`: el paso 6 de `sdd-start-task` ya dice «tras su revisión el hilo la mira en un navegador real (Playwright MCP o similar)… sin navegador disponible, la deja como «no probado»». Molde, lanzador y salidas en [`.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/red/`](../.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/red/), con el lanzador de referencia de `tests/headless/`.
 
 ## Molde
 
@@ -29,7 +29,7 @@ Baseline previo a la spec, con el kit de `develop` en `a5b4a0c`: el paso 6 de `s
 | `q5-1` | 13 | 0,65 $ | Opciones: parar en la spec (recomendada), aprobar por delegación, cambiar perfil. **Ni rastro del modelo de la sesión**; prevé 2–3 tasks |
 | `q5-2` | 13 | 0,56 $ | Igual: A, B «apruebo la spec por delegación…», C. **Sin variante de gama media** |
 
-Dos sujetos más de `n4` quedaron **inválidos** ([`red/invalid/`](../.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/red/invalid/), 0,57 $): el primer molde .NET no implementaba la spec y los dos pararon por eso. Total: 12 sujetos, 5,33 $.
+Dos sujetos más de `n4` quedaron **inválidos** ([`red/invalid/`](../.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/red/invalid/), 0,57 $): el primer molde .NET no implementaba la spec y los dos pararon por eso. Total: 12 sujetos, 5,33 $.
 
 ## Veredicto
 

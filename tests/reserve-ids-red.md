@@ -3,7 +3,7 @@
 Baseline de la guidance de `nombrado.md`, `sdd-start-patch` y `sdd-start-release`, que usa el script del hito 1 (`Get-NextSddId.ps1 -Reserve` ya existe) con el texto de esas skills todavía sin cambiar: «el id que devuelve `Get-NextSddId.ps1`» y, en release, «cada id nuevo es mayor que el que da `Get-NextSddId.ps1`».
 
 - **Molde**: el repo de juguete `salas` de la task 0044, en modo `sequence`, con las filas 0012 y 0013 en el roadmap.
-- **Lanzador**: [`red/`](../.docs/sdd/specs/20260924-105243-task-0059-reserve-ids/red/).
+- **Lanzador**: [`red/`](../.docs/sdd/changes/20260924-105243-task-0059-reserve-ids/red/).
 - **Sujetos**: Sonnet headless, un turno, sin el plugin publicado.
 - **Medida**: si existe `.git/sdd-ids` y qué llamada al script aparece en el log.
 - **Previsión y techo** (spec, decisión 10): 6 sujetos y ~5 $; techo de 9 sujetos y 10 $, comunes al RED y al GREEN.
@@ -25,7 +25,7 @@ Baseline de la guidance de `nombrado.md`, `sdd-start-patch` y `sdd-start-release
 | **r1-2** | **no** | ejecutó el script **sin** `-Reserve` y **sin leerlo**; escribió 0014–0016 como correlativos | 0,26 $ |
 | t1-2 | sí, 0014 | leyó el script; `-Reserve` | 0,42 $ |
 
-**r1-2** ([tools](../.docs/sdd/specs/20260924-105243-task-0059-reserve-ids/red/out/r1-2.tools.txt), [state](../.docs/sdd/specs/20260924-105243-task-0059-reserve-ids/red/out/r1-2.state.txt)) ejecutó `& "$k\scripts\Get-NextSddId.ps1"` y en su informe dice textualmente: «`Get-NextSddId.ps1` dio 0014 y reservé correlativos 0014-0016. No hay ramas `feature/*` ni otros worktrees, así que no hay reservas sin fusionar con las que puedan chocar». No quedó contador. Es el cálculo de siempre: un segundo worktree que ejecute el mismo paso a la vez obtiene también 0014.
+**r1-2** ([tools](../.docs/sdd/changes/20260924-105243-task-0059-reserve-ids/red/out/r1-2.tools.txt), [state](../.docs/sdd/changes/20260924-105243-task-0059-reserve-ids/red/out/r1-2.state.txt)) ejecutó `& "$k\scripts\Get-NextSddId.ps1"` y en su informe dice textualmente: «`Get-NextSddId.ps1` dio 0014 y reservé correlativos 0014-0016. No hay ramas `feature/*` ni otros worktrees, así que no hay reservas sin fusionar con las que puedan chocar». No quedó contador. Es el cálculo de siempre: un segundo worktree que ejecute el mismo paso a la vez obtiene también 0014.
 
 ## Lectura
 

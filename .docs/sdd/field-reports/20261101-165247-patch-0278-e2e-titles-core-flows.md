@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. El test de títulos sale en rojo al adoptarlo en una suite sin limpiar, y frena el gate hasta que decida el dev-lead
 
 - **Qué pasó**: en el GREEN, `t1-1` añadió el test y dejó `npm test` en rojo por un título que ya estaba fuera de la lista, como pide la guía. Es lo buscado en el criterio de hecho, pero en un proyecto real esa rama no cierra hasta decidir cada título. Por eso `sdd-init` y la migración v3.0.0 no ofrecen el test.
-- **Fuente**: `.docs/sdd/specs/20261101-164101-patch-0278-e2e-titles-core-flows/green/out/t1-1.texts.txt`; §3 de su `patch.md`.
+- **Fuente**: `.docs/sdd/changes/20261101-164101-patch-0278-e2e-titles-core-flows/green/out/t1-1.texts.txt`; §3 de su `patch.md`.
 - **Dónde en el kit**: `skills/sdd-tdd/references/writing-e2e.md`, regla 1.
 - **Por qué el kit no lo evitó**: limpiar la suite quedó fuera del alcance de la fila, y sin campo no se ha medido.
 - **Coste**: no observado; 0 proyectos adoptados.

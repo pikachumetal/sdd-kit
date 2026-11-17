@@ -3,7 +3,7 @@
 Mismos frentes que [`init-files-red.md`](init-files-red.md), ahora con el kit de la rama.
 
 **Método**:
-- Siete escenarios de un turno y 2 sujetos Sonnet headless cada uno, lanzados con [`green/run.sh`](../.docs/sdd/specs/20260922-211157-task-0019-init-files/green/run.sh) y `driver.py`.
+- Siete escenarios de un turno y 2 sujetos Sonnet headless cada uno, lanzados con [`green/run.sh`](../.docs/sdd/changes/20260922-211157-task-0019-init-files/green/run.sh) y `driver.py`.
 - Moldes en `green/molds/`, generados por `make_molds.py`. En G4 el molde redirige la memoria con `autoMemoryDirectory` a una carpeta propia, así que ningún sujeto toca la memoria real de la máquina.
 - Salidas en `green/out/<etiqueta>/`. Cada una tiene `transcript.md`, `tools.txt` y `state.txt`, y la foto de disco sin el punto inicial (`docs/`, `claude/`, `gitignore`, `memory/`).
 

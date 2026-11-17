@@ -4,8 +4,8 @@ Baseline de `skills/sdd-start-feature/SKILL.md` en `02a2e24` (develop tras la 00
 
 Fuentes:
 
-- **Streams de la 0077, a coste cero**: `.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/{red,green}/out/`. Son 15 sujetos que levantaron un servidor (`v6`, `v7`, `x4`, `n4`, `c6`). Su paso 7 es el mismo que el de develop salvo la verificación visual, que es lo que medía la 0077. Recuento sobre `tools.txt`, que da la primera línea de cada comando y las líneas de contenido que lo siguen.
-- **Sujetos nuevos, 5 Sonnet, 2,07 $**, en `.docs/sdd/specs/20260925-180248-feature-0036-closing-verification/red/out/`: `b1` ×2, `d1` ×2 (`red/subject.sh`) y `v7f` ×1 (`green/web.sh`).
+- **Streams de la 0077, a coste cero**: `.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/{red,green}/out/`. Son 15 sujetos que levantaron un servidor (`v6`, `v7`, `x4`, `n4`, `c6`). Su paso 7 es el mismo que el de develop salvo la verificación visual, que es lo que medía la 0077. Recuento sobre `tools.txt`, que da la primera línea de cada comando y las líneas de contenido que lo siguen.
+- **Sujetos nuevos, 5 Sonnet, 2,07 $**, en `.docs/sdd/changes/20260925-180248-feature-0036-closing-verification/red/out/`: `b1` ×2, `d1` ×2 (`red/subject.sh`) y `v7f` ×1 (`green/web.sh`).
 - **Un sujeto `v7f` interrumpido** (`red/invalid/`): se paró por su PID al minuto de arrancar para añadir el hook `green/deny-kill.mjs`. Sin ese hook, un sujeto que hiciera `taskkill /IM node.exe` habría tumbado los MCP de las sesiones del dev-lead. No cuenta como conducta.
 - **37 walkthroughs cerrados** del repo (2026-09-22 a 2026-09-25), para la duración de la suite.
 

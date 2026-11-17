@@ -1,6 +1,6 @@
 # Evidencia GREEN — tests escritos por el hilo principal antes de despachar (2026-09-09)
 
-Verificación de la task [tests-red-hilo](../.docs/sdd/specs/20260909-173929-task-0000-tests-red-hilo/spec.md) (T16) tras el [RED](tests-red-hilo-red.md).
+Verificación de la task [tests-red-hilo](../.docs/sdd/changes/20260909-173929-task-0000-tests-red-hilo/spec.md) (T16) tras el [RED](tests-red-hilo-red.md).
 
 ## Método
 

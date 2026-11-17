@@ -1,6 +1,6 @@
 # GREEN — feature 0150: la fuente de cada dato del ticket del kit
 
-Kit de la rama en `d68550cc` (`git archive` al scratchpad, sin `.docs/` ni `tests/`), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Batería de humo `tests/batteries/sdd-feedback/` (fb1). Salida en `.docs/sdd/specs/20261013-112220-feature-0150-roadmap-triage-release-feedback/green/out/`. 1 sujeto, 0,27 $. No leyó `.docs/` de la copia del kit.
+Kit de la rama en `d68550cc` (`git archive` al scratchpad, sin `.docs/` ni `tests/`), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Batería de humo `tests/batteries/sdd-feedback/` (fb1). Salida en `.docs/sdd/changes/20261013-112220-feature-0150-roadmap-triage-release-feedback/green/out/`. 1 sujeto, 0,27 $. No leyó `.docs/` de la copia del kit.
 
 | Escenario | Fila | Resultado | Cita |
 | --- | --- | --- | --- |

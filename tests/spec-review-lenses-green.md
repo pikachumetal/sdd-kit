@@ -1,6 +1,6 @@
 # Evidencia GREEN — review de spec con lentes sin solape (2026-09-21)
 
-Verificación de la [task 0011](../.docs/sdd/specs/20260920-220930-task-0011-spec-review-lenses/spec.md) con el `review-spec.md` reescrito (commits `62f49f5` y `ddba5e0`). Mismos escenarios que [el RED](spec-review-lenses-red.md), mismos defectos plantados, mismo modelo (Sonnet vía subagente `general-purpose`).
+Verificación de la [task 0011](../.docs/sdd/changes/20260920-220930-task-0011-spec-review-lenses/spec.md) con el `review-spec.md` reescrito (commits `62f49f5` y `ddba5e0`). Mismos escenarios que [el RED](spec-review-lenses-red.md), mismos defectos plantados, mismo modelo (Sonnet vía subagente `general-purpose`).
 
 **Cambio de condición respecto al RED**: los cinco sujetos corren sobre `fixture-no-rule` —el fixture Ledgerly **sin** el artículo de datos ficticios—, que es la condición en la que el RED falló (E3b) y la que reproduce la constitution real del kit. Los ocho defectos plantados son idénticos; lo único que cambia es que el nombre real no está prohibido por escrito en el proyecto del fixture.
 

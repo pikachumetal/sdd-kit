@@ -1,6 +1,6 @@
 # RED — `sdd-implement` (feature 0147)
 
-Baseline de las reglas nuevas de la feature 0147, con el kit del commit de apertura (`33702ef2`, con el paso 6 de `sdd-start-feature` y las dos skills de superpowers 7.0.0 por `SUPERPOWERS_DIR`). Batería: [`tests/batteries/sdd-implement/`](batteries/sdd-implement/battery.md). Sujetos Sonnet, headless; salidas en [`red/out/`](../.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/red/out/). Coste: ~6,5 $ en 15 sujetos válidos, más 3 invalidados por el molde.
+Baseline de las reglas nuevas de la feature 0147, con el kit del commit de apertura (`33702ef2`, con el paso 6 de `sdd-start-feature` y las dos skills de superpowers 7.0.0 por `SUPERPOWERS_DIR`). Batería: [`tests/batteries/sdd-implement/`](batteries/sdd-implement/battery.md). Sujetos Sonnet, headless; salidas en [`red/out/`](../.docs/sdd/changes/20261010-174401-feature-0147-implement-fork/red/out/). Coste: ~6,5 $ en 15 sujetos válidos, más 3 invalidados por el molde.
 
 ## Molde: lo que se corrigió a mitad
 

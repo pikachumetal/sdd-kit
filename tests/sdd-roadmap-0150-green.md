@@ -1,6 +1,6 @@
 # GREEN — feature 0150: roadmap Now / Next / Later y debt.md con triaje
 
-Kit de la rama en `d8b8dc20` (Task 4 antes de su ronda 1; `git archive` al scratchpad, sin `.docs/` ni `tests/`), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Batería `tests/batteries/sdd-roadmap/` entera: m1 a m6 y m3b, 2 sujetos cada uno. Salidas en `.docs/sdd/specs/20261013-112220-feature-0150-roadmap-triage-release-feedback/green/out/`. 14 sujetos, 2,90 $; ninguno leyó `.docs/` de la copia del kit. Los 14 entran por `sdd-kit:sdd-roadmap` y contestan en castellano (fila L).
+Kit de la rama en `d8b8dc20` (Task 4 antes de su ronda 1; `git archive` al scratchpad, sin `.docs/` ni `tests/`), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Batería `tests/batteries/sdd-roadmap/` entera: m1 a m6 y m3b, 2 sujetos cada uno. Salidas en `.docs/sdd/changes/20261013-112220-feature-0150-roadmap-triage-release-feedback/green/out/`. 14 sujetos, 2,90 $; ninguno leyó `.docs/` de la copia del kit. Los 14 entran por `sdd-kit:sdd-roadmap` y contestan en castellano (fila L).
 
 ## Resultado por escenario
 

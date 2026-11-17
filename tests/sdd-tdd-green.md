@@ -1,6 +1,6 @@
 # GREEN — `sdd-tdd` y `sdd-debugging` (feature 0165)
 
-Kit de la rama (copia del working tree) y superpowers 7.0.0 por `SUPERPOWERS_DIR`. Sujetos Sonnet, headless; salidas en [`green/out/`](../.docs/sdd/specs/20261011-143353-feature-0165-tdd-and-debugging/green/out/). RED en [`sdd-tdd-red.md`](sdd-tdd-red.md).
+Kit de la rama (copia del working tree) y superpowers 7.0.0 por `SUPERPOWERS_DIR`. Sujetos Sonnet, headless; salidas en [`green/out/`](../.docs/sdd/changes/20261011-143353-feature-0165-tdd-and-debugging/green/out/). RED en [`sdd-tdd-red.md`](sdd-tdd-red.md).
 
 ## Task 2 — el encargo y `sdd-tdd`
 

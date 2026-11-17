@@ -1,6 +1,6 @@
 # GREEN — tickets de `sdd-feedback` con menos ruido (feature 0050)
 
-Mismos escenarios y molde que el [RED](kit-feedback-noise-red.md), con la skill y la plantilla editadas de la rama (copia del working tree sobre `18001d0b`), 2026-10-01. Salidas en [green/out/](../.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/green/out/) y [refactor/out/](../.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/refactor/out/).
+Mismos escenarios y molde que el [RED](kit-feedback-noise-red.md), con la skill y la plantilla editadas de la rama (copia del working tree sobre `18001d0b`), 2026-10-01. Salidas en [green/out/](../.docs/sdd/changes/20261001-125120-feature-0050-feedback-less-noise/green/out/) y [refactor/out/](../.docs/sdd/changes/20261001-125120-feature-0050-feedback-less-noise/refactor/out/).
 
 ## Gasto
 
@@ -68,7 +68,7 @@ Minor aplicados:
 
 Queda diferido un Minor: los menores mal clasificados de las salidas del GREEN (una atribución «sin respaldo» como menor). Es ruido residual, para la batería de la 0120.
 
-Control con la plantilla alineada (enmienda del dev-lead: 12 sujetos, [fix/out/](../.docs/sdd/specs/20261001-125120-feature-0050-feedback-less-noise/fix/out/)), 2 sujetos y 0,57 $:
+Control con la plantilla alineada (enmienda del dev-lead: 12 sujetos, [fix/out/](../.docs/sdd/changes/20261001-125120-feature-0050-feedback-less-noise/fix/out/)), 2 sujetos y 0,57 $:
 
 | Medida | n1-1 | l1-1 |
 | --- | --- | --- |

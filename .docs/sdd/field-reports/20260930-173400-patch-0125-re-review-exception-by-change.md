@@ -46,8 +46,8 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ### 3. `subject.sh` no corre desde el scratchpad antes de que el patch abra carpeta
 
-- **Qué pasó**: `sdd-start-patch` prohíbe abrir carpeta, rama o id antes de reproducir el fallo, y el RED de una skill necesita una campaña. El `subject.sh` de referencia calcula la raíz del repo subiendo cinco niveles desde su propia ruta (`$BASE/../../../../..`), y eso solo funciona dentro de `.docs/sdd/specs/<carpeta>/red/`. Añadí `REPO="${KIT_REPO:-…}"` para lanzarlo desde el scratchpad, y lo moví a la carpeta del patch cuando el RED reprodujo.
-- **Dónde en el kit**: `tests/headless/lib.sh` (cabecera de uso) y el molde de `subject.sh` de las campañas (por ejemplo `.docs/sdd/specs/20260927-150813-feature-0091-closing-review-edges/red/subject.sh`); `skills/sdd-start-patch/SKILL.md` paso 1.
+- **Qué pasó**: `sdd-start-patch` prohíbe abrir carpeta, rama o id antes de reproducir el fallo, y el RED de una skill necesita una campaña. El `subject.sh` de referencia calcula la raíz del repo subiendo cinco niveles desde su propia ruta (`$BASE/../../../../..`), y eso solo funciona dentro de `.docs/sdd/changes/<carpeta>/red/`. Añadí `REPO="${KIT_REPO:-…}"` para lanzarlo desde el scratchpad, y lo moví a la carpeta del patch cuando el RED reprodujo.
+- **Dónde en el kit**: `tests/headless/lib.sh` (cabecera de uso) y el molde de `subject.sh` de las campañas (por ejemplo `.docs/sdd/changes/20260927-150813-feature-0091-closing-review-edges/red/subject.sh`); `skills/sdd-start-patch/SKILL.md` paso 1.
 - **Por qué el kit no lo evitó**: el lanzador supone que la campaña vive ya en su carpeta de spec; en el carril patch, el RED va antes que la carpeta.
 - **Coste**: ~5 min y una variable nueva por campaña.
 - **Propuesta**: la cabecera de `lib.sh` documenta la forma de un `subject.sh` que funciona en los dos sitios (`KIT_REPO` o la ruta del kit por variable), y `run.sh` acepta un `SPEC_DIR` en el scratchpad.

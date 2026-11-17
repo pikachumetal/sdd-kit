@@ -35,9 +35,11 @@ export function shadowWarning(docsPath: string, shadowed: string): string {
   return `aviso: también existe ${path}, que no se lee`;
 }
 
+export const CHANGE_FOLDER_NAMES = ['changes', 'specs'];
+
 export function changeFolders(docsPath: string): string[] {
   const docs = resolve(docsPath);
-  return ['changes', 'specs'].map((folder) => join(docs, folder)).filter((folder) => existsSync(folder));
+  return CHANGE_FOLDER_NAMES.map((folder) => join(docs, folder)).filter((folder) => existsSync(folder));
 }
 
 export function estimationLogPath(docsPath: string): string {

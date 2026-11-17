@@ -1,6 +1,6 @@
 # RED — la pasada de fix: el efecto, el valor de la spec y el Important que mete (feature 0246, Tasks 2 y 3)
 
-Kit: `git archive` del commit de apertura `40c72058`, sin las reglas nuevas. Sonnet. Salidas en `.docs/sdd/specs/20261029-190601-feature-0246-baseline-detached-worktree/red/`. Rúbricas en `tests/batteries/sdd-verify/battery.md` (`C7`, `C8`, `C9`) y `tests/batteries/sdd-implement/battery.md` (`T6`).
+Kit: `git archive` del commit de apertura `40c72058`, sin las reglas nuevas. Sonnet. Salidas en `.docs/sdd/changes/20261029-190601-feature-0246-baseline-detached-worktree/red/`. Rúbricas en `tests/batteries/sdd-verify/battery.md` (`C7`, `C8`, `C9`) y `tests/batteries/sdd-implement/battery.md` (`T6`).
 
 ## `c8` — un Important que mete la pasada de fix (reproduce)
 

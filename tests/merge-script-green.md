@@ -1,6 +1,6 @@
 # GREEN — merge del cierre con el remoto adelantado (task 0042)
 
-El kit es el de `feature/0042`: la receta reescrita como invocación de `Invoke-SddMerge.ps1` y el paso de rama de `sdd-end-task` y de `sdd-end-patch` apuntando a ella. Los escenarios y las medidas son los mismos que en [el RED](merge-script-red.md), más el control de no regresión de «Merge denegado por el entorno» (`d1`). El lanzador y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/specs/20260923-145338-task-0042-merge-script/green/).
+El kit es el de `feature/0042`: la receta reescrita como invocación de `Invoke-SddMerge.ps1` y el paso de rama de `sdd-end-task` y de `sdd-end-patch` apuntando a ella. Los escenarios y las medidas son los mismos que en [el RED](merge-script-red.md), más el control de no regresión de «Merge denegado por el entorno» (`d1`). El lanzador y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/changes/20260923-145338-task-0042-merge-script/green/).
 
 ## Resultados
 

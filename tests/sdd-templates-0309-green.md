@@ -1,6 +1,6 @@
 # sdd-templates 0309 — evidencia del Approach con enfoques y la previsión desde el comando
 
-Batería de `sdd-propose` (`tests/batteries/sdd-propose/battery.md`), sujetos Sonnet. Spec: `.docs/sdd/specs/20261108-144046-feature-0309-templates-rework/spec.md`.
+Batería de `sdd-propose` (`tests/batteries/sdd-propose/battery.md`), sujetos Sonnet. Spec: `.docs/sdd/changes/20261108-144046-feature-0309-templates-rework/spec.md`.
 
 ## RED — kit de la base (74988a8b), molde `reservas-skills` con `scripts/plan.mjs`
 

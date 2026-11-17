@@ -1,6 +1,6 @@
 # RED — `sdd-tdd` (feature 0165)
 
-Baseline de las piezas condicionadas de la feature 0165, con el kit del commit `6b651ea0` (la rama tras fusionar `develop`: `sdd-implement` carga `superpowers:test-driven-development`) y superpowers 7.0.0 por `SUPERPOWERS_DIR`. Batería: [`tests/batteries/sdd-implement/`](batteries/sdd-implement/battery.md), pasos `tdd-red` y `red-writer`. Sujetos Sonnet, headless; salidas en [`red/out/`](../.docs/sdd/specs/20261011-143353-feature-0165-tdd-and-debugging/red/out/). Coste: 1,85 $ en 8 sujetos.
+Baseline de las piezas condicionadas de la feature 0165, con el kit del commit `6b651ea0` (la rama tras fusionar `develop`: `sdd-implement` carga `superpowers:test-driven-development`) y superpowers 7.0.0 por `SUPERPOWERS_DIR`. Batería: [`tests/batteries/sdd-implement/`](batteries/sdd-implement/battery.md), pasos `tdd-red` y `red-writer`. Sujetos Sonnet, headless; salidas en [`red/out/`](../.docs/sdd/changes/20261011-143353-feature-0165-tdd-and-debugging/red/out/). Coste: 1,85 $ en 8 sujetos.
 
 ## Por pieza
 

@@ -102,7 +102,7 @@ Estructura recomendada:
 │               └── walkthrough.md
 ```
 
-Los cambios nuevos nacen en `changes/`. La carpeta `specs/` solo existe en los proyectos que vienen de la 2.x: sus carpetas se siguen leyendo, y el kit no las mueve.
+Los cambios nacen en `changes/`. Un proyecto que viene de la 2.x tenía sus carpetas en `specs/`: la migración a la 3.0.1 las mueve a `changes/`.
 
 ### 2.1. Gestión del contexto
 
@@ -186,7 +186,7 @@ Reducir el tiempo que va de una idea a una funcionalidad validada por el cliente
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.0, noviembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.1, noviembre de 2026.*
 
 ## Referencias
 

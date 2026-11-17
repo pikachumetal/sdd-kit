@@ -1,6 +1,6 @@
 # GREEN — vigía de silencio (feature 0095)
 
-Mismos escenarios y molde que en `tests/silence-watch-red.md`, con el kit de la rama (sección «Vigía de silencio» de `control-profiles.md`, frase del paso 6 y remisiones de los demás puntos de despacho) y `Watch-SubagentSilence.ps1`. Salidas en `.docs/sdd/specs/20260928-173846-feature-0095-silence-watch/green/out/`, lanzador en `green/subject.sh`.
+Mismos escenarios y molde que en `tests/silence-watch-red.md`, con el kit de la rama (sección «Vigía de silencio» de `control-profiles.md`, frase del paso 6 y remisiones de los demás puntos de despacho) y `Watch-SubagentSilence.ps1`. Salidas en `.docs/sdd/changes/20260928-173846-feature-0095-silence-watch/green/out/`, lanzador en `green/subject.sh`.
 
 ## Resultado
 

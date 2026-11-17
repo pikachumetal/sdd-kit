@@ -15,9 +15,9 @@ No aplica: sin sesión de feedback externo. Los tres ítems de la release se dec
 
 | # | Unidad | Origen | Decisión |
 | --- | --- | --- | --- |
-| 1 | [Task modo lite del carril task](../../specs/20260902-084856-task-0000-modo-lite/) | Estreno del kit en un proyecto del equipo | Cerrada antes de esta sesión |
-| 2 | [Patch de la referencia rota a `grilling`](../../specs/20260902-153722-patch-0000-grilling-reference/) | Consulta del 2026-09-02 | Arreglar ya, decidido por el usuario |
-| 3 | [Task de declaración de dependencias](../../specs/20260902-160308-task-0000-dependencias-declaradas/) | Ítem 4 del roadmap, ampliado por la investigación | Entera y en una sola task, decidido por el usuario |
+| 1 | [Task modo lite del carril task](../../changes/20260902-084856-task-0000-modo-lite/) | Estreno del kit en un proyecto del equipo | Cerrada antes de esta sesión |
+| 2 | [Patch de la referencia rota a `grilling`](../../changes/20260902-153722-patch-0000-grilling-reference/) | Consulta del 2026-09-02 | Arreglar ya, decidido por el usuario |
+| 3 | [Task de declaración de dependencias](../../changes/20260902-160308-task-0000-dependencias-declaradas/) | Ítem 4 del roadmap, ampliado por la investigación | Entera y en una sola task, decidido por el usuario |
 
 ## 2. Cambios de requisito detectados
 
@@ -27,7 +27,7 @@ Uno, y afecta al propio roadmap. El ítem 4 daba por hecho que la dependencia se
 - La dependencia es **cross-marketplace** y está bloqueada por defecto: exige `allowCrossMarketplaceDependenciesOn` en el `marketplace.json` propio.
 - `grilling` **no cabe ahí en ningún caso**: no es un plugin, sino una skill instalada con `npx skills add`. El kit depende de dos canales de distribución distintos, no de uno.
 
-Consecuencia: la declaración quedó en dos planos (manifest para el plugin, README para la humana) en vez de un campo. Registrado en la [spec](../../specs/20260902-160308-task-0000-dependencias-declaradas/spec.md) §3.
+Consecuencia: la declaración quedó en dos planos (manifest para el plugin, README para la humana) en vez de un campo. Registrado en la [spec](../../changes/20260902-160308-task-0000-dependencias-declaradas/spec.md) §3.
 
 ## 3. Retro
 

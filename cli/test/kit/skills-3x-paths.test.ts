@@ -8,11 +8,9 @@ import { markdownFiles, repoRoot } from './kit-files.ts';
 const PATH_2X = /mission\.md|tech-stack\.md|environments\.md|\.docs\/sdd\/(roadmap|changelog|constitution|architecture|estimation)\.md|\.docs\/sdd\/specs/;
 
 const ALLOWED: Record<string, string> = {
-  'skills/add-to-changelog/SKILL.md': 'enlaza las carpetas de los cambios anteriores a la 3.0.0, que siguen en specs/',
   'skills/sdd-end-release/SKILL.md': 'la puerta de forma y el rescate de las validaciones del roadmap 2.x borrado',
   'skills/sdd-init/SKILL.md': 'el predicado de un template o de documentos 2.x sin marcador',
   'skills/sdd-init/references/structure.md': 'un template 2.x conserva su forma hasta migrar',
-  'skills/sdd-propose/references/coherence-pass.md': 'specs/ como carpeta de evidencia que el repaso no toca',
   'skills/sdd-roadmap/SKILL.md': 'la puerta de forma',
   'skills/sdd-templates/SKILL.md': 'la plantilla 2.x del roadmap, que solo lee la migración v2.3.0',
 };

@@ -1,6 +1,6 @@
 # RED — `sdd-upgrade` (feature 0157)
 
-Baseline del kit de la base de la rama (`git archive c04fc5c7 skills .claude-plugin cli hooks`), sin `sdd-upgrade`: la migración la hace `sdd-init` y el hook solo avisa. Batería [`tests/batteries/sdd-upgrade/`](batteries/sdd-upgrade/battery.md) (`o1`, `m2`) y `u1` de la de `using-sdd`, con Sonnet y `SUPERPOWERS_DIR` en la 7.0.0. Salidas en [`.docs/sdd/specs/20261017-220910-feature-0157-sdd-upgrade/red/out/`](../.docs/sdd/specs/20261017-220910-feature-0157-sdd-upgrade/red/out/). 2026-10-18. 5 sujetos, 0,90 $. Moldes pasados antes por `DRY_RUN=1`.
+Baseline del kit de la base de la rama (`git archive c04fc5c7 skills .claude-plugin cli hooks`), sin `sdd-upgrade`: la migración la hace `sdd-init` y el hook solo avisa. Batería [`tests/batteries/sdd-upgrade/`](batteries/sdd-upgrade/battery.md) (`o1`, `m2`) y `u1` de la de `using-sdd`, con Sonnet y `SUPERPOWERS_DIR` en la 7.0.0. Salidas en [`.docs/sdd/changes/20261017-220910-feature-0157-sdd-upgrade/red/out/`](../.docs/sdd/changes/20261017-220910-feature-0157-sdd-upgrade/red/out/). 2026-10-18. 5 sujetos, 0,90 $. Moldes pasados antes por `DRY_RUN=1`.
 
 ## Veredictos
 

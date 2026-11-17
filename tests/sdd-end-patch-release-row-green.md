@@ -4,8 +4,8 @@ Mismo escenario y la misma petición que el [RED](sdd-end-patch-release-row-red.
 
 | Sujeto | Coste | ¿Fila en la tabla de la release? | Fila de Patches (control) |
 | --- | --- | --- | --- |
-| [green-1](../.docs/sdd/specs/20260927-131408-patch-0087-roadmap-header-fast-suite/red/out/green-1.state.txt) | 1,21 $ | sí: `\| 0013 \| … \| soporte \| src/slots.js, tests/slots.test.js \| 🧪 validación diferida a smoke de la release \|` | sí, y ahora con el prefijo 🧪 |
-| [green-2](../.docs/sdd/specs/20260927-131408-patch-0087-roadmap-header-fast-suite/red/out/green-2.texts.txt) | 0,27 $ | — (ruido, igual que `red-1`: acabó en el repo del kit y paró) | — |
+| [green-1](../.docs/sdd/changes/20260927-131408-patch-0087-roadmap-header-fast-suite/red/out/green-1.state.txt) | 1,21 $ | sí: `\| 0013 \| … \| soporte \| src/slots.js, tests/slots.test.js \| 🧪 validación diferida a smoke de la release \|` | sí, y ahora con el prefijo 🧪 |
+| [green-2](../.docs/sdd/changes/20260927-131408-patch-0087-roadmap-header-fast-suite/red/out/green-2.texts.txt) | 0,27 $ | — (ruido, igual que `red-1`: acabó en el repo del kit y paró) | — |
 
 **Pasa 1/1** en el sujeto válido, y la fila de Patches se mantiene (control). `green-1` agotó los 45 turnos antes del merge, pero ya había escrito el roadmap del cierre.
 

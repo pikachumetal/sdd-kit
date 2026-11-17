@@ -1,6 +1,6 @@
 # Evidencia RED — política de ejecución y modelos (2026-09-08)
 
-Baseline de la task [workflow-ejecucion](../.docs/sdd/specs/20260908-095857-task-0000-workflow-ejecucion/spec.md) (T3). Sonnet, fixture desechable "Cobra", 7 runs en dos tandas. Estado final verificado en disco.
+Baseline de la task [workflow-ejecucion](../.docs/sdd/changes/20260908-095857-task-0000-workflow-ejecucion/spec.md) (T3). Sonnet, fixture desechable "Cobra", 7 runs en dos tandas. Estado final verificado en disco.
 
 ## Fixture
 

@@ -3,7 +3,7 @@
 - **Fecha**: 2026-10-08. **Kit**: la base de la rama (`1440f84f`, sin la skill), copiado con `git archive`. **superpowers**: 6.4.2.
 - **Batería**: `tests/batteries/sdd-rubber-duck/` (`STEPS=rubber-duck`, `PHASE=red`), molde `exportes`.
 - **Sujetos**: 6 (s1, s2 y l1, dos de cada), Sonnet. **Coste**: 0,71 $ (previsión: ~2 $ para el RED, techo de la campaña 10 $).
-- **Salidas**: [`red/out/`](../.docs/sdd/specs/20261008-164456-feature-0145-sdd-rubber-duck/red/out/).
+- **Salidas**: [`red/out/`](../.docs/sdd/changes/20261008-164456-feature-0145-sdd-rubber-duck/red/out/).
 - **Veredicto de puerta**: rojo por construcción en los tres escenarios (la skill no existe). Primera skill invocada: `sdd-consult` en l1-1 y l1-2, `sdd-templates` en s1-1; el resto, ninguna.
 
 Un primer lanzamiento no arrancó ningún sujeto: `subject_init` comprueba que la skill esperada esté en la copia del kit, y en el RED no está. Desde entonces `subject.sh` pasa a la guarda `using-sdd` en el RED (ruling de la Task 1).

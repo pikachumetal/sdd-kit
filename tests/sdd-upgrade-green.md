@@ -1,6 +1,6 @@
 # GREEN — `sdd-upgrade` (feature 0157)
 
-Mismos moldes que el [RED](sdd-upgrade-red.md), con el kit del working tree de la rama (la skill `sdd-upgrade`, el hook con la orden de ofrecer y `sdd upgrade` en la CLI). Batería [`tests/batteries/sdd-upgrade/`](batteries/sdd-upgrade/battery.md) entera, tramos `sdd-init` y `sdd-upgrade` de `using-sdd` y tramo `resume` de `sdd-init`, con Sonnet y `SUPERPOWERS_DIR` en la 7.0.0. Salidas en [`.docs/sdd/specs/20261017-220910-feature-0157-sdd-upgrade/green/out/`](../.docs/sdd/specs/20261017-220910-feature-0157-sdd-upgrade/green/out/). 2026-10-18. 11 sujetos, 1,70 $; con el RED, 16 sujetos y 2,60 $, dentro de la previsión (20 y ~4,5 $).
+Mismos moldes que el [RED](sdd-upgrade-red.md), con el kit del working tree de la rama (la skill `sdd-upgrade`, el hook con la orden de ofrecer y `sdd upgrade` en la CLI). Batería [`tests/batteries/sdd-upgrade/`](batteries/sdd-upgrade/battery.md) entera, tramos `sdd-init` y `sdd-upgrade` de `using-sdd` y tramo `resume` de `sdd-init`, con Sonnet y `SUPERPOWERS_DIR` en la 7.0.0. Salidas en [`.docs/sdd/changes/20261017-220910-feature-0157-sdd-upgrade/green/out/`](../.docs/sdd/changes/20261017-220910-feature-0157-sdd-upgrade/green/out/). 2026-10-18. 11 sujetos, 1,70 $; con el RED, 16 sujetos y 2,60 $, dentro de la previsión (20 y ~4,5 $).
 
 ## Veredictos
 

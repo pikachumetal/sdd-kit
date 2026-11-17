@@ -1,6 +1,6 @@
 # Carril spike — RED (feature 0163)
 
-Kit del commit de apertura (`5c117084`), Sonnet, n = 2, 2026-11-01. 8 sujetos, 3,86 $. Salidas en `.docs/sdd/specs/20261101-175419-feature-0163-spike-lane/red/out/`.
+Kit del commit de apertura (`5c117084`), Sonnet, n = 2, 2026-11-01. 8 sujetos, 3,86 $. Salidas en `.docs/sdd/changes/20261101-175419-feature-0163-spike-lane/red/out/`.
 
 | Frente | Escenario | Resultado | Evidencia |
 | --- | --- | --- | --- |

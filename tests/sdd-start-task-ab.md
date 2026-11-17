@@ -1,6 +1,6 @@
 # Evidencia A/B — `sdd-start-task` (2026-09-07)
 
-Campaña de no-regresión del Art. I (ampliado en el commit `978ca40`): control = `SKILL.md` vigente (1503 palabras), tratamiento = `SKILL.md` partido (997 palabras, −34 %) más tres ficheros en `references/`. Ola 1 de la task [progressive-disclosure](../.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/spec.md).
+Campaña de no-regresión del Art. I (ampliado en el commit `978ca40`): control = `SKILL.md` vigente (1503 palabras), tratamiento = `SKILL.md` partido (997 palabras, −34 %) más tres ficheros en `references/`. Ola 1 de la task [progressive-disclosure](../.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/spec.md).
 
 ## Cortes probados
 

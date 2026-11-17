@@ -14,7 +14,7 @@
 
 ## GREEN de la batería
 
-Kit en `6cc7dc7c` (con `sdd-grilling` y las seis llamantes), superpowers 6.4.2 aislado, Sonnet, 2026-10-02. Salidas en `.docs/sdd/specs/20261002-141929-feature-0128-sdd-grilling/green/out/`.
+Kit en `6cc7dc7c` (con `sdd-grilling` y las seis llamantes), superpowers 6.4.2 aislado, Sonnet, 2026-10-02. Salidas en `.docs/sdd/changes/20261002-141929-feature-0128-sdd-grilling/green/out/`.
 
 - **Sujetos**: 19. **Coste**: 4,44 $.
 - **Puerta**: 18 de 19. u1 («Pensemos bien cómo debería funcionar la lista de espera») entra por `sdd-start-feature`, no por `sdd-consult`. Su control (C4: la puerta no es `sdd-grilling`) pasa; lo que estaba mal elegido era el «Esperado» de la batería.
@@ -82,4 +82,4 @@ Estos controles son **de no regresión**: la batería nunca reprodujo el «dos m
 | Frase | Mensaje | Control (sin guía) | Con la skill |
 | --- | --- | --- | --- |
 | Buscar fuera (m3, párrafo reescrito por la enmienda) | Node 22 frente a c8, con `WebSearch` permitido | 0 de 3 buscan | **3 de 3 buscan**: R11 está probado con el texto de la pasada de fix de la primera re-revisión, juntada en el cierre en micro-test (los tres buscan directamente). El disparador del subagente cambió después, en la pasada de la segunda re-revisión («if it needs a web search»), y no se ha medido; por el camino real, `sdd-consult` no cargó la skill en g9 |
-| Mezcla por costumbre (m4) | `salas`: dónde va el día en `libres`; el formato del día ya está fijado en `tech-stack.md`, la posición no | 0 de 3 con mezcla; 3 de 3 con una segunda pregunta al final («Si eliges A o B, falta saber…», «Dime también…») | 0 de 3 con mezcla; 3 de 3 con una sola decisión sobre la forma de `libres` (la posición del día en skill-1 y skill-3, si es obligatorio en skill-2), con dos alternativas defendibles y sin repreguntar el formato fijado. Ninguno de los seis reproduce el «dos más una 🔀» con Sonnet: queda como evidencia de campo. «Una sola alternativa defendible» no se ejercita. Salidas en `.docs/sdd/specs/20261002-141929-feature-0128-sdd-grilling/micro/out/` |
+| Mezcla por costumbre (m4) | `salas`: dónde va el día en `libres`; el formato del día ya está fijado en `tech-stack.md`, la posición no | 0 de 3 con mezcla; 3 de 3 con una segunda pregunta al final («Si eliges A o B, falta saber…», «Dime también…») | 0 de 3 con mezcla; 3 de 3 con una sola decisión sobre la forma de `libres` (la posición del día en skill-1 y skill-3, si es obligatorio en skill-2), con dos alternativas defendibles y sin repreguntar el formato fijado. Ninguno de los seis reproduce el «dos más una 🔀» con Sonnet: queda como evidencia de campo. «Una sola alternativa defendible» no se ejercita. Salidas en `.docs/sdd/changes/20261002-141929-feature-0128-sdd-grilling/micro/out/` |

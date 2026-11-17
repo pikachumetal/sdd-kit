@@ -1,6 +1,6 @@
 # RED — final del cierre: push autorizado y aviso de terminado (task 0040)
 
-Baseline: el kit de `develop` en `e6d74ff`, sin `merge.push` ni paso «Mensaje final». Es la campaña previa a la spec: la regla de `tech-stack.md` pide reproducir los frentes antes de presentarla. El GREEN repite estos escenarios. El molde, el lanzador y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/specs/20260923-143450-task-0040-close-push/red/README.md). Aquí va el resumen para el veredicto.
+Baseline: el kit de `develop` en `e6d74ff`, sin `merge.push` ni paso «Mensaje final». Es la campaña previa a la spec: la regla de `tech-stack.md` pide reproducir los frentes antes de presentarla. El GREEN repite estos escenarios. El molde, el lanzador y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/changes/20260923-143450-task-0040-close-push/red/README.md). Aquí va el resumen para el veredicto.
 
 ## Escenarios
 

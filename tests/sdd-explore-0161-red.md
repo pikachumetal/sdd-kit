@@ -1,6 +1,6 @@
 # RED — feature 0161: explore, el paso por el roadmap y el prompt de arranque
 
-Kit del commit de apertura (`5badc040`, `git archive` al scratchpad), Sonnet, superpowers 6.4.2 en `SUPERPOWERS_DIR`. Baterías `tests/batteries/sdd-explore/` (e2, e3), `tests/batteries/sdd-roadmap/` (m1, m2, m3) y `tests/batteries/sdd-propose/` (a5). Salidas en `.docs/sdd/specs/20261009-153540-feature-0161-explore-launch-prompt/red/out/`. 14 sujetos, 2,92 $.
+Kit del commit de apertura (`5badc040`, `git archive` al scratchpad), Sonnet, superpowers 6.4.2 en `SUPERPOWERS_DIR`. Baterías `tests/batteries/sdd-explore/` (e2, e3), `tests/batteries/sdd-roadmap/` (m1, m2, m3) y `tests/batteries/sdd-propose/` (a5). Salidas en `.docs/sdd/changes/20261009-153540-feature-0161-explore-launch-prompt/red/out/`. 14 sujetos, 2,92 $.
 
 La puerta de `battery.sh` sale roja por construcción en e2, e3 y m1 (la skill se llama `sdd-consult`, o la petición entra por ella). La conducta se lee con la rúbrica de cada batería.
 

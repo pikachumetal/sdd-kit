@@ -1,6 +1,6 @@
 # GREEN — migración v3.0.0: aviso de un gate que `sdd merge --verify` no admite (feature 0235)
 
-Kit de la rama, sin commitear (`skills`, `.claude-plugin`, `cli` sin `node_modules`, `hooks`), con el paso 9 de `v3.0.0.md`. El mismo escenario que el [RED](v3-gate-warning-red.md): `g1` sobre `v2x-gate`, Sonnet, `SUPERPOWERS_DIR` en la 7.0.0. Salidas en `green/out/` y `refactor1/out/` de la [carpeta de la spec](../.docs/sdd/specs/20261028-205941-feature-0235-verify-runs-intersection/). 2026-10-28. Campaña entera, RED incluido: 3 sujetos, 1,31 $ (previsión: 2 sujetos y ~0,9 $, ~1,8 $ con una tanda de REFACTOR).
+Kit de la rama, sin commitear (`skills`, `.claude-plugin`, `cli` sin `node_modules`, `hooks`), con el paso 9 de `v3.0.0.md`. El mismo escenario que el [RED](v3-gate-warning-red.md): `g1` sobre `v2x-gate`, Sonnet, `SUPERPOWERS_DIR` en la 7.0.0. Salidas en `green/out/` y `refactor1/out/` de la [carpeta de la spec](../.docs/sdd/changes/20261028-205941-feature-0235-verify-runs-intersection/). 2026-10-28. Campaña entera, RED incluido: 3 sujetos, 1,31 $ (previsión: 2 sujetos y ~0,9 $, ~1,8 $ con una tanda de REFACTOR).
 
 ## GREEN (1 sujeto, 0,44 $)
 

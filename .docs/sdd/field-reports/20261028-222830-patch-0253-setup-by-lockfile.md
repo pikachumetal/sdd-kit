@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. El RED de sujetos que fijó el triaje no podía exhibir el fallo: los sujetos deducen el gestor del lockfile
 
 - **Qué pasó**: la fila 0253 fijaba el RED como «GIVEN el molde `reservas-deps` sin la línea de pnpm en su `tech-stack.md` WHEN un sujeto sigue el carril patch THEN corre `pnpm install` antes del primer test». Con el texto viejo del Step 2 (`if [ -f package.json ]; then npm install; fi`), 0 de 3 sujetos medidos corrieron `npm install`: los que leyeron el Step 2 lo adaptaron al ver `pnpm-workspace.yaml` y `pnpm-lock.yaml` y corrieron `pnpm install --frozen-lockfile`. El fallo de la línea solo se ve ejecutándola: un test que corre el bloque bash del Step 2 en una carpeta por lockfile salió 3 de 4 en rojo (`expected 'npm install' to be 'pnpm install --frozen-lockfile'`). Hubo que parar al dev-lead por el desvío.
-- **Fuente**: `.docs/sdd/specs/20261028-215919-patch-0253-setup-by-lockfile/patch.md` §4, filas 1-3; `red/out/ws3-1.tools.txt`, `red2/out/ws3-2.tools.txt` (`pnpm install --frozen-lockfile` antes del primer test); `cli/test/kit/worktrees-setup.slow.test.ts`
+- **Fuente**: `.docs/sdd/changes/20261028-215919-patch-0253-setup-by-lockfile/patch.md` §4, filas 1-3; `red/out/ws3-1.tools.txt`, `red2/out/ws3-2.tools.txt` (`pnpm install --frozen-lockfile` antes del primer test); `cli/test/kit/worktrees-setup.slow.test.ts`
 - **Dónde en el kit**: `skills/sdd-roadmap/SKILL.md`, el triaje que escribe el criterio de aceptación de una fila «Actuar»; el paso 1 de `skills/sdd-start-patch/SKILL.md` («El test del comportamiento pedido va en RED antes del cambio»)
 - **Por qué el kit no lo evitó**: ninguna regla distingue un defecto de un texto que el agente ejecuta (un bloque de comandos literal) de uno de conducta; el triaje eligió el RED de conducta, el caro, para un defecto que un test del bloque reproduce sin sujetos
 - **Coste**: 1,55 $ en 4 sujetos y una parada del dev-lead (`patch.md` §4 y §3, decisión «RED determinista»)
@@ -40,7 +40,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 2. La clasificación de `sdd-propose` ejecuta el código antes de preparar el entorno (segundo y tercer caso)
 
 - **Qué pasó**: `red2/ws3-1` corrió `node --test` antes de instalar (`ℹ fail 2`), y `green/ws3-1` leyó `Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'fecha'` en la clasificación; los dos instalaron después, ya en `sdd-start-patch`. Es la (a) de los menores del ticket del patch 0248, que el roadmap dejó en «Esperar 2.º ticket»
-- **Fuente**: `.docs/sdd/specs/20261028-215919-patch-0253-setup-by-lockfile/red2/out/ws3-1.tools.txt` y `green/out/ws3-1.tools.txt`; fila «Menores del ticket del patch 0248» de `.docs/sdd/roadmap.md`
+- **Fuente**: `.docs/sdd/changes/20261028-215919-patch-0253-setup-by-lockfile/red2/out/ws3-1.tools.txt` y `green/out/ws3-1.tools.txt`; fila «Menores del ticket del patch 0248» de `.docs/sdd/roadmap.md`
 - **Dónde en el kit**: `skills/sdd-propose/SKILL.md` paso 2 («reproduce a reported failure»), que corre antes del paso 1 de `sdd-start-patch`
 - **Por qué el kit no lo evitó**: la 0248 puso el Step 2 de `sdd-worktrees` en el paso 1 de `sdd-start-patch` y en el carril config, no en el paso 2 de `sdd-propose`, que también ejecuta código
 - **Coste**: un turno de sujeto por caso, sin efecto en el resultado (sin respaldo de coste en reloj)

@@ -28,12 +28,12 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ### 1. `run.sh` acepta un `SPEC_DIR` relativo y pierde la salida de un sujeto ya pagado
 
-- **Qué pasó**: lancé el RED de `m1` con `SPEC_DIR=.docs/sdd/specs/<carpeta>`. El sujeto corrió 12 turnos y costó 0,34 $, pero `subject_save` escribió en `<ruta relativa>/red/out/`, que dejó de existir en cuanto el sujeto hizo `cd` al molde. El lanzador dijo «sujetos de la campaña: 0 · coste acumulado: 0.00 $», y el techo de la campaña quedó sin contar ese gasto. Se recuperó a mano, regenerando la salida desde el stream.
+- **Qué pasó**: lancé el RED de `m1` con `SPEC_DIR=.docs/sdd/changes/<carpeta>`. El sujeto corrió 12 turnos y costó 0,34 $, pero `subject_save` escribió en `<ruta relativa>/red/out/`, que dejó de existir en cuanto el sujeto hizo `cd` al molde. El lanzador dijo «sujetos de la campaña: 0 · coste acumulado: 0.00 $», y el techo de la campaña quedó sin contar ese gasto. Se recuperó a mano, regenerando la salida desde el stream.
 - **Dónde en el kit**: `tests/headless/run.sh` (validación de variables al principio) y `tests/headless/lib.sh`, `subject_save`/`out_path`.
 - **Por qué el kit no lo evitó**: `run.sh` comprueba que `RUNS_DIR` esté en el scratchpad, pero no que `SPEC_DIR` sea absoluta.
 - **Coste**: un sujeto cuya salida pudo perderse y un recuento de coste falso, que dejaba el techo sin proteger.
 - **Propuesta**: `run.sh` resuelve `SPEC_DIR` a ruta absoluta (`cd "$SPEC_DIR" && pwd`) antes de lanzar, o muere si no existe.
-- **Criterio de aceptación**: GIVEN `SPEC_DIR=.docs/sdd/specs/x` relativo y `DRY_RUN=1` · WHEN se ejecuta `run.sh` con un escenario · THEN `x/red/out/<escenario>-1.tools.txt` existe y el recuento dice «sujetos de la campaña: 1».
+- **Criterio de aceptación**: GIVEN `SPEC_DIR=.docs/sdd/changes/x` relativo y `DRY_RUN=1` · WHEN se ejecuta `run.sh` con un escenario · THEN `x/red/out/<escenario>-1.tools.txt` existe y el recuento dice «sujetos de la campaña: 1».
 
 ### 2. Tras renombrar una skill en la sesión, el nombre nuevo no se puede invocar
 

@@ -1,6 +1,6 @@
 # Evidencia RED — numeración de ids sin gestor de tickets (2026-09-20)
 
-Baseline de la task [task-ids](../.docs/sdd/specs/20260920-202137-task-0001-task-ids/spec.md) (0001): con el kit v1.1.0, ¿qué id pone un agente a una task en un proyecto **sin gestor de tickets**, y qué hace al partir una task en dos?
+Baseline de la task [task-ids](../.docs/sdd/changes/20260920-202137-task-0001-task-ids/spec.md) (0001): con el kit v1.1.0, ¿qué id pone un agente a una task en un proyecto **sin gestor de tickets**, y qué hace al partir una task en dos?
 
 ## Método
 

@@ -2,7 +2,7 @@
 
 Mismo molde, lanzador, peticiones y modelo que el [RED](sdd-end-patch-red.md), sobre una copia del kit con la guía nueva: el párrafo **Capacidades** del paso 1 de `sdd-end-patch`, las capacidades en el commit de cierre del paso 2, la sección «6. Delta de capacidad» de `patch-template.md` y `capability-template.md` nombrando el cierre de patch. Cuatro sujetos, 1,05 $. Con la tanda de REFACTOR (abajo), la campaña entera suma 12 sujetos y 3,65 $, frente a una previsión de 8 sujetos y ~6 $ y un techo de 12 sujetos y 9 $: la tanda más cabía en el techo, que se declaró para ella.
 
-Salida: [`green/out/`](../.docs/sdd/specs/20260924-225643-task-0067-patch-capabilities/green/out/).
+Salida: [`green/out/`](../.docs/sdd/changes/20260924-225643-task-0067-patch-capabilities/green/out/).
 
 ## Resultados
 
@@ -35,7 +35,7 @@ Dos frases:
 - **Paso 2:** «si el fix —código, tests y `patch.md`— llega en más de un commit desde el `merge-base`, júntalo».
 - **Salida corta del paso 1:** «si `patch.md` trae la sección de delta vacía de la plantilla, bórrala».
 
-El molde gana `SECTION6=1`, con el que el `patch.md` nace con la §6 vacía de `patch-template.md`, como en campo. Una tanda más de 4 sujetos con los mismos escenarios: [`refactor/out/`](../.docs/sdd/specs/20260924-225643-task-0067-patch-capabilities/refactor/out/), 1,38 $.
+El molde gana `SECTION6=1`, con el que el `patch.md` nace con la §6 vacía de `patch-template.md`, como en campo. Una tanda más de 4 sujetos con los mismos escenarios: [`refactor/out/`](../.docs/sdd/changes/20260924-225643-task-0067-patch-capabilities/refactor/out/), 1,38 $.
 
 | Qué | E | Sujeto 1 | Sujeto 2 | Veredicto |
 | --- | --- | --- | --- | --- |

@@ -42,7 +42,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Por qué el kit no lo evitó**: el lanzador comprueba que `RUNS_DIR` está en el scratchpad, pero no que `SPEC_DIR` sea absoluto.
 - **Coste**: una tanda que parecía no haber corrido. Además, el techo de sujetos y de coste cuenta sobre esas salidas, así que sin ellas deja de vigilar.
 - **Propuesta**: `run.sh` resuelve `SPEC_DIR` a ruta absoluta al arrancar. Ya tiene fila de deuda en el roadmap.
-- **Criterio de aceptación**: GIVEN `SPEC_DIR=.docs/sdd/specs/<carpeta>` relativo y `DRY_RUN=1` · WHEN se lanza `run.sh` · THEN `<carpeta>/red/out/a-1.tools.txt` existe y el recuento final dice 1 sujeto. Caso nuevo en `tests/HeadlessLauncher.Tests.ps1`.
+- **Criterio de aceptación**: GIVEN `SPEC_DIR=.docs/sdd/changes/<carpeta>` relativo y `DRY_RUN=1` · WHEN se lanza `run.sh` · THEN `<carpeta>/red/out/a-1.tools.txt` existe y el recuento final dice 1 sujeto. Caso nuevo en `tests/HeadlessLauncher.Tests.ps1`.
 
 ### 3. Una excepción que depende de un predicado choca con otro predicado del mismo paso
 

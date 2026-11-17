@@ -69,7 +69,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
   - las 72-79 líneas sangradas de los encargos de eje, que se midieron con otro script;
   - las líneas en blanco dobles que dejaban las `quita` entre dos blancos en `skill-mechanics.md`. Las cazó `git diff --stat` de `dist/`.
 - **Fuente**: rulings de las tasks 1 a 3 en `tasks.md` de la 0312; `real-copies/compare-dist.mjs:1`.
-- **Dónde en el kit**: `.docs/sdd/specs/…-feature-0302-…/real-copies/` (el borrador y su comparación).
+- **Dónde en el kit**: `.docs/sdd/changes/…-feature-0302-…/real-copies/` (el borrador y su comparación).
 - **Por qué el kit no lo evitó**: la comparación de la 0302 normalizaba los espacios para tolerar los saltos de línea del original. Con eso también tolera la sangría y las líneas juntadas.
 - **Coste**: ~45 min entre detectar y rehacer, en las tasks 1 a 3 (rulings de `tasks.md`).
 - **Propuesta**: para cada copia, dos comparaciones: por párrafos, que tolera los saltos de línea del original, y byte a byte de la sangría y de las líneas en blanco. O que `kit:build` compare con el `dist/` anterior, salvo las líneas que cambian por saltos dentro de un párrafo.

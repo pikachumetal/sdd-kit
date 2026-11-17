@@ -1,6 +1,6 @@
 # GREEN — despacho a subagentes: el encargo del implementador (task 0005)
 
-Mismos moldes que el [RED](dispatch-brief-red.md), con el kit de la rama. Lanzadores y salidas en [`green/`](../.docs/sdd/specs/20260922-084550-task-0005-dispatch-brief/green/). 10 sujetos válidos Sonnet headless, 5,65 $.
+Mismos moldes que el [RED](dispatch-brief-red.md), con el kit de la rama. Lanzadores y salidas en [`green/`](../.docs/sdd/changes/20260922-084550-task-0005-dispatch-brief/green/). 10 sujetos válidos Sonnet headless, 5,65 $.
 
 ## E2 — reglas del implementador
 
