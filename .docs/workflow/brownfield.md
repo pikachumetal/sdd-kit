@@ -57,7 +57,7 @@ El ciclo es el mismo que en greenfield, guiado por las skills:
 7. **Validación**: el agente presenta lo hecho, su smoke y un guion de pruebas, y espera a que digas qué has probado y que funciona, o a que lo difieras con un disparador concreto. Qué contestar en cada parada lo cuenta la [guía de uso](usage-guide.md#4-qué-te-pregunta-el-agente-y-qué-contestar).
 8. **Cierre** con `walkthrough.md` y `sdd-archive`: delta fusionado en `capabilities/`, aprendizajes a los documentos vivos, retro, ADR candidatas, y la fila de Now y el registro de estimaciones actualizados. El cierre no toca `CHANGELOG.md`: lo sella `sdd-end-release`.
 
-Los artefactos viven en `.docs/sdd/changes/<fecha>-feature-<id>-<nombre>/`, como en greenfield. Un proyecto que viene de la 2.x conserva su `specs/`, que se sigue leyendo.
+Los artefactos viven en `.docs/sdd/changes/<fecha>-feature-<id>-<nombre>/`, como en greenfield. Un proyecto que viene de la 2.x tenía su `specs/`, que la migración a la 3.0.1 mueve a `changes/`.
 
 Las tareas tienen que ser pequeñas, de una jornada o menos. En las demasiado grandes los últimos pasos pierden calidad. Si una tarea crece mientras se trabaja, se divide.
 
@@ -111,7 +111,7 @@ Reducir el tiempo necesario para entregar cambios validados sobre un sistema exi
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.0, noviembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.1, noviembre de 2026.*
 
 ## Referencias
 
