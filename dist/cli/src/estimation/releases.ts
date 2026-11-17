@@ -4,7 +4,7 @@ import type { Row } from './artifacts.ts';
 import { readText } from '../cli/files.ts';
 import { MISSING } from './text.ts';
 import { gitSync } from '../git/git.ts';
-import { changeFolders, resolveDocument } from '../cli/layout.ts';
+import { resolveDocument } from '../cli/layout.ts';
 
 const UNPUBLISHED = 'sin publicar';
 const UNDATED = 'sin fecha';
@@ -35,12 +35,13 @@ function readVersions(changelogPath: string, docsPath: string): Version[] {
   return versions.sort((a, b) => a.date.localeCompare(b.date) || (a.commits?.size ?? 0) - (b.commits?.size ?? 0));
 }
 
-// Commit que añadió cada «<carpeta>/<fichero>» de una carpeta de cambios: el log va del más nuevo al más viejo y gana el último.
+// Commit que añadió cada «<carpeta>/<fichero>» en changes/ o specs/: el log va del más nuevo al más viejo y gana el último,
+// así una carpeta movida de specs/ a changes/ cuenta desde su commit en specs/.
 // ponytail: un fichero renombrado (renumerar una carpeta) cuenta desde el renombrado; si se renombra tras el corte, cae en la versión siguiente.
-function addedCommits(specsPath: string): Map<string, string> {
+function addedCommits(docsPath: string): Map<string, string> {
   const added = new Map<string, string>();
   let commit = '';
-  for (const line of gitSync(specsPath, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--name-only', '--', '.']) ?? []) {
+  for (const line of gitSync(docsPath, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--name-only', '--', 'changes', 'specs']) ?? []) {
     if (/^[0-9a-f]{40}$/.test(line)) commit = line;
     else added.set(line.split('/').slice(-2).join('/'), commit);
   }
@@ -74,7 +75,7 @@ export function releaseTable(rows: Row[], docsPath: string): string[] {
   const changelog = resolveDocument(docsPath, 'changelog').file;
   const versions = changelog === null ? [] : readVersions(changelog, docsPath);
   if (versions.length === 0) return [];
-  const added = new Map(changeFolders(docsPath).flatMap((folder) => [...addedCommits(folder)]));
+  const added = addedCommits(docsPath);
   const byLabel = Map.groupBy(rows, (row) => releaseLabel(row, versions, added));
   const labels = [...versions.map((version) => version.name), UNPUBLISHED, UNDATED];
   return [
