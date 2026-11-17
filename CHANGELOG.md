@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Changed
+
+- **Feature 0348** — La migración a la 3.0.1 junta las carpetas de `specs/` en `changes/`. Dos comandos que se pegan igual en PowerShell y bash mueven cada carpeta con `git mv`, en un commit solo de renombrados, y reescriben las rutas de los `.md`; la evidencia de sus subcarpetas no se toca. Paran sin mover nada ante algo sin versionar, una carpeta vacía o un nombre repetido. `sdd estimation log` cuenta una carpeta movida en la release en que nació, y el tope de longitud de ruta del repo sube a 142. Este repo, migrado. → [ref](.docs/sdd/changes/20261117-162953-feature-0348-move-specs-to-changes/)
+
 ## [3.0.0] - 2026-11-16
 
 smoke: pendiente
