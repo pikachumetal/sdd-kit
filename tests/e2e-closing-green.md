@@ -1,6 +1,6 @@
 # GREEN — E2E en la revisión y el cierre (feature 0207)
 
-Campañas de la [feature 0207](../.docs/sdd/specs/20261021-174559-feature-0207-e2e-review-and-closing/spec.md) con el kit del working tree de cada task (copia antes de su commit). Sujetos Sonnet con `tests/headless/run.sh` y superpowers 7.0.0, sobre los escenarios del [RED](e2e-closing-red.md). Salidas en `green/`, `refactor/` y `refactor2/` de la carpeta de la feature. 15 sujetos, 5,81 $; con el RED, 21 sujetos y 8,29 $ (techo 22, por enmienda).
+Campañas de la [feature 0207](../.docs/sdd/changes/20261021-174559-feature-0207-e2e-review-and-closing/spec.md) con el kit del working tree de cada task (copia antes de su commit). Sujetos Sonnet con `tests/headless/run.sh` y superpowers 7.0.0, sobre los escenarios del [RED](e2e-closing-red.md). Salidas en `green/`, `refactor/` y `refactor2/` de la carpeta de la feature. 15 sujetos, 5,81 $; con el RED, 21 sujetos y 8,29 $ (techo 22, por enmienda).
 
 ## Task 1 — la migración con los seis campos E2E
 

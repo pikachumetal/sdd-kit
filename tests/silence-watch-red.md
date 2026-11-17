@@ -1,6 +1,6 @@
 # RED — vigía de silencio (feature 0095)
 
-Kit de `develop` (commit `544fb1d5`, sin guía del vigía), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2 de la caché) y el hook `fake-dispatch.mjs`, que no lanza el subagente y le dice al sujeto que ya corre en segundo plano. Molde: repo salas de la 0044/0057 con `control.silence` 8 y 20 en `sdd-kit.json`, perfil `delegate` (`unattended` en s5u). Salidas en `.docs/sdd/specs/20260928-173846-feature-0095-silence-watch/red/out/`.
+Kit de `develop` (commit `544fb1d5`, sin guía del vigía), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2 de la caché) y el hook `fake-dispatch.mjs`, que no lanza el subagente y le dice al sujeto que ya corre en segundo plano. Molde: repo salas de la 0044/0057 con `control.silence` 8 y 20 en `sdd-kit.json`, perfil `delegate` (`unattended` en s5u). Salidas en `.docs/sdd/changes/20260928-173846-feature-0095-silence-watch/red/out/`.
 
 Descartados antes de medir: dos sujetos de s1 sin `SUPERPOWERS_DIR`. El plugin no cargó («did not load in this session (unmet dependency)»), 0,43 $.
 

@@ -1,6 +1,6 @@
 # RED — merge en el cierre (task 0009)
 
-Baseline: el kit de `develop` en `b15d820`, sin la receta. Es la campaña previa a la spec: la regla de `tech-stack.md` pide reproducir los frentes de campo antes de presentarla, y sus escenarios son los mismos que repite el GREEN. El molde, el lanzador, las dos tandas y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/specs/20260923-120510-task-0009-merge-close/red/README.md). Aquí va el resumen para el veredicto.
+Baseline: el kit de `develop` en `b15d820`, sin la receta. Es la campaña previa a la spec: la regla de `tech-stack.md` pide reproducir los frentes de campo antes de presentarla, y sus escenarios son los mismos que repite el GREEN. El molde, el lanzador, las dos tandas y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/changes/20260923-120510-task-0009-merge-close/red/README.md). Aquí va el resumen para el veredicto.
 
 ## Escenarios
 

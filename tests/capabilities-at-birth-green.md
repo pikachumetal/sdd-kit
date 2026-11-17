@@ -2,7 +2,7 @@
 
 Mismos frentes que [`capabilities-at-birth-red.md`](capabilities-at-birth-red.md), con el kit de la rama (Tasks 1–3, hasta `e174219`).
 
-**Método**: seis escenarios de un turno, 2 sujetos Sonnet headless cada uno, lanzados con [`green/driver.py`](../.docs/sdd/specs/20260923-105726-task-0033-capabilities-at-birth/green/driver.py). Detalle completo, salidas y descartados en [`green/README.md`](../.docs/sdd/specs/20260923-105726-task-0033-capabilities-at-birth/green/README.md).
+**Método**: seis escenarios de un turno, 2 sujetos Sonnet headless cada uno, lanzados con [`green/driver.py`](../.docs/sdd/changes/20260923-105726-task-0033-capabilities-at-birth/green/driver.py). Detalle completo, salidas y descartados en [`green/README.md`](../.docs/sdd/changes/20260923-105726-task-0033-capabilities-at-birth/green/README.md).
 
 ## Veredicto por THEN
 

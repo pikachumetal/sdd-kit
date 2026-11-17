@@ -2,7 +2,7 @@
 
 Baseline: kit en el estado de `develop` antes de la task 0004. Los sujetos son headless (`claude -p --model sonnet`), el plugin instalado está deshabilitado y se les da una copia limpia del kit (`skills/` y `.claude-plugin/`). Cada sujeto tiene dos turnos: el segundo es un mensaje fijo enviado con `--resume`. Hay dos sujetos por escenario.
 
-- Moldes, lanzadores y lo que produjo cada sujeto: `.docs/sdd/specs/20260921-074701-task-0004-release-without-client/red/` (`m1`–`m4`, `subject.sh`, `run.sh`, `out/`).
+- Moldes, lanzadores y lo que produjo cada sujeto: `.docs/sdd/changes/20260921-074701-task-0004-release-without-client/red/` (`m1`–`m4`, `subject.sh`, `run.sh`, `out/`).
 - Las transcripciones `stream-json` se quedan en el scratchpad de la sesión.
 - Coste: 8,49 $ en E1–E4 (8 sujetos, 16 turnos) más 1,68 $ en E5 (2 sujetos), 10,17 $ en total.
 

@@ -1,6 +1,6 @@
 # RED — merge del cierre con el remoto adelantado (task 0042)
 
-Baseline: el kit de `develop` en `19948c6`, con la receta en prosa de la task 0009. El molde, el lanzador y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/specs/20260923-145338-task-0042-merge-script/red/). Esta página resume lo necesario para el veredicto.
+Baseline: el kit de `develop` en `19948c6`, con la receta en prosa de la task 0009. El molde, el lanzador y lo que produjo cada sujeto están en la [carpeta de la spec](../.docs/sdd/changes/20260923-145338-task-0042-merge-script/red/). Esta página resume lo necesario para el veredicto.
 
 ## Escenario
 

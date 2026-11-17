@@ -1,6 +1,6 @@
 # GREEN — feature 0161: explore, el paso por el roadmap y el prompt de arranque
 
-Kit de la rama copiado al scratchpad en cada task (`git ls-files` de `skills`, `.claude-plugin`, `hooks`, `cli` y `agents`), Sonnet, superpowers 6.4.2 en `SUPERPOWERS_DIR`. Salidas en `.docs/sdd/specs/20261009-153540-feature-0161-explore-launch-prompt/green/out/`. La puerta la da `battery.sh`; la conducta, la rúbrica de cada batería.
+Kit de la rama copiado al scratchpad en cada task (`git ls-files` de `skills`, `.claude-plugin`, `hooks`, `cli` y `agents`), Sonnet, superpowers 6.4.2 en `SUPERPOWERS_DIR`. Salidas en `.docs/sdd/changes/20261009-153540-feature-0161-explore-launch-prompt/green/out/`. La puerta la da `battery.sh`; la conducta, la rúbrica de cada batería.
 
 ## Task 2 — `sdd-consult` pasa a `sdd-explore`, sin reglas nuevas
 

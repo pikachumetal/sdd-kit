@@ -2,7 +2,7 @@
 
 **Qué se prueba.** Una sola llamada `claude -p --model opus --setting-sources "" --tools "" --append-system-prompt-file <texto>` por muestra, en una carpeta vacía. El texto es el `SKILL.md` de `sdd-start-feature` (mensajes `td` y `td2`) o `plan-template.md` (mensaje `plan`): el de `main` 2.3.0 (control) o el del patch. Fecha: 2026-10-03. Coste: 36 llamadas de Opus, del orden de 0,1 $ cada una.
 
-**Las salidas** están en `.docs/sdd/specs/20261003-144033-patch-0138-task-done-exit-code/micro/out/` (`<mensaje>-<ctrl|new>-<n>.txt`). Se cuenta si el comando lleva `-CI` y si sale con distinto de 0 con un test en rojo por cualquier vía (`-CI`, `Run.Exit = $true`, `-PassThru` con `exit`).
+**Las salidas** están en `.docs/sdd/changes/20261003-144033-patch-0138-task-done-exit-code/micro/out/` (`<mensaje>-<ctrl|new>-<n>.txt`). Se cuenta si el comando lleva `-CI` y si sale con distinto de 0 con un test en rojo por cualquier vía (`-CI`, `Run.Exit = $true`, `-PassThru` con `exit`).
 
 **Origen.** Ticket de la feature 0128 §4 (`field-reports/20261003-120530-feature-0128-sdd-grilling.md`, en `develop`): `task-done … -- pwsh -NoProfile -Command "Invoke-Pester … -Output Minimal"` dio `Tests Passed: 33, Failed: 1` y `ledger: Task 1: complete`, porque `Invoke-Pester` sin `-CI` termina con 0.
 

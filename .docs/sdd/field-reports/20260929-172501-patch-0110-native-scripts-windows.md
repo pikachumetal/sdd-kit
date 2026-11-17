@@ -33,7 +33,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Por qué el kit no lo evitó**: la comprobación previa pregunta por herramientas que el sujeto no tiene (`AskUserQuestion`), pero no por contexto del harness que el sujeto no recibe (el shell principal, la plataforma).
 - **Coste**: ~1 $ y un frente cerrado sin GREEN de conducta.
 - **Propuesta**: otra pregunta en la comprobación previa: «¿la conducta depende del shell principal o de otro dato del entorno del harness interactivo? El sujeto `-p` no lo recibe: el escenario lo modela (p. ej. `--append-system-prompt` con la línea de entorno) o la medición lo declara como límite antes de lanzar». Sin verificar si `--append-system-prompt` basta para que el sujeto elija PowerShell.
-- **Criterio de aceptación**: GIVEN el molde de este patch (`.docs/sdd/specs/20260929-165746-patch-0110-native-scripts-windows/red/subject.sh`) con el kit de antes del fix y el entorno del harness modelado, WHEN el sujeto ejecuta las Tasks 1 y 2, THEN al menos 1 de 2 lanza un script con `bash` desde PowerShell (disparador presente); hoy 0/2.
+- **Criterio de aceptación**: GIVEN el molde de este patch (`.docs/sdd/changes/20260929-165746-patch-0110-native-scripts-windows/red/subject.sh`) con el kit de antes del fix y el entorno del harness modelado, WHEN el sujeto ejecuta las Tasks 1 y 2, THEN al menos 1 de 2 lanza un script con `bash` desde PowerShell (disparador presente); hoy 0/2.
 
 ### 2. `MOLD_NAME` solo vale si se define antes de `subject_init`
 

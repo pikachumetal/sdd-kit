@@ -1,6 +1,6 @@
 # RED — la línea base a la vez que un commit de la rama (feature 0285)
 
-Escenario `w4` de la batería de `sdd-implement` (paso `worktree-baseline-commit`): la 0010 en un worktree enlazado, con la apertura staged, y la petición de hacer ese commit y preparar la implementación. Kit: `git archive` de `b04870fc`, con el texto de `sdd-worktrees` sin tocar. Sonnet, n = 2, 0,73 $. Salidas en `.docs/sdd/specs/20261102-120757-feature-0285-load-test-timeouts/red/out/`.
+Escenario `w4` de la batería de `sdd-implement` (paso `worktree-baseline-commit`): la 0010 en un worktree enlazado, con la apertura staged, y la petición de hacer ese commit y preparar la implementación. Kit: `git archive` de `b04870fc`, con el texto de `sdd-worktrees` sin tocar. Sonnet, n = 2, 0,73 $. Salidas en `.docs/sdd/changes/20261102-120757-feature-0285-load-test-timeouts/red/out/`.
 
 ## Veredicto por la fila `Wc`
 

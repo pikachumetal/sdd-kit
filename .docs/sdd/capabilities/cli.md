@@ -48,7 +48,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 - WHEN se ejecuta el test de `cli/test/docs-claims.test.ts`
 - THEN cada `sdd <sustantivo> <verbo>` (o `sdd merge`, `sdd workspace`) que aparece, con o sin `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js"` delante, es un verbo de la CLI, y cada `--opción` que le sigue en la misma línea es una opción de ese verbo; los huecos `<…>` no se analizan
 - AND falla si esos ficheros nombran un `.ps1` del kit, `hooks/session-start`, `task-start`, `task-done`, `task-brief`, `review-package` o `sdd-workspace` sin `sdd` delante, `cygpath` o `PLAN_FILE`
-- AND no mira `.docs/sdd/specs/`, `.docs/sdd/decisions/`, `.docs/sdd/field-reports/`, `changelog.md` ni `tests/*.md`: son eventos y no se reescriben
+- AND no mira `.docs/sdd/changes/`, `.docs/sdd/decisions/`, `.docs/sdd/field-reports/`, `changelog.md` ni `tests/*.md`: son eventos y no se reescriben
 
 ### Cada verbo enseña su uso con `--help` sin ejecutarse
 
@@ -261,7 +261,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 ### `sdd review comments` dice qué no ha leído
 
-- GIVEN una rama que añade `a.vue`, `b.json`, `c.md` y `.docs/sdd/specs/x/red/m.ts` con `// Task 4`
+- GIVEN una rama que añade `a.vue`, `b.json`, `c.md` y `.docs/sdd/changes/x/red/m.ts` con `// Task 4`
 - WHEN se ejecuta `node sdd.js review comments --base develop`
 - THEN escribe `sin leer: a.vue` antes de la línea de cierre, y no lista los otros tres
 - AND con `--json`, `unread` es `["a.vue"]`

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { build, project } from './helpers.ts';
 
@@ -36,5 +36,21 @@ describe('sdd estimation log: release por el tag en git', () => {
     expect(text).toMatch(/^\| 0\.1\.0 \| 1 \|/m);
     expect(text).toMatch(/^\| 0\.1\.1 \| 1 \|/m);
     expect(text).toMatch(/^\| sin publicar \| 1 \|/m);
+  });
+
+  it('a folder moved from specs/ to changes/ after a tag keeps its release', () => {
+    const folder = '20261008-080000-patch-0056-primera';
+    const root = project({ 'changelog.md': '# Changelog\n\n## [0.2.0] - 2026-10-09\n\n- algo\n\n## [0.1.0] - 2026-10-08\n\n- algo\n' });
+    git(root, 'init', '-q');
+    addPatch(root, folder);
+    git(root, 'tag', 'v0.1.0');
+    mkdirSync(join(root, '.docs/sdd/changes'), { recursive: true });
+    git(root, 'mv', `.docs/sdd/specs/${folder}`, `.docs/sdd/changes/${folder}`);
+    rmSync(join(root, '.docs/sdd/specs'), { recursive: true });
+    git(root, 'commit', '-q', '-m', 'mover');
+    git(root, 'tag', 'v0.2.0');
+    const { text } = build(root);
+    expect(text).toMatch(/^\| 0\.1\.0 \| 1 \|/m);
+    expect(text).not.toMatch(/^\| 0\.2\.0 \| 1 \|/m);
   });
 });

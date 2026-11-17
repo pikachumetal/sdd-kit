@@ -232,9 +232,10 @@ describe('La evidencia de los sujetos no lleva el home de la máquina', () => {
   const because = 'el repo es público: pasa las salidas por tests/headless/extract.mjs clean';
   let evidence: EvidenceFile[];
 
+  // Lee ~35.000 ficheros de evidencia: en el runner con 8 workers pasa de los 10 s por defecto de un hook.
   beforeAll(async () => {
     evidence = await readEvidence(repoEvidence());
-  });
+  }, 120_000);
 
   it('revisa también las salidas de las baterías, de las pasadas de fix y de las campañas', () => {
     expect(evidence.some((file) => /\/(battery|fix)[^/]*\/out\//i.test(file.path))).toBe(true);

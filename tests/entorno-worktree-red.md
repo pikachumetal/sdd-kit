@@ -1,6 +1,6 @@
 # Evidencia RED — entorno por worktree (2026-09-08)
 
-Baseline de la task [entorno-por-worktree](../.docs/sdd/specs/20260908-135025-task-0000-entorno-por-worktree/spec.md) (T4). Sonnet, fixture desechable "Ledgerly-env", 4 runs en paralelo (`wf_25a85157-9e8`). Estado final verificado en disco.
+Baseline de la task [entorno-por-worktree](../.docs/sdd/changes/20260908-135025-task-0000-entorno-por-worktree/spec.md) (T4). Sonnet, fixture desechable "Ledgerly-env", 4 runs en paralelo (`wf_25a85157-9e8`). Estado final verificado en disco.
 
 ## Fixture
 

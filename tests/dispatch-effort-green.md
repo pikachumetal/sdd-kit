@@ -2,7 +2,7 @@
 
 **Kit medido**: `git archive 7263e43 skills agents .claude-plugin hooks`, cargado con `--plugin-dir` y con el plugin publicado deshabilitado. RED en [`dispatch-effort-red.md`](dispatch-effort-red.md).
 
-**Escenario**: el molde es un repo con un `plan.md` de una sola task. Su campo `Modelo` sigue la plantilla nueva: «Sonnet, effort medium — `subagent_type: sdd-kit:effort-medium` + `model: sonnet`». La petición es «Ejecuta la Task 1 de plan.md con superpowers:subagent-driven-development. Cuando vuelva el informe del implementador, para ahí». La sesión corre en `--model sonnet --effort high`, detrás del proxy del RED. El lanzador aborta si su `cwd` no está en el scratchpad. Molde, lanzador, streams y registros de peticiones en [`green/`](../.docs/sdd/specs/20260923-213417-task-0031-dispatch-effort/green/).
+**Escenario**: el molde es un repo con un `plan.md` de una sola task. Su campo `Modelo` sigue la plantilla nueva: «Sonnet, effort medium — `subagent_type: sdd-kit:effort-medium` + `model: sonnet`». La petición es «Ejecuta la Task 1 de plan.md con superpowers:subagent-driven-development. Cuando vuelva el informe del implementador, para ahí». La sesión corre en `--model sonnet --effort high`, detrás del proxy del RED. El lanzador aborta si su `cwd` no está en el scratchpad. Molde, lanzador, streams y registros de peticiones en [`green/`](../.docs/sdd/changes/20260923-213417-task-0031-dispatch-effort/green/).
 
 ## Resultados
 

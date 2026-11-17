@@ -417,10 +417,48 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - THEN Later tiene la 0050 con su id, y la fila sin id del Backlog con uno de la reserva
 - AND la tabla pregunta qué estado lleva en Later la fila `🔄`, que Later no admite
 
+### La migración a la 3.0.1 junta `specs/` en `changes/`
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.0`, el árbol limpio y estas piezas:
+  - la carpeta `.docs/sdd/specs/20261001-100000-feature-0079-b/`, con `walkthrough.md` y con `red/out/notas.md`, que enlaza `../../../../specs/20261001-100000-feature-0079-b/spec.md`;
+  - la carpeta `.docs/sdd/changes/20261110-090000-feature-0160-c/`;
+  - un `ROADMAP.md` que enlaza `[walkthrough](.docs/sdd/specs/20261001-100000-feature-0079-b/walkthrough.md)`;
+  - un `.docs/sdd/steering/debt.md` que enlaza `[walkthrough](../specs/20261001-100000-feature-0079-b/walkthrough.md)`;
+  - un `docs/guia.md` que enlaza `../specs/api.md`.
+- WHEN el usuario pide «actualízame al kit» con el kit 3.0.1 cargado
+- THEN `.docs/sdd/specs/` no existe y `.docs/sdd/changes/` tiene las dos carpetas
+- AND un commit `chore(sdd): mover specs/ a changes/` solo lleva renombrados, y `git log --follow` de `walkthrough.md` llega a su commit de `specs/`
+- AND `ROADMAP.md` enlaza `.docs/sdd/changes/20261001-100000-feature-0079-b/walkthrough.md` y `debt.md`, `../changes/20261001-100000-feature-0079-b/walkthrough.md`
+- AND `red/out/notas.md`, copia de evidencia, conserva su texto, también el enlace a `specs/`
+- AND `docs/guia.md` no cambia: está fuera de `.docs/sdd/`
+- AND no hay gate: el «actualízame al kit» basta
+- AND el informe lista cada fichero que no es `.md` y nombra `.docs/sdd/specs/`, sin tocarlo
+- AND `sdd-kit.json` queda en `3.0.1`, escrito con `sdd upgrade --mark 3.0.1`, en un commit `chore(sdd): migrar al kit v3.0.1`
+
+### La migración a la 3.0.1 no mueve nada con una carpeta repetida
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.0`, el árbol limpio y `20261001-100000-feature-0079-b/` en `.docs/sdd/specs/` y en `.docs/sdd/changes/`
+- WHEN el usuario pide «actualízame al kit» con el kit 3.0.1 cargado
+- THEN ninguna carpeta se mueve, `git status --short` sale vacío y `sdd-kit.json` sigue en `3.0.0`
+- AND el informe dice «No se mueve nada; ya existen en changes/: 20261001-100000-feature-0079-b» y que, tras renombrar una de las dos, se vuelve a pedir «actualízame al kit»
+
+### La migración a la 3.0.1 para con el árbol sucio
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.0`, carpetas en `.docs/sdd/specs/` y `ROADMAP.md` modificado sin commitear
+- WHEN el usuario pide «actualízame al kit» con el kit 3.0.1 cargado
+- THEN no se mueve ni se reescribe nada, `sdd-kit.json` sigue en `3.0.0` y el informe nombra `ROADMAP.md`
+- AND con el árbol limpio pero `.docs/sdd/specs/20261001-100000-feature-0079-b/notas.log` ignorado por `.gitignore`, tampoco se mueve nada y el informe nombra `notas.log`
+
+### Sin `specs/`, la migración a la 3.0.1 solo avanza el marcador
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.0` y sin `.docs/sdd/specs/`
+- WHEN el usuario pide «actualízame al kit» con el kit 3.0.1 cargado
+- THEN `sdd-kit.json` queda en `3.0.1` en un commit `chore(sdd): migrar al kit v3.0.1`, y ningún otro fichero cambia
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Writes**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.
 - **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case, salvo los tres documentos de la raíz que fija el Art. IV en mayúsculas: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`.
 - **Límites**: no aplica.
 - **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado que no pasa de la versión de su `plugin.json` (migrar el proyecto); en el segundo caso el agente ofrece migrar antes de atender la primera petición y no migra sin el «sí», salvo con `control.profile: unattended` (el de `sdd-kit.local.json` manda sobre el de `sdd-kit.json`), que ni ofrece ni migra y lo anota en su mensaje final; con un proyecto 2.x y la migración a la 3.0.0 en el kit, migrar no es una oferta: el agente migra antes de atender nada, o no hace el trabajo; un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado; un paso sin marca que borra un fichero, una sección entera o una clave, o que cambia la ruta de un fichero, es un gate.
-- **Regla ante conflicto**: un paso que su migración marca «no gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro.
+- **Regla ante conflicto**: un paso que su migración marca «no gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un paso «no gate» que choca con el estado del proyecto (árbol sucio, una carpeta repetida en el destino, algo sin versionar) para sin escribir nada y lo dice. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro.

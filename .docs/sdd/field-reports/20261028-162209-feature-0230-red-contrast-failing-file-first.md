@@ -51,7 +51,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 3. `RUNS_DIR` en el scratchpad de la sesión da `Filename too long` a los sujetos
 
 - **Qué pasó**: con la regla del dev-lead de temporales solo en el scratchpad, puse `RUNS_DIR` allí (~190 caracteres). Los sujetos del RED recibieron `error: unable to open loose object …: Filename too long` en `git clone`, `git worktree add` y `sdd merge`. `a3a-2` no pudo fusionar, y `a8-1` revisó sobre un `git archive`.
-- **Fuente**: `.docs/sdd/specs/20261028-131603-feature-0230-red-contrast-failing-file-first/red/out/a3a-1.tools.txt` (el `git clone` con `Filename too long`); `tests/red-contrast-0230-red.md`, «Ruido de la tanda»
+- **Fuente**: `.docs/sdd/changes/20261028-131603-feature-0230-red-contrast-failing-file-first/red/out/a3a-1.tools.txt` (el `git clone` con `Filename too long`); `tests/red-contrast-0230-red.md`, «Ruido de la tanda»
 - **Dónde en el kit**: `tests/headless/battery.sh` (validación de `RUNS_DIR`); `.docs/sdd/tech-stack.md`, «Baterías por skill»
 - **Por qué el kit no lo evitó**: `battery.sh` comprueba que `RUNS_DIR` sea absoluto, no su longitud. La línea nueva de `tech-stack.md` (de esta feature) lo dice, pero no lo impide
 - **Coste**: parte del RED con ruido (2 sujetos sin llegar al merge), sin tanda repetida; respaldo: `tests/red-contrast-0230-red.md`

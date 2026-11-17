@@ -1,6 +1,6 @@
 # Evidencia A/B — `sdd-start-release` (2026-09-07)
 
-Campaña de no-regresión del Art. I. Ola 2 de la task [progressive-disclosure](../.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/spec.md). Control 796 palabras → tratamiento **752 (−6 %)**.
+Campaña de no-regresión del Art. I. Ola 2 de la task [progressive-disclosure](../.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/spec.md). Control 796 palabras → tratamiento **752 (−6 %)**.
 
 ## Cortes probados y aceptados
 

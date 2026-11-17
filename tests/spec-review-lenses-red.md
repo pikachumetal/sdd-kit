@@ -1,6 +1,6 @@
 # Evidencia RED — review de spec con lentes sin solape (2026-09-21)
 
-Baseline de la [task 0011](../.docs/sdd/specs/20260920-220930-task-0011-spec-review-lenses/spec.md) de la release 1.2.0. Mide tres cosas con el `review-spec.md` **vigente** (commit `74009d4`): cuánto se solapan las dos lentes, qué forma tiene la propuesta de nivel que llega al gate, y si algún revisor mira los ejemplos de la spec.
+Baseline de la [task 0011](../.docs/sdd/changes/20260920-220930-task-0011-spec-review-lenses/spec.md) de la release 1.2.0. Mide tres cosas con el `review-spec.md` **vigente** (commit `74009d4`): cuánto se solapan las dos lentes, qué forma tiene la propuesta de nivel que llega al gate, y si algún revisor mira los ejemplos de la spec.
 
 ## Método
 

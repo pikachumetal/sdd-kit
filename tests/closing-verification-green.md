@@ -1,6 +1,6 @@
 # GREEN — verificación de cierre, qué cuenta (feature 0036)
 
-Kit de `22b90a1` (Tasks 1 y 2) para el frente web; los frentes de Native y de la spec, con el kit de sus tasks. Sujetos Sonnet con `tests/headless/run.sh`, previsión común con el RED: 15 sujetos y 12 $. Salidas en `.docs/sdd/specs/20260925-180248-feature-0036-closing-verification/green/out/`. Recuento sobre el `.jsonl` de cada sujeto (`tool_use` completos), no sobre `tools.txt`.
+Kit de `22b90a1` (Tasks 1 y 2) para el frente web; los frentes de Native y de la spec, con el kit de sus tasks. Sujetos Sonnet con `tests/headless/run.sh`, previsión común con el RED: 15 sujetos y 12 $. Salidas en `.docs/sdd/changes/20260925-180248-feature-0036-closing-verification/green/out/`. Recuento sobre el `.jsonl` de cada sujeto (`tool_use` completos), no sobre `tools.txt`.
 
 Los sujetos web llevan el hook `green/deny-kill.mjs`, que deniega parar por nombre o por línea de comandos: un intento denegado sigue contando como fallo.
 

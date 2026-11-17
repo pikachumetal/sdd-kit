@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. El repaso de coherencia no buscó los requisitos que nombran una etiqueta que la spec cambia
 
 - **Qué pasó**: la decisión 2 de la spec cambió la etiqueta `- Real:` por `- Esfuerzo real:` en §5 de `patch-template.md`. El delta no traía dos requisitos vivos de `capabilities/estimation.md` que nombraban `- Real:`: «La estimación de un patch se escribe antes del fix» (con `- Real:` debajo) y el ejemplo del requisito nuevo de `post hoc`. Los encontraron la revisión final (eje Spec, Important) y la re-revisión (Important fuera de alcance). Costó un `MODIFIED` añadido en la pasada de fix y una corrección en el cierre.
-- **Fuente**: `.docs/sdd/specs/20261015-104325-feature-0188-closing-estimation-templates/spec.md`, «Enmiendas» (la del `MODIFIED`); `tasks.md` §Rulings, la línea «Important fuera del alcance de la re-revisión».
+- **Fuente**: `.docs/sdd/changes/20261015-104325-feature-0188-closing-estimation-templates/spec.md`, «Enmiendas» (la del `MODIFIED`); `tasks.md` §Rulings, la línea «Important fuera del alcance de la re-revisión».
 - **Dónde en el kit**: `skills/sdd-propose/SKILL.md`, paso 4, «Coherence pass».
 - **Por qué el kit no lo evitó**: el repaso parte de los `MODIFIED` del delta («For each `MODIFIED` in the delta, search outside the spec…»). Un cambio de forma de una plantilla no es un `MODIFIED`, y nadie busca su literal en `capabilities/`. Es la misma familia que la fila de deuda que ya va a la 0185.
 - **Coste**: un hallazgo Important en cada una de las dos revisiones, y un requisito de la capacidad corregido en el cierre (`tasks.md` §Rulings).

@@ -1,6 +1,6 @@
 # Evidencia GREEN — freno de alcance en ejecución (2026-09-22)
 
-Task [0025](../.docs/sdd/specs/20260922-133931-task-0025-scope-brake/spec.md). Los cuatro escenarios del [RED](scope-brake-red.md), sin tocar, más el control E5 (una duda interna que debe decidirse como ruling sin parar). Sonnet headless, 20 sujetos en cuatro vueltas, 15,04 $. Detalle y citas: [`green/`](../.docs/sdd/specs/20260922-133931-task-0025-scope-brake/green/README.md).
+Task [0025](../.docs/sdd/changes/20260922-133931-task-0025-scope-brake/spec.md). Los cuatro escenarios del [RED](scope-brake-red.md), sin tocar, más el control E5 (una duda interna que debe decidirse como ruling sin parar). Sonnet headless, 20 sujetos en cuatro vueltas, 15,04 $. Detalle y citas: [`green/`](../.docs/sdd/changes/20260922-133931-task-0025-scope-brake/green/README.md).
 
 | Escenario | Resultado final | Vueltas |
 | --- | --- | --- |

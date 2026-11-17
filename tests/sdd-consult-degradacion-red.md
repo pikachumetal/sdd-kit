@@ -1,6 +1,6 @@
 # RED — degradación de `grilling` en `sdd-consult`
 
-Task: [20260902-160308-task-0000-dependencias-declaradas](../.docs/sdd/specs/20260902-160308-task-0000-dependencias-declaradas/spec.md) · 2026-09-02
+Task: [20260902-160308-task-0000-dependencias-declaradas](../.docs/sdd/changes/20260902-160308-task-0000-dependencias-declaradas/spec.md) · 2026-09-02
 
 **Veredicto: el baseline NO exhibe el fallo. Por Art. I, la guidance de degradación no se escribe.**
 

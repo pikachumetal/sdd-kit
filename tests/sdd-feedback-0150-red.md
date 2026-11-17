@@ -1,6 +1,6 @@
 # RED — feature 0150: la fuente de cada dato del ticket del kit
 
-Kit del commit de apertura (`bc53694a`, `git archive` al scratchpad), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Batería de humo `tests/batteries/sdd-feedback/` (fb1). Salida en `.docs/sdd/specs/20261013-112220-feature-0150-roadmap-triage-release-feedback/red/out/`. 1 sujeto, 0,19 $. No leyó `.docs/` de la copia del kit.
+Kit del commit de apertura (`bc53694a`, `git archive` al scratchpad), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Batería de humo `tests/batteries/sdd-feedback/` (fb1). Salida en `.docs/sdd/changes/20261013-112220-feature-0150-roadmap-triage-release-feedback/red/out/`. 1 sujeto, 0,19 $. No leyó `.docs/` de la copia del kit.
 
 | Escenario | Fila | Resultado | Cita |
 | --- | --- | --- | --- |

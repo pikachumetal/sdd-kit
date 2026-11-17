@@ -1,6 +1,6 @@
 # GREEN — formato de las capacidades (task 0070)
 
-Kit de la rama tras la Task 3 (`git archive` del commit provisional `16ba9dc`), mismos sujetos headless Sonnet y molde `salas` que el [RED](capability-format-red.md), migrado a 2.0.0: las capacidades del molde no tienen `## Historial`. Lanzador y salidas: [green/](../.docs/sdd/specs/20260925-081130-task-0070-openspec-capabilities/green/). 7 sujetos, 2,60 $; la campaña entera, 15 sujetos y 5,92 $, dentro del techo común (`SUBJECT_CAP=17`, `COST_CAP=16`).
+Kit de la rama tras la Task 3 (`git archive` del commit provisional `16ba9dc`), mismos sujetos headless Sonnet y molde `salas` que el [RED](capability-format-red.md), migrado a 2.0.0: las capacidades del molde no tienen `## Historial`. Lanzador y salidas: [green/](../.docs/sdd/changes/20260925-081130-task-0070-openspec-capabilities/green/). 7 sujetos, 2,60 $; la campaña entera, 15 sujetos y 5,92 $, dentro del techo común (`SUBJECT_CAP=17`, `COST_CAP=16`).
 
 ## Escenarios
 
@@ -40,7 +40,7 @@ Kit de la rama tras la Task 3 (`git archive` del commit provisional `16ba9dc`), 
 
 ## Control tras la revisión final
 
-La revisión final cambió `sdd-end-task` paso 4 y `sdd-end-patch` paso 1: un fallo del validador en una capacidad que el delta no toca no bloquea el cierre. Un sujeto por escenario afectado (Art. I), con `BROKEN_OTHER=1`: la base trae `capabilities/rooms.md` con «Poner una sala en mantenimiento» sin `- THEN`. Salidas en [refactor/](../.docs/sdd/specs/20260925-081130-task-0070-openspec-capabilities/refactor/). 2 sujetos, 0,66 $; campaña total, 17 sujetos y 6,58 $.
+La revisión final cambió `sdd-end-task` paso 4 y `sdd-end-patch` paso 1: un fallo del validador en una capacidad que el delta no toca no bloquea el cierre. Un sujeto por escenario afectado (Art. I), con `BROKEN_OTHER=1`: la base trae `capabilities/rooms.md` con «Poner una sala en mantenimiento» sin `- THEN`. Salidas en [refactor/](../.docs/sdd/changes/20260925-081130-task-0070-openspec-capabilities/refactor/). 2 sujetos, 0,66 $; campaña total, 17 sujetos y 6,58 $.
 
 | Conducta | Resultado | Evidencia |
 | --- | --- | --- |

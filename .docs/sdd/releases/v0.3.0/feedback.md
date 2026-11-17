@@ -11,7 +11,7 @@ Fuente: trabajo interno del kit. **Sin demo ni feedback de cliente** — esta re
 
 ## 1. Inventario y triage
 
-No aplica: sin sesión de feedback externo. El único ítem de la release es la skill `sdd-consult`, decidida y aprobada por el usuario en la propia sesión ([task](../../specs/20260721-114445-task-0000-consult-skill/)).
+No aplica: sin sesión de feedback externo. El único ítem de la release es la skill `sdd-consult`, decidida y aprobada por el usuario en la propia sesión ([task](../../changes/20260721-114445-task-0000-consult-skill/)).
 
 ## 2. Cambios de requisito detectados
 

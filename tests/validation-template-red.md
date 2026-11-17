@@ -1,6 +1,6 @@
 # Plantilla de validación y quién valida — RED/GREEN (feature 0263)
 
-Batería de `sdd-archive`, `t1`-`t3`, y de `sdd-start-feature`, `v1a` y `v1b`. Salidas en `.docs/sdd/specs/20261030-122825-feature-0263-validation-template/`. 27 sujetos Sonnet, 7,74 $, con un tope de 8 $ (la previsión era ~4 $: dos rondas de REFACTOR más y un control).
+Batería de `sdd-archive`, `t1`-`t3`, y de `sdd-start-feature`, `v1a` y `v1b`. Salidas en `.docs/sdd/changes/20261030-122825-feature-0263-validation-template/`. 27 sujetos Sonnet, 7,74 $, con un tope de 8 $ (la previsión era ~4 $: dos rondas de REFACTOR más y un control).
 
 ## RED (`red/`, kit de develop)
 

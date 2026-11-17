@@ -1,6 +1,6 @@
 # RED — el freno que fija la spec y la parada sobre una copia (feature 0296)
 
-Escenarios `fr1` y `cp1` de la batería de [`sdd-implement`](batteries/sdd-implement/battery.md), sujetos Sonnet headless, n = 3 cada uno, sin superpowers. Kit del commit `2b0c3ad9` (`dist/` de ese commit, sin las dos frases de las decisiones 10 y 11). Salidas en [`red/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/red/out/). Origen: tickets de las features [0299 §1](../.docs/sdd/field-reports/20261103-150804-feature-0299-own-skills-audit.md) y [0312 §1](../.docs/sdd/field-reports/20261104-162918-feature-0312-annotate-real-copies.md).
+Escenarios `fr1` y `cp1` de la batería de [`sdd-implement`](batteries/sdd-implement/battery.md), sujetos Sonnet headless, n = 3 cada uno, sin superpowers. Kit del commit `2b0c3ad9` (`dist/` de ese commit, sin las dos frases de las decisiones 10 y 11). Salidas en [`red/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/red/out/). Origen: tickets de las features [0299 §1](../.docs/sdd/field-reports/20261103-150804-feature-0299-own-skills-audit.md) y [0312 §1](../.docs/sdd/field-reports/20261104-162918-feature-0312-annotate-real-copies.md).
 
 ## fr1 — el freno que fija la spec
 

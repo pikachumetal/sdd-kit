@@ -70,7 +70,7 @@ The kit's executable code is a Node CLI, `cli/bin/sdd.js`, that travels with the
 Rules when using them:
 
 - **Trace the structure** (same sections, same order); the help blocks in quotes (`>`) are deleted when drafting.
-- **3.0.0 structure**: `PRODUCT.md`, `ROADMAP.md` and `CHANGELOG.md` at the project root; in `.docs/sdd/`, `steering/` (constitution, operations, architecture, estimation), `decisions/`, `capabilities/`, `changes/` and `releases/vX.Y.Z/`. The artifacts of a feature, patch and proposal, in `changes/<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>/`. The `specs/` folders from before 3.0.0 are read and not moved (and the `-task-` ones from before 2.0.0 aren't renamed).
+- **3.0.0 structure**: `PRODUCT.md`, `ROADMAP.md` and `CHANGELOG.md` at the project root; in `.docs/sdd/`, `steering/` (constitution, operations, architecture, estimation), `decisions/`, `capabilities/`, `changes/` and `releases/vX.Y.Z/`. The artifacts of a feature, patch and proposal, in `changes/<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>/`. Migration v3.0.1 moves the `specs/` folders here; the `-task-` ones from before 2.0.0 aren't renamed.
 - Sections marked *(si el módulo está activo)* are governed by the project's predicates (`estimation.md`, `changelog.md` present or not).
 - **Lite mode**: the spec is traced from the SAME light template (decisions · Intent/Scope/Approach · delta · approvals) and adds the «Estimación y esfuerzo» block, which in full mode lives in `plan.md`. No `spec-lite-template.md` exists or is created: a second template is instant drift (Art. VIII).
 - When drafting the artifact, replace the `<proyecto>` gaps (stack, build commands, constitution articles) with the project's real values (`operations.md`, `constitution.md`).

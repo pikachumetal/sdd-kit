@@ -1,6 +1,6 @@
 # RED — feature 0271, una sola línea de conducta ante un RED limpio
 
-Kit de la apertura (`68f73813`), salvo `cr2` y `cr3`, con el kit de la Task 1 y de la revisión final. Salidas en `red/`, `red-n1/`, `red-propose/`, `red-plan/` y `red-suite/` de `.docs/sdd/specs/20261102-135210-feature-0271-clean-red-rules/`.
+Kit de la apertura (`68f73813`), salvo `cr2` y `cr3`, con el kit de la Task 1 y de la revisión final. Salidas en `red/`, `red-n1/`, `red-propose/`, `red-plan/` y `red-suite/` de `.docs/sdd/changes/20261102-135210-feature-0271-clean-red-rules/`.
 
 | Escenario | Fila | n | Resultado | Lectura |
 | --- | --- | --- | --- | --- |

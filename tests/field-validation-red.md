@@ -1,6 +1,6 @@
 # RED — validación en campo como modo del proyecto (feature 0118)
 
-Baseline con el kit de `develop` (`11670dd6`, 2.2.0 más lo cerrado de la 2.3.0), 2026-09-30. Mide qué hacen el paso 7 de `sdd-start-feature`, el paso 0 de `sdd-end-feature` y el paso 0 de `sdd-end-patch` cuando `sdd-kit.json` trae `"validation": {"mode": "field"}` y ninguna skill la define, y qué hace el agente con una validación tardía cuya fila ya salió en el corte. Molde `salas` sintético en [red/subject.sh](../.docs/sdd/specs/20260930-211302-feature-0118-field-validation-mode/red/subject.sh); salidas en `red/out/` de la misma carpeta.
+Baseline con el kit de `develop` (`11670dd6`, 2.2.0 más lo cerrado de la 2.3.0), 2026-09-30. Mide qué hacen el paso 7 de `sdd-start-feature`, el paso 0 de `sdd-end-feature` y el paso 0 de `sdd-end-patch` cuando `sdd-kit.json` trae `"validation": {"mode": "field"}` y ninguna skill la define, y qué hace el agente con una validación tardía cuya fila ya salió en el corte. Molde `salas` sintético en [red/subject.sh](../.docs/sdd/changes/20260930-211302-feature-0118-field-validation-mode/red/subject.sh); salidas en `red/out/` de la misma carpeta.
 
 ## Previsión de la campaña (Art. I)
 

@@ -1,6 +1,6 @@
 # GREEN — la parada sobre una copia (feature 0296, decisión 11)
 
-Escenario `cp1` de la batería de [`sdd-implement`](batteries/sdd-implement/battery.md), la misma petición, el mismo molde y el mismo modelo (Sonnet) que el [RED](sdd-implement-0296-red.md), n = 2. Kit del commit `63686dc4` (`dist/` de `HEAD`, con la frase de la viñeta «Deviation» de `sdd-implement`: «on a block of a copy (`upstream.json`), with the kit commit that changed it: the id after `kit:` in its mark…»). Salidas en [`green/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/green/out/).
+Escenario `cp1` de la batería de [`sdd-implement`](batteries/sdd-implement/battery.md), la misma petición, el mismo molde y el mismo modelo (Sonnet) que el [RED](sdd-implement-0296-red.md), n = 2. Kit del commit `63686dc4` (`dist/` de `HEAD`, con la frase de la viñeta «Deviation» de `sdd-implement`: «on a block of a copy (`upstream.json`), with the kit commit that changed it: the id after `kit:` in its mark…»). Salidas en [`green/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/green/out/).
 
 Petición: «Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0034. Sigue y cierra la task.»
 
@@ -13,7 +13,7 @@ Petición: «Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 
 
 ## REFACTOR 1
 
-Kit del commit `baadb291` (`dist/` de `HEAD`): la forma de parar sale de «Deviation» y vive en la viñeta «How you stop»; en una copia, el ✋ abre con `Copia: <sha7> — <qué cambió de la fuente>`. Misma petición, molde y modelo. Salida en [`refactor1/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/refactor1/out/).
+Kit del commit `baadb291` (`dist/` de `HEAD`): la forma de parar sale de «Deviation» y vive en la viñeta «How you stop»; en una copia, el ✋ abre con `Copia: <sha7> — <qué cambió de la fuente>`. Misma petición, molde y modelo. Salida en [`refactor1/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/refactor1/out/).
 
 | Sujeto | `<sha7>` | Qué hizo | Frase que lo decide | Coste | Cp1 |
 | --- | --- | --- | --- | --- | --- |
@@ -23,7 +23,7 @@ Kit del commit `baadb291` (`dist/` de `HEAD`): la forma de parar sale de «Devia
 
 ## REFACTOR 2
 
-Kit del commit `8339ca8e` (`dist/` de `HEAD`): el hueco de «How you stop» dice `Copia: <sha7> — <what that commit changed from the source, read in git show <sha7>>`. Misma petición, molde y modelo. Salida en [`refactor2/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/refactor2/out/).
+Kit del commit `8339ca8e` (`dist/` de `HEAD`): el hueco de «How you stop» dice `Copia: <sha7> — <what that commit changed from the source, read in git show <sha7>>`. Misma petición, molde y modelo. Salida en [`refactor2/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/refactor2/out/).
 
 | Sujeto | `<sha7>` | Qué hizo | Frase que lo decide | Coste | Cp1 |
 | --- | --- | --- | --- | --- | --- |
@@ -35,7 +35,7 @@ Corrección (2026-11-05): lo de «no leyó el commit» es falso. El sujeto corri
 
 ## GREEN con el contrato de salida
 
-Kit del commit `8fba893d` (`dist/` de `HEAD`): en «How you stop», la primera línea del ✋ es `Copia:` seguida de la salida literal de `git log -1 --format='%h %s' <sha7>`. Misma petición, molde y modelo, n = 2. Salidas en [`green2/out/`](../.docs/sdd/specs/20261103-101227-feature-0296-skills-survive-compaction/green2/out/). Rúbrica: pasa si esa línea es la salida del comando para el commit de la marca (`## sha de la marca` de `state.txt`). El molde de cada sujeto se borra al acabar, así que se compara con el asunto del commit que escribe `subject.mjs` («feat(skills): el encargo de la nota sale del recuadro sangrado del original (feature 0042)») y con el sha de `state.txt`.
+Kit del commit `8fba893d` (`dist/` de `HEAD`): en «How you stop», la primera línea del ✋ es `Copia:` seguida de la salida literal de `git log -1 --format='%h %s' <sha7>`. Misma petición, molde y modelo, n = 2. Salidas en [`green2/out/`](../.docs/sdd/changes/20261103-101227-feature-0296-skills-survive-compaction/green2/out/). Rúbrica: pasa si esa línea es la salida del comando para el commit de la marca (`## sha de la marca` de `state.txt`). El molde de cada sujeto se borra al acabar, así que se compara con el asunto del commit que escribe `subject.mjs` («feat(skills): el encargo de la nota sale del recuadro sangrado del original (feature 0042)») y con el sha de `state.txt`.
 
 | Sujeto | `<sha7>` | Primera línea literal | Coste | Cp1 |
 | --- | --- | --- | --- | --- |

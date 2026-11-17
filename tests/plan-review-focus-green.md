@@ -1,6 +1,6 @@
 # GREEN — Review Focus del plan (feature 0113)
 
-Kit en `dc5683b5` (plantilla con `## Review Focus` y encargo del revisor final con su copia literal), superpowers 6.4.2. Mismos escenarios y molde que el [RED](plan-review-focus-red.md), con el mismo [subject.sh](../.docs/sdd/specs/20260929-170930-feature-0113-plan-review-focus/red/subject.sh); salidas en [`green/out/`](../.docs/sdd/specs/20260929-170930-feature-0113-plan-review-focus/green/out/). Solo Opus 5.5, el modelo en el que el RED falla.
+Kit en `dc5683b5` (plantilla con `## Review Focus` y encargo del revisor final con su copia literal), superpowers 6.4.2. Mismos escenarios y molde que el [RED](plan-review-focus-red.md), con el mismo [subject.sh](../.docs/sdd/changes/20260929-170930-feature-0113-plan-review-focus/red/subject.sh); salidas en [`green/out/`](../.docs/sdd/changes/20260929-170930-feature-0113-plan-review-focus/green/out/). Solo Opus 5.5, el modelo en el que el RED falla.
 
 - Cuatro sujetos (3,90 $) y uno de control tras la pasada de fix de la revisión final (r-3, con el kit en `e4451c29`, 0,89 $).
 - La campaña entera suma 15 sujetos y 12,03 $. El techo de la spec era de 14 sujetos y 16 $; el dev-lead aprobó el sujeto 15.

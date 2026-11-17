@@ -2,7 +2,7 @@
 
 Campaña proporcional (Art. I): un escenario, dos sujetos. Previsión común con el GREEN: 4 sujetos, ~30 min y ~3,5 $; techo `COST_CAP=6` y `SUBJECT_CAP=4` en el lanzador, con parada a petición en `red/stop`.
 
-- **Molde**: el repo de juguete `salas` de la 0060 (`closing_state`), más `.docs/sdd/estimation.md` y una tabla `pricing` en `sdd-kit.json`. Lanzador y salidas: [`red/`](../.docs/sdd/specs/20260924-230945-task-0068-session-tokens/red/).
+- **Molde**: el repo de juguete `salas` de la 0060 (`closing_state`), más `.docs/sdd/estimation.md` y una tabla `pricing` en `sdd-kit.json`. Lanzador y salidas: [`red/`](../.docs/sdd/changes/20260924-230945-task-0068-session-tokens/red/).
 - **Kit**: copia de `HEAD` de la rama tras la Task 2 (`5af7490`). Ya trae `Measure-SessionTokens.ps1`, pero no la guidance del cierre.
 - **Escenario `w2`**: «Invoca la skill sdd-kit:sdd-end-task y cierra la task 0012 […]. El dev-lead validó: […]. Escribe `walkthrough.md` (pasos 1 y 2 del checklist) y para ahí». Sujetos `claude -p --model sonnet`.
 

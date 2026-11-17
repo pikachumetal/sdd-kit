@@ -1,6 +1,6 @@
 # Evidencia GREEN — Adaptar el kit a Native (task 0057, 2026-09-24)
 
-GREEN de los escenarios de [`native-adapt-red.md`](native-adapt-red.md), sobre `feature/0057` con las Tasks 1–4 en `HEAD` (`75ba772`) y superpowers **6.4.1**. Mismo molde, mismos lanzadores y mismo techo común que el RED. Para el GREEN, `subject.sh` instala el hook en el commit base, y la línea `Ejecución` del plan del molde lleva la frase del cambio de método que dicta la plantilla (`GREEN=1`). Salidas en [`green/out/`](../.docs/sdd/specs/20260924-105352-task-0057-native-adapt/green/out/). Los ficheros con prefijo `t1-` son la primera tanda, previa al REFACTOR.
+GREEN de los escenarios de [`native-adapt-red.md`](native-adapt-red.md), sobre `feature/0057` con las Tasks 1–4 en `HEAD` (`75ba772`) y superpowers **6.4.1**. Mismo molde, mismos lanzadores y mismo techo común que el RED. Para el GREEN, `subject.sh` instala el hook en el commit base, y la línea `Ejecución` del plan del molde lleva la frase del cambio de método que dicta la plantilla (`GREEN=1`). Salidas en [`green/out/`](../.docs/sdd/changes/20260924-105352-task-0057-native-adapt/green/out/). Los ficheros con prefijo `t1-` son la primera tanda, previa al REFACTOR.
 
 ## Escenarios nuevos
 

@@ -1,6 +1,6 @@
 # GREEN — verificación visual con Playwright y variante de gama media en la delegación (task 0077)
 
-Kit: copia limpia del working tree en `02b4933`, con la Task 1 aplicada (pasos 2, 6 y 7 de `sdd-start-task` y la racionalización del «no tengo el MCP»). Mismo molde y mismo lanzador que el [RED](visual-check-red.md), con `PHASE=green`. Salidas en [`green/out/`](../.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/green/out/).
+Kit: copia limpia del working tree en `02b4933`, con la Task 1 aplicada (pasos 2, 6 y 7 de `sdd-start-task` y la racionalización del «no tengo el MCP»). Mismo molde y mismo lanzador que el [RED](visual-check-red.md), con `PHASE=green`. Salidas en [`green/out/`](../.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/green/out/).
 
 ## Sujetos
 
@@ -41,7 +41,7 @@ Ninguna fila empeora. Las cuatro que fallaban en el RED pasan.
 
 ## Tras la revisión final
 
-La revisión final (Opus, effort high) encontró dos huecos en el paso 2 y el hilo los arregló con un sujeto de control cada uno (Art. I, edición tras el GREEN). Salidas en [`refactor/out/`](../.docs/sdd/specs/20260925-144030-task-0077-playwright-visual-check/refactor/out/).
+La revisión final (Opus, effort high) encontró dos huecos en el paso 2 y el hilo los arregló con un sujeto de control cada uno (Art. I, edición tras el GREEN). Salidas en [`refactor/out/`](../.docs/sdd/changes/20260925-144030-task-0077-playwright-visual-check/refactor/out/).
 
 - **La variante prometía una parada que con SDD no ocurría**: el paso 2 remitía a la oferta del paso 4, que solo para con Native. Ahora para antes de la Task 1 «sea cual sea el método», y el motivo es el del THEN de la spec.
 - **`q1` no aislaba la excepción**: los dos sujetos clasificaron la fila como lite, y en lite no hay plan. `q2` usa una task que cambia el contrato de la API y no cabe en lite.

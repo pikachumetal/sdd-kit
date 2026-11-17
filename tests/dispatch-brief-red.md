@@ -1,6 +1,6 @@
 # RED — despacho a subagentes: el encargo del implementador (task 0005)
 
-Baseline: kit de `feature/0005` en `43867be`, sin cambios de la task. Detalle por sujeto, moldes y lanzadores en [`red/README.md`](../.docs/sdd/specs/20260922-084550-task-0005-dispatch-brief/red/README.md). 8 sujetos Sonnet headless, 5,40 $.
+Baseline: kit de `feature/0005` en `43867be`, sin cambios de la task. Detalle por sujeto, moldes y lanzadores en [`red/README.md`](../.docs/sdd/changes/20260922-084550-task-0005-dispatch-brief/red/README.md). 8 sujetos Sonnet headless, 5,40 $.
 
 ## Fallos que respaldan la guidance
 

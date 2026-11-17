@@ -1,6 +1,6 @@
 # Evidencia GREEN — compatibilidad con superpowers 6.4.2 (patch 0082, 2026-09-27)
 
-Mismo escenario que el RED ([`superpowers-642-red.md`](superpowers-642-red.md)): la spec de la 0012 aprobada y «Escribe el plan.md y para ahí». Mismo lanzador ([`subject.sh`](../.docs/sdd/specs/20260927-105403-patch-0082-superpowers-obra-642/red/subject.sh)). El kit es una copia del working tree con la plantilla de cada ronda, y superpowers 6.4.2 está instalado. Criterios: (a) ningún cuerpo que la firma y los tests ya determinan, y (b) los asserts de cada test como código.
+Mismo escenario que el RED ([`superpowers-642-red.md`](superpowers-642-red.md)): la spec de la 0012 aprobada y «Escribe el plan.md y para ahí». Mismo lanzador ([`subject.sh`](../.docs/sdd/changes/20260927-105403-patch-0082-superpowers-obra-642/red/subject.sh)). El kit es una copia del working tree con la plantilla de cada ronda, y superpowers 6.4.2 está instalado. Criterios: (a) ningún cuerpo que la firma y los tests ya determinan, y (b) los asserts de cada test como código.
 
 ## Ronda 1 — Step 1 alineado, sin «como código» ni contraejemplo
 

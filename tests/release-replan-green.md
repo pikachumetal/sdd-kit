@@ -1,6 +1,6 @@
 # GREEN — replanificar la release en curso (task 0029)
 
-Los seis escenarios del [RED](release-replan-red.md), con la sección «Replanificar la release en curso» de `sdd-start-release/SKILL.md`. Mismos moldes, lanzadores y turnos; lanzador de la tanda en [`green/`](../.docs/sdd/specs/20260922-154013-task-0029-release-replan/green/). Coste: 6,57 $ (RED + GREEN: 11,83 $, dentro del techo de 12 $ aprobado).
+Los seis escenarios del [RED](release-replan-red.md), con la sección «Replanificar la release en curso» de `sdd-start-release/SKILL.md`. Mismos moldes, lanzadores y turnos; lanzador de la tanda en [`green/`](../.docs/sdd/changes/20260922-154013-task-0029-release-replan/green/). Coste: 6,57 $ (RED + GREEN: 11,83 $, dentro del techo de 12 $ aprobado).
 
 ## Primera redacción: seis sujetos
 

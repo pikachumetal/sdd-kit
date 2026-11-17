@@ -29,10 +29,10 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. `Get-NextSddId.ps1` no ve la carpeta de un patch sin commitear en otro worktree
 
 - **Qué pasó**: a las 09:02 el script dio 0036 y creé `specs/20260923-070206-patch-0036-disparador-vago/`. El patch no tiene fila de reserva: la fila de patches se escribe al cerrar. A las 09:26, otro worktree partió la task 0006 y reservó 0036 en `develop`, porque la carpeta seguía sin commitear. Lo vi al ir a fusionar. Tuve que integrar `develop` y renumerar a 0037 carpeta, ticket, tests, roadmap, changelog y log; los tres primeros commits de la rama siguen diciendo 0036.
-- **Dónde en el kit**: `skills/sdd-templates/scripts/Get-NextSddId.ps1`, `Get-WorktreeRoadmapIds`: del disco de cada worktree lee el roadmap, no `.docs/sdd/specs/`. `skills/sdd-start-patch/SKILL.md` paso 2 crea la carpeta y no la publica.
+- **Dónde en el kit**: `skills/sdd-templates/scripts/Get-NextSddId.ps1`, `Get-WorktreeRoadmapIds`: del disco de cada worktree lee el roadmap, no `.docs/sdd/changes/`. `skills/sdd-start-patch/SKILL.md` paso 2 crea la carpeta y no la publica.
 - **Por qué el kit no lo evitó**: la ampliación del patch 0035 cubrió la reserva sin commitear del roadmap (la de una task), no la de un patch, que reserva con la carpeta.
 - **Coste**: ~10 min de merge y renumerado, y un id viejo en tres mensajes de commit.
-- **Propuesta**: que `Get-WorktreeRoadmapIds` lea también los nombres de carpeta de `.docs/sdd/specs/` en el disco de cada worktree, en el mismo bucle.
+- **Propuesta**: que `Get-WorktreeRoadmapIds` lea también los nombres de carpeta de `.docs/sdd/changes/` en el disco de cada worktree, en el mismo bucle.
 - **Criterio de aceptación**: GIVEN el worktree A con `specs/<ts>-patch-0036-x/` sin commitear y sin fila WHEN el worktree B ejecuta `Get-NextSddId.ps1` THEN devuelve 0037. Hoy devuelve 0036.
 
 ### 2. Una obligación del mensaje final escrita en el paso 0 no se cumple

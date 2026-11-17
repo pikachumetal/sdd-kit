@@ -2,7 +2,7 @@
 
 Baseline: el kit de `develop` sin cambios (v1.1.0 + tasks 0001, 0002 y 0011), servido desde una copia limpia con `--plugin-dir`. Sujetos headless `claude -p --model sonnet`, dos por escenario, cada uno sobre una copia fresca del molde con `git init`. Diez sujetos, 7,48 $ en total.
 
-Moldes, lanzador y lo que produjo cada sujeto (diff contra la base e informe final): [`red/`](../.docs/sdd/specs/20260921-081125-task-0003-cap-lifecycle/red/). Proyecto ficticio: «Aulario», reserva de aulas de una academia.
+Moldes, lanzador y lo que produjo cada sujeto (diff contra la base e informe final): [`red/`](../.docs/sdd/changes/20260921-081125-task-0003-cap-lifecycle/red/). Proyecto ficticio: «Aulario», reserva de aulas de una academia.
 
 ## Escenarios
 

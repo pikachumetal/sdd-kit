@@ -1,6 +1,6 @@
 # GREEN — el carril patch acepta ajustes visuales (feature 0098)
 
-Mismos escenarios, molde y lanzador que el [RED](visual-patch-red.md), con el kit del working tree tras la guía de cada task. Salidas en [`green/out/`](../.docs/sdd/specs/20260928-210002-feature-0098-visual-patch-lane/green/out/).
+Mismos escenarios, molde y lanzador que el [RED](visual-patch-red.md), con el kit del working tree tras la guía de cada task. Salidas en [`green/out/`](../.docs/sdd/changes/20260928-210002-feature-0098-visual-patch-lane/green/out/).
 
 ## Puertas (Task 1)
 

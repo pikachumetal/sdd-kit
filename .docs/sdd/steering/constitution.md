@@ -44,7 +44,7 @@ Texto humano (docs, tests, cuerpo de los commits) en castellano con ortografía 
 
 ## Art. IV — Convenciones que el kit fija a los proyectos
 
-- **Documentos y artefactos**: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md` en la raíz del proyecto; el resto en `.docs/sdd/` (`steering/`, `decisions/`, `capabilities/`, `changes/`, `releases/vX.Y.Z/`); naming `<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>` en UTC, en `changes/` (las carpetas de `specs/` anteriores a la 3.0.0 y las `-task-` anteriores a la v2.0.0 se leen y no se mueven); módulos por predicado observable.
+- **Documentos y artefactos**: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md` en la raíz del proyecto; el resto en `.docs/sdd/` (`steering/`, `decisions/`, `capabilities/`, `changes/`, `releases/vX.Y.Z/`); naming `<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>` en UTC, en `changes/` (las `-task-` anteriores a la v2.0.0 se leen y no se renombran); módulos por predicado observable.
 - **Ids**, según `ids.mode` en `.docs/sdd/sdd-kit.json`: en `tracker`, el id del gestor de tickets (0000 si no hay; el de la épica para una propuesta); en `sequence`, la secuencia única de features, patches y propuestas del proyecto.
 - **Merge**: a la rama de integración, según la política que el usuario declara en `sdd-kit.json` y aplican las skills que la leen (el cierre de feature y el de patch); sin política declarada, lo decide el usuario. El merge a la rama estable y el tag los decide siempre una persona.
 - **Historia de la rama**: en una feature, un commit de apertura, uno por task del plan y uno de cierre; en un patch, fix y cierre; los intermedios se juntan al quedar limpia la revisión de cada hito (`sdd-implement/references/commit-milestones.md`).
@@ -70,7 +70,7 @@ Tipo/scope en inglés, título y cuerpo en castellano, nunca title-only. Las ram
 
 ## Art. VII — Dogfooding
 
-Los cambios no triviales del kit pasan por su propio flujo (arranque de feature → spec → plan → implementación → cierre), con artefactos en `.docs/sdd/changes/` (las anteriores a la 3.0.0, en `.docs/sdd/specs/`); los fixes pequeños deterministas, por el carril patch.
+Los cambios no triviales del kit pasan por su propio flujo (arranque de feature → spec → plan → implementación → cierre), con artefactos en `.docs/sdd/changes/`; los fixes pequeños deterministas, por el carril patch.
 
 *Por qué*: el kit solo se prueba de verdad usándolo, y cada sesión del propio repo es un caso de campo.
 

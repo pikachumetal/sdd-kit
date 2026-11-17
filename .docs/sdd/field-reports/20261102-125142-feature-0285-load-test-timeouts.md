@@ -40,7 +40,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 2. Escribí en la evidencia del RED un hecho que no leí, y la evidencia sostenía una decisión de la spec
 
 - **Qué pasó**: `tests/baseline-commit-0285-red.md` decía que `w4-2` corrió la línea base en un worktree desanclado. La corrió en el worktree de la rama, sin invocar `sdd-worktrees`. Solo miré la línea de `tools.txt` del commit y de la orden, recortada a 170 caracteres. Lo cazó el eje Spec. El veredicto `Wc` seguía en pie, pero solo `w4-1` midió el Step 3, y la decisión de no editarlo se aprobó con «los dos sujetos».
-- **Fuente**: `.docs/sdd/specs/20261102-120757-feature-0285-load-test-timeouts/red/out/w4-2.tools.txt` línea 108; `w4-2.texts.txt`.
+- **Fuente**: `.docs/sdd/changes/20261102-120757-feature-0285-load-test-timeouts/red/out/w4-2.tools.txt` línea 108; `w4-2.texts.txt`.
 - **Dónde en el kit**: `tests/headless/battery.mjs`, `verdict`; `.docs/sdd/tech-stack.md`, «Baterías por skill», «Antes de leer una puerta, la primera línea de `state.txt`».
 - **Por qué el kit no lo evitó**: la regla existía a medias: el veredicto de una fila en prosa lo lee el hilo, sin control de que el sujeto cargó la skill que se mide. `w4` no pasa de `sdd-implement`, y `battery.mjs verdict` dio «verde».
 - **Coste**: una pasada de fix y un hallazgo Important. La aprobación de la spec se dio con una evidencia más débil de lo que decía.
@@ -51,7 +51,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 3. Un sujeto en un worktree enlazado se salta `sdd-worktrees` entero, y con él la línea base desanclada
 
 - **Qué pasó**: `w4-2` dijo «ya estábamos en un worktree aislado, así que no invoqué `sdd-worktrees`» y corrió la línea base en el árbol de la rama.
-- **Fuente**: `.docs/sdd/specs/20261102-120757-feature-0285-load-test-timeouts/red/out/w4-2.texts.txt`.
+- **Fuente**: `.docs/sdd/changes/20261102-120757-feature-0285-load-test-timeouts/red/out/w4-2.texts.txt`.
 - **Dónde en el kit**: `skills/sdd-implement/SKILL.md`, Setup, paso 1.
 - **Por qué el kit no lo evitó**: el nombre del paso, «Worktree», se lee como crear un worktree; la línea base va dentro. Es un solo caso.
 - **Coste**: ninguno aquí, porque el sujeto no tenía RED a medio escribir.

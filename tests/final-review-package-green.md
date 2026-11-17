@@ -1,6 +1,6 @@
 # GREEN — encargo del revisor final: paquete y techo en el plan (feature 0032)
 
-Kit: copia del working tree en `7035cda`, con la guía. Mismo lanzador, molde y escenarios que el [RED](final-review-package-red.md) (`red/subject.sh`), con las salidas en `.docs/sdd/specs/20260927-124940-feature-0032-final-review-scope/green/out/`. Todos los sujetos en Sonnet.
+Kit: copia del working tree en `7035cda`, con la guía. Mismo lanzador, molde y escenarios que el [RED](final-review-package-red.md) (`red/subject.sh`), con las salidas en `.docs/sdd/changes/20260927-124940-feature-0032-final-review-scope/green/out/`. Todos los sujetos en Sonnet.
 
 ## Resultados
 

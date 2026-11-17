@@ -6,8 +6,8 @@ RED previo a la spec (Art. I y `tech-stack.md`: cada frente se reproduce antes d
 
 ## Método
 
-- **Sondas deterministas**: [`sondas.md`](../.docs/sdd/specs/20260923-220402-task-0026-superpowers-641/red/sondas.md), con los `diff` 6.3.0 → 6.4.1, `task-brief` sobre un plan del kit y `sdd-workspace` en Git Bash.
-- **Sujetos**: Sonnet headless (`claude -p`) sobre el molde de la task 0006: proyecto .NET + Angular, `.docs/sdd/` y perfil `delegate`. El molde se reutiliza sin copiar; esta task solo añade `red/f7` (la Task 2 del molde implementada), `red/tasks-f7.md`, `red/progress.md` y `red/final-review.md`. Lanzador: [`red/subject.sh`](../.docs/sdd/specs/20260923-220402-task-0026-superpowers-641/red/subject.sh). Salidas: `red/out/`.
+- **Sondas deterministas**: [`sondas.md`](../.docs/sdd/changes/20260923-220402-task-0026-superpowers-641/red/sondas.md), con los `diff` 6.3.0 → 6.4.1, `task-brief` sobre un plan del kit y `sdd-workspace` en Git Bash.
+- **Sujetos**: Sonnet headless (`claude -p`) sobre el molde de la task 0006: proyecto .NET + Angular, `.docs/sdd/` y perfil `delegate`. El molde se reutiliza sin copiar; esta task solo añade `red/f7` (la Task 2 del molde implementada), `red/tasks-f7.md`, `red/progress.md` y `red/final-review.md`. Lanzador: [`red/subject.sh`](../.docs/sdd/changes/20260923-220402-task-0026-superpowers-641/red/subject.sh). Salidas: `red/out/`.
 - **Evidencia previa reutilizada** (`tech-stack.md`: un stream previo puede ser el RED de otra task): los `result.json` de la campaña GREEN de la task 0006 (2026-09-23), que corrió con 6.4.1. Lo prueba `g-e1-1`, que cita literal el handoff nuevo.
 
 ## Resultados por frente

@@ -1,6 +1,6 @@
 # RED — menos paradas y avisos llanos (task 0053)
 
-Baseline con las skills de `develop` en `60fffcb`: 16 sujetos headless Sonnet sobre el repo de juguete `salas` de la 0044, **4,61 $**. De ellos, 14 son válidos y 2 se descartaron por el molde (s7, abajo). Molde, lanzador y salidas: `.docs/sdd/specs/20260923-214917-task-0053-fewer-stops/red/` (`subject.sh`, `mold.sh`, `run.sh`; `out/<escenario>-<n>.{tools,texts,state}.txt`). La previsión común del RED y el GREEN (37 sujetos, ~17 $, techo 18 $) se declaró antes del primer sujeto; el techo lo aplica `run.sh` sumando también los descartados.
+Baseline con las skills de `develop` en `60fffcb`: 16 sujetos headless Sonnet sobre el repo de juguete `salas` de la 0044, **4,61 $**. De ellos, 14 son válidos y 2 se descartaron por el molde (s7, abajo). Molde, lanzador y salidas: `.docs/sdd/changes/20260923-214917-task-0053-fewer-stops/red/` (`subject.sh`, `mold.sh`, `run.sh`; `out/<escenario>-<n>.{tools,texts,state}.txt`). La previsión común del RED y el GREEN (37 sujetos, ~17 $, techo 18 $) se declaró antes del primer sujeto; el techo lo aplica `run.sh` sumando también los descartados.
 
 | Escenario | Qué mide | Resultado |
 | --- | --- | --- |

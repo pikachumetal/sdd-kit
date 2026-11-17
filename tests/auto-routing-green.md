@@ -1,6 +1,6 @@
 # Evidencia GREEN — auto-enrutado frente a superpowers (2026-09-21)
 
-Verificación de la task [auto-routing](../.docs/sdd/specs/20260921-162213-task-0014-auto-routing/spec.md) contra el RED de [`auto-routing-red.md`](auto-routing-red.md). Mismos moldes, mismas peticiones y mismo lanzador; lo único que cambia es la copia del kit: ahora lleva `hooks/` (hook `SessionStart` con el router de `hooks/router.md`), las `description` reescritas y el frontmatter nuevo. Los cambios entran **juntos**, así que la campaña no separa cuánto aporta cada capa (ver «Límites»).
+Verificación de la task [auto-routing](../.docs/sdd/changes/20260921-162213-task-0014-auto-routing/spec.md) contra el RED de [`auto-routing-red.md`](auto-routing-red.md). Mismos moldes, mismas peticiones y mismo lanzador; lo único que cambia es la copia del kit: ahora lleva `hooks/` (hook `SessionStart` con el router de `hooks/router.md`), las `description` reescritas y el frontmatter nuevo. Los cambios entran **juntos**, así que la campaña no separa cuánto aporta cada capa (ver «Límites»).
 
 ## Criterio de la spec (decisión 4), fijado antes de medir
 

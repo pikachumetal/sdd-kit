@@ -1,6 +1,6 @@
 # RED — bordes de la revisión después de la revisión final (feature 0085)
 
-Paso 7 de `sdd-start-feature` con el kit de `develop` (`bb4dc7b`, tras el patch 0084). Lanzador de referencia (`tests/headless/run.sh`) con [`red/subject.sh`](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/subject.sh), sujetos Sonnet headless aislados (`SUPERPOWERS_DIR`, superpowers 6.4.2), 2026-09-27. Molde: el repo `salas` de las 0044 y 0057, feature 0012 en Native con las Tasks 1 y 2 hechas y la revisión final apuntada en `tasks.md` con el commit que revisó. Un `PreToolUse` ([`red/deny-agent.mjs`](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/deny-agent.mjs)) deniega `Agent`: la tool call queda en el stream con su encargo y nadie paga un revisor. Salidas en [`red/out/`](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/).
+Paso 7 de `sdd-start-feature` con el kit de `develop` (`bb4dc7b`, tras el patch 0084). Lanzador de referencia (`tests/headless/run.sh`) con [`red/subject.sh`](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/subject.sh), sujetos Sonnet headless aislados (`SUPERPOWERS_DIR`, superpowers 6.4.2), 2026-09-27. Molde: el repo `salas` de las 0044 y 0057, feature 0012 en Native con las Tasks 1 y 2 hechas y la revisión final apuntada en `tasks.md` con el commit que revisó. Un `PreToolUse` ([`red/deny-agent.mjs`](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/deny-agent.mjs)) deniega `Agent`: la tool call queda en el stream con su encargo y nadie paga un revisor. Salidas en [`red/out/`](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/).
 
 ## Task 1 — Re-revisión del tramo posterior a la revisión final
 
@@ -10,10 +10,10 @@ Criterio: (a) intenta despachar un revisor sobre el commit posterior antes de pr
 
 | Sujeto | (a) Revisión del commit posterior |
 | --- | --- |
-| [p1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/p1-1.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión del commit 1cf54c1», antes de presentar |
-| [p1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/p1-2.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Revisión final del commit 1cf54c1», antes de presentar |
-| [p2-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/p2-1.texts.txt) | ❌ invoca `sdd-end-feature` y fusiona en `develop` sin revisar el commit |
-| [p2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/p2-2.texts.txt) | ❌ invoca `sdd-end-feature` y junta el commit en el de cierre: «fix del minor diferido + revisión final + documentación» |
+| [p1-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/p1-1.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión del commit 1cf54c1», antes de presentar |
+| [p1-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/p1-2.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Revisión final del commit 1cf54c1», antes de presentar |
+| [p2-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/p2-1.texts.txt) | ❌ invoca `sdd-end-feature` y fusiona en `develop` sin revisar el commit |
+| [p2-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/p2-2.texts.txt) | ❌ invoca `sdd-end-feature` y junta el commit en el de cierre: «fix del minor diferido + revisión final + documentación» |
 
 **`p1` pasa 2/2; `p2` falla 0/2.** `p1` no saca la conducta de una fuente incidental: los dos sujetos citan la regla del paso 6, «todo commit del hilo principal… nunca se presenta sin pasar por revisión» (p1-1: «La regla del kit es clara: todo commit del hilo…»). Esa frase solo alcanza hasta la presentación. Con la validación ya presentada, la orden de cerrar gana: es el fallo del ticket 0014 §1. La guía se escribe para `p2`, y `p1` queda como control de no regresión.
 
@@ -29,8 +29,8 @@ Criterio: (a) en `s1` no despacha revisor y anota la lectura en el hilo; (b) en 
 
 | Sujeto | (a) `s1` sin revisor | Sujeto | (b) `s2` con re-revisión |
 | --- | --- | --- | --- |
-| [s1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s1-1.texts.txt) | ❌ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión rango 7c3ee1c..c66872a» | [s2-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s2-1.texts.txt) | ❌ solo un `Explore` para buscar `review-package`; revisa él y reescribe `architecture.md` |
-| [s1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s1-2.texts.txt) | ❌ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión bd8d7ac..6aaf338» | [s2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s2-2.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión final tramo 6351b7a..HEAD» |
+| [s1-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/s1-1.texts.txt) | ❌ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión rango 7c3ee1c..c66872a» | [s2-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/s2-1.texts.txt) | ❌ solo un `Explore` para buscar `review-package`; revisa él y reescribe `architecture.md` |
+| [s1-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/s1-2.texts.txt) | ❌ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión bd8d7ac..6aaf338» | [s2-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/s2-2.texts.txt) | ✅ `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión final tramo 6351b7a..HEAD» |
 
 **(a) falla 0/2; (b) pasa 1/2.** Es el coste del ticket 0005 §5: un revisor Opus (~85k tokens) por una fila del roadmap, que ahora pide la regla nueva de la Task 1 en cada tramo. (b) no es el fallo que se busca: s2-1 despachó un `Explore` en vez del revisor y se tomó el tramo como suyo. Queda como control de que la excepción no se come los commits de docs grandes.
 
@@ -44,8 +44,8 @@ Criterio: (a) `f1`: el encargo del implementador pide primero un test que reprod
 
 | Sujeto | (a) `f1`: encargo | Sujeto | (b) `f2`: pasada de fix |
 | --- | --- | --- | --- |
-| [f1-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f1-1/agent-prompts.txt) | ❌ reenvía el hallazgo y su fix; nada de reproducir | [f2-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f2-1.texts.txt) | ✅ «the Important finding doesn't reproduce», `src/` sin tocar, ruling |
-| [f1-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f1-2/agent-prompts.txt) | ❌ «Fix: comprobar `typeof slot === 'string'`», y «si crees que hace falta un test adicional… añádelo» | [f2-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/f2-2.texts.txt) | ✅ «no reproduce contra HEAD actual», `src/` sin tocar |
+| [f1-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/f1-1/agent-prompts.txt) | ❌ reenvía el hallazgo y su fix; nada de reproducir | [f2-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/f2-1.texts.txt) | ✅ «the Important finding doesn't reproduce», `src/` sin tocar, ruling |
+| [f1-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/f1-2/agent-prompts.txt) | ❌ «Fix: comprobar `typeof slot === 'string'`», y «si crees que hace falta un test adicional… añádelo» | [f2-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/f2-2.texts.txt) | ✅ «no reproduce contra HEAD actual», `src/` sin tocar |
 
 **(a) falla 0/2; (b) pasa 2/2.** En Native la conducta viene de la «Final Review» de `executing-plans` («write the test that reproduces the finding, watch it fail»), que el sujeto tiene delante al hacer la pasada: no es incidental. En SDD, el hilo traduce el hallazgo a un encargo de fix, y el implementador recibe el arreglo como orden: es el fallo del ticket 0016 §1, que costó tres reanudaciones. La guía se escribe para el encargo de SDD, y `f2` queda como control de no regresión.
 
@@ -57,8 +57,8 @@ La revisión final marcó como Important que los pasos 6 y 7 no dicen cómo se c
 
 | Sujeto | (a) `s3` sin revisor |
 | --- | --- |
-| [s3-1](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s3-1.texts.txt) | ✅ `git show --remerge-diff`, sin revisor |
-| [s3-2](../.docs/sdd/specs/20260927-145355-feature-0085-post-final-review/red/out/s3-2.texts.txt) | ✅ `git show --remerge-diff --numstat`, sin revisor |
+| [s3-1](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/s3-1.texts.txt) | ✅ `git show --remerge-diff`, sin revisor |
+| [s3-2](../.docs/sdd/changes/20260927-145355-feature-0085-post-final-review/red/out/s3-2.texts.txt) | ✅ `git show --remerge-diff --numstat`, sin revisor |
 
 **Pasa 2/2: el Important no se reproduce en conducta.** Los dos sujetos leyeron `control-profiles.md`, que ya tenía el conteo del merge. Es la misma referencia que el s2-2 del primer GREEN de la Task 2 no abrió, así que el arreglo se mantiene (ruling de la pasada de fix), y `s3` queda como control.
 

@@ -1,6 +1,6 @@
 # RED — encargo del revisor final: paquete, trailer y techo en el plan (feature 0032)
 
-Kit: copia del working tree en `cd3eb13`, antes de la guía. Superpowers 6.4.2 con `SUPERPOWERS_DIR`. Molde `salas` (features 0044 y 0057). Lanzador y sujetos en `.docs/sdd/specs/20260927-124940-feature-0032-final-review-scope/red/`, salidas en `red/out/`. Todos los sujetos en Sonnet.
+Kit: copia del working tree en `cd3eb13`, antes de la guía. Superpowers 6.4.2 con `SUPERPOWERS_DIR`. Molde `salas` (features 0044 y 0057). Lanzador y sujetos en `.docs/sdd/changes/20260927-124940-feature-0032-final-review-scope/red/`, salidas en `red/out/`. Todos los sujetos en Sonnet.
 
 | Escenario | Qué mide |
 | --- | --- |

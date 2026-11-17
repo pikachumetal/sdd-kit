@@ -1,6 +1,6 @@
 # RED — configuración personal y entrevista de claves (task 0061)
 
-Baseline **sin** `sdd-config` ni `sdd-kit.local.json`: el kit en la base de la rama (`259e1b0`, copia con `git archive`). Sujetos Sonnet headless sobre el repo de juguete `salas` (molde de la 0044), sin `AskUserQuestion`: cada uno termina su turno en la primera pregunta. Lanzador, sujeto y salidas en [`red/`](../.docs/sdd/specs/20260924-220849-task-0061-local-config/red/).
+Baseline **sin** `sdd-config` ni `sdd-kit.local.json`: el kit en la base de la rama (`259e1b0`, copia con `git archive`). Sujetos Sonnet headless sobre el repo de juguete `salas` (molde de la 0044), sin `AskUserQuestion`: cada uno termina su turno en la primera pregunta. Lanzador, sujeto y salidas en [`red/`](../.docs/sdd/changes/20260924-220849-task-0061-local-config/red/).
 
 **Previsión y techo comunes al RED y al GREEN** (declarados en la spec, decisión 16, antes del primer sujeto): 14 sujetos, ~10 $, ~2 h; techo 20 sujetos, 16 $, 3 h. `SUBJECT_CAP=20`, `COST_CAP=16` y fichero `stop` en `red/run.sh`.
 

@@ -2,7 +2,7 @@
 
 Repite el RED ([native-scripts-red.md](native-scripts-red.md)) con el mismo molde, la misma petición y el kit con el fix. El fix está en el párrafo Native del paso 6 de `sdd-start-feature`: los scripts se lanzan con la herramienta Bash (Git Bash), nunca con `bash <ruta>` desde PowerShell; la ruta de `sdd-workspace` se comprueba no vacía antes de escribir el ledger; y el comando de `task-done` tiene que imprimir algo, con `sh -c '<comando> && echo ok'` si la «Verificación» es silenciosa.
 
-- Salidas: `.docs/sdd/specs/20260929-165746-patch-0110-native-scripts-windows/green/out/`.
+- Salidas: `.docs/sdd/changes/20260929-165746-patch-0110-native-scripts-windows/green/out/`.
 - Coste: 1,07 $ (w-1 0,57 $; w-2 0,49 $). Campaña total: 4 sujetos, 2,06 $.
 
 ## Resultado

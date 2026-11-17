@@ -1,6 +1,6 @@
 # Evidencia GREEN — numeración de ids sin gestor de tickets (2026-09-20)
 
-Verificación de la task [task-ids](../.docs/sdd/specs/20260920-202137-task-0001-task-ids/spec.md) (0001) contra el baseline de [task-ids-red.md](task-ids-red.md).
+Verificación de la task [task-ids](../.docs/sdd/changes/20260920-202137-task-0001-task-ids/spec.md) (0001) contra el baseline de [task-ids-red.md](task-ids-red.md).
 
 ## Método
 

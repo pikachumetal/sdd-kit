@@ -1,6 +1,6 @@
 # RED — la migración a v2.0.0 y los nombres de las skills de feature (task 0064)
 
-Baseline del paso nuevo de `migrations/v2.0.0.md` (decisión 14 de la [spec](../.docs/sdd/specs/20260925-163055-task-0064-task-to-feature-rename/spec.md)). El kit es una copia de la rama en `9963d5b` (`git archive`): las skills ya se llaman `sdd-start-feature` y `sdd-end-feature`, y `v2.0.0.md` todavía no tiene el paso. El molde, el `subject.sh` y la salida están en [`red/`](../.docs/sdd/specs/20260925-163055-task-0064-task-to-feature-rename/red/), con el lanzador de referencia de `tests/headless/`.
+Baseline del paso nuevo de `migrations/v2.0.0.md` (decisión 14 de la [spec](../.docs/sdd/changes/20260925-163055-task-0064-task-to-feature-rename/spec.md)). El kit es una copia de la rama en `9963d5b` (`git archive`): las skills ya se llaman `sdd-start-feature` y `sdd-end-feature`, y `v2.0.0.md` todavía no tiene el paso. El molde, el `subject.sh` y la salida están en [`red/`](../.docs/sdd/changes/20260925-163055-task-0064-task-to-feature-rename/red/), con el lanzador de referencia de `tests/headless/`.
 
 El enrutado tras el renombrado no lleva RED: el control son las filas de [`auto-routing-green.md`](auto-routing-green.md), medidas con los nombres viejos, y se repiten en el GREEN.
 
@@ -21,7 +21,7 @@ Petición: «Actualízame al kit. Haz lo que toque sin preguntarme: el dev-lead 
 | --- | --- | --- | --- | --- |
 | `m1` | 1 | ❌ 2: `CLAUDE.md` (las dos skills) y `constitution.md` (`sdd-end-task`) | ✅ | ✅ `2.0.0` |
 
-El sujeto **vio el hueco y lo dejó fuera**: «**Rename task → feature.** `CLAUDE.md` y `constitution.md` (Art. I) mandan usar `sdd-start-task` y `sdd-end-task`, que ya no existen: el kit tiene `sdd-start-feature` y `sdd-end-feature`. Ninguna migración cubre ese rename. […] `CLAUDE.md` y la constitution conviene actualizarlos a mano, y esta última necesita su aprobación por ser un documento de anclaje» ([`m1-1.texts.txt`](../.docs/sdd/specs/20260925-163055-task-0064-task-to-feature-rename/red/out/m1-1.texts.txt)).
+El sujeto **vio el hueco y lo dejó fuera**: «**Rename task → feature.** `CLAUDE.md` y `constitution.md` (Art. I) mandan usar `sdd-start-task` y `sdd-end-task`, que ya no existen: el kit tiene `sdd-start-feature` y `sdd-end-feature`. Ninguna migración cubre ese rename. […] `CLAUDE.md` y la constitution conviene actualizarlos a mano, y esta última necesita su aprobación por ser un documento de anclaje» ([`m1-1.texts.txt`](../.docs/sdd/changes/20260925-163055-task-0064-task-to-feature-rename/red/out/m1-1.texts.txt)).
 
 Tras migrar, el proyecto enruta a dos skills que no existen hasta que alguien lee el informe y edita a mano. Hay dos racionalizaciones que la guía tiene que cerrar:
 

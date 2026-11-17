@@ -1,6 +1,6 @@
 # RED — feature 0116: arrancar sin el kit y retomar
 
-Kit de `78b0b6fa` más la apertura. Salidas en `.docs/sdd/specs/20261101-150956-feature-0116-session-start-and-resume/red/` y `red2/`.
+Kit de `78b0b6fa` más la apertura. Salidas en `.docs/sdd/changes/20261101-150956-feature-0116-session-start-and-resume/red/` y `red2/`.
 
 ## Hook de arranque (estructural)
 

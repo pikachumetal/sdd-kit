@@ -1,6 +1,6 @@
 # Feature 0206 — retirar `sdd-start-feature` y `sdd-start-patch`: RED y GREEN
 
-Salidas en `.docs/sdd/specs/20261101-115344-feature-0206-retire-start-skills/`, en `red/`, `green/` y `enrutado-entera/`. Sujetos en Sonnet, con superpowers 7.0.0.
+Salidas en `.docs/sdd/changes/20261101-115344-feature-0206-retire-start-skills/`, en `red/`, `green/` y `enrutado-entera/`. Sujetos en Sonnet, con superpowers 7.0.0.
 
 ## RED, sobre el commit de la Task 1
 

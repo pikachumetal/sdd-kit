@@ -1,6 +1,6 @@
 # GREEN — `sdd-implement` (feature 0147)
 
-Mismos escenarios que el [RED](sdd-implement-red.md), con el kit de la rama (copia del árbol de trabajo en el scratchpad). Batería: [`tests/batteries/sdd-implement/`](batteries/sdd-implement/battery.md); salidas en [`green/out/`](../.docs/sdd/specs/20261010-174401-feature-0147-implement-fork/green/out/).
+Mismos escenarios que el [RED](sdd-implement-red.md), con el kit de la rama (copia del árbol de trabajo en el scratchpad). Batería: [`tests/batteries/sdd-implement/`](batteries/sdd-implement/battery.md); salidas en [`green/out/`](../.docs/sdd/changes/20261010-174401-feature-0147-implement-fork/green/out/).
 
 ## Task 2 — lo movido, sin cambiar reglas (`u1`, `u2`)
 

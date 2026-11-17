@@ -1,6 +1,6 @@
 # GREEN — esfuerzo real medido en los cierres (feature 0188)
 
-Kit: copia del working tree tras las Tasks 1 y 2 y el paso 2 de `sdd-end-feature` editado (cuatro líneas), cargada con `--plugin-dir` junto a superpowers 7.0.0 y `--setting-sources ""`. `sdd-end-patch` sin editar: por la enmienda del 2026-10-15, su GREEN prueba la plantilla sola. Mismo molde y peticiones que el [RED](closing-estimation-red.md); lanzador en [`green/subject.sh`](../.docs/sdd/specs/20261015-104325-feature-0188-closing-estimation-templates/green/subject.sh), salidas en `green/out/`.
+Kit: copia del working tree tras las Tasks 1 y 2 y el paso 2 de `sdd-end-feature` editado (cuatro líneas), cargada con `--plugin-dir` junto a superpowers 7.0.0 y `--setting-sources ""`. `sdd-end-patch` sin editar: por la enmienda del 2026-10-15, su GREEN prueba la plantilla sola. Mismo molde y peticiones que el [RED](closing-estimation-red.md); lanzador en [`green/subject.sh`](../.docs/sdd/changes/20261015-104325-feature-0188-closing-estimation-templates/green/subject.sh), salidas en `green/out/`.
 
 Fecha: 2026-10-15. Coste: 0,78 $ en 3 sujetos (`p1-1` 0,28 $, `p1-2` 0,27 $, `f1-1` 0,22 $). Campaña entera: 1,51 $ en 6 sujetos, frente a la previsión de 9 $ (techo 12 $).
 

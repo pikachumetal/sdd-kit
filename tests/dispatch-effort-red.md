@@ -2,7 +2,7 @@
 
 **Qué se mide**: si el effort que declara un plan del kit es el que viaja en las peticiones a la API de un subagente despachado con `Agent` en Claude Code 2.1.281.
 
-**Método**: sondas técnicas headless (`claude -p`), no sujetos de conducta. Un proxy local (`ANTHROPIC_BASE_URL=http://127.0.0.1:8787`) registra `model`, `output_config` y `thinking` de cada petición y la reenvía intacta. Las peticiones de subagente llevan `cc_is_subagent=true` en la cabecera de facturación del system prompt. Ni `--debug-file` ni los transcripts de subagentes registran el effort. Proxy, definiciones y registros: [`red/`](../.docs/sdd/specs/20260923-213417-task-0031-dispatch-effort/red/).
+**Método**: sondas técnicas headless (`claude -p`), no sujetos de conducta. Un proxy local (`ANTHROPIC_BASE_URL=http://127.0.0.1:8787`) registra `model`, `output_config` y `thinking` de cada petición y la reenvía intacta. Las peticiones de subagente llevan `cc_is_subagent=true` en la cabecera de facturación del system prompt. Ni `--debug-file` ni los transcripts de subagentes registran el effort. Proxy, definiciones y registros: [`red/`](../.docs/sdd/changes/20260923-213417-task-0031-dispatch-effort/red/).
 
 **Por qué no hay sujetos de conducta**: el fallo es determinista (el tool `Agent` no tiene parámetro de effort) y ya hay cuatro reportes de campo: 0008 §6, 0006a §8, la fila de la 0021 y 0039 §1. En la 0039, el plan declaró «Sonnet, effort medio» y los cinco subagentes corrieron sin ese effort.
 

@@ -1,6 +1,6 @@
 # GREEN — la excepción de re-revisión se decide por lo que cambia (patch 0125)
 
-Kit del working tree con el texto nuevo en `control-profiles.md`, en el paso 6 de `sdd-start-feature` y en el paso 9 de `sdd-end-feature`, sobre `a5197b79`. Mismo lanzador, molde y hook que el [RED](re-review-exception-red.md), 2026-09-30. Salidas en [`green/out/`](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/).
+Kit del working tree con el texto nuevo en `control-profiles.md`, en el paso 6 de `sdd-start-feature` y en el paso 9 de `sdd-end-feature`, sobre `a5197b79`. Mismo lanzador, molde y hook que el [RED](re-review-exception-red.md), 2026-09-30. Salidas en [`green/out/`](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/).
 
 Escenarios del RED:
 
@@ -18,16 +18,16 @@ Criterio: (a) en `a1` y `a2`, no despacha revisor y lo anota como `revisado en e
 
 | Sujeto | Resultado |
 | --- | --- |
-| [a1-1](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a1-1.texts.txt) | ✅ (a) «15 líneas de documentación y comentario, así que los leí yo (`revisado en el hilo`)» |
-| [a1-2](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a1-2.texts.txt) | ✅ (a) sin despacho, «15 líneas de documentación y un comentario» |
-| [a2-1](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a2-1.texts.txt) | ✅ (a) «anoto `revisado en el hilo` y no abro re-revisión» |
-| [a2-2](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a2-2.texts.txt) | ✅ (a) sin despacho, `revisado en el hilo` |
-| [a3-1](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a3-1.tools.txt) | ✅ (b) `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión 0012 b3f728b..6fe62f0» |
-| [c1-1](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c1-1.tools.txt) | ✅ (b) el mismo despacho, «a054559..d523fb8» |
-| [c1-2](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c1-2.texts.txt) | ✅ (b) el mismo despacho: el `.md` «son instrucciones para un agente» |
-| [c2-1](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c2-1.texts.txt) | ✅ (b) el mismo despacho: «ESLint sí interpreta este» comentario |
-| [c2-2](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c2-2.texts.txt) | ✅ (b) el mismo despacho: «El linter interpreta ese comentario» |
-| [c3-2](../.docs/sdd/specs/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c3-2.texts.txt) | ✅ (b) el mismo despacho: «solo cubre documentación y comentarios» |
+| [a1-1](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a1-1.texts.txt) | ✅ (a) «15 líneas de documentación y comentario, así que los leí yo (`revisado en el hilo`)» |
+| [a1-2](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a1-2.texts.txt) | ✅ (a) sin despacho, «15 líneas de documentación y un comentario» |
+| [a2-1](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a2-1.texts.txt) | ✅ (a) «anoto `revisado en el hilo` y no abro re-revisión» |
+| [a2-2](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a2-2.texts.txt) | ✅ (a) sin despacho, `revisado en el hilo` |
+| [a3-1](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/a3-1.tools.txt) | ✅ (b) `Agent` `sdd-kit:effort-high` + `opus`, «Re-revisión 0012 b3f728b..6fe62f0» |
+| [c1-1](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c1-1.tools.txt) | ✅ (b) el mismo despacho, «a054559..d523fb8» |
+| [c1-2](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c1-2.texts.txt) | ✅ (b) el mismo despacho: el `.md` «son instrucciones para un agente» |
+| [c2-1](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c2-1.texts.txt) | ✅ (b) el mismo despacho: «ESLint sí interpreta este» comentario |
+| [c2-2](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c2-2.texts.txt) | ✅ (b) el mismo despacho: «El linter interpreta ese comentario» |
+| [c3-2](../.docs/sdd/changes/20260930-170633-patch-0125-re-review-exception-by-change/green/out/c3-2.texts.txt) | ✅ (b) el mismo despacho: «solo cubre documentación y comentarios» |
 
 **(a) pasa 4/4 y (b) 6/6.** Los dos controles de los bordes nuevos citan la regla: `c1` las instrucciones de un agente y `c2` el comentario que una herramienta interpreta. En el RED, (a) daba 0/4. El control `c3` salió con la etiqueta `c3-2` porque la segunda tanda lo lanzó en su lugar; es un solo sujeto.
 

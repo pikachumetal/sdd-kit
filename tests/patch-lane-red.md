@@ -1,6 +1,6 @@
 # RED — el carril patch lo decide quién fijó la solución (feature 0117)
 
-Baseline con el kit de la rama en `cf239794` (develop tras la 0124, sin guía nueva), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead) sobre el molde `ventas` de la 0098, copiado a [`red/`](../.docs/sdd/specs/20261001-153446-feature-0117-patch-lane-fixed-solution/red/) con la versión 2.2.0 y, en los escenarios p, un `index.html` con el listado. Tope por sujeto: 25 turnos en las puertas y 40 en las peticiones con `/sdd-start-patch`, 12 min. Ninguno llegó al tope. Total: 14 sujetos, 2,77 $.
+Baseline con el kit de la rama en `cf239794` (develop tras la 0124, sin guía nueva), sujetos Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead) sobre el molde `ventas` de la 0098, copiado a [`red/`](../.docs/sdd/changes/20261001-153446-feature-0117-patch-lane-fixed-solution/red/) con la versión 2.2.0 y, en los escenarios p, un `index.html` con el listado. Tope por sujeto: 25 turnos en las puertas y 40 en las peticiones con `/sdd-start-patch`, 12 min. Ninguno llegó al tope. Total: 14 sujetos, 2,77 $.
 
 ## Conducta
 

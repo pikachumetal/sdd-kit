@@ -1,6 +1,6 @@
 # GREEN — el gate de los proyectos por niveles y por lo afectado (feature 0236)
 
-Kit de la rama sin commitear (copia de `skills`, `.claude-plugin`, `cli` sin `node_modules` y `hooks`), sujetos headless Sonnet, superpowers 7.0.0. Salidas en `.docs/sdd/specs/20261029-082734-feature-0236-project-gate-levels/green/out/`. RED en [`project-gate-levels-red.md`](project-gate-levels-red.md).
+Kit de la rama sin commitear (copia de `skills`, `.claude-plugin`, `cli` sin `node_modules` y `hooks`), sujetos headless Sonnet, superpowers 7.0.0. Salidas en `.docs/sdd/changes/20261029-082734-feature-0236-project-gate-levels/green/out/`. RED en [`project-gate-levels-red.md`](project-gate-levels-red.md).
 
 ## Task 1 — los campos de `operations.md` y quien los propone
 

@@ -72,7 +72,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 5. Rojos del humo que también salen con el kit de `develop`
 
 - **Qué pasó**: con el kit de `develop` (control, N=1) fallan igual: `pt1` de `sdd-implement` (PT-B: despacha un revisor «Revisar patch 0015» en un patch); `u1` (U1: para sin dejar la enmienda escrita en `spec.md`; U1r: sin el revisor `sonnet` de la enmienda); `h1` y `h2` (W: no dicen dónde está el workspace del plan ni qué guarda; `h1` A: `git add -A`); `c1` de `sdd-verify` (C1: sin ✋ al parar); `n1` de `sdd-init` (C2: quita el puerto sin decir que vive en `operations.md`); `d1` de `sdd-debugging` (C: atribuye la causa a `"type": "module"` y no al `GIT_INDEX_FILE` heredado)
-- **Fuente**: `.docs/sdd/specs/20261109-143437-feature-0311-includes-and-checks/control2-*/out/` y `control-sdd-implement/out/pt1-1.tools.txt` → `>>> Agent: … · Revisar patch 0015`
+- **Fuente**: `.docs/sdd/changes/20261109-143437-feature-0311-includes-and-checks/control2-*/out/` y `control-sdd-implement/out/pt1-1.tools.txt` → `>>> Agent: … · Revisar patch 0015`
 - **Dónde en el kit**: `skills/sdd-implement/references/patch-flow.md` (pt1), la inclusión `deviation` en `skills/sdd-implement/SKILL.md` (u1), `skills/sdd-implement/SKILL.md` Overview (W), `skills/sdd-verify/references/closing-the-review.md` (c1), `skills/sdd-init/SKILL.md` (n1), `skills/sdd-debugging/SKILL.md` (d1)
 - **Por qué el kit no lo evitó**: no localizado; son rojos de la base con N=1, sin RED propio
 - **Coste**: 11 sujetos de control, ~6 $ (walkthrough §2, coste de sujetos)

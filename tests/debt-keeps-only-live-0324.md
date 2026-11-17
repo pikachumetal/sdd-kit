@@ -1,6 +1,6 @@
 # La deuda guarda solo lo vivo (patch 0324)
 
-Evidencia en `.docs/sdd/specs/20261109-134853-patch-0324-debt-keeps-only-live/` (`red/out/`, `green/out/`). Sonnet, n = 1 por frente. RED con el kit de `ce4a45f7`; GREEN con el `dist/` del fix.
+Evidencia en `.docs/sdd/changes/20261109-134853-patch-0324-debt-keeps-only-live/` (`red/out/`, `green/out/`). Sonnet, n = 1 por frente. RED con el kit de `ce4a45f7`; GREEN con el `dist/` del fix.
 
 | Frente | Skill | RED | GREEN |
 | --- | --- | --- | --- |

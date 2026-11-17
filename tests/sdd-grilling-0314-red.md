@@ -1,6 +1,6 @@
 # RED — feature 0314: `sdd-grilling` frente a brainstorming 7.0.2
 
-Kit de `HEAD` en `4284ad1e` (`git archive HEAD:dist`), batería de `sdd-grilling`, escenarios `p1`-`p3`, n = 2, Sonnet, 2026-11-08. Coste: 6 sujetos, 1,21 $. Puerta `sdd-kit:sdd-propose` en los 6. Salidas en `.docs/sdd/specs/20261108-184606-feature-0314-grilling-brainstorming-7/red/out/`.
+Kit de `HEAD` en `4284ad1e` (`git archive HEAD:dist`), batería de `sdd-grilling`, escenarios `p1`-`p3`, n = 2, Sonnet, 2026-11-08. Coste: 6 sujetos, 1,21 $. Puerta `sdd-kit:sdd-propose` en los 6. Salidas en `.docs/sdd/changes/20261108-184606-feature-0314-grilling-brainstorming-7/red/out/`.
 
 Se puntúa el último mensaje del turno (rúbrica de `tests/batteries/sdd-grilling/battery.md`). Las operativas del llamante (carril, perfil, aprobar) no cuentan en W1-W3.
 

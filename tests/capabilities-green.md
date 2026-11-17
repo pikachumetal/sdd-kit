@@ -2,7 +2,7 @@
 
 Kit de la rama `feature/0003` tras `9a2089a`, servido desde una copia limpia con `--plugin-dir`. Mismos moldes y peticiones que E1 y E2 del [RED](capabilities-red.md), dos sujetos headless Sonnet por escenario. Cuatro sujetos, 3,20 $ en total. E3–E5 no se repiten: no fallaron en el RED.
 
-Moldes y lo que produjo cada sujeto: [`green/`](../.docs/sdd/specs/20260921-081125-task-0003-cap-lifecycle/green/). Lanzador: el mismo `red/run.sh`, apuntado a `green/`.
+Moldes y lo que produjo cada sujeto: [`green/`](../.docs/sdd/changes/20260921-081125-task-0003-cap-lifecycle/green/). Lanzador: el mismo `red/run.sh`, apuntado a `green/`.
 
 ## Veredicto por fallo del RED
 

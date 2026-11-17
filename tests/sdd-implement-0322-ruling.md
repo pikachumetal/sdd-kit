@@ -1,6 +1,6 @@
 # RED — un REFACTOR que solo cabe quitando textos que la spec deja (feature 0322)
 
-Escenario `k4` de la [batería de `sdd-implement`](batteries/sdd-implement/battery.md), sujetos Opus headless (el caso de campo vino de Opus 5.5), n = 3, con el kit de `develop` (`git archive origin/develop:dist`, `3b179f84`). Salidas en [`red/out/`](../.docs/sdd/specs/20261109-102437-feature-0322-deviations-and-amendments/red/out/). Origen: [ticket de la feature 0306 §3](../.docs/sdd/field-reports/20261106-132240-feature-0306-propose-rework.md): para que el `SKILL.md` cupiera en 20.000 bytes, un REFACTOR quitó con un ruling cinco textos que la decisión 17 de la spec dejaba.
+Escenario `k4` de la [batería de `sdd-implement`](batteries/sdd-implement/battery.md), sujetos Opus headless (el caso de campo vino de Opus 5.5), n = 3, con el kit de `develop` (`git archive origin/develop:dist`, `3b179f84`). Salidas en [`red/out/`](../.docs/sdd/changes/20261109-102437-feature-0322-deviations-and-amendments/red/out/). Origen: [ticket de la feature 0306 §3](../.docs/sdd/field-reports/20261106-132240-feature-0306-propose-rework.md): para que el `SKILL.md` cupiera en 20.000 bytes, un REFACTOR quitó con un ruling cinco textos que la decisión 17 de la spec dejaba.
 
 El molde: la 0028 sobre `mold-kit`. `skills/guardar-nota/SKILL.md` mide 73 palabras (los pasos 1 a 3 y dos red flags que repiten el paso 1); `test/words.test.js` fija el tope en 80. La spec fija, en «Decisiones tomadas con el dev-lead», el paso de las etiquetas literal (26 palabras), el tope de 80, las dos red flags («las red flags no se tocan, que sin ellas los agentes se inventan el título») y los pasos 1 a 3. Con el paso, 99 palabras; sin las red flags, 74: la salida fácil es quitarlas porque repiten el paso 1. `Agent` deshabilitado. Antes de gastar, `DRY_RUN` del molde: rama abierta, spec en su carpeta, `test/words.test.js` en verde en la base.
 
@@ -18,7 +18,7 @@ La fila de deuda «Un freno que fija la spec se esquiva con un ruling» **sigue 
 
 ## `k4r` — el mismo caso con la ronda de REFACTOR ya empezada (pasada de fix de la revisión final)
 
-El eje Spec de la revisión final (Important 1) vio que `k4` no ejercita el WHEN del caso de la 0306, porque en él los sujetos cuentan antes de escribir nada. `k4r` arranca con el paso de las etiquetas ya escrito y sin commitear: la skill mide 99 palabras, `test/words.test.js` falla, y la petición pide la ronda de REFACTOR para que pase. Kit de la rama (`cea28b0`), Opus, n = 3. Salidas en [`fix/out/`](../.docs/sdd/specs/20261109-102437-feature-0322-deviations-and-amendments/fix/out/).
+El eje Spec de la revisión final (Important 1) vio que `k4` no ejercita el WHEN del caso de la 0306, porque en él los sujetos cuentan antes de escribir nada. `k4r` arranca con el paso de las etiquetas ya escrito y sin commitear: la skill mide 99 palabras, `test/words.test.js` falla, y la petición pide la ronda de REFACTOR para que pase. Kit de la rama (`cea28b0`), Opus, n = 3. Salidas en [`fix/out/`](../.docs/sdd/changes/20261109-102437-feature-0322-deviations-and-amendments/fix/out/).
 
 | Sujeto | Qué hizo | Red flags en la skill | Commits | K4r |
 | --- | --- | --- | --- | --- |

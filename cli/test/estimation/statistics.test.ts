@@ -198,8 +198,8 @@ describe('walkthrough con evidencia por THEN', () => {
     .replace(/^- Estimación de implementación \(del plan\): <Yh>/m, '- Estimación de implementación (del plan): 2h')
     .replace(/^- Esfuerzo real: <[^\n]*/m, '- Esfuerzo real: 3h')
     .replace(/^feature: <id>/m, 'feature: 0100');
-  const closedFolder = readdirSync(join(repoRoot, '.docs/sdd/specs')).find((name) => name.includes('-task-0077-'))!;
-  const closed = readFileSync(join(repoRoot, '.docs/sdd/specs', closedFolder, 'walkthrough.md'), 'utf8');
+  const closedFolder = readdirSync(join(repoRoot, '.docs/sdd/changes')).find((name) => name.includes('-task-0077-'))!;
+  const closed = readFileSync(join(repoRoot, '.docs/sdd/changes', closedFolder, 'walkthrough.md'), 'utf8');
   const { text, warnings } = build(
     project({
       'specs/20260926-100000-feature-0100-nuevo/walkthrough.md': filled,

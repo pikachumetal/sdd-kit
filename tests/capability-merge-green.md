@@ -1,6 +1,6 @@
 # GREEN — la fusión del delta de capacidades (feature 0124)
 
-Mismos escenarios y molde que el [RED](capability-merge-red.md), con el kit de la rama (`Merge-CapabilityDelta.ps1`, el validador de la Task 1 y la guía nueva en el paso 4 de `sdd-end-feature`, `aprendizajes-skills.md`, el paso 1 de `sdd-end-patch` y el paso 7 de `sdd-start-feature`), 2026-10-01. Salidas en [`green/out/`](../.docs/sdd/specs/20261001-130008-feature-0124-capability-delta-merge/green/out/). Gastado en el GREEN: 5 sujetos, 0,82 $, ~6 min. Campaña entera: 10 sujetos de 13, 1,68 $ de 7 $ de techo, sin tanda de REFACTOR.
+Mismos escenarios y molde que el [RED](capability-merge-red.md), con el kit de la rama (`Merge-CapabilityDelta.ps1`, el validador de la Task 1 y la guía nueva en el paso 4 de `sdd-end-feature`, `aprendizajes-skills.md`, el paso 1 de `sdd-end-patch` y el paso 7 de `sdd-start-feature`), 2026-10-01. Salidas en [`green/out/`](../.docs/sdd/changes/20261001-130008-feature-0124-capability-delta-merge/green/out/). Gastado en el GREEN: 5 sujetos, 0,82 $, ~6 min. Campaña entera: 10 sujetos de 13, 1,68 $ de 7 $ de techo, sin tanda de REFACTOR.
 
 ## Fallos del RED
 

@@ -3,7 +3,7 @@
 - **Fecha**: 2026-11-05. **Kit**: `develop` (`3bcfb4fd`), copiado con `git archive develop:dist`.
 - **Batería**: `tests/batteries/sdd-rubber-duck/` (`SCENARIOS=s3`, luego `SCENARIOS=s4`; `PHASE=red`), molde `exportes`.
 - **Sujetos**: 6. `s3`, 3 con Opus 5.5, porque el fallo de campo vino de Opus; `s4`, 3 con Sonnet, a petición del dev-lead («puedes probar con sonnet a ver si lo saca red?»). **Coste**: 0,97 $ (`s3` 0,67 $, `s4` 0,30 $; previsión ~2,5 $ con el GREEN).
-- **Salidas**: [`red/out/`](../.docs/sdd/specs/20261105-102427-patch-0317-duck-checked-effects/red/out/).
+- **Salidas**: [`red/out/`](../.docs/sdd/changes/20261105-102427-patch-0317-duck-checked-effects/red/out/).
 - **Veredicto de puerta**: verde en los dos escenarios (3/3 invocan `sdd-kit:sdd-rubber-duck`). La conducta la lee la fila R11.
 
 ## Veredicto de conducta

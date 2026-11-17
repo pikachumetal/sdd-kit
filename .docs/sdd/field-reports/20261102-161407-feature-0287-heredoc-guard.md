@@ -28,7 +28,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. Una clasificación por forma se presentó como medida de falsos positivos, y no podía detectarlos
 
 - **Qué pasó**: la spec prometía mirar a mano cada parada del barrido por transcripts. Salieron 520 y las clasifiqué por forma: «465, 55, 0 de otra forma». El eje Spec señaló que el «0» no prueba nada: toda parada es de una de las dos formas por construcción. Lo cambié en el walkthrough por lo que se miró de verdad, y los falsos positivos quedan sin censo.
-- **Fuente**: `.docs/sdd/specs/20261102-145840-feature-0287-heredoc-guard/spec.md`, decisión 9, y su `walkthrough.md`, §4.2.
+- **Fuente**: `.docs/sdd/changes/20261102-145840-feature-0287-heredoc-guard/spec.md`, decisión 9, y su `walkthrough.md`, §4.2.
 - **Dónde en el kit**: `skills/sdd-verify/SKILL.md`, «Requirements» y la tabla «Common Failures»: no nombran una medida que no puede dar otro resultado.
 - **Por qué el kit no lo evitó**: la regla de evidencia pide un comando y su salida, y esto los tenía. Lo cazó la revisión, no una regla.
 - **Coste**: parte del eje Spec, que rehízo su barrido; sin desglose, sin respaldo.

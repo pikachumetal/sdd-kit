@@ -1,6 +1,6 @@
 # RED — capacidades al nacer (task 0033)
 
-Evidencia completa, moldes y salidas: `.docs/sdd/specs/20260923-105726-task-0033-capabilities-at-birth/red/`. Kit en `3c565a4`, sujetos Sonnet de un turno, 7 sujetos, 3,73 $.
+Evidencia completa, moldes y salidas: `.docs/sdd/changes/20260923-105726-task-0033-capabilities-at-birth/red/`. Kit en `3c565a4`, sujetos Sonnet de un turno, 7 sujetos, 3,73 $.
 
 | Frente | Escenario | Resultado |
 | --- | --- | --- |

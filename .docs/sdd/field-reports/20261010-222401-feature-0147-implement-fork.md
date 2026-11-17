@@ -17,7 +17,7 @@ date: 2026-10-11
 - Proyecto: el propio kit (skills en Markdown, CLI en TypeScript, Pester y Vitest), una persona
 - Modelo del hilo: Opus 5.5, effort no registrado
 - Modelos de los subagentes: revisor final Opus; 27 sujetos válidos Sonnet en la batería nueva
-- Coste en reloj: ~2,3 h de spec y plan + ~2,5 h de implementación y cierre, frente a 5 h estimadas para implementar ([walkthrough](../specs/20261010-174401-feature-0147-implement-fork/walkthrough.md) §2)
+- Coste en reloj: ~2,3 h de spec y plan + ~2,5 h de implementación y cierre, frente a 5 h estimadas para implementar ([walkthrough](../changes/20261010-174401-feature-0147-implement-fork/walkthrough.md) §2)
 - Coste en tokens: 145 M (hilo 142 M + revisor final 3,1 M), 44,34 $; sujetos ~16,7 $ válidos + ~3 $ invalidados
 
 ## Cómo leer este ticket
@@ -41,7 +41,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Qué pasó**: el primer RED de `tests/batteries/sdd-implement/` salió con tres defectos del molde (tests de la base en rojo en `r1`-`r3`, un THEN de la spec sin datos que llevó `r4` y `h2` a la acción update, una «Verificación» mal sustituida en la 0014). Tres sujetos inválidos y dos relanzamientos.
 - **Dónde en el kit**: `.docs/sdd/tech-stack.md`, «Comprobación previa de cada escenario» (siete preguntas).
 - **Por qué el kit no lo evitó**: ninguna de las siete preguntas pide pasar la suite del molde montado (en seco) y ver que solo fallan los RED del escenario; la (2) mira lo preexistente en el commit base, no que esté en verde. La comprobé con `DRY_RUN=1` solo después del primer RED.
-- **Coste**: ~3 $ en sujetos invalidados y ~20 min ([walkthrough](../specs/20261010-174401-feature-0147-implement-fork/walkthrough.md) §2 y §3; [RED](../../../tests/sdd-implement-red.md), «Molde»).
+- **Coste**: ~3 $ en sujetos invalidados y ~20 min ([walkthrough](../changes/20261010-174401-feature-0147-implement-fork/walkthrough.md) §2 y §3; [RED](../../../tests/sdd-implement-red.md), «Molde»).
 - **Propuesta**: octava pregunta: «con `DRY_RUN=1`, ¿la suite del molde montado sale en verde salvo los RED que el escenario planta, y cada THEN del molde tiene de dónde sacar sus datos?».
 - **Verificada**: sí — tras corregir el molde, la comprobación en seco (`node --test` en cada repo de `runs/dry/`) mostró solo los RED esperados y el relanzamiento midió lo que tocaba.
 - **Criterio de aceptación**: GIVEN una batería nueva cuyo molde rompe un test de la base WHEN se aplica la comprobación previa THEN se ve antes del primer sujeto.

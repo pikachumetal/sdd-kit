@@ -2,7 +2,7 @@
 
 Repite el RED ([verify-gate-red.md](verify-gate-red.md)) con el mismo molde, la misma petición y el kit con el fix. El fix es la viñeta `-VerifyCommand` de `merge-recipe.md`: el parámetro es el gate de merge que declara `tech-stack.md` §Testing (el conjunto rápido si el proyecto separa), la suite completa se ejecuta antes de llamar al script y la omisión por hook no la alcanza.
 
-- Salidas: `.docs/sdd/specs/20260923-212835-patch-0051-verify-gate/green/out/`.
+- Salidas: `.docs/sdd/changes/20260923-212835-patch-0051-verify-gate/green/out/`.
 - Coste: 0,57 $ (green-1 0,28 $; green-2 0,29 $).
 
 ## Resultado

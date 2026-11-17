@@ -1,6 +1,6 @@
 # RED — un E2E sin flujo core se queda en la suite (patch 0278)
 
-Baseline del [patch 0278](../.docs/sdd/specs/20261101-164101-patch-0278-e2e-titles-core-flows/patch.md), con el kit de la rama antes del fix (`git archive 0f35eed3`). Sujeto Sonnet con `tests/headless/run.mjs` y superpowers. Molde `hojas` de `tests/batteries/sdd-verify/`: «Flujos core» declarados y «formatea una celda como moneda» fuera de la lista. Lanzador y salidas: [`red/`](../.docs/sdd/specs/20261101-164101-patch-0278-e2e-titles-core-flows/red/).
+Baseline del [patch 0278](../.docs/sdd/changes/20261101-164101-patch-0278-e2e-titles-core-flows/patch.md), con el kit de la rama antes del fix (`git archive 0f35eed3`). Sujeto Sonnet con `tests/headless/run.mjs` y superpowers. Molde `hojas` de `tests/batteries/sdd-verify/`: «Flujos core» declarados y «formatea una celda como moneda» fuera de la lista. Lanzador y salidas: [`red/`](../.docs/sdd/changes/20261101-164101-patch-0278-e2e-titles-core-flows/red/).
 
 ## t1 — una task añade un E2E
 

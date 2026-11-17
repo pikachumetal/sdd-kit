@@ -24,7 +24,7 @@ Baseline con `sdd-consult` **sin modificar** (estado v0.5.0 + Task 1 de esta tas
 | --- | --- |
 | `git branch` | solo `develop` y `main` |
 | `git status --short` | limpio |
-| `.docs/sdd/specs/` | solo `.gitkeep` |
+| `.docs/sdd/changes/` | solo `.gitkeep` |
 | `src/`, `tests/` | intactos |
 | Skills invocadas con `Skill` | ninguna |
 | Último mensaje | respuesta razonada («Sí, se puede, y sin tocar `package.json`») con tres puntos de atención (escapado CSV, contrato público, decisiones de formato pendientes en el roadmap) y handoff a `sdd-start-task` |

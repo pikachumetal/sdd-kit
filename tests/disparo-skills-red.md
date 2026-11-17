@@ -1,6 +1,6 @@
 # Evidencia RED — disparo de las skills (2026-09-09)
 
-Baseline de la task [disparo-skills](../.docs/sdd/specs/20260909-162118-task-0000-disparo-skills/spec.md) (T13). Pregunta: cuando el dev dice «implementa la task 77 del roadmap» **sin nombrar ninguna skill**, ¿Claude Code invoca `sdd-kit:sdd-start-task` por su `description`? Si dispara, no se toca ni la `description` ni el `CLAUDE.md` que escriben `init-*`.
+Baseline de la task [disparo-skills](../.docs/sdd/changes/20260909-162118-task-0000-disparo-skills/spec.md) (T13). Pregunta: cuando el dev dice «implementa la task 77 del roadmap» **sin nombrar ninguna skill**, ¿Claude Code invoca `sdd-kit:sdd-start-task` por su `description`? Si dispara, no se toca ni la `description` ni el `CLAUDE.md` que escriben `init-*`.
 
 ## Método
 

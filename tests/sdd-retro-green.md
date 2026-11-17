@@ -1,6 +1,6 @@
 # GREEN — `sdd-retro` (feature 0277)
 
-Sujetos Sonnet, mismas baterías que el [RED](sdd-retro-red.md). Salidas en `.docs/sdd/specs/20261101-191641-feature-0277-sdd-retro/green/out/`. Coste de la campaña, RED incluido: 5,91 $ del kit más 0,43 $ del contraste de `rc2`.
+Sujetos Sonnet, mismas baterías que el [RED](sdd-retro-red.md). Salidas en `.docs/sdd/changes/20261101-191641-feature-0277-sdd-retro/green/out/`. Coste de la campaña, RED incluido: 5,91 $ del kit más 0,43 $ del contraste de `rc2`.
 
 La última medida, tras la revisión final, está en `out/`; las anteriores, en `out/ronda-1/`, `ronda-2/` y `ronda-3/`.
 

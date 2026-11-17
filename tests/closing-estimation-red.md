@@ -1,6 +1,6 @@
 # RED — estimación post hoc y esfuerzo real en los cierres (feature 0188)
 
-Baseline: el kit del commit de apertura `08f3176e` (sin la línea `Esfuerzo real` de la CLI ni las plantillas nuevas), cargado con `--plugin-dir` junto a superpowers 7.0.0 y `--setting-sources ""`. Sujetos Sonnet, un turno. Molde y lanzador: [`red/subject.sh`](../.docs/sdd/specs/20261015-104325-feature-0188-closing-estimation-templates/red/subject.sh); salidas en `red/out/`.
+Baseline: el kit del commit de apertura `08f3176e` (sin la línea `Esfuerzo real` de la CLI ni las plantillas nuevas), cargado con `--plugin-dir` junto a superpowers 7.0.0 y `--setting-sources ""`. Sujetos Sonnet, un turno. Molde y lanzador: [`red/subject.sh`](../.docs/sdd/changes/20261015-104325-feature-0188-closing-estimation-templates/red/subject.sh); salidas en `red/out/`.
 
 Fecha: 2026-10-15. Coste: 0,73 $ en 3 sujetos (`p1-1` 0,28 $, `p1-2` 0,31 $, `f1-1` 0,15 $).
 

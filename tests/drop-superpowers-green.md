@@ -1,6 +1,6 @@
 # GREEN — retirar la dependencia de superpowers (feature 0279)
 
-Sujetos Sonnet sin `SUPERPOWERS_DIR`, salvo el control. 14 sujetos en esta tanda, RED incluido, 2,68 $, frente a los 14,4 $ previstos: el molde `salas3` salta los pasos 1 a 6 y cada sujeto cuesta ~0,2 $, no los ~1,5 $ estimados. Salidas en `.docs/sdd/specs/20261101-175350-feature-0279-drop-superpowers-dependency/`, en `green/`, `green-s3/` y `green-sp/`.
+Sujetos Sonnet sin `SUPERPOWERS_DIR`, salvo el control. 14 sujetos en esta tanda, RED incluido, 2,68 $, frente a los 14,4 $ previstos: el molde `salas3` salta los pasos 1 a 6 y cada sujeto cuesta ~0,2 $, no los ~1,5 $ estimados. Salidas en `.docs/sdd/changes/20261101-175350-feature-0279-drop-superpowers-dependency/`, en `green/`, `green-s3/` y `green-sp/`.
 
 | Escenario | Qué mide | Resultado | Evidencia |
 | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # GREEN — freno por regiones, `tasks.md` y oferta de gama media (feature 0186)
 
-Sujetos headless en Opus, en serie, superpowers 7.0.0, kit de la rama. Salidas por tanda en [`green/`, `refactor/`, `enmienda/`, `control/`, `enmienda-g1/`, `g2-sin/` y `final/`](../.docs/sdd/specs/20261031-182430-feature-0186-implement-deviations-and-brakes/). RED: [implement-brakes-0186-red.md](implement-brakes-0186-red.md).
+Sujetos headless en Opus, en serie, superpowers 7.0.0, kit de la rama. Salidas por tanda en [`green/`, `refactor/`, `enmienda/`, `control/`, `enmienda-g1/`, `g2-sin/` y `final/`](../.docs/sdd/changes/20261031-182430-feature-0186-implement-deviations-and-brakes/). RED: [implement-brakes-0186-red.md](implement-brakes-0186-red.md).
 
 | Frente | Sujeto | Qué hizo | Veredicto |
 | --- | --- | --- | --- |

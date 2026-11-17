@@ -1,6 +1,6 @@
 # RED — E2E en la revisión y el cierre (feature 0207)
 
-Campaña previa a la spec de la [feature 0207](../.docs/sdd/specs/20261021-174559-feature-0207-e2e-review-and-closing/spec.md), con el kit de `develop` en `a7f9afb6` (los campos E2E de `operations.md` ya existen; ni el eje Código ni el cierre los leen). Sujetos Sonnet con `tests/headless/run.sh` y superpowers 7.0.0, como escenarios nuevos de las baterías: `f5` en la de `sdd-verify` y `e1` y `e2` en la de `sdd-archive`. Salidas en [`red/out/`](../.docs/sdd/specs/20261021-174559-feature-0207-e2e-review-and-closing/red/out/). 6 sujetos, 2,48 $.
+Campaña previa a la spec de la [feature 0207](../.docs/sdd/changes/20261021-174559-feature-0207-e2e-review-and-closing/spec.md), con el kit de `develop` en `a7f9afb6` (los campos E2E de `operations.md` ya existen; ni el eje Código ni el cierre los leen). Sujetos Sonnet con `tests/headless/run.sh` y superpowers 7.0.0, como escenarios nuevos de las baterías: `f5` en la de `sdd-verify` y `e1` y `e2` en la de `sdd-archive`. Salidas en [`red/out/`](../.docs/sdd/changes/20261021-174559-feature-0207-e2e-review-and-closing/red/out/). 6 sujetos, 2,48 $.
 
 ## f5 — eje Código sobre la 0024 de `hojas`
 

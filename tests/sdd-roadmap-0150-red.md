@@ -1,6 +1,6 @@
 # RED — feature 0150: roadmap Now / Next / Later y debt.md con triaje
 
-Kit del commit de apertura (`bc53694a`, `git archive` al scratchpad, sin `.docs/` ni `tests/`: ver «Cambios en la campaña»), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Baterías `tests/batteries/sdd-roadmap/` (m3, m4, m5) y `tests/batteries/using-sdd/` (r7). Salidas en `.docs/sdd/specs/20261013-112220-feature-0150-roadmap-triage-release-feedback/red/out/`. 10 sujetos válidos y 2 apartados, 2,36 $ en total con fb1 (`tests/sdd-feedback-0150-red.md`).
+Kit del commit de apertura (`bc53694a`, `git archive` al scratchpad, sin `.docs/` ni `tests/`: ver «Cambios en la campaña»), Sonnet, superpowers 7.0.0 en `SUPERPOWERS_DIR`. Baterías `tests/batteries/sdd-roadmap/` (m3, m4, m5) y `tests/batteries/using-sdd/` (r7). Salidas en `.docs/sdd/changes/20261013-112220-feature-0150-roadmap-triage-release-feedback/red/out/`. 10 sujetos válidos y 2 apartados, 2,36 $ en total con fb1 (`tests/sdd-feedback-0150-red.md`).
 
 La puerta de `battery.sh` sale verde en todos: el triaje, el prompt y el «apunta» entran por `sdd-roadmap` sin la regla nueva. La conducta se lee con la rúbrica de la batería.
 
@@ -35,4 +35,4 @@ La puerta de `battery.sh` sale verde en todos: el triaje, el prompt y el «apunt
 
 - **m3b se añadió tras el m3 limpio**, por decisión del dev-lead («Otra tanda con un caso de campo»): molde `salas-3-wt`, con un ticket de soporte que da «40 s con 1.000 reservas» citando el walkthrough de la 0012, que mide 4 s. 2 sujetos más, 0,39 $; la campaña RED suma 13 sujetos y 2,75 $.
 
-- **La primera tanda de m3 estaba contaminada.** `git archive` del commit de apertura metió `.docs/` y `tests/` en la copia del kit, y m3-1 y m3-2 leyeron las secciones de triaje de la spec de esta feature desde ella (`grep -n -i "triar\|debt\|deuda" .docs/sdd/specs/20261013-112220-feature-0150-…/spec.md`). Sus salidas están en `red-contaminated/out/` y su coste cuenta en el techo. La copia del kit pasó a no llevar `.docs/` ni `tests/`, y m3 se relanzó. m4, m5 y r7 no leyeron `.docs/` del kit: se quedan.
+- **La primera tanda de m3 estaba contaminada.** `git archive` del commit de apertura metió `.docs/` y `tests/` en la copia del kit, y m3-1 y m3-2 leyeron las secciones de triaje de la spec de esta feature desde ella (`grep -n -i "triar\|debt\|deuda" .docs/sdd/changes/20261013-112220-feature-0150-…/spec.md`). Sus salidas están en `red-contaminated/out/` y su coste cuenta en el techo. La copia del kit pasó a no llevar `.docs/` ni `tests/`, y m3 se relanzó. m4, m5 y r7 no leyeron `.docs/` del kit: se quedan.

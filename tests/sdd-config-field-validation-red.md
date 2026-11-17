@@ -1,6 +1,6 @@
 # RED — `sdd-config` pregunta la validación en campo (feature 0127)
 
-Baseline con el kit de `develop` (`86fa0f12`, 2.2.0 más lo cerrado de la 2.3.0, la 0118 incluida), 2026-10-01. Mide si `sdd-config`, la migración a v2.3.0 y la init greenfield preguntan `validation.mode` cuando falta. Hoy la clave solo existe en `control-profiles.md` (sección «Validación en campo» y tabla «Claves de sdd-kit.json»); el catálogo de `sdd-config` no la tiene. Molde `salas` sintético en [red/subject.sh](../.docs/sdd/specs/20261001-112831-feature-0127-sdd-config-field-validation/red/subject.sh); salidas en `red/out/` de la misma carpeta.
+Baseline con el kit de `develop` (`86fa0f12`, 2.2.0 más lo cerrado de la 2.3.0, la 0118 incluida), 2026-10-01. Mide si `sdd-config`, la migración a v2.3.0 y la init greenfield preguntan `validation.mode` cuando falta. Hoy la clave solo existe en `control-profiles.md` (sección «Validación en campo» y tabla «Claves de sdd-kit.json»); el catálogo de `sdd-config` no la tiene. Molde `salas` sintético en [red/subject.sh](../.docs/sdd/changes/20261001-112831-feature-0127-sdd-config-field-validation/red/subject.sh); salidas en `red/out/` de la misma carpeta.
 
 ## Previsión de la campaña (Art. I)
 

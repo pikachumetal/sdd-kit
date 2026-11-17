@@ -1,6 +1,6 @@
 # GREEN — cierre de filas del roadmap (task 0018)
 
-Mismos moldes, lanzador y turnos que el [RED](roadmap-closing-red.md), sobre una copia del kit con la guía nueva: el bloque «Formato de cierre» de `roadmap-template.md` y la cita desde el paso 8 de `sdd-end-task` y el paso 4 de `sdd-end-patch`. Salida en `.docs/sdd/specs/20260922-153902-task-0018-roadmap-closing/green/out/`.
+Mismos moldes, lanzador y turnos que el [RED](roadmap-closing-red.md), sobre una copia del kit con la guía nueva: el bloque «Formato de cierre» de `roadmap-template.md` y la cita desde el paso 8 de `sdd-end-task` y el paso 4 de `sdd-end-patch`. Salida en `.docs/sdd/changes/20260922-153902-task-0018-roadmap-closing/green/out/`.
 
 - Ronda 1 (`t-green-*`, `p-green-*`): guía tal como quedó en `f688ecc`.
 - Ronda 2 (`t-green2-*`): la plantilla precisa que `<enlace>` es un enlace Markdown (`[walkthrough](…)` o `[patch](…)`), porque en la ronda 1 las dos tasks escribieron la ruta suelta.

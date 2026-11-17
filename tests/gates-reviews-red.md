@@ -1,6 +1,6 @@
 # Evidencia RED — gates y reviews proporcionales (2026-09-09)
 
-Baseline de la task [gates-y-reviews](../.docs/sdd/specs/20260909-131802-task-0000-gates-y-reviews/spec.md) (T11). Sujetos Sonnet en sesión headless sobre una **copia limpia del kit** (`skills/` + `.claude-plugin/`) con las **plantillas de Task 1 ya aplicadas** (bloque de decisiones del plan, líneas de review y validación, referencia a `review-spec.md` desde `spec-template`) y las **skills vigentes** (`ed609b9`: sin rúbrica enlazada, sin gate de validación). Lo que se mide es qué hace la disciplina de las skills cuando la forma ya está en las plantillas. Verificación en disco (`verify-rev.py`) y en el JSON de salida; en E3, en el `stream-json`.
+Baseline de la task [gates-y-reviews](../.docs/sdd/changes/20260909-131802-task-0000-gates-y-reviews/spec.md) (T11). Sujetos Sonnet en sesión headless sobre una **copia limpia del kit** (`skills/` + `.claude-plugin/`) con las **plantillas de Task 1 ya aplicadas** (bloque de decisiones del plan, líneas de review y validación, referencia a `review-spec.md` desde `spec-template`) y las **skills vigentes** (`ed609b9`: sin rúbrica enlazada, sin gate de validación). Lo que se mide es qué hace la disciplina de las skills cuando la forma ya está en las plantillas. Verificación en disco (`verify-rev.py`) y en el JSON de salida; en E3, en el `stream-json`.
 
 ## Método (novedades respecto a T10)
 

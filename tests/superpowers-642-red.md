@@ -23,7 +23,7 @@ RED previo al fix (Art. I y Art. V), sobre `develop` en `c885270` con superpower
 
 ## Sujetos
 
-Molde de la task 0006: la spec de la 0012 aprobada, perfil `delegate` y la petición «Escribe el plan.md y para ahí». Lanzador: [`subject.sh`](../.docs/sdd/specs/20260927-105403-patch-0082-superpowers-obra-642/red/subject.sh), con `tests/headless/run.sh`. El kit es una copia del working tree con `plan-template.md` de `HEAD`. La spec tiene 62 líneas.
+Molde de la task 0006: la spec de la 0012 aprobada, perfil `delegate` y la petición «Escribe el plan.md y para ahí». Lanzador: [`subject.sh`](../.docs/sdd/changes/20260927-105403-patch-0082-superpowers-obra-642/red/subject.sh), con `tests/headless/run.sh`. El kit es una copia del working tree con `plan-template.md` de `HEAD`. La spec tiene 62 líneas.
 
 | Sujeto | Coste | Plan | Líneas en bloques de código | Resultado |
 | --- | --- | --- | --- | --- |

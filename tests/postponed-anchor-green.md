@@ -1,6 +1,6 @@
 # Evidencia GREEN — anclaje pospuesto (2026-09-22)
 
-Mismos escenarios que [el RED](postponed-anchor-red.md) más E3 (greenfield). 12 sujetos Sonnet headless, 6,92 $. Detalle por sujeto: [`green/`](../.docs/sdd/specs/20260922-083703-task-0013-postponed-anchor/green/README.md).
+Mismos escenarios que [el RED](postponed-anchor-red.md) más E3 (greenfield). 12 sujetos Sonnet headless, 6,92 $. Detalle por sujeto: [`green/`](../.docs/sdd/changes/20260922-083703-task-0013-postponed-anchor/green/README.md).
 
 | THEN de la spec | RED | GREEN |
 | --- | --- | --- |

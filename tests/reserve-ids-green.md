@@ -6,7 +6,7 @@ Los mismos escenarios y el mismo molde que el [RED](reserve-ids-red.md), ahora c
 - **`sdd-start-patch`**, paso 2: el mismo cambio.
 - **`sdd-start-release`**, paso 3: pasa a llamarse «Ids reservados», con una sola reserva `-Reserve -Count N`. También cambia `roadmap-fuente.md`.
 
-Lanzador: [`red/run.sh`](../.docs/sdd/specs/20260924-105243-task-0059-reserve-ids/red/run.sh) con `OUT_NAME=green`. Salidas en [`green/out/`](../.docs/sdd/specs/20260924-105243-task-0059-reserve-ids/green/out/).
+Lanzador: [`red/run.sh`](../.docs/sdd/changes/20260924-105243-task-0059-reserve-ids/red/run.sh) con `OUT_NAME=green`. Salidas en [`green/out/`](../.docs/sdd/changes/20260924-105243-task-0059-reserve-ids/green/out/).
 
 ## Resultado: 3 de 3 reservan
 
