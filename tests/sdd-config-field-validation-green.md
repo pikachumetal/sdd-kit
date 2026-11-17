@@ -1,6 +1,6 @@
 # GREEN — `sdd-config` pregunta la validación en campo (feature 0127)
 
-Kit de la rama `feature/0127-sdd-config-field-validation` con la guía de la Task 2 (fila 7 del catálogo de `sdd-config`, «y quién valida» en las init, `validation` en `generacion.md` y el paso «Quién valida» de `v2.3.0.md`), 2026-10-01. Mismos escenarios y molde que el [RED](sdd-config-field-validation-red.md), más tres de control. Salidas en `green/out/` de la [carpeta de la spec](../.docs/sdd/specs/20261001-112831-feature-0127-sdd-config-field-validation/).
+Kit de la rama `feature/0127-sdd-config-field-validation` con la guía de la Task 2 (fila 7 del catálogo de `sdd-config`, «y quién valida» en las init, `validation` en `generacion.md` y el paso «Quién valida» de `v2.3.0.md`), 2026-10-01. Mismos escenarios y molde que el [RED](sdd-config-field-validation-red.md), más tres de control. Salidas en `green/out/` de la [carpeta de la spec](../.docs/sdd/changes/20261001-112831-feature-0127-sdd-config-field-validation/).
 
 ## Gasto
 

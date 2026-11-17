@@ -1,6 +1,6 @@
 # `sdd-agent-writing` — RED y GREEN (feature 0151)
 
-Batería: `tests/batteries/sdd-agent-writing/`. Sujetos Sonnet; salidas en `.docs/sdd/specs/20261101-151300-feature-0151-agent-writing/`, carpetas `red`, `red2`, `red3` y de `green` a `green5`, más `green-using` y `green-using2`. Kit del RED: `git archive` de `78b0b6fa`. Molde pequeño y un solo turno: un RED limpio puede no reproducir lo que pasó en campo.
+Batería: `tests/batteries/sdd-agent-writing/`. Sujetos Sonnet; salidas en `.docs/sdd/changes/20261101-151300-feature-0151-agent-writing/`, carpetas `red`, `red2`, `red3` y de `green` a `green5`, más `green-using` y `green-using2`. Kit del RED: `git archive` de `78b0b6fa`. Molde pequeño y un solo turno: un RED limpio puede no reproducir lo que pasó en campo.
 
 | Escenario · fila | RED | GREEN |
 | --- | --- | --- |

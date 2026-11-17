@@ -4,7 +4,7 @@ Art. I: humo (n = 1) de `sdd-templates` tras cambiar su `description`, su índic
 
 - **Molde**: `salas` de la batería de `using-sdd`, pasado a la estructura 3.0.0 por `subject.sh`: `ROADMAP.md` y `CHANGELOG.md` en la raíz, `constitution.md` en `.docs/sdd/steering/`, artefactos en `changes/`, sin `tech-stack.md` ni `mission.md`.
 - **Lanzamiento**: `tests/headless/run.sh` con una copia limpia del kit del working tree (`skills/`, `.claude-plugin/`, `agents/`, `cli/`), `SUPERPOWERS_DIR` en superpowers 6.4.2 y Sonnet.
-- **Evidencia**: batería, lanzador y salida de cada sujeto en [`humo/`](../.docs/sdd/specs/20261008-151724-feature-0144-docs-structure/humo/).
+- **Evidencia**: batería, lanzador y salida de cada sujeto en [`humo/`](../.docs/sdd/changes/20261008-151724-feature-0144-docs-structure/humo/).
 
 | Escenario | Petición (resumen) | Esperado | Resultado |
 | --- | --- | --- | --- |

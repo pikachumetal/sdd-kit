@@ -2,7 +2,7 @@
 
 **Kit medido**: working tree de `feature/0020` en el commit `6e3bebc`. Incluye el bloque «Preguntas de las claves de control» de `control-profiles.md`, las preguntas 18–20 de greenfield, el paso 3 de brownfield como lista numerada y la migración v1.2.0 alineada.
 
-**Método**: el mismo del [RED](init-control-keys-red.md). Sujetos headless Sonnet, simulador Haiku con persona fija y copia limpia del kit. El lanzador es el del RED más un molde de migración con `main` y `develop`. Lanzador, moldes, personas y lo que produjo cada sujeto están en [`green/`](../.docs/sdd/specs/20260922-141616-task-0020-init-control-keys/green/). El stream muestra que los seis sujetos cargaron la skill que se mide.
+**Método**: el mismo del [RED](init-control-keys-red.md). Sujetos headless Sonnet, simulador Haiku con persona fija y copia limpia del kit. El lanzador es el del RED más un molde de migración con `main` y `develop`. Lanzador, moldes, personas y lo que produjo cada sujeto están en [`green/`](../.docs/sdd/changes/20260922-141616-task-0020-init-control-keys/green/). El stream muestra que los seis sujetos cargaron la skill que se mide.
 
 Comprobación previa de los seis puntos: pasa. Un solo ajuste: la constitution del molde G3 decía `master` y el repo tiene `main` y `develop`, así que se corrigió a git-flow para que el molde no contradiga su propio repo.
 

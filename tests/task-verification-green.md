@@ -1,6 +1,6 @@
 # GREEN — verificación por task (task 0006)
 
-Kit del working tree con las Tasks 2 y 3 de esta task ya commiteadas (`00ce715`, `ec584a8`), copiado a `KIT_DIR` limpio (`skills/` + `.claude-plugin/`). Mismo molde que el RED: `red/m` + `red/f1` (E1), `red/f6`/`red/f6b` + `red/subject6.sh` (E2, E3) — reutilizados sin copiar. Lanzadores: `red/subject.sh` (E1) y `red/subject6.sh` (E2, E3), sin cambios. Salidas en [`.docs/sdd/specs/20260923-102746-task-0006-task-verification/green/out/`](../.docs/sdd/specs/20260923-102746-task-0006-task-verification/green/out/).
+Kit del working tree con las Tasks 2 y 3 de esta task ya commiteadas (`00ce715`, `ec584a8`), copiado a `KIT_DIR` limpio (`skills/` + `.claude-plugin/`). Mismo molde que el RED: `red/m` + `red/f1` (E1), `red/f6`/`red/f6b` + `red/subject6.sh` (E2, E3) — reutilizados sin copiar. Lanzadores: `red/subject.sh` (E1) y `red/subject6.sh` (E2, E3), sin cambios. Salidas en [`.docs/sdd/changes/20260923-102746-task-0006-task-verification/green/out/`](../.docs/sdd/changes/20260923-102746-task-0006-task-verification/green/out/).
 
 ## Sujetos
 

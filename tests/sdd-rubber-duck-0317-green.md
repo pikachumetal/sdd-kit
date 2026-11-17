@@ -3,7 +3,7 @@
 - **Fecha**: 2026-11-05. **Kit**: el `dist/` de la rama tras `moon run kit:build`, con la línea nueva del modo corto: «First, what changes or happens for the product's user, with data; name only effects checked in the file.» (18 palabras, las mismas que la que sustituye; la skill sigue en 590).
 - **Batería**: `tests/batteries/sdd-rubber-duck/` (`STEPS=rubber-duck`, `PHASE=green`): `s4` y `s3`, el escenario del fallo y su control, y el tramo del paso (`s1`, `s2`, `l1`) como control de la línea editada.
 - **Sujetos**: 12. `s4` 3 y `s1`, `s2`, `l1` 2 de cada, con Sonnet; `s3` 3, con Opus 5.5. **Coste**: 1,42 $ (campaña 2,39 $ con el RED; previsión ~2,5 $).
-- **Salidas**: [`green/out/`](../.docs/sdd/specs/20261105-102427-patch-0317-duck-checked-effects/green/out/).
+- **Salidas**: [`green/out/`](../.docs/sdd/changes/20261105-102427-patch-0317-duck-checked-effects/green/out/).
 - **Veredicto de puerta**: verde en los cinco escenarios.
 
 ## Veredicto de conducta

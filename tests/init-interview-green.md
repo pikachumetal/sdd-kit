@@ -1,6 +1,6 @@
 # GREEN — entrevista de `sdd-init-greenfield` (task 0012)
 
-Mismo método y lanzador que el [RED](init-interview-red.md), con la skill de la rama `feature/0012` en la copia del kit. Moldes nuevos y salidas en [`green/`](../.docs/sdd/specs/20260922-090037-task-0012-init-interview/green/). Comprobado en el stream que todos los sujetos cargaron `sdd-kit:sdd-init-greenfield`.
+Mismo método y lanzador que el [RED](init-interview-red.md), con la skill de la rama `feature/0012` en la copia del kit. Moldes nuevos y salidas en [`green/`](../.docs/sdd/changes/20260922-090037-task-0012-init-interview/green/). Comprobado en el stream que todos los sujetos cargaron `sdd-kit:sdd-init-greenfield`.
 
 | Escenario | Qué mide | Sujetos |
 | --- | --- | --- |

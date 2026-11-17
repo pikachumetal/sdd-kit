@@ -1,6 +1,6 @@
 # RED — lo que crean las init (task 0019)
 
-Baseline previo a la spec. Detalle, moldes y salidas en [`red/README.md`](../.docs/sdd/specs/20260922-211157-task-0019-init-files/red/README.md) de la carpeta de la task.
+Baseline previo a la spec. Detalle, moldes y salidas en [`red/README.md`](../.docs/sdd/changes/20260922-211157-task-0019-init-files/red/README.md) de la carpeta de la task.
 
 ## Frentes y resultado
 

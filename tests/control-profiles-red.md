@@ -1,6 +1,6 @@
 # RED — perfiles de control y gates (task 0008)
 
-Baseline: el kit de `feature/0008` antes de la implementación (copia limpia de `skills/` y `.claude-plugin/`). Sujetos headless `claude -p --model sonnet` según `tech-stack.md` §Sujetos headless. Moldes, lanzadores y salidas en `.docs/sdd/specs/20260921-162234-task-0008-control-profiles/red/`.
+Baseline: el kit de `feature/0008` antes de la implementación (copia limpia de `skills/` y `.claude-plugin/`). Sujetos headless `claude -p --model sonnet` según `tech-stack.md` §Sujetos headless. Moldes, lanzadores y salidas en `.docs/sdd/changes/20260921-162234-task-0008-control-profiles/red/`.
 
 ## Escenarios con sujetos
 

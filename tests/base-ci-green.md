@@ -1,6 +1,6 @@
 # GREEN — La release y el merge leen la CI de la base (feature 0257)
 
-Kit de la rama, sonnet, 2026-10-29. Escenarios y rúbrica en [la batería de `sdd-archive`](batteries/sdd-archive/battery.md); RED en [base-ci-red.md](base-ci-red.md). Salidas en `green/`, `refactor/`, `refactor2/`, `refactor3/` y `fix/` de [la carpeta de la 0257](../.docs/sdd/specs/20261029-171538-feature-0257-release-merge-read-base-ci/). Coste de la campaña, RED incluido: 8,56 $ (techo de la spec: 14,5 $).
+Kit de la rama, sonnet, 2026-10-29. Escenarios y rúbrica en [la batería de `sdd-archive`](batteries/sdd-archive/battery.md); RED en [base-ci-red.md](base-ci-red.md). Salidas en `green/`, `refactor/`, `refactor2/`, `refactor3/` y `fix/` de [la carpeta de la 0257](../.docs/sdd/changes/20261029-171538-feature-0257-release-merge-read-base-ci/). Coste de la campaña, RED incluido: 8,56 $ (techo de la spec: 14,5 $).
 
 | Ronda | Texto | `ci1` | `ci2` | `rc1` | `rc2` |
 | --- | --- | --- | --- | --- | --- |

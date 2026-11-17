@@ -1,6 +1,6 @@
 # GREEN — final del cierre: push autorizado y aviso de terminado (task 0040)
 
-Mismo molde que el [RED](close-push-red.md), el repo bare con worktrees de la task 0009, con el kit de `feature/0040`. Los lanzadores están en `green/` de la [carpeta de la spec](../.docs/sdd/specs/20260923-143450-task-0040-close-push/): `subject.sh` (cierres), `interview.sh` (init y migración) y `run.sh`. El escenario F reutiliza el lanzador del patch 0037 y el molde `m-close` de la 0008. Sin el tool PowerShell, que en el RED bloqueó git en tres sujetos.
+Mismo molde que el [RED](close-push-red.md), el repo bare con worktrees de la task 0009, con el kit de `feature/0040`. Los lanzadores están en `green/` de la [carpeta de la spec](../.docs/sdd/changes/20260923-143450-task-0040-close-push/): `subject.sh` (cierres), `interview.sh` (init y migración) y `run.sh`. El escenario F reutiliza el lanzador del patch 0037 y el molde `m-close` de la 0008. Sin el tool PowerShell, que en el RED bloqueó git en tres sujetos.
 
 ## Escenarios
 

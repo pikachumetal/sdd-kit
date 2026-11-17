@@ -6,7 +6,7 @@ Baseline con el kit de `develop` (1.1.0 + tasks 0001–0014 fusionadas), `sdd-in
 
 ## Método
 
-Sujetos headless Sonnet (`claude -p`, kit en copia limpia con `--plugin-dir`, plugin instalado deshabilitado, mensajería entre sesiones bloqueada). Dev-lead simulado por Haiku con persona fija, que responde solo a lo que se pregunta y, si el turno trae varias preguntas, **solo a la primera**, como en el caso de campo. Lanzador, moldes, personas y lo que produjo cada sujeto en [`red/`](../.docs/sdd/specs/20260922-090037-task-0012-init-interview/red/). Comprobado en el stream que los seis sujetos cargaron `sdd-kit:sdd-init-greenfield`; los de entrevista, también `superpowers:brainstorming`.
+Sujetos headless Sonnet (`claude -p`, kit en copia limpia con `--plugin-dir`, plugin instalado deshabilitado, mensajería entre sesiones bloqueada). Dev-lead simulado por Haiku con persona fija, que responde solo a lo que se pregunta y, si el turno trae varias preguntas, **solo a la primera**, como en el caso de campo. Lanzador, moldes, personas y lo que produjo cada sujeto en [`red/`](../.docs/sdd/changes/20260922-090037-task-0012-init-interview/red/). Comprobado en el stream que los seis sujetos cargaron `sdd-kit:sdd-init-greenfield`; los de entrevista, también `superpowers:brainstorming`.
 
 | Escenario | Molde | Petición | Turnos |
 | --- | --- | --- | --- |

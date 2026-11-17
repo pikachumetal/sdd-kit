@@ -6,8 +6,8 @@
   sesiones del 2026-09-18 y 2026-09-19. Ejecución por `subagent-driven-development` con el dev-lead
   ausente durante la implementación; una task paralela (0004, auth) en otro worktree.
 - **Artefactos para contrastar**:
-  `.docs/sdd/specs/20260918-081722-task-0005-translations-db/` (`spec.md`, `plan.md`, `tasks.md`,
-  `walkthrough.md`), `.docs/sdd/specs/20260919-172855-patch-0000-marcador-cleaned-ng-serve/patch.md`,
+  `.docs/sdd/changes/20260918-081722-task-0005-translations-db/` (`spec.md`, `plan.md`, `tasks.md`,
+  `walkthrough.md`), `.docs/sdd/changes/20260919-172855-patch-0000-marcador-cleaned-ng-serve/patch.md`,
   `.docs/sdd/capabilities/{template-angular-dotnet,translations,auth}.md`. Commits en `develop`:
   merge de la 0005 `edb099a`, merge con la 0004 `0e74373`, patch `55a35fd`.
 - **Alcance de este ticket**: quien lo escribe es el agente que ejecutó la task. Solo leyó las

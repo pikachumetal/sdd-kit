@@ -2,13 +2,13 @@
 
 RED previo a la spec (Art. I y `tech-stack.md`), sobre `develop` en `5019471` con superpowers **6.4.1** instalado.
 
-**Previsión y techo** comunes a las tasks 0055, 0057 y 0058 (RED previo, GREEN y A/B), declarados en el chat antes del primer sujeto: unos 50 sujetos, unos 50 $ y unas 8 h; **techo 65 $** (dev-lead, 2026-09-24). El lanzador común [`red/run.sh`](../.docs/sdd/specs/20260924-082516-task-0055-native-default/red/run.sh) suma el coste de las carpetas de las tres tasks y para ante el techo o el fichero `stop`.
+**Previsión y techo** comunes a las tasks 0055, 0057 y 0058 (RED previo, GREEN y A/B), declarados en el chat antes del primer sujeto: unos 50 sujetos, unos 50 $ y unas 8 h; **techo 65 $** (dev-lead, 2026-09-24). El lanzador común [`red/run.sh`](../.docs/sdd/changes/20260924-082516-task-0055-native-default/red/run.sh) suma el coste de las carpetas de las tres tasks y para ante el techo o el fichero `stop`.
 
 ## Método
 
-- **Lectura determinista** de superpowers 6.4.1 frente al kit, sin sujetos: [`red/lectura-superpowers-641.md`](../.docs/sdd/specs/20260924-082516-task-0055-native-default/red/lectura-superpowers-641.md).
+- **Lectura determinista** de superpowers 6.4.1 frente al kit, sin sujetos: [`red/lectura-superpowers-641.md`](../.docs/sdd/changes/20260924-082516-task-0055-native-default/red/lectura-superpowers-641.md).
 - **Evidencia previa reutilizada** (`tech-stack.md`: un stream previo puede ser el RED de otra task): los sujetos de la task 0026 (`tests/superpowers-641-red.md` y `tests/superpowers-641-green.md`), que corrieron con 6.4.1.
-- **Sujetos**: Sonnet headless (`claude -p`) sobre el molde `salas` de la 0044, con la apertura de la task 0012 commiteada y un `plan.md` cuyo `Modelo` despacha con `sdd-kit:effort-medium`. `KIT_DIR` es la copia de `HEAD` **sin `agents/`**: la sesión no tiene los tipos `sdd-kit:effort-*`. Lanzador: [`red/subject.sh`](../.docs/sdd/specs/20260924-082516-task-0055-native-default/red/subject.sh). Salidas: `red/out/`.
+- **Sujetos**: Sonnet headless (`claude -p`) sobre el molde `salas` de la 0044, con la apertura de la task 0012 commiteada y un `plan.md` cuyo `Modelo` despacha con `sdd-kit:effort-medium`. `KIT_DIR` es la copia de `HEAD` **sin `agents/`**: la sesión no tiene los tipos `sdd-kit:effort-*`. Lanzador: [`red/subject.sh`](../.docs/sdd/changes/20260924-082516-task-0055-native-default/red/subject.sh). Salidas: `red/out/`.
 
 ## Resultados por conducta
 

@@ -1,6 +1,6 @@
 # GREEN — un Important que mete la pasada de fix no se adjudica (feature 0246, Task 3)
 
-Kit: `git archive` de una instantánea del árbol con «What it leaves open» de `sdd-verify` editado: «**A Critical, or an Important in the lines the fix pass changed, is never adjudicated.**», seguido de «Any other Important, or a Minor: adjudicate it…». Sonnet, `c8` n = 2 y `c6` n = 2 como control; 1,10 $. RED en [fix-pass-effect-red.md](fix-pass-effect-red.md). Salidas en `.docs/sdd/specs/20261029-190601-feature-0246-baseline-detached-worktree/green/out/`.
+Kit: `git archive` de una instantánea del árbol con «What it leaves open» de `sdd-verify` editado: «**A Critical, or an Important in the lines the fix pass changed, is never adjudicated.**», seguido de «Any other Important, or a Minor: adjudicate it…». Sonnet, `c8` n = 2 y `c6` n = 2 como control; 1,10 $. RED en [fix-pass-effect-red.md](fix-pass-effect-red.md). Salidas en `.docs/sdd/changes/20261029-190601-feature-0246-baseline-detached-worktree/green/out/`.
 
 | Sujeto | El `TypeError` de la pasada | `canceladas` vacío, de la revisión final | Fila | Veredicto |
 | --- | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # Evidencia GREEN — compatibilidad con superpowers 7.0.0 (patch 0167, 2026-10-10)
 
-Verificación del fix del RED ([`superpowers-700-red.md`](superpowers-700-red.md)): mismos escenarios, mismo lanzador ([`subject.sh`](../.docs/sdd/specs/20261010-195847-patch-0167-superpowers-7-compat/red/subject.sh)), Sonnet, superpowers 7.0.0 desde la caché. El kit es una copia del working tree con el cambio:
+Verificación del fix del RED ([`superpowers-700-red.md`](superpowers-700-red.md)): mismos escenarios, mismo lanzador ([`subject.sh`](../.docs/sdd/changes/20261010-195847-patch-0167-superpowers-7-compat/red/subject.sh)), Sonnet, superpowers 7.0.0 desde la caché. El kit es una copia del working tree con el cambio:
 
 - **Paso 4 de `sdd-start-feature`**: «No ofrezcas saltarse las preguntas, aunque su primer mensaje lo pida: en el kit, saltárselas no se lleva la spec ni su gate. Si el usuario pide empezar ya, escribes la spec con lo que hay y sus huecos van a «Decisiones que he tomado yo».» Y el repaso de coherencia escribe sus cuatro comprobaciones en el paso, sin citar el «Spec Self-Review».
 - **`overrides-superpowers.md`**: «Size the Work» y la oferta de saltarse las preguntas sustituyen a la fila de la clasificación spike / bounded / architectural; filas nuevas del builder check y del estilo de preguntas; la del Execution Handoff deja de citar la HARD-GATE.
@@ -28,7 +28,7 @@ GREEN. `tests/SuperpowersCompat.Tests.ps1` fija las filas de overrides, la frase
 
 ## Sobre `develop` (port en el merge de `main`, 2026-10-10)
 
-En `develop` el paso de la spec vive en `sdd-propose` (feature 0160), en inglés, y sus preguntas siguen `sdd-grilling`. El port lleva la misma frase, traducida («Don't offer to skip the questions, even if its first message asks you to…»), al paso 4 de `sdd-propose`, y el repaso de coherencia con sus cuatro comprobaciones. La fila de preguntas de `overrides-superpowers.md` manda a `sdd-grilling`. Mismos escenarios con la entrada en `sdd-propose`: [`subject.sh`](../.docs/sdd/specs/20261010-195847-patch-0167-superpowers-7-compat/green-develop/subject.sh), con el kit copiado del merge.
+En `develop` el paso de la spec vive en `sdd-propose` (feature 0160), en inglés, y sus preguntas siguen `sdd-grilling`. El port lleva la misma frase, traducida («Don't offer to skip the questions, even if its first message asks you to…»), al paso 4 de `sdd-propose`, y el repaso de coherencia con sus cuatro comprobaciones. La fila de preguntas de `overrides-superpowers.md` manda a `sdd-grilling`. Mismos escenarios con la entrada en `sdd-propose`: [`subject.sh`](../.docs/sdd/changes/20261010-195847-patch-0167-superpowers-7-compat/green-develop/subject.sh), con el kit copiado del merge.
 
 | Sujeto | Coste | Ofrece saltarse las preguntas | `spec.md` | Gate | Builder check | Dónde para |
 | --- | --- | --- | --- | --- | --- | --- |

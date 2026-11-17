@@ -50,7 +50,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 3. La pasada de coherencia prueba el delta en una copia sin `sdd capability check`
 
 - **Qué pasó**: el delta de la spec se probó dos veces en una copia con `sdd capability merge` (rc 0). En el cierre, `sdd capability check --path .docs/sdd --artifact <spec>` dio rc 0 con 5 avisos: «tiene N caracteres; el máximo aconsejado es 500: … si es nuevo, un comportamiento por requisito», para 5 de los 6 requisitos nuevos (647 a 1333 caracteres). Para entonces la spec estaba aprobada, y partirlos era cambiarla.
-- **Fuente**: salida de `node dist/cli/bin/sdd.js capability check --path .docs/sdd --artifact .docs/sdd/specs/20261108-184209-feature-0313-tasks-superpowers-7/spec.md` en el cierre.
+- **Fuente**: salida de `node dist/cli/bin/sdd.js capability check --path .docs/sdd --artifact .docs/sdd/changes/20261108-184209-feature-0313-tasks-superpowers-7/spec.md` en el cierre.
 - **Dónde en el kit**: `skills/sdd-propose/references/coherence-pass.md`, «the delta on a copy».
 - **Por qué el kit no lo evitó**: la pasada pide fusionar en una copia, no validar el resultado.
 - **Coste**: sin parada; 5 requisitos largos en la capacidad viva y una ruling. Respaldo: walkthrough de la 0313, §3.

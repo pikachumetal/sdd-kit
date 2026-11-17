@@ -1,6 +1,6 @@
 # GREEN — verificación de frontend (feature 0099)
 
-Mismos escenarios, molde y lanzador que el [RED](frontend-verification-red.md), con el kit del working tree de cada task (copia de `skills/`, `.claude-plugin/` y `hooks/`). Salidas en [`green/`](../.docs/sdd/specs/20260929-073733-feature-0099-frontend-verification/green/).
+Mismos escenarios, molde y lanzador que el [RED](frontend-verification-red.md), con el kit del working tree de cada task (copia de `skills/`, `.claude-plugin/` y `hooks/`). Salidas en [`green/`](../.docs/sdd/changes/20260929-073733-feature-0099-frontend-verification/green/).
 
 **Cambio de molde entre RED y GREEN**: `/dev/impersonate` acepta `next=<ruta>` y el `§Frontend` del molde declara la URL de entrada `/dev/impersonate?user=demo@example.test&next={path}`. Sale del RED de `k1`: el detector no lleva sesión. En el RED, `§Frontend` no declaraba esa URL, así que ningún sujeto podía usarla. Solo afecta a `k1`.
 

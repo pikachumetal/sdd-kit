@@ -1,6 +1,6 @@
 # RED — revisión por task abaratada (task 0021)
 
-Baseline: kit de `feature/0021` en `884ccc3`, sin cambios de la task, con superpowers 6.4.1 (las reglas citadas abajo ya estaban en la 6.3.0 que usaron los tickets de campo). Molde, lanzadores y salida por sujeto en [`red/`](../.docs/sdd/specs/20260922-211605-task-0021-proportional-review/red/). 6 sujetos Sonnet headless, 2,44 $.
+Baseline: kit de `feature/0021` en `884ccc3`, sin cambios de la task, con superpowers 6.4.1 (las reglas citadas abajo ya estaban en la 6.3.0 que usaron los tickets de campo). Molde, lanzadores y salida por sujeto en [`red/`](../.docs/sdd/changes/20260922-211605-task-0021-proportional-review/red/). 6 sujetos Sonnet headless, 2,44 $.
 
 - **R1** — revisor de task con el encargo del kit (cabecera de `encargo-revision.md` + `task-reviewer-prompt.md`) sobre un diff **correcto**, con tres trampas: el trailer de todos los commits nombra `Claude Fable 5.1`, la función nueva ocupa 21 líneas frente al límite de 20, y el implementador añadió la línea en blanco que exigía el lint entre dos bloques del test RED (lo declara en su informe).
 - **R2** — revisor final con la misma cabecera + `code-reviewer.md` y el paquete de la rama, sobre el mismo molde.

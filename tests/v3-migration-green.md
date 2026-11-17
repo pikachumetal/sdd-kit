@@ -1,6 +1,6 @@
 # GREEN — migración v3.0.0 (feature 0197)
 
-Mismo molde y escenarios que el [RED](v3-migration-red.md), con el kit del working tree de la rama: `v3.0.0.md` con sus siete pasos. `v1` conversa con la persona (`persona-v2x.md`, Haiku), que aprueba las tablas y da el Tamaño `M`. Salidas en [`.docs/sdd/specs/20261019-083116-feature-0197-v3-migration/green/out/`](../.docs/sdd/specs/20261019-083116-feature-0197-v3-migration/green/out/). 2026-10-19. 3 sujetos, 0,78 $; con el RED, 5 sujetos y 1,02 $ (la previsión era 8 y ~6 $).
+Mismo molde y escenarios que el [RED](v3-migration-red.md), con el kit del working tree de la rama: `v3.0.0.md` con sus siete pasos. `v1` conversa con la persona (`persona-v2x.md`, Haiku), que aprueba las tablas y da el Tamaño `M`. Salidas en [`.docs/sdd/changes/20261019-083116-feature-0197-v3-migration/green/out/`](../.docs/sdd/changes/20261019-083116-feature-0197-v3-migration/green/out/). 2026-10-19. 3 sujetos, 0,78 $; con el RED, 5 sujetos y 1,02 $ (la previsión era 8 y ~6 $).
 
 | Sujeto | Puerta | Conducta | Veredicto |
 | --- | --- | --- | --- |

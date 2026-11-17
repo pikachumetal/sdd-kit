@@ -119,7 +119,7 @@ observado. Las horas son locales (UTC+2); entre paréntesis va la marca UTC del 
   de lo necesario.
 - **Propuesta**:
   - `--diff-filter=d` más una sección «Ficheros borrados» con `git diff --name-only --diff-filter=D`.
-  - Excluir `.docs/sdd/specs/<carpeta de esta feature>/**`.
+  - Excluir `.docs/sdd/changes/<carpeta de esta feature>/**`.
   - En «Cómo revisar», «léelo en tramos de 400 líneas con `offset`/`limit`».
 - **Criterio de aceptación**: GIVEN una rama que borra ficheros grandes · WHEN el hilo genera el
   paquete con la receta · THEN ningún `Read` del revisor devuelve el error de 25.000 tokens y el

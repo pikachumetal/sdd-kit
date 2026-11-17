@@ -10,7 +10,7 @@ Mismo escenario que [`sdd-consult-spike-red.md`](sdd-consult-spike-red.md), con 
 | Etiquetado como desechable y borrado | — | ✅ «(ya borrado, no queda nada en el repo)»; `rm` de ambos scripts; verificado: ningún `spike-*` en el scratchpad |
 | `git status --short` | limpio | limpio |
 | `git branch` | `develop`, `main` | `develop`, `main` |
-| `.docs/sdd/specs/` | solo `.gitkeep` | solo `.gitkeep` |
+| `.docs/sdd/changes/` | solo `.gitkeep` | solo `.gitkeep` |
 | Respuesta a la pregunta | ❌ sustituida por un handoff | ✅ «Sí, se puede», con la salida generada, lo comprobado en los docs y las decisiones que quedarían para una task |
 | Handoff | a `sdd-start-task` en lugar de responder | a `sdd-start-task` **después** de responder, condicionado a que el usuario quiera construirlo |
 | Salida durable | — | Propuesta y no ejecutada: «Si quieres que esto se construya de verdad (…) dímelo y lo transicionamos» |

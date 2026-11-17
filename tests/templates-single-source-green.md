@@ -13,7 +13,7 @@ Subagente Sonnet sobre la fixture "TimeTrack" (proyecto SIN carpeta `templates/`
 ## Resultado (verificado en disco)
 
 - ✅ **No creó `.docs/sdd/templates/` en el proyecto** (`Test-Path` → False) ni copió plantilla alguna: calcó `spec-template.md` directamente desde la ruta del kit.
-- ✅ Spec en `.docs/sdd/specs/20260721-091448-task-210-informe-mensual/spec.md` con el naming estándar (timestamp UTC, `task`, id de ticket real, slug), en rama `feature/210` desde `develop` (constitution del proyecto).
+- ✅ Spec en `.docs/sdd/changes/20260721-091448-task-210-informe-mensual/spec.md` con el naming estándar (timestamp UTC, `task`, id de ticket real, slug), en rama `feature/210` desde `develop` (constitution del proyecto).
 - ✅ Se detuvo en el gate de aprobación: ni `plan.md` ni código; las asunciones quedaron como open questions (la más crítica —partes aprobados vs horas registradas— señalada como decisión del usuario).
 - ✅ Autorrevisión de placeholders (sin `<...>` residuales).
 

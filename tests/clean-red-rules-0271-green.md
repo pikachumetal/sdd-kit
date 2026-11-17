@@ -1,6 +1,6 @@
 # GREEN — feature 0271, una sola línea de conducta ante un RED limpio
 
-Salidas en `green/`, `green-propose/` y `refactor-propose/` de `.docs/sdd/specs/20261102-135210-feature-0271-clean-red-rules/`.
+Salidas en `green/`, `green-propose/` y `refactor-propose/` de `.docs/sdd/changes/20261102-135210-feature-0271-clean-red-rules/`.
 
 | Escenario | Fila | n | Resultado | Lectura |
 | --- | --- | --- | --- | --- |

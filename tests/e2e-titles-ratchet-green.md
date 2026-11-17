@@ -1,6 +1,6 @@
 # GREEN — el test de títulos nace en verde, solo encoge y lee `playwright test --list` (feature 0282)
 
-Mismo lanzador que el [RED](e2e-titles-ratchet-red.md), con el texto de la feature. Sujetos Sonnet; las salidas llevan títulos de producto de clientes y no se versionan. Sondas: [`red/probes.mjs`](../.docs/sdd/specs/20261101-171153-feature-0282-e2e-titles-ratchet/red/probes.mjs), que imprime solo salida y si nombra el título sonda.
+Mismo lanzador que el [RED](e2e-titles-ratchet-red.md), con el texto de la feature. Sujetos Sonnet; las salidas llevan títulos de producto de clientes y no se versionan. Sondas: [`red/probes.mjs`](../.docs/sdd/changes/20261101-171153-feature-0282-e2e-titles-ratchet/red/probes.mjs), que imprime solo salida y si nombra el título sonda.
 
 ## La guía
 

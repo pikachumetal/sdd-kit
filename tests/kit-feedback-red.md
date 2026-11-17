@@ -6,7 +6,7 @@
 
 Sujetos headless, `claude -p --model sonnet`, con `--plugin-dir` y `--add-dir` a una copia limpia del kit **sin** `sdd-feedback` (la versión de este working tree, v1.1.0). Una copia de fixture por run, `git init` en la copia, verificación en disco además del texto del sujeto. Peticiones neutras: ninguna nombra carpeta, formato, privacidad ni «sin hallazgos».
 
-Fixtures (moldes en `.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/red/`):
+Fixtures (moldes en `.docs/sdd/changes/20260920-220741-task-0002-sdd-feedback/red/`):
 
 - **Molde A — proyecto de cliente**: plataforma de pedidos ficticia, dominio de tarifas y rappel por todas partes, nombre de cliente y de interlocutora. `session-log.md` de 120 líneas con tres fricciones del kit, un error del propio ejecutor, una iniciativa propia que ninguna skill pide y lo que funcionó. Su constitution **no dice nada** de privacidad ni de confidencialidad, para no telegrafiar la conducta.
 - **Molde B — proyecto personal**: herramienta de notas, `session-log.md` de 60 líneas sin ninguna fricción. La primera versión (`m-limpia/`) era defectuosa; la válida es `m-limpia-v2/`: estado justo antes del cierre, spec calcada de la plantilla con escenarios y estimación lite, `estimation-log.md` con el formato del script y código coherente con la spec.
@@ -69,4 +69,4 @@ Hallazgo real para el kit, fuera del alcance de esta task: en modo lite no hay f
 
 Reglas que la skill **sí** escribe, cada una con su fallo 2/2: ubicación y nombre fijos, privacidad, criterio de aceptación por hallazgo, la iniciativa propia como material propio y la oferta en el cierre.
 
-Artefactos producidos por los sujetos y `git status` de cada run: `.docs/sdd/specs/20260920-220741-task-0002-sdd-feedback/red/tickets/`.
+Artefactos producidos por los sujetos y `git status` de cada run: `.docs/sdd/changes/20260920-220741-task-0002-sdd-feedback/red/tickets/`.

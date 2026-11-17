@@ -2,7 +2,7 @@
 
 Baseline: el kit de la rama en la apertura (`d3e2b5b`, antes del cambio), servido desde una copia limpia con `--plugin-dir`. Sujetos headless `claude -p --model sonnet`, dos por escenario, cada uno sobre una copia fresca del molde. Seis sujetos, 2,13 $. Previsión común con el GREEN: 12 sujetos, ~6 $; techo `SUBJECT_CAP=14`, `COST_CAP=8`.
 
-Molde, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/specs/20260925-115547-task-0073-capabilities-index/red/). Proyecto ficticio: «salas», reservas de salas de reuniones, con 9 capacidades en el formato de la 2.0.0 sin propósito (`bookings`, `rooms`, `access`, `house-rules`, `billing`, `quotas`, `notifications`, `calendar-sync`, `usage-reports`). Lo que piden los tres escenarios vive en `house-rules` («normas de uso»), cuyo nombre no lo delata: por nombre, un invitado apunta a `access` y un cobro a `billing`.
+Molde, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/changes/20260925-115547-task-0073-capabilities-index/red/). Proyecto ficticio: «salas», reservas de salas de reuniones, con 9 capacidades en el formato de la 2.0.0 sin propósito (`bookings`, `rooms`, `access`, `house-rules`, `billing`, `quotas`, `notifications`, `calendar-sync`, `usage-reports`). Lo que piden los tres escenarios vive en `house-rules` («normas de uso»), cuyo nombre no lo delata: por nombre, un invitado apunta a `access` y un cobro a `billing`.
 
 ## Escenarios
 

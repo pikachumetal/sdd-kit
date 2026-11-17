@@ -1,6 +1,6 @@
 # GREEN — menos paradas y avisos llanos (task 0053)
 
-Mismos escenarios y molde que el RED (`tests/fewer-stops-red.md`), con las skills de `b0f6dbf` (Tasks 1 y 2): 17 sujetos headless Sonnet, **5,43 $**. Salidas: `.docs/sdd/specs/20260923-214917-task-0053-fewer-stops/green/out/`. **Campaña entera: 10,04 $** (RED 4,61 + GREEN 5,43), frente a una previsión de ~17 $ y un techo de 18 $; sin tanda de REFACTOR.
+Mismos escenarios y molde que el RED (`tests/fewer-stops-red.md`), con las skills de `b0f6dbf` (Tasks 1 y 2): 17 sujetos headless Sonnet, **5,43 $**. Salidas: `.docs/sdd/changes/20260923-214917-task-0053-fewer-stops/green/out/`. **Campaña entera: 10,04 $** (RED 4,61 + GREEN 5,43), frente a una previsión de ~17 $ y un techo de 18 $; sin tanda de REFACTOR.
 
 La campaña se partió en dos sesiones: el dev-lead pidió parar a las 00:45 («si tienes agentes arrancados, espera pero no arranques más»), tras s1-1…s6-1, y se retomó por la mañana con la misma copia del kit (`git diff b0f6dbf -- skills` vacío).
 

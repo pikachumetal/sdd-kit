@@ -28,7 +28,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. Di al dev-lead cifras de puerta como si fueran de conducta, y decidió sobre ellas
 
 - **Qué pasó**: presenté `m2` 1/2 y 3/6 y `c2` frente a «`develop` 2/2», contando la puerta en `m2` y las filas de la deuda en `c2`, sin aplicar la rúbrica. Por fila, `m2` daba 1/6 frente a 1/2 y `c2` en `develop`, 1/2. El dev-lead eligió sobre esas cifras, y lo cazó el eje Spec. Tuve que parar otra vez.
-- **Fuente**: `.docs/sdd/specs/20261102-163922-feature-0194-roadmap-whats-next/walkthrough.md`, §4.2; `spec.md`, «Enmiendas».
+- **Fuente**: `.docs/sdd/changes/20261102-163922-feature-0194-roadmap-whats-next/walkthrough.md`, §4.2; `spec.md`, «Enmiendas».
 - **Dónde en el kit**: `tests/headless/battery.mjs`, `verdict`; `tests/batteries/sdd-roadmap/battery.md`, filas M2 y C2 de la rúbrica; `skills/sdd-verify/SKILL.md`, «The Iron Law».
 - **Por qué el kit no lo evitó**: la regla existía y no la apliqué bien: `verdict` dice `puerta verde · sin leer: M2`, y yo convertí la tanda en una cifra. Con filas en prosa, nada obliga a dar la cifra por fila, y el A/B lo calificas tú a mano.
 - **Coste**: 2 paradas del dev-lead y 6 sujetos más de lo previsto (walkthrough, §2).

@@ -43,7 +43,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 - **Por qué el kit no lo evitó**: la regla de parar por PID o puerto vive solo en `sdd-implement` («Processes you start»), y una entrevista no la carga. El hook `deny-kill.mjs` de la feature 0036 existe, pero el lanzador de referencia no lo carga por defecto.
 - **Coste**: no se vio daño en la sesión; el riesgo es matar procesos del dev-lead en cada campaña que arranque la app.
 - **Propuesta**: (a) ya hecho en esta feature: `sdd-grilling` gana «stop what you started by its PID or port, never by name», sin GREEN propio. (b) Pendiente: `subject_launch` carga por defecto el `deny-kill.mjs` de la feature 0036 como hook `PreToolUse` del sujeto.
-- **Verificada**: sí — `.docs/sdd/specs/20261011-130007-feature-0168-fork-brainstorming-writing-plans/green/out/sk-4.tools.txt`.
+- **Verificada**: sí — `.docs/sdd/changes/20261011-130007-feature-0168-fork-brainstorming-writing-plans/green/out/sk-4.tools.txt`.
 - **Criterio de aceptación**: GIVEN un sujeto headless lanzado con `tests/headless/run.sh`, WHEN intenta `taskkill //IM node.exe` o `pkill -f`, THEN el hook lo deniega y el sujeto no mata ningún proceso.
 
 ### 3. Toqué un fichero que la spec dejaba en «No entra» y lo registré como ruling

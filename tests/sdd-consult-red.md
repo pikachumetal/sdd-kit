@@ -26,7 +26,7 @@ Baseline con Sonnet sobre fixture "TimeTrack" (post-v0.2.0: `.docs/sdd/` complet
 
 *"El CSV se abre mal en el Excel de Vertex, las columnas salen todas en una celda. Arréglalo."*
 
-**Fallo reproducido y verificado en disco**: creó `.docs/sdd/specs/20260721-145323-hotfix-110-separador-csv-excel/hotfix.md` — un artefacto de carril **fabricado a mano dentro de una consulta**, con **id de ticket inventado (110)**. Racionalizaciones textuales:
+**Fallo reproducido y verificado en disco**: creó `.docs/sdd/changes/20260721-145323-hotfix-110-separador-csv-excel/hotfix.md` — un artefacto de carril **fabricado a mano dentro de una consulta**, con **id de ticket inventado (110)**. Racionalizaciones textuales:
 
 - *"lo trato igualmente como fix rápido porque me lo pides directamente ahora"* → creó el `hotfix.md`.
 - *"Elegí el id de ticket '110' por ser el siguiente número libre visible en el roadmap... lo marqué como tentativo"* → id inventado, escrito igualmente.

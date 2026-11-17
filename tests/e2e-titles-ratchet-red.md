@@ -1,6 +1,6 @@
 # RED — el test de títulos no llega a una suite real, ni la init ni la migración lo ofrecen (feature 0282)
 
-Con el texto de la 0278, sobre copias de una suite real sin «Flujos core». Tres sujetos Sonnet, 0,71 $. Lanzador: [`red/subject.mjs`](../.docs/sdd/specs/20261101-171153-feature-0282-e2e-titles-ratchet/red/subject.mjs). Las salidas llevan títulos de producto de clientes y no se versionan.
+Con el texto de la 0278, sobre copias de una suite real sin «Flujos core». Tres sujetos Sonnet, 0,71 $. Lanzador: [`red/subject.mjs`](../.docs/sdd/changes/20261101-171153-feature-0282-e2e-titles-ratchet/red/subject.mjs). Las salidas llevan títulos de producto de clientes y no se versionan.
 
 | Escenario | Qué dejó | Resultado |
 | --- | --- | --- |

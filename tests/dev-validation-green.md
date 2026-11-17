@@ -4,7 +4,7 @@ Misma batería que la [RED](dev-validation-red.md) (`sdd-archive`, escenarios `g
 
 ## GREEN — 8 sujetos
 
-Salidas en [`green/out/`](../.docs/sdd/specs/20261022-140232-feature-0208-dev-validation-script/green/out/).
+Salidas en [`green/out/`](../.docs/sdd/changes/20261022-140232-feature-0208-dev-validation-script/green/out/).
 
 | Criterio | Resultado | RED |
 | --- | --- | --- |
@@ -17,7 +17,7 @@ Salidas en [`green/out/`](../.docs/sdd/specs/20261022-140232-feature-0208-dev-va
 
 ## REFACTOR — 6 sujetos
 
-Salidas en [`refactor/out/`](../.docs/sdd/specs/20261022-140232-feature-0208-dev-validation-script/refactor/out/). Cambios: la línea fija `Panel:` (Chrome, plan B o «sin panel») y el entorno de una app que también corre por CLI.
+Salidas en [`refactor/out/`](../.docs/sdd/changes/20261022-140232-feature-0208-dev-validation-script/refactor/out/). Cambios: la línea fija `Panel:` (Chrome, plan B o «sin panel») y el entorno de una app que también corre por CLI.
 
 | Criterio | Resultado |
 | --- | --- |
@@ -27,7 +27,7 @@ Salidas en [`refactor/out/`](../.docs/sdd/specs/20261022-140232-feature-0208-dev
 
 ## REFACTOR 2 — 4 sujetos
 
-Salidas en [`refactor2/out/`](../.docs/sdd/specs/20261022-140232-feature-0208-dev-validation-script/refactor2/out/). Cambio: la línea `Panel:` solo admite Chrome o plan B; `Panel: no arrancó: <su error>` solo si falla `sdd validation serve`.
+Salidas en [`refactor2/out/`](../.docs/sdd/changes/20261022-140232-feature-0208-dev-validation-script/refactor2/out/). Cambio: la línea `Panel:` solo admite Chrome o plan B; `Panel: no arrancó: <su error>` solo si falla `sdd validation serve`.
 
 | Sujeto | G6 | G5 |
 | --- | --- | --- |

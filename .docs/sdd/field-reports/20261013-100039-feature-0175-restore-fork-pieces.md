@@ -68,7 +68,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 
 ### 5. `sdd task start` no admite una spec lite
 
-- **Qué pasó**: `node cli/bin/sdd.js task start .docs/sdd/specs/<carpeta>/spec.md 1` en Git Bash → `task 1 not found in .docs/sdd/specs/<carpeta>/spec.md (no heading matching 'Task 1')`. `sdd task done` con la misma spec sí registró la task.
+- **Qué pasó**: `node cli/bin/sdd.js task start .docs/sdd/changes/<carpeta>/spec.md 1` en Git Bash → `task 1 not found in .docs/sdd/changes/<carpeta>/spec.md (no heading matching 'Task 1')`. `sdd task done` con la misma spec sí registró la task.
 - **Dónde en el kit**: `cli/src/tasks/` (`task start`) y `skills/sdd-implement/SKILL.md`, § Method («In lite mode, without a plan, `spec.md` is the plan»).
 - **Por qué el kit no lo evitó**: la skill trata la spec lite como plan, y el verbo busca un encabezado de task que una spec no tiene.
 - **Coste**: ~2 min, un ruling (BASE = la apertura).

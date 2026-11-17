@@ -8,7 +8,7 @@ Mismo escenario E5 que [`sdd-start-task-vias-red.md`](sdd-start-task-vias-red.md
 | --- | --- | --- |
 | Enrutado | task en modo lite | **spike** → `sdd-consult`, invocada con `Skill` |
 | Rama | ❌ `feature/0000-export-pedidos-csv` | ✅ ninguna; sigue en `develop` |
-| `.docs/sdd/specs/` | ❌ carpeta + `spec.md` de 89 líneas | ✅ solo `.gitkeep` |
+| `.docs/sdd/changes/` | ❌ carpeta + `spec.md` de 89 líneas | ✅ solo `.gitkeep` |
 | `superpowers:brainstorming` | invocada (y la vía ignorada) | no invocada: no es una task |
 | Sonda | — | ✅ `_spike_csv_check.js` dentro de la copia, ejecutado y **borrado en el mismo paso**; `git status` limpio |
 | Respuesta a la pregunta | ❌ sustituida por una spec a aprobar | ✅ «Sí, se puede», con la salida CSV real y lo confirmado en `package.json`, constitution y contrato |

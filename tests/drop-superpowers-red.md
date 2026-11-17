@@ -1,6 +1,6 @@
 # RED — retirar la dependencia de superpowers (feature 0279)
 
-Kit de la rama antes del paso 10 de `v3.0.0.md`, ya sin la dependencia. Sujeto Sonnet, 0,19 $. Salida en `.docs/sdd/specs/20261101-175350-feature-0279-drop-superpowers-dependency/red/out/`.
+Kit de la rama antes del paso 10 de `v3.0.0.md`, ya sin la dependencia. Sujeto Sonnet, 0,19 $. Salida en `.docs/sdd/changes/20261101-175350-feature-0279-drop-superpowers-dependency/red/out/`.
 
 | Escenario | Molde | Resultado |
 | --- | --- | --- |

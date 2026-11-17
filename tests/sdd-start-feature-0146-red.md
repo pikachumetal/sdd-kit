@@ -1,6 +1,6 @@
 # RED de la feature 0146 — spec y plan de propose
 
-Baseline de las reglas que la feature 0146 quiere añadir a `sdd-start-feature`, `sdd-grilling` y `sdd-rubber-duck`, sobre el kit del commit de apertura (`4ea38478`, `git archive … skills .claude-plugin hooks cli`), con superpowers 6.4.2 en `SUPERPOWERS_DIR`. Baterías: `tests/batteries/sdd-start-feature/` (nueva), `t1` en la de `sdd-grilling` y `l2` en la de `sdd-rubber-duck`. Sonnet, salvo `g1` en Opus. Salidas en `.docs/sdd/specs/20261008-193241-feature-0146-propose-spec-and-plan/red/out/`.
+Baseline de las reglas que la feature 0146 quiere añadir a `sdd-start-feature`, `sdd-grilling` y `sdd-rubber-duck`, sobre el kit del commit de apertura (`4ea38478`, `git archive … skills .claude-plugin hooks cli`), con superpowers 6.4.2 en `SUPERPOWERS_DIR`. Baterías: `tests/batteries/sdd-start-feature/` (nueva), `t1` en la de `sdd-grilling` y `l2` en la de `sdd-rubber-duck`. Sonnet, salvo `g1` en Opus. Salidas en `.docs/sdd/changes/20261008-193241-feature-0146-propose-spec-and-plan/red/out/`.
 
 **Puerta**: los 18 sujetos entraron por la skill esperada (veredicto de `battery.sh`, 2/2 en cada escenario). **Coste**: 6,75 $ en la primera tanda, más las repeticiones de abajo.
 

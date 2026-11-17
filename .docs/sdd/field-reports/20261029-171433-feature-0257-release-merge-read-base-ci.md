@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. Dos filas de la rúbrica puntuadas a favor con la línea de `tools.txt` cortada
 
 - **Qué pasó**: en REFACTOR 3, `rc2-2` corrió `gh run list … ; node --test 2>&1 | tail -8` en una sola llamada. Busqué `node --test` con `grep -n ">>> .*node --test\|>>> .*gh run" … | cut -c1-150`, y el corte escondió el `node --test` que seguía al `gh`. Di `rc2` por 2/2. Lo mismo con `ci2-2` de REFACTOR: anoté el error recortado entre paréntesis y conté K4 como 2/2. El eje Spec de la revisión final lo marcó como dos Important.
-- **Fuente**: `.docs/sdd/specs/20261029-171538-feature-0257-release-merge-read-base-ci/refactor3/out/rc2-2.tools.txt:67`; el commit `ea7e29d2` corrige `tests/base-ci-green.md`; el informe del eje Spec de la sesión.
+- **Fuente**: `.docs/sdd/changes/20261029-171538-feature-0257-release-merge-read-base-ci/refactor3/out/rc2-2.tools.txt:67`; el commit `ea7e29d2` corrige `tests/base-ci-green.md`; el informe del eje Spec de la sesión.
 - **Dónde en el kit**: `.docs/sdd/tech-stack.md`, «Baterías por skill» («Cada sujeto se califica con la rúbrica escrita, literal, y fila por fila»); `tests/headless/battery.mjs` solo da el veredicto de la puerta.
 - **Por qué el kit no lo evitó**: la regla existía y no la apliqué. Una fila «`tools.txt` tiene `<comando>`» se puede comprobar con una máquina, y la puntué a ojo con un filtro que recorta.
 - **Coste**: una pasada de fix con 8 sujetos (2,47 $) y dos Important en la revisión final; respaldo: `tests/base-ci-green.md` (filas REFACTOR 3 y «Pasada de fix») y el commit `ea7e29d2`.

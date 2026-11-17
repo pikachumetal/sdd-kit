@@ -1,6 +1,6 @@
 # GREEN — un commit por hito (task 0044)
 
-Sujetos Sonnet headless (`claude -p`) sobre un repo de juguete (`salas`). La rama de cada escenario está en el estado que describe la tabla. El kit es una copia limpia del worktree tras las tasks 1 y 2. El molde, el lanzador y la salida de cada sujeto (`*.state.txt`: `git log`, commits desde el `merge-base`, ficheros por commit, status; `*.tools.txt`: tool calls y mensaje final) están en `.docs/sdd/specs/20260923-191212-task-0044-commit-per-milestone/green/`.
+Sujetos Sonnet headless (`claude -p`) sobre un repo de juguete (`salas`). La rama de cada escenario está en el estado que describe la tabla. El kit es una copia limpia del worktree tras las tasks 1 y 2. El molde, el lanzador y la salida de cada sujeto (`*.state.txt`: `git log`, commits desde el `merge-base`, ficheros por commit, status; `*.tools.txt`: tool calls y mensaje final) están en `.docs/sdd/changes/20260923-191212-task-0044-commit-per-milestone/green/`.
 
 **Coste**: 12 sujetos (10 de campaña y 2 de re-verificación), 3,93 $ y 123 turnos, ~40 min de reloj. Previsión de la spec: 10 sujetos y ~10 $, con un techo de 14 sujetos y 14 $. No se superó.
 

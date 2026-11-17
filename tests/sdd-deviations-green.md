@@ -1,6 +1,6 @@
 # GREEN — el desvío del REFACTOR en `sdd-implement` (feature 0166)
 
-Escenario `k2` de la batería de `sdd-implement`, con el kit de la rama (el texto nuevo en el punto del desvío de «Deviations and rulings») y superpowers 7.0.0. Salidas en [`green/out/`](../.docs/sdd/specs/20261012-104247-feature-0166-worktrees-and-parallel-agents/green/out/). RED en [sdd-deviations-red.md](sdd-deviations-red.md): 2/2 commitearon «no escribir hasta confirmar» como `Ruling:`. `k1` no tiene GREEN: su RED salió limpio y su texto no se escribió.
+Escenario `k2` de la batería de `sdd-implement`, con el kit de la rama (el texto nuevo en el punto del desvío de «Deviations and rulings») y superpowers 7.0.0. Salidas en [`green/out/`](../.docs/sdd/changes/20261012-104247-feature-0166-worktrees-and-parallel-agents/green/out/). RED en [sdd-deviations-red.md](sdd-deviations-red.md): 2/2 commitearon «no escribir hasta confirmar» como `Ruling:`. `k1` no tiene GREEN: su RED salió limpio y su texto no se escribió.
 
 | Sujeto | Commit | Qué hizo | K2 |
 | --- | --- | --- | --- |

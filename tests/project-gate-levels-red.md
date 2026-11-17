@@ -1,6 +1,6 @@
 # RED — el gate de los proyectos por niveles y por lo afectado (feature 0236)
 
-Kit de `develop` en `b8ab5635` (`git archive b8ab5635 skills .claude-plugin cli hooks`), sujetos headless Sonnet, n = 1, superpowers 7.0.0. Salidas en `.docs/sdd/specs/20261029-082734-feature-0236-project-gate-levels/red/out/`. Escenarios y rúbrica en las baterías de `sdd-init` (`n7`), `sdd-upgrade` (`v4`, `g2`) y `sdd-propose` (`pl3`).
+Kit de `develop` en `b8ab5635` (`git archive b8ab5635 skills .claude-plugin cli hooks`), sujetos headless Sonnet, n = 1, superpowers 7.0.0. Salidas en `.docs/sdd/changes/20261029-082734-feature-0236-project-gate-levels/red/out/`. Escenarios y rúbrica en las baterías de `sdd-init` (`n7`), `sdd-upgrade` (`v4`, `g2`) y `sdd-propose` (`pl3`).
 
 ## Task 1 — los campos de `operations.md` y quien los propone
 

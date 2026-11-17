@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. Un tope sacado de un ticket rechazaba el caso que el propio ticket daba por bueno
 
 - **Qué pasó**: una ampliación de alcance pedía rechazar una carpeta de ejecución «de más de ~80 caracteres». Escribí 80 en la enmienda sin contrastarlo con la evidencia del mismo ticket, que daba por bueno un caso de unos 83 y por malo uno de unos 190. La revisión final lo hizo visible: con 80, el lanzador rechazaba el caso que funcionó. Subirlo a 100 fue un desvío de la spec aprobada, con parada para el dev-lead, una task nueva (Task 7) y el merge esperando mientras otra sesión aguardaba para sincronizar.
-- **Fuente**: `.docs/sdd/specs/20261028-164955-feature-0238-subject-lib-to-node/spec.md`, `## Enmiendas` (las dos entradas del 2026-10-28) y `walkthrough.md` §3; commit `b14e2095`
+- **Fuente**: `.docs/sdd/changes/20261028-164955-feature-0238-subject-lib-to-node/spec.md`, `## Enmiendas` (las dos entradas del 2026-10-28) y `walkthrough.md` §3; commit `b14e2095`
 - **Dónde en el kit**: `skills/sdd-implement/SKILL.md`, «Deviations and rulings» (la enmienda se escribe en su sitio de `spec.md`); `skills/sdd-propose/references/spec-writing.md` (los valores de ✋)
 - **Por qué el kit no lo evitó**: ningún paso pide contrastar un umbral copiado de un ticket con los datos que el ticket trae
 - **Coste**: una parada de desvío y una task más; la espera del dev-lead, sin respaldo
@@ -51,7 +51,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 3. Una propiedad del repo («sin bash») se verificó por la extensión de los ficheros
 
 - **Qué pasó**: la verificación de la retirada fue `git ls-files '*.sh'` vacío. Se escapó un script de bash sin extensión: el `claude` que bloquea el `claude` anidado de un sujeto. El e2e lo lanzaba en Linux, en contra de la restricción «ningún test lanza bash». Lo encontró la re-revisión única, y su arreglo quedó como commit sin revisar en el cierre.
-- **Fuente**: `.docs/sdd/specs/20261028-164955-feature-0238-subject-lib-to-node/plan.md`, Task 5 («**Verificación**: `git ls-files '*.sh' …` vacío»); `walkthrough.md` §1 y la línea ✋ «Sin revisar: el commit de cierre»
+- **Fuente**: `.docs/sdd/changes/20261028-164955-feature-0238-subject-lib-to-node/plan.md`, Task 5 («**Verificación**: `git ls-files '*.sh' …` vacío»); `walkthrough.md` §1 y la línea ✋ «Sin revisar: el commit de cierre»
 - **Dónde en el kit**: `skills/sdd-propose/references/plan-writing.md` (la «Verificación» de cada task)
 - **Por qué el kit no lo evitó**: el plan no pide que la verificación compruebe la propiedad, y no un indicador de ella
 - **Coste**: un hallazgo Important en la re-revisión y un arreglo fuera de ella

@@ -1,6 +1,6 @@
 # RED — el revisor de la spec señala una prueba que pasa sin la conducta (feature 0327)
 
-Escenario `rc1` de la [batería de `sdd-propose`](batteries/sdd-propose/battery.md), sonnet, con el kit de `develop` (`git archive origin/develop:dist`) y la batería de la rama. La spec de la 0031 está limpia salvo una cosa: su THEN pide que el aviso nombre la 0011 con su título, y la fila de rúbrica que lo prueba es `text: /pendiente/`, que pasa con un aviso que solo diga «pendiente». Salidas en [`red/out/`](../.docs/sdd/specs/20261110-141415-feature-0327-review-conduct-plain-names/red/out/) y [`control/out/`](../.docs/sdd/specs/20261110-141415-feature-0327-review-conduct-plain-names/control/out/).
+Escenario `rc1` de la [batería de `sdd-propose`](batteries/sdd-propose/battery.md), sonnet, con el kit de `develop` (`git archive origin/develop:dist`) y la batería de la rama. La spec de la 0031 está limpia salvo una cosa: su THEN pide que el aviso nombre la 0011 con su título, y la fila de rúbrica que lo prueba es `text: /pendiente/`, que pasa con un aviso que solo diga «pendiente». Salidas en [`red/out/`](../.docs/sdd/changes/20261110-141415-feature-0327-review-conduct-plain-names/red/out/) y [`control/out/`](../.docs/sdd/changes/20261110-141415-feature-0327-review-conduct-plain-names/control/out/).
 
 | Sujeto | $ | Lo que dice «Hallazgos de la review» de la fila | `RC1` |
 | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # GREEN — `using-sdd` y `sdd-templates` en inglés (feature 0272)
 
-Salidas en `.docs/sdd/specs/20261101-140903-feature-0272-using-sdd-templates-english/`, en `green/`, `ab-en/`, `ab-es/` y `humo/`. Sujetos en Sonnet, con superpowers 7.0.0, sobre una copia del kit sacada con `git archive` de `46c3ecf0`. Línea base: la batería de la 0206, 24/24 con el texto en castellano. Coste: 63 sujetos, 9,92 $ de ~13 $.
+Salidas en `.docs/sdd/changes/20261101-140903-feature-0272-using-sdd-templates-english/`, en `green/`, `ab-en/`, `ab-es/` y `humo/`. Sujetos en Sonnet, con superpowers 7.0.0, sobre una copia del kit sacada con `git archive` de `46c3ecf0`. Línea base: la batería de la 0206, 24/24 con el texto en castellano. Coste: 63 sujetos, 9,92 $ de ~13 $.
 
 ## Batería entera de `using-sdd`
 

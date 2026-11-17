@@ -1,6 +1,6 @@
 # sdd-verify, feature 0182: comentarios que citan documentos
 
-Escenario `f6` de `tests/batteries/sdd-verify/`, Sonnet, n = 1 por decisión del dev-lead. Evidencia en `.docs/sdd/specs/20261101-175259-feature-0182-doc-citing-comments/`, en `red/`, `green/`, `refactor/`, `refactor2/` y `fix/`. `battery.mjs` da verde en todas porque solo mira que el sujeto informe: la fila Q6 se lee a mano.
+Escenario `f6` de `tests/batteries/sdd-verify/`, Sonnet, n = 1 por decisión del dev-lead. Evidencia en `.docs/sdd/changes/20261101-175259-feature-0182-doc-citing-comments/`, en `red/`, `green/`, `refactor/`, `refactor2/` y `fix/`. `battery.mjs` da verde en todas porque solo mira que el sujeto informe: la fila Q6 se lee a mano.
 
 | Tanda | Encargo | Q6 | Lo que hizo con el comentario del IBAN | Coste |
 | --- | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # Evidencia RED — spec ligera y `funcional/` (2026-09-08)
 
-Baseline de la task [spec-ligera-funcional](../.docs/sdd/specs/20260908-150513-task-0000-spec-ligera-funcional/spec.md) (T5). Sonnet, fixture desechable "Bookline-fn", 6 runs en tres tandas (`wf_cdc5467c-357`, `wf_b1edd106-dcd`, y E4 por `Agent`). Estado verificado en disco.
+Baseline de la task [spec-ligera-funcional](../.docs/sdd/changes/20260908-150513-task-0000-spec-ligera-funcional/spec.md) (T5). Sonnet, fixture desechable "Bookline-fn", 6 runs en tres tandas (`wf_cdc5467c-357`, `wf_b1edd106-dcd`, y E4 por `Agent`). Estado verificado en disco.
 
 ## Fixture
 

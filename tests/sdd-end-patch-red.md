@@ -2,7 +2,7 @@
 
 Baseline: el kit de `develop` (`fc0536e`), servido desde una copia limpia con `--plugin-dir`. Sujetos headless `claude -p --model sonnet`, dos por escenario, cada uno sobre una copia fresca del molde con `git init`. Cuatro sujetos, 1,22 $ en total.
 
-Molde, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/specs/20260924-225643-task-0067-patch-capabilities/red/). Proyecto ficticio: `salas`, el CLI de reservas de la task 0044, con `capabilities/bookings.md`.
+Molde, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/changes/20260924-225643-task-0067-patch-capabilities/red/). Proyecto ficticio: `salas`, el CLI de reservas de la task 0044, con `capabilities/bookings.md`.
 
 ## Por qué este molde y no el de la task 0003
 

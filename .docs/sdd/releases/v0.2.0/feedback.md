@@ -7,7 +7,7 @@ source: Estreno real del kit en un proyecto del equipo (sin acta formal; el feed
 
 # Acta de release — v0.2.0 (2026-07-21)
 
-Fuente: estreno real del kit en un proyecto del equipo (roadmap, ítem 2). El feedback no llegó como transcripción sino como **artefactos**: dos skills nuevas escritas sobre la marcha en el proyecto de prueba y las ediciones de fuente única en las 7 existentes, incorporadas al kit en la sesión del 2026-07-21 ([task](../../specs/20260721-082038-task-0000-release-skills/)).
+Fuente: estreno real del kit en un proyecto del equipo (roadmap, ítem 2). El feedback no llegó como transcripción sino como **artefactos**: dos skills nuevas escritas sobre la marcha en el proyecto de prueba y las ediciones de fuente única en las 7 existentes, incorporadas al kit en la sesión del 2026-07-21 ([task](../../changes/20260721-082038-task-0000-release-skills/)).
 
 ## 1. Inventario y triage
 

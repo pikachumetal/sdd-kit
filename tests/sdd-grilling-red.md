@@ -1,6 +1,6 @@
 # RED — `sdd-grilling` (feature 0128)
 
-Baseline sin `sdd-grilling`: el kit en `e88248d0` (las seis skills con su regla de preguntas de antes), superpowers 6.4.2 aislado (`SUPERPOWERS_DIR`), Sonnet, 2026-10-02. Batería `tests/batteries/sdd-grilling/` (escenarios y rúbrica). Salidas en `.docs/sdd/specs/20261002-141929-feature-0128-sdd-grilling/red/out/`.
+Baseline sin `sdd-grilling`: el kit en `e88248d0` (las seis skills con su regla de preguntas de antes), superpowers 6.4.2 aislado (`SUPERPOWERS_DIR`), Sonnet, 2026-10-02. Batería `tests/batteries/sdd-grilling/` (escenarios y rúbrica). Salidas en `.docs/sdd/changes/20261002-141929-feature-0128-sdd-grilling/red/out/`.
 
 - **Sujetos**: 19, contando las dos ejecuciones de g3 que se repitieron. **Coste**: 3,74 $ (previsión: ~21 $).
 - **Puerta**: 17/17 en la skill esperada. Veredicto de `battery.sh`: verde en los nueve escenarios.

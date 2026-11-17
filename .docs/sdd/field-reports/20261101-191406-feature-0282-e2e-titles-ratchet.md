@@ -29,7 +29,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. Dije en la evidencia lo que el sujeto contó, sin comprobarlo, y la regla no se cumplía
 
 - **Qué pasó**: escribí «las 2 configs» en la evidencia de `a1-2`. El test del sujeto listaba solo la config por defecto y dejaba fuera 15 títulos; el de `m1-1`, igual. Las sondas de entonces no tocaban la segunda config, así que salían bien. Lo destapó el eje Spec por un recuento que no cuadraba (70 frente a 89). Costó la pasada de fix y 3 sujetos más.
-- **Fuente**: `tests/e2e-titles-ratchet-green.md`; salida de los ejes en la sesión; `.docs/sdd/specs/20261101-171153-feature-0282-e2e-titles-ratchet/walkthrough.md`.
+- **Fuente**: `tests/e2e-titles-ratchet-green.md`; salida de los ejes en la sesión; `.docs/sdd/changes/20261101-171153-feature-0282-e2e-titles-ratchet/walkthrough.md`.
 - **Dónde en el kit**: `.docs/sdd/tech-stack.md`, §Testing (ya apunta el aprendizaje); `skills/sdd-verify/SKILL.md`, «Agent delegation».
 - **Por qué el kit no lo evitó**: la tabla «Agent reports success → verify» habla de subagentes, no de lo que hizo un sujeto en su molde.
 - **Coste**: ~1,5 $ de sujetos y una re-revisión con hallazgos; sin medir aparte.
@@ -40,7 +40,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 2. El plan marcó ✓ tres coberturas sin una sonda que existiera
 
 - **Qué pasó**: §4 del plan marcaba ✓ «título en la lista, verde», «la task no añade su línea» y `projects`. `probes.mjs` no tenía esas sondas y el lanzador pedía «sin título nuevo». Lo cazó el eje Spec.
-- **Fuente**: `.docs/sdd/specs/20261101-171153-feature-0282-e2e-titles-ratchet/plan.md` §4; informe del eje Spec.
+- **Fuente**: `.docs/sdd/changes/20261101-171153-feature-0282-e2e-titles-ratchet/plan.md` §4; informe del eje Spec.
 - **Dónde en el kit**: `skills/sdd-propose/references/plan-writing.md`, «Self-review», punto 1.
 - **Por qué el kit no lo evitó**: el punto pide señalar a qué task y test va cada cláusula, pero una sonda o un escenario que aún no existe pasa igual.
 - **Coste**: un sujeto (`a3`) y una vuelta de sondas.

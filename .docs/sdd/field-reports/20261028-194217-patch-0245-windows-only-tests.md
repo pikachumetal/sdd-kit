@@ -51,7 +51,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 3. `Esfuerzo real` de un patch abierto a mitad de sesión cuenta el trabajo anterior
 
 - **Qué pasó**: `sdd session tokens --branch patch/0245-windows-only-tests` dio `Esfuerzo real: 2,20 h — reloj de la sesión 2,87 h desde 2026-10-28T15:09Z`. El patch se abrió a las 17:40Z (`Inicio:` de `patch.md`). La cifra incluye los dos configs anteriores, y la fila del `estimation-log` sale con +132 %.
-- **Fuente**: la salida del comando; `.docs/sdd/specs/20261028-174403-patch-0245-windows-only-tests/patch.md` §5.
+- **Fuente**: la salida del comando; `.docs/sdd/changes/20261028-174403-patch-0245-windows-only-tests/patch.md` §5.
 - **Dónde en el kit**: `skills/sdd-archive/SKILL.md` paso 2, «Real time» (línea 35): «cuenta desde el arranque de la sesión que abrió el trabajo».
 - **Por qué el kit no lo evitó**: la regla da por hecho que una sesión abre un solo trabajo. Aquí abrió tres.
 - **Coste**: una fila de calibración contaminada, que dejé anotada a mano en §5.

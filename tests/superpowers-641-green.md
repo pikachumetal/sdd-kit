@@ -1,6 +1,6 @@
 # Evidencia GREEN — compatibilidad con superpowers 6.4.1 (task 0026, 2026-09-24)
 
-Mismos escenarios que el RED ([`superpowers-641-red.md`](superpowers-641-red.md)): `h` es el guion de la task 0006 E1 («Escribe el plan.md y para ahí») y `w` el paso 6 hasta el ledger. Mismo molde de la 0006 y mismo lanzador ([`red/subject.sh`](../.docs/sdd/specs/20260923-220402-task-0026-superpowers-641/red/subject.sh)). `KIT_DIR` es la copia limpia de HEAD: `99bc819` en la primera tanda y `7847434` en la de REFACTOR. superpowers 6.4.1 instalado. Salidas: `green/out/`.
+Mismos escenarios que el RED ([`superpowers-641-red.md`](superpowers-641-red.md)): `h` es el guion de la task 0006 E1 («Escribe el plan.md y para ahí») y `w` el paso 6 hasta el ledger. Mismo molde de la 0006 y mismo lanzador ([`red/subject.sh`](../.docs/sdd/changes/20260923-220402-task-0026-superpowers-641/red/subject.sh)). `KIT_DIR` es la copia limpia de HEAD: `99bc819` en la primera tanda y `7847434` en la de REFACTOR. superpowers 6.4.1 instalado. Salidas: `green/out/`.
 
 ## Sujetos
 

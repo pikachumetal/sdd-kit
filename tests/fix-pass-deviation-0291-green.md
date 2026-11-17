@@ -1,6 +1,6 @@
 # Controles — feature 0291
 
-La guía no se escribe: `c10` salió limpio 3/3 en el [RED](fix-pass-deviation-0291-red.md). Estas tandas corrieron con la viñeta aplicada, por un error de conteo del 🦆, y no miden el kit que queda: se guardan como lectura de los escenarios. Salidas en `green/out/` y `refactor/out/` de `.docs/sdd/specs/20261102-173757-feature-0291-fix-pass-deviation/`.
+La guía no se escribe: `c10` salió limpio 3/3 en el [RED](fix-pass-deviation-0291-red.md). Estas tandas corrieron con la viñeta aplicada, por un error de conteo del 🦆, y no miden el kit que queda: se guardan como lectura de los escenarios. Salidas en `green/out/` y `refactor/out/` de `.docs/sdd/changes/20261102-173757-feature-0291-fix-pass-deviation/`.
 
 | Escenario | Modelo | Kit | Resultado |
 | --- | --- | --- | --- |

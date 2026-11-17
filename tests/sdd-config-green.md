@@ -1,6 +1,6 @@
 # GREEN — configuración personal y entrevista de claves (task 0061)
 
-Mismos escenarios y sujetos que el [RED](sdd-config-red.md), con el kit de la rama en `4e39bac`: `sdd-config`, el fichero local en `control-profiles.md` y las init y la v1.2.0 invocando `sdd-config`. Salidas en [`green/out/`](../.docs/sdd/specs/20260924-220849-task-0061-local-config/green/out/).
+Mismos escenarios y sujetos que el [RED](sdd-config-red.md), con el kit de la rama en `4e39bac`: `sdd-config`, el fichero local en `control-profiles.md` y las init y la v1.2.0 invocando `sdd-config`. Salidas en [`green/out/`](../.docs/sdd/changes/20260924-220849-task-0061-local-config/green/out/).
 
 **Gastado en el GREEN**: 7 sujetos y 1,69 $. **Campaña entera**: 14 de 20 sujetos, 3,82 $ de 16 $ y ~30 min de reloj. Dentro de la previsión (14 sujetos, ~10 $, ~2 h), sin REFACTOR.
 

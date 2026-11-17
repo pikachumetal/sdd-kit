@@ -1,6 +1,6 @@
 # Evidencia RED — review reforzada opt-in (2026-09-09)
 
-Baseline de la task [review-reforzada](../.docs/sdd/specs/20260909-160248-task-0000-review-reforzada/spec.md) (T12), que responde al §4.4 de [research.md](../.docs/sdd/specs/20260909-131802-task-0000-gates-y-reviews/research.md): ¿la review por defecto del kit —las dos revisiones de `subagent-driven-development` con la cabecera de `encargo-revision.md`— caza un bug de transición de estado sin guarda, el tipo del hallazgo alto de SifAcademy 0001? **Si sí, la review reforzada no se añade.**
+Baseline de la task [review-reforzada](../.docs/sdd/changes/20260909-160248-task-0000-review-reforzada/spec.md) (T12), que responde al §4.4 de [research.md](../.docs/sdd/changes/20260909-131802-task-0000-gates-y-reviews/research.md): ¿la review por defecto del kit —las dos revisiones de `subagent-driven-development` con la cabecera de `encargo-revision.md`— caza un bug de transición de estado sin guarda, el tipo del hallazgo alto de SifAcademy 0001? **Si sí, la review reforzada no se añade.**
 
 ## Método
 

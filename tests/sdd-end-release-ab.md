@@ -1,6 +1,6 @@
 # Evidencia A/B — `sdd-end-release` (2026-09-07)
 
-Campaña de no-regresión del Art. I. Ola 2 de la task [progressive-disclosure](../.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/spec.md). Control 1103 palabras → tratamiento **944 (−14 %)**.
+Campaña de no-regresión del Art. I. Ola 2 de la task [progressive-disclosure](../.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/spec.md). Control 1103 palabras → tratamiento **944 (−14 %)**.
 
 ## Cortes probados y aceptados
 
@@ -59,7 +59,7 @@ Control = `SKILL.md` en `f88c3d6`, tratamiento = `74da912` (rename `funcional.md
 
 # Campaña A/B — corte en cinco pasos (task 0063, 2026-09-25)
 
-Recorte de la [task 0063](../.docs/sdd/specs/20260924-221103-task-0063-end-release-cut/spec.md): de 8 pasos a 5, sin acta ni triaje (pasan a `sdd-plan`, task 0062), y la retro opcional. **Control** = `skills/` de `develop` (1468 palabras en el `SKILL.md`). **Tratamiento** = la rama (1361 palabras tras el REFACTOR, −7 %). Los mismos escenarios en los dos brazos, Sonnet, un sujeto por brazo y repetición donde hubo diferencia. Lanzador y salidas en `ab/` de la carpeta de la task: `run.sh` aplica `SUBJECT_CAP`, el techo de coste y el fichero `stop` antes de cada sujeto.
+Recorte de la [task 0063](../.docs/sdd/changes/20260924-221103-task-0063-end-release-cut/spec.md): de 8 pasos a 5, sin acta ni triaje (pasan a `sdd-plan`, task 0062), y la retro opcional. **Control** = `skills/` de `develop` (1468 palabras en el `SKILL.md`). **Tratamiento** = la rama (1361 palabras tras el REFACTOR, −7 %). Los mismos escenarios en los dos brazos, Sonnet, un sujeto por brazo y repetición donde hubo diferencia. Lanzador y salidas en `ab/` de la carpeta de la task: `run.sh` aplica `SUBJECT_CAP`, el techo de coste y el fichero `stop` antes de cada sujeto.
 
 **Previsión** (spec, decisión 12): 8 sujetos, ~9 $, `SUBJECT_CAP=12` y techo de 16 $. **Real**: 17 sujetos y 6,03 $. Los 12 primeros cabían en la previsión. El dev-lead aprobó otros 2 tras un REFACTOR, al llegar al tope («Arreglo + 2 sujetos»), y 3 más tras la revisión final («3 sujetos más de A2»).
 

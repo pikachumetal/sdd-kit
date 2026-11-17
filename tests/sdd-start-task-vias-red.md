@@ -44,7 +44,7 @@ Este RED cierra la deuda "el override sobre la clasificación de `brainstorming`
 | Comprobación | E5 |
 | --- | --- |
 | Rama | ❌ `feature/0000-export-pedidos-csv` creada desde `develop` |
-| Carpeta de spec | ❌ `.docs/sdd/specs/20260907-160922-task-0000-export-pedidos-csv/` con `spec.md` de 89 líneas, `mode: lite` propuesto |
+| Carpeta de spec | ❌ `.docs/sdd/changes/20260907-160922-task-0000-export-pedidos-csv/` con `spec.md` de 89 líneas, `mode: lite` propuesto |
 | `sdd-consult` invocada | ❌ no (estaba disponible y se le había dicho) |
 | `superpowers:brainstorming` invocada | ✅ (y la vía anunciada no gobernó nada) |
 | `src/`, `tests/` intactos | ✅ |

@@ -1,6 +1,6 @@
 # Humo de la 0143 — las skills editadas ejecutan la CLI `sdd`
 
-Art. I: cada skill editada por la feature 0143 (sus llamadas pasan de `pwsh … .ps1` a `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verbo>`) lleva un escenario de humo, n = 1, Sonnet. Batería y sujeto en [`humo/`](../.docs/sdd/specs/20261007-153554-feature-0143-node-cli/humo/), salida de cada sujeto en `humo/out/`. Kit: copia de `666fd772` cargada con `--plugin-dir`, junto a superpowers 6.4.2, sin la configuración del dev-lead. Molde: `salas` en modo `sequence`.
+Art. I: cada skill editada por la feature 0143 (sus llamadas pasan de `pwsh … .ps1` a `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verbo>`) lleva un escenario de humo, n = 1, Sonnet. Batería y sujeto en [`humo/`](../.docs/sdd/changes/20261007-153554-feature-0143-node-cli/humo/), salida de cada sujeto en `humo/out/`. Kit: copia de `666fd772` cargada con `--plugin-dir`, junto a superpowers 6.4.2, sin la configuración del dev-lead. Molde: `salas` en modo `sequence`.
 
 Pasa si la primera skill es la esperada y el stream muestra la llamada a `cli/bin/sdd.js` con la ruta del plugin sustituida (ningún `${CLAUDE_PLUGIN_ROOT}` literal) y el verbo del paso.
 

@@ -1,6 +1,6 @@
 # RED — verificación de frontend (feature 0099)
 
-Baseline con el kit de la rama en `a903651` (apertura de la 0099, sin guía nueva). Los sujetos corren en Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead). El molde es `pedidos`, una web en node sin dependencias propias (`server.mjs`, `views.mjs`, `app.css`, `node --test`) con `.docs/sdd/`, Playwright 1.63 en `node_modules` y `§Frontend` en `tech-stack.md` según el escenario. Detector declarado: `npx impeccable@4.1.0 detect {url} --viewport {viewport}`. Molde, lanzador y salidas en [`red/`](../.docs/sdd/specs/20260929-073733-feature-0099-frontend-verification/red/). Tope por sujeto: 40 turnos y 15 min. Ninguno llegó al tope.
+Baseline con el kit de la rama en `a903651` (apertura de la 0099, sin guía nueva). Los sujetos corren en Sonnet con `SUPERPOWERS_DIR` (superpowers 6.4.2, sin el `CLAUDE.md` del dev-lead). El molde es `pedidos`, una web en node sin dependencias propias (`server.mjs`, `views.mjs`, `app.css`, `node --test`) con `.docs/sdd/`, Playwright 1.63 en `node_modules` y `§Frontend` en `tech-stack.md` según el escenario. Detector declarado: `npx impeccable@4.1.0 detect {url} --viewport {viewport}`. Molde, lanzador y salidas en [`red/`](../.docs/sdd/changes/20260929-073733-feature-0099-frontend-verification/red/). Tope por sujeto: 40 turnos y 15 min. Ninguno llegó al tope.
 
 ## Escenarios
 

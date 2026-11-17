@@ -1,6 +1,6 @@
 # Evidencia GREEN — `using-sdd`, la puerta de entrada al kit (2026-09-25)
 
-Mismas 14 frases, molde y aislamiento que el [RED](using-sdd-red.md), con dos sujetos Sonnet por frase. El kit es un `git archive` de la rama tras la Task 2 (`99a6648`). En él, el hook inyecta `skills/using-sdd/SKILL.md` y `hooks/router.md` ya no existe. Las salidas están en `green/out/` de la [carpeta de la spec](../.docs/sdd/specs/20260925-180228-feature-0074-using-sdd/).
+Mismas 14 frases, molde y aislamiento que el [RED](using-sdd-red.md), con dos sujetos Sonnet por frase. El kit es un `git archive` de la rama tras la Task 2 (`99a6648`). En él, el hook inyecta `skills/using-sdd/SKILL.md` y `hooks/router.md` ya no existe. Las salidas están en `green/out/` de la [carpeta de la spec](../.docs/sdd/changes/20260925-180228-feature-0074-using-sdd/).
 
 ## Resultados
 

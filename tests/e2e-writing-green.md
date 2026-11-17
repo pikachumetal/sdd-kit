@@ -1,6 +1,6 @@
 # GREEN — escribir E2E (feature 0180)
 
-Los escenarios de [e2e-writing-red.md](e2e-writing-red.md) con el kit de la rama: `skills/sdd-tdd/references/writing-e2e.md`, su puntero en `sdd-tdd` y los campos E2E de `operations-template.md`. Sujetos Sonnet, con `tests/headless/run.sh` y superpowers 7.0.0, sobre una copia del working tree de cada task. Lo que produjo cada sujeto: [`green/out/`](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/green/out/).
+Los escenarios de [e2e-writing-red.md](e2e-writing-red.md) con el kit de la rama: `skills/sdd-tdd/references/writing-e2e.md`, su puntero en `sdd-tdd` y los campos E2E de `operations-template.md`. Sujetos Sonnet, con `tests/headless/run.sh` y superpowers 7.0.0, sobre una copia del working tree de cada task. Lo que produjo cada sujeto: [`green/out/`](../.docs/sdd/changes/20261021-133607-feature-0180-e2e-core-flows/green/out/).
 
 ## i1 — init con código de `hojas` (Task 1)
 
@@ -44,7 +44,7 @@ Coste del GREEN de la Task 2: 1,91 $ (8 sujetos).
 
 ## Baterías de `sdd-init` y `sdd-upgrade` (enmienda de la revisión final)
 
-El eje Spec pidió el tramo de batería de las ediciones de la init y de la migración (ADR 0002). Escenarios nuevos: `n6` en la de `sdd-init` (molde `code-e2e-progress`, filas E1-E3) y `v3` en la de `sdd-upgrade` (molde `v2x-e2e`, fila V13); `n3` como control. Salidas en [`battery/`](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/battery/out/) y [`battery2/`](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/battery2/out/).
+El eje Spec pidió el tramo de batería de las ediciones de la init y de la migración (ADR 0002). Escenarios nuevos: `n6` en la de `sdd-init` (molde `code-e2e-progress`, filas E1-E3) y `v3` en la de `sdd-upgrade` (molde `v2x-e2e`, fila V13); `n3` como control. Salidas en [`battery/`](../.docs/sdd/changes/20261021-133607-feature-0180-e2e-core-flows/battery/out/) y [`battery2/`](../.docs/sdd/changes/20261021-133607-feature-0180-e2e-core-flows/battery2/out/).
 
 | Pasada | Escenario | Resultado |
 | --- | --- | --- |

@@ -1,6 +1,6 @@
 # RED — Validación del dev con guion desde el reporte (feature 0208)
 
-Campaña previa a la spec de la [feature 0208](../.docs/sdd/specs/20261022-140232-feature-0208-dev-validation-script/spec.md), con el kit de `develop` en `7108949d` (la validación manual vive en el paso 1 de `sdd-archive` y en el paso 7 de `sdd-start-feature`; ninguno dice de dónde salen los pasos del guion, ni obliga a correrlo, ni lee `validation.startEnvironment` cuando el agente no levantó el entorno). Sujetos Sonnet con `tests/headless/battery.sh` y superpowers 7.0.0, como escenarios nuevos de la batería de `sdd-archive` (`g1`-`g4`, rúbrica G1-G5). Salidas en [`red/out/`](../.docs/sdd/specs/20261022-140232-feature-0208-dev-validation-script/red/out/). 8 sujetos, 1,62 $.
+Campaña previa a la spec de la [feature 0208](../.docs/sdd/changes/20261022-140232-feature-0208-dev-validation-script/spec.md), con el kit de `develop` en `7108949d` (la validación manual vive en el paso 1 de `sdd-archive` y en el paso 7 de `sdd-start-feature`; ninguno dice de dónde salen los pasos del guion, ni obliga a correrlo, ni lee `validation.startEnvironment` cuando el agente no levantó el entorno). Sujetos Sonnet con `tests/headless/battery.sh` y superpowers 7.0.0, como escenarios nuevos de la batería de `sdd-archive` (`g1`-`g4`, rúbrica G1-G5). Salidas en [`red/out/`](../.docs/sdd/changes/20261022-140232-feature-0208-dev-validation-script/red/out/). 8 sujetos, 1,62 $.
 
 ## g1 — patch 0008 con el reporte literal de Laura
 

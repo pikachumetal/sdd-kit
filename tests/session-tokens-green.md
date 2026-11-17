@@ -1,6 +1,6 @@
 # GREEN — el cierre mide la sesión (task 0068)
 
-Mismo escenario `w2` y el mismo molde que el [RED](session-tokens-red.md), con dos sujetos. El kit es `HEAD` de la rama más la guidance nueva: el paso 2 de `sdd-end-task` y las líneas de coste de `walkthrough-template.md`. Salidas en [`green/out/`](../.docs/sdd/specs/20260924-230945-task-0068-session-tokens/green/out/).
+Mismo escenario `w2` y el mismo molde que el [RED](session-tokens-red.md), con dos sujetos. El kit es `HEAD` de la rama más la guidance nueva: el paso 2 de `sdd-end-task` y las líneas de coste de `walkthrough-template.md`. Salidas en [`green/out/`](../.docs/sdd/changes/20260924-230945-task-0068-session-tokens/green/out/).
 
 ## Resultado
 

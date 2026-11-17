@@ -34,7 +34,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
   - Antes de despachar nada, el repaso de coherencia completo encontró 13 errores en la spec.
   - Los dos revisores encontraron 20 hallazgos, 3 de ellos Critical. Uno (A+C se esquivaba con `…` y daba rojo con cualquier cambio de media línea) obligó a rediseñar la decisión central.
   - Esa spec fija la gramática de la marca y la forma de `upstream.json`, que van a rellenar la 0312 y la 0296.
-- **Fuente**: «Hallazgos de la review» de la spec de la 0302 (`.docs/sdd/specs/20261103-201153-feature-0302-annotated-copies/spec.md`); `skills/sdd-propose/references/review-spec.md:20` → «**Por defecto, ninguna.** 0–3 señales no proponen review.».
+- **Fuente**: «Hallazgos de la review» de la spec de la 0302 (`.docs/sdd/changes/20261103-201153-feature-0302-annotated-copies/spec.md`); `skills/sdd-propose/references/review-spec.md:20` → «**Por defecto, ninguna.** 0–3 señales no proponen review.».
 - **Dónde en el kit**: `skills/sdd-propose/references/review-spec.md`, §2 «Decide si recomiendas review».
 - **Por qué el kit no lo evitó**: la señal «Contrato público» pesa lo mismo cuando la consume otro módulo hoy que cuando la van a rellenar varias features después. Además, el umbral de «ninguna» llega hasta 3 señales. El repaso de coherencia que hice antes de presentar la spec fue parcial: lo reconocí cuando el dev-lead preguntó.
 - **Coste**: dos paradas del dev-lead, unos 2,2 $ de los dos revisores y la reescritura de la spec, en su mayor parte la decisión 3 (spec, «Hallazgos de la review»).

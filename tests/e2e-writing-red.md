@@ -1,6 +1,6 @@
 # RED — escribir E2E (feature 0180)
 
-Campañas de la [feature 0180](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/spec.md), con el kit de `develop` (2.3.4, sin `writing-e2e.md` ni los campos E2E de `operations.md`). Sujetos Sonnet, con `tests/headless/run.sh` y superpowers 7.0.0. Molde `hojas`: una app React con una rejilla de celdas cuyo editor se monta bajo demanda, un portapapeles guardado en el API y un E2E por feature en `e2e/`, con el helper `typeInCell` (Enter y teclear sin esperar) y `expect.poll` al API entre acciones, como el proyecto de los tickets del patch 0158 y de la feature 0223. Molde, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/specs/20261021-133607-feature-0180-e2e-core-flows/red/).
+Campañas de la [feature 0180](../.docs/sdd/changes/20261021-133607-feature-0180-e2e-core-flows/spec.md), con el kit de `develop` (2.3.4, sin `writing-e2e.md` ni los campos E2E de `operations.md`). Sujetos Sonnet, con `tests/headless/run.sh` y superpowers 7.0.0. Molde `hojas`: una app React con una rejilla de celdas cuyo editor se monta bajo demanda, un portapapeles guardado en el API y un E2E por feature en `e2e/`, con el helper `typeInCell` (Enter y teclear sin esperar) y `expect.poll` al API entre acciones, como el proyecto de los tickets del patch 0158 y de la feature 0223. Molde, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/changes/20261021-133607-feature-0180-e2e-core-flows/red/).
 
 ## r1 — escribir el E2E de pegar desde el menú contextual (`sdd-tdd`)
 

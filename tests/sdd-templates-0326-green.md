@@ -1,6 +1,6 @@
 # GREEN — lo previsto de «Topes de palabras» lleva su origen (feature 0326)
 
-Mismo escenario, molde y lanzador que el [RED](sdd-templates-0326-red.md), con el kit de la rama. Salidas en [`green-co2p/out/`](../.docs/sdd/specs/20261109-223338-feature-0326-orphans-eol-and-forecast/green-co2p/out/).
+Mismo escenario, molde y lanzador que el [RED](sdd-templates-0326-red.md), con el kit de la rama. Salidas en [`green-co2p/out/`](../.docs/sdd/changes/20261109-223338-feature-0326-orphans-eol-and-forecast/green-co2p/out/).
 
 Guía (`spec-template.md`, «Topes de palabras»):
 

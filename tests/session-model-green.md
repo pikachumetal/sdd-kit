@@ -1,6 +1,6 @@
 # GREEN — modelo y effort de la sesión que ejecuta en Native (task 0058)
 
-Kit: copia del working tree en `088fca5`, con la guía de la Task 2 (pasos 4 y 5 de `sdd-start-task`, `plan-template.md`, `walkthrough-template.md` y Art. IV). Mismos escenarios, molde y lanzador que el [RED](session-model-red.md); salidas en `.docs/sdd/specs/20260924-225741-task-0058-session-model-policy/green/out/`.
+Kit: copia del working tree en `088fca5`, con la guía de la Task 2 (pasos 4 y 5 de `sdd-start-task`, `plan-template.md`, `walkthrough-template.md` y Art. IV). Mismos escenarios, molde y lanzador que el [RED](session-model-red.md); salidas en `.docs/sdd/changes/20260924-225741-task-0058-session-model-policy/green/out/`.
 
 ## Resultados
 

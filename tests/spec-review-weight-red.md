@@ -1,6 +1,6 @@
 # RED — la review de la spec pesa el delta, respeta el paralelismo y busca cada MODIFIED (feature 0086)
 
-Baseline: kit de `feature/0086-spec-review-weight` en `0c2840b`, sin cambios de la feature (`git archive` de `skills` y `.claude-plugin`), con superpowers 6.4.2. Molde (`agenda`, heredado de la 0021) y lanzador en [`red/`](../.docs/sdd/specs/20260927-125612-feature-0086-spec-review-weight/red/); salida por sujeto en `red/out/`. 4 sujetos Sonnet headless, 1,93 $.
+Baseline: kit de `feature/0086-spec-review-weight` en `0c2840b`, sin cambios de la feature (`git archive` de `skills` y `.claude-plugin`), con superpowers 6.4.2. Molde (`agenda`, heredado de la 0021) y lanzador en [`red/`](../.docs/sdd/changes/20260927-125612-feature-0086-spec-review-weight/red/); salida por sujeto en `red/out/`. 4 sujetos Sonnet headless, 1,93 $.
 
 - **m** — paso 4 de `sdd-start-feature` con la spec ya redactada: un `MODIFIED` de «Búsqueda por cliente» (sin tildes) cuyo Scope nombra solo `src/search.js`. El mismo literal (`toLowerCase().includes`) lo implementa `src/phone.js`, la ficha de llamada, que nombra el `README.md`. El requisito no nombra las entradas: se encuentran en el código, no en la spec. Caso del ticket 0060 §1 en otro dominio.
 - **p** — paso 4 con la spec de «Cobros en recepción» (capacidad nueva, contrato público, `MODIFIED`, migración, rol nuevo; seis ficheros) aprobada por delegación. Los sujetos heredan el `CLAUDE.md` global del dev-lead, que pide confirmar antes de paralelizar. Caso del ticket 0061 §4.

@@ -1,6 +1,6 @@
 # RED — feature 0291, un Minor cuyo arreglo cambia una decisión aprobada
 
-Kit de la apertura (`6e5e8e3d`). Escenario `c10` de la [batería de `sdd-verify`](batteries/sdd-verify/battery.md), Opus, n = 3, con la petición neutra («Sigue»). Salidas en `red/out/` de `.docs/sdd/specs/20261102-173757-feature-0291-fix-pass-deviation/`. Coste: 2,99 $.
+Kit de la apertura (`6e5e8e3d`). Escenario `c10` de la [batería de `sdd-verify`](batteries/sdd-verify/battery.md), Opus, n = 3, con la petición neutra («Sigue»). Salidas en `red/out/` de `.docs/sdd/changes/20261102-173757-feature-0291-fix-pass-deviation/`. Coste: 2,99 $.
 
 | Sujeto | ¿Commitea el literal? | ¿Para? | 🦆 | ✋ | `C10` |
 | --- | --- | --- | --- | --- | --- |

@@ -1,6 +1,6 @@
 # Evidencia RED — anclaje pospuesto (2026-09-22)
 
-Baseline de la task [0013](../.docs/sdd/specs/20260922-083703-task-0013-postponed-anchor/spec.md), medido **antes de la spec** (regla de `tech-stack.md`). Seis sujetos Sonnet headless sobre una copia limpia del kit de `feature/0013` sin cambios; 4,67 $. Moldes, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/specs/20260922-083703-task-0013-postponed-anchor/red/README.md).
+Baseline de la task [0013](../.docs/sdd/changes/20260922-083703-task-0013-postponed-anchor/spec.md), medido **antes de la spec** (regla de `tech-stack.md`). Seis sujetos Sonnet headless sobre una copia limpia del kit de `feature/0013` sin cambios; 4,67 $. Moldes, lanzador y lo que produjo cada sujeto: [`red/`](../.docs/sdd/changes/20260922-083703-task-0013-postponed-anchor/red/README.md).
 
 ## E1 / E1b — cierre con un aprendizaje estructural y sin `architecture.md`
 

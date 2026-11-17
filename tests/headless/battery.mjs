@@ -27,7 +27,7 @@ export class BatteryError extends Error {
 }
 
 const REPO_ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const SPECS_ROOT = join(REPO_ROOT, '.docs', 'sdd', 'specs');
+const SPECS_ROOT = join(REPO_ROOT, '.docs', 'sdd', 'changes');
 const HEADER = ['Id', 'Paso', 'Petición', 'Molde', 'Esperado', 'n', 'Umbral', 'Modelo', 'Procedencia'];
 
 const RUBRIC_HEADER = ['Fila', 'Escenarios', 'Falla si…'];

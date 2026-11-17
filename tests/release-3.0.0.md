@@ -2,7 +2,7 @@
 
 ## Rojos de develop (0311 §5 y §6), n = 3, kit de develop (6418f13e)
 
-Lectura de las salidas de `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`. Criterio: el umbral de cada escenario es «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3; por debajo, «rojo, se repite». «Ruido» es un rojo de la 0311 que ahora sale 3/3 verde. Las filas en prosa las leyó una sola persona, sin segundo lector.
+Lectura de las salidas de `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`. Criterio: el umbral de cada escenario es «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3; por debajo, «rojo, se repite». «Ruido» es un rojo de la 0311 que ahora sale 3/3 verde. Las filas en prosa las leyó una sola persona, sin segundo lector.
 
 **Aviso de alcance.** La spec (§4, punto «los rojos que la 0311 vio en develop») atribuyó mal varias baterías: el ticket de la 0311 §5 nombra la batería solo en `pt1`, `c1`, `n1`, `d1` (de `sdd-debugging`), `f1` (de `sdd-propose`) y `m5`; `u1`, `h1` y `h2` son de `sdd-implement` (sus filas `U1`, `U1r`, `W` y `A` solo existen allí). Las fases `b-use`, `b-upg` y el `d1` de `b-imp` midieron otros escenarios con el mismo id (`using-sdd:u1` y `f1`, `sdd-upgrade:h1` y `h2`, `sdd-implement:d1`). Salen en la tabla, pero **no re-miden los rojos de la 0311**. Sin medir con n = 3: `sdd-implement:u1` (U1, U1r), `sdd-implement:h1` y `h2` (W, A), `sdd-debugging:d1` (C) y `sdd-propose:f1` (F1-C).
 
@@ -115,7 +115,7 @@ Todos los sujetos de los dos kits invocan `sdd-kit:sdd-roadmap`, dan el prompt c
 
 ## GREEN de los rojos de develop (kit 47a91cc6), n = 3
 
-Lectura de `g-imp`, `g-ver`, `g-rmp` y `g-dbg` en `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit de la rama (`47a91cc6`) y los moldes en la forma 3.0.0. Rúbrica de `battery.md` actual. Las filas de máquina (`tools:`, `file:`, `text:`, `state:`) las aplicó la tanda y no se repiten; aquí van las de prosa (`U1`, `U1r`, `U2`, `W`, `A`, `N`, `S`, `PT-D`, `C1`, `M5`, `E1`, `C`, `L`). Umbral de cada escenario: «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3. `L` mira solo los mensajes del hilo; los de implementadores y revisores (p. ej. `h2-2` [34] a [93], `h2-3` [43], [112], [123]) no cuentan. Un solo lector, sin segundo. `PT-A`, `PT-B` y `PT-C` de `pt1` son de máquina y no se releen.
+Lectura de `g-imp`, `g-ver`, `g-rmp` y `g-dbg` en `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit de la rama (`47a91cc6`) y los moldes en la forma 3.0.0. Rúbrica de `battery.md` actual. Las filas de máquina (`tools:`, `file:`, `text:`, `state:`) las aplicó la tanda y no se repiten; aquí van las de prosa (`U1`, `U1r`, `U2`, `W`, `A`, `N`, `S`, `PT-D`, `C1`, `M5`, `E1`, `C`, `L`). Umbral de cada escenario: «todos» (2/2, 1/1), así que con n = 3 cuenta 3/3. `L` mira solo los mensajes del hilo; los de implementadores y revisores (p. ej. `h2-2` [34] a [93], `h2-3` [43], [112], [123]) no cuentan. Un solo lector, sin segundo. `PT-A`, `PT-B` y `PT-C` de `pt1` son de máquina y no se releen.
 
 | Batería:escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
 | --- | --- | --- | --- | --- | --- |
@@ -168,7 +168,7 @@ Resumen: 2 escenarios verdes (`m5`, `d1`) más `pt1` en las filas de prosa; 4 si
 
 ## GREEN 2 y mediciones de la fila (kit d5dc6963)
 
-Lectura de `g2-imp`, `g2-ver`, `m-imp`, `m-dbg`, `m-arc`, `m-prp` y `m-upg` en `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit `d5dc6963`. Solo filas de prosa (las de máquina no se repiten: `P4a`, `W` de `h1` y `h2`, etc.). Para `u1` leí también los `.jsonl` de `.temp/r52/g2-imp/` (el encargo de cada `Agent` sale de ahí). `L` mira solo los mensajes del hilo, no los de revisores ni implementadores. Un solo lector. Umbral: el de la tabla de escenarios (3/3 con n = 3; 1/1 en `p4o`; 4/4 en `d1`; 2/2 en `v5`).
+Lectura de `g2-imp`, `g2-ver`, `m-imp`, `m-dbg`, `m-arc`, `m-prp` y `m-upg` en `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`, con el kit `d5dc6963`. Solo filas de prosa (las de máquina no se repiten: `P4a`, `W` de `h1` y `h2`, etc.). Para `u1` leí también los `.jsonl` de `.temp/r52/g2-imp/` (el encargo de cada `Agent` sale de ahí). `L` mira solo los mensajes del hilo, no los de revisores ni implementadores. Un solo lector. Umbral: el de la tabla de escenarios (3/3 con n = 3; 1/1 en `p4o`; 4/4 en `d1`; 2/2 en `v5`).
 
 | Batería:escenario | Fila | Sujeto 1 | Sujeto 2 | Sujeto 3 | Veredicto |
 | --- | --- | --- | --- | --- | --- |
@@ -177,7 +177,7 @@ Lectura de `g2-imp`, `g2-ver`, `m-imp`, `m-dbg`, `m-arc`, `m-prp` y `m-upg` en `
 | sdd-implement:u1 | U2 Sin reabrir | pasa: Task 2 «enmienda 2026-11-11 aprobada (1350c72): sin «quién canceló»», Task 1 sin nota y la enmienda en su propio commit | pasa: «THEN sin «quién»: enmienda aprobada 2026-11-11», Task 1 intacta | pasa: «Enmienda 2026-11-11: sin «quién canceló». Ruling: …», Task 1 intacta | 3/3 |
 | sdd-implement:u1 | L Idioma | pasa | falla: «The Python heredoc turned `\n` into a real newline. Fixing that.» (mensaje [29] del hilo, entero en inglés) | pasa | 2/3 |
 | sdd-implement:u1 | **Escenario** | | | | rojo (U1 y U1r 2/3, L 2/3) |
-| sdd-implement:h1 | A Commits por ruta | pasa: `git add src/app.js test/cancel.test.js $D/tasks.md`, ningún `-A` ni `.` | pasa: `git add src/app.js test/cancel.test.js .docs/sdd/specs/…/tasks.md` | pasa: `git add src/app.js test/cancel.test.js $D/tasks.md` | 3/3 |
+| sdd-implement:h1 | A Commits por ruta | pasa: `git add src/app.js test/cancel.test.js $D/tasks.md`, ningún `-A` ni `.` | pasa: `git add src/app.js test/cancel.test.js .docs/sdd/changes/…/tasks.md` | pasa: `git add src/app.js test/cancel.test.js $D/tasks.md` | 3/3 |
 | sdd-implement:h1 | N Native | pasa: «ledger: Task 1: complete (commits dad3b31..62d01af…)» y Task 2 | pasa: «ledger: Task 1: complete (commits e37844b..b13a096…)» y Task 2 | pasa: «ledger: Task 1: complete (commits 4d76435..cc27dfd…)» y Task 2 | 3/3 |
 | sdd-implement:h1 | L Idioma | pasa | pasa | pasa | 3/3 |
 | sdd-implement:h1 | **Escenario** (con `W` de máquina 3/3) | | | | verde |
@@ -214,7 +214,7 @@ Lectura de `g2-imp`, `g2-ver`, `m-imp`, `m-dbg`, `m-arc`, `m-prp` y `m-upg` en `
 | sdd-propose:d1 (sujeto 4) | D1 Depuración | falla: ídem; para con «¿Abro el patch con la opción 1?», tras decir «Dijiste «patch»… no lo vuelvo a preguntar» | — | — | 0/1 |
 | sdd-propose:d1 | L Idioma (S1 a S4) | pasa los cuatro | — | — | 4/4 |
 | sdd-propose:d1 | **Escenario** | | | | rojo (D1 1/4) |
-| sdd-upgrade:v5 | V15 Enlaces | falla: no existe `ROADMAP.md` ni `CHANGELOG.md` (migración sin hacer) | pasa: `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)` en `ROADMAP.md` y `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` en `CHANGELOG.md` | — | 1/2 |
+| sdd-upgrade:v5 | V15 Enlaces | falla: no existe `ROADMAP.md` ni `CHANGELOG.md` (migración sin hacer) | pasa: `](.docs/sdd/changes/20261005-130000-feature-0030-floor-filter/walkthrough.md)` en `ROADMAP.md` y `](.docs/sdd/changes/20260915-090000-feature-0016-weekly/walkthrough.md)` en `CHANGELOG.md` | — | 1/2 |
 | sdd-upgrade:v5 | V16 Lo publicado | falla: sin `ROADMAP.md` | pasa: 0032 y 0023 en Now con ✅; 0029 y 0016 fuera de `ROADMAP.md` | — | 1/2 |
 | sdd-upgrade:v5 | V17 Release por prefijo | falla: sin `ROADMAP.md` | pasa: `## Now — 3.0.0 · en preparación` con 0030, 0031 y 0033 (una vez); 0021, 0022 y 0024 en Next | — | 1/2 |
 | sdd-upgrade:v5 | V18 Ids del Backlog | falla: sin `ROADMAP.md` (la tabla anuncia «recibirán un id nuevo» pero no está escrito) | pasa: Later con 0040 y 0041 para B3; la tabla pregunta «qué estado lleva (hoy 🔄, que Later no admite)» | — | 1/2 |
@@ -263,7 +263,7 @@ Se leyeron las salidas de `grn-prp` (d1 ×4, a3 ×2), `grn-imp` (u1 ×2, dos tur
 | sdd-implement:u1 | U2 Sin reabrir | pasa: la Task 1 intacta (`c2ff5d6`); nota en la Task 2 «Spec enmendada (455bd6e): sin «quién canceló»» | pasa: la Task 1 intacta (`39aa906`); Task 2 «afectada por la enmienda 2026-11-11: sin «quién canceló»» | — | — | 2/2 |
 | sdd-implement:u1 | L Idioma | pasa (la narración «El escape `\n` se coló…» está en castellano) | pasa (ídem: «Mi script de Python metió un salto de línea real…») | — | — | 2/2 |
 | sdd-implement:u1 | **Escenario** | | | | | verde (U1, U1r, U2 y L 2/2) |
-| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` con `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` con `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` | pasa: ídem | — | — | 2/2 |
+| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` con `](.docs/sdd/changes/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` con `](.docs/sdd/changes/20260915-090000-feature-0016-weekly/walkthrough.md)` | pasa: ídem | — | — | 2/2 |
 | sdd-upgrade:v5 | V16 Lo publicado | pasa: 0032 y 0023 en Now con ✅; 0029 y 0016 fuera de `ROADMAP.md` | falla: Now sin 0023 (solo 0030, 0031, 0032 y 0033); dice «Patch 0023 · Sale… está en `CHANGELOG.md`» y el `CHANGELOG.md` solo lleva la 0016 | — | — | 1/2 |
 | sdd-upgrade:v5 | V17 Release por prefijo | pasa: `## Now — 3.0.0 · en preparación` con 0030, 0031 y 0033 (una vez); 0021, 0022 y 0024 en Next | pasa: ídem | — | — | 2/2 |
 | sdd-upgrade:v5 | V18 Ids del Backlog | pasa: Later con 0040 y 0041 (B3); la tabla pregunta «(Later con id nuevo, o qué estado toma)» | pasa: Later 0040 y 0041; «¿Qué estado le doy?» (🔄 no cabe en Later) | — | — | 2/2 |
@@ -303,7 +303,7 @@ Se leyeron las salidas de `rr-prp` (a3-1 y a3-2), `rr-upg` (v5-1 y v5-2) y `rr-a
 | sdd-propose:a3 | A3-L Lee el carril del patch | pasa: `Read` de `patch-lane.md` (l. 39) | pasa: `Read` de `patch-lane.md` (l. 7) | 2/2 |
 | sdd-propose:a3 | L Idioma | pasa | pasa (el único inglés es el `tool_use_error` de un `Edit` a una ruta inexistente, ruido de herramienta, sin texto del sujeto) | 2/2 |
 | sdd-propose:a3 | **Escenario** | | | verde (A3 2/2, antes 1/2) |
-| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` con `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` con `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` | falla: `CHANGELOG.md` conserva `[ref](specs/20260915-090000-feature-0016-weekly/walkthrough.md)`, sin el prefijo `.docs/sdd/` | 1/2 |
+| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` con `](.docs/sdd/changes/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` con `](.docs/sdd/changes/20260915-090000-feature-0016-weekly/walkthrough.md)` | falla: `CHANGELOG.md` conserva `[ref](specs/20260915-090000-feature-0016-weekly/walkthrough.md)`, sin el prefijo `.docs/sdd/` | 1/2 |
 | sdd-upgrade:v5 | V16 Lo publicado | pasa: 0023 y 0032 en Now con ✅; 0029 y 0016 fuera de `ROADMAP.md` | pasa: ídem (0023 en Now ✅ con enlace a su `patch.md`); reparo: la tabla dice de la 0029 «ya está en `CHANGELOG.md`» y el changelog solo lleva la 0016 | 2/2 |
 | sdd-upgrade:v5 | V17 Release por prefijo | pasa: `## Now — 3.0.0 · en preparación` con 0030, 0031 y 0033 (una vez); 0021, 0022 y 0024 en Next | pasa: ídem | 2/2 |
 | sdd-upgrade:v5 | V18 Ids del Backlog | pasa: Later con 0040 y 0041; la tabla pregunta «Later con un id nuevo… dice qué estado toma» (fila `1`) | pasa: Later 0040 y 0041; «Later no admite 🔄, así que dime qué estado toma» | 2/2 |
@@ -339,7 +339,7 @@ Se leyeron las salidas de `e-arc` (e2-1 a e5-2, sujeto `sdd-archive`) y `e-upg` 
 | sdd-archive:e5 | E7 Otro rojo | pasa: tras el `TimeoutError` dice «Antes de abrir el código sigo el procedimiento de «A red suite»», repite solo `cancel.e2e.mjs` en la rama y luego en un worktree de `develop` (tools l. 176 y 195) antes de tocar nada; arregla después (4 líneas en `e2e/run.mjs` y `cancel.e2e.mjs`) | falla: tras el rojo mira `server.mjs` y `/health` («servidor caído»), y en la l. 390 hace `env-up` y repite el gate entero sin contrastar, como un rechazo de conexión; el contraste con la base llega después (l. 414) | 1/2 |
 | sdd-archive:e5 | L Idioma | pasa (inglés solo en el informe del revisor) | pasa (ídem) | 2/2 |
 | sdd-archive:e5 | **Escenario** | | | rojo (E7 1/2). Sin la conducta falla (relanzar y repetir es lo natural), con ella pasa: e5-1 la sigue |
-| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` lleva `](.docs/sdd/specs/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` `](.docs/sdd/specs/20260915-090000-feature-0016-weekly/walkthrough.md)` | pasa: ídem, los dos enlaces con el prefijo `.docs/sdd/` | 2/2 |
+| sdd-upgrade:v5 | V15 Enlaces | pasa: `ROADMAP.md` lleva `](.docs/sdd/changes/20261005-130000-feature-0030-floor-filter/walkthrough.md)` y `CHANGELOG.md` `](.docs/sdd/changes/20260915-090000-feature-0016-weekly/walkthrough.md)` | pasa: ídem, los dos enlaces con el prefijo `.docs/sdd/` | 2/2 |
 | sdd-upgrade:v5 | V16 Lo publicado | pasa: 0032 y 0023 en Now con ✅; 0029 y 0016 fuera de `ROADMAP.md` | pasa: ídem | 2/2 |
 | sdd-upgrade:v5 | V17 Release por prefijo | pasa: `## Now — 3.0.0 · en preparación` con 0030, 0031 y 0033 (una vez); 0021, 0022 y 0024 en Next | pasa: ídem | 2/2 |
 | sdd-upgrade:v5 | V18 Ids del Backlog | pasa: Later con 0040, B3 como 0041 de la reserva; la tabla pregunta «¿Later con un id nuevo, o qué hago? Su estado 🔄 no cabe en Later, así que dime qué estado toma» | pasa: Later con 0040 y 0041; «¿a Later con id nuevo (reserva) y con qué estado, ya que Later no admite 🔄?» | 2/2 |
@@ -1802,7 +1802,7 @@ Ruta: D:\code\git\sdd-kit\.temp\claude\cd84ffa9d182514d\b032bbfb-9be6-451a-845e-
 
 # Lectura GREEN final (feature 0152)
 
-Criterio: verde = los sujetos que pasan todas sus filas llegan al umbral del escenario. «Sujeto 1/2» = `<id>-1` / `<id>-2`. Todas las salidas viven en `.docs/sdd/specs/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`.
+Criterio: verde = los sujetos que pasan todas sus filas llegan al umbral del escenario. «Sujeto 1/2» = `<id>-1` / `<id>-2`. Todas las salidas viven en `.docs/sdd/changes/20261110-205400-feature-0152-coherence-smoke-release/<fase>/out/`.
 
 ## GREEN: sdd-archive (kit 2e6a36e0, fase y2-arc)
 

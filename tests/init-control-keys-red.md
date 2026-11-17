@@ -10,7 +10,7 @@ Baseline con el kit de `develop` en el commit `527893e` (1.1.0 más las tasks de
 
 - **Sujetos**: headless Sonnet, lanzados con `claude -p`. El kit va en una copia limpia con `--plugin-dir` y `--add-dir`, el plugin instalado está deshabilitado y la mensajería entre sesiones, bloqueada.
 - **Dev-lead simulado**: Haiku con persona fija. Responde solo a lo que se le pregunta y, si el turno trae varias preguntas, **solo a la primera**.
-- **Lanzador**: copia del de la 0012 con dos cambios. El remoto apunta a un host real sin push, por la regla «Un remoto local da una salida». Y el lanzador ya reconoce «FIN.» con punto: en esta tanda no lo hacía y gastó tres turnos vacíos en bf-b y uno en bf-a. El lanzador, el molde, la persona y lo que produjo cada sujeto están en [`red/`](../.docs/sdd/specs/20260922-141616-task-0020-init-control-keys/red/).
+- **Lanzador**: copia del de la 0012 con dos cambios. El remoto apunta a un host real sin push, por la regla «Un remoto local da una salida». Y el lanzador ya reconoce «FIN.» con punto: en esta tanda no lo hacía y gastó tres turnos vacíos en bf-b y uno en bf-a. El lanzador, el molde, la persona y lo que produjo cada sujeto están en [`red/`](../.docs/sdd/changes/20260922-141616-task-0020-init-control-keys/red/).
 - **Carga de la skill**: el stream muestra que los dos sujetos cargaron `sdd-kit:sdd-init-brownfield` y `sdd-kit:sdd-templates`.
 
 Comprobación previa (seis puntos del tech-stack):

@@ -1,6 +1,6 @@
 # RED — paquete del revisor final con ficheros borrados (patch 0094)
 
-`encargo-revision.md` §Revisor final con el kit de la rama en `e338512`. El lanzador es el de referencia (`tests/headless/run.sh`) con [`red/subject.sh`](../.docs/sdd/specs/20260928-154618-patch-0094-review-package-slim/red/subject.sh). Un sujeto Sonnet headless aislado (`SUPERPOWERS_DIR`, superpowers 6.4.2), 2026-09-28. Salidas en [`red/out/`](../.docs/sdd/specs/20260928-154618-patch-0094-review-package-slim/red/out/).
+`encargo-revision.md` §Revisor final con el kit de la rama en `e338512`. El lanzador es el de referencia (`tests/headless/run.sh`) con [`red/subject.sh`](../.docs/sdd/changes/20260928-154618-patch-0094-review-package-slim/red/subject.sh). Un sujeto Sonnet headless aislado (`SUPERPOWERS_DIR`, superpowers 6.4.2), 2026-09-28. Salidas en [`red/out/`](../.docs/sdd/changes/20260928-154618-patch-0094-review-package-slim/red/out/).
 
 El molde `legal` calca la rama del [ticket de la feature 0000 de LegalRep](../.docs/sdd/field-reports/20260928-141407-feature-0000-retire-visual-gate.md) §3: `feature/0000` borra una spec de 500 líneas y cinco fixtures de 150, trae su `spec.md` (250 líneas) y su `plan.md` (350) y cambia filas de roadmap de ~2,6 KB en una línea. El script extrae la receta y «Cómo revisar» del kit que mide, rellena los huecos, genera el paquete en `.superpowers/sdd/spec/` del molde y despacha al sujeto como revisor final con «Cómo revisar» delante.
 
@@ -10,7 +10,7 @@ Criterio (del ticket): (a) el paquete no contiene el cuerpo de los borrados, (b)
 
 | Sujeto | Paquete | (a) | (b) | (c) | (d) | (e) |
 | --- | --- | --- | --- | --- | --- | --- |
-| [v1-1](../.docs/sdd/specs/20260928-154618-patch-0094-review-package-slim/red/out/v1-1.tools.txt) | 235.036 bytes, 2.018 líneas (LegalRep: 235.524) | ❌ 500 líneas `LEGACY-LINE-` | ❌ sin sección | ✅ ningún error | ❌ 600 líneas de `spec.md` y `plan.md` | ✅ ni `git diff` ni suite |
+| [v1-1](../.docs/sdd/changes/20260928-154618-patch-0094-review-package-slim/red/out/v1-1.tools.txt) | 235.036 bytes, 2.018 líneas (LegalRep: 235.524) | ❌ 500 líneas `LEGACY-LINE-` | ❌ sin sección | ✅ ningún error | ❌ 600 líneas de `spec.md` y `plan.md` | ✅ ni `git diff` ni suite |
 
 19 turnos, 0,56 $. Antes hubo un intento con el workspace fuera del molde: `Read` pidió un permiso que nadie concede, se paró a mitad y no dejó línea de resultado (~0,3 $ estimados). El `subject.sh` pone ahora el workspace dentro del molde, como el de superpowers.
 

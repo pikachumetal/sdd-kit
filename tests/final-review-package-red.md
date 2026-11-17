@@ -1,6 +1,6 @@
 # RED — encargo del revisor final: paquete, trailer y techo en el plan (feature 0032)
 
-Kit: copia del working tree en `cd3eb13`, antes de la guía. Superpowers 6.4.2 con `SUPERPOWERS_DIR`. Molde `salas` (features 0044 y 0057). Lanzador y sujetos en `.docs/sdd/specs/20260927-124940-feature-0032-final-review-scope/red/`, salidas en `red/out/`. Todos los sujetos en Sonnet.
+Kit: copia del working tree en `cd3eb13`, antes de la guía. Superpowers 6.4.2 con `SUPERPOWERS_DIR`. Molde `salas` (features 0044 y 0057). Lanzador y sujetos en `.docs/sdd/changes/20260927-124940-feature-0032-final-review-scope/red/`, salidas en `red/out/`. Todos los sujetos en Sonnet.
 
 | Escenario | Qué mide |
 | --- | --- |
@@ -13,7 +13,7 @@ Kit: copia del working tree en `cd3eb13`, antes de la guía. Superpowers 6.4.2 c
 | Sujeto | Turnos | Coste | Resultado |
 | --- | --- | --- | --- |
 | `f1-1` | 23 | 1,11 $ | ✗ evidencia: el diff abre con `red/out/r-1.jsonl` (400 líneas) y el paquete pesa 49.940 bytes. ✓ base: `git merge-base develop HEAD` (`cc36863`), sin la 0013. ✗ ubicación: no usó `review-package`; lo escribió a mano en `/tmp`, no pudo leerlo y lo rehízo dentro de la carpeta de la spec, con un `review-package.md` falso que borró después. ✓ despacho: `sdd-kit:effort-high` + `opus` |
-| `f1-2` | 38 | 0,98 $ | ✗ evidencia: el mismo `r-1.jsonl` dentro, 49.874 bytes. ✓ base: `cc36863`. ✓ `PLAN_FILE`: `bash review-package .docs/sdd/specs/…/spec.md cc36863 ee653eb` a la primera. ✓ despacho: `effort-high` + `opus` |
+| `f1-2` | 38 | 0,98 $ | ✗ evidencia: el mismo `r-1.jsonl` dentro, 49.874 bytes. ✓ base: `cc36863`. ✓ `PLAN_FILE`: `bash review-package .docs/sdd/changes/…/spec.md cc36863 ee653eb` a la primera. ✓ despacho: `effort-high` + `opus` |
 | `r1-1` | 27 | 0,78 $ | ✓ «Approved»; ninguna mención al trailer ni al modelo |
 | `r1-2` | 27 | 0,78 $ | ✓ «Approved»; ninguna mención al trailer ni al modelo |
 | `p1-1` | 24 | 0,65 $ | ✓ el plan no nombra al revisor final; la línea `Ejecución` reserva «el modelo más capaz» para la revisión final |

@@ -3,7 +3,7 @@
 - **Fecha**: 2026-10-08. **Kit**: la rama con `skills/sdd-rubber-duck/`, copiado de los ficheros que versiona git. **superpowers**: 6.4.2.
 - **Batería**: `tests/batteries/sdd-rubber-duck/` entera (`PHASE=green`): s1, s2 y l1 dos veces, y el control c1.
 - **Sujetos**: 7 en el GREEN y 2 de control en el REFACTOR, Sonnet. **Coste**: GREEN 0,87 $, REFACTOR 0,27 $. Campaña completa con el RED: **15 sujetos, 1,86 $** (previsión: 18 sujetos y ~5 $; techo de 10 $).
-- **Salidas**: [`green/out/`](../.docs/sdd/specs/20261008-164456-feature-0145-sdd-rubber-duck/green/out/) y [`refactor/out/`](../.docs/sdd/specs/20261008-164456-feature-0145-sdd-rubber-duck/refactor/out/).
+- **Salidas**: [`green/out/`](../.docs/sdd/changes/20261008-164456-feature-0145-sdd-rubber-duck/green/out/) y [`refactor/out/`](../.docs/sdd/changes/20261008-164456-feature-0145-sdd-rubber-duck/refactor/out/).
 
 ## Veredicto de puerta
 

@@ -1,6 +1,6 @@
 # Evidencia RED — estimation-log desde el kit (2026-09-09)
 
-Baseline de la task [estimation-log-script](../.docs/sdd/specs/20260909-065145-task-0000-estimation-log-script/spec.md) (T7). Sonnet, fixture desechable "Ledgerly-est", 2 sujetos en paralelo (`Agent` en segundo plano, uno por escenario). Estado final verificado en disco; pregunta a posteriori a cada sujeto con el escenario ya cerrado.
+Baseline de la task [estimation-log-script](../.docs/sdd/changes/20260909-065145-task-0000-estimation-log-script/spec.md) (T7). Sonnet, fixture desechable "Ledgerly-est", 2 sujetos en paralelo (`Agent` en segundo plano, uno por escenario). Estado final verificado en disco; pregunta a posteriori a cada sujeto con el escenario ya cerrado.
 
 ## Fixture
 

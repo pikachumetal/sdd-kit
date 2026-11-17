@@ -1,6 +1,6 @@
 # Evidencia RED — auto-enrutado frente a superpowers (2026-09-21)
 
-Baseline de la task [auto-routing](../.docs/sdd/specs/20260921-162213-task-0014-auto-routing/spec.md) (0014). Pregunta: con superpowers instalado y su hook `SessionStart` inyectando `using-superpowers` en cada sesión, cuando el usuario pide trabajo en lenguaje natural **sin nombrar ninguna skill**, ¿la primera skill que se invoca es la del kit? El punto de partida era el issue GH #1 («me da la sensación de que está usando skills de este en vez de las skills del kit») y la fila B5 del roadmap.
+Baseline de la task [auto-routing](../.docs/sdd/changes/20260921-162213-task-0014-auto-routing/spec.md) (0014). Pregunta: con superpowers instalado y su hook `SessionStart` inyectando `using-superpowers` en cada sesión, cuando el usuario pide trabajo en lenguaje natural **sin nombrar ninguna skill**, ¿la primera skill que se invoca es la del kit? El punto de partida era el issue GH #1 («me da la sensación de que está usando skills de este en vez de las skills del kit») y la fila B5 del roadmap.
 
 ## Método
 

@@ -1,6 +1,6 @@
 # RED — el 🦆 de una parada no nombra un id de la batería sin decir qué es (feature 0327)
 
-Escenario `s5` de la [batería de `sdd-rubber-duck`](batteries/sdd-rubber-duck/battery.md), sonnet, en modo corto, con el kit de `develop` (`git archive origin/develop:dist`) y la batería de la rama. Material de una parada por dinero que nombra el escenario `co2p`, la fila `CO2P-M` y los sujetos `co2p-1` y `co2p-2`. Salidas en [`red/out/`](../.docs/sdd/specs/20261110-141415-feature-0327-review-conduct-plain-names/red/out/) y [`control/out/`](../.docs/sdd/specs/20261110-141415-feature-0327-review-conduct-plain-names/control/out/).
+Escenario `s5` de la [batería de `sdd-rubber-duck`](batteries/sdd-rubber-duck/battery.md), sonnet, en modo corto, con el kit de `develop` (`git archive origin/develop:dist`) y la batería de la rama. Material de una parada por dinero que nombra el escenario `co2p`, la fila `CO2P-M` y los sujetos `co2p-1` y `co2p-2`. Salidas en [`red/out/`](../.docs/sdd/changes/20261110-141415-feature-0327-review-conduct-plain-names/red/out/) y [`control/out/`](../.docs/sdd/changes/20261110-141415-feature-0327-review-conduct-plain-names/control/out/).
 
 | Sujeto | $ | Cómo nombra la prueba | `R12` | `R7` |
 | --- | --- | --- | --- | --- |

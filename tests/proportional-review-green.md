@@ -1,6 +1,6 @@
 # GREEN — revisión por task abaratada (task 0021)
 
-Mismos escenarios y molde que el [RED](proportional-review-red.md), con el kit de `feature/0021` tras las Tasks 1 y 2: el plan del molde parte sus Restricciones globales en «De código» y «De proceso», y los encargos de R1 y R2 se componen desde la cabecera nueva de `encargo-revision.md` (`green/compose-prompts.mjs`). R3 usa el molde `red/m3` sin cambios (una copia en `green/` pasaba del límite de longitud de ruta). Molde, lanzadores y salida por sujeto en [`green/`](../.docs/sdd/specs/20260922-211605-task-0021-proportional-review/green/). 8 sujetos Sonnet headless, 2,71 $.
+Mismos escenarios y molde que el [RED](proportional-review-red.md), con el kit de `feature/0021` tras las Tasks 1 y 2: el plan del molde parte sus Restricciones globales en «De código» y «De proceso», y los encargos de R1 y R2 se componen desde la cabecera nueva de `encargo-revision.md` (`green/compose-prompts.mjs`). R3 usa el molde `red/m3` sin cambios (una copia en `green/` pasaba del límite de longitud de ruta). Molde, lanzadores y salida por sujeto en [`green/`](../.docs/sdd/changes/20260922-211605-task-0021-proportional-review/green/). 8 sujetos Sonnet headless, 2,71 $.
 
 La constitution del molde conserva «El revisor marca el incumplimiento como Important, no como estilo» sin la tolerancia, como la de un proyecto que no ha cambiado la suya: la excepción tiene que ganar desde la cabecera.
 

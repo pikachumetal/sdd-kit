@@ -1,6 +1,6 @@
 # RED — `sdd-retro` (feature 0277)
 
-Kit de la rama en `67125a3` (sin la skill), sujetos Sonnet, `tests/batteries/sdd-retro/` y `c1` de `sdd-archive`. Salidas en `.docs/sdd/specs/20261101-191641-feature-0277-sdd-retro/red/out/`. Coste: 2 $ en 15 sujetos, unos 0,17 $ cada uno, por debajo de los 0,4 $ previstos.
+Kit de la rama en `67125a3` (sin la skill), sujetos Sonnet, `tests/batteries/sdd-retro/` y `c1` de `sdd-archive`. Salidas en `.docs/sdd/changes/20261101-191641-feature-0277-sdd-retro/red/out/`. Coste: 2 $ en 15 sujetos, unos 0,17 $ cada uno, por debajo de los 0,4 $ previstos.
 
 | Escenario | Lo que hizo el baseline | Lectura |
 | --- | --- | --- |

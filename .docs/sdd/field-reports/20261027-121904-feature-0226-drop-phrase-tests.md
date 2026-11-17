@@ -40,7 +40,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 2. El repaso de coherencia no comprueba que un test movido a una tarea con caché siga corriendo
 
 - **Qué pasó**: la spec aprobada fijaba unos `testInputs` de `cli/moon.yml` que dejaban fuera `.agents/`, `.claude/`, `hooks/`, `.githooks/`, `.moon/` y la raíz, que `path-length.test.ts` sí recorre. Lo vio el eje Spec de la revisión final; lo reproduje con una ruta de 144 caracteres en `.agents/`: `moon run cli:test` → `cli:test (cached, b914a366)` en verde. Hizo falta parar por desvío, una enmienda aprobada por el dev-lead y una Task 3.
-- **Fuente**: `.docs/sdd/specs/20261026-162553-feature-0226-drop-phrase-tests/spec.md` («Enmiendas») y `walkthrough.md` §3
+- **Fuente**: `.docs/sdd/changes/20261026-162553-feature-0226-drop-phrase-tests/spec.md` («Enmiendas») y `walkthrough.md` §3
 - **Dónde en el kit**: `skills/sdd-propose/SKILL.md` paso 4, repaso de coherencia
 - **Por qué el kit no lo evitó**: el repaso cruza literales y requisitos; no pide comprobar que lo que una tarea con caché da por bueno cubre todo lo que lee el test que se mueve a ella. Antes el test corría en una tarea con `cache: false`.
 - **Coste**: una parada del dev-lead, una task de enmienda y su re-revisión (~20 min)

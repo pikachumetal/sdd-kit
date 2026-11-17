@@ -1,6 +1,6 @@
 # GREEN — migración v3.0.0: textos, reglas y marcador (feature 0199)
 
-Kit de la rama tras la Task 2 (`git archive d1d51441 skills .claude-plugin cli hooks`), y en el REFACTOR, con el `v3.0.0.md` de cada ronda. Batería [`tests/batteries/sdd-upgrade/`](batteries/sdd-upgrade/battery.md), escenarios `v1` y `v2` sobre `mold-v2x`, Sonnet, persona en Haiku. Salidas en [`green/`, `refactor1/` y `refactor2/`](../.docs/sdd/specs/20261019-142606-feature-0199-v3-migration-texts/) de la carpeta de la spec. 2026-10-19. Campaña entera, RED incluido: 9 sujetos, 3,54 $ (previsión: 11 sujetos y ~2,5 $; el dev-lead aceptó la ronda 2 por encima del dinero: «Sí, v1 ×2 (~0,85 $)»).
+Kit de la rama tras la Task 2 (`git archive d1d51441 skills .claude-plugin cli hooks`), y en el REFACTOR, con el `v3.0.0.md` de cada ronda. Batería [`tests/batteries/sdd-upgrade/`](batteries/sdd-upgrade/battery.md), escenarios `v1` y `v2` sobre `mold-v2x`, Sonnet, persona en Haiku. Salidas en [`green/`, `refactor1/` y `refactor2/`](../.docs/sdd/changes/20261019-142606-feature-0199-v3-migration-texts/) de la carpeta de la spec. 2026-10-19. Campaña entera, RED incluido: 9 sujetos, 3,54 $ (previsión: 11 sujetos y ~2,5 $; el dev-lead aceptó la ronda 2 por encima del dinero: «Sí, v1 ×2 (~0,85 $)»).
 
 ## GREEN (3 sujetos, 1,00 $)
 

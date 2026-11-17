@@ -1,6 +1,6 @@
 # GREEN — feature 0314: el porqué primero en `sdd-grilling`
 
-Del RED (`tests/sdd-grilling-0314-red.md`) entra solo la (2), con W1 en 2 de 2. Batería de `sdd-grilling`, Sonnet, 2026-11-08 y 2026-11-09. Salidas en `.docs/sdd/specs/20261108-184606-feature-0314-grilling-brainstorming-7/` (`green/`, `refactor/`, `refactor2/`, `control/`, `control-dev/`, `control-r/`, `control-r2/`).
+Del RED (`tests/sdd-grilling-0314-red.md`) entra solo la (2), con W1 en 2 de 2. Batería de `sdd-grilling`, Sonnet, 2026-11-08 y 2026-11-09. Salidas en `.docs/sdd/changes/20261108-184606-feature-0314-grilling-brainstorming-7/` (`green/`, `refactor/`, `refactor2/`, `control/`, `control-dev/`, `control-r/`, `control-r2/`).
 
 ## La frase, ronda a ronda
 

@@ -1,6 +1,6 @@
 # GREEN — merge en el cierre (task 0009)
 
-Mismos escenarios que el [RED](merge-close-red.md), sobre el mismo molde (`red/` de la [carpeta de la spec](../.docs/sdd/specs/20260923-120510-task-0009-merge-close/red/README.md)), con el kit de `feature/0009` en `935c8af`. R4, que el RED recortó, va como control de no regresión (Art. I). R6 es nuevo: mide la salida «worktree temporal» de `sdd-start-release` (fila de deuda de la 0029), sin tocar esa skill. Salida de cada sujeto en `green/out/` y `green/out2/` de la carpeta de la spec.
+Mismos escenarios que el [RED](merge-close-red.md), sobre el mismo molde (`red/` de la [carpeta de la spec](../.docs/sdd/changes/20260923-120510-task-0009-merge-close/red/README.md)), con el kit de `feature/0009` en `935c8af`. R4, que el RED recortó, va como control de no regresión (Art. I). R6 es nuevo: mide la salida «worktree temporal» de `sdd-start-release` (fila de deuda de la 0029), sin tocar esa skill. Salida de cada sujeto en `green/out/` y `green/out2/` de la carpeta de la spec.
 
 ## Primera tanda (`green/out/`, 12 sujetos, 6,19 $)
 

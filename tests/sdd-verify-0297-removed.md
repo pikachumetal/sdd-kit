@@ -1,6 +1,6 @@
 # sdd-verify, feature 0297: un REMOVED buscado por su requisito vigente
 
-Escenarios `rm1`, `rm2`, `rm2b` y `rm3` de `tests/batteries/sdd-verify/`, Opus, n = 2 (`rm2b`, de la enmienda del 2026-11-08, más abajo). El sujeto es el eje Spec de la revisión final sobre la 0025 de juguete («Quitar el aviso por correo al anular»), con `#### REMOVED — Avisar por correo` en `bookings`. La rama quita `formatMail()` y deja `outbox.push` en `voidBooking()`, sin «correo» ni «mail» en el código. Solo cambia el requisito vigente: con escenario (`rm1`), sin cuerpo (`rm2`) o fuera del sha revisado y en el historial (`rm3`). Salidas en `.docs/sdd/specs/20261108-122008-feature-0297-verify-removed-by-requirement/red/out/`.
+Escenarios `rm1`, `rm2`, `rm2b` y `rm3` de `tests/batteries/sdd-verify/`, Opus, n = 2 (`rm2b`, de la enmienda del 2026-11-08, más abajo). El sujeto es el eje Spec de la revisión final sobre la 0025 de juguete («Quitar el aviso por correo al anular»), con `#### REMOVED — Avisar por correo` en `bookings`. La rama quita `formatMail()` y deja `outbox.push` en `voidBooking()`, sin «correo» ni «mail» en el código. Solo cambia el requisito vigente: con escenario (`rm1`), sin cuerpo (`rm2`) o fuera del sha revisado y en el historial (`rm3`). Salidas en `.docs/sdd/changes/20261108-122008-feature-0297-verify-removed-by-requirement/red/out/`.
 
 ## RED — kit de `HEAD` (`d2532ea`), 6 sujetos, 2,18 $
 

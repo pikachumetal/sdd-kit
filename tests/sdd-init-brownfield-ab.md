@@ -1,6 +1,6 @@
 # Evidencia A/B — `sdd-init-brownfield` (2026-09-08)
 
-Campaña de no-regresión del Art. I. Ola 3 de la task [progressive-disclosure](../.docs/sdd/specs/20260907-184057-task-0000-progressive-disclosure/spec.md). Control 629 palabras → tratamiento **568 (−10 %)**.
+Campaña de no-regresión del Art. I. Ola 3 de la task [progressive-disclosure](../.docs/sdd/changes/20260907-184057-task-0000-progressive-disclosure/spec.md). Control 629 palabras → tratamiento **568 (−10 %)**.
 
 ## Corte probado y aceptado
 

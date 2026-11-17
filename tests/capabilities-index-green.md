@@ -2,7 +2,7 @@
 
 Kit: la rama con la guía nueva (paso de contexto de `sdd-start-task`, `sdd-roadmap` y `sdd-consult`, ayuda del bloque «Capacidades» de `spec-template.md`) y `Get-CapabilityIndex.ps1`, servido desde una copia limpia con `--plugin-dir`. Mismo molde, mismo arnés y mismas peticiones que el [RED](capabilities-index-red.md), con una diferencia de formato: cada capacidad lleva `## Propósito` (`PURPOSE=1`), porque en la 2.0.0 todas lo tienen. Seis sujetos `claude -p --model sonnet`, 1,99 $, más dos de la migración (abajo). Campaña completa: 14 sujetos, 4,70 $: la previsión era de 12; los dos de más los aprobó el dev-lead tras la revisión final, dentro del techo (14, 8 $); sin tanda de REFACTOR.
 
-Salidas: [`green/`](../.docs/sdd/specs/20260925-115547-task-0073-capabilities-index/green/).
+Salidas: [`green/`](../.docs/sdd/changes/20260925-115547-task-0073-capabilities-index/green/).
 
 ## Resultados frente al RED
 

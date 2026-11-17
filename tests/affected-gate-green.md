@@ -1,6 +1,6 @@
 # GREEN — el gate de cierre corre solo lo afectado (feature 0221)
 
-Kit del working tree de la rama, sujetos headless Sonnet, superpowers 7.0.0. Salidas en `.docs/sdd/specs/20261026-172719-feature-0221-affected-closing-gate/{green,refactor,control}/out/`. RED en [affected-gate-red.md](affected-gate-red.md).
+Kit del working tree de la rama, sujetos headless Sonnet, superpowers 7.0.0. Salidas en `.docs/sdd/changes/20261026-172719-feature-0221-affected-closing-gate/{green,refactor,control}/out/`. RED en [affected-gate-red.md](affected-gate-red.md).
 
 | Escenario | Fase | Resultado | Lectura |
 | --- | --- | --- | --- |

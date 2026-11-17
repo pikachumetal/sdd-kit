@@ -1,6 +1,6 @@
 # RED — la línea base corre en el árbol de la rama (feature 0246, Task 1)
 
-Escenario `w2` de la batería de `sdd-implement` (paso `worktree-baseline`): la 0010 abierta en un worktree enlazado, con `env:setup`, `Gate de cierre: node --test` y, sin commitear, `test/rooms-half.test.js`, el RED de la Task 1 a medio escribir. Kit: `git archive` del commit de apertura `40c72058` (texto de `sdd-worktrees` sin tocar). Sonnet, n = 2, 0,73 $. Salidas en `.docs/sdd/specs/20261029-190601-feature-0246-baseline-detached-worktree/red/out/`.
+Escenario `w2` de la batería de `sdd-implement` (paso `worktree-baseline`): la 0010 abierta en un worktree enlazado, con `env:setup`, `Gate de cierre: node --test` y, sin commitear, `test/rooms-half.test.js`, el RED de la Task 1 a medio escribir. Kit: `git archive` del commit de apertura `40c72058` (texto de `sdd-worktrees` sin tocar). Sonnet, n = 2, 0,73 $. Salidas en `.docs/sdd/changes/20261029-190601-feature-0246-baseline-detached-worktree/red/out/`.
 
 ## Veredicto por la fila `Wb`
 

@@ -1,6 +1,6 @@
 # GREEN — Temporales por worktree en la init y la migración (feature 0209)
 
-Campañas de la [feature 0209](../.docs/sdd/specs/20261022-083957-feature-0209-worktree-temp/spec.md) con el kit del working tree de la Task 3 (copia antes de su commit), sobre los escenarios del [RED](temp-dir-red.md). Sujetos Sonnet con `tests/headless/run.sh`, superpowers 7.0.1, `RUNS_DIR` y `CLAUDE_CODE_TMPDIR` en `.temp/` del worktree. Salidas en `green/`, `refactor/`, `refactor2/` y `final/` de la carpeta de la feature. 14 sujetos, 4,24 $; con el RED, 16 sujetos y 5,02 $ (techo 16 y 10 $). Los moldes de los 16 se borraron al acabar cada sujeto (Task 2).
+Campañas de la [feature 0209](../.docs/sdd/changes/20261022-083957-feature-0209-worktree-temp/spec.md) con el kit del working tree de la Task 3 (copia antes de su commit), sobre los escenarios del [RED](temp-dir-red.md). Sujetos Sonnet con `tests/headless/run.sh`, superpowers 7.0.1, `RUNS_DIR` y `CLAUDE_CODE_TMPDIR` en `.temp/` del worktree. Salidas en `green/`, `refactor/`, `refactor2/` y `final/` de la carpeta de la feature. 14 sujetos, 4,24 $; con el RED, 16 sujetos y 5,02 $ (techo 16 y 10 $). Los moldes de los 16 se borraron al acabar cada sujeto (Task 2).
 
 ## GREEN 1
 

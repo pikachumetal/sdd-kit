@@ -28,7 +28,7 @@ Los hallazgos son hipótesis a testear con RED/GREEN, no cambios aprobados, y va
 ### 1. La plantilla no pide el número de sujetos en la fila `Suma`, y sin él el techo no se aplica
 
 - **Qué pasó**: el lanzador ya para en el número de `Suma`, pero 6 de 16 specs con previsión no lo llevan: 5 dejan vacía la columna de sujetos y 1 la llena de prosa. Sus filas tampoco se suman, porque son prosa («`c1` × 2, `m6` × 2»). En esas specs el techo sigue siendo el `SUBJECT_CAP` a mano, con un aviso. No se tocó la plantilla: aclararla lleva sujetos por el Art. I, y esta feature iba sin ellos.
-- **Fuente**: recuento con `awk` de las filas `Suma` de `.docs/sdd/specs/*/spec.md` → `num 10 vacia 5 prosa 1`; `skills/sdd-templates/templates/spec-template.md:149`, «el total es la suma de las filas».
+- **Fuente**: recuento con `awk` de las filas `Suma` de `.docs/sdd/changes/*/spec.md` → `num 10 vacia 5 prosa 1`; `skills/sdd-templates/templates/spec-template.md:149`, «el total es la suma de las filas».
 - **Dónde en el kit**: `skills/sdd-templates/templates/spec-template.md`, «Previsión de coste».
 - **Por qué el kit no lo evitó**: el bloque de ayuda pide el total sin decir que la celda de sujetos lleve un número, y solo se ve en la columna de dólares.
 - **Coste**: ninguno aún; es un hueco del saldo de la deuda. El riesgo es el caso de la 0151, 63 sujetos frente a 45, en las specs sin número.

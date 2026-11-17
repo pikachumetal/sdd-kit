@@ -1,6 +1,6 @@
 # RED — Temporales por worktree en la init y la migración (feature 0209)
 
-Baseline de la [feature 0209](../.docs/sdd/specs/20261022-083957-feature-0209-worktree-temp/spec.md) con el kit del working tree antes de la Task 3: ni `sdd-init` ni `migrations/v3.0.0.md` nombran `.temp/` ni «Temporales». Sujetos Sonnet con `tests/headless/run.sh`, superpowers 7.0.1, `RUNS_DIR` y `CLAUDE_CODE_TMPDIR` en `.temp/` del worktree (la Task 2 ya en la rama). Salidas en `red/` de la carpeta de la feature. 2 sujetos, 0,78 $.
+Baseline de la [feature 0209](../.docs/sdd/changes/20261022-083957-feature-0209-worktree-temp/spec.md) con el kit del working tree antes de la Task 3: ni `sdd-init` ni `migrations/v3.0.0.md` nombran `.temp/` ni «Temporales». Sujetos Sonnet con `tests/headless/run.sh`, superpowers 7.0.1, `RUNS_DIR` y `CLAUDE_CODE_TMPDIR` en `.temp/` del worktree (la Task 2 ya en la rama). Salidas en `red/` de la carpeta de la feature. 2 sujetos, 0,78 $.
 
 | Escenario | Resultado |
 | --- | --- |

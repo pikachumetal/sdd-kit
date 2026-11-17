@@ -1,6 +1,6 @@
 # `sdd-end-release` — el corte saca lo hecho de Now al changelog (feature 0177)
 
-Evidencia en `.docs/sdd/specs/20261031-165052-feature-0177-release-cut-now-to-changelog/` (`red/out/`, `green/out/`). Molde 3.0.0 en `red/subject.mjs`, Sonnet, en serie.
+Evidencia en `.docs/sdd/changes/20261031-165052-feature-0177-release-cut-now-to-changelog/` (`red/out/`, `green/out/`). Molde 3.0.0 en `red/subject.mjs`, Sonnet, en serie.
 
 | Frente | RED (skill anterior) | GREEN |
 | --- | --- | --- |

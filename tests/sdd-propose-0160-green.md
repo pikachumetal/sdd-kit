@@ -1,6 +1,6 @@
 # GREEN — `sdd-propose`, feature 0160
 
-Batería `tests/batteries/sdd-propose/`, Sonnet salvo `g1` (Opus), kit de la rama copiado al scratchpad. Salidas en `.docs/sdd/specs/20261009-110857-feature-0160-single-entry-propose/green/out/`. La puerta la da `battery.sh`; la conducta, la rúbrica de la batería, leída en `texts.txt`, `tools.txt` y los ficheros de cada sujeto.
+Batería `tests/batteries/sdd-propose/`, Sonnet salvo `g1` (Opus), kit de la rama copiado al scratchpad. Salidas en `.docs/sdd/changes/20261009-110857-feature-0160-single-entry-propose/green/out/`. La puerta la da `battery.sh`; la conducta, la rúbrica de la batería, leída en `texts.txt`, `tools.txt` y los ficheros de cada sujeto.
 
 ## Task 2 — lo movido y traducido, sin cambiar reglas (controles)
 
