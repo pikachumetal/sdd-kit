@@ -219,7 +219,7 @@ Primero la CLI: un módulo de rutas que, dada la raíz del proyecto, devuelve el
 - WHEN se invoca `sdd id next --reserve` desde la raíz del proyecto
 - THEN devuelve por salida estándar el siguiente id en cuatro dígitos: el mayor valor entre el contador del proyecto y el mayor id encontrado en las carpetas de `.docs/sdd/changes/` y `.docs/sdd/changes/` y en los dos roadmaps (`ROADMAP.md` de la raíz y `.docs/sdd/roadmap.md`) del working tree; en esos mismos roadmaps y carpetas de cada rama local y remota, y en su nombre salvo el de la rama actual; y en esos roadmaps y carpetas del disco de cada worktree de `git worktree list`, más uno
 - AND cada rama y cada worktree se leen con lo que tengan: una rama con solo `ROADMAP.md` y `changes/` cuenta igual que una con solo `.docs/sdd/roadmap.md` y `specs/`
-- AND con `.docs/sdd/changes/20260920-100000-feature-0079-b/`, `.docs/sdd/changes/20261010-090000-feature-0081-c/`, la fila `0083` en `ROADMAP.md` y la fila `0085` en `.docs/sdd/roadmap.md`, sin contador ni ramas con un id mayor, propone `0086`
+- AND con `.docs/sdd/specs/20260920-100000-feature-0079-b/`, `.docs/sdd/changes/20261010-090000-feature-0081-c/`, la fila `0083` en `ROADMAP.md` y la fila `0085` en `.docs/sdd/roadmap.md`, sin contador ni ramas con un id mayor, propone `0086`
 - AND lo que otro worktree tiene reservado sin fusionar cuenta aunque no esté en ninguna rama: una fila de un roadmap en *staged* o una carpeta de `changes/` o `specs/` sin commitear
 - AND deja ese id consumido en el contador
 - AND no hace `git fetch`: lee las referencias tal como están en el repositorio

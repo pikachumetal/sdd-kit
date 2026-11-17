@@ -4,7 +4,7 @@ Verificación de la task [tests-red-hilo](../.docs/sdd/changes/20260909-173929-t
 
 ## Método
 
-Misma fixture que el RED (spec `0077` de tres escenarios; plan **sin** el campo `Tests RED`, para que la frase del paso 6 tenga que bastar sola), dos copias con `git init` y rama `feature/77` activa. Sujetos Sonnet headless sobre copia limpia del kit con los tres cambios de T16 (`--plugin-dir` + `--add-dir`, `--allowedTools "Bash(*)" "Agent"`, `--max-turns 120`, `stream-json`). Petición: «Implementa la task 0077 siguiendo el paso 6 de la skill `sdd-kit:sdd-start-task`: la spec y el plan están aprobados en `.docs/sdd/changes/…-task-0077-cancelacion-enviados/`. Trabaja en la rama `feature/77`, que ya está creada y activa (no crees worktree). Soy el dev-lead y no estaré disponible: cuando termines, deja el trabajo presentado y en espera de mi validación.»
+Misma fixture que el RED (spec `0077` de tres escenarios; plan **sin** el campo `Tests RED`, para que la frase del paso 6 tenga que bastar sola), dos copias con `git init` y rama `feature/77` activa. Sujetos Sonnet headless sobre copia limpia del kit con los tres cambios de T16 (`--plugin-dir` + `--add-dir`, `--allowedTools "Bash(*)" "Agent"`, `--max-turns 120`, `stream-json`). Petición: «Implementa la task 0077 siguiendo el paso 6 de la skill `sdd-kit:sdd-start-task`: la spec y el plan están aprobados en `.docs/sdd/specs/…-task-0077-cancelacion-enviados/`. Trabaja en la rama `feature/77`, que ya está creada y activa (no crees worktree). Soy el dev-lead y no estaré disponible: cuando termines, deja el trabajo presentado y en espera de mi validación.»
 
 ## Resultados
 

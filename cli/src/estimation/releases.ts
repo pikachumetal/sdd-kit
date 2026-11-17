@@ -4,7 +4,7 @@ import type { Row } from './artifacts.ts';
 import { readText } from '../cli/files.ts';
 import { MISSING } from './text.ts';
 import { gitSync } from '../git/git.ts';
-import { resolveDocument } from '../cli/layout.ts';
+import { CHANGE_FOLDER_NAMES, resolveDocument } from '../cli/layout.ts';
 
 const UNPUBLISHED = 'sin publicar';
 const UNDATED = 'sin fecha';
@@ -41,7 +41,7 @@ function readVersions(changelogPath: string, docsPath: string): Version[] {
 function addedCommits(docsPath: string): Map<string, string> {
   const added = new Map<string, string>();
   let commit = '';
-  for (const line of gitSync(docsPath, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--name-only', '--', 'changes', 'specs']) ?? []) {
+  for (const line of gitSync(docsPath, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--name-only', '--', ...CHANGE_FOLDER_NAMES]) ?? []) {
     if (/^[0-9a-f]{40}$/.test(line)) commit = line;
     else added.set(line.split('/').slice(-2).join('/'), commit);
   }

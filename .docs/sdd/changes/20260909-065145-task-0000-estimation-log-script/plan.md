@@ -115,7 +115,7 @@ Ninguna.
 
 - [ ] **Step 1: Fixtures**. Crear estos ficheros (contenido mínimo: frontmatter + la sección de tiempo; el resto del walkthrough no hace falta).
 
-`tests/fixtures/estimation-log/proyecto/.docs/sdd/changes/20260901-100000-task-0001-plain/walkthrough.md`:
+`tests/fixtures/estimation-log/proyecto/.docs/sdd/specs/20260901-100000-task-0001-plain/walkthrough.md`:
 
 ```markdown
 ---

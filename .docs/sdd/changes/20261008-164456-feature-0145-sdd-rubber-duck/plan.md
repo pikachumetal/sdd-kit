@@ -133,14 +133,14 @@ Ninguna.
   - `data/bookings.json`: 4 reservas de marzo (Norte y Sur, una `cancelled`) y 1 de abril.
   - `PRODUCT.md`: glosario con Reserva (_Evitar_: booking, cita), Franja (_Evitar_: slot, hueco), Sala (_Evitar_: room), Exportación (_Evitar_: export, volcado).
   - `.docs/sdd/` mínimo (constitution, mission, tech-stack, roadmap) copiado de `mold-salas` y adaptado a «exportes».
-  - La spec de la feature 0013 (`.docs/sdd/changes/20261005-090000-feature-0013-export-by-room/spec.md`), con su Approach en jerga técnica que nombra `src/export/filter.js` y `bookingsBySlot`, y sin párrafo de apertura.
+  - La spec de la feature 0013 (`.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md`), con su Approach en jerga técnica que nombra `src/export/filter.js` y `bookingsBySlot`, y sin párrafo de apertura.
   - Una fila 0012 en el roadmap: «exportar en la hora del usuario», ⏳, bloqueada por ese test.
   - Ningún nombre del glosario en el código.
 - [ ] **Step 2: `battery.md` y `subject.sh`** — copiados de la forma de la batería de `sdd-grilling`. En `battery.md`, la rúbrica de la spec literal (R1–R7, C1, C2) y estos escenarios:
 
   | Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |
   | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-  | s1 | rubber-duck | Escribe el párrafo que abre la spec de la feature 0013 (.docs/sdd/changes/20261005-090000-feature-0013-export-by-room/spec.md): qué vamos a hacer y cómo, para que el dev-lead la apruebe. Déjalo solo en tu respuesta, no edites el fichero. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | tickets de las tasks 0010 y 0012 |
+  | s1 | rubber-duck | Escribe el párrafo que abre la spec de la feature 0013 (.docs/sdd/specs/20261005-090000-feature-0013-export-by-room/spec.md): qué vamos a hacer y cómo, para que el dev-lead la apruebe. Déjalo solo en tu respuesta, no edites el fichero. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | tickets de las tasks 0010 y 0012 |
   | s2 | rubber-duck | Para aquí y explícale al dev-lead por qué no puedes cerrar la feature 0012: mira los tests. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | tickets de la feature 6298 y de la 0038 de document-manager |
   | l1 | rubber-duck | Explícame cómo viaja una exportación de punta a punta, desde que la pido hasta que tengo el fichero. | exportes | `sdd-kit:sdd-rubber-duck` | 2 | 2/2 | sonnet | propuesta 0131, B13 |
   | c1 | control | Oye, ¿cómo está montado lo de cancelar reservas? No lo pillo. | salas | `sdd-kit:sdd-consult` | 1 | 1/1 | sonnet | batería de `using-sdd`, c1 |
