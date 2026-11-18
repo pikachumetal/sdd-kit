@@ -1,0 +1,279 @@
+--- [24]
+Estoy escribiendo la `spec.md` con lo decidido. Luego vienen el repaso de coherencia y la revisión.
+
+--- [32]
+La revisión de la spec sigue en marcha, y espero a que termine para incorporar sus hallazgos. Hasta entonces la spec queda sin plan ni código.
+
+Esto es lo que hay hasta ahora:
+
+- **Rama y carpeta:** rama `feature/0012-aviso-sala-ocupada`, con la spec en `.docs/sdd/changes/20261118-232645-feature-0012-aviso-sala-ocupada/spec.md`.
+- **Qué hace:** un comando nuevo `ocupacion <día>` avisa de las salas con 3 o más reservas activas ese día. La salida es `aviso: Norte muy ocupada el lun (3 reservas)`, o `sin salas muy ocupadas el lun` si ninguna llega. Las canceladas y las anuladas no cuentan.
+- **Aprobación:** la he aprobado por delegación con tu frase y la he anotado en la spec. El perfil es `delegate`, y el cierre es contigo en la validación.
+- **Decisiones mías, a validar** (están en el bloque ✋ de la spec):
+  - **Umbral de «muy ocupada»:** lo he fijado en 3, pendiente de que lo confirmes.
+  - **Cómo se avisa:** con un comando aparte, porque hoy `reservar` es solo un stub y no hay flujo de reserva donde colgar un aviso. Si prefieres el aviso al reservar o dentro de `libres`, es un cambio de spec.
+  - **Capacidad nueva `room-occupancy`:** la declaro yo en la spec.
+- **Repaso de coherencia:** hecho sin hallazgos. El delta se fusiona sin errores en una copia de `.docs/sdd`.
+
+Cuando llegue el revisor incorporaré sus hallazgos y seguiré con el plan y la implementación.
+
+--- [33]
+1. Importante · Delta, requisito 1 (escenario) · El escenario pasa con el aviso de Norte pero no fija el caso límite de más de 3 ni el contador `(<n> reservas)`: con 4 reservas, nada comprueba que `n` sea 4 y no 3 fijo. El texto `(3 reservas)` se acierta a ojo. · Añadir un escenario con 4 reservas activas que espere `(4 reservas)`.
+
+2. Importante · Delta, requisitos 1 a 4 · Ningún escenario cubre más de una sala con aviso, y el orden «el de `rooms`» (decisión 3) no tiene escenario. Podría salir en cualquier orden y los tests pasarían. · Añadir un escenario con Norte y Sur ambas con 3 reservas, y exigir el orden de `rooms`.
+
+3. Importante · Delta, requisito 3 · Cancelada y anulada van juntas en un solo escenario. Si el código excluye solo una de las dos, 2 activas más 1 excluida sigue dando 3 solo si falla la otra. Hoy el escenario también falla en ese caso, pero el requisito no distingue cuál se rompe. · Separar en dos escenarios, uno de canceladas y otro de anuladas, cada uno con 2 activas más 1 de ese estado.
+
+4. Importante · Delta, requisito 5 y «Decisiones» 3 · El día no se valida. `ocupacion xyz` o un día mal escrito dará «sin salas muy ocupadas el xyz», que es un falso negativo del propio anti-objetivo. El complemento (qué entrada es inválida) no está declarado. · Declarar el comportamiento ante un día no válido y añadir su escenario, o decidir de forma explícita que no se valida y ponerlo en «Decisiones».
+
+5. Importante · Sección Delta, regla «Dónde viven los datos» y Approach · Se dice «`bookings` no se exporta» y la función admite la lista como segundo parámetro. Eso cambia el contrato del módulo `src/app.js` o su prueba, y el comando `ocupacion` solo se prueba con las reservas por defecto. No hay escenario de cómo el test del comando fija los datos de `bookings`. · Declarar en Scope cómo se siembran las reservas en el test del comando, o exportarlas de forma explícita, y anotarlo como decisión.
+
+6. Menor · Decisiones 7 y delta, «Regla ante conflicto: no aplica» · Se declara sin razón. Dos entradas con el mismo día y estados contradictorios de una misma reserva no se tratan. · Justificar el «no aplica» o decir que una reserva solo tiene un estado.
+
+7. Menor · Scope y README · Se promete «una línea en el README» sin que ningún requisito ni test la cubra. La línea no entra en el delta y el gate no la comprueba. · Dejarlo fuera del gate de forma explícita, o añadir una comprobación.
+
+8. Menor · «Decisiones» 8 y cabecera · La spec figura aprobada por delegación y con `status: approved`, pero las decisiones 1 y 2 siguen marcadas como *pendiente*. Es una contradicción con la aprobación. · Quitar *pendiente* o dejar la spec sin aprobar hasta que las valide el dev-lead.
+
+9. Menor · Cabecera de «Decisiones» y Dominio · Se dice que la review mira «cancelada/anulada se excluyen en todos los escenarios», pero solo un escenario de cuatro lo pone a prueba. Es una afirmación de cobertura que no se sostiene. · Ajustar el texto de la review o añadir los escenarios que faltan.
+
+10. Menor · Archivos de steering · Falta `PRODUCT.md` en el repo (el fichero no existe). No pude contrastar el glosario que se cita («cancelada» y «anulada»), ni si «sala» y «reserva» son términos definidos. · Comprobar que el glosario existe o citar su origen real.
+
+--- [35]
+Los hallazgos del revisor son la salida automática de la review. No cuentan como respuesta tuya, y la aprobación sigue siendo la que dijiste al principio. Los incorporo a la spec.
+
+--- [62]
+RED confirmado: falla porque el módulo no exporta `bookings`, que es lo que falta. Ahora implemento.
+
+--- [64]
+Mi script de Python metió un salto de línea real dentro del `join`, lo que da un error de sintaxis. Lo arreglo.
+
+--- [73]
+Task 1 está cerrada: commit hecho, 13 tests nuevos en verde y la suite completa con 17 en verde. Ahora va la revisión final de la rama con `sdd-verify`.
+
+--- [82]
+Preparo el paquete de revisión y los índices que necesitan los ejes.
+
+--- [98]
+Los ejes Spec (opus) y Code (sonnet) de la revisión final están en marcha en segundo plano, cada uno con su vigilancia de silencio. El eje Arquitectura no sale: el diff no añade ningún módulo, manifest ni contrato. Espero a que vuelvan para cerrar la revisión.
+
+--- [104]
+### Strengths
+- `src/app.js` is small and has no comments, tabs or magic numbers. `BUSY_THRESHOLD = 3` and `DAYS` are named constants.
+- `busyRooms` is a pure function over a list, with `bookings` as the default. It filters by room, day and `status === 'active'`, so cancelled and voided bookings are excluded as the spec asks. It also respects the order of `rooms`.
+- `occupancy` validates in a sensible order: missing day, then invalid day, then count. That avoids a false "sin salas muy ocupadas".
+- All the user-facing messages match the spec literally: the aviso, the "sin salas", the `uso:` line and the `día no válido:` line. They are in Spanish.
+- The tests restore `bookings` in a `try/finally` with `splice`. Each test builds its own data, so they don't depend on each other's order.
+- The exclusion and per-day tests would fail if the code did the wrong thing. If cancelled bookings counted, "canceladas no cuentan" would reach 3. If the day were ignored, "es por día" would reach 4.
+- The extra edge-case tests (extra arguments, uppercase day) pin behaviour the spec left open. That behaviour is reasonable.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+None.
+
+#### Minor (Nice to Have)
+1. `test/occupancy.test.js:110-157` · Several tests rely on the default seed, which has one active Norte booking on `lun`. For example, "Norte con 3 activas" adds 2 and expects 3, and "es por día" adds 1 and expects 2. Changing `bookings` in `src/app.js` would break them with no clear cause. Fix: seed the whole state in the helper by clearing `bookings` before pushing, or use `busyRooms` with its own list.
+2. `test/occupancy.test.js:179-182` · The spec's "Dónde se prueba" says the threshold and the cancelled/voided exclusion get unit tests of `busyRooms` with their own lists. There is only one unit test, and it covers exactly 3 bookings. The rest go through `run` with seeded `bookings`. The behaviour is covered, but the isolation the spec promised is missing. Fix: add unit cases with 2 bookings, with a cancelled one and with a voided one.
+3. `README.md:5` · "3 o más" repeats the value of `BUSY_THRESHOLD`. If the constant changes, the README goes stale and no test catches it. Fix: accept it, since the spec already says the README line isn't checked.
+4. `test/occupancy.test.js:97` · The slots are built as `8:00-9:00`, without a leading zero, unlike the `10:00-12:00` format in the seed. It is harmless today. Fix: use `padStart(2, '0')` if the slots are ever compared.
+
+### Declined to judge
+- Whether the five spec scenarios and the decisions are covered completely is the Spec axis. I only checked the texts and the threshold.
+- Whether `busyRooms` and `bookings` belong in `app.js`, and whether exporting `bookings` is acceptable, is the Architecture axis. The spec states it as decision 10.
+- The `reservar` stub and the order of the `if` chain in `run` are already in the repo, not part of this change, so I left them.
+- Whether `process.argv` is read when `app.js` is imported in tests is existing behaviour. `cancel.test.js` already does it.
+- The weight of the README line and the pending (*pendiente*) decisions in the spec are product matters, so I left them to the dev-lead.
+
+### Not verified
+- Lint (`scripts/lint.mjs`) and the test suite were not run, as instructed. I checked for tabs with a grep on `src/app.js` and `test/occupancy.test.js`, and found none.
+- Test evidence from the task reports was not in the package, so I did not confirm it.
+- Recommendation: the main thread should run the full suite and the lint.
+
+### Recommendations
+Apply minor items 1 and 2 if there is time. Neither blocks the merge.
+
+### Assessment
+**Ready to merge?** Yes
+
+**Reasoning:** The code is clean and the texts and threshold match the spec. The tests exercise real behaviour and restore `bookings`. The only findings are minor: tests coupled to the seed, and thin unit coverage of `busyRooms`.
+
+--- [106]
+El eje Code ha vuelto limpio: ningún Crítico ni Importante, solo 4 menores y veredicto «listo para fusionar». Falta el eje Spec. Cuando llegue, cierro la revisión con las dos respuestas juntas.
+
+--- [109]
+Es el aviso de que la vigilancia del eje Code terminó con normalidad, porque el eje ya había vuelto. Sigo esperando al eje Spec.
+
+--- [111]
+## Revisión final, eje Spec: commit `3ce6865` (feature 0012, aviso de sala muy ocupada)
+
+Revisé el paquete en una sola pasada (183 líneas de diff), con la spec, el plan y el ledger. Las tres líneas del Review Focus están implementadas y cada una tiene su test. La rama está casi lista: falta la prueba de que los tests pasan y hay dos huecos menores de cobertura.
+
+### Strengths
+
+- **Los nueve requisitos ADDED de `room-occupancy` están todos implementados.** Los textos coinciden literalmente con la spec en `src/app.js:39-44`: `aviso: …`, `sin salas muy ocupadas el …`, `uso: ocupacion <día>` y `día no válido: …`. Las salas salen en el orden de `rooms`.
+- **Las decisiones ✋ de la spec están cubiertas.** El umbral es la constante `BUSY_THRESHOLD = 3`. Hay un comando nuevo. Solo cuentan las reservas `active`, y `cancelled`/`voided` coinciden con los estados que escriben `cancelBooking`/`voidBooking`. `DAYS` va sin tilde y `bookings` se exporta. Las dos decisiones tomadas con el dev-lead (aprobación por delegación y perfil `delegate`) no fijan ningún comportamiento, así que no piden ninguna regla.
+- **Los tests distinguen de verdad los casos.** Comprobé el cálculo de cada uno:
+  - `canceladas no cuentan` y `anuladas no cuentan`: si esos estados contaran, saldrían 3 y habría aviso.
+  - `es por día`: si no se filtrara por día, saldrían 4.
+  - `busyRooms con lista propia`: si mezclara la lista propia con `bookings`, saldrían 4.
+  - `ignora argumentos de sobra`: el día va en el texto, así que se nota si se usara `mar`.
+- **Review Focus, las tres líneas están cubiertas por código y por un test con el nombre del plan:**
+  - Datos por defecto, `lun` → `sin salas muy ocupadas el lun`. Código en `src/app.js:43`, test en `test/occupancy.test.js:76-78`.
+  - `lun mar` → se trata `lun`. Código en `src/app.js:51` (`params[0]`), test en `:80-82`.
+  - `LUN` → `día no válido: LUN`, sin normalizar. Código en `src/app.js:41`, test en `:84-86`.
+- **Se respetan las restricciones de código.** No hay comentarios. Hay 0 líneas con tabulador en `src/app.js` y en el test (lo comprobé con `git show` + grep). Los mensajes están en castellano. La línea del README es correcta y fiel a la spec.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+
+1. **El ledger no prueba que los tests pasen** (`.temp/sdd/plan/progress.md:6`).
+   - **Qué falla:** la línea de la Task 1 solo dice `node --test test/occupancy.test.js → ℹ duration_ms 96.7497`. No incluye `ℹ fail 0`, que es lo que la Verificación de la Task 1 da como resultado esperado. Tampoco recoge el `node --test` de toda la suite (Step 3) ni la ejecución RED del Step 1.
+   - **Por qué importa:** ningún THEN puede darse por verificado con esa evidencia. Mi cálculo dice que los 13 tests pasan, pero eso no sustituye a ejecutarlos.
+   - **Cómo arreglarlo:** el gate de cierre del hilo principal (`node --test && node scripts/lint.mjs`) tiene que mostrar `ℹ fail 0`, y esa salida debe quedar anotada en el ledger.
+   - **Gap:** `partial`. **Origen:** plan, Task 1 (Verificación y Step 3).
+
+#### Minor (Nice to Have)
+
+1. **La exclusión y el umbral no se prueban donde dice la spec** (`test/occupancy.test.js:88-91`).
+   - **Qué falla:** «Dónde se prueba» pide probar el umbral y la exclusión de canceladas y anuladas con un unitario de `busyRooms` sobre listas propias. El único unitario de `busyRooms` cubre 3 activas. El caso de 2 activas, las canceladas y las anuladas solo se prueban a través de `run('ocupacion', …)` sembrando `bookings`.
+   - **Por qué importa:** el comportamiento está fijado igualmente, porque los tests del comando distinguen los casos. Pero la verificación no está en la capa que nombra la spec.
+   - **Cómo arreglarlo:** añadir tres casos de `busyRooms('lun', lista)`, cada uno debe devolver `[]`: 2 activas; 2 activas + 1 `cancelled`; 2 activas + 1 `voided`.
+   - **Gap:** `partial`. **Origen:** «Dónde se prueba» (umbral y exclusión de canceladas/anuladas).
+2. **El test del primer requisito no siembra la reserva de Sur** (`test/occupancy.test.js:19-23`).
+   - **Qué falla:** el GIVEN del primer ADDED incluye «Sur con una», y el test no siembra ninguna reserva de Sur. El THEN «no sale línea de Sur» se cumple con Sur a 0 reservas, no con 1.
+   - **Cómo arreglarlo:** añadir `...many('Sur', 'lun', 'active', 1)` al `extra`. Esto cambia un dato de un test RED, así que le toca decidirlo al ejecutor.
+   - **Gap:** `partial`. **Origen:** THEN de «Una sala con 3 o más reservas activas en un día está muy ocupada».
+
+El ledger no tiene líneas `minor (deferred)` ni `parked`. Su único `Ruling:` (llamar `seed()` al helper si `many()` chocaba) quedó sin efecto, porque se mantuvo `many()`, y no cuesta nada.
+
+### Not verified
+
+- **Que los 13 tests de `test/occupancy.test.js` y la suite completa pasen.** Motivo: el ledger no trae `ℹ fail 0` y el encargo me prohíbe ejecutarlos. Por cálculo deberían pasar.
+- **Que los tests se vieran fallar (RED) antes del código.** Motivo: tests y código van en el mismo commit y el ledger no registra la ejecución RED.
+- **El lint completo.** Motivo: no se ejecutó. Solo comprobé con grep que `src/app.js` no tiene tabuladores.
+- **La prueba en la aplicación (`node src/app.js ocupacion lun` → `sin salas muy ocupadas el lun`).** Motivo: no se ejecutó la CLI.
+- **El `sdd capability merge` de la decisión 8 de la spec (5 requisitos según la spec).** Motivo: está fuera del paquete. Ojo: el delta tiene 9 requisitos ADDED, así que esa cifra parece desfasada respecto a la spec final y conviene que el cierre lo revise.
+
+### Recommendations
+
+- Ejecutar el gate de cierre y anotar en el ledger el número de tests que pasan y `ℹ fail 0`.
+- Ejecutar una vez `node src/app.js ocupacion lun` y `node src/app.js ocupacion` para cerrar la prueba en la aplicación.
+- En el cierre, repetir el `sdd capability merge` con la spec final y comprobar que entran 9 requisitos y 5 reglas.
+
+### Declined to judge
+
+- **`mié` con tilde u otras variantes del día.** La spec lo decide explícitamente (decisión 9) y el Review Focus cubre `LUN`. No es un hueco.
+- **`libres` no filtra por día** (`freeRooms`). Es anterior a esta rama y queda fuera del alcance.
+- **Aislamiento entre ficheros de test.** `cancel.test.js` cancela la reserva por defecto en el array `bookings` compartido. No se nota porque `node --test` ejecuta cada fichero en su propio proceso. Es cosa del eje Código.
+- **`package.json` pide `node >=20` y el plan dice Node 22.** No es comportamiento de la spec.
+- **El riesgo de exportar `bookings` como array mutable.** Lo pide la decisión 10. El diseño es cosa de los ejes Código y Arquitectura.
+
+### Assessment
+
+**Ready to merge?** With fixes. **Reasoning:** la implementación cumple todos los requisitos de la spec y las tres líneas del Review Focus con tests que distinguen los casos. Falta que el gate muestre `ℹ fail 0`, porque hoy no hay evidencia de que los tests pasen. Los dos Minor (unitarios de `busyRooms` para la exclusión, y la reserva de Sur en el primer escenario) pueden arreglarse antes de fusionar o diferirse a criterio del ejecutor.
+
+Ficheros relevantes:
+- `<run>/review-0012-3ce6865/src/app.js`
+- `<run>/review-0012-3ce6865/test/occupancy.test.js`
+- `<run>/repo/.temp/sdd/plan/progress.md`
+- `<run>/review-0012-3ce6865/.docs/sdd/changes/20261118-232645-feature-0012-aviso-sala-ocupada/spec.md`
+
+--- [115]
+Los dos ejes han vuelto y no hay Críticos. Antes de cerrar, verifico yo lo que el eje Spec marcó «no verificado»: el gate completo, la CLI en vivo y el recuento del delta.
+
+--- [128]
+Esto es la validación. Primero corro el gate y ensayo yo cada paso del guion tal como lo escribirás tú.
+
+--- [131]
+🦆 `salas` ya avisa de las salas muy ocupadas. Con `node src/app.js ocupacion lun`, una sala con 3 o más reservas activas ese día sale como `aviso: Norte muy ocupada el lun (3 reservas)`, y si ninguna llega sale `sin salas muy ocupadas el lun`. Las reservas canceladas y las anuladas no cuentan.
+
+Con perfil `delegate` y `validation.mode` sin definir (cuenta como `manual`), el cierre no avanza sin tu validación. Todavía no he escrito el walkthrough ni la fusión.
+
+**✋ Me salí del plan en…** nada. El plan salió tal cual. Estos son los rulings y los menores que dejé apuntados:
+
+- **Rulings de la revisión final:**
+  - El eje Spec marcó como Important que el ledger no probaba que los tests pasaran. Lo traté como evidencia: volví a correr el gate y salió 17/17, con `fail 0`.
+  - La spec decía «5 requisitos» y eran 9. Corregí ese texto, que es solo documentación.
+  - Descarté tres cosas fuera de alcance: `libres` no filtra por día, `bookings` exportado y mutable (lo fija la decisión 10 de la spec) y `node >=20` frente a Node 22.
+- **Menores diferidos** (no hay `review.minors: fix` en la config):
+  - Faltan unitarios de `busyRooms` con 2 activas, con una cancelada y con una anulada.
+  - El test del primer escenario no siembra la reserva de Sur.
+  - Varios tests dependen de la reserva por defecto de Norte.
+  - Los slots de los tests no llevan cero a la izquierda.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| 3 activas el lun → aviso de Norte, sin línea de Sur | `ejecución real` (paso 4) | `aviso: Norte muy ocupada el lun (3 reservas)` |
+| 2 activas / por día | `suite` | 13/13 en `test/occupancy.test.js` |
+| Canceladas y anuladas no cuentan | `ejecución real` (paso 5) | `sin salas muy ocupadas el lun` |
+| 4 reservas → `(4 reservas)`, varias salas en orden | `suite` | en verde |
+| Falta el día | `ejecución real` (paso 2) | `uso: ocupacion <día>` |
+| Día no válido | `ejecución real` (paso 3) | `día no válido: xyz` |
+
+**Suites**
+
+- `node --test && node scripts/lint.mjs`: 17/17 sobre `17c21f1`, 135 ms, y lint sin hallazgos.
+
+**Sin probar**
+
+- La fusión: `sdd merge --check` dice que falta `merge.into` o `merge.noFf` en `sdd-kit.json`. Con el bloque `merge` incompleto, el cierre me pide presentarte la fusión y esperar tu respuesta.
+- No hay otras ramas abiertas a la vez.
+- Desde la CLI no se puede crear reservas (`reservar` es un stub y los datos viven en memoria). Por eso los pasos 4 y 5 siembran reservas con una línea de Node.
+
+**Guion**
+
+Rama `feature/0012-aviso-sala-ocupada` · worktree `<run>\repo`
+
+No hay entorno que arrancar: es una CLI, y «Arrancar» en `operations.md` es `node src/app.js <comando> <argumentos>`.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Con los datos por defecto, que tienen 1 reserva de Norte el lun → `sin salas muy ocupadas el lun`
+
+```
+node src/app.js ocupacion lun
+```
+
+2. Sin día → `uso: ocupacion <día>`
+
+```
+node src/app.js ocupacion
+```
+
+3. Un día mal escrito → `día no válido: xyz`
+
+```
+node src/app.js ocupacion xyz
+```
+
+4. Con 2 reservas más de Norte el lun, que suman 3 → `aviso: Norte muy ocupada el lun (3 reservas)`
+
+```
+node --input-type=module -e "import { bookings, run } from './src/app.js'; for (let i = 0; i < 2; i++) bookings.push({ room: 'Norte', day: 'lun', slot: 'x', status: 'active' }); console.log(run('ocupacion', ['lun']));"
+```
+
+5. Con 1 activa más, 1 cancelada y 1 anulada (2 activas en total) → `sin salas muy ocupadas el lun`
+
+```
+node --input-type=module -e "import { bookings, run } from './src/app.js'; bookings.push({ room: 'Norte', day: 'lun', slot: 'x', status: 'active' }, { room: 'Norte', day: 'lun', slot: 'y', status: 'cancelled' }, { room: 'Norte', day: 'lun', slot: 'z', status: 'voided' }); console.log(run('ocupacion', ['lun']));"
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

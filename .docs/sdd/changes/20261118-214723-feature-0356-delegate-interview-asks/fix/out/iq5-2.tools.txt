@@ -1,0 +1,128 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1 | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60; ls node_modules 2>&1 | head -3
+
+>>> Read: <run>\repo\ROADMAP.md
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+8	| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature<br>**R
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.2", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+
+>>> Bash: cd "<run>/repo" && cat package.json PRODUCT.md .docs/sdd/steering/*.md; ls -R .docs/sdd/specs test scripts; cat test/*.js | head -60; git branch -a
+<<< {"type": "module", "engines": {"node": ">=20"}}
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelac
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356fix/skills/sdd-propose/references" && cat spec-writing.md nombrado.md; sed -n 1,80p control-profiles.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Writing the spec
+
+Inspired by superpowers `brainstorming` (MIT).
+
+You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+
+## What the spec covers
+
+Before the first question, sort what the change needs into three piles:
+
+- 
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.1984532 $)
+Ahora: ya clasifiqué y hago la entrevista de la spec. Queda: una pregunta tuya, luego rama, spec, revisión y la parada de aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme):
+- Al reservar una sala que ya tiene muchas reservas activas ese día, la respuesta de `reservar` lleva una segunda línea de aviso.
+- Se cuentan las reservas activas de la sala en el día, no las horas. Tus dos decisiones se quedan tal cual.
+- Fuera de alcance: el aviso por correo (fila 0008).
+- Tests en `test/busy.test.js` y el aviso en `src/app.js`.
+- No hay dependencias que instalar. `node --test` corre sin más.
+
+**Lo que he visto en `src/app.js`:**
+- `reservar` hoy solo acepta `reservar <sala> --cada-semana` y devuelve el texto fijo `reserva semanal creada`.
+- No recibe día ni franja, y no añade nada a `bookings`.
+- Las reservas activas sí llevan `day` (`lun`, `mar`…). `libres` solo filtra por franja.
+- Para contar "en el día" hace falta saber de qué día es la reserva.
+
+❓ **¿De qué día cuenta `reservar`?**
+1️⃣ **Día opcional como segundo argumento**: `reservar Norte lun [--cada-semana]`.
+   - Con día, cuenta las reservas activas de Norte ese día. Si pasa del umbral, añade la segunda línea: `reserva semanal creada` + `aviso: Norte tiene N reservas activas el lun`.
+   - Sin día, responde como hoy y no avisa.
+   - Cuesta un argumento nuevo en la interfaz, y las reservas sin día no avisan nunca.
+2️⃣ **No tocar los argumentos y aparcar la feature**: no hay día que contar hasta que otra feature enseñe a `reservar` a recibirlo y a crear reservas.
+   - No cuesta nada ahora, pero esta feature no se entrega.
+
+➡️ **Recomiendo 1️⃣**, porque es lo mínimo que hace medible "en el día" y no cambia lo que `reservar` hace hoy cuando no se pasa día. A cambio, el comando gana un argumento que no estaba en tu alcance. ¿Cuál eliges?

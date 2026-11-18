@@ -1,0 +1,83 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, escribir la spec y presentártela, ~10 min.
+
+--- [29]
+Estoy escribiendo la spec; el heredoc falló por quoting, así que la creo con el editor de ficheros.
+
+--- [32]
+Ahora: repaso de coherencia (delta probado sobre una copia) y búsqueda de lo que toca. Queda: revisión con un revisor y presentarte la spec, ~5 min.
+
+--- [36]
+Ahora: lanzo el revisor de la spec (uno, sonnet). Queda: integrar sus hallazgos y presentarte la spec, ~4 min.
+
+--- [42]
+Lancé el revisor de la spec y espero su informe. No puedo darte la spec por cerrada hasta integrar sus hallazgos.
+
+Hasta ahora, en la rama `feature/0012-reservas-sala` (id 0012 reservado), la spec está escrita en `.docs/sdd/changes/20261118-231556-feature-0012-reservas-sala/spec.md`. El delta ya pasó el merge de prueba sobre una copia, con salida 0.
+
+No te hice ninguna pregunta de entrevista: el porqué y el formato ya los dabas. Lo que decidí yo está en el bloque «✋ Decisiones que he tomado yo». Lo principal de ahí:
+- **Activa:** solo cuenta el estado `active`. Las canceladas y las anuladas no salen.
+- **Orden:** por día de la semana (`lun`…`dom`) y, dentro del día, por hora de inicio.
+- **Alcance:** se listan todas las reservas activas de la sala, no solo las de hoy. Las reservas guardan el día de la semana, no una fecha.
+- **Sala desconocida:** responde `sin reservas Oeste`, igual que una sala sin reservas.
+- **Sin sala:** `reservas` sin argumento responde `uso: reservas <sala>`. Ese texto es mío y está marcado como pendiente de tu visto bueno.
+- **Enfoque:** función pura `formatAgenda(room, bookings)` en `src/app.js`, para poder probar el orden y los estados con datos propios.
+
+Falta recoger los hallazgos del revisor en la spec y presentártela con su 🦆 para tu aprobación. La spec sigue en espera hasta que apruebes. Después seguiría con el plan y el traspaso a `sdd-implement`.
+
+--- [43]
+1. Importante · Delta «Las anuladas y canceladas no se listan» · El título promete canceladas y anuladas, pero el GIVEN solo prueba una anulada. Una implementación que excluya solo `voided` pasaría el escenario. · Añade un GIVEN con una reserva `cancelled` y otra `voided`, ambas excluidas. O parte el escenario en dos.
+
+2. Importante · Delta «Las reservas activas… una por línea» / Decisión 3 · El orden por día depende de la lista `lun…dom`, pero ningún escenario cubre un día fuera de orden alfabético frente a `dom` o `sab`. El primer escenario sí distingue `lun` de `mar`. Además, el orden de la hora es texto, y `9:00` contra `10:00` ordenaría mal si el formato no lleva cero. · Declara el formato de hora como `HH:MM` con cero a la izquierda en «Reglas de la capacidad». Añade un escenario con `dom` o `sab` antes de otro día.
+
+3. Importante · Reglas de la capacidad (5 bis) · El delta trae datos y nombres nuevos: el formato de línea `día HH:MM-HH:MM`, la abreviatura de días, los mensajes `sin reservas <sala>` y `uso: reservas <sala>`, y la regla de conflicto. No existe la sección «Reglas de la capacidad» ni un «no aplica» para dónde viven los datos, límites ni avisos. · Añade «Reglas de la capacidad» con las cinco reglas. Dónde viven los datos: en memoria, en `src/app.js`. Idioma: castellano en los textos de salida, inglés en el nombre de la capacidad. Límites: sin tope de líneas. Avisos: no aplica. Conflicto: no aplica, o declara que una sala desconocida equivale a una sala vacía.
+
+4. Importante · Decisión 5 y delta «Una sala sin reservas lo dice» · Se afirma que «el resto de comandos no distingue salas desconocidas», y eso no se puede comprobar sin leer el código. Es una decisión que oculta una elección de producto: `sin reservas Oeste` oculta un error de tecleo. Va contra la intención de no quedarse en silencio. · Marca la decisión como pendiente de validar por el dev-lead, o cita la evidencia. Valora un mensaje distinto, como `sala desconocida`.
+
+5. Importante · Decisión 7 / Scope · Norte se compara con distinción de mayúsculas. `reservas norte` responde `sin reservas norte`, que parece correcto y es falso. Es el mismo riesgo de silencio engañoso que la decisión 5. · Añade un escenario que fije este comportamiento, o un aviso. Deja constancia en la regla de conflicto.
+
+6. Menor · Decisiones del dev-lead / Decisión 6 · El texto `uso: reservas <sala>` lo decide el agente y está marcado «pendiente», pero el delta ya lo fija como requisito. · Mantén «pendiente de visto bueno» hasta la aprobación. No lo marques como cerrado en el delta.
+
+7. Menor · Decisiones, apartado de revisión · «Dominio (sonnet)» promete que los THEN cubren sala desconocida. Eso está cubierto solo como un AND dentro de otro escenario. Una sala desconocida no tiene un requisito propio. · Convierte la sala desconocida en su propio ADDED, o deja claro que forma parte del mismo requisito.
+
+8. Menor · Capacidades / Términos · El glosario de PRODUCT.md define Cancelación y Anulación, pero no «activa». La spec lo declara en «Términos resueltos» sin pasarlo al glosario. Los estados `active`, `cancelled` y `voided` salen de `src/app.js`, que no se ha podido verificar. · Pasa «reserva activa» a PRODUCT.md. Referencia los estados como supuestos a verificar en el plan.
+
+9. Menor · Intent / Scope · El Intent habla de que el responsable revisa «cada mañana», pero el comando lista todas las reservas sin fecha, de modo que no es una agenda de la mañana. La decisión 4 lo reconoce pero el Intent promete otra cosa. · Ajusta el Intent a «agenda semanal de la sala».
+
+10. Menor · Dónde se prueba · El comando completo solo se prueba con la reserva semilla, de la que no se ve la sala ni el estado. Un test de `run` podría no ejercitar ningún caso del delta. · Fija en la spec la reserva semilla que se usa (sala, día, hora) o prueba `run` con un caso del delta.
+
+--- [51]
+Ahora añado la subsección de hallazgos y repito el merge de prueba del delta.
+
+--- [55]
+Ahora: te presento la spec para que la apruebes. Queda: tu aprobación; después, plan y traspaso a `sdd-implement`, ~5 min.
+
+## Spec 0012 — Listar las reservas de una sala
+
+Está en `.docs/sdd/changes/20261118-231556-feature-0012-reservas-sala/spec.md`, en la rama `feature/0012-reservas-sala`. Todavía no he hecho commit.
+
+🦆 Hoy el responsable de sala no puede ver qué tiene reservado una sala sin probar franja a franja con `libres`. Con este cambio escribe `reservas Norte` y ve su agenda: una línea por reserva activa, como `lun 10:00-12:00`. Si no hay ninguna, responde `sin reservas Norte`. Por dentro, es un comando nuevo que filtra las reservas activas de la sala y las ordena por día y hora.
+
+Es una capacidad nueva, `room-bookings`. Se valida contigo, porque lo usa una persona en la terminal.
+
+### ✋ Decisiones que he tomado yo — valida estas
+1. **Capacidad nueva `room-bookings`.** El nombre va en inglés y kebab-case porque es nombre de fichero.
+2. **Activa** significa estado `active`. Las canceladas y las anuladas no salen.
+3. **Orden:** por día (`lun`…`dom`) y, dentro del día, por hora de inicio.
+4. **Alcance:** se listan todas las reservas activas de la sala, no solo las de hoy. Las reservas guardan el día de la semana, no una fecha, así que lo que ves es la agenda semanal.
+5. **Sala desconocida:** `reservas Oeste` responde `sin reservas Oeste`. **Necesita tu visto bueno**, porque oculta un error de tecleo. La alternativa es un mensaje propio, como `sala desconocida Oeste`.
+6. **Sin sala:** `reservas` sin argumento responde `uso: reservas <sala>`. El texto es mío, y **necesita tu visto bueno**.
+7. **Mayúsculas:** `reservas norte` responde `sin reservas norte`, igual que `cancelar` y `libres`, que distinguen mayúsculas. **Necesita tu visto bueno**, por el mismo riesgo que la 5.
+8. **Enfoque:** función pura `formatAgenda(room, bookings)` en `src/app.js`. La descarté frente a filtrar dentro de `run` y frente a un módulo nuevo, que rompería la arquitectura de un solo fichero. Así el orden y los estados se prueban con datos propios.
+
+### Review
+Pasó un revisor (sonnet). Aceptado: 9 de 10 hallazgos, ninguno Crítico. Cubrí los huecos con escenarios para fines de semana, anulada y cancelada, sala desconocida y mayúsculas. Añadí las reglas de la capacidad y fijé la reserva semilla de los tests. Rechacé uno: pasar «reserva activa» al glosario de `PRODUCT.md`, que lo escribe el cierre.
+
+El delta probado sobre una copia de `.docs/sdd` se fusiona sin errores.
+
+### Decisión
+1. **Apruebo (Recomendada):** sigo con el plan y paso a `sdd-implement`.
+2. **Cambios:** me dices qué ajustar, por ejemplo la 5, la 6 o la 7.
+
+¿Apruebas la spec?
+

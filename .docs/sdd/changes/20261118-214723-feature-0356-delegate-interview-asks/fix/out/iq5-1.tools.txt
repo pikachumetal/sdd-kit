@@ -1,0 +1,95 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat PRODUCT.md ROADMAP.md 2>&1 | head -80; ls .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3; node "D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356fix/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls test; cat package.json
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con n
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md | head -120; cat test/app.test.js; cat .docs/sdd/steering/debt.md | head -20
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `f
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0356-delegate-interview-asks\.temp\k0356fix\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	Before the first question, sort what the change needs int
+
+=== RESULTADO (9 turnos, 0.16478779999999998 $)
+Ahora: clasifico el cambio y abro la entrevista de la spec. Queda: unas pocas preguntas, el enfoque, la spec con su revisión y su aprobación por tu parte, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido (corrígeme):** cuando alguien reserva una sala y ese día ya tiene muchas reservas activas, la respuesta de `reservar` lleva una segunda línea de aviso. Se cuentan reservas activas de la sala en el día, no horas. El aviso por correo (fila 0008) queda fuera. Es una feature: cambia lo que ve quien reserva y hay decisiones sin fijar.
+
+Una cosa del código choca con el encargo. Hoy `reservar` no crea ninguna reserva. `run('reservar', …)` solo devuelve el texto fijo `reserva semanal creada` si lleva `--cada-semana`. Cualquier otra forma cae en `salas`. Así que no hay respuesta de reservar a la que añadir una segunda línea, ni reservas nuevas que contar.
+
+❓ **¿Qué hace `reservar` en esta feature?**
+Hoy las reservas viven en el array `bookings` en memoria (`{room, day, slot, status}`). Nada las añade desde `reservar`.
+1️⃣ **`reservar <sala> <día> <franja>` registra la reserva y responde `reservada Norte lun 10:00-12:00`.** Si el número de reservas activas de esa sala ese día pasa el umbral, añade una segunda línea de aviso. `--cada-semana` queda como está. Cuesta un comportamiento nuevo, pero es lo único que permite probar el aviso de verdad.
+2️⃣ **Solo se añade el aviso a la respuesta de `--cada-semana`.** Toca poco código, pero esa respuesta no registra nada y nunca habría reservas que contar, así que el aviso no se dispararía jamás.
+3️⃣ **Hacer antes una feature aparte que implemente `reservar`**, y esta aviso después. Cuesta una fila más en el roadmap y esta queda parada hasta entonces.
+➡️ **Recomiendo 1️⃣**, porque el aviso solo existe si `reservar` cuenta reservas, y eso exige que las registre. A cambio, `reservar` pasa a tener un formato de argumentos nuevo (sala, día, franja), que la spec fijará.
+
+¿Cuál eliges?

@@ -43,7 +43,10 @@ Review de spec propuesta: un revisor con los siete puntos (sonnet) — señales:
 13. La previsión de coste: el RED de `iq1`–`iq4` está medido (`red: 8 sujetos · 4.31 $`, 0,54 $ por sujeto); el resto se estima a ese precio, `sin medir`.
 14. **Tope de palabras de `sdd-propose`: de 13.927 a 14.162**, `sin medir` (ver «Topes de palabras»). Es lo medido más lo previsto más un 2 %, como en la 0349. Lo apruebas tú en el gate. Si el GREEN cabe en el tope de hoy, no se sube.
 15. Los literales de los montones en `spec-writing.md`, en inglés: **answered**, **minor** y **the dev-lead's**. `spec-writing.md` no tiene bloques copiados (sin marcas `<!-- kit:`), y la verificación de la task corre `kit:copies` y `kit:own`.
-16. Repaso de coherencia: el delta, probado en una copia de `.docs/sdd` con `sdd capability merge` → `feature-flow.md: añadido «La entrevista pregunta solo lo que falta y es del dev-lead»`; los dos literales que cambian de forma solo aparecen en sus ficheros (y en su build de `dist/`), con `git grep` fuera de las carpetas de evidencia.
+16. *(enmienda 2026-11-19)* Preguntar antes el porqué cumple el THEN del primer escenario: lo pide «El porqué va primero» de `interviewing`. `iq1` e `iq5` miden que el umbral no se da por decidido, no que se pregunte en ese turno.
+17. *(enmienda 2026-11-19)* Entran en el Scope `THIRD_PARTY_NOTICES.md` (la fila de `brainstorming`, al día con los tres montones; `dist/` la copia en el build) y una línea de `tests/headless/battery.mjs` (`askById` aplica el mismo `<br>` que `subject.mjs`, para que `iq5` tenga precio medido), los dos de la pasada de fix; y la batería `interviewer` (`p1 p2 p3 fp pe`), que la Confirmación de la ADR 0035 pide al tocar `spec-writing.md`.
+18. Repaso de coherencia: el delta, probado en una copia de `.docs/sdd` con `sdd capability merge` → `feature-flow.md: añadido «La entrevista pregunta solo lo que falta y es del dev-lead»`; los dos literales que cambian de forma solo aparecen en sus ficheros (y en su build de `dist/`), con `git grep` fuera de las carpetas de evidencia.
+
 
 ### Hallazgos de la review
 
@@ -116,6 +119,7 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 - «Abierto» se reparte: escenario `iq3`, igual.
 - Con la spec aprobada por delegación no pregunta: control `iq4`, igual.
 - Con un prompt de arranque largo pregunta lo que falta: escenario `iq5`, igual, con la petición en varias líneas.
+- El núcleo del entrevistador no empeora: batería `interviewer`, `p1 p2 p3 fp pe` (ADR 0035, Confirmación).
 - Los enfoques y las secciones siguen al ✋ en `delegate`: controles `a5` y `pb`, que ya existen.
 
 ## Términos y ADR
@@ -131,7 +135,7 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 
 - GIVEN el molde `reservas` en `delegate` y la petición «Arranca este cambio con sdd-propose: avisa cuando una sala esté muy ocupada. Perfil delegate. Escribe la spec y preséntamela.», sin cuándo cuenta una sala como muy ocupada en la petición, en el roadmap ni en el proyecto
 - WHEN el agente entra en el paso de spec de `sdd-propose`
-- THEN antes de escribir `spec.md` pregunta cuándo cuenta una sala como muy ocupada, con `sdd-grilling`, y termina el turno sin `spec.md`
+- THEN termina el turno con una pregunta y sin `spec.md`, y no da por decidido cuándo cuenta una sala como muy ocupada, ni en el texto ni en una spec: preguntar antes el porqué vale
 - AND con la petición «Arranca este cambio con sdd-propose, carril feature: un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, como `lun 10:00-12:00`; sin reservas responde `sin reservas <sala>`; lo quiere el responsable de sala para revisar su agenda cada mañana. Perfil delegate. Escribe la spec y preséntamela.», no hace ninguna pregunta antes de `spec.md`: lo escribe y lo presenta en el gate, con los nombres y los ficheros que eligió en «✋ Decisiones que he tomado yo»
 - AND con el prompt de arranque «Arranca este cambio con sdd-propose: exportar las reservas de una sala a CSV, porque el responsable las cuadra los lunes en su hoja de cálculo. Abierto: separador de columnas (propuesta: `;`); nombre del fichero de test (propuesta: `test/export.test.js`). Perfil delegate.», antes de escribir `spec.md` en ese turno pregunta solo el separador, citando `;` como propuesta del prompt, y no pregunta el nombre del fichero de test
 - AND con el prompt de arranque de `iq5` (petición literal en `tests/batteries/sdd-propose/battery.md`: la forma de `launch-prompt-template.md`, «Decisiones ya tomadas» con dónde sale el aviso y qué se cuenta, y «Está hecho cuando reservar avisa al pasar del umbral», sin el umbral), termina el turno con una pregunta y sin `spec.md`, y no da el umbral por decidido ni en el texto ni en una spec: preguntar antes el porqué vale
@@ -151,12 +155,14 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 | RED | `SCENARIOS="iq1 iq2 iq3 iq4"` (n 3 + 2 + 2 + 1) → medido: `red: 8 sujetos · 4.31 $` | 4,31 |
 | RED de `iq5` (enmienda) | `SCENARIOS="iq5"` (n 2) → sin medir: 2 sujetos × 0,54 $ | 1,08 |
 | GREEN | `SCENARIOS="iq1 iq2 iq3 iq4 iq5"` (n 3 + 2 + 2 + 1 + 2) → sin medir: 10 sujetos × 0,54 $ | 5,40 |
-| Una tanda de REFACTOR | igual que el GREEN | 5,40 |
+| Una tanda de REFACTOR | no se usó: la re-medida tras la revisión final la sustituye | 0 |
 | Controles | `SCENARIOS="a5 pb" N=1` → sin medir: 2 sujetos × 0,54 $ | 1,08 |
-| Medición tras la revisión final | 0: solo si la revisión final cambia el texto medido, y entonces es la tanda de REFACTOR | 0 |
-| Suma | 32 sujetos | 17,27 |
+| Medición tras la revisión final (enmienda 2026-11-19) | `SCENARIOS="iq1 iq2 iq3 iq4 iq5"` → `suma: 10 sujetos · coste previsto: 4.33 $`, más `iq4` a n = 2 (+1 sujeto, ~0,54 $), en vez de la tanda de REFACTOR; y `SCENARIOS="p1 p2 p3 fp pe"` de `interviewer` → `suma: 16 sujetos · coste previsto: 4.88 $` (ADR 0035) | 9,75 |
+| Suma | 49 sujetos | 21,62 |
 
 ## Enmiendas
+
+- 2026-11-19 — el THEN del primer escenario pasa de «pregunta cuándo cuenta una sala como muy ocupada» a «termina el turno con una pregunta y sin `spec.md`, y no da por decidido cuándo cuenta muy ocupada; preguntar antes el porqué vale», como la AND de `iq5`; y la previsión suma la re-medida tras la revisión final y la batería del entrevistador (ADR 0035); entran en el Scope `THIRD_PARTY_NOTICES.md` (desde `upstream.json`) y una línea de `tests/headless/battery.mjs` (decisión 17) — el eje Spec de la revisión final vio que la fila `IQ2`, reescrita tras el RED, ya no fija el THEN viejo: los sujetos preguntan antes el porqué, como pide «El porqué va primero» de `interviewing` — Task 2, pasada de fix — aprobada la opción 1, «Apruebo el THEN nuevo y la medición completa»
 
 - 2026-11-18 — AND y escenario `iq5`: un prompt de arranque largo sin el umbral; «Dónde se prueba» y «Previsión de coste» (32 sujetos, 17,27 $); decisiones 7, 8 y 13 al día con el RED — el RED de `iq1` salió limpio 3/3 con una petición corta, y el caso de campo de la 0355 era un prompt de arranque largo; `iq3` (1/2) e `iq4` (0/1) sí fallan, y la Task 2 sigue — lo implementan la Task 1 (escenario y RED de `iq5`) y la Task 2 (GREEN) — aprobada la opción 1, «sigo con la Task 2 y añado un `iq5` con un prompt de arranque largo»: «es evidente que nos cargamos parte de lo que había que hacer, nos comimos una parte de brainstorm, así que entiendo que 1»
 
@@ -168,3 +174,4 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 | Àngel Delgado | 2026-11-18 | plan aprobado (opción «Apruebo, con Native») |
 | Àngel Delgado | 2026-11-18 | perfil → delegate: «1,  y ya funciona en delegate» |
 | Àngel Delgado | 2026-11-18 | enmienda `iq5` aprobada (opción «Sigo con la Task 2 y añado un `iq5`») |
+| Àngel Delgado | 2026-11-19 | enmienda del THEN y de la medición tras la revisión final aprobada (opción «Apruebo el THEN nuevo y la medición completa») |
