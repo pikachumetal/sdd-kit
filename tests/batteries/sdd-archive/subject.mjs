@@ -73,14 +73,16 @@ function moldReservas() {
   s.commit('feat: base del molde');
   branch('develop');
 }
-function open0010() {
+// Con camino crítico, la spec aprobada ya dice qué E2E son de feature: el cierre lo lee de ahí.
+function open0010(where) {
   branch('feature/0010-cancel-reason');
-  s.put(`${F10}/spec.md`, approved0010());
+  const spec = approved0010();
+  s.put(`${F10}/spec.md`, where ? spec.replace(/^## Dónde se prueba\n[\s\S]*?(?=\n## )/m, `## Dónde se prueba\n\n${where}\n`) : spec);
   s.put(`${F10}/plan.md`, readFileSync(join(IMPL, 'fixtures', 'plan-0010.md'), 'utf8'));
   s.commit('docs(sdd): abrir la feature 0010 con su spec y su plan');
 }
-function done0010() {
-  open0010();
+function done0010(where, extra) {
+  open0010(where);
   cp(join(IMPL, 'fixtures', 'app-task1.js'), 'src/app.js');
   cp(join(IMPL, 'fixtures', 'cancel-task1.test.js'), 'test/cancel.test.js');
   s.commit('feat(bookings): cancelar con un motivo de la lista');
@@ -88,6 +90,7 @@ function done0010() {
   cp(join(IMPL, 'fixtures', 'app-done.js'), 'src/app.js');
   cp(join(IMPL, 'fixtures', 'cancel-done.test.js'), 'test/cancel.test.js');
   if (existsSync(at('e2e/run.mjs'))) cp(join(E2E, 'e2e', 'cancel-0010.e2e.mjs'), 'e2e/cancel.e2e.mjs');
+  extra?.();
   s.commit('feat(bookings): listado de canceladas con su motivo');
   const A = short('HEAD');
   s.put(`${F10}/tasks.md`, [
@@ -134,6 +137,57 @@ function e2eSuite() {
   writeFileSync(at('.docs/sdd/steering/operations.md'), perLine(readLf(join(E2E, 'operations.md')), ['PORT', String(E2E_PORT)]));
   appendFileSync(at('README.md'), readFileSync(join(E2E, 'README-tail.md')));
   s.commit('test: suite e2e');
+}
+// Camino crítico en develop: la lista sustituye a «Flujos core», el check entra en el gate, y dos E2E fuera de la lista ya viven en la base.
+const CP = join(HERE, 'fixtures', 'critical-path');
+const e2eFile = (tests) => `export default [\n${tests.map(([name, cmd, args, out]) => `  { name: '${name}', steps: [['${cmd}', ${JSON.stringify(args)}, '${out}']] },`).join('\n')}\n];\n`;
+const FREE = ['libres', ['12:00-14:00'], 'Norte, Sur'];
+function criticalPath() {
+  cp(join(CP, 'check.mjs'), 'scripts/critical-path.mjs');
+  s.put('e2e/print.e2e.mjs', e2eFile([['imprime las salas libres', ...FREE]]));
+  s.put('e2e/rooms.e2e.mjs', e2eFile([['lista las salas', ...FREE]]));
+  s.put('.docs/sdd/steering/critical-path.md', ['# Camino crítico — salas', '', '| Nivel | Camino | Crit. | Test | Evidencia |', '| --- | --- | --- | --- | --- |',
+    '| E2E | cancelar una reserva | A | `cancel.e2e.mjs › cancela una reserva con su motivo` | la cancelación es el producto; el título lo fija la 0010 |',
+    '| E2E | ver las salas libres | C | `free.e2e.mjs › libres de 12:00 a 14:00 enseña las dos salas` | funcionalidad clave |', ''].join('\n'));
+  const ops = readLf(at('.docs/sdd/steering/operations.md'))
+    .replace(/^- \*\*Suites\*\*:.*$/m, '- **Suites**: `unit` · `node --test test/` · ~1 s · unitario; `e2e` · `node e2e/run.mjs` · ~50 s · E2E')
+    .replace(/^- \*\*Gate de cierre\*\*:.*$/m, '- **Gate de cierre**: `node --test test/ && node scripts/critical-path.mjs && node e2e/run.mjs`')
+    .replace(/^- \*\*Flujos core\*\*:\n(?: {2}- .*\n)+/m, '- **Camino crítico**: `node scripts/critical-path.mjs` · cubre `e2e`; lista en `.docs/sdd/steering/critical-path.md`\n- **Tests de feature**: `node scripts/critical-path.mjs --extras --run`\n');
+  if (!ops.includes('Camino crítico')) s.die('sin «Flujos core» que sustituir en operations.md');
+  writeFileSync(at('.docs/sdd/steering/operations.md'), ops);
+  s.git('add', '-A');
+  s.commit('test: camino crítico');
+}
+// «Dónde se prueba» de la 0010 con camino crítico: la fila del E2E de cancelar ya nombra su título nuevo; lo demás de `e2e` es de feature.
+const WHERE_CP5 = [
+  '- Motivo: por el comando `cancelar`, como `test/cancel.test.js`.',
+  '- Listado: por la salida del comando `canceladas`, en `test/cancel.test.js`.',
+  '- E2E de `cancel.e2e.mjs`: «cancela una reserva con su motivo» es la fila de la lista; «rechaza un motivo fuera de la lista» y «la cancelada sale en canceladas con su motivo», de feature, se borra al cerrar.',
+].join('\n');
+const WHERE_CP4 = [WHERE_CP5,
+  '- Compartir las salas libres: `share-pdf.e2e.mjs › comparte las salas libres`, fila propuesta: C (también en el ✋).',
+  '- Exportar e imprimir en A4: `export-pdf.e2e.mjs` y «imprime en A4» de `print.e2e.mjs`, de feature, se borra al cerrar.',
+  '- `rooms.e2e.mjs`: se revisa su comentario, sin test nuevo.',
+].join('\n');
+// Un E2E de feature dentro de un fichero que ya tenía otro, y un retoque a uno de la base: el cierre no debe borrar lo heredado.
+function featureTests0010() {
+  s.put('e2e/export-pdf.e2e.mjs', e2eFile([['exporta las salas libres', ...FREE]]));
+  s.put('e2e/share-pdf.e2e.mjs', e2eFile([['comparte las salas libres', ...FREE]]));
+  s.put('e2e/print.e2e.mjs', e2eFile([['imprime las salas libres', ...FREE], ['imprime en A4', ...FREE]]));
+  s.put('e2e/rooms.e2e.mjs', `${e2eFile([['lista las salas', ...FREE]])}// revisado en la 0010\n`);
+}
+// «Camino crítico» declarado sin la lista: todo test saldría `fuera:`.
+function dropList() {
+  s.git('rm', '-q', '.docs/sdd/steering/critical-path.md');
+  s.commit('test: sin la lista del camino crítico');
+}
+// La base trae, tras abrir la rama, un E2E de otra rama fuera de la lista.
+function baseBringsTest() {
+  s.git('checkout', '-q', 'develop');
+  s.put('e2e/comments.e2e.mjs', e2eFile([['comenta una reserva', ...FREE]]));
+  s.git('add', '-A');
+  s.commit('test: e2e de comentarios (otra rama)');
+  s.git('checkout', '-q', 'feature/0010-cancel-reason');
 }
 // Un servidor que arrancó otra pasada, desde el código de develop, escucha ya en el puerto de la suite.
 // El tar se lee con una ruta relativa: el tar del PATH puede tomar «D:» como un host.
@@ -575,6 +629,10 @@ const molds = {
   'reservas-flaky': () => (moldReservas(), flakyTest(), done0010()),
   'reservas-gate-red': () => (moldReservas(), affectedGate(), storeRedTest(), done0010()),
   'reservas-e2e': () => (moldReservas(), e2eSuite(), done0010()),
+  'reservas-cp': () => (moldReservas(), e2eSuite(), criticalPath(), done0010(WHERE_CP4, featureTests0010)),
+  'reservas-cp-no': () => (moldReservas(), e2eSuite(), criticalPath(), done0010(WHERE_CP4, featureTests0010), (s.env.TURN2 = 'No la pego. Sigue con el cierre.')),
+  'reservas-cp-nolist': () => (moldReservas(), e2eSuite(), criticalPath(), dropList(), done0010(WHERE_CP4, featureTests0010)),
+  'reservas-cp-base': () => (moldReservas(), e2eSuite(), criticalPath(), done0010(WHERE_CP5), baseBringsTest()),
   'reservas-e2e-stale': () => (moldReservas(), e2eSuite(), done0010(), staleServer()),
   'reservas-e2e-busy': async () => (moldReservas(), e2eSuite(), done0010(), await busyPort()),
   'reservas-e2e-refused': () => (moldReservas(), e2eSuite(), serverDiesOnce(), done0010()),
@@ -694,6 +752,9 @@ const tail = architecture ? `${architecture.replace(/\n$/, '').split('\n').slice
 s.save([
   `## petición\n${ASK}\n## entorno al acabar el sujeto\n${envAtEnd}\n`,
   caps,
+  existsSync(at('scripts/critical-path.mjs'))
+    ? `## e2e al acabar\n${files('e2e', /\.e2e\.mjs$/).join('\n')}\n## print.e2e.mjs al acabar\n${existsSync(at('e2e/print.e2e.mjs')) ? readFileSync(at('e2e/print.e2e.mjs'), 'utf8') : 'borrado\n'}## test al acabar\n${files('test', /\.js$/).join('\n')}\n`
+    : '',
   foreign ? `## aplicación ajena en el puerto al acabar el sujeto\n${foreignAtEnd}\n` : '',
   existsSync(join(GH_BIN, 'gh.json')) ? `## llamadas a gh\n${existsSync(join(GH_BIN, 'gh.log')) ? readFileSync(join(GH_BIN, 'gh.log'), 'utf8') : 'ninguna\n'}` : '',
   `## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all', '--graph')}## etiquetas\n${s.git('tag', '-n1')}`,

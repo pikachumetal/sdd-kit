@@ -11,6 +11,7 @@ const ALLOWED_SECTIONS = ['Propósito', 'Requisitos', 'Reglas de la capacidad'];
 const SCENARIO_KEYWORDS = ['GIVEN', 'WHEN', 'THEN'];
 const PURPOSE_MAX_LENGTH = 300;
 const REQUIREMENT_MAX_LENGTH = 500;
+const CAPABILITY_MAX_WORDS = 5000;
 const NONE_LINE = /^(?:-\s*)?Ninguna\b/i;
 const POINTER_TITLE = /^# Capacidad — (.+) \(puntero\)\s*$/i;
 const MARKDOWN_LINK = /\]\(([^)\s]+)\)/g;
@@ -27,6 +28,13 @@ function lengthWarnings(file: Resolved): string[] {
     if (length <= REQUIREMENT_MAX_LENGTH) return [];
     return [`Aviso: ${file.name}: «${title}» tiene ${length} caracteres; el máximo aconsejado es ${REQUIREMENT_MAX_LENGTH}: si ya existe, no lo partas ni lo recortes; si es nuevo, un comportamiento por requisito`];
   });
+}
+
+function sizeWarnings(file: Resolved): string[] {
+  if (file.skipped || file.label) return [];
+  const words = file.lines.join(' ').split(/\s+/).filter(Boolean).length;
+  if (words <= CAPABILITY_MAX_WORDS) return [];
+  return [`Aviso: ${file.name}: tiene ${words} palabras; el máximo aconsejado es ${CAPABILITY_MAX_WORDS}: pártela por propósito con sdd-propose, una capacidad por cosa que hace el usuario`];
 }
 
 function titleProblems(slug: string, lines: string[]): string[] {
@@ -264,7 +272,7 @@ export function validateCapabilities(sddPath: string, artifactPath?: string): Va
   const foreign = files.filter((file) => !isOwn(file)).flatMap((file) => file.problems);
   const skipped = files.filter((file) => file.skipped).map((file) => file.name);
   const validCount = files.filter((file) => !file.problems.length && !file.skipped).length;
-  const warnings = files.filter(isOwn).flatMap(lengthWarnings);
+  const warnings = files.filter(isOwn).flatMap((file) => [...sizeWarnings(file), ...lengthWarnings(file)]);
   if (problems.length) return { lines: problems, code: 1, validCount, foreign, warnings };
   if (!files.length && !artifactPath) return { lines: ['Sin capacidades que validar'], code: 0, validCount, foreign, warnings };
   return { lines: [summaryLine(validCount, skipped)], code: 0, validCount, foreign, warnings };

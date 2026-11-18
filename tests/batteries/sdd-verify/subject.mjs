@@ -31,7 +31,7 @@ const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, en
 const edit = (path, change) => writeFileSync(at(path), change(readLf(at(path))));
 
 // f5 monta su propio molde, hojas.
-if (s.SC !== 'f5') {
+if (!['f5', 'cpt3'].includes(s.SC)) {
   s.copy(join(IMPL, 'mold-reservas'));
   s.putKitMarker(MARKER);
   s.initRepo();
@@ -109,7 +109,7 @@ const BODILESS = ['rm2', 'rm2b'];
 const briefScenario = () => (REMOVED_SCENARIOS.includes(s.SC) ? 'rm' : s.SC.replace(/n$/, ''));
 // El encargo del eje de f3, f3n, f4, f5, f6, f6b, rm1, rm2, rm2b o rm3, compuesto con el texto del kit que se prueba; f3n usa los valores de f3.
 function axisBrief(base, headSha, pkg) {
-  const axis = ['f4', 'f5', 'f6', 'f6b'].includes(s.SC) ? 'code' : 'spec';
+  const axis = ['f4', 'f5', 'cpt3', 'f6', 'f6b'].includes(s.SC) ? 'code' : 'spec';
   const files = s.git('diff', '--name-only', base, 'HEAD', '--', '.', ':(exclude,glob).docs/sdd/specs/**').split('\n').filter(Boolean);
   const adrs = sddCli('decision', 'index', '--path', '.docs/sdd', '--files', ...files);
   const caps = sddCli('capability', 'index', '--path', '.docs/sdd');
@@ -130,9 +130,26 @@ function reviewPackage(base, excludeSpecs) {
   return axisBrief(base, headSha, pkg);
 }
 // La 0024 de hojas: recordar el filtro de estado, con su E2E y los timeouts subidos.
-function hojas0024() {
+const CPT3_FLOWS = /^- \*\*Flujos core\*\*:\n(?: {2}- .*\n)+/m;
+const CPT3_OPS = (ops) => ops.replace(CPT3_FLOWS, '- **Camino crítico**: `node scripts/critical-path.mjs` · cubre `e2e`; lista en `.docs/sdd/steering/critical-path.md`\n- **Tests de feature**: `node scripts/critical-path.mjs --extras --run`\n');
+const CPT3_LIST = [
+  '# Camino crítico — hojas', '',
+  '| Nivel | Camino | Crit. | Test | Evidencia |',
+  '| --- | --- | --- | --- | --- |',
+  '| E2E | sumar una columna | A | `0012-sum-row.spec.ts › la fila de total suma la columna` | el total es el producto |',
+  '| E2E | exportar la hoja a PDF | C | `0015-export-pdf.spec.ts › exporta la hoja a PDF` | funcionalidad clave |', '',
+].join('\n');
+function useCriticalPath(opsChange) {
+  const ops = at('.docs/sdd/steering/operations.md');
+  const changed = opsChange(readLf(ops));
+  if (!changed.includes('Camino crítico')) s.die('sin «Flujos core» que sustituir en el molde hojas');
+  writeFileSync(ops, changed);
+  writeFileSync(at('.docs/sdd/steering/critical-path.md'), CPT3_LIST);
+}
+function hojas0024(opsChange) {
   const fix = join(FIX, 'hojas-0024');
   s.copy(join(HERE, 'mold-hojas'));
+  if (opsChange) useCriticalPath(opsChange);
   s.putKitMarker(MARKER);
   s.initRepo('feat: base del molde hojas');
   const base = s.git('rev-parse', 'HEAD').trim();
@@ -364,6 +381,13 @@ const steps = {
     const base = hojas0024();
     ASK = reviewPackage(base, false);
   },
+  // La 0024 en un hojas con «Camino crítico»: la rama añade además una fila a la lista.
+  cpt3: () => {
+    const base = hojas0024(CPT3_OPS);
+    appendFileSync(at('.docs/sdd/steering/critical-path.md'), '| E2E | recordar el filtro de estado | C | `0024-remember-filter.spec.ts › recuerda el filtro de estado al volver a facturas` | lo pidió el cliente |\n');
+    s.commit('docs(testing): el filtro recordado entra en el camino crítico');
+    ASK = reviewPackage(base, false);
+  },
   f1: () => {
     mkdirSync(at('.docs/sdd/decisions'), { recursive: true });
     cp(join(HERE, '..', 'sdd-propose', 'fixtures', 'adr-0003-bookings-in-memory.md'), '.docs/sdd/decisions/0003-bookings-in-memory.md');
@@ -389,7 +413,7 @@ for (const id of ['f3', 'f3n', 'f4', 'f6', 'f6b', 'sv1']) steps[id] = reviewF3;
 for (const id of REMOVED_SCENARIOS) steps[id] = reviewRemoved;
 steps[s.SC]?.();
 
-const axisSubjects = ['f3', 'f3n', 'f4', 'f5', 'f6', 'f6b', 's1', 's1b', 'sv1', ...REMOVED_SCENARIOS];
+const axisSubjects = ['f3', 'f3n', 'f4', 'f5', 'cpt3', 'f6', 'f6b', 's1', 's1b', 'sv1', ...REMOVED_SCENARIOS];
 if (['v1', ...axisSubjects].includes(s.SC)) s.env.EXTRA_DISALLOWED = 'Agent';
 const turns = { f1: '30', f2: '30', mp1: '30', c2: '30', c3: '30', c4: '30' };
 for (const id of axisSubjects) turns[id] = '25';
@@ -401,7 +425,7 @@ const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
 for (const kept of ['spec', 'plan', 'tasks', 'walkthrough']) keepIf(`${F10}/${kept}.md`, `${kept}.md`);
 for (const test of existsSync(at('test')) ? readdirSync(at('test')).filter((file) => file.endsWith('.js')) : []) keepIf(`test/${test}`, test);
 keepIf('src/app.js', 'app.js');
-if (s.SC === 'f5') s.keep(at('e2e/0024-remember-filter.spec.ts'), '0024-remember-filter.spec.ts');
+if (['f5', 'cpt3'].includes(s.SC)) s.keep(at('e2e/0024-remember-filter.spec.ts'), '0024-remember-filter.spec.ts');
 const sddTemp = at('.temp/sdd');
 for (const plan of existsSync(sddTemp) ? readdirSync(sddTemp).sort() : []) keepIf(`.temp/sdd/${plan}/progress.md`, 'progress.md');
 s.save(`## petición\n${ASK}\n## git status\n${s.git('status', '--short')}## git log\n${s.git('log', '--oneline', '--all')}## commits con sus ficheros\n${s.git('log', '--stat', '--format=--- %h %s', 'develop..HEAD')}`);

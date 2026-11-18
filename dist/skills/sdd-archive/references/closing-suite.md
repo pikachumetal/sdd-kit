@@ -6,6 +6,18 @@ Steps 1 and 6 of `sdd-archive`. With E2E fields in `operations.md` §Testing («
 
 If the suite already ran for this close (the validation names its sha; the closing commit moves `HEAD`, not that), don't run it again, whatever the base did: step 6 repeats only what the base brought. If it hasn't run, with another branch open (item 3 of step 0) or the base ahead (`git rev-list --count HEAD..<remote>/<merge.into>` > 0 after `git fetch`), step 6 runs it once, nothing of it runs before, and your validation record says it runs on the sync merge; otherwise run the closing gate here.
 
+## With «Camino crítico»
+
+Here, before the suite, even one on the sync merge:
+
+1. «Tests de feature» once; a red is a fix pass.
+2. The check; decide by prefix, not exit code. Stop and name it, deleting nothing, on `sin-base:`, a prefix other than `fuera:`, `ya-en-base:`, `lista-tocada:`, `fila-nueva:` or `freno-modificado:`, a non-zero exit with no known prefix, a `cubre` suite missing from «Suites», or `critical-path.md` missing or empty («`Camino crítico` declarado sin `critical-path.md`: no borro nada.»).
+3. A row proposed («Dónde se prueba», `patch.md` §4): ask «¿Pegas en `critical-path.md` la fila `<fila>`? Si no, el cierre borra `<test>`.». No answer: the close waits; in `unattended`, delete it and log row and task sha as debt. Never write it.
+4. Delete only `fuera:` tests of `integración` or `E2E` suites, finding each file in `git diff --name-only <merge-base>` by its path's end (two matches: stop, name both); remove that test (the file, if empty). In the closing commit, with the 4.1 «Tests de feature» line.
+5. The suite on the deleted tree: non-zero is red. A fix pass restarts at 1. In `manual`, 1-2 run before the script.
+
+The final message (after the sync merge, if any): «La base trae `<cuántos>` tests fuera de la lista (`ya-en-base:`): `<test>`[, …]. Recomiendo un patch que los borre; decide el dev-lead.» (ten at most), and the `lista-tocada:`, `fila-nueva:` and `freno-modificado:` lines; no debt row.
+
 ## What runs
 
 «Suites» is in `operations.md` §Testing.

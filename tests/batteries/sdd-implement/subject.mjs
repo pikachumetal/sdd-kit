@@ -66,6 +66,28 @@ const HALF_RED = "import { test } from 'node:test';\nimport assert from 'node:as
   + "test('cancelar sin motivo lo pide', () => {\n  assert.equal(run('cancelar', ['Norte', 'lun']),\n";
 const BROKEN_ON_BRANCH = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
   + "test('salas en orden', () => {\n  assert.equal(run('salas', []), 'Norte, Sur');\n});\n";
+const CPT2_E2E = [
+  "import { test, expect } from '@playwright/test';", '',
+  "test('cancelar una reserva activa', async ({ page }) => {",
+  "  await page.goto('/');",
+  "  await page.getByRole('button', { name: 'Cancelar Norte lun' }).click();",
+  "  await expect(page.getByText('cancelada Norte lun')).toBeVisible();",
+  '});', '',
+].join('\n');
+const CPT2_OPS = [
+  '# Operations — reservas', '', '## Testing', '',
+  '- **Suites**: `unit` · `node --test` · ~1 s · unitario; `e2e` · `npx playwright test` · ~1 min · E2E',
+  '- **Gate de cierre**: `node --test && npx playwright test`',
+  '- **Camino crítico**: `node scripts/critical-path.mjs` · cubre `e2e`; lista en `.docs/sdd/steering/critical-path.md`',
+  '- **Tests de feature**: `node scripts/critical-path.mjs --extras --run`',
+  '- **Retries**: `0` en local', '- **Timeouts**: `por defecto`', '',
+].join('\n');
+const CPT2_LIST = [
+  '# Camino crítico — reservas', '',
+  '| Nivel | Camino | Crit. | Test | Evidencia |',
+  '| --- | --- | --- | --- | --- |',
+  '| E2E | cancelar una reserva | A | `cancel.spec.js › cancelar una reserva activa` | la cancelación es el producto |', '',
+].join('\n');
 const at = (path) => join(s.R, path);
 const OPS = '.docs/sdd/steering/operations.md';
 const CONSTITUTION = '.docs/sdd/steering/constitution.md';
@@ -447,6 +469,16 @@ steps.e1 = () => {
   steps.h1();
   cp('app-task1.js', 'src/app.js');
   cp('cancel-task1.test.js', 'test/cancel.test.js');
+};
+// Camino crítico con E2E y sin test de títulos: la lista es critical-path.md, no «Flujos core».
+steps.cpt2 = () => {
+  s.put('playwright.config.js', "export default { testDir: 'e2e' };\n");
+  s.put('e2e/cancel.spec.js', CPT2_E2E);
+  s.put(OPS, CPT2_OPS);
+  s.put('.docs/sdd/steering/critical-path.md', CPT2_LIST);
+  s.git('add', '-A');
+  s.commit('docs(testing): camino crítico con E2E');
+  s.git('checkout', '-q', '-b', 'feature/0040-cancel-list');
 };
 steps.p1 = steps.t2;
 steps.p4o = steps.p4;

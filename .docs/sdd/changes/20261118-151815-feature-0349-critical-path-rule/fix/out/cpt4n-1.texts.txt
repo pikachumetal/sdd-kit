@@ -1,0 +1,59 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [22]
+El cierre de la 0010 está parado en una decisión tuya sobre el camino crítico. Todavía no he escrito ningún registro, no he borrado ningún test ni he commiteado nada.
+
+**Hecho hasta ahora**
+- **Pre-checks:** el árbol está limpio y `merge --check` da `destino: listo` hacia `develop`. No hay otras ramas `feature/*` ni `patch/*` abiertas. La spec está `approved` y firmada por Laura.
+- **Revisión final:** está limpia y es sobre `7e377d9`. Desde entonces `HEAD` solo añadió 17 líneas de `tasks.md`, que es documentación, así que no lanzo otra.
+- **Tests de feature:** `node scripts/critical-path.mjs --extras --run` pasa los 9 tests de los ficheros tocados (60,2 s, 0 fallos). La salida está en `/tmp/sdd10/extras.txt`.
+- **Check del camino crítico:** sale con exit 1 y solo con prefijos conocidos (`fuera:` y `ya-en-base:`), sin `sin-base:`.
+
+**Tests de feature que el cierre borraría**
+- `cancel.e2e.mjs › rechaza un motivo fuera de la lista`
+- `cancel.e2e.mjs › la cancelada sale en canceladas con su motivo`
+- `export-pdf.e2e.mjs › exporta las salas libres`
+- `print.e2e.mjs › imprime en A4`
+- `share-pdf.e2e.mjs › comparte las salas libres`
+
+El último es el de la fila propuesta C. Los otros cuatro son los que la spec ya marca como «de feature, se borra al cerrar».
+
+**La pregunta**
+¿Pegas en `critical-path.md` la fila `E2E | compartir las salas libres | C | share-pdf.e2e.mjs › comparte las salas libres | <evidencia>`? Si no, el cierre borra `share-pdf.e2e.mjs › comparte las salas libres`.
+
+Yo nunca escribo esa fila, porque la lista es del dev-lead. Si me dices que sí, la pegas tú o me das la evidencia literal. Con la respuesta sigo con el humo de la validación, la suite sobre el árbol ya sin los tests borrados, `walkthrough.md`, las capacidades, el roadmap, el squash del cierre y el merge a `develop`. Esa suite es `node --test test/ && node scripts/critical-path.mjs && node e2e/run.mjs`.
+
+--- [35]
+Sigo en el cierre. Con la suite verde sobre el árbol ya sin los tests de feature, ahora hago el humo real de cada THEN de la spec contra el servidor que he levantado.
+
+--- [43]
+Ahora el retro del cierre.
+
+--- [56]
+La 0010 está fusionada en `develop`. El merge se hizo con `sdd merge`, con `--verified-at 6c58cb9`.
+
+**Decisiones tomadas sin el dev-lead**
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos, y tiene su fila en la deuda. Si es erróneo, el test falla si corre solo o en otro orden.
+- Al cerrar: la fila C de `share-pdf` no se pegó en `critical-path.md`, así que borré ese test.
+
+**Tu instrucción**
+- «No la pego»: borré `share-pdf.e2e.mjs › comparte las salas libres` y no escribí ninguna fila en `critical-path.md`.
+
+**Qué se hizo**
+- **Tests de feature borrados (5):** las dos nuevas de `cancel.e2e.mjs`, `export-pdf.e2e.mjs` entero, `imprime en A4` de `print.e2e.mjs` y `share-pdf.e2e.mjs` entero.
+- **Suite:** corrió sobre el árbol ya sin esos tests y quedó verde: unitaria 5/5, E2E 7/7 en 42,2 s. Gate: `node --test test/` · `node --test test/ && node scripts/critical-path.mjs && node e2e/run.mjs` → unit: corrió 5/5 · e2e: corrió 7/7, sobre el commit de cierre `6c58cb9`.
+- **Humo:** los 4 THEN de la spec con ejecución real contra el servidor. Quedó registrado como `Validación en campo` en el walkthrough.
+- **Base:** estaba `al día`, así que no hubo sync merge ni suite repetida.
+- **Registros:** `walkthrough.md`, la capacidad nueva `bookings`, la fila de la 0010 en `✅` y dos filas en «Por triar» de la deuda. No había `estimation.md`, así que no hay tiempo real que registrar.
+- **Retro:** `Retro: sin señales`.
+
+**Pendiente**
+- La base trae 5 tests E2E fuera de la lista (`ya-en-base:`): `cancel.e2e.mjs › anula una reserva`, `cancel.e2e.mjs › anular sin reserva avisa`, `free.e2e.mjs › reservar cada semana crea la reserva semanal`, `print.e2e.mjs › imprime las salas libres` y `rooms.e2e.mjs › lista las salas`. Recomiendo un patch que los borre; decide el dev-lead.
+- La suite E2E pasa de su presupuesto: 42,2 s frente a 30 s. Es deuda del proyecto y está en la tabla.
+- No hay push: `merge.push` es `false` y el repo no tiene remoto.
+
+**Ticket del kit:** no hay ninguna línea `Retro: … → ticket del kit`. Si quieres el feedback de mejora del kit sobre esta sesión, dilo y lanzo `sdd-feedback`.
+
+**Terminado.** `feature/0010-cancel-reason` fusionada en `develop` (c8d91ca) · push: no hecho: sin remoto
+

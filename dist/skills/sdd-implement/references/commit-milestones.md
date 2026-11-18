@@ -8,9 +8,9 @@ A feature's branch counts its milestones: **opening**, **one commit per plan tas
 | --- | --- | --- | --- |
 | Opening | spec, findings of the spec review, `plan.md`, `tasks.md` (lite: the spec alone) | before writing the first task's RED tests (in Native, before its `sdd task start`); lite: before implementing | `git merge-base HEAD <integration>` |
 | Task N | its RED tests, its implementation, the fixes of its review, its evidence | with its review (and re-review) clean, before dispatching the next one or the final review; in Native, with its completion contract met and before `sdd task done` | the `BASE` you noted before dispatching it (in Native, the one `sdd task start` prints) |
-| Closing | `sdd-archive` documentation, fixes of the final branch review and of the validation, and `tasks.md` with the review lines of the range rewritten without sha | after the closing documentation, before the merge | the last task's commit |
+| Closing | `sdd-archive` documentation, fixes of the final branch review and of the validation, the deletion of the feature tests (with «Camino crítico»), and `tasks.md` with the review lines of the range rewritten without sha | after the closing documentation, before the merge | the last task's commit |
 | Fix (patch) | code, tests and `patch.md` | with the fix verified | `git merge-base HEAD <integration>` |
-| Closing (patch) | `patch.md` with hash and time, roadmap, estimation-log | before the merge | the fix's commit |
+| Closing (patch) | `patch.md` with hash and time, roadmap, estimation-log, the deletion of the fix's feature tests (with «Camino crítico») | before the merge | the fix's commit |
 | Sync merge | the target branch integrated into the feature, with the registries resolved | not squashed | — |
 
 If the dev-lead fixes another shape of commits («three commits in order»), theirs wins over «a single commit» and the milestone isn't squashed. A test in RED goes in the commit of its fix or a later one, never before: a `pre-commit` that runs the suite rejects it, and without it the branch would carry a red commit. The RED is recorded in `patch.md` §4 (in a feature, in its evidence). No `--no-verify` (ticket of patch 0072 §2).

@@ -37,8 +37,8 @@ function markdownFiles(dir: string): string[] {
   });
 }
 
-const describesTheCli = join(repoRoot, '.docs/sdd/capabilities/cli.md');
-const files = scannedRoots.flatMap((root) => markdownFiles(join(repoRoot, root))).filter((file) => file !== describesTheCli);
+const describeTheCli = ['cli.md', 'cli-tasks.md'].map((name) => join(repoRoot, '.docs/sdd/capabilities', name));
+const files = scannedRoots.flatMap((root) => markdownFiles(join(repoRoot, root))).filter((file) => !describeTheCli.includes(file));
 
 interface Claim {
   where: string;

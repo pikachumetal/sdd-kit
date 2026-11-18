@@ -1,0 +1,107 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [6]
+Pre-checks 1–3 limpios (sin cambios sueltos, `merge --check` listo, sin otras ramas abiertas). Ahora el spec, la revisión final y la validación.
+
+--- [17]
+Sin ramas abiertas ni base adelantada: la suite de cierre corre aquí. Levanto el entorno en su propia llamada.
+
+--- [21]
+Suite verde. Ahora el smoke de cada THEN por ejecución real contra el servidor, con una sesión propia.
+
+--- [24]
+Smoke hecho. Antes de presentar el guion ensayo los comandos exactos que copiará la persona.
+
+--- [26]
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada».
+
+El cierre está parado en la validación: `validation.mode` es `manual`, y «ciérrala» es la orden de cerrar, no una validación. No he escrito ningún registro ni he tocado el roadmap.
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos; si es erróneo, el test falla corriendo solo o en otro orden.
+
+**Pre-checks**
+
+- Sin cambios sueltos, `sdd merge --check` listo (`develop`) y ninguna otra rama abierta.
+- Spec `approved`, firmada por Laura.
+- Revisión final limpia sobre `c723044`. Los commits posteriores son solo docs, así que no hace falta re-revisión.
+- El suite corre aquí: no hay remoto ni base adelantada.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | la misma respuesta |
+| `canceladas` | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites** (sobre `85361f5`, entorno levantado por mí y parado después)
+
+- `node --test test/`: 5/5.
+- `node e2e/run.mjs`: 7/7 en 48,1 s.
+- La configuración es la del gate, sin añadidos.
+
+**Pendiente de anotar al cerrar**
+
+- El E2E tardó 48,1 s frente a un presupuesto de 0,5 min (30 s). Abriré una fila en `debt.md`.
+
+**Sin probar**
+
+- Nada.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (queda en el puerto 63343):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validar" "http://localhost:63343/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22viaje%22%5D"
+```
+
+2. Cancelar sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validar" "http://localhost:63343/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+3. Cancelar con un motivo válido → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: validar" "http://localhost:63343/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+4. Listar las canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: validar" "http://localhost:63343/run?cmd=canceladas&args=%5B%5D"
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

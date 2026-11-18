@@ -22,6 +22,9 @@
 - **Motor de producción**: <si los tests usan el motor de base de datos de producción o uno en memoria, y qué no se puede expresar con el segundo>
 - **Temporales**: <dónde deja hoy cada suite sus temporales, según su config o, si no lo fija, el valor por defecto del runner (Playwright sin `outputDir`: `test-results/`), y si no es `.temp/`, la propuesta para llevarlos ahí, p. ej. `e2e` · `test-results/` · propuesta `outputDir: '.temp/playwright'`; si ninguno lo dice, `<suite>` · `no declarado`, sin propuesta; con un «no», solo el sitio>
 
+- **Camino crítico**: <el comando del check del proyecto, completo, · cubre <suites de «Suites» de nivel `integración` o `E2E`>, p. ej. `` `moon run root:critical-path` · cubre `backend:test`, `frontend:e2e` ``; la lista, en `.docs/sdd/steering/critical-path.md`, que solo edita una persona. En la base quedan los unitarios y los tests de la lista; los demás de esas suites son de feature y el cierre los borra · o `ninguno`>
+- **Tests de feature**: <solo con «Camino crítico»: el comando que pasa una vez los tests que el check marca `fuera:`, los que añade la rama, p. ej. `moon run root:critical-path -- --extras --run`>
+
 > Los seis campos siguientes, solo si el proyecto tiene tests E2E; si no, bórralos.
 
 - **Flujos core**: <uno por línea, el flujo en palabras del usuario y su test, p. ej. «emitir una factura · `e2e/invoice.spec.ts` · emite y descarga el PDF», con su `describe › ` si lo tiene, tras el último `·`. Un test de la suite `unitario` los compara con `playwright test --list`; lo demás, una capa más abajo>

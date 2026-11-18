@@ -1,0 +1,51 @@
+--- [2]
+### Strengths
+- The feature is small and readable. `choose` and the load effect are easy to follow. The `Status` type removes the repeated `(typeof STATUSES)[number]`.
+- Both the server endpoint and the E2E helper follow the pattern already in the repo.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+1. **`playwright.config.ts:8-9` raises the timeouts without a reason.** The test timeout goes to `90_000` and the expect timeout to `20_000`. The project E2E section says «Timeouts: por defecto». Nothing in the diff adds a reason to `operations.md`. Remove both lines, or document the reason.
+
+2. **`e2e/0024-remember-filter.spec.ts:1-16` adds E2E tests that name no core flow.** The core flows are sum-row, export-pdf and invoice-status. The new tests don't name any of them.
+   - A test off the list is a feature test the close deletes.
+   - The second test, `el desplegable de estado tiene cuatro opciones`, only counts the `<option>` elements. A component test of `InvoiceList` can cover that. I found no `InvoiceList.test.tsx` in the package, so it should be created.
+   - The first test could also move one layer down, as a component test with `fetch` mocked.
+
+3. **`e2e/0024-remember-filter.spec.ts:6` polls internal state between two user actions.** `expect.poll(() => savedStatus(request))` checks the API between the selection and the navigation, and there is no comment giving a reason.
+   - It hides a real race: `choose` fires the PUT without awaiting it.
+   - Navigating away can happen before the PUT arrives. The remount's GET can then return the old value, and the test would fail the way a user would see it fail.
+   - Remove the poll. If the test then fails, the fix belongs in the app.
+
+4. **`src/invoices/InvoiceList.tsx:115,119` has no error handling and a race on the saved value.**
+   - Neither `fetch` has a `.catch`. If the API is down, the GET leaves an unhandled rejection.
+   - The PUT result is ignored, so a failed save is silent.
+   - If the user picks a status before the GET resolves, the late GET response overwrites that choice.
+   - `saved.value && setStatus(...)` also accepts any string. The code does not check it against `STATUSES`.
+
+5. **`server/api.js:94-96` (possible bug) stores preferences globally, not per user.** The `prefs` map ignores the `x-user` header, while `clipboard` is keyed by `user`. One user's filter would then appear for every other user, and `savedStatus` sends no user. Key it by `user` like the clipboard, or state that the preference is global on purpose.
+
+#### Minor
+- `src/invoices/InvoiceList.tsx:115,119`: the URL `/api/prefs/invoice-status` appears twice, and the e2e helper has it a third time. Name the constant.
+- `src/invoices/InvoiceList.tsx:114-120` (possible Clean Code «error handling separate from business logic» / Ousterhout «hide a design decision»): the persistence code could move into a `useRememberedStatus` hook. The component would then no longer know about the endpoint.
+- `e2e/helpers.ts:53`: `http://localhost:3001` is hardcoded the same way as in the neighbouring helpers, so this is only a consistency note.
+
+### Declined to judge
+- Whether the feature, the persistence in memory on the server and the choice of a server-side preference match the spec. That is the Spec axis.
+- Whether adding the API in `server/api.js` fits the module boundaries. That is the Architecture axis.
+- Whether the commit order, with the feature before the E2E test, follows TDD. That is a process question.
+
+### Recommendations
+- Remove the config timeouts. Replace the E2E tests with a component test of `InvoiceList` with `fetch` mocked, covering the saved value being restored and the four options.
+- Make the preference per user and cover the failure paths.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works on the happy path. It raises timeouts the project doesn't allow, adds non-core E2E tests with a hidden race, and lacks error handling and per-user storage.
+

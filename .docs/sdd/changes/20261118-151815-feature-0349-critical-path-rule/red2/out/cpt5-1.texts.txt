@@ -1,0 +1,90 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [18]
+El servidor de la suite no estaba levantado (conexión rechazada), no es un fallo del código. Leo `e2e-suite.md` para hacer la pasada como manda.
+
+--- [21]
+Levanto el entorno yo, en su propia llamada, y lo compruebo en otra.
+
+--- [32]
+Hay un servidor de otro run (`cpt4-1`, pid 62008) corriendo, y mi `/tmp/sdd0010` puede ser compartido con esa sesión. Compruebo quién escucha en el puerto 55121.
+
+--- [35]
+El puerto 55121 es mío (pid 61268; el otro run usa el 55120), así que el servidor es fiel. Lo que estaba contaminado era el scratch compartido. Repito todo en un directorio privado.
+
+--- [38]
+Los dos tests de feature pasaron una vez. El spec dice que se borran al cerrar, así que los quito de `cancel.e2e.mjs` y compruebo que el check del camino crítico queda en verde.
+
+--- [44]
+Gate en verde (E2E 42,2 s frente a un presupuesto de 0,5 min: eso va a deuda). Me falta el smoke con ejecución real de cada THEN, incluido «sin `--motivo`», que ningún test cubre.
+
+--- [47]
+Los cuatro THEN verificados con ejecución real. Paro el servidor que levanté yo y paso a los registros; leo las referencias que mandan.
+
+--- [53]
+Empiezo por el delta de capacidad con el CLI (nunca a mano).
+
+--- [58]
+Sin ADR candidata y `decision check` en verde. Compruebo los rulings del ledger y luego redacto el walkthrough.
+
+--- [63]
+Ahora la deuda y la fila del roadmap.
+
+--- [66]
+El diff de `cancel.e2e.mjs` es de 12 líneas por solo borrar 2: sospecho que `sed` cambió los finales de línea. Lo compruebo.
+
+--- [69]
+Los finales de línea eran CRLF y `sed` los dejó en LF. Los restauro para que el diff sea solo las dos líneas borradas.
+
+--- [72]
+Finales de línea correctos en los tres ficheros. Ahora la retro, que escribe la línea `Retro:` del walkthrough.
+
+--- [78]
+Registros completos. Paso 5: junto `ac885a1` y el cierre en un solo commit desde el de la última task (`3c9168e`); ningún registro cita `ac885a1`.
+
+--- [80]
+Paso 6: sincronizo la base, en su propia llamada.
+
+--- [83]
+La base traía un commit de otra rama (`8817661`, e2e de comentarios). Miro qué toca para decidir qué corre tras la sincronización.
+
+--- [86]
+La base añadió un test E2E nuevo, que es código. Repito el gate completo sobre el merge de sincronización, con el entorno levantado por mí.
+
+--- [90]
+Verde sobre `01491d1`. Paro mi servidor y paso al merge, leyendo antes el CI de la base según la receta.
+
+--- [93]
+`operations.md` no declara «CI de la base», así que no hay nada que leer. Veo la invocación exacta del merge.
+
+--- [96]
+El gate de merge es `node --test test/` (sin cadenas). La suite completa corrió sobre `01491d1`, que es el `HEAD`, así que lo paso en `--verified-at`. Sin `--push`, porque `merge.push` es `false`.
+
+--- [99]
+🦆 Cancelar una reserva ahora pide un motivo de una lista cerrada: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` muestra «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2 (decisión del ledger, no del dev-lead): el test de `canceladas` reutiliza la cancelación del test anterior en vez de preparar la suya. Lo comprobé en el cierre: suelto falla con `actual: ''`. Está en la deuda con una propuesta de chequeo, que no construí porque habría sido código nuevo tras la revisión final.
+- Quité los dos tests E2E de feature de `e2e/cancel.e2e.mjs`, como pedía la spec, después de pasarlos una vez (5/5).
+
+**Lo que pasó en el cierre**
+
+- **Validación:** modo `field`, la hice yo. Los 4 THEN del smoke tienen ejecución real contra un servidor levantado por mí, incluido «sin `--motivo`», que ningún test cubre. Quedó como `Validación en campo`.
+- **Revisión final:** no relancé nada. El único commit posterior (`ac885a1`) solo tocaba `tasks.md`.
+- **Pasada fallida:** una primera pasada con el entorno caído dio `ERR_CONNECTION_REFUSED`. No cuenta y la repetí con el entorno levantado.
+- **Registros:** capacidad `bookings` creada con `sdd capability merge`, walkthrough, la 0010 en ✅ y dos filas nuevas en «Por triar» de `debt.md`. Tras el último `roadmap check` hice un cambio extra y no lo relancé, solo `decision check`.
+- **Retro:** una señal, `error que cazaría un chequeo`, con salida «chequeo propuesto» en la deuda. No hay señal contra el kit.
+- **Fila 0010:** la fila de la 0010 solo cambió su «Estado».
+
+**Pendiente**
+
+- Gate: `node --test test/ && node scripts/critical-path.mjs && node e2e/run.mjs` → unit: corrió 5/5 · camino crítico: exit 0 · e2e: corrió 8/8 · 49 s · sobre `01491d1`. La sincronización trajo un test E2E nuevo de otra rama (`comments.e2e.mjs`), por eso repetí el gate entero. En el merge, `--verify` quedó omitido: desde `01491d1` solo cambian docs.
+- La suite E2E tarda 42–49 s frente a un presupuesto de 0,5 min (6 s por paso con la traza completa). Está en la deuda y no probé otra configuración, porque el gate va como está declarado.
+- El proyecto no declara estimación, así que no hay tiempo real que registrar.
+
+¿Quieres el ticket de mejora del kit (`sdd-feedback`) de esta sesión? La retro no sacó ninguna línea contra el kit; lo dejo a tu criterio.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (8568264) · push: no hecho: `merge.push` no lo autoriza
+

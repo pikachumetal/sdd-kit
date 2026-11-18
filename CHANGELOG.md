@@ -4,6 +4,23 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [3.0.2] - 2026-11-18
+
+smoke: 2026-11-18 · 0 hallazgos (humo de sdd-archive v1b y t1 sin el panel, 2/2; gates de release)
+
+### Added
+
+- **Feature 0349** — El camino crítico: con «Camino crítico» en `operations.md`, los tests se escriben en el nivel más bajo que ve el fallo, el cierre pasa una vez los tests de feature y borra los que añadió la rama, la revisión final marca el nivel alto y la lista tocada, y en la base quedan los unitarios y `critical-path.md`. → [ref](.docs/sdd/changes/20261118-151815-feature-0349-critical-path-rule/)
+- **Patch 0352** — `sdd capability check` avisa de una capacidad de más de 5.000 palabras para partirla por propósito. → [ref](.docs/sdd/changes/20261118-190500-patch-0352-capability-size-warning/)
+
+### Changed
+
+- **0353** — Las 7 capacidades de más de 5.000 palabras se parten por propósito en 14 nuevas, con los mismos requisitos.
+
+### Removed
+
+- **Patch 0351** — El panel de validación, su plan B y `sdd validation serve`: la validación manual vuelve al guion en texto hasta la 3.1. → [ref](.docs/sdd/changes/20261118-183552-patch-0351-remove-validation-panel/)
+
 ## [3.0.1] - 2026-11-17
 
 smoke: pendiente

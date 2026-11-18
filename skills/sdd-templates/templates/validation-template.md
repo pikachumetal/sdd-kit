@@ -8,7 +8,7 @@
 >
 > **Bloques**: sin lenguaje, que el terminal los pinta de azul. Uno por terminal: un servidor se queda bloqueando y, pegados seguidos, el siguiente comando no corre. Cada comando en su línea y sin puntuación al final, para copiarlo sin tocarlo.
 >
-> Cómo se compone y se ensaya el guion, el entorno y el panel: `dev-validation.md` de `sdd-archive`. Borra los bloques de ayuda (`>`) al redactar.
+> Cómo se compone y se ensaya el guion y el entorno: `dev-validation.md` de `sdd-archive`. Borra los bloques de ayuda (`>`) al redactar.
 
 🦆 <qué cambia para quien usa el producto, con un ejemplo con datos>
 
@@ -30,7 +30,7 @@
 
 - <lo que no pudiste probar y por qué, o «nada»>
 
-> Solo si alguna task tiene «Verificación visual»: su criterio, la salida del detector por viewport y la ruta de cada captura. Solo con guion: la línea `Panel:` de `dev-validation.md`.
+> Solo si alguna task tiene «Verificación visual»: su criterio, la salida del detector por viewport y la ruta de cada captura.
 
 **Guion**
 

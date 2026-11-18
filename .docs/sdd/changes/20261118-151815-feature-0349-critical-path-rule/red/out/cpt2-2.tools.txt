@@ -1,0 +1,120 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\e2e\cancel.spec.js
+<<< 1	import { test, expect } from '@playwright/test';
+2	
+3	test('cancelar una reserva activa', async ({ page }) => {
+4	  await page.goto('/');
+5	  await page.getByRole('button', { name: 'Cancelar Norte lun' }).click();
+6	  await expect(page.getByText('cancelada Norte lun')).toBeVisible();
+7	});
+8	
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0349-critical-path-rule\.temp\kit-red\skills\sdd-tdd\references\writing-e2e.md
+<<< 1	# Writing E2E Tests
+2	
+3	**Load this reference when:** writing, changing or fixing an end-to-end test (Playwright or another runner that drives the real app). It adds to [writing-good-tests.md](writing-good-tests.md) what only an E2E needs.
+4	
+5	## Overview
+6	
+7	An E2E is the most expensive test a project has and the only one that sees what the user sees. It earns its cost by doing what a user does, at the user's pace, on a flow the product exists for.
+8	
+9	In the field, a menu offered the *previous* copy for ~3 s after copying; every E2E of that flow polled the API for the new copy before o
+
+>>> Glob: **/*
+<<< .docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+.docs\sdd\specs\20260915-090000-task-0005-weekly\walkthrough.md
+.docs\sdd\specs\20260917-090000-task-0006-free\spec.md
+.docs\sdd\specs\20260917-090000-task-0006-free\walkthrough.md
+.docs\sdd\specs\20260918-090000-patch-0007-cancel\patch.md
+.docs\sdd\steering\architecture.md
+.docs\sdd\steering\constitution.md
+.docs\sdd\steering\debt.md
+.gitignore
+CHANGELOG.md
+PRODUCT.md
+package.json
+README.md
+ROADMAP.md
+src\app.js
+test\app.test.js
+test\cancel.test.js
+.docs\sdd\sdd-kit.json
+.git\description
+.git\hooks\applypatch-msg.sample
+.git\hooks\commi
+
+>>> Read: <run>\repo\.docs\sdd\steering\critical-path.md
+<<< 1	# Camino crítico — reservas
+2	
+3	| Nivel | Camino | Crit. | Test | Evidencia |
+4	| --- | --- | --- | --- | --- |
+5	| E2E | cancelar una reserva | A | `cancel.spec.js › cancelar una reserva activa` | la cancelación es el producto |
+6	
+
+>>> Read: <run>\repo\.docs\sdd\steering\operations.md
+<<< 1	# Operations — reservas
+2	
+3	## Testing
+4	
+5	- **Suites**: `unit` · `node --test` · ~1 s · unitario; `e2e` · `npx playwright test` · ~1 min · E2E
+6	- **Gate de cierre**: `node --test && npx playwright test`
+7	- **Camino crítico**: `node scripts/critical-path.mjs` · cubre `e2e`; lista en `.docs/sdd/steering/critical-path.md`
+8	- **Tests de feature**: `node scripts/critical-path.mjs --extras --run`
+9	- **Retries**: `0` en local
+10	- **Timeouts**: `por defecto`
+11	
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\package.json
+<<< 1	{"type": "module"}
+2	
+
+>>> Edit: <run>\repo\e2e\cancel.spec.js
+<<< The file <run>\repo\e2e\cancel.spec.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd "<run>/repo" && cat playwright.config.js; npx playwright test 2>&1 | tail -30
+<<< export default { testDir: 'e2e' };
+npm notice run npx
+npm notice run ^"playwright^" test
+Error: Cannot find package '@playwright/test' imported from <run>\repo\e2e\cancel.spec.js
+    at eval (<anonymous>:1:1)
+Error: No tests found
+
+=== RESULTADO (12 turnos, 0.1515222 $)
+Escribí el paso en rojo, pero no pude verlo fallar. El E2E no se ejecuta en este entorno.
+
+**Cambio en `e2e/cancel.spec.js`.** Es un paso más dentro de `cancelar una reserva activa`, sin título nuevo, porque ese test ya es el camino crítico A de `critical-path.md`. Después de comprobar `cancelada Norte lun`:
+```js
+const lista = page.getByRole('list', { name: 'Reservas' });
+await expect(lista).toBeVisible();
+await expect(lista.getByText('Norte lun')).toHaveCount(0);
+```
+Primero exige que la lista exista. Si no, la ausencia de `Norte lun` pasaría en vacío y el test no sería rojo.
+
+**Verify RED: no verificado.**
+- Ejecuté `npx playwright test` y falló con `Cannot find package '@playwright/test'` y `No tests found`. No es un fallo de la funcionalidad, así que no cuenta como rojo.
+- `playwright.config.js` solo define `testDir` y no tiene `webServer`. `src/app.js` es una CLI y no sirve ninguna página, así que tampoco hay una web a la que apuntar.
+- Con el paquete instalado, el test fallaría en `toBeVisible()` de la lista porque la app no tiene esa vista. Es lo esperado, pero no lo he visto.
+
+**Supuesto mío.** El nombre accesible `Reservas` de la lista (`role=list`) es una suposición, porque no hay UI de la que sacarlo. Corrígelo si la spec fija otro locator.
+
+**Antes de pasar a green** hace falta instalar `@playwright/test` y definir cómo se sirve la app (`baseURL` o `webServer`). Esto último es una decisión de la feature, no mía. No implementé nada ni hice commit.

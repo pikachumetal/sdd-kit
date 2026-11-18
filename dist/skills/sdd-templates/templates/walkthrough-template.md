@@ -54,6 +54,7 @@ created: <YYYY-MM-DD>
 - Gate: `<suite unitaria, si «Suites» la declara>` · `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>) · <duración> · configuración: <la del gate | lo que se añadió> · sobre <sha | el commit de cierre, si el cierre junta ese sha> *(sin «Presupuesto E2E» o con `pendiente`, si pasa de 10 min, apúntalo en 4.3 como deuda del proyecto, con la duración)*
 - Entorno de la suite: `<comando>` · <comprobación> → <resultado>, levantado en esta sesión · o `no aplica` *(solo con E2E)*
 - E2E: <duración> de <Presupuesto E2E> *(solo con E2E; si lo pasa, apúntalo en 4.3 como deuda del proyecto)*
+- Tests de feature: `<comando de «Tests de feature»>` → <resultado> · borrados: <ids, uno por línea si son varios> *(solo con «Camino crítico»)*
 - Tanda: <la línea `Tanda:` que diste antes de lanzarla>, <minutos> reales *(si hubo tanda)*
 
 ### 4.2 Smoke / tests

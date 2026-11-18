@@ -1,0 +1,105 @@
+
+>>> Read: <run>/review-final-1cb9997.diff · offset=0 · limit=400
+<<< 0	# Review package: 193fe04..HEAD
+1	
+2	## Commits
+3	1cb9997 test(invoices): e2e de recordar el filtro
+4	d0a0107 feat(invoices): la lista recuerda el último estado elegido
+5	
+6	## Files changed
+7	 e2e/0024-remember-filter.spec.ts | 16 ++++++++++++++++
+8	 e2e/helpers.ts                   |  5 +++++
+9	 playwright.config.ts             |  2 ++
+10	 server/api.js                    |  4 ++++
+11	 src/invoices/InvoiceList.tsx     | 14 +++++++++++---
+12	 5 files changed, 38 insertions(+), 3 deletions(-)
+13	
+14	## Diff
+15	diff --git a/e2e/0024-remember-filter.spec.ts b/e2e/0024-remember-filter.spec.ts
+1
+
+>>> Bash: cd <run>/repo && ls; ls src/invoices; grep -rn -i "timeout" .docs 2>/dev/null | head; git ls-files | grep -i -E "operations|critical-path|test"
+<<< CHANGELOG.md
+e2e/
+package.json
+playwright.config.ts
+PRODUCT.md
+README.md
+ROADMAP.md
+server/
+src/
+InvoiceList.test.tsx
+InvoiceList.tsx
+.docs/sdd/steering/operations.md:22:- **Timeouts**: por defecto
+.docs/sdd/steering/operations.md
+src/invoices/InvoiceList.test.tsx
+
+>>> Bash: cd <run>/repo && cat src/invoices/InvoiceList.test.tsx | head -40; git show --stat HEAD~1 | head
+<<< import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
+import { InvoiceList } from './InvoiceList';
+
+const invoices = [
+  { number: 'F-014', client: 'Norte SL', amount: 120, status: 'emitida' as const },
+  { number: 'F-015', client: 'Sur SA', amount: 80, status: 'cobrada' as const },
+];
+
+describe('InvoiceList', () => {
+  it('filtra por estado', () => {
+    render(<InvoiceList invoices={invoices} />);
+    fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'cobrada' } });
+    expect(screen.queryByText(/F-0
+
+=== RESULTADO (4 turnos, 0.1305023 $)
+### Strengths
+- The change is small and easy to follow. `Status` is extracted as a type, and `choose` keeps the persist call in one place.
+- The server side reuses the existing `json`/`read` helpers and the same routing style as the cells endpoints.
+- The UI text is in Spanish, and the component stays a function with hooks, as the constraints require.
+
+### Issues
+
+#### Critical
+None.
+
+#### Important
+1. **`e2e/0024-remember-filter.spec.ts:1-16`: neither new E2E test names a core flow.**
+   - The core flows are sum column, export PDF, and mark an invoice as paid. Neither test is any of them, so both are feature tests that belong one layer down.
+   - Test 2, "el desplegable… cuatro opciones" (line 33), is plainly visible to a component test. `src/invoices/InvoiceList.test.tsx` already renders `InvoiceList` and queries `Estado`. Move the option-count assertion there.
+   - Test 1, "recuerda el filtro", can also be covered below E2E. A component test of `InvoiceList` with a mocked `fetch` can check that `choose` issues the PUT and that the mount fetch restores the value. A server test can cover `/api/prefs`.
+   - `InvoiceList.test.tsx` has no test of the new persistence behavior at all.
+
+2. **`playwright.config.ts:8-9`: timeouts raised above the declared value, with no reason.**
+   - `operations.md:22` declares `Timeouts: por defecto`. The diff sets `timeout: 90_000` and `expect: { timeout: 20_000 }` globally, and `operations.md` has no entry explaining it.
+   - This hides slowness for every existing test. Revert both, or document the reason in `operations.md`.
+
+3. **`e2e/0024-remember-filter.spec.ts:27`: `expect.poll(() => savedStatus(request))` waits on server state between two user actions, with no comment.**
+   - The test polls the API instead of letting the user flow reveal the failure. If navigating away before the PUT lands loses the preference, that is exactly the bug the test should catch.
+   - The poll masks it. Remove the poll and the `savedStatus` helper (`e2e/helpers.ts:53-56`), or justify them in a comment.
+
+4. **`src/invoices/InvoiceList.tsx:114-120`: persistence has no error handling and two races.**
+   - The mount `fetch` has no `.catch` and no `res.ok` check. If the server is down or returns 404/204 with an empty body, `r.json()` throws an unhandled rejection.
+   - A slow GET can resolve after the user has already picked a status. `setStatus(saved.value)` then overwrites the user's choice.
+   - The PUT in `choose` is fire-and-forget, so a failure is silent and the saved status silently diverges from what the user sees.
+   - Fix: guard the late GET with an ignore flag or by checking whether the user has chosen, add `.catch`, and handle the PUT failure.
+
+5. **`src/invoices/InvoiceList.tsx:115`: the stored value is trusted without validation.**
+   - `saved.value && setStatus(saved.value)` accepts any string. An unknown value leaves the `<select>` showing the wrong option, and `shown` filters everything out (an empty list).
+   - Fix: check `STATUSES.includes(saved.value)` before calling `setStatus`.
+
+#### Minor
+- **`server/api.js:94-96`:** preferences are global, not per user. The `x-user` header is ignored here, although the clipboard and cells code in the same file uses `user`, and the comment at line 3 says state is per user. Two users would share the same filter. If that is intended, a comment saying so would help.
+- **`src/invoices/InvoiceList.tsx:115,119`:** the URL `/api/prefs/invoice-status` is duplicated, and the fetch logic sits inline in the component. A possible Clean Code duplication/SRP smell; extract a small `prefs` client.
+- **`e2e/helpers.ts:54`:** `savedStatus` sends no `x-user` header, while the other helpers do. This is a minor inconsistency.
+
+### Declined to judge
+- Whether remembering the filter should be per user or global. The spec is not in the package, so I only flagged the inconsistency with the rest of the file.
+- Whether `server/api.js` needs its own tests. There is no existing server test setup in the repo, so this is outside the diff's conventions.
+
+### Recommendations
+- Cover persistence with component tests (mocked `fetch`). Keep the E2E suite to the declared core flows.
+- Remove the timeout overrides.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature is simple and works on the happy path. However, the E2E additions break the project's core-flow rule, the timeouts are raised without a reason, and the fetch logic has an overwrite race and no error handling or validation. These need fixing before merge.

@@ -90,7 +90,7 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## Dónde se prueba
 
-> Una línea por comportamiento: dónde se prueba y como qué prueba existente, en la costura existente más alta, y cuantas menos costuras mejor.
+> Una línea por comportamiento: dónde se prueba y como qué prueba existente, en el nivel más bajo que ve el fallo: si un unitario existente ve la regla y su texto, la línea nombra ese unitario. Con «Camino crítico» en `operations.md`, un test de una suite de su alcance va solo si ningún nivel más bajo lo ve, y dice «de feature, se borra al cerrar» o «fila propuesta: <criterio A, B, C o Arnés>», y la fila propuesta va también al ✋.
 
 - <comportamiento>: <superficie y patrón> — p. ej. «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
 

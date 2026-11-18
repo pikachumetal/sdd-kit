@@ -1,0 +1,38 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities) para clasificar el cambio. Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [17]
+Estoy escribiendo la spec en su carpeta (`changes/…-feature-0040-cancel-cutoff`); después probaré el delta sobre una copia y te la presento.
+
+--- [21]
+Añado la línea del resultado de la fusión a ✋ y presento.
+
+--- [23]
+Ahora: esperando tu aprobación de la spec. Queda: tras el «apruebo», escribir el plan y pasar a implementar, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`). No hay review, como pediste.
+
+La spec está en `.docs/sdd/changes/20261118-163603-feature-0040-cancel-cutoff/spec.md`. La rama `feature/0040-cancel-cutoff` ya tiene la 0040 reservada; la he comprobado con `sdd id claim`, sin remoto.
+
+🦆 Hoy, `cancelar Norte lun` anula la reserva siempre. Con el cambio, si hoy es lunes responde «ya no se puede cancelar Norte lun» y la reserva sigue activa. Si hoy es martes o cualquier otro día, `cancelar Norte lun` la cancela como siempre. Por dentro, `cancelBooking` compara el día de la reserva con el de hoy, que se puede inyectar para que los tests no dependan del reloj.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Enfoque:** «hoy» es un tercer parámetro opcional de `cancelBooking` y de `run`, con el día del sistema por defecto. Descarto una variable de entorno y un reloj falso global.
+2. **Días del sistema:** `dom, lun, mar, mie, jue, vie, sab`.
+3. **Solo se bloquea el día de hoy.** Las reservas de días anteriores se cancelan como las posteriores, porque no las mencionaste.
+4. **Hoy sin reserva activa:** responde «sin reserva», no el bloqueo.
+5. **La reserva rechazada sigue activa.**
+6. **`anular` no cambia.**
+7. **Toca un test del camino crítico.** `cancel.test.js › cancelar una reserva activa` (fila A) llama a `run('cancelar', ['Norte','lun'])` sin «hoy», y los lunes dejaría de dar «cancelada». Propongo pasarle `'mar'` como hoy, igual que al unitario equivalente. Lo esperado y la fila de `critical-path.md` no cambian. Si prefieres no tocarlo, queda como riesgo de los lunes.
+8. **Tests nuevos:** solo unitarios, sin test nuevo en `cancel.test.js` ni fila nueva en el camino crítico.
+9. **Texto exacto:** `ya no se puede cancelar <sala> <día>`.
+10. **`PRODUCT.md`:** reescribo «Cancelación» de «antes de 24 h» a «antes del día de la reserva».
+11. **Capacidad nueva:** `booking-cancellation`. La fusión del delta sobre una copia pasó sin rechazos.
+
+Con esta regla, una reserva de mañana a las 08:00 se puede cancelar esta noche aunque falten menos de 24 h. Es lo que decidiste, pero cambia la idea de «24 h».
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. Cambios
+3. Apruebo; escribe el plan y, si sale Native, para antes de la Task 1 para que baje la sesión a gama media (prevé 2 tasks)
+
