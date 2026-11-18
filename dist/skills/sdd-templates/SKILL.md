@@ -33,6 +33,7 @@ A template's text and literals stay as they are.
 | [operations-template.md](templates/operations-template.md) | `.docs/sdd/steering/operations.md` | How it runs and is verified: commands, testing, frontend and environments; no versions |
 | [architecture-template.md](templates/architecture-template.md) | `.docs/sdd/steering/architecture.md` | Anchor document: traced by the init, or by whoever needs it if it was postponed (a feature, `sdd-archive` with a structural learning, `sdd-explore`) |
 | [now-next-later-template.md](templates/now-next-later-template.md) | `ROADMAP.md` at the root | Anchor document: traced by the init; Now, Next and Later with the literal table header, because other skills and `sdd roadmap check` read them |
+| [critical-path-template.md](templates/critical-path-template.md) | `.docs/sdd/steering/critical-path.md` | The tests that stay in the base when `operations.md` declares «Camino crítico»; only a person edits it |
 | [debt-template.md](templates/debt-template.md) | `.docs/sdd/steering/debt.md` | State document of the technical debt: Por triar, En espera and Lista; `sdd-roadmap` writes it when triaging |
 | [roadmap-template.md](templates/roadmap-template.md) | `.docs/sdd/roadmap.md` | **2.x, deprecated: read only by `migrations/v2.3.0.md`; deleted in 4.0.0.** 2.x anchor document: literal sections and table headers |
 | [estimation-template.md](templates/estimation-template.md) | `.docs/sdd/steering/estimation.md` | Project opt-in: activates the estimation module; empty calibration at birth |
