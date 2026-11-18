@@ -1,0 +1,87 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, la nota de comprensión y la spec para tu aprobación, ~5 min.
+
+--- [16]
+Rama creada con la 0012. Ahora leo la plantilla de spec, la pasada de coherencia y la revisión.
+
+--- [24]
+Ahora: pasada de coherencia y escritura de `spec.md`. Queda: probar el delta en una copia, la revisión de la spec y presentártela, ~6 min.
+
+--- [34]
+Revisión de la spec en marcha con un revisor (sonnet). Espero su resultado para integrar los hallazgos antes de presentártela.
+
+--- [40]
+1. Crítico · Delta (Listado de las reservas activas) y «Dónde se prueba» · El escenario de orden da por hecho unos datos (`mar 09:00-10:00`, `lun 14:00-15:00`) que `app.js` no tiene: `bookings` solo trae `Norte lun 10:00-12:00` y no se exporta. La spec deja a la task decidir cómo sembrar los datos, y `cancelar` en la cancelada de `Norte mar` no encuentra nada que cancelar. Los tests de orden y de cancelada no se pueden escribir tal como están. · Decide ahora la forma de sembrar: exportar `bookings` o una función `resetBookings(seed)` en `app.js`. Añade ese cambio al Scope y a la sección de ficheros tocados. Reescribe el escenario de cancelada como «reserva `Norte lun 10:00-12:00` cancelada con `cancelar Norte lun`», que sí existe.
+
+2. Crítico · Delta «Las reservas no activas no se listan» · La reserva anulada sale solo en un `AND` sin GIVEN propio. Pasa si `listBookings` filtra bien, pero también si nadie la siembra. La cancelada `mar 09:00-10:00` no existe en el estado inicial. · Separa en dos escenarios, uno de cancelada y otro de anulada. Cada uno parte de un estado alcanzable (`cancelar Norte lun` y `anular Norte lun`) y comprueba la salida completa.
+
+3. Importante · Delta (ADDED) frente a `PRODUCT.md` y Terminology · `PRODUCT.md` define «Reserva» como «a nombre de quien la pide», pero el listado no muestra quién reserva (decisión 6). La capacidad se llama `bookings` y el término a evitar es «booking». El slug en inglés choca con «Evitar: booking» y con el idioma castellano de la constitución (punto 4). · Justifica el slug en «Decisiones» o cámbialo a `reservas`. Declara la omisión del nombre como decisión de producto, no solo como limitación de los datos.
+
+4. Importante · Delta, escenarios de orden · No hay escenario del orden para un día fuera de la lista (decisión 2: «va al final, en el orden en que se reservó»). Tampoco hay escenario para dos reservas el mismo día con la misma hora de inicio, ni para el orden `mié` o `sáb`. Una regla de la decisión 2 queda sin prueba. · Añade un escenario con un día no estándar y otro con un empate de hora. O elimina la regla del día desconocido si no se necesita.
+
+5. Importante · Delta «Sala sin reservas» · La sala inexistente está como `AND` dentro del escenario de `Sur`. Es otra decisión (la decisión 4 la trata como no error), y una implementación que valide contra `rooms` y lance un error fallaría sin que se note. Falta también el escenario de mayúsculas (`reservas norte`), que la decisión 4 menciona. · Separa en escenarios propios: sala inexistente y sala con mayúscula distinta, cada uno con su GIVEN/WHEN/THEN.
+
+6. Importante · Delta «El comando exige la sala» · Cubre `reservas` sin argumentos, pero no `reservas ""` ni `reservas Norte extra`. Con `run('reservas', [])`, `params[0]` es `undefined`. Además, `run` hace `return 'salas'` por defecto, así que un `reservas` mal enrutado pasaría por la rama equivocada sin avisar. · Añade el caso de argumento vacío y de argumentos sobrantes, o declara en el Scope que se ignoran. Añade en el test que `reservas` no cae en el `return 'salas'`.
+
+7. Importante · Decisiones y Delta (formato de salida) · «Tres líneas» y «imprime solo X» no fijan el separador ni qué pasa con la salida: `run` devuelve una cadena y `console.log` la imprime. La spec dice «devuelve las líneas unidas con salto de línea», pero ningún escenario lo comprueba, así que una lista con comas pasaría con una lectura por ojo. · Escribe el THEN con la cadena exacta, por ejemplo `"lun 10:00-12:00\nlun 14:00-15:00\nmar 09:00-10:00"`, para que el test compare valor a valor.
+
+8. Importante · Reglas de la capacidad · Dos reglas figuran como «no aplica» sin motivo: Límites (¿máximo de líneas?, ¿reservas duplicadas?) y Regla ante conflicto (¿qué pasa con dos reservas solapadas en la misma sala?). `reservar` no se implementa, y `libres` filtra por `slot` sin día, así que el solapamiento es un conflicto real que el listado muestra. · Escribe por qué no aplican, por ejemplo «el listado es de solo lectura y no impide solapes», o define cómo se muestran dos reservas que se pisan.
+
+9. Menor · «Decisiones que he tomado yo» · Hay ítems que son hechos de proceso y no decisiones de producto: 9 (enfoque), 10 (carpeta), 12 (delta probado). La línea 26 menciona «siete puntos» sin que existan siete. Mezclarlos con las decisiones de producto diluye lo que el dev-lead tiene que validar. · Mueve 9, 10 y 12 a Approach o a una nota de proceso, y deja en la lista solo las decisiones con efecto de producto (1 a 6, 11). Corrige «siete puntos».
+
+10. Menor · Intent y Scope · El Intent promete que no se mezclen reservas de otra sala, pero ninguna prueba siembra una reserva de `Sur` para demostrarlo. Con solo `Norte` en los datos, el escenario pasa aunque el filtro por sala falle. · Siembra una reserva activa de `Sur` en el GIVEN del primer escenario y comprueba que no sale en `reservas Norte`.
+
+--- [42]
+Ahora: integro los hallazgos en la spec. Hay dos Críticos aceptados, así que va una segunda ronda con un revisor. Queda: esa ronda y presentarte la spec, ~4 min.
+
+--- [45]
+Segunda ronda de revisión en marcha. Cuando termine, integro lo que salga y te presento la spec.
+
+--- [53]
+1. Importante · Delta, «Orden de la agenda» y decisión 2 · El desempate no se prueba de verdad. Las reservas `lun 15:00-16:00` y `lun 15:00-17:00` se reservaron ya en el orden en que salen. Una ordenación por la cadena completa de la franja, o por hora de fin, también pasa. Pasaría sin implementar «orden de reserva». · Sembrar el empate al revés (`15:00-17:00` primero, `15:00-16:00` después) y esperar `15:00-17:00` antes que `15:00-16:00`.
+2. Importante · Decisión 2 y escenario «Orden de la agenda» · «Un día fuera de la lista va al final, en el orden en que se reservó» no se prueba con dos días desconocidos de horas distintas. Con un solo `xyz` también pasaría ordenar los desconocidos por hora. · Añadir un segundo día desconocido, sembrado con una hora anterior a la del primero, y esperar el orden de reserva.
+3. Importante · Delta, escenario de `reservas Norte extra` · El escenario «El comando exige la sala» mezcla en un `AND` un WHEN distinto (`reservas Norte extra`), que debería ser un caso con su propio GIVEN y su THEN de salida real. Tal como está, nadie dice qué imprime con las reservas sembradas. · Separarlo en un escenario con `Norte` sembrada y THEN con la cadena exacta del listado.
+4. Importante · Dónde se prueba y decisión 12 · Los tests rellenan el `bookings` exportado, que es `const` y se muta (`length = 0` y `push`). La spec no fija el reinicio entre tests. `cancelar` y `anular` mutan el estado, así que un orden de ejecución distinto puede dejar datos sucios. · Decir que cada test vacía y vuelve a sembrar `bookings` (con `splice` o `length = 0`, sin reasignar) antes de ejecutar.
+5. Importante · Decisión 12 y Scope · Exportar `bookings` cambia el contrato del módulo y expone el estado mutable, y no hay ninguna capacidad ni requisito que lo respalde. El Approach A, en cambio, presenta la exportación como «una función más». B ya se descartó con el argumento de «habría que exportar el estado», que es justo lo que A acaba haciendo. · Reconocer la contradicción en Approach (el coste de A incluye exportar el estado) o sembrar mediante una función de test, y anotar en Scope que `bookings` pasa a ser API pública.
+6. Menor · Decisión 5 y escenario de uso · `reservas " "` (sala de solo espacios) o `reservas` con la sala `undefined` frente a `""` no están decididos. Con el código actual `params[0]` solo cubre `undefined` y `""`. · Decir si se recorta el espacio y qué imprime, o dejarlo fuera expresamente.
+7. Menor · Cabecera, «Validación: dev-lead» y Intent · El rol «responsable de sala» no figura en `PRODUCT.md` («no hay más usuarios») y la spec no dice quién puede listar. No hay control de rol, y eso es una decisión implícita, ausente de ✋. · Añadir a ✋ que `reservas` lo puede ejecutar cualquiera, sin distinción de rol, y alinear el rol con `PRODUCT.md`.
+8. Menor · ✋, bloque «Review de spec propuesta» · Lista dos revisores (Dominio y Técnica) y luego «un solo revisor», y el hallazgo corregido sobre «siete puntos» ya no aparece en ningún sitio. Hay incoherencia de proceso. · Dejar una sola línea de review consistente con el despacho real.
+9. Menor · Delta, «Sala que no existe» · El GIVEN «no hay ninguna sala `Oeste`» no se prepara de forma explícita y el resultado es idéntico al de «Sala sin reservas». Es un escenario redundante, no una prueba del comportamiento distinto. · Fijar que el test usa una sala fuera de `rooms` y que `rooms` no se consulta, o fundirlo con el escenario anterior.
+10. Menor · Constitución regla 3 y rama · La rama es `feature/0012-reservas-sala`, no `feature/<id>`, y la spec no lo menciona. · Alinear el nombre de la rama con la regla 3 o anotarlo como excepción.
+
+--- [55]
+Ahora: integro los hallazgos de la segunda ronda (sin tercera ronda, por regla) y te presento la spec.
+
+--- [59]
+Esta es la spec de `reservas <sala>`, lista para que la apruebes. Está en `.docs/sdd/changes/20261118-224954-feature-0012-reservas-sala/spec.md`, en la rama `feature/0012-reservas-sala` y con el estado `draft`. No he escrito plan ni código, y la spec no está aprobada.
+
+**🦆 Qué cambia.** Hoy no hay forma de ver qué tiene reservado una sala. Con esta feature, `reservas Norte` imprime una línea por cada reserva activa de Norte, por ejemplo `lun 10:00-12:00`. Si no tiene ninguna, imprime `sin reservas Norte`. Así el responsable de sala repasa su agenda cada mañana sin ir franja por franja. Por dentro es un comando más en `src/app.js`, con la misma forma que `cancelar` y `anular`.
+
+**Cómo la he llevado:** carril feature, modo full, perfil delegate (el del proyecto). Prevé una sola task. Nada de lo que quedó abierto cambiaba lo que se construye, así que no te he hecho preguntas. Todo lo que no dijiste está en «✋ Decisiones que he tomado yo».
+
+**✋ Decisiones mías que conviene que valides:**
+1. El comando lista las reservas activas de **todos los días**, no solo las de hoy. Tu ejemplo lleva el día y el comando solo recibe la sala.
+2. **Orden de agenda:** por día de la semana (`lun`…`dom`) y luego por hora de inicio.
+3. Las canceladas y las anuladas **no salen**.
+4. Una sala sin reservas y una sala que no existe responden igual: `sin reservas <sala>`. Se distingue mayúscula, como en `cancelar`.
+5. `reservas` sin sala imprime `uso: reservas <sala>`. Ese texto me lo he inventado yo.
+6. Cada línea es solo `<día> <franja>`, sin nombre de quien reserva, porque los datos no lo guardan.
+7. Se crea la capacidad `bookings`, la primera del proyecto. El slug va en inglés por regla del kit, aunque `PRODUCT.md` pide evitar «booking» en el texto de producto.
+8. `src/app.js` pasa a **exportar el array `bookings`** para que los tests puedan sembrar reservas. Hoy solo trae una y ningún comando crea más. Es el coste del enfoque elegido, y lo he dejado dicho en la spec.
+9. Cualquiera puede ejecutar `reservas`, sin control de rol, igual que `cancelar` y `anular` hoy.
+10. La carpeta es `changes/`, como dice el kit, aunque las specs anteriores del proyecto estén en `specs/`.
+
+**Enfoque elegido:** una función `listBookings` exportada junto a `cancelBooking` y `voidBooking`. Descarté un módulo nuevo, porque rompe el fichero único de `architecture.md`, y filtrar dentro de `run`, porque mezcla el despacho con la regla.
+
+**Revisión:**
+- Pasó un revisor (sonnet) y, por dos Críticos aceptados, una segunda ronda.
+- Los Críticos eran que los escenarios partían de datos que no existen y que la reserva anulada no tenía su propio GIVEN.
+- Integré todos los hallazgos salvo dos, que rechacé con motivo escrito: el escenario de sala inexistente (sirve para probar que no se consulta `rooms`) y el nombre de la rama (la regla 3 de la constitución pide `feature/<id>` y la convención del kit le añade el slug).
+- El delta pasa `sdd capability merge` en una copia de `.docs/sdd`; el `capabilities/` del repo no cambia.
+
+**Pregunta para ti.** ¿Apruebas la spec?
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+
+También puedes decirme «apruebo la spec por delegación, nos vemos en la validación». Con 1 sigo con el plan y lo implemento; no paro hasta la validación.
+

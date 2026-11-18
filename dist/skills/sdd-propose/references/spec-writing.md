@@ -6,7 +6,13 @@ You build what you believe the user wants, and that belief is usually thinner th
 
 ## What the spec covers
 
-If neither the user nor the project says why they want it, ask that first, even if you can guess: open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?». Then cover goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to ✋ marked «pendiente».
+Before the first question, sort what the change needs into three piles:
+
+- **Answered**: the request, its «Decisiones ya tomadas», the roadmap row or the project say it. Use it; don't ask.
+- **Minor**: a sensible builder would settle it without changing what gets built (a name, a file, the order of the tasks, an approach the project decides). Decide it; if it shows in the spec, it goes to ✋.
+- **The dev-lead's**: only they can answer it, and the answer changes the spec, the approach or the tasks: the why first, open, «what will you do with it?», not «a spreadsheet, a colleague, a backup?»; then the done criterion, the scope, a request that contradicts the project. Ask it in `pair` and in `delegate`: the profile isn't a «decide for me».
+
+A point under «Abierto» of a launch prompt is never answered, and its proposal isn't a decision: if it's the dev-lead's, the question quotes it as the prompt's. With nothing in the dev-lead's pile, don't ask: write the spec. If they can't answer (the spec approved by delegation, «empieza ya»), each of theirs goes to ✋ marked «pendiente», even the value you chose. Then cover goals, non-goals, and anti-goals (what would make this a failure even if it technically works) as territory, not a script: anchor them in a concrete moment («what would make you wince if I got it wrong?»). What the user says goes to Intent; what they left unanswered, to ✋ marked «pendiente».
 
 Write it so a builder could plan from it without going back to the user:
 
@@ -26,7 +32,7 @@ Approval covers what you showed. A description you haven't written isn't approve
 
 ## Approaches
 
-Once you understand what the user wants, and before the sections or `spec.md`, put the ways of building it in a message of its own, also when the request already fixes what to build («decidido con el dev-lead: …»): what was decided is the what, and the how is still open: the two or three that remain after dropping the weak ones, grounded in what the project does, each with what it trades off, and the one you recommend with its reason. In `pair`, ask which way they want to go and wait. In `delegate` there is no such message, because nobody chooses: the approaches, with what each trades off and why you chose one, go to the spec's Approach, and «✋ Decisiones que he tomado yo» only names the chosen and the discarded ones («Enfoque: A, frente a B y C (ver Approach)»); the spec's stop approves them. With one sensible way, the message, or in `delegate` the Approach, says so and why the others don't fit. The approach chosen, in the message or in the ✋, is the spec's central decision.
+Once you understand what the user wants, and before the sections or `spec.md`, put the ways of building it in a message of its own, also when the request already fixes what to build («decidido con el dev-lead: …»): what was decided is the what, and the how is still open: the two or three that remain after dropping the weak ones, grounded in what the project does, each with what it trades off, and the one you recommend with its reason. In `pair`, ask which way they want to go and wait. In `delegate` the approaches, with what each trades off and why you chose one, go to the spec's Approach, and «✋ Decisiones que he tomado yo» only names the chosen and the discarded ones («Enfoque: A, frente a B y C (ver Approach)»); the spec's stop approves them. With one sensible way, the message, or in `delegate` the Approach, says so and why the others don't fit. The approach chosen, in the message or in the ✋, is the spec's central decision.
 
 ## Design by sections
 

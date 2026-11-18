@@ -1,0 +1,80 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files && cat PRODUCT.md ROADMAP.md .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; ls .docs/sdd/steering .docs/sdd/capabilities; ls node_modules | head -3
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/*.md package.json; cat src/app.js; cat test/app.test.js | head -40; git branch -a
+<<< # Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/skills/sdd-propose/references" && cat nombrado.md; cat spec-writing.md; grep -n "Aviso\|merge.push" control-profiles.md | head
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/cli/bin/sdd.js"; git checkout -b feature/0012-aviso-sala-ocupada && node "$S" id claim --project-root "$PWD"; git status --short; git branch --show-current
+<<< Switched to a new branch 'feature/0012-aviso-sala-ocupada'
+sin remoto: la 0012 vale (contador local)
+feature/0012-aviso-sala-ocupada
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (10 turnos, 0.2003019 $)
+Ahora: dejo la rama `feature/0012-aviso-sala-ocupada` creada (id 0012 reservado) y abro la entrevista de la spec. Queda: una o dos preguntas, la spec con su 🦆 y ✋ para tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido:** cuando alguien reserva una sala y ya tiene muchas reservas activas ese día, la respuesta de `reservar` lleva una segunda línea de aviso. Se cuentan reservas activas de esa sala en ese día (no horas, porque las franjas son texto libre). El aviso por correo (0008) queda fuera. Tests en `test/busy.test.js`.
+
+**Lo que he encontrado en `src/app.js`:** hoy `reservar` no crea ninguna reserva. Solo existe la rama `--cada-semana`, que devuelve el texto fijo `reserva semanal creada`. Sin `--cada-semana`, `reservar` cae en la respuesta por defecto (`salas`). Sin reservas nuevas no hay nada que contar.
+
+❓ **¿Qué hace `reservar` para poder avisar?**
+1️⃣ **`reservar <sala> <día> <franja>` registra la reserva** y responde `reservada Norte lun 14:00-15:00`. Si la sala supera el umbral ese día, añade una segunda línea: `aviso: Norte tiene 4 reservas el lun`. Entra algo de comportamiento nuevo, pero el aviso necesita que `reservar` reserve.
+2️⃣ **Solo avisar dentro de la rama `--cada-semana`.** No cambia qué reserva `reservar`, pero esa rama no lleva día ni franja. No hay día que contar y el aviso queda sin sentido.
+
+➡️ **Recomiendo 1️⃣**, porque el aviso solo tiene sentido cuando la reserva queda registrada y hay día y sala que contar. A cambio, la feature crece: `reservar` pasa a registrar reservas, con su propio test.
+
+Quedan dos puntos que aún no te he preguntado: el valor del umbral y qué responde `reservar` cuando la sala ya está reservada en esa franja.
