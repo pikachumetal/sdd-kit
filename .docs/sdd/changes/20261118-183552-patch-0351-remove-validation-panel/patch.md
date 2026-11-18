@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-18
 branch: patch/0351-remove-validation-panel
-commit: PENDIENTE
+commit: 81a64077c
 ---
 
 # Patch 0351 — quitar el panel de validación hasta la 3.1
@@ -38,12 +38,14 @@ Solución fijada por el dev-lead, 2026-11-18: «hay que quitarlo ya!!! … Quier
 
 | # | Caso | Resultado |
 | --- | --- | --- |
-| 1 | `git grep` de `validation-panel`, `validation serve`, `sddValidationPanel` y `Panel:` en `skills`, `cli/src` y `dist/skills` | sin coincidencias ✅ |\|validation serve\|sddValidationPanel\|Panel:" -- skills cli/src` | PENDIENTE |
-| 2 | `node cli/bin/sdd.js | 1 | `git grep` de `validation-panel`, `validation serve`, `sddValidationPanel` y `Panel:` en `skills`, `cli/src` y `dist/skills` | sin coincidencias ✅ |` | PENDIENTE |
+| 1 | `git grep` de `validation-panel`, `validation serve`, `sddValidationPanel` y `Panel:` en `skills`, `cli/src` y `dist/skills` | sin coincidencias ✅ |
+| 2 | `node dist/cli/bin/sdd.js validation serve` | «comando desconocido: «validation»» ✅ |
+
+Validación por el agente: 2026-11-18 · los dos casos y la gate · el guion en texto de `dev-validation.md` §1-§4 no cambia salvo el registro
 
 ## 5. Tiempo (ligero)
 
-- Esfuerzo real: PENDIENTE
+- Esfuerzo real: ~30 min, aproximado con las marcas de los commits (la sesión corre desde el checkout de `develop`)
 
 ## 6. Delta de capacidad
 
