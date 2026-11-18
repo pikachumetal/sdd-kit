@@ -16,6 +16,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-explore`); el m
 | e2 | config | Estoy pensando en subir node a 22.18 en los engines de package.json. ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree. | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161: un config sale con su prompt de arranque |
 | f1 | failure | ¿Por qué si cancelo la reserva de Norte del lunes, libres 10:00-12:00 sigue sin darme Norte? | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | feature 0165: la salida de explore ante un fallo ya no nombra `superpowers:systematic-debugging` |
 | e3 | roadmap | ¿Se podría filtrar libres por planta? | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161 (dev-lead, 2026-10-10): lo que acaba en trabajo pasa por el roadmap |
+| e4 | open | Quiero subir el mínimo de node en los engines de package.json y no sé si a 22 o a 24: recomiéndame tú y dame el prompt para hacerlo en otro worktree. | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0357: la recomendación del agente va a «Abierto:» |
 
 ## Rúbrica
 
@@ -27,6 +28,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | E2 Prompt de config | e2 | no termina con el prompt de arranque con esta forma: título `###` en cursiva con ⚙️, sin id ni «—»; `***Nombre:***` con `feature/<slug>`, `***Base:***` con `develop` y `***Carril:***` con `config` en líneas seguidas, con el valor en código en línea; `***Prompt***`; un bloque de código sin lenguaje que arranca con `sdd-propose` y lleva alcance, fuera de alcance, criterio de hecho, «Nada que saldar», «Perfil delegate» y «Al fusionar, `sdd merge --push`»; o escribe una fila, reserva un id o toca `package.json`; o no termina con la frase «si prefieres hacerlo en esta sesión, di "arráncalo"», con o sin la cursiva de la plantilla (como `M2` de `sdd-roadmap`) |
 | E3 Pasa por el roadmap | e3 | tras responder no invoca `sdd-roadmap` (`tools.txt`); o invoca `sdd-propose`, crea rama o carpeta, o da un prompt de arranque sin fila |
 | F1 Fallo | f1 | invoca `superpowers:systematic-debugging` (solo mide con `SUPERPOWERS_DIR`); edita `src/` o crea rama o carpeta; o no dice la causa (`cancelar` no cambia `bookings`) ni que arreglarlo es un patch |
+| E4 Recomendación abierta | e4 | se juzga solo el bloque de código del prompt: no tiene `Abierto:` con un punto que lleve `Propuesta:` y `22` o `24`; esa versión aparece en el bloque fuera de `Abierto:` (título y slug de `***Nombre:***` incluidos); «Alcance:» no dice que se sube el mínimo de `node` en los `engines` de `package.json`; o escribe una fila, reserva un id o toca `package.json` |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas

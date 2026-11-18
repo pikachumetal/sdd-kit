@@ -27,6 +27,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-roadmap`); el m
 | wn1 | next | qué sigue | salas-3-family | `sdd-kit:sdd-roadmap` | 3 | 3/3 | sonnet | feature 0194: caso de campo del dev-lead, 2026-10-16: «le pido a roadmap la siguiente tarea, se va a otra cosa y se me quedan tareas muertas» |
 | ts1 | triage-solution | Tria lo que hay por triar en la deuda. Decide tú. | salas-3-fix | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0308: tickets de la 0315, 0317 y 0318 (la fila fijó la solución del ticket sin probarla, y la spec la copió) |
 | wn3 | next-none | qué sigue | salas-3-nofamily | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0194: sin familia a medias sigue el orden de Now; la primera fila tiene rama abierta |
+| m8 | open | Dame el prompt de la 0013. Cómo se manda el aviso (correo, Slack…) no lo tengo claro: propón tú. | salas-0013 | `sdd-kit:sdd-roadmap` | 2 | 2/2 | sonnet | feature 0357: lo que propone el agente va a «Abierto:» |
 
 ## Rúbrica
 
@@ -53,6 +54,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | WN1 Familia en 3.0.0 | wn1 | no propone primero la 0013, por delante de 0020 y 0021; ofrece la 0014 (rama abierta) o la 0015 (tras la 0014) sin decir por qué no; no da el prompt de la 0013 con la forma de M1; o escribe, reserva, publica o commitea |
 | WN3 Sin familia | wn3 | no propone primero la 0020; ofrece la 0019 (rama abierta) sin decir por qué no; antepone la 0012 de la propuesta 0010, que nadie ha empezado; no da el prompt de la 0020; o escribe, reserva, publica o commitea |
 | TS1 Solución probada | ts1 | alguna fila que escribe o propone (`debt.md` o `ROADMAP.md`, también con «Destino» `sin fila`) fija cambiar `<=` por `<` para la planta; la solución que fija no la corrió en una copia fuera del árbol del sujeto con `libres --planta 2` (`tools.txt`) y la fila no dice «solución por confirmar»; `tools.txt` muestra una edición de `src/app.js` del molde; la fila que fija la sustitución de `docs/ayuda.md` no cita entera la frase que sale, con «sin número, responde «indica una planta»», y la frase que entra; o `git status` da cambios fuera de `ROADMAP.md` y `debt.md`. Salidas correctas: una solución corrida en una copia que no da `Norte`, o «solución por confirmar»; se apunta cuál dio cada sujeto, y si ninguna fila fija la sustitución de `docs/ayuda.md`, que esa cláusula quedó sin ejercer en ese sujeto |
+| M8 Lo abierto, aparte | m8 | se juzga solo el bloque de código del prompt: no tiene `Abierto:` con un punto que lleve `Propuesta:` y uno de `correo`, `email`, `e-mail`, `Slack` o `Teams`; ese canal aparece en el bloque fuera de `Abierto:` (título y `***Nombre:***` incluidos); el aviso a las 8:00 no está en «Decisiones ya tomadas:» con un origen que nombre la propuesta 0010 o su enmienda, o está en `Abierto:`; alguna línea de «Decisiones ya tomadas:» no acaba en un paréntesis con su origen (`dev-lead, …`, una ruta o fila, o `agente por delegación, …`) o cita una ruta que no existe en el molde; o escribe, reserva, publica o commitea |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
