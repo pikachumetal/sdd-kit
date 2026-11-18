@@ -43,6 +43,28 @@ function capabilityWith(name: string, requirements: string): string {
   return `# Capacidad — ${name}\n\n## Propósito\n\nReservar salas.\n\n## Requisitos\n\n${requirements}`;
 }
 
+const sizeWarning = (words: number, file = 'bookings.md') =>
+  `Aviso: ${file}: tiene ${words} palabras; el máximo aconsejado es 5000: pártela por propósito con sdd-propose, una capacidad por cosa que hace el usuario`;
+
+function capabilityOfWords(words: number): string {
+  const head = capabilityWith('bookings', '### Reservar una franja\n\n- GIVEN x\n- WHEN y\n- THEN');
+  const filler = words - head.split(/\s+/).filter(Boolean).length;
+  return `${head} ${Array.from({ length: filler }, () => 'z').join(' ')}\n`;
+}
+
+describe('sdd capability check warns about oversized capabilities', () => {
+  it('warns over 5000 words and exits 0', async () => {
+    const result = await checkBookings(capabilityOfWords(5001));
+    expect(result.lines.filter((line) => line.includes('palabras'))).toEqual([sizeWarning(5001)]);
+    expect(result.code).toBe(0);
+  });
+
+  it('stays quiet at 5000 words', async () => {
+    const result = await checkBookings(capabilityOfWords(5000));
+    expect(result.lines.filter((line) => line.includes('palabras'))).toEqual([]);
+  });
+});
+
 describe('sdd capability check warns about long requirements', () => {
   it('warns over 500 characters and exits 0', async () => {
     const content = capabilityWith('bookings', `${sizedRequirement('Reservar una franja', 501)}\n${sizedRequirement('Cancelar una reserva', 500)}`);

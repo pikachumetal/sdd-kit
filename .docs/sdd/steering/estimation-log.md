@@ -320,6 +320,7 @@
 | 2026-11-17 | 0348 | migration | 2.5 | 1.66 | 0.66 | 83426k | 15851k | no aplica | 33.02 | 20261117-162953-feature-0348-move-specs-to-changes |
 | 2026-11-18 | 0349 | docs | 6 | 3 | 0.5 | no medido | no medido | 10.3 | no medido | 20261118-151815-feature-0349-critical-path-rule |
 | 2026-11-18 | 0351 | patch | — | 0.5 | — | — | — | — | — | 20261118-183552-patch-0351-remove-validation-panel |
+| 2026-11-18 | 0352 | patch | — | 0.33 | — | — | — | — | — | 20261118-190500-patch-0352-capability-size-warning |
 
 **Factor de calibración** (ratio mediano real/estimado, 279 artefactos): **0.57** · media 0.72
 
@@ -366,7 +367,7 @@
 | 2.3.4 | 1 | 0.3 | — | — | — |
 | 3.0.0 | 165 | 311.12 | 0.53 | 2197.73 | 2895.59 |
 | 3.0.1 | 1 | 1.66 | 0.66 | — | 33.02 |
-| sin publicar | 2 | 3.5 | 0.5 | 10.3 | — |
+| sin publicar | 3 | 3.83 | 0.5 | 10.3 | — |
 
 > Ver `estimation.md`.
 
