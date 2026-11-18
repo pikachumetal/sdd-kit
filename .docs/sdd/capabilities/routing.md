@@ -303,6 +303,13 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - WHEN el usuario escribe «qué sigue» o «dame la siguiente», sin nombrar ninguna skill
 - THEN la primera skill que se invoca es `sdd-kit:sdd-roadmap`, no `sdd-kit:sdd-explore`
 
+### El prompt de un config deja abierto lo que recomienda el agente
+
+- GIVEN el molde `salas`, con `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
+- WHEN el usuario escribe «Estoy pensando en subir el mínimo de node en los engines de package.json, a 22 o a 24. ¿Rompe algo? Recomiéndame una y dame el prompt para hacerlo en otro worktree.»
+- THEN `sdd-explore` responde con su recomendación y termina con el prompt de arranque en la forma de `launch-prompt-template.md`
+- AND la versión que recomienda va en la sección `Abierto:` del prompt, como `- <punto>. Propuesta: <versión>`, y no aparece en ningún otro sitio del prompt, el título y el slug de `***Nombre:***` incluidos
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: no aplica.
