@@ -100,37 +100,40 @@ function rangeWords(lines, ranges) {
   return ranges.reduce((sum, [from, to]) => sum + words(lines.slice(from - 1, to).join('\n')), 0);
 }
 
+function sweepFile(file) {
+  const lines = readLines(file);
+  const hits = hitsOf(lines);
+  const plan = readingPlan(file, lines, hits);
+  const fileWords = words(lines.join('\n'));
+  const read = rangeWords(lines, plan.ranges);
+  return {
+    mode: plan.mode,
+    read,
+    fileWords,
+    hitRows: hits.map((hit) => `${file}\t${hit.line}\t${hit.marker}`),
+    headingRows: [`\n## ${file} (${fileWords} palabras)\n`, ...headingsOf(lines).map((h) => `- ${h.line}: ${h.text}`)],
+    readingRow: `${file}\t${plan.mode}\t${plan.ranges.map(([a, b]) => `${a}-${b}`).join(';')}\t${read}\t${fileWords}`,
+  };
+}
+
 function sweep() {
   mkdirSync(outDir, { recursive: true });
-  const hitRows = ['file\tline\tmarker'];
-  const headingRows = [];
-  const readingRows = ['file\tmode\tranges\twords_read\twords_file'];
-  const totals = { entero: 0, seccion: 0, contexto: 0, indice: 0, read: 0, all: 0 };
-  for (const file of skillFiles()) {
-    const lines = readLines(file);
-    const hits = hitsOf(lines);
-    const plan = readingPlan(file, lines, hits);
-    const fileWords = words(lines.join('\n'));
-    const read = rangeWords(lines, plan.ranges);
-    hits.forEach((hit) => hitRows.push(`${file}\t${hit.line}\t${hit.marker}`));
-    headingRows.push(`\n## ${file} (${fileWords} palabras)\n`, ...headingsOf(lines).map((h) => `- ${h.line}: ${h.text}`));
-    readingRows.push(`${file}\t${plan.mode}\t${plan.ranges.map(([a, b]) => `${a}-${b}`).join(';')}\t${read}\t${fileWords}`);
-    totals[plan.mode] += 1;
-    totals.read += read;
-    totals.all += fileWords;
-  }
-  writeFileSync(join(outDir, 'hits.tsv'), hitRows.join('\n') + '\n');
-  writeFileSync(join(outDir, 'headings.md'), '# Encabezados por fichero\n' + headingRows.join('\n') + '\n');
-  writeFileSync(join(outDir, 'reading.tsv'), readingRows.join('\n') + '\n');
-  console.log(`ficheros: ${skillFiles().length} · entero: ${totals.entero} · sección: ${totals.seccion} · contexto: ${totals.contexto} · índice: ${totals.indice} · palabras leídas: ${totals.read} de ${totals.all}`);
+  const results = skillFiles().map(sweepFile);
+  const count = (mode) => results.filter((r) => r.mode === mode).length;
+  const sum = (key) => results.reduce((total, r) => total + r[key], 0);
+  writeFileSync(join(outDir, 'hits.tsv'), ['file\tline\tmarker', ...results.flatMap((r) => r.hitRows)].join('\n') + '\n');
+  writeFileSync(join(outDir, 'headings.md'), '# Encabezados por fichero\n' + results.flatMap((r) => r.headingRows).join('\n') + '\n');
+  writeFileSync(join(outDir, 'reading.tsv'), ['file\tmode\tranges\twords_read\twords_file', ...results.map((r) => r.readingRow)].join('\n') + '\n');
+  console.log(`ficheros: ${results.length} · entero: ${count('entero')} · sección: ${count('seccion')} · contexto: ${count('contexto')} · índice: ${count('indice')} · palabras leídas: ${sum('read')} de ${sum('fileWords')}`);
 }
 
 function readTsv(name) {
   const path = join(here, name);
   if (!existsSync(path)) return [];
-  const [header, ...rows] = readFileSync(path, 'utf8').split(/\r?\n/).filter((row) => row.trim() && !row.startsWith('#'));
-  const columns = header.split('\t');
-  return rows.map((row, index) => ({ row: index + 2, ...Object.fromEntries(row.split('\t').map((cell, i) => [columns[i], cell])) }));
+  const numbered = readFileSync(path, 'utf8').split(/\r?\n/).map((text, index) => ({ text, line: index + 1 }))
+    .filter(({ text }) => text.trim() && !text.startsWith('#'));
+  const columns = numbered[0].text.split('\t');
+  return numbered.slice(1).map(({ text, line }) => ({ row: line, ...Object.fromEntries(text.split('\t').map((cell, i) => [columns[i], cell])) }));
 }
 
 function pieceError(piece, fileSet) {
@@ -140,7 +143,8 @@ function pieceError(piece, fileSet) {
   if (!(from >= 1 && to >= from && to <= readLines(piece.file).length)) return `rango fuera del fichero: ${piece.from}-${piece.to}`;
   if (!destinations.has(piece.destination)) return `destino no válido: ${piece.destination}`;
   if (!piece.reason?.trim()) return 'sin motivo';
-  if (!Number.isInteger(Number(piece.hook_words))) return `hook_words no es un entero: ${piece.hook_words}`;
+  if (!/^\d+$/.test(piece.hook_words ?? '')) return `hook_words no es un entero: ${piece.hook_words}`;
+  if (Number(piece.hook_words) > 0 && !piece.hook_text?.trim()) return 'enganche sin texto';
   return null;
 }
 
@@ -169,8 +173,9 @@ function skillOf(file) {
 }
 
 function piecesTable(pieces) {
-  const header = '| Skill | Fichero | Líneas | Destino | Motivo | Palabras | Enganche |\n| --- | --- | --- | --- | --- | --- | --- |';
-  const rows = pieces.map((p) => `| ${skillOf(p.file)} | \`${p.file.split('/').slice(1).join('/')}\` | ${p.from}-${p.to} | ${p.destination} | ${p.reason} | ${pieceWords(p)} | ${p.hook_words} |`);
+  const header = '| Skill | Fichero | Líneas | Destino | Motivo | Palabras | Enganche (palabras estimadas · texto) |\n| --- | --- | --- | --- | --- | --- | --- |';
+  const hook = (p) => (Number(p.hook_words) > 0 ? `${p.hook_words} · ${p.hook_text}` : '—');
+  const rows = pieces.map((p) => `| ${skillOf(p.file)} | \`${p.file.split('/').slice(1).join('/')}\` | ${p.from}-${p.to} | ${p.destination} | ${p.reason} | ${pieceWords(p)} | ${hook(p)} |`);
   return ['### Piezas', '', header, ...rows].join('\n');
 }
 
@@ -224,15 +229,22 @@ function readingSummary() {
   const hitLinesOnly = new Set(readFileSync(join(outDir, 'hit-lines-only.txt'), 'utf8').split(/\r?\n/).filter(Boolean));
   const count = (mode) => rows.filter((r) => r.mode === mode).length;
   const read = rows.filter((r) => !hitLinesOnly.has(r.file)).reduce((sum, r) => sum + Number(r.words_read), 0);
-  return `lectura: entero ${count('entero')} · sección ${count('seccion') - hitLinesOnly.size} · solo la línea del acierto ${hitLinesOnly.size} · contexto ${count('contexto')} · índice ${count('indice')} · palabras leídas por sección o entero: ${read} de ${rows.reduce((sum, r) => sum + Number(r.words_file), 0)}`;
+  return `lectura: entero ${count('entero')} · sección ${count('seccion') - hitLinesOnly.size} · solo la línea del acierto ${hitLinesOnly.size} · contexto ${count('contexto')} · índice ${count('indice')} · palabras leídas (entero, sección y contexto): ${read} de ${rows.reduce((sum, r) => sum + Number(r.words_file), 0)}`;
 }
 
-function squares(rows, pieces) {
-  const kitWords = skillFiles().reduce((sum, file) => sum + words(readLines(file).join('\n')), 0);
+function budgetTotals() {
+  const source = readFileSync(join(repoRoot, 'cli', 'test', 'kit', 'word-budget.test.ts'), 'utf8');
+  return new Map([...source.matchAll(/'([\w-]+)': \{ skillMd: \d+, total: (\d+) \}/g)].map((m) => [m[1], Number(m[2])]));
+}
+
+function squareErrors(rows, pieces) {
+  const budgets = budgetTotals();
   const leaving = pieces.filter((p) => p.destination !== 'queda').reduce((sum, p) => sum + pieceWords(p), 0);
-  const todayOk = rows.reduce((sum, r) => sum + r.today, 0) === kitWords;
-  const outOk = rows.reduce((sum, r) => sum + r.out, 0) === leaving;
-  return todayOk && outOk;
+  const errors = rows.filter((r) => !budgets.has(r.skill) || r.today > budgets.get(r.skill))
+    .map((r) => `${r.skill}: hoy ${r.today} frente al tope ${budgets.get(r.skill) ?? 'ausente'} de word-budget.test.ts`);
+  if (rows.length !== budgets.size) errors.push(`skills medidas ${rows.length} frente a ${budgets.size} con tope`);
+  if (rows.reduce((sum, r) => sum + r.out, 0) !== leaving) errors.push('la suma por skill de lo que sale no es la de las piezas');
+  return errors;
 }
 
 function table() {
@@ -248,9 +260,10 @@ function table() {
   writeFileSync(join(outDir, 'tables.md'), tables.join('\n\n') + '\n');
   console.log(readingSummary());
   console.log(`piezas: ${pieces.length} · sin destino: 0 · solapes: 0`);
-  const ok = squares(rows, pieces);
-  console.log(`cuadra: ${ok ? 'sí' : 'no'}`);
-  if (!ok) process.exit(1);
+  const errorsOfSquare = squareErrors(rows, pieces);
+  errorsOfSquare.forEach((error) => console.error(error));
+  console.log(`cuadra: ${errorsOfSquare.length ? 'no' : 'sí'}`);
+  if (errorsOfSquare.length) process.exit(1);
 }
 
 const commands = { sweep, table };
