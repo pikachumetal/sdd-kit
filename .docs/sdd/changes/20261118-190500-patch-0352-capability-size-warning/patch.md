@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-18
 branch: patch/0352-capability-size-warning
-commit: PENDIENTE
+commit: 330bad3fd
 ---
 
 # Patch 0352 — aviso de capacidad de más de 5.000 palabras

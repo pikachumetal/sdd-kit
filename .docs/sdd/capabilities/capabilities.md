@@ -242,6 +242,13 @@ Cómo nace, qué contiene y cómo se fusiona una capacidad en los proyectos que 
 - AND un `REMOVED` cuyo título ya no está, en una capacidad que ya no tenía requisitos, no la vacía esta fusión: escribe `ya no estaba` y no para
 - AND la línea `- Retiradas:` lleva el nombre y el motivo, vale en una spec y en un `patch.md`, y su capacidad lleva su subsección en el delta como las demás; sin motivo, escribe `spec.md: «bookings» está en «Retiradas» sin motivo: escríbelo tras el nombre, con raya`, sale con 1 y no escribe
 
+### Una capacidad de más de 5.000 palabras da un aviso
+
+- GIVEN `bookings.md` con 5.001 palabras
+- WHEN se ejecuta `sdd capability check --path .docs/sdd`
+- THEN escribe `Aviso: bookings.md: tiene 5001 palabras; el máximo aconsejado es 5000: pártela por propósito con sdd-propose, una capacidad por cosa que hace el usuario` y sale con 0
+- AND con 5.000 palabras no avisa
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: `.docs/sdd/capabilities/`, un fichero por capacidad; el índice lo genera `sdd capability index` al vuelo y no se guarda en ningún fichero.
