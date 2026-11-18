@@ -274,7 +274,7 @@ const CP1_LIST = [
   '# Camino crítico — reservas', '',
   '| Nivel | Camino | Crit. | Test | Evidencia |',
   '| --- | --- | --- | --- | --- |',
-  '| cli | cancelar una reserva | A | `cancel.test.js › cancelar una reserva activa` | la cancelación es el producto |', '',
+  '| integración | cancelar una reserva | A | `cancel.test.js › cancelar una reserva activa` | la cancelación es el producto |', '',
 ].join('\n');
 
 const steps = {
@@ -318,6 +318,7 @@ const steps = {
     const ops = readLf(at('.docs/sdd/steering/operations.md'))
       .replace(/^- \*\*Suites\*\*:.*$/m, '- **Suites**: `unit` · `node --test test/booking.unit.test.js` · ~1 s · unitario; `cli` · `node --test test/app.test.js test/cancel.test.js` · ~1 s · integración')
       .replace(/^(- \*\*Gate de merge\*\*:.*)$/m, '$1\n- **Camino crítico**: `node scripts/critical-path.mjs` · cubre `cli`; lista en `.docs/sdd/steering/critical-path.md`\n- **Tests de feature**: `node scripts/critical-path.mjs --extras --run`');
+    if (!/Camino crítico/.test(ops) || !/unitario; `cli`/.test(ops)) s.die('el molde reservas no tiene «Suites» o «Gate de merge» que sustituir');
     writeFileSync(at('.docs/sdd/steering/operations.md'), ops);
     s.put('.docs/sdd/steering/critical-path.md', CP1_LIST);
     s.commit('docs(testing): camino crítico');

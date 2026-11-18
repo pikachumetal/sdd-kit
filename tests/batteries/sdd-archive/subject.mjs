@@ -73,7 +73,7 @@ function moldReservas() {
   s.commit('feat: base del molde');
   branch('develop');
 }
-// `where` sustituye «Dónde se prueba» de la spec aprobada; `extra` añade ficheros al commit de la Task 2.
+// Con camino crítico, la spec aprobada ya dice qué E2E son de feature: el cierre lo lee de ahí.
 function open0010(where) {
   branch('feature/0010-cancel-reason');
   const spec = approved0010();
@@ -169,12 +169,17 @@ const WHERE_CP4 = [WHERE_CP5,
   '- Exportar e imprimir en A4: `export-pdf.e2e.mjs` y «imprime en A4» de `print.e2e.mjs`, de feature, se borra al cerrar.',
   '- `rooms.e2e.mjs`: se revisa su comentario, sin test nuevo.',
 ].join('\n');
-// En la Task 2 de la 0010: tres E2E de feature, uno dentro de un fichero que ya tenía otro, y un retoque a uno de la base.
+// Un E2E de feature dentro de un fichero que ya tenía otro, y un retoque a uno de la base: el cierre no debe borrar lo heredado.
 function featureTests0010() {
   s.put('e2e/export-pdf.e2e.mjs', e2eFile([['exporta las salas libres', ...FREE]]));
   s.put('e2e/share-pdf.e2e.mjs', e2eFile([['comparte las salas libres', ...FREE]]));
   s.put('e2e/print.e2e.mjs', e2eFile([['imprime las salas libres', ...FREE], ['imprime en A4', ...FREE]]));
   s.put('e2e/rooms.e2e.mjs', `${e2eFile([['lista las salas', ...FREE]])}// revisado en la 0010\n`);
+}
+// «Camino crítico» declarado sin la lista: todo test saldría `fuera:`.
+function dropList() {
+  s.git('rm', '-q', '.docs/sdd/steering/critical-path.md');
+  s.commit('test: sin la lista del camino crítico');
 }
 // La base trae, tras abrir la rama, un E2E de otra rama fuera de la lista.
 function baseBringsTest() {
@@ -625,6 +630,8 @@ const molds = {
   'reservas-gate-red': () => (moldReservas(), affectedGate(), storeRedTest(), done0010()),
   'reservas-e2e': () => (moldReservas(), e2eSuite(), done0010()),
   'reservas-cp': () => (moldReservas(), e2eSuite(), criticalPath(), done0010(WHERE_CP4, featureTests0010)),
+  'reservas-cp-no': () => (moldReservas(), e2eSuite(), criticalPath(), done0010(WHERE_CP4, featureTests0010), (s.env.TURN2 = 'No la pego. Sigue con el cierre.')),
+  'reservas-cp-nolist': () => (moldReservas(), e2eSuite(), criticalPath(), dropList(), done0010(WHERE_CP4, featureTests0010)),
   'reservas-cp-base': () => (moldReservas(), e2eSuite(), criticalPath(), done0010(WHERE_CP5), baseBringsTest()),
   'reservas-e2e-stale': () => (moldReservas(), e2eSuite(), done0010(), staleServer()),
   'reservas-e2e-busy': async () => (moldReservas(), e2eSuite(), done0010(), await busyPort()),

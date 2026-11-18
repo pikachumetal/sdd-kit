@@ -139,16 +139,17 @@ const CPT3_LIST = [
   '| E2E | sumar una columna | A | `0012-sum-row.spec.ts › la fila de total suma la columna` | el total es el producto |',
   '| E2E | exportar la hoja a PDF | C | `0015-export-pdf.spec.ts › exporta la hoja a PDF` | funcionalidad clave |', '',
 ].join('\n');
+function useCriticalPath(opsChange) {
+  const ops = at('.docs/sdd/steering/operations.md');
+  const changed = opsChange(readLf(ops));
+  if (!changed.includes('Camino crítico')) s.die('sin «Flujos core» que sustituir en el molde hojas');
+  writeFileSync(ops, changed);
+  writeFileSync(at('.docs/sdd/steering/critical-path.md'), CPT3_LIST);
+}
 function hojas0024(opsChange) {
   const fix = join(FIX, 'hojas-0024');
   s.copy(join(HERE, 'mold-hojas'));
-  if (opsChange) {
-    const ops = at('.docs/sdd/steering/operations.md');
-    const changed = opsChange(readLf(ops));
-    if (!changed.includes('Camino crítico')) s.die('sin «Flujos core» que sustituir en el molde hojas');
-    writeFileSync(ops, changed);
-    writeFileSync(at('.docs/sdd/steering/critical-path.md'), CPT3_LIST);
-  }
+  if (opsChange) useCriticalPath(opsChange);
   s.putKitMarker(MARKER);
   s.initRepo('feat: base del molde hojas');
   const base = s.git('rev-parse', 'HEAD').trim();

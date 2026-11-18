@@ -8,15 +8,15 @@ If the suite already ran for this close (the validation names its sha; the closi
 
 ## With «Camino crítico»
 
-In order, before the suite:
+Here, before the suite, even one on the sync merge:
 
 1. «Tests de feature» once; a red is a fix pass.
-2. The check; decide by prefix, not exit code. Stop deleting nothing on `sin-base:`, a prefix other than `fuera:`, `ya-en-base:`, `lista-tocada:`, `fila-nueva:` or `freno-modificado:`, a non-zero exit with no known prefix, a `cubre` suite missing from «Suites», or `critical-path.md` missing or empty («`Camino crítico` declarado sin `critical-path.md`: no borro nada.»).
-3. A row proposed by «Dónde se prueba» or `patch.md` §4: ask «¿Pegas en `critical-path.md` la fila `<fila>`? Si no, el cierre borra `<test>`.». No answer: the test stays; in `unattended`, delete it and open a debt row with the row and its task's sha. Never write it.
-4. Delete only the `fuera:` tests of `integración` or `E2E` suites, each file found in `git diff --name-only <merge-base>` by its path's end (two matches: stop); remove that test (the file, if empty). In the closing commit; «4.1 Builds» gets the «Tests de feature» line.
-5. The suite on the deleted tree: any non-zero exit is red. After a fix pass, back to 1. In `manual`, 1-2 run before the script.
+2. The check; decide by prefix, not exit code. Stop and name it, deleting nothing, on `sin-base:`, a prefix other than `fuera:`, `ya-en-base:`, `lista-tocada:`, `fila-nueva:` or `freno-modificado:`, a non-zero exit with no known prefix, a `cubre` suite missing from «Suites», or `critical-path.md` missing or empty («`Camino crítico` declarado sin `critical-path.md`: no borro nada.»).
+3. A row proposed («Dónde se prueba», `patch.md` §4): ask «¿Pegas en `critical-path.md` la fila `<fila>`? Si no, el cierre borra `<test>`.». No answer: the close waits; in `unattended`, delete it and log row and task sha as debt. Never write it.
+4. Delete only `fuera:` tests of `integración` or `E2E` suites, finding each file in `git diff --name-only <merge-base>` by its path's end (two matches: stop, name both); remove that test (the file, if empty). In the closing commit, with the 4.1 «Tests de feature» line.
+5. The suite on the deleted tree: non-zero is red. A fix pass restarts at 1. In `manual`, 1-2 run before the script.
 
-After the sync merge, the final message: «La base trae `<cuántos>` tests fuera de la lista (`ya-en-base:`): `<test>`[, …]. Recomiendo un patch que los borre; decide el dev-lead.» (ten at most), and the `lista-tocada:`, `fila-nueva:` and `freno-modificado:` lines; no debt row.
+The final message (after the sync merge, if any): «La base trae `<cuántos>` tests fuera de la lista (`ya-en-base:`): `<test>`[, …]. Recomiendo un patch que los borre; decide el dev-lead.» (ten at most), and the `lista-tocada:`, `fila-nueva:` and `freno-modificado:` lines; no debt row.
 
 ## What runs
 

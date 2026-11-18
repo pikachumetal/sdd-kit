@@ -112,7 +112,7 @@ Subagent (sdd-kit:effort-high, model: sonnet):
 <!-- kit: 0312 -->
     **E2E tests.** With the fields of «Project E2E» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
     - with «Flujos core», a new E2E test that names none of them: what no core flow covers is tested one layer down;
-    - with «Camino crítico», never «names no core flow»: a test off the list is a feature test the close deletes. Instead, a new test whose behavior a lower level can see: search the repo for a unit or component test of the code it exercises (`RoomPicker.tsx` → `RoomPicker.test.tsx`), and name it in the finding; and any change of the diff to `critical-path.md`, which only a person edits;
+    - with «Camino crítico», «names no core flow» is no finding: a test off the list is a feature test the close deletes. A new test whose behavior a lower level can see is: run `git ls-files "*<Name>.test.*"` for the code it exercises (`RoomPicker.tsx` → `RoomPicker.test.tsx`) and name the hit in the finding; and any change of the diff to `critical-path.md`, which only a person edits;
     - a retry or a timeout raised above the declared value, in a test or in the runner's config, without its reason written in `operations.md`;
     - a wait on internal state (an API poll, a store, an attribute the user doesn't see) between two user actions, without a reason in a comment. «Without waiting, the app wouldn't have the data yet» is not a reason: it is the failure the test exists to catch. A wait the test needs is not a strength.
 

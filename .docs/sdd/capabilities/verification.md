@@ -27,6 +27,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - THEN con `sdd-parallel-agents` y en segundo plano salen dos revisores sobre `a1b2c3d`: el eje Spec con `sdd-kit:effort-high` + `opus` y el eje Código con `sdd-kit:effort-high` + `sonnet`, cada uno con su vigía de silencio
 - AND el encargo de cada eje lleva la cabecera de `encargo-revision.md` («Code constraints»), su sección «How to review» y el encargo de su eje de `sdd-verify`
 - AND el eje Spec recibe además las rutas de `spec.md` y `plan.md`, la sección `## Review Focus` del plan literal, la lista de ADR `accepted` de `sdd decision index --files <ficheros del diff>`, la salida de `sdd capability index` y el puntero a las líneas `Ruling:` y `minor (deferred)` del ledger; el eje Código, el paquete, «Flujos core», «Retries» y «Timeouts» de `operations.md` §Testing, literales, o `sin E2E declarados`, y la salida de `sdd review comments` en el worktree del revisor; el eje Arquitectura, el paquete y `architecture.md`
+- AND con «Camino crítico» en `operations.md`, el eje Código recibe esa línea literal en lugar de «Flujos core», junto a «Retries» y «Timeouts»
 - AND con `Eje Arquitectura: sí — <frontera>` sale además el eje Arquitectura, con `sdd-kit:effort-high` + `opus`
 - AND con `control.maxParallelAgents: 2` y tres ejes, salen dos y el tercero cuando vuelve uno
 - AND los ejes trabajan en el mismo worktree desanclado `review-<id>-a1b2c3d`
@@ -186,6 +187,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND marca Important los dos timeouts subidos sin motivo escrito en `operations.md`
 - AND marca Important la espera a `savedStatus` entre elegir el estado y salir de la pantalla, sin motivo en un comentario
 - AND con `sin E2E declarados` en el encargo no marca ninguno de los tres
+- AND con «Camino crítico» en el encargo y `StatusSelect.test.ts`, de componente, ya en el repo, no marca que un E2E no nombre un flujo core: marca Important el test que cuenta las cuatro opciones, que ve `StatusSelect.test.ts`, y marca Important todo cambio del diff a `critical-path.md`
 
 ### La línea `Gate:` nombra cada tarea, corrida o saltada
 

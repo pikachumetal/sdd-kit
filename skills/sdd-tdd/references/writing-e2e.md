@@ -10,9 +10,9 @@ In the field, a menu offered the *previous* copy for ~3 s after copying; every E
 
 ## Rule 1: Name the Core Flow
 
-`operations.md` §Testing lists the project's **Flujos core**, each with its test; «Camino crítico» (`critical-path.md`) replaces them, without titles test. New steps extend one of those tests. A behavior of no core flow (a remembered filter, a label) is tested one layer down: a component or endpoint test. A new title is a proposal for the spec's ✋: the list is the dev-lead's. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
+`operations.md` §Testing lists the project's **Flujos core**, each with its test; «Camino crítico» (`critical-path.md`) replaces them. New steps extend one of those tests. A behavior of no core flow (a remembered filter, a label) is tested one layer down: a component or endpoint test. A new title is a proposal for the spec's ✋: the list is the dev-lead's. A load or stress test isn't an E2E, even on a core flow: run it as a smoke measurement, or in a suite the closing gate doesn't run.
 
-With E2E tests, the project keeps a titles test in a suite the close runs whole. Missing, write it with your first E2E, even with the list `pendiente`: every current title goes to «Títulos heredados», born green.
+Without «Camino crítico», E2E tests keep a titles test in a suite the close runs whole. Missing, write it with your first E2E, even with the list `pendiente`: every current title goes to «Títulos heredados», born green.
 
 It runs `playwright test --list --reporter=json` for every `playwright*.config.*` (glob them: a default one hides the rest), with the config's `grep` and `grepInvert` switched off by env; a regex misses dynamic titles. No server starts; ~3 s per config, so a 30 s timeout. Red, naming the title: in neither «Flujos core» nor «Títulos heredados», or a «Títulos heredados» title gone. Compare `describe › title` as a set: one test in two `projects` is one title. A core line's title follows its last `·`. A non-zero exit doesn't throw: red printing the JSON's `errors`, as when a spec reads the environment at load (move it to a fixture, or give the listing what it needs).
 
