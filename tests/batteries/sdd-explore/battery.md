@@ -16,6 +16,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-explore`); el m
 | e2 | config | Estoy pensando en subir node a 22.18 en los engines de package.json. ¿Rompe algo? Si no, dame el prompt para hacerlo en otro worktree. | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161: un config sale con su prompt de arranque |
 | f1 | failure | ¿Por qué si cancelo la reserva de Norte del lunes, libres 10:00-12:00 sigue sin darme Norte? | salas | `sdd-kit:sdd-explore` | 1 | 1/1 | sonnet | feature 0165: la salida de explore ante un fallo ya no nombra `superpowers:systematic-debugging` |
 | e3 | roadmap | ¿Se podría filtrar libres por planta? | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0161 (dev-lead, 2026-10-10): lo que acaba en trabajo pasa por el roadmap |
+| e4 | open | Estoy pensando en subir el mínimo de node en los engines de package.json, a 22 o a 24. ¿Rompe algo? Recomiéndame una y dame el prompt para hacerlo en otro worktree. | salas | `sdd-kit:sdd-explore` | 2 | 2/2 | sonnet | feature 0357: la recomendación del agente va a «Abierto:» |
 
 ## Rúbrica
 
@@ -27,6 +28,7 @@ Una fila por conducta; «falla» con la cita literal o el fichero.
 | E2 Prompt de config | e2 | no termina con el prompt de arranque con esta forma: título `###` en cursiva con ⚙️, sin id ni «—»; `***Nombre:***` con `feature/<slug>`, `***Base:***` con `develop` y `***Carril:***` con `config` en líneas seguidas, con el valor en código en línea; `***Prompt***`; un bloque de código sin lenguaje que arranca con `sdd-propose` y lleva alcance, fuera de alcance, criterio de hecho, «Nada que saldar», «Perfil delegate» y «Al fusionar, `sdd merge --push`»; o escribe una fila, reserva un id o toca `package.json`; o no termina con la frase «si prefieres hacerlo en esta sesión, di "arráncalo"», con o sin la cursiva de la plantilla (como `M2` de `sdd-roadmap`) |
 | E3 Pasa por el roadmap | e3 | tras responder no invoca `sdd-roadmap` (`tools.txt`); o invoca `sdd-propose`, crea rama o carpeta, o da un prompt de arranque sin fila |
 | F1 Fallo | f1 | invoca `superpowers:systematic-debugging` (solo mide con `SUPERPOWERS_DIR`); edita `src/` o crea rama o carpeta; o no dice la causa (`cancelar` no cambia `bookings`) ni que arreglarlo es un patch |
+| E4 Recomendación abierta | e4 | se juzga solo el bloque de código del prompt: no tiene `Abierto:` con un punto que lleve `Propuesta:` y `22` o `24`; esa versión aparece fuera de `Abierto:` como valor nuevo del mínimo (`>=24`, «a 22», «a 24», en el título o el slug de `***Nombre:***`; el mínimo actual `>=22` y un hecho comprobado, como «22.18 en el CI», no cuentan); «Alcance:» no nombra `engines` y `package.json`; o escribe una fila, reserva un id o toca `package.json` |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
@@ -40,3 +42,4 @@ Cada regla de `skills/sdd-explore/SKILL.md`, de dónde viene y qué escenario la
 | Paso 5: feature, patch y spike pasan por `sdd-roadmap`; explore no escribe la fila ni invoca `sdd-propose` | `tests/sdd-explore-0161-red.md`, e3: 2 de 2 traspasaron a `sdd-propose` sin fila; GREEN 2/2 | e3 |
 | Paso 5: un config da su prompt de arranque con la plantilla, sin id, y la frase «arráncalo» | `tests/sdd-explore-0161-red.md`, e2: 2 de 2 dieron un prompt sin la forma fija; GREEN 2/2 | e2 |
 | Red flag: invocar `sdd-propose` para una feature o un patch sin fila | RED e3 (la conducta del traspaso) | e3 |
+| Plantilla del prompt (`launch-prompt-template.md`): lo que recomienda el agente va a `Abierto:` y su valor no sale fuera | feature 0357; RED `e4` 0/2 con la petición original (la versión, decidida: `tests/sdd-explore-0357-red.md`); GREEN `e4` 2/2 con la petición enmendada; `e2` 1/2 en la puerta, igual que con el kit de `develop` (`tests/sdd-explore-0357-green.md`) | e4, e2 |

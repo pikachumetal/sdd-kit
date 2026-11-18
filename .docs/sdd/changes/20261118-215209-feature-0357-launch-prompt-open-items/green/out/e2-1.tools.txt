@@ -1,0 +1,92 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cat package.json; ls -a; cat .nvmrc .node-version .tool-versions 2>/dev/null; ls .github/workflows 2>/dev/null; grep -rn "node" Dockerfile* .github 2>/dev/null | head -30; ls .docs/sdd 2>/dev/null
+<<< {"type": "module", "engines": {"node": ">=22"}}
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: node -v; grep -rniE "node|engines|22" README.md PRODUCT.md ROADMAP.md CHANGELOG.md .docs/sdd/steering .docs/sdd/sdd-kit.json | head -30; find src test -type f | head -30; grep -rnE "node:|process\.|import " src test | head -30
+<<< v26.10.0
+.docs/sdd/steering/constitution.md:4:2. Tests antes que código: `node --test` en verde antes de cada commit.
+.docs/sdd/steering/operations.md:5:- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+.docs/sdd/steering/operations.md:10:- Tests: `node --test` (carpeta `test/`).
+src/app.js
+test/app.test.js
+src/app.js:1:const [command, ...args] = process.argv.slice(2);
+test/app.test.js:1:import { test } from 'node:test';
+test/app.test.js:2:import assert from 'node:assert/strict';
+test/app.test.js:3:import { run } from '../src/app.js';
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0357-launch-prompt-open-items/.temp/k57g/skills/sdd-templates/templates/launch-prompt-template.md"; cat .docs/sdd/steering/operations.md
+<<< # Prompt de arranque — plantilla
+
+> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+>
+> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+>
+> - Cuenta lo que no encuentra mirando: cada decisión con su porqué y su origen. La constitution, el stack y el código los lee solo.
+> - Quien lo recibe toma «Decisiones ya tomadas» como palabra del 
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json 2>&1 | head -1
+<<< {"version": "3.0.2", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+ls: cannot access '.docs/sdd/sdd-kit.local.json': No such file or directory
+
+=== RESULTADO (7 turnos, 0.1243351 $)
+No rompe nada. Lo comprobé así:
+
+- **Código:** `src/app.js` solo usa `process.argv`. `test/app.test.js` solo usa `node:test` y `node:assert/strict`. No hay APIs que dependan de la versión.
+- **Dependencias y lockfile:** `package.json` no tiene dependencias, así que no hay otros `engines` que choquen.
+- **CI y contenedores:** no hay `.github/`, ni Dockerfile, ni `.nvmrc`. No hay nada que fije otra versión de Node.
+- **Entorno local:** tienes Node v26.10.0, que cumple `>=22.18`.
+- **Docs:** `.docs/sdd/steering/operations.md` dice «Node 22». Sigue siendo cierto con 22.18, aunque podría precisarse.
+
+Es un cambio de configuración, sin fila de roadmap ni id. Este es el prompt para pegar en otro worktree:
+
+### *⚙️ Subir el mínimo de Node en engines*
+***Nombre:*** `feature/bump-node-engines`  
+***Base:*** `develop`  
+***Carril:*** `config`
+
+***Prompt***
+
+```
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node en el campo engines de package.json de ">=22" a ">=22.18".
+
+Alcance:
+- package.json: el valor de engines.node pasa a ">=22.18"
+
+Fuera de alcance:
+- Cualquier otro cambio de dependencias o de código: no hacen falta, el código solo usa process.argv y node:test.
+
+Decisiones ya tomadas:
+- El mínimo nuevo es 22.18, porque lo pidió el dev-lead (dev-lead, 2026-11-18: «subir node a 22.18 en los engines de package.json»)
+- No hay que tocar nada más para que siga funcionando, porque se comprobó que no hay CI, Dockerfile, .nvmrc ni dependencias que fijen otra versión de Node (agente por delegación, 2026-11-18)
+
+Abierto:
+- Si operations.md debe decir «Node 22.18» en vez de «Node 22». Propuesta: sí, para que la documentación coincida con engines.
+
+Antes de diseñar, lee:
+- .docs/sdd/steering/operations.md, sección Comandos
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y `package.json` tiene engines.node con el mínimo 22.18.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".
