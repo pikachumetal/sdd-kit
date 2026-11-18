@@ -487,6 +487,8 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN una feature que añade cancelar una reserva por el endpoint y por la pantalla, en un proyecto cuyos tests de reservas van contra el endpoint
 - WHEN el agente escribe la spec
 - THEN la sección «Dónde se prueba» dice «cancelar reserva: por el endpoint, como los tests de reservas actuales; la pantalla, con una captura»
+- AND si el proyecto ya tiene `ReservationServiceTests`, unitario, y la regla de cancelar la ve ese nivel, la línea nombra `ReservationServiceTests`, no el endpoint
+- AND con «Camino crítico: `moon run root:critical-path` · cubre `backend:test`, `frontend:e2e`» en `operations.md`, cada test de esas suites que nombra la línea dice «de feature, se borra al cerrar» o «fila propuesta: <criterio>», y cada fila propuesta está también en el ✋
 
 ### La pregunta del gate de la spec lleva opciones fijas
 
@@ -687,6 +689,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - WHEN una task pide una prueba de estrés de cinco sesiones editando la misma hoja a la vez
 - THEN la prueba no queda en `e2e/` ni en ninguna suite que corra el gate de cierre, aunque ejerza un flujo core
 - AND vive en una suite aparte con su propio comando, o se ejecuta como medida del smoke con su resultado en el walkthrough
+- AND con «Camino crítico», lo mismo aunque ejerza un camino de `critical-path.md`
 
 ### El vigía de una verificación lenta termina con su comando
 
@@ -752,6 +755,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN deja un test en una suite que el cierre corre entera, que sale en rojo y nombra ese título
 - AND con el título en la lista sale en verde
 - AND sin E2E, no se pide ese test
+- AND con «Camino crítico» en `operations.md`, no se pide ese test ni se lee «Flujos core»: la lista es `critical-path.md`
 
 ### El test de títulos E2E nace en verde y su lista de heredados solo encoge
 
@@ -762,6 +766,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - AND con un bucle nuevo sobre `claro` y `oscuro` cuyo `test(...)` tiene de título una plantilla `pinta en ${t}`, sale en rojo y nombra `pinta en claro` y `pinta en oscuro`
 - AND al borrar un test heredado, sale en rojo y nombra su título hasta que se quita su línea
 - AND el título nuevo es propuesta para el ✋: la task no añade su línea a «Títulos heredados»
+- AND con «Camino crítico» en `operations.md`, la task no escribe el test de títulos ni «Títulos heredados»
 
 ### El test de títulos lee los títulos que corre Playwright
 
@@ -770,6 +775,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN compara los 70 títulos de la primera y los 19 distintos de la segunda, salidos de `playwright test --list`
 - AND sin arrancar servidor, `globalSetup` ni navegador
 - AND si `--list` sale con un código distinto de 0, el test sale en rojo con el error de Playwright, no con una lista vacía
+- AND con «Camino crítico» en `operations.md` no aplica: no hay test de títulos
 
 ### Quien depura busca el fallo en la deuda antes de investigar
 
@@ -829,6 +835,14 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN una spec que edita `skills/aviso-cierre/SKILL.md` para que el aviso nombre la fila 0011, y prueba su THEN con la fila de rúbrica `` `text: /pendiente/` ``
 - WHEN la revisa el revisor de la spec
 - THEN devuelve un hallazgo que dice que la fila pasa con un aviso que dice «pendiente» sin nombrar la 0011
+
+### Con camino crítico, la task escribe tests de feature y no toca la lista
+
+- GIVEN `operations.md` con «Camino crítico» que cubre `backend:test`, de nivel `integración`, y `critical-path.md` con 41 filas
+- WHEN una task añade un test de integración de `backend:test` para «exportar a PDF», y la spec no propone fila para él
+- THEN el test se escribe y la task lo corre en su «Verificación»
+- AND `git diff --name-only <merge-base>` de la rama no lista `critical-path.md`
+- AND si la regla la ve un test unitario, la task escribe el unitario y no el de integración
 
 ## Reglas de la capacidad
 

@@ -1,0 +1,61 @@
+--- [7]
+### Strengths
+- The change is small and does what the commit says. `InvoiceList` restores the saved status on mount and saves it on every choice. The `Status` type is extracted and reused.
+- The UI text is in Spanish and the component is a function with hooks, so both code constraints are met.
+- The server's `prefs` endpoints follow the pattern already used for cells and the clipboard.
+- The first E2E test covers the flow end to end: choose a status, navigate away, come back, and check the value. It is on the critical-path list.
+- No comments were added, so there are no document citations and no comments that repeat the code.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`playwright.config.ts:7-8`: timeouts raised above the declared values.**
+   - The diff adds `timeout: 90_000` and `expect: { timeout: 20_000 }`. «Project E2E» declares timeouts «por defecto», and no reason is written in `operations.md` (the diff doesn't touch it).
+   - Raised timeouts hide slow or flaky behaviour in the suite for every test.
+   - Fix: remove both lines, or document the reason in `operations.md`.
+
+2. **`e2e/0024-remember-filter.spec.ts:7`: wait on internal state between two user actions, with no comment.**
+   - `expect.poll(() => savedStatus(request))` polls the API after the select and before the navigation.
+   - Without the poll, the app might not have saved the preference yet. That is the failure the test exists to catch, so it is not a justification.
+   - Fix: delete the poll and the `savedStatus` helper (`e2e/helpers.ts:68-71`). Let the final `toHaveValue('cobrada')` assertion fail if the save was lost. If the save genuinely needs awaiting, make that a UI-visible step and comment why.
+
+3. **`.docs/sdd/steering/critical-path.md:8`: the diff edits the critical-path list.**
+   - The rule says any change to this file is a finding, because only a person edits it. The row was added by the commit `docs(testing): el filtro recordado entra en el camino crítico`.
+   - Fix: revert the row and leave it for a person to add.
+
+#### Minor (Nice to Have)
+4. **`src/invoices/InvoiceList.tsx:11,16`: no error handling on the two `fetch` calls, and the saved value isn't validated.**
+   - The GET has no `.catch` and the PUT result is ignored.
+   - `saved.value && setStatus(...)` accepts any string, so a stale or invalid stored value gives a `<select>` with no matching option.
+   - Fix: check the value against `STATUSES` and catch the errors.
+
+5. **`src/invoices/InvoiceList.tsx:10-12`: possible race.**
+   - If the user picks a status before the GET resolves, the late response overwrites their choice.
+   - Fix: ignore the response if the user has already chosen, or add a cancelled flag in the effect cleanup.
+
+6. **`server/api.js:19-21`: preferences are global rather than per user.**
+   - The existing clipboard and cells code reads `x-user`, but `prefs` is keyed only by name. Every user shares one filter.
+   - Neither the client nor `savedStatus` sends `x-user`.
+   - Fix: key `prefs` by user, as the clipboard does. This is a judgement call, because the spec may intend a global preference.
+
+7. **`src/invoices/InvoiceList.tsx:13-16` (Clean Code, "can you understand each function without reading its body?"): possible test gap.**
+   - `InvoiceList.test.tsx` has no test for loading or saving the preference. `fetch` isn't mocked there either, so the new effect runs against a real `fetch` in that test.
+   - Fix: add a unit test with a mocked `fetch`.
+
+### Declined to judge
+- The second E2E test, `el desplegable de estado tiene cuatro opciones`, is off the critical-path list. Per the «Camino crítico» rule that is not a finding, because the close deletes it. I checked that no existing lower-level test already sees it. `InvoiceList.test.tsx` only has `filtra por estado`.
+- Whether the preference should be per user or global. I raised it as Minor item 6. The spec axis decides the intent.
+- Whether `server/api.js` as a place for preferences is right. That belongs to the Architecture axis.
+- I ran no test, build or lint, as instructed. The main thread should run `node scripts/critical-path.mjs` and the unit suite.
+
+### Recommendations
+Remove the timeouts, the poll and the list edit first. Those three are mechanical and make the E2E part conform to the declared standard.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature code is sound and small. Three E2E-rule violations are Important: raised timeouts without a documented reason, an undocumented poll between user actions, and an edit to `critical-path.md`. The remaining Minor items are robustness points.
+

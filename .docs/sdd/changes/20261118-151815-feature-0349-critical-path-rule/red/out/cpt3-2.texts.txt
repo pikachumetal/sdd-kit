@@ -1,0 +1,36 @@
+--- [3]
+### Strengths
+- The change is small and keeps to the existing style. `InvoiceList` stays a function component with hooks, the UI text is in Spanish, and the `Status` type removes a repeated type expression.
+- The server `prefs` endpoint follows the same pattern as the clipboard and cells endpoints.
+- The main E2E test goes through the real user path: pick a filter, navigate away, come back, and check it is still selected.
+- The critical-path row was added in the same branch, with a test name that matches the spec.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **Timeouts raised without a reason.** `playwright.config.ts:6-7` sets `timeout: 90_000` and `expect: { timeout: 20_000 }`. The declared value is the Playwright default (30 s test, 5 s expect). The diff has no reason in `operations.md`. Remove them, or document why they are needed. A raised timeout can hide the slow load these tests are meant to catch.
+2. **Wait on internal state between two user actions.** `e2e/0024-remember-filter.spec.ts:41` runs `expect.poll(() => savedStatus(request))` between selecting the filter and navigating. It polls an API the user never sees, and there is no comment giving a reason. This is the failure the test should catch: if the PUT is slow, the filter is lost on return. Remove the poll and rely on the final `toHaveValue`. Then the extra `savedStatus` helper in `e2e/helpers.ts:67` is no longer needed either.
+3. **E2E test that names no core flow.** `e2e/0024-remember-filter.spec.ts:47-50` ("tiene cuatro opciones") does not appear in `critical-path.md` and covers no core flow. A static option count belongs one layer down, in a unit or component test. Also, the first test's row (`critical-path.md:8`, evidence «lo pidió el cliente») is added by the same branch that adds the test. Please confirm remembering the filter really is a core flow and not just a feature test.
+4. **Race in `src/invoices/InvoiceList.tsx:128-130`.** The mount `GET` can resolve after the user has already picked a status, and it then overwrites that choice with the saved one. There is no cancellation flag and no `.catch`, so a failed request gives an unhandled rejection. The saved value is also applied without checking it is one of `STATUSES`. Fix: ignore the response if the user has already chosen, and validate the value.
+5. **Preference stored globally, not per user.** `server/api.js:108-110` keys prefs by name only, while the clipboard and cells endpoints use the `x-user` header. In this server, every user shares one «invoice-status». The client also sends no `x-user`. Key the prefs by user.
+
+#### Minor (Nice to Have)
+- `src/invoices/InvoiceList.tsx:133`: the PUT sends no `content-type` header and its result is ignored. The `fetch` calls are inline in the component. A small `prefs` module would hide the URL and make a test easier.
+- Possible Clean Code «error handling separate»: the new fetches have no error path at all.
+
+### Recommendations
+Remove the poll and the timeout changes, move the "cuatro opciones" check down a layer, and make the preference per user.
+
+### Declined to judge
+- Whether `/api/...` resolves to port 3001 from the app on 5173 (a dev proxy?): the diff shows no proxy config, which is an Architecture or Spec matter.
+- Whether the Spec asked for the preference to be per user or global: Spec axis. I flagged only the inconsistency with the neighbouring endpoints.
+- Comments citing documents: the list is empty and I found none in the diff.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works and is clean, but the branch raises the timeouts without a reason, polls internal state in an E2E test, and adds a non-core E2E test. The client also has a mount-time race and the server shares one preference across all users.
+

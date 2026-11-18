@@ -1,0 +1,41 @@
+--- [5]
+### Strengths
+- The feature is small and readable. `Status` is extracted as a type, and the `choose` handler keeps the save next to the state change.
+- The server endpoint is minimal and follows the existing pattern in `api.js`.
+- The first E2E test follows a real user path (choose a filter, navigate away, come back).
+- Retries stay at `0` locally and `2` in CI, as declared.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`.docs/sdd/steering/critical-path.md:7`**: the diff adds a row to the critical-path list. Only a person edits that file, so the commit `4bc5413` has to be reverted and the person decides whether the test goes on the list. The row's evidence text, «lo pidió el cliente», is also a reason that isn't about risk.
+2. **`playwright.config.ts:8-9`**: `timeout: 90_000` and `expect: { timeout: 20_000 }` are raised above the declared "por defecto". `operations.md:20` says `Timeouts: por defecto`, and no reason is written in `operations.md`. Revert both lines, or have a person document a reason. Raised timeouts also hide slowness that the test should surface.
+3. **`e2e/0024-remember-filter.spec.ts:7`**: `expect.poll(() => savedStatus(request))` waits on server state between two user actions, with no reason in a comment. The test would still be valid without it, because it would fail if the app hadn't saved the value before the user navigates. The wait hides a real race in `InvoiceList.tsx`: the `PUT` is fire-and-forget. Remove the poll, together with the `savedStatus` helper (`e2e/helpers.ts:68-71`) if nothing else uses it.
+4. **`e2e/0024-remember-filter.spec.ts:14-17`**: the test «el desplegable de estado tiene cuatro opciones» is a new E2E test that is not on the critical-path list, so the close would delete it. It also checks something a lower level already sees: `src/invoices/InvoiceList.test.tsx` renders `InvoiceList` and queries by the `Estado` label. Move the assertion there, or drop it.
+5. **`src/invoices/InvoiceList.tsx:11-13`**: the `fetch` calls have no error handling. If the `GET` fails, the `.then(r => r.json())` rejection goes unhandled. If it returns a value that isn't a valid `Status`, `setStatus` accepts it without checking, and `select` then shows no matching option. The `PUT` result is ignored. Validate the saved value against `STATUSES`, and add a `.catch`.
+6. **`src/invoices/InvoiceList.tsx` (new `useEffect`)**: there is no unit test for the new behavior. `InvoiceList.test.tsx` doesn't cover restoring or saving the status, which a component test with a mocked `fetch` could check. Only the E2E covers it.
+
+#### Minor (Nice to Have)
+- **`server/api.js:11-13`**: prefs are not keyed per user, unlike the clipboard, which uses `x-user`. One user's filter is shown to every user. The same applies to `savedStatus` in `helpers.ts`, which sends no `x-user` header.
+- **`src/invoices/InvoiceList.tsx`**: the status flashes `todas` before the saved value arrives. This is a minor UX point.
+- **`e2e/helpers.ts:68-71`**: the new `savedStatus` helper hardcodes the URL, as the other helpers do. It is acceptable, but it becomes unused if the poll is removed.
+
+### Declined to judge
+- Whether `0018-invoice-status.spec.ts` already covers part of this feature: it is not in the diff, and the Spec axis owns this.
+- Whether storing the filter on the server rather than in `localStorage` is the right design: that is an Architecture axis decision.
+- The `C` criticality rating of the new row: a person's call.
+
+### Recommendations
+- Revert `4bc5413` and the `playwright.config.ts` timeouts.
+- Keep one E2E test for the feature. Put the remaining assertions in `InvoiceList.test.tsx`.
+- Add error handling and validation for the stored status.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature logic works, but the diff edits the person-owned `critical-path.md`, raises Playwright timeouts without a documented reason, includes an unjustified internal-state poll, and adds an E2E test that a unit test should cover.
+

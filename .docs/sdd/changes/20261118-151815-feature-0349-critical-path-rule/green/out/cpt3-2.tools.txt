@@ -1,0 +1,73 @@
+
+>>> Read: <run>/review-final-381cb2e.diff · offset=0 · limit=400
+<<< 0	# Review package: ea74d79..HEAD
+1	
+2	## Commits
+3	381cb2e docs(testing): el filtro recordado entra en el camino crítico
+4	ba8a587 test(invoices): e2e de recordar el filtro
+5	d3ff429 feat(invoices): la lista recuerda el último estado elegido
+6	
+7	## Files changed
+8	 .docs/sdd/steering/critical-path.md |  1 +
+9	 e2e/0024-remember-filter.spec.ts    | 16 ++++++++++++++++
+10	 e2e/helpers.ts                      |  5 +++++
+11	 playwright.config.ts                |  2 ++
+12	 server/api.js                       |  4 ++++
+13	 src/invoices/InvoiceList.tsx        | 14 +++++++++++---
+14	 6 files changed
+
+=== RESULTADO (2 turnos, 0.11667839999999999 $)
+### Strengths
+- The feature is small and the new `Status` type removes the repeated `(typeof STATUSES)[number]`.
+- The preference API reuses the existing `json` and `read` helpers and the same routing style as the rest of `server/api.js`.
+- The main E2E test goes through the user's path: pick a filter, navigate away, come back, check the value.
+- UI text is in Castellano and the component is a function with hooks, so both code constraints are met.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`playwright.config.ts:7-8` raises the timeouts without a written reason.**
+   - The diff adds `timeout: 90_000` and `expect: { timeout: 20_000 }`; the project declares the default timeouts.
+   - The review package contains no change to `operations.md` giving a reason. If a reason exists elsewhere, I couldn't see it.
+   - Long timeouts hide a slow app or a flaky wait, and they slow every failing test.
+   - Fix: remove both lines, or document the reason in `operations.md`.
+2. **`.docs/sdd/steering/critical-path.md:7` was edited in the diff.** Only a person edits this file, so any change to it by the agent is a finding. Revert the line and leave the row to the person.
+3. **`e2e/0024-remember-filter.spec.ts:41` waits on internal state between two user actions.**
+   - `expect.poll(() => savedStatus(request))` reads the API between the select and the navigation, and there is no comment giving a reason.
+   - The wait masks the race the test should catch: the PUT in `choose` may not have finished when the user navigates away.
+   - Fix: remove the poll and let the final `toHaveValue` check decide. If the poll is needed, comment why.
+4. **`e2e/0024-remember-filter.spec.ts:47-50`: the second test, «cuatro opciones», names no core flow.**
+   - It only checks that the `<select>` has 4 options, which is static markup.
+   - It is not on the critical-path list, so the close will delete it.
+   - It belongs one layer down as a component test. Remove it from E2E.
+5. **`server/api.js:108-110`: the preference is stored globally, not per user.**
+   - `prefs` is keyed only by name, while the file's own comment and the clipboard/cells routes use `x-user`.
+   - One user's filter would show up for every other user, which is not what a reasonable person expects.
+   - Fix: key it by `${user}:${name}`.
+   - The frontend `fetch` calls also send no `x-user` header, so the per-user fix needs that header added (or an existing auth mechanism).
+
+#### Minor (Nice to Have)
+- **`src/invoices/InvoiceList.tsx:128-130`:**
+  - The initial `fetch` has no `.catch`; if it fails there is an unhandled rejection.
+  - A slow GET can overwrite a choice the user made in the meantime.
+  - `saved.value` is cast to `Status` without checking it against `STATUSES`.
+  - `choose`'s PUT is fire-and-forget.
+- **`server/api.js:99`:** `read` does an unguarded `JSON.parse`. A malformed PUT body throws inside the request handler and breaks the server. This code was already there, but the new route uses it.
+- **`e2e/0024-remember-filter.spec.ts:40`:** server state persists between runs and between tests. On a re-run the preference is already `cobrada`, so the test passes without proving anything. Reset the preference in setup.
+
+### Declined to judge
+- Whether the first E2E test duplicates a lower-level test: the package shows no unit tests, so I can't tell.
+- The 20-line function threshold and similar length rows: the functions here are short, so none apply.
+- Whether the row's «C» criticality and its evidence text are right: that is a human decision about the list.
+
+### Recommendations
+- Keep the E2E to the one critical-path test, drop the timeout changes, and make the preference per user.
+- Run the feature's tests (`node scripts/critical-path.mjs --extras --run`) after the fixes. I did not run anything.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works for a single user. The edit to `critical-path.md`, the raised timeouts, the unexplained API poll and the globally shared preference must be fixed first.

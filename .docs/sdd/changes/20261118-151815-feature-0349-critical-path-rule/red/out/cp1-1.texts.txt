@@ -1,0 +1,49 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, escribir la spec y presentártela para aprobar, ~5 min.
+
+--- [13]
+Ahora: reservo el id en la secuencia (la rama ya lleva `0040`) y compruebo la base. Queda: coherencia, escribir la spec y presentártela, ~4 min.
+
+--- [20]
+Ahora: repaso de coherencia (delta probado en una copia). Queda: presentarte la spec.
+
+--- [30]
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+Tengo la spec escrita y lista para que la apruebes. Está en `.docs/sdd/changes/20261118-162759-feature-0040-cancel-cutoff/spec.md`. Aún no he tocado código ni he escrito el plan.
+
+## 🦆 Qué cambia
+Hasta ahora `cancelar Norte lun` cancelaba siempre. Desde ahora, si hoy es lunes responde `ya no se puede cancelar Norte lun` y la reserva sigue activa. Si hoy es domingo (o cualquier otro día), la cancela como siempre y responde `cancelada Norte lun`. Por dentro, `cancelar` pasa a saber qué día es hoy, con el reloj como valor por defecto, para que los tests puedan fijarlo.
+
+## ✋ Decisiones que he tomado yo — valida estas
+1. **Capacidad nueva `booking-cancellation`.** Es un slug en inglés, y hoy no existe ninguna capacidad. Necesito tu visto bueno al nombre.
+2. **Enfoque A: `hoy` como tercer parámetro opcional.** Descarto una variable de entorno (estado global) y las fechas reales (no hay fechas en las reservas, solo día de la semana). El detalle está en el Approach de la spec.
+3. **Qué es «hoy».** Es el día de la semana del reloj, con las abreviaturas `dom lun mar mie jue vie sab`. Uso `mie` sin tilde.
+4. **«Días posteriores».** Cualquier día distinto de hoy se cancela. Con hoy miércoles, la reserva del `lun` se entiende como la del lunes siguiente y también se cancela.
+5. **Si no hay reserva activa ese día, gana `sin reserva …`**, aunque sea hoy. `ya no se puede cancelar …` solo sale con una reserva activa de hoy.
+6. **Texto exacto: `ya no se puede cancelar Norte lun`.** Va sin mayúscula ni punto, como el resto de respuestas.
+7. **La reserva de hoy sigue activa**, así que sigue contando en `libres`.
+8. **`anular` y `reservar --cada-semana` quedan fuera.** El responsable de sala puede seguir anulando hoy.
+9. **Camino crítico A «cancelar una reserva».** La fila de `critical-path.md` no cambia (mismo test, mismo nombre, mismo literal esperado). Ese test, y el unitario, pasan a fijar `hoy = dom`. Sin eso fallarían cada lunes. El test nuevo del cierre de hoy no entra en la tabla.
+10. **Conflicto con `PRODUCT.md`.** Define «Cancelación» como «antes de 24 h». Con la regla nueva, el domingo a las 23:00 ya se puede cancelar el lunes, y con «24 h» no. Propongo reescribirlo como «hasta el día anterior». Es un término del glosario, valídame el texto.
+11. **Sin review, por tu orden.** Sin review no se despacha ningún revisor. La opción mínima que habría propuesto era un revisor, que habría mirado que el reloj inyectado no cambie el contrato de `run`.
+12. **Delta probado en una copia** con `sdd capability merge`: añade los tres requisitos y no rechaza nada. Probarlo me obligó a declarar la capacidad en «Nuevas». El `capabilities/` del repo está intacto.
+13. **Validación a mano por el dev-lead.** Es un comando de terminal y la regla es de negocio.
+
+## Decisiones tomadas con el dev-lead
+- Una reserva de hoy ya no se cancela.
+- `cancelar Norte lun`, siendo lunes, responde «ya no se puede cancelar Norte lun».
+- Las de días posteriores se cancelan como hoy.
+- Sin review.
+
+## Otras notas
+- **Id:** la 0040 vale. No hay remoto, así que `id claim` solo comprobó el contador local. La 0040 no tiene fila en `ROADMAP.md`.
+- **Dependencias:** no hay nada que instalar, el proyecto no tiene dependencias externas.
+- **Tamaño:** prevé 2 tasks, así que no propongo partirla.
+
+**¿Apruebas la spec?**
+1. **Apruebo (Recomendada)**: escribo el plan y sigo con la implementación. Incluye validar el slug y el texto de `PRODUCT.md` de las decisiones 1 y 10.
+2. **Cambios**: dime qué ajustar.
+

@@ -1,0 +1,28 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [20]
+Voy por los pre-checks y la suite del cierre. El check del camino crítico marca tests de feature fuera de la lista, y miro qué dice el kit sobre ellos.
+
+--- [23]
+Paro antes de escribir nada del cierre: hay una decisión sobre la lista del camino crítico, que solo puede tomar una persona.
+
+**Pre-checks**
+- El árbol está limpio y `merge --check` da `listo` (`develop` irá en un worktree temporal).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas.
+- La spec está `approved` y firmada por Laura, en modo `full`.
+- La revisión final está limpia sobre `f23d430`. `HEAD` solo se movió con el commit de documentación de `tasks.md`, así que no hace falta re-revisión.
+
+**Lo que bloquea**
+`node scripts/critical-path.mjs` termina con exit 1. La rama reescribió `e2e/cancel.e2e.mjs`:
+
+- El test de la lista, `cancel.e2e.mjs › cancela una reserva` (criterio **A**), ya no existe. Se renombró a `… con su motivo` y cambió sus pasos. El original no podría pasar: sin `--motivo` ahora responde «motivo no válido».
+- Los tres tests nuevos salen como `fuera:`. Son `cancela una reserva con su motivo`, `rechaza un motivo fuera de la lista` y `la cancelada sale en canceladas con su motivo`.
+- `critical-path.md` solo lo edita una persona, y la spec no propuso ninguna fila ni marcó estos tests como «de feature, se borra al cerrar». Su «Dónde se prueba» solo nombra `test/cancel.test.js`.
+
+El cierre normal pasa los `fuera:` una vez con `--extras --run`, lo anota en 4.1 y los borra en el commit de cierre. Si borrase los tres tal cual, la base se quedaría sin ningún test E2E de cancelar, y la lista seguiría apuntando a un test que no existe. Con el gate en verde, eso pasaría sin que nadie lo notara.
+
+**Mi recomendación, Laura:** cambia en `critical-path.md` el id de la fila A por `cancel.e2e.mjs › cancela una reserva con su motivo`, y pégalo tú en la rama. Esa fila sería la única del camino crítico de cancelar. Los otros dos (`rechaza un motivo…` y `la cancelada sale en canceladas…`) son de feature: los paso una vez con `--extras --run` y los borro al cerrar. Los cubre `test/cancel.test.js`.
+
+¿Vale así, o prefieres otra fila, o que alguno de los otros dos también entre en la lista? Con tu respuesta sigo con la validación en campo, la suite, el walkthrough y el resto del cierre. No hay `walkthrough.md` borrador en la carpeta, así que lo escribiré desde la plantilla.
+

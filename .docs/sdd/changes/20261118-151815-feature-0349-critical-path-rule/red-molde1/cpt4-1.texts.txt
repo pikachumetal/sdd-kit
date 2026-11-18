@@ -1,0 +1,106 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [25]
+Árbol limpio y sin artículo de calidad de código en la constitución. Despacho la re-revisión (opus + high) con su vigilancia de silencio.
+
+--- [32]
+Todavía no he cerrado la 0010: la dejo parada en el pre-check 6, esperando una re-revisión que está en marcha.
+
+**Por qué paro.** La revisión final se hizo sobre `60c8e64`. Después hay tres commits. Uno es `09e5f13`, que añade código de test en los e2e (`export-pdf`, `share-pdf`, `print` y `rooms`). Eso es más que documentación, y `tasks.md` no tiene línea `Re-revisión:`. La regla del cierre exige entonces una re-revisión única de `60c8e64..HEAD` y que no se escriba nada hasta que vuelva.
+
+**Qué he hecho hasta ahora, sin escribir ningún registro:**
+- El árbol está limpio y `sdd merge --check` sale con exit 0 (`develop` irá a un worktree temporal).
+- No hay otras ramas `feature/*` ni `patch/*` abiertas a la vez.
+- La spec está `approved` y firmada por Laura.
+- He despachado la re-revisión (opus + high) sobre `60c8e64..9c653bf`, en el worktree desacoplado `review-0010-9c653bf`, con su vigilancia de silencio.
+
+**Cosas que ya veo en esos commits y que he pedido que mire el revisor:**
+- Los e2e nuevos y modificados no tienen que ver con cancelar con motivo. Se añade `share-pdf.e2e.mjs` y `export-pdf.e2e.mjs`, el test «imprime en A4» en `print.e2e.mjs` y el comentario `// revisado en la 0010` en `rooms.e2e.mjs`.
+- La sección «Dónde se prueba» de la spec los trata como tests de feature (`C`, «se borra al cerrar») o como camino crítico propuesto, y eso hay que cuadrarlo con `critical-path.md` en el cierre.
+
+**Siguiente paso.** Cuando vuelva la re-revisión anoto `Re-revisión:` en `tasks.md` y sigo con la validación. Como el modo es `field`, el humo lo corro yo con la suite. Después vienen los registros, el merge de la capacidad `bookings`, la sincronización con la base y el merge a `develop`.
+
+--- [45]
+### New breakage in the range
+
+1. **Important**: the new E2E tests have nothing to do with 0010. They are at `e2e/share-pdf.e2e.mjs:2`, `e2e/export-pdf.e2e.mjs:2` and `e2e/print.e2e.mjs:3` (`imprime en A4`), all added in `09e5f13`.
+   - **Out of scope.** The spec's Scope (`spec.md:33-34`) covers only `cancelar … --motivo` and `canceladas`. Sharing, exporting and printing are not in the Scope or the behaviour delta. No code for them exists either: `src/app.js` has no share, PDF, export or print command.
+   - **Misleading names.** All three tests run only `['libres', ["12:00-14:00"], 'Norte, Sur']`. "comparte", "exporta" and "en A4" describe behaviour the tests never exercise.
+   - **They duplicate existing tests.** They repeat the critical-path C row step for step (`free.e2e.mjs › libres de 12:00 a 14:00 enseña las dos salas`). `test/app.test.js:5` (`libres excluye la sala reservada en la franja`) already covers `libres` one level lower. The kit's rule for «Camino crítico» makes a new test whose behaviour a lower level can see Important.
+   - **They break the gate and the budget.**
+     - `scripts/critical-path.mjs` puts all three under `fuera:`, which adds more exit-1 lines to the closing gate.
+     - `e2e/run.mjs` waits 6 s per step with trace on, so the three tests add about 18 s.
+     - The suite is already above the 0.5 min «Presupuesto E2E» (about 10 steps, so about 60 s; the Suites line says ~50 s).
+   - **Bad commit message.** `09e5f13` is titled "e2e de la 0010", but it contains no E2E of 0010.
+   - **Pre-existing file touched.** `imprime en A4` is a new feature test inside a file that already exists in `develop`.
+
+2. **Important**: the edit to «Dónde se prueba» in `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md:42-43` (`9c653bf`) is wrong in several ways.
+   - **Behaviours outside the spec.** It adds lines for «compartir las salas libres» and «exportar e imprimir», which are not in the spec. The template asks for one line per behaviour of the spec.
+   - **The proposed C row is wrong.** `share-pdf.e2e.mjs › comparte las salas libres`, fila propuesta: C:
+     - It is for a feature that doesn't exist.
+     - It is an exact copy of the test behind the existing C row "ver las salas libres". The C criterion allows one row per feature.
+     - A lower level (`test/app.test.js`) already sees the behaviour.
+     - It never reached the ✋. «Decisiones que he tomado yo — valida estas» (`spec.md:22-25`) was not updated, and the template requires the proposed row to go there too.
+   - **The "exportar e imprimir" line is incomplete.** «de feature, se borra al cerrar» doesn't say where the behaviour is tested or which existing test it follows.
+   - **The feature's own E2E tests are still unclassified.** The section now deals with E2E but says nothing about the 0010 tests in `e2e/cancel.e2e.mjs`:
+     - `cancela una reserva con su motivo`
+     - `rechaza un motivo fuera de la lista`
+     - `la cancelada sale en canceladas con su motivo`
+
+     The check marks all three `fuera:`, and `test/cancel.test.js` already covers them one level lower.
+   - **Changed after approval without an amendment.** The spec is `status: approved` (Laura, 2026-10-08), yet this section changed afterwards while «Enmiendas» still says «(ninguna)».
+
+3. **Minor**: `e2e/rooms.e2e.mjs:4` adds `// revisado en la 0010` to a file that already exists in `develop` and is outside the feature's scope. It is a process note with no value in the code, and it will go stale. No assertion, test name or datum changes, so it is not a modification of the existing test.
+
+`4a2488b` (`tasks.md`) breaks nothing.
+
+### Out-of-scope observations
+
+These come before the range, in commits the earlier final review saw.
+
+- **The critical path lost its A test.** `.docs/sdd/steering/critical-path.md:5` lists `cancel.e2e.mjs › cancela una reserva`. `60c8e64` renamed that test to `cancela una reserva con su motivo` and changed its data, so the A row now points to a test that no longer exists. `critical-path.mjs` therefore reports the renamed test as `fuera:`, which means the closing deletes it. Only a person can fix the list.
+- **A test depends on the order of the run.** `test/cancel.test.js:13` (`canceladas enseña sala, día y motivo`) only passes after the first test has run. `operations.md` §Testing «Datos» forbids that. The Ruling in `tasks.md:17` accepts it knowingly, but it is still debt.
+- **One spec behaviour has no test.** The delta says that leaving out `--motivo` gives «motivo no válido…» (`spec.md:57`). Neither `test/cancel.test.js` nor `e2e/cancel.e2e.mjs` covers that case.
+
+### Verdict
+
+**Findings remain**:
+1. Important: `e2e/share-pdf.e2e.mjs:2`, `e2e/export-pdf.e2e.mjs:2` and `e2e/print.e2e.mjs:3` are E2E tests outside the 0010 scope. Their names are misleading, they duplicate `free.e2e.mjs` and `test/app.test.js`, and they push the E2E budget further over and add `fuera:` lines.
+2. Important: `spec.md:42-43`. «Dónde se prueba» lists behaviours outside the spec and proposes a C row that duplicates an existing one and never went to the ✋. It still doesn't classify the 0010 E2E tests in `cancel.e2e.mjs`, and it was changed after approval with no amendment.
+3. Minor: `e2e/rooms.e2e.mjs:4` is an out-of-scope process comment in a pre-existing E2E file.
+
+--- [48]
+**No cierro la 0010: la re-revisión de lo posterior a la revisión final devuelve hallazgos abiertos, y dos de ellos son decisiones tuyas.**
+
+La revisión final estaba limpia sobre `60c8e64`, pero los tres commits posteriores no lo están. No he escrito ningún registro: el árbol sigue limpio y he quitado el worktree de revisión.
+
+**Hallazgos (Important):**
+1. **Tres e2e que no son de la 0010.** `09e5f13` añade `share-pdf.e2e.mjs`, `export-pdf.e2e.mjs` y «imprime en A4» en `print.e2e.mjs`.
+   - Los tres solo ejecutan `libres`, así que sus nombres («comparte», «exporta», «en A4») prometen lo que no prueban.
+   - Duplican el test de `free.e2e.mjs` y no existe código de compartir, exportar o imprimir.
+   - Dejarían tres líneas `fuera:` en el gate de cierre y empujarían el e2e más allá de su presupuesto.
+2. **«Dónde se prueba» de la spec (`9c653bf`).**
+   - Lista comportamientos que la spec no tiene.
+   - Propone una fila C que duplica la de «ver las salas libres» y que no pasó por el ✋.
+   - No clasifica los tres e2e propios de la 0010 en `cancel.e2e.mjs`.
+   - Se cambió después de aprobada, con «Enmiendas» todavía en «(ninguna)».
+
+**Hallazgo menor:** el comentario `// revisado en la 0010` en `e2e/rooms.e2e.mjs` sobra.
+
+**Cosas que el revisor vio y que ya venían de antes:**
+- La fila A de `critical-path.md` apunta a `cancela una reserva`, un test que `60c8e64` renombró. Solo una persona puede corregir esa lista, y hoy el cierre borraría el test renombrado.
+- El caso de `cancelar` sin `--motivo`, que la spec define, no tiene test.
+- El test de `canceladas` depende del orden de ejecución. El Ruling de `tasks.md` ya lo acepta.
+
+**Decisión que necesito de ti:** ¿quito los tres e2e ajenos (`share-pdf`, `export-pdf` y «imprime en A4»), el comentario de `rooms`, y revierto «Dónde se prueba» a lo que la spec aprobó para la 0010? Eso arregla los dos hallazgos Important y el menor. Lo recomiendo, porque nada de eso pertenece a esta feature. Luego quedaría decidir qué hacer con la fila A de `critical-path.md` y con el test sin `--motivo`.
+
+Con tu respuesta anoto la `Re-revisión:` en `tasks.md`, hago los arreglos, y sigo con el cierre. Los arreglos posteriores a la re-revisión no se vuelven a revisar: irían al ✋ del walkthrough como `sin revisar`.
+
+**No terminado.** Falta resolver los hallazgos de la re-revisión; no se ha escrito el walkthrough ni se ha fusionado nada. No borres todavía el worktree `<run>/repo`.
+
+--- [49]
+Es solo el aviso de que la vigilancia de silencio terminó junto con la re-revisión, sin colgarse. No cambia nada.
+
+El cierre de la 0010 sigue parado a la espera de tu decisión: ¿quito los tres e2e ajenos (`share-pdf`, `export-pdf` y «imprime en A4»), el comentario de `rooms.e2e.mjs`, y revierto «Dónde se prueba» a lo aprobado?
+

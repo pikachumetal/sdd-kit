@@ -66,6 +66,9 @@ Lo observado/reportado, literal. Error o traza recortada a lo relevante.
 > con `Validación: agente`, `Validación por el agente: <fecha> · <evidencia>`.
 > Encima, la línea del gate de cierre: `` Gate: `<suite unitaria, si «Suites» la declara>` · `<comando>` → <suite>: corrió <N>/<M> · <tarea>: corrió <N>/<M> (sin filtro: cambia el build, si la rama toca «Sin filtro») · <tarea>: saltada (<porqué de la herramienta>) `` (sin tareas, `→ <N>/<M>`).
 
+- Fila propuesta: <solo con «Camino crítico» en `operations.md`, si el test del fix es de una suite de su alcance: `<test>` · criterio <A, B, C o Arnés> | ninguna: el test es de feature y el cierre lo borra>
+- Tests de feature: <solo con «Camino crítico», lo escribe el cierre: `<comando>` → <resultado> · borrados: <ids>>
+
 | # | Caso | Resultado |
 | --- | --- | --- |
 | 1 | reproducir el síntoma → ahora OK | ✅ / ❌ + nota |

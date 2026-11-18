@@ -1,0 +1,19 @@
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-18 |
+| El test de `canceladas` depende de la cancelación del primer test de `test/cancel.test.js` | feature 0010 (ruling de la Task 2) | 2026-11-18 |
+| Suite e2e por encima del presupuesto: 42,2 s de 30 s | feature 0010 | 2026-11-18 |
+
+## En espera
+
+| Ítem | Causa | Origen | Impacto | Falta | Fecha |
+| --- | --- | --- | --- | --- | --- |
+
+## Lista
+
+| Ítem | Causa | Origen | Impacto | Evidencia | Remedio temporal | Arreglo | Destino |
+| --- | --- | --- | --- | --- | --- | --- | --- |

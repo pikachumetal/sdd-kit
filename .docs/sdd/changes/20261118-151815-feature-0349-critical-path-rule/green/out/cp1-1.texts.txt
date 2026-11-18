@@ -1,0 +1,40 @@
+--- [3]
+Ahora: leo el contexto del proyecto para escribir la spec. Queda: spec y presentarla para tu aprobación, ~5 min.
+
+--- [15]
+Estoy escribiendo la spec de la feature 0040 en su carpeta; luego la valido contra una copia de `.docs/sdd` y te la presento.
+
+--- [23]
+Ahora: presento la spec para tu aprobación. Queda: tu respuesta; después el plan y la implementación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (`sdd-kit.json`). Son 3 tasks o menos, así que no propongo partirla.
+
+La spec está en `.docs/sdd/changes/20261118-163152-feature-0040-cancel-cutoff/spec.md`, con `status: draft`.
+
+🦆 Hasta ahora `cancelar Norte lun` anula la reserva siempre. Con este cambio, si hoy es lunes responde «ya no se puede cancelar Norte lun» y la reserva sigue activa. `cancelar Norte mar`, de un día posterior, se cancela como siempre. Por dentro, `run` recibe el día de hoy como parámetro opcional, para que los tests no dependan del reloj.
+
+**Delta:** una capacidad nueva, `booking-cancellation`, con tres escenarios.
+- Hoy = lunes, `cancelar Norte lun` → `ya no se puede cancelar Norte lun`, y la reserva sigue activa.
+- Hoy = domingo, `cancelar Norte lun` → `cancelada Norte lun`.
+- Hoy = lunes, `cancelar Sur lun` sin reserva → `sin reserva Sur lun`.
+
+Probé el delta en una copia de `.docs/sdd` con `sdd capability merge` y no lo rechazó. No hay review, como pediste.
+
+**✋ Decisiones que he tomado yo — valida estas:**
+1. Capacidad nueva `booking-cancellation`, porque el proyecto no tiene `capabilities/`.
+2. Enfoque A: `run(cmd, params, today = diaDeHoy())`. Descarto la variable de entorno y simular el reloj; el detalle está en la spec.
+3. «Hoy» se decide por día, no por horas: toda reserva del día queda sin cancelar, sea cual sea su franja.
+4. **Pendiente de tu confirmación:** los días anteriores a hoy siguen cancelándose. Nadie dijo nada de ellos, y solo bloqueo el día igual a hoy.
+5. Las abreviaturas son `dom, lun, mar, mié, jue, vie, sáb`. En el código hoy solo existen `lun` y `mar`; las demás con tilde son mi propuesta.
+6. Si no hay reserva, sigue diciendo `sin reserva …` aunque sea el día de hoy. Se comprueba antes que lo de hoy.
+7. `anular` no cambia.
+8. No toco `PRODUCT.md`. Su «Cancelación … antes de 24 h» ya no encaja con una regla por día; queda como discrepancia de vocabulario para que la decidas tú.
+9. **Camino crítico:** el test `cancelar una reserva activa` usa `cancelar Norte lun`. Con hoy = lunes fallaría, y sin reloj fijo fallaría solo los lunes. Propongo mantener la fila y que el test fije el día: `run('cancelar', ['Norte','lun'], 'mar')` → `cancelada Norte lun`. La fila de `critical-path.md` la editas tú al validar.
+10. Los tests nuevos son de feature y se borran al cerrar. No propongo filas nuevas para el camino crítico.
+
+La validación final es tuya, porque cambia lo que ve quien cancela.
+
+Elige una opción:
+1. **Apruebo (Recomendada):** apruebo la spec, con la 4 como está, y sigo con el plan.
+2. **Cambios:** dime qué ajustar. Por ejemplo, si los días pasados también deben bloquearse, o si prefieres otro enfoque o texto.
+
