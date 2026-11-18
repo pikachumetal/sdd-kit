@@ -1,0 +1,40 @@
+--- [5]
+### Strengths
+- The change is small and easy to follow. `choose` and the `Status` alias tidy up the component.
+- The server side matches the existing pattern in `api.js`.
+- The first E2E test follows the whole user flow: pick a status, leave the page, come back. The expected value is checked through the UI.
+- The UI text is in Spanish and the component is a function with hooks, so both code constraints are met.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`.docs/sdd/steering/critical-path.md:7`**: the diff adds a row to the critical-path list. Only a person edits that file, so this change has to be reverted or confirmed by the user. The commit is `ed3a158`.
+2. **`e2e/0024-remember-filter.spec.ts:41`**: `expect.poll(() => savedStatus(request))` waits on server state between two user actions, with no comment giving a reason. This is the failure the test exists to catch. If `PUT` hasn't finished before the navigation, the test should fail, not wait. Remove the poll. `savedStatus` in `e2e/helpers.ts:67` is then unused and can go too.
+3. **`playwright.config.ts:7-8`**: the diff raises `timeout` to 90 s (default 30 s) and `expect.timeout` to 20 s (default 5 s). `operations.md` has no reason for either (a grep for "timeout" in it found nothing). The "Project E2E" brief declares the default timeouts. Revert both, or write the reason in `operations.md`. The raised timeouts also hide the slowness that the poll above works around.
+4. **`e2e/0024-remember-filter.spec.ts:47`**: the test "el desplegable de estado tiene cuatro opciones" is not on the critical-path list, so the close deletes it. A lower level already sees this behavior: `src/invoices/InvoiceList.test.tsx` renders `InvoiceList`. Move it there or drop it. It also asserts an implementation detail, the option count.
+5. **Missing unit test**: the new remember-the-filter logic in `src/invoices/InvoiceList.tsx:128-134` has no test in `InvoiceList.test.tsx`. That file mocks nothing and doesn't stub `fetch`, so the new `useEffect` fires an unmocked `fetch` in the existing test. Add a test with `fetch` stubbed to cover load and save.
+
+#### Minor (Nice to Have)
+1. **`src/invoices/InvoiceList.tsx:129`**: the `fetch` has no `.catch`, and `r.ok` isn't checked. If the API is down, this is an unhandled rejection. The `PUT` at line 133 also ignores failures. Choosing a status while offline fails silently.
+2. **`src/invoices/InvoiceList.tsx:129`**: the `saved.value` check isn't validated against `STATUSES`. A bad stored value would put the `<select>` in an inconsistent state. A late response can also overwrite a status the user picked in the meantime.
+3. **`server/api.js:108`**: `prefs` is global and not keyed by `user`, unlike `clipboard`. Every user shares one preference, which is wrong for a per-user preference. The preference route also ignores the `x-user` header that the other routes honor. `InvoiceList.tsx:129` sends no `x-user` either, whereas the helper in `e2e/helpers.ts:13` does.
+4. **`src/invoices/InvoiceList.tsx:129,133`**: the URL `/api/prefs/invoice-status` appears twice (also `e2e/helpers.ts:68`). Name it as a constant.
+5. **`server/api.js`**: the `PUT` doesn't send a content-type, and `JSON.parse` in `read` throws on invalid bodies. This is existing behavior, not new.
+
+### Declined to judge
+- Whether the "C" criticality and the "lo pidió el cliente" evidence in the new list row are right. That is for the person who owns the list.
+- Whether persisting the preference on the server rather than in `localStorage` is the right boundary. That belongs to the Architecture axis.
+- Whether the feature matches the spec. That belongs to the Spec axis.
+- No comments cite documents in the diff.
+
+### Recommendations
+Remove the poll and the timeout raises, keep a single E2E test (the first one), and move the option-count test and the load/save checks to `InvoiceList.test.tsx`. Revert the `critical-path.md` edit, or get the user to confirm it.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works, but the diff edits the critical-path list, adds an internal-state wait, raises timeouts with no recorded reason, and adds an E2E test a lower level can cover. The new logic has no unit test, and the preference is shared across all users.
+

@@ -1,0 +1,60 @@
+
+>>> Read: <run>/review-final-37f0423.diff · limit=400
+<<< 1	# Review package: 1fdb4b6..HEAD
+2	
+3	## Commits
+4	37f0423 docs(testing): el filtro recordado entra en el camino crítico
+5	7a32e98 test(invoices): e2e de recordar el filtro
+6	6ff267f feat(invoices): la lista recuerda el último estado elegido
+7	
+8	## Files changed
+9	 .docs/sdd/steering/critical-path.md |  1 +
+10	 e2e/0024-remember-filter.spec.ts    | 16 ++++++++++++++++
+11	 e2e/helpers.ts                      |  5 +++++
+12	 playwright.config.ts                |  2 ++
+13	 server/api.js                       |  4 ++++
+14	 src/invoices/InvoiceList.tsx        | 14 +++++++++++---
+15	 6 files change
+
+=== RESULTADO (2 turnos, 0.1735826 $)
+### Strengths
+- The feature is small and does one thing. `InvoiceList` gets a `Status` alias, a `choose` helper, and a restore effect, and the server endpoint follows the existing pattern in `server/api.js`.
+- The E2E test uses accessible locators (`getByLabel`, `getByRole`) and drives a real navigation round trip: Facturas → Hojas → Facturas.
+- The new flow is added to `critical-path.md` with a criticality and evidence.
+- The UI text is in Spanish and the component is a function with hooks, so the code constraints are met.
+- `retries` is untouched (0 local, 2 in CI).
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`playwright.config.ts:7-8`: timeouts raised above the default.** The diff adds `timeout: 90_000` and `expect: { timeout: 20_000 }`. The project declares "Timeouts: por defecto", and `operations.md` has no reason written for the change, since the diff doesn't touch it. Longer timeouts hide slow or flaky behaviour. Remove both lines, or write the reason in `operations.md`.
+2. **`e2e/0024-remember-filter.spec.ts:42` (diff line 42): API poll between user actions.** `await expect.poll(() => savedStatus(request)).toBe('cobrada')` waits on server state the user can't see, and there is no comment giving a reason. This is the failure the test exists to catch: if the save is slow or lost, the test should fail at the final `toHaveValue`, not wait for the server. Remove the poll, and with it the `savedStatus` helper in `e2e/helpers.ts`, unless a reason is written.
+3. **`e2e/0024-remember-filter.spec.ts:48-51`: second E2E test names no core flow.** "el desplegable de estado tiene cuatro opciones" isn't in `critical-path.md`. It checks a static option count, which belongs one layer down as a component test of `InvoiceList`. Move it there or delete it.
+4. **`server/api.js:109-111`: preference stored globally, not per user.** The clipboard and cells endpoints read the `x-user` header, but `prefs` is keyed only by name. Every user shares one remembered filter, so one person's choice changes another's list. The `savedStatus` helper also sends no `x-user`. Key the map by `${user}:${name}`, as the other endpoints do.
+5. **`InvoiceList.tsx:130-135`: restore and save are unsafe.**
+   - The initial `fetch` has no `.catch` (unhandled rejection) and doesn't check `r.ok`.
+   - If the user picks a status before the GET returns, the late response overwrites their choice. Add a cancelled flag or skip the restore once the user has chosen.
+   - `saved.value` is set into state without checking it is one of `STATUSES`, so a stale or invalid value gives a `<select>` with no matching option.
+   - The PUT sends no `content-type` header and has no error handling.
+
+#### Minor (Nice to Have)
+- `critical-path.md:8`: the new row has Crit. C and the evidence "lo pidió el cliente", which is a reason about who asked, not why the flow is critical. This is a judgement call; the second E2E test already names no listed flow.
+- `server/api.js:3`: the comment says state is shared per user, but the new `prefs` map isn't. That stays inconsistent until item 4 is fixed.
+- `api.js:100`: `JSON.parse` on a malformed body throws and kills the request handler. This is pre-existing, and the new PUT inherits it.
+
+### Declined to judge
+- Whether "recordar el filtro" is truly a core flow (Spec axis). I only checked that it is listed in `critical-path.md`.
+- Server-side persistence in an in-memory `Map`, which is lost on restart. This is an architecture and spec choice.
+- The `/api/prefs` endpoint's placement and its proxying from the Vite dev server, which are Architecture axis.
+
+### Recommendations
+- Remove the config timeouts and the poll, then re-run `node scripts/critical-path.mjs --extras --run` to confirm the test passes without them.
+- Add a component test for the option count and for the restore behaviour with a failing fetch.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature works in the happy path. However, the undeclared timeout increases, the API poll between user actions, the extra non-core E2E test and the globally shared preference all need fixing first. The restore effect also has race and error-handling gaps.

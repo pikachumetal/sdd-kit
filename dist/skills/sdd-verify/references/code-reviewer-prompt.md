@@ -18,7 +18,7 @@ Subagent (sdd-kit:effort-high, model: sonnet):
 
     ## Project E2E
 
-    <«Flujos core», «Retries» y «Timeouts» de operations.md §Testing, literales, o «sin E2E declarados»>
+    <«Flujos core» (o «Camino crítico», si lo declara), «Retries» y «Timeouts» de operations.md §Testing, literales, o «sin E2E declarados»>
 
     ## Comments that cite documents
 
@@ -86,7 +86,8 @@ Subagent (sdd-kit:effort-high, model: sonnet):
     **Comments:** a comment that repeats what the code says is Important, also when «Code constraints» doesn't mention comments. Each `file:line` line of «Comments that cite documents» is a candidate, not a finding: a citation that goes stale with its document is Important; a false positive (the word without a document of this project: «requisito de la pasarela de pago»), or a citation with its own reason (an ADR, a living document; «lo dice la spec» is no reason), goes to «Declined to judge», never to Issues. A citation «Code constraints» forbids is Important, even with a reason. The list doesn't limit you: a citation it missed is a finding too.
 
     **E2E tests.** With the fields of «Project E2E» above, each of these is Important; with `sin E2E declarados`, none applies, and with «Flujos core» empty or `pendiente`, the first one doesn't:
-    - a new E2E test that names none of the core flows: what no core flow covers is tested one layer down;
+    - with «Flujos core», a new E2E test that names none of them: what no core flow covers is tested one layer down;
+    - with «Camino crítico», never «names no core flow»: a test off the list is a feature test the close deletes. Instead, a new test whose behavior a lower level can see: search the repo for a unit or component test of the code it exercises (`RoomPicker.tsx` → `RoomPicker.test.tsx`), and name it in the finding; and any change of the diff to `critical-path.md`, which only a person edits;
     - a retry or a timeout raised above the declared value, in a test or in the runner's config, without its reason written in `operations.md`;
     - a wait on internal state (an API poll, a store, an attribute the user doesn't see) between two user actions, without a reason in a comment. «Without waiting, the app wouldn't have the data yet» is not a reason: it is the failure the test exists to catch. A wait the test needs is not a strength.
 
