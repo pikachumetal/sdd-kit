@@ -1,0 +1,120 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Bash: cat package.json; ls -a; cat .nvmrc .node-version .tool-versions 2>/dev/null; ls .github/workflows .azure-pipelines* 2>/dev/null; grep -rnE "node-version|node:[0-9]|FROM node|setup-node|NODE_VERSION" --include=*.yml --include=*.yaml --include=Dockerfile* --include=*.json . --exclude-dir=node_modules 2>/dev/null | head -30; node -v
+
+>>> Bash: ls .docs/sdd 2>/dev/null; grep -rniE "node ?(>=|[0-9]{2}|version)|engines" .docs/sdd/*.md .docs/sdd/steering 2>/dev/null | head -20
+<<< sdd-kit.json
+specs/
+steering/
+.docs/sdd/steering/operations.md:5:- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+<<< {"type": "module", "engines": {"node": ">=22"}}
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+v26.10.0
+
+>>> Bash: cat .docs/sdd/steering/operations.md; ls src test; grep -rnE "require\(|import |process\.|node:" src test | head -30; cat ROADMAP.md | head -30
+<<< # Operations — salas
+
+## Comandos
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+
+## Testing
+
+- Tests: `node --test` (carpeta `test/`).
+src:
+app.js
+
+test:
+app.test.js
+src/app.js:1:const [command, ...args] = process.argv.slice(2);
+test/app.test.js:1:import { test } from 'node:test';
+test/app.test.js:2:import assert from 'node:assert/strict';
+test/app.test.js:3:import { run } from '../src/app.js';
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0357-launch-prompt-open-items/.temp/k57g/skills/sdd-templates/templates/launch-prompt-template.md"
+<<< # Prompt de arranque — plantilla
+
+> Lo dan `sdd-roadmap` (en su cierre, para la fila que va primero, y con «dame el prompt de la <id>») y `sdd-explore` (para un config, sin fila). No se guarda: va en el chat, en el idioma del usuario, y quien lo pega en otro worktree arranca sin repetir la entrevista.
+>
+> **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
+>
+> - Cuenta lo que no encuentra mirando: cada decisión con su porqué y su origen. La constitution, el stack y el código los lee solo.
+> - Quien lo recibe toma «Decisiones ya tomadas» como palabra del 
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd/sdd-kit.local.json 2>/dev/null; grep -rn "22\|node" README.md PRODUCT.md CHANGELOG.md | head
+<<< {"version": "3.0.2", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}}
+
+=== RESULTADO (8 turnos, 0.1345914 $)
+Estoy cerrando la comprobación y te dejo la respuesta y el prompt.
+
+## ¿Rompe algo?
+
+No, salvo que alguien use una versión de Node inferior a la que pongas. Esto es lo que he comprobado:
+
+- **`package.json` ya dice `"engines": {"node": ">=22"}`.** Subir a 22 no cambia nada. La decisión real es dejarlo en 22 o pasar a 24.
+- **El código no depende de la versión.** No hay dependencias externas. `src/app.js` solo usa `process.argv`, y el test usa `node:test` y `node:assert/strict`, que existen en 22 y en 24.
+- **Tu Node local es v26.10.0**, así que ahí no se notaría el cambio.
+- **No hay CI ni `.nvmrc`/`.node-version`.** Tampoco hay Dockerfile que haya que mantener alineado.
+- **Documentación que habría que tocar:** `.docs/sdd/steering/operations.md` dice «Node 22». Es la única mención que he encontrado.
+- **Efecto sobre quien consuma el paquete:** `>=` solo avisa con npm. Rechaza la versión solo si hay `engine-strict`.
+
+## Recomendación: 24
+
+Subir a 22 no aporta nada, porque ya es el mínimo. Pasar a 24 deja un mínimo más alto y no cuesta nada en el código. Dos cosas que no he podido comprobar desde aquí: el calendario de soporte de 22 y 24, y la comodidad de usar 24 en tu entorno de despliegue. Conviene mirar el calendario de Node antes de fusionar. Si algún entorno vuestro sigue en 22, quédate en 22 y no toques `engines`.
+
+Es un cambio de configuración, así que va sin fila de roadmap.
+
+### *⚙️ Subir el mínimo de Node*
+***Nombre:*** `feature/raise-node-minimum`  
+***Base:*** `develop`  
+***Carril:*** `config`
+
+***Prompt***
+
+```
+Arranca este cambio con sdd-propose, carril config: subir el mínimo de Node declarado en el proyecto y mantener la documentación de acuerdo con él.
+
+Alcance:
+- el campo engines.node de package.json
+- la mención de la versión de Node en .docs/sdd/steering/operations.md, sección Comandos
+
+Fuera de alcance:
+- cambios en src/ o test/: no usan nada que dependa de la versión
+
+Decisiones ya tomadas:
+- Ninguna.
+
+Abierto:
+- A qué versión subir el mínimo (hoy es >=22). Propuesta: 24, porque dejar 22 no cambia nada. Antes de aplicarlo, comprueba el calendario de soporte de Node y que ningún entorno de despliegue siga en 22. Si lo hace, deja 22 y avisa al dev-lead.
+
+Antes de diseñar, lee:
+- package.json
+- .docs/sdd/steering/operations.md, sección Comandos
+
+Nada que saldar.
+
+Está hecho cuando `node --test` pasa y package.json y operations.md declaran la misma versión mínima.
+
+Perfil delegate. Al fusionar, `sdd merge --push`.
+```
+
+Si prefieres hacerlo en esta sesión, di "arráncalo".

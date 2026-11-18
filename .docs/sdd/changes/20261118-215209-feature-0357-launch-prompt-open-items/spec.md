@@ -39,8 +39,8 @@ Review de spec propuesta: dos revisores — señales: contrato público (la secc
 5. **El ejemplo de la plantilla** gana una sección `Abierto:` con un punto y su propuesta, y su línea de decisión lleva el origen `<ruta o fila>` (la propuesta 0131 que ya cita), sin inventar una frase del dev-lead. Por qué: el agente calca el ejemplo más que la regla.
 6. **La regla del triaje de `sdd-roadmap` (`SKILL.md:104`) no se toca, y queda un riesgo** — hoy manda una solución que probó el agente a `**Decisiones ya tomadas:**` del brief; con la decisión 3, esa línea sale en el prompt con el origen de la fila, sin decir que la puso el agente. Lo mismo el cierre de `sdd-roadmap` que escribe filas: en `pair` y `delegate` las presenta y espera la decisión del dev-lead (paso 3), así que lo que llega al brief lo aceptó él o lo delegó. Por qué: hoy no hay ninguna fila con una solución del triaje (buscado en los briefs de `ROADMAP.md`), y marcar el autor en el brief es lo que el dev-lead dejó fuera; si aparece el caso, es su segundo caso y va a una fila.
 7. **Los escenarios nuevos y sus filas** — `m8` en la batería de `sdd-roadmap` y `e4` en la de `sdd-explore`, con las peticiones literales del delta, n = 2 y umbral 2/2 en sonnet, como `m1` y `e2`. Se juzga solo el bloque de código del prompt en `texts.txt`, no la prosa de antes. Filas literales:
-   - **M8 Lo abierto, aparte** (`m8`): falla si el bloque no tiene `Abierto:` con un punto que lleve `Propuesta:` y uno de `correo`, `email`, `e-mail`, `Slack` o `Teams`; si ese canal aparece en el bloque fuera de `Abierto:` (título y `***Nombre:***` incluidos); si el aviso a las 8:00 no está en «Decisiones ya tomadas:» con un origen que nombre la propuesta 0010 o su enmienda, o está en `Abierto:`; si alguna línea de «Decisiones ya tomadas:» no acaba en un paréntesis con su origen (`dev-lead, …`, una ruta o fila, o `agente por delegación, …`) o cita una ruta que no existe en el molde; o si escribe, reserva, publica o commitea.
-   - **E4 Recomendación abierta** (`e4`): falla si el bloque no tiene `Abierto:` con un punto que lleve `Propuesta:` y `22` o `24`; si esa versión aparece en el bloque fuera de `Abierto:` (título y slug de `***Nombre:***` incluidos); si «Alcance:» no dice que se sube el mínimo de `node` en los `engines` de `package.json`; o si escribe una fila, reserva un id o toca `package.json`.
+   - **M8 Lo abierto, aparte** (`m8`): falla si el bloque no tiene `Abierto:` con un punto que lleve `Propuesta:` y uno de `correo`, `email`, `e-mail`, `Slack` o `Teams`; si ese canal aparece en el bloque fuera de `Abierto:` como medio del aviso de la 0013 (título y `***Nombre:***` incluidos; nombrar la 0008, sus «avisos por correo» o `src/correo.js` no cuenta); si el aviso a las 8:00 no está en «Decisiones ya tomadas:» con un origen que nombre la propuesta 0010 o su enmienda, o está en `Abierto:`; si alguna línea de «Decisiones ya tomadas:» no acaba en un paréntesis con su origen (`dev-lead, …`, una ruta o fila, o `agente por delegación, …`) o cita una ruta que no existe en el molde; o si escribe, reserva, publica o commitea.
+   - **E4 Recomendación abierta** (`e4`): falla si el bloque no tiene `Abierto:` con un punto que lleve `Propuesta:` y `22` o `24`; si esa versión aparece fuera de `Abierto:` como valor del mínimo (`>=22`, `>=24`, «a 22», «a 24», en el título o el slug de `***Nombre:***`; un hecho comprobado, como «22.18 en el CI», no cuenta); si «Alcance:» no nombra `engines` y `package.json`; o si escribe una fila, reserva un id o toca `package.json`.
    - El RED vale si falla por estas condiciones. Si el RED sale verde, el escenario queda de control, se reformula la petición y se dice en la evidencia. Controles tras el cambio: `m1`, `m4` y `e2`, porque miden la forma del prompt que cambia; `m4` sin precio medido (el de `m1`).
    - Sin escenario: el origen `agente por delegación` (ninguna petición de los moldes delega una decisión que acabe en el prompt) y el cierre de `sdd-roadmap` con filas escritas en la misma sesión (lo mide `m2` en su forma; el origen, no). Lo cubre la regla de la plantilla y el uso en campo.
    - Si el RED obliga a tocar `sdd-roadmap` o `sdd-explore`, el saldo de palabras de las skills tocadas queda igual o baja (CLAUDE.md, regla 6): la regla se mueve al paso donde se decide, no se añade.
@@ -164,7 +164,7 @@ La plantilla dice en su bloque de ayuda qué va en cada bloque (decisión 2), la
 #### ADDED — El prompt de un config deja abierto lo que recomienda el agente
 
 - GIVEN el molde `salas`, con `control.profile: delegate` y `merge.push: true` en `sdd-kit.json`
-- WHEN el usuario escribe «Quiero subir el mínimo de node en los engines de package.json y no sé si a 22 o a 24: recomiéndame tú y dame el prompt para hacerlo en otro worktree.»
+- WHEN el usuario escribe «Estoy pensando en subir el mínimo de node en los engines de package.json, a 22 o a 24. ¿Rompe algo? Recomiéndame una y dame el prompt para hacerlo en otro worktree.»
 - THEN `sdd-explore` responde con su recomendación y termina con el prompt de arranque en la forma de `launch-prompt-template.md`
 - AND la versión que recomienda va en la sección `Abierto:` del prompt, como `- <punto>. Propuesta: <versión>`, y no aparece en ningún otro sitio del prompt, el título y el slug de `***Nombre:***` incluidos
 
@@ -179,9 +179,20 @@ Los escenarios `m8` y `e4` aún no están en las baterías: su precio es el de `
 | Una tanda de REFACTOR | lo mismo que el RED | 0.50 |
 | Controles | `SCENARIOS="m1" N=2` → `0.27 $`; `m4` (sin medir, precio de `m1`) → `0.27 $`; `SCENARIOS="e2" N=2` → `0.23 $` | 0.77 |
 | Medición tras la revisión final | 0: no hay cambio de skill tras la revisión salvo que un hallazgo lo pida | 0 |
-| Suma | 18 sujetos | 2.27 |
+| Enmienda de `e4` (2026-11-18) | `SCENARIOS="e4" N=2` con la petición nueva, al precio de `e2` | 0.20 |
+| Suma | 20 sujetos | 2.47 |
+
+## Topes de palabras
+
+| Fichero | Medido / tope | Margen | Tope propuesto |
+| --- | --- | --- | --- |
+| `sdd-templates` (skill completa, `cli/test/kit/word-budget.test.ts`) | 17648 / 17460 | −188 | 18000: medido con la plantilla nueva (`moon run cli:test` → «mide 17648 y el tope es 17460») + 2 % |
 
 ## Enmiendas
+
+- 2026-11-18 — sección «Topes de palabras»: la spec editaba `launch-prompt-template.md`, que cuenta para el tope de la skill `sdd-templates` en `word-budget.test.ts`, y no lo midió; con la plantilla nueva mide 17648 y el tope es 17460, y el pre-commit para el commit de la Task 2. Se sube el tope a 18000; retirar los topes de palabras va a una fila aparte, pedida a la sesión de develop — Task 2 — aprobada (opción «Subo aquí solo el tope de sdd-templates a 18.000»)
+
+- 2026-11-18 — el WHEN del ADDED de `routing` (y la petición de `e4`) pasa de «Quiero subir el mínimo de node … recomiéndame tú y dame el prompt…» a «Estoy pensando en subir el mínimo de node en los engines de package.json, a 22 o a 24. ¿Rompe algo? Recomiéndame una y dame el prompt para hacerlo en otro worktree.» — con la petición vieja ningún sujeto llegó a `sdd-explore` (RED 0/2, GREEN 0/4: dos sin skill, dos por `sdd-roadmap`), así que E4 no se podía observar; la nueva calca el arranque de `e2` («Estoy pensando… ¿Rompe algo?»), que sí entra por `sdd-explore` (GREEN `e2-1` aplicó la forma nueva con `Abierto:`). La puerta de `e2` también falla 1 de 2 con el kit de `develop` (`ctl-develop/`): ruido previo, ajeno a la 0357. Con la enmienda: la fila E4 acota la versión a su valor como mínimo (`>=22`, `>=24`, «a 22», «a 24», título y slug; un hecho comprobado no cuenta) y fija las palabras de «Alcance:» (`engines` y `package.json`); el control `e2` se compara con su línea base de `develop` (1 de 2 en la puerta, igual que antes, no es regresión); el molde `salas` no rompe con ninguna de las dos versiones (`engines` `>=22`, sin CI ni `.nvmrc`). Coste real hasta aquí: 18 sujetos, 2,09 $; la enmienda añade `e4` n = 2 (~0,2 $) y registra la primera skill de cada sujeto — Task 2 — aprobada (opción «Apruebo la enmienda»)
 
 ## Aprobaciones
 
@@ -190,3 +201,5 @@ Los escenarios `m8` y `e4` aún no están en las baterías: su precio es el de `
 | Àngel Delgado | 2026-11-18 | aprobada (opción «Apruebo») |
 | Àngel Delgado | 2026-11-18 | plan aprobado (opción «Apruebo, con Native») |
 | Àngel Delgado | 2026-11-18 | perfil → delegate: «1, y a puedes seguir con delegate» |
+| Àngel Delgado | 2026-11-18 | enmienda de e4 aprobada (opción «Apruebo la enmienda») |
+| Àngel Delgado | 2026-11-18 | tope de sdd-templates a 18000 aprobado (opción «Subo aquí solo el tope de sdd-templates a 18.000») |

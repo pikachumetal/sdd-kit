@@ -4,7 +4,10 @@
 >
 > **Cómo se redacta** (lo lee un agente que no vio esta conversación), en prosa y con listas:
 >
-> - Cuenta lo que no encuentra mirando: cada decisión con su literal y su porqué. La constitution, el stack y el código los lee solo.
+> - Cuenta lo que no encuentra mirando: cada decisión con su porqué y su origen. La constitution, el stack y el código los lee solo.
+> - Quien lo recibe toma «Decisiones ya tomadas» como palabra del dev-lead y no pregunta. Ahí solo va lo seguro: lo que el dev-lead dijo o aceptó con un «sí» a una propuesta concreta; lo que consta en el roadmap, una propuesta y sus enmiendas, una spec aprobada, una ADR o la constitution; y lo que decidiste porque te lo delegó («decide tú», «elige tú»). Su origen va entre paréntesis: `dev-lead, <AAAA-MM-DD>: «<frase>»`, `<ruta o fila>` o `agente por delegación, <ruta, fila o AAAA-MM-DD>`.
+> - Todo lo demás va a `Abierto:`, con tu propuesta: una idea tuya, una duda, lo que te pidió proponer o recomendar («propón tú», «recomiéndame») y aún no ha aceptado. En la duda, `Abierto:`. Su valor no sale en ningún otro sitio del prompt, tampoco en el título ni en el nombre: «subir el mínimo de Node», no «subir Node a 24». Sin nada abierto, la sección no va.
+> - Si dos fuentes chocan, manda la enmienda más reciente y después la frase más reciente del dev-lead; lo que así no se resuelve va a `Abierto:` con las dos. Un hecho comprobado no es una decisión: va al alcance o a las lecturas.
 > - En positivo: lo que tiene que hacer.
 > - Lecturas por ruta y sección, sin copiarlas.
 > - El criterio de hecho se comprueba mirando un resultado: un comando, un sujeto, un fichero.
@@ -28,7 +31,10 @@ Fuera de alcance:
 - <qué no entra>: <fila que lo lleva>
 
 Decisiones ya tomadas:
-- <decisión con su literal>, porque <su porqué>
+- <decisión>, porque <su porqué> (<origen>)
+
+Abierto:
+- <lo que no está claro>. Propuesta: <tu recomendación>
 
 Antes de diseñar, lee:
 - <ruta>, <sección>[, y la fila <id> del roadmap] | Sin lecturas: los requisitos son los de este prompt.
@@ -63,7 +69,10 @@ Fuera de alcance:
 - la migración de los proyectos: 0145
 
 Decisiones ya tomadas:
-- ROADMAP.md va en la raíz, porque lo lee quien no abre .docs/
+- ROADMAP.md va en la raíz, porque lo lee quien no abre .docs/ (.docs/sdd/changes/20261007-144256-proposal-0131-kit-rework/proposal.md)
+
+Abierto:
+- Si debt.md vive en steering/ o junto a ROADMAP.md. Propuesta: en steering/, porque solo lo leen las skills.
 
 Antes de diseñar, lee:
 - .docs/sdd/changes/20261007-144256-proposal-0131-kit-rework/proposal.md, §Documentos
