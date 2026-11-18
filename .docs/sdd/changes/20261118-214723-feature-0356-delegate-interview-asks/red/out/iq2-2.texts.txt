@@ -1,0 +1,121 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, entrevista y spec hasta tu aprobación, ~10 min.
+
+--- [26]
+Ahora: repaso de coherencia (búsquedas en el repo y delta probado en una copia). Queda: revisión de la spec y presentación en el gate, ~6 min.
+
+--- [30]
+Ahora: despacho un revisor de la spec (sonnet, según la rúbrica) con su vigilancia de silencio. Queda: integrar hallazgos y presentar en el gate, ~5 min.
+
+--- [40]
+El revisor de la spec sigue en marcha. No he recibido sus hallazgos, así que la spec todavía no está lista para presentártela.
+
+Esto es lo que hay hasta ahora:
+- **Rama y spec:** `feature/0012-reservas-sala`, con la spec en `.docs/sdd/specs/20261118-222532-feature-0012-reservas-sala/spec.md`. Está en borrador y sin aprobar.
+- **Carril y perfil:** carril feature, modo full, perfil delegate. Es una sola función más una línea en `run`, así que no propongo partirla.
+- **Entrevista:** la petición ya traía qué hace el comando y para qué se usa. El resto lo he decidido yo y va en «✋ Decisiones que he tomado yo».
+- **Esas decisiones:**
+  - El orden de las líneas es por día de la semana y luego por hora.
+  - Una sala inexistente responde `sin reservas <sala>`.
+  - Sin argumento responde `uso: reservas <sala>`.
+  - Solo cuentan las reservas activas.
+  - No hay filtro por día.
+  - El nombre de la sala distingue mayúsculas.
+- **Coherencia:** el delta (capacidad nueva `room-bookings`, 6 requisitos) se fusiona sin rechazos en una copia de `.docs/sdd`. En el repo no existe ningún comando `reservas`.
+
+Quedan tres cosas por hacer:
+- **Hallazgos de la review:** integrarlos en la spec cuando lleguen.
+- **🦆:** escribir el párrafo 🦆, que ahora es un marcador.
+- **Gate:** presentarte la spec para que la apruebes. Hasta que digas que sí no escribo plan ni código.
+
+--- [41]
+1. Crítico · Delta de comportamiento (escenario «Una sala que no existe») · El GIVEN «no existe ninguna sala Este» no se distingue del de «sin reservas». Si la implementación no filtra por sala, o si trata igual una sala sin reservas y una inexistente, el escenario pasa sin que se cumpla la decisión 4. Además, el proyecto no tiene un registro de salas, así que «existe» no tiene definición. · Definir qué es una sala conocida (por ejemplo, la que tiene al menos una reserva en cualquier estado), o admitir que no hay distinción y quitar el escenario como requisito distinto. Añadir un escenario donde las reservas de otra sala (Norte) no salen en `reservas Sur`.
+
+2. Crítico · Delta de comportamiento (escenarios 1, 2 y 4) · Ningún escenario aísla el filtrado por sala. Una implementación que liste todas las reservas activas de todas las salas pasa el escenario 1 si el almacén de prueba solo tiene Norte. · Añadir un GIVEN con reservas activas en dos salas y un THEN que solo muestre las de la sala pedida.
+
+3. Importante · Decisión 3, Approach y Delta · El orden es de lunes a domingo, pero `mié` y `sáb` llevan tilde. Tampoco se dice cómo se ordenan las horas (cadena o numérico) ni qué pasa con una franja mal formada (`9:00-10:00`), que Scope deja fuera como deuda. Además, «un día fuera de esa lista iría al final» está en el Approach sin escenario ni decisión. · Añadir un escenario con `mié` o `sáb` en el orden. Fijar que las horas se comparan como texto `HH:MM` o como números. Mover la regla del día desconocido a las decisiones y darle un escenario, o quitarla.
+
+4. Importante · Delta de comportamiento (escenario 4) · El escenario junta tres estados y un `AND` condicional («si no queda ninguna activa…») sin GIVEN propio. Eso no es verificable como escrito, porque el GIVEN ya tiene una reserva activa. · Separar en dos escenarios: uno con cancelada, anulada y activa, y otro con solo canceladas y anuladas, que debe dar `sin reservas Norte`.
+
+5. Importante · Decisión 6 y Delta · La spec dice que el estado es `active`, el mismo de `findBooking`, `cancelar` y `anular`. Pero no se ha verificado cómo se distinguen cancelada y anulada: puede haber dos estados o solo uno. El escenario las trata como dos estados y la spec no cita la fuente. Es una dependencia del código que se toca sin declararla. · Declarar en la spec los valores de estado que existen hoy y su origen, o dejar el contrato abierto con una tarea de comprobación.
+
+6. Importante · Decisión 8 y Decisión 4 · Hay sensibilidad a mayúsculas, pero ningún escenario la prueba: `reservas norte` con `Norte` existente. La decisión 8 queda sin cobertura. Además, la decisión 4 mezcla sala inexistente con error de mayúsculas, que el responsable verá como «sin reservas» en vez de como un error suyo. · Añadir el escenario `reservas norte` → `sin reservas norte`, y valorar si ese caso merece un aviso distinto.
+
+7. Importante · Complemento de roles y estados (Intent y Delta) · El Intent habla del «responsable de sala», pero no dice si cualquiera puede ejecutar `reservas` ni si hay que filtrar por rol. Con `anular` reservado al responsable y `cancelar` al cliente, la spec no declara qué está prohibido ni si un cliente puede ver la agenda de otros. Tampoco cubre `reservas Norte extra` (más de un argumento). · Declarar que el comando es abierto o restringido, y dar un escenario o regla para los argumentos sobrantes.
+
+8. Menor · Reglas de la capacidad (Límites, Conflicto) · «Límites: no aplica» es dudoso: la salida no tiene tope y una sala con muchas reservas devuelve todas. «Regla ante conflicto: no aplica» es razonable porque el comando solo lee. Ninguno de los dos lleva razón escrita. · Escribir «no aplica: la lista no se pagina, salen todas» y «no aplica: solo lectura».
+
+9. Menor · Decisiones tomadas, línea «Delta probado» y Reglas · El texto dice «6 requisitos y 5 reglas», pero la sección Reglas tiene 5 reglas con 2 «no aplica». Además, la línea es una afirmación de prueba sin evidencia citable. Aun así, `PRODUCT.md` define «Reserva» como «a nombre de quien la pide», y la spec decide no mostrar quién reservó (decisión 9) sin justificar el recorte frente al término. · Revisar el recuento de reglas. Anotar en la decisión 9 que el nombre no se muestra a propósito, con su motivo.
+
+10. Menor · Encabezado y revisión · Hay `🦆 PENDIENTE`, «Hallazgos de la review: PENDIENTE» y aprobador `TBD`. La spec dice «Validación: dev-lead», pero `PRODUCT.md` dice que no hay más usuarios que el autor. El rol «responsable de sala» y el «dev-lead» no coinciden con el producto, que tiene un solo usuario. · Aclarar el rol (el autor hace de responsable y de dev-lead) o ajustar el texto. Completar el 🦆 y los hallazgos antes de pasar la spec a aprobación.
+
+--- [44]
+Ahora: integro los hallazgos en la spec. Después un segundo revisor la relee una vez, porque acepto Críticos. Queda: ese repaso, el 🦆 y el gate, ~5 min.
+
+--- [46]
+Ahora: reviso el delta de nuevo en una copia y despacho la segunda ronda de revisión. Queda: 🦆 y gate, ~4 min.
+
+--- [50]
+La segunda ronda está en marcha. Espero su resultado antes de escribir el 🦆 y presentarte la spec.
+
+La primera ronda ya está integrada:
+- Acepté 8 hallazgos, 2 de ellos solo en parte, y rechacé 1 (el del rol).
+- El delta sigue fusionándose sin rechazos en una copia. Salen 9 requisitos, porque añadí escenarios.
+
+--- [58]
+1. Importante · Decisión 4, Approach (última línea) y escenario «Una sala que no existe…» · La regla «una sala existe si está en la lista del código» no cambia nada observable. La salida es idéntica a la de una sala sin reservas, así que el escenario pasa sin implementarla y es lógica muerta. Además, esa lista es una dependencia con los datos del código que no se declara en Scope. · Quita la comprobación de existencia del Approach y de la decisión 4 y di que «sala desconocida = sala sin reservas». Si de verdad hace falta, da un escenario con una sala que solo exista en la lista, y declara en Scope que se lee esa lista.
+
+2. Importante · Decisión 5 (argumentos de más) · El comportamiento «`reservas Norte extra` usa solo el primero» está decidido y no tiene escenario GIVEN/WHEN/THEN. Una implementación que concatene o falle pasaría todos los escenarios. · Añade el escenario `reservas Norte extra` → lista de Norte, o retira la regla del cuerpo.
+
+3. Importante · Decisión 1, Approach A y Dónde se prueba · Exportar `listBookings(room, store)` desde `src/app.js` y añadir el parámetro `store` con valor por defecto es un cambio de contrato público del único fichero de entrada. Se menciona de pasada, pero no figura en Scope ni en «Lo que se retira o cambia de forma». · Decláralo en Scope (nueva exportación y costura de test) y en la tabla de cambios de forma.
+
+4. Importante · Reglas de la capacidad — «Idioma de los nombres» · Dice «castellano (constitución, regla 4)». Esa regla cubre el texto de la interfaz y de los documentos, no los identificadores. `listBookings` está en inglés, y `PRODUCT.md` pide evitar «booking». La regla declarada contradice el propio Approach. · Reescribe la regla como «texto de interfaz y documentos en castellano; identificadores como el código existente (`cancelBooking`)». Quita la cita errónea a la regla 4 de la constitución.
+
+5. Importante · Decisión 10 y deuda de formato · Un día mal formado queda «no cubierto», pero no se dice qué hace el listado. Con una lista fija de días, un `indexOf` de -1 lo coloca el primero, o un `undefined` lanza error. El comando de lectura puede romperse o ordenar mal con datos que ya guarda el almacén. · Fija un comportamiento mínimo, por ejemplo que no lance error y que lo desconocido salga al final. O acláralo expresamente como límite aceptado en Scope «No entra».
+
+6. Importante · Documentos de usuario (`operations.md`, `CHANGELOG.md`, ayuda de `run`) · Se menciona que `operations.md:14` y `CHANGELOG.md:14` hablan de reservas, pero el Scope no dice si se actualiza algo. Un comando nuevo suele alterar la ayuda, la lista de comandos o el changelog. Hoy eso es alcance oculto, y las «~15 líneas en 2 ficheros» lo ignoran. · Di explícitamente si la lista de comandos o la ayuda cambian. Si no, ponlo en No entra.
+
+7. Menor · Decisiones 8 y 4, Intent · Un error de tecleo o de mayúsculas devuelve «sin reservas», y el responsable puede creer que la sala está libre. Es el reverso del modo de fallo del Intent (una reserva de más o de menos) y no se contempla ahí. · Menciónalo en Intent como riesgo aceptado, o deja que el dev-lead lo valide expresamente.
+
+8. Menor · «Hallazgos de la review», línea «Segunda ronda: PENDIENTE» y cabecera de la review · El texto dice «un revisor» y deja la segunda ronda como pendiente. Eso es coherente ahora, pero habrá que cerrarlo con los hallazgos de esta pasada. La decisión 7 de la primera ronda («no hay escenario de roles») se contradice con que el actor de los escenarios sea «el responsable». · Cierra la segunda ronda con sus resultados. Unifica el actor de los escenarios en «el usuario» o en «el responsable» según la decisión 12.
+
+9. Menor · Scope «Entra» · Cita «decisiones 3 a 9», pero también obligan al comportamiento las decisiones 1 (costura de test), 10 (orden como texto `HH:MM`) y 11 (sin control de acceso). · Cambia a «decisiones 1 y 3 a 11».
+
+10. Menor · Escenario «Sin sala, el comando explica su uso» · «GIVEN cualquier estado de las reservas» es un precondición vacía y no fija ningún dato. Tampoco hay caso con argumento vacío o con espacios (`reservas ""`). · Usa un GIVEN concreto, como «la sala Norte con una reserva activa». Decide si el argumento vacío equivale a no pasar argumento.
+
+--- [63]
+Ahora: la spec está lista y espera tu aprobación en el gate. No he escrito plan ni código, y no los escribiré hasta que apruebes.
+
+Está en `.docs/sdd/specs/20261118-222532-feature-0012-reservas-sala/spec.md`, en la rama `feature/0012-reservas-sala`, y todavía sin commit.
+
+🦆 El responsable de sala podrá escribir `reservas Norte` cada mañana y ver sus reservas en pie, una por línea y en orden de semana: `lun 10:00-12:00`, `mar 09:00-10:00`. Las canceladas y las anuladas no salen, y una sala sin reservas responde `sin reservas Norte`. Una sala mal escrita también responde `sin reservas`, así que una errata parece una sala libre. Se añade una función de listado junto a las de cancelar y anular, sin tocar nada más. Falta que valides las decisiones de abajo, sobre todo el orden y las respuestas que he escrito yo.
+
+**✋ Decisiones que he tomado yo — valida estas** (la lista completa, con los textos literales, está en la spec):
+- **Enfoque:** una función `listBookings(room, store)` en `src/app.js`, junto a `cancelBooking` y `voidBooking`. Descarto un módulo aparte y pintar la lista dentro de `run`. La exportación nueva y el parámetro `store`, que solo usan los tests, son un cambio visible en el fichero de entrada.
+- **Capacidad nueva:** `room-bookings`. El proyecto no tenía ninguna.
+- **Orden:** por día de la semana (`lun`…`dom`) y luego por hora de inicio, comparada como texto. Con un día o una franja mal formados solo garantizo que no lanza error.
+- **Sala inexistente:** `sin reservas Este`, igual que una sala sin reservas.
+- **Sin argumento o con argumento vacío:** `uso: reservas <sala>`. Es un texto mío.
+- **Argumentos de más:** se usa solo el primero, como hacen `cancelar` y `anular`.
+- **Solo activas:** el código guarda los estados `active`, `cancelled` y `voided`, y el listado deja pasar solo `active`.
+- **Sin filtro por día:** salen todas las reservas activas de la sala.
+- **Mayúsculas:** `reservas norte` responde `sin reservas norte`, como `cancelar` y `anular`.
+- **Línea:** sin quién reservó. El almacén de hoy no guarda a nadie.
+- **Sin roles ni login:** cualquiera que ejecute el comando ve la agenda.
+- **Ayuda y `CHANGELOG.md`:** no se tocan.
+- **Riesgo aceptado:** una errata en la sala parece una sala libre.
+- **Un solo usuario:** el responsable de sala y el dev-lead son la misma persona, y la validación es suya.
+
+**Review:**
+- **Primera ronda:** un revisor sonnet, con 10 hallazgos. Acepté 8, 2 de ellos solo en parte, y rechacé uno.
+- **Segunda ronda:** hubo Críticos aceptados, así que otro revisor sonnet releyó la spec corregida. Sus 10 hallazgos están integrados: acepté 9 y 1 en parte.
+- **Cierre:** no hay tercera ronda. El detalle está en «Hallazgos de la review».
+
+**Coherencia:** el delta (10 requisitos y 5 reglas) se fusiona sin rechazos en una copia de `.docs/sdd`. En el repo no existe ningún comando `reservas`. La fila 0012 no existe en el roadmap, porque la feature sale de tu petición. La 0011, «Anular reservas de otros», es otra cosa.
+
+**Validación:** la haces tú (dev-lead), porque lo que ve el responsable lo lee una persona.
+
+¿Qué decides?
+1. **Apruebo (Recomendada).** Escribo el plan y sigo con la implementación.
+2. **Cambios.** Dime qué decisión o escenario quieres cambiar y reviso la spec.
+

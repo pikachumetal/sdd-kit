@@ -1,0 +1,37 @@
+--- [3]
+Ahora: leer el contexto del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar y abrir la spec, hasta la primera parada.
+
+--- [11]
+Ahora: presentar lo que he entendido y hacer la única pregunta que reorienta el resto. Queda: la entrevista, la spec con su revisión y la parada de aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», con el modelo más capaz y más de una task)
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hay `sdd-kit.local.json`, así que no hay claves locales que ignorar. Prevé 2 o 3 tasks en una sola superficie (`src/app.js`), así que no propongo partirla.
+
+**Lo que he entendido, corrígeme:**
+- Al reservar una sala, si ya tiene muchas reservas activas ese día, la respuesta de `reservar` lleva una segunda línea de aviso. Es lo que has fijado.
+- Se cuentan las reservas activas de la sala en el día, no las horas. Eso también lo has fijado.
+- Quedan fuera el aviso por correo (fila 0008) y cualquier otra vía de aviso.
+- No hay nada que saldar.
+- El valor del umbral no lo has dado. No te lo pregunto: lo fijo yo en «✋ Decisiones que he tomado yo» con mi razón, para que lo valides en la spec.
+
+**Lo que he encontrado en `src/app.js`:**
+- `reservar` solo existe con `--cada-semana`. Devuelve `'reserva semanal creada'` y no añade nada a `bookings`.
+- No hay un `reservar <sala> <día> <franja>` que registre una reserva.
+- Esa vía semanal no recibe día, así que no sirve para contar «en el día».
+- `libres` solo lee `bookings` por franja.
+
+❓ **¿Dónde sale el aviso?**
+1️⃣ **Un `reservar <sala> <día> <franja>` que registra la reserva y cuenta las activas de esa sala en ese día.** Si pasa el umbral, añade la segunda línea. Ejemplo: `reservar Norte lun 14:00-15:00` → `reservada Norte lun 14:00-15:00` y, si ya hay más de N activas, `⚠ Norte está muy ocupada el lun: 4 reservas activas`. Es una pieza nueva en `reservar`, pero es lo único que encaja con «contar en el día».
+2️⃣ **Solo el camino `--cada-semana` actual.** No recibe día, así que no puede contar «en el día». Habría que contar todas las reservas activas de la sala, lo que contradice tu decisión.
+
+➡️ **Recomiendo 1️⃣**, porque tu criterio de contar por sala y día solo se puede cumplir donde `reservar` recibe un día. A cambio, la feature crece: `reservar` pasa a registrar reservas, y eso hay que probarlo.
+
+Un aviso aparte: las reservas viven en memoria y cada `node src/app.js` es un proceso nuevo. Desde la terminal el contador solo vería la reserva sembrada, así que el aviso se comprobará en los tests y no en uso real hasta que haya persistencia. Lo anoto en la spec como límite, no como parte de esta feature.
+
+¿Va bien 1️⃣?
+

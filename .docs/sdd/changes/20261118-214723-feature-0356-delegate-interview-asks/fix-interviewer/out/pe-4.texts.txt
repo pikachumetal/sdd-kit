@@ -1,0 +1,61 @@
+--- [11]
+Estoy preparando la feature: ya he leído el contexto del proyecto y ahora reservo el id y creo la rama. Antes vuelvo al directorio del repo, porque mi `cd` anterior me sacó de él.
+
+--- [17]
+Ahora: dejo clara la feature y empiezo la entrevista de la spec. Queda: unas pocas preguntas, la spec con su revisión y tu aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+He creado la rama `feature/0010-exportar-reservas-csv` con el id 0010. No hay `sdd-kit.local.json`, así que no hay nada que ignorar. Al ser Node sin dependencias externas, tampoco hay nada que instalar.
+
+**Lo que he entendido (corrígeme si me equivoco):**
+- Hoy `src/app.js` tiene las reservas en memoria, como `{ room, day, slot }`, y los comandos `libres`, `reservar` y `cancelar`. No hay ninguna forma de sacar las reservas de una sala.
+- Quieres un comando nuevo que, dada una sala, exporte sus reservas a CSV.
+- El motivo: el responsable de cada sala las cuadra los lunes en su hoja de cálculo. Por eso el CSV tiene que abrirse en la hoja sin retoques.
+- Todavía no sé qué reservas debe incluir ni qué columnas necesita, y eso decide el formato y los tests.
+
+❓ ¿Qué tiene que traer el CSV para que el responsable pueda cuadrar sus reservas el lunes sin retocarlo?
+
+--- [19]
+Anoto lo que has decidido: columnas `sala`, `día` y `franja`, separadas por `;` para el Excel en castellano. Lo demás (cabecera, forma de pasar la sala, sala inexistente) lo decido yo y lo dejaré en la spec para que lo valides.
+
+Hay un choque con el filtro de la semana. Las reservas de hoy solo guardan el día de la semana (`lun`) y la franja, sin fecha. Por eso «la semana que empieza el lunes que viene» no se puede calcular con los datos actuales.
+
+❓ **Qué significa «la semana que viene» si las reservas no tienen fecha**
+Fuente: `src/app.js`, donde `bookings` es `{ room, day, slot }` y `reservar`/`cancelar` solo trabajan con día de la semana y hora.
+
+1️⃣ **Exportar todas las reservas de la sala.** Como cada una es un día de la semana con su franja, ya describen una semana tipo.
+`exportar Norte` →
+```
+sala;día;franja
+Norte;lun;10:00-12:00
+```
+Cuesta que no hay filtro por semana. Si algún día las reservas llevan fecha, habrá que añadirlo.
+
+2️⃣ **Añadir fecha a las reservas y filtrar de verdad la semana siguiente.** Habría que cambiar `reservar` y el modelo de datos. Eso es otra feature con más tasks, y tocaría `reservar`, que hoy no entra en tu petición.
+
+3️⃣ **Exportar todas, con una cuarta columna `fecha` calculada** a partir del día, apuntando al lunes que viene (`lun` → `2026-11-23`). Pero esa fecha sería inventada, porque la reserva no la guarda, y el responsable cuadraría contra una fecha que no existe en los datos.
+
+➡️ **Recomiendo 1️⃣**, porque el modelo actual no puede distinguir semanas y las otras dos añaden alcance o datos inventados. A cambio, el CSV trae siempre todas las reservas de la sala y no solo las de la semana siguiente.
+
+¿Con cuál sigo?
+
+--- [20]
+Lo dejamos aquí. No he escrito ningún fichero ni commit: la spec no existe todavía.
+
+**Estado**
+- **Rama:** `feature/0010-exportar-reservas-csv`, creada desde `develop` con el id 0010. Ese id sigue reservado.
+- **Carril:** feature en modo full, con perfil `delegate` (el del proyecto).
+- **Decidido por ti:** el CSV lleva las columnas `sala`, `día` y `franja`, separadas por `;` para el Excel en castellano.
+- **Pendiente de ti:** qué hacer con el filtro de «la semana que viene». Las reservas solo guardan el día de la semana y la franja, sin fecha, y el filtro no se puede calcular con esos datos. Las opciones eran:
+  1. Exportar todas las reservas de la sala (mi recomendación).
+  2. Añadir fecha a las reservas, que sería otra feature más grande.
+  3. Exportar todas con una columna `fecha` calculada, que sería inventada.
+- **Decidido por mí, para la spec:** la cabecera, cómo se pasa la sala y qué pasa con una sala que no existe. Irá en «✋ Decisiones que he tomado yo».
+
+Cuando vuelvas, dime con qué opción sigues. Con eso escribo el enfoque y la spec, y paso por la revisión y la aprobación.
+

@@ -1,0 +1,58 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capacidades). Queda: clasificar y darte el anuncio con la primera pregunta de diseño, ~3 min.
+
+--- [13]
+Ahora: aviso de carril y primera pregunta de diseño. Queda: tu respuesta, y después spec, repaso de coherencia y revisión hasta la aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, por defecto (sin control.profile en sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:** quieres ver qué salas están libres en una franja horaria. Pero **ese comando ya existe**: `salas libres <franja>` (`src/app.js`, `freeRooms`) devuelve las salas sin reserva en esa franja. Tiene test (`libres excluye la sala reservada en la franja`) y su feature es la 0006, cerrada (`specs/20260917-090000-task-0006-free`). Así que algo de lo que pides no está cubierto, y no quiero inventar qué.
+
+Lo que sí he visto que falta en el `libres` actual:
+- Ignora el **día**: compara solo la franja, así que una reserva del lunes 10:00-12:00 marca la sala como ocupada también el martes. Es la misma clase de fallo que arregló el patch 0007 en `cancelar`.
+- No valida el formato de la franja (está en la deuda por triar).
+- Solo acepta franjas exactas: 10:00-11:00 no choca con 10:00-12:00.
+
+1. **Ampliar `libres` con día (`salas libres lun 10:00-12:00`) y solape de franjas** (Recomendada): es lo que más se parece a «ver qué salas están libres en una franja» de verdad. No crea un comando nuevo.
+2. **Solo añadir el día**, con franjas exactas como ahora.
+3. **Otra cosa**, un comando nuevo con otra salida, por ejemplo la lista de franjas libres de una sala. Cuéntame cuál.
+
+¿Cuál es? Si es la 1, la siguiente pregunta será si el día es obligatorio o si sin día vale «cualquier día».
+
+--- [21]
+Registro tu decisión con tus palabras («mantengo lo que dije») y no vuelvo a plantear la objeción. Lo que no has respondido queda pendiente en la spec. Ahora reservo el id y creo la rama.
+
+--- [45]
+Ahora: segunda ronda de revisión. Aceptué un hallazgo Crítico, así que un revisor nuevo relee la spec corregida una vez. Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~3 min.
+
+--- [53]
+Ahora: aprobación de la spec. Queda: tu respuesta. Con ella escribo el plan y paso a implementar, ~2 min.
+
+La spec está en `.docs/sdd/specs/20261118-234325-feature-0010-salas-libres-franja/spec.md`, en la rama `feature/0010-salas-libres-franja`. Aún no está commiteada.
+
+🦆 Hoy `libres 10:00-12:00` dice `Sur` aunque la reserva de Norte sea del lunes y preguntes por el martes, y no ve que 10:30-11:30 choca con 10:00-12:00. Con esta feature, `libres mar 10:30-11:30` da `Norte, Sur` y `libres lun 10:30-11:30` da `Sur`. Sin día sigue valiendo como hasta ahora: mira cualquier día. Si no queda ninguna sala libre, imprime `ninguna sala libre`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+1. **Lo primero que tienes que decidir.** Me pediste un comando que no existe, pero `libres` ya existe y lo ejecuté (`libres 10:00-12:00` → `Sur`). Mantuviste tu petición, así que no creo un comando duplicado: amplío `libres` con día y solape. Si querías otra cosa, dímelo y el Delta entero cambia.
+2. Alcance: día y solape. Son los dos fallos que vi en `libres`; tú no los pediste tal cual.
+3. Sintaxis: `libres [día] <franja>`, con el día opcional y primero, como en `cancelar`. Sin día mira cualquier día.
+4. Franjas contiguas (10:00-12:00 y 12:00-14:00) no solapan.
+5. Sin salas libres imprime `ninguna sala libre` (hoy imprime vacío).
+6. No valido el formato de franja ni de día (sigue en la deuda por triar). Franja invertida o día desconocido: no definido, como hoy.
+7. `freeRooms(slot)` pasa a `freeRooms(day, slot)` y `run` reparte los argumentos. El día se compara por igualdad exacta (`lun` ≠ `lunes`).
+8. El solape se calcula en minutos. Las salas son `Norte` y `Sur`, en ese orden y separadas por `, `.
+9. La capacidad nueva `room-availability` va toda como `ADDED`, porque la 0006 no dejó capacidades. Probé el delta en una copia con `sdd capability merge`: 6 requisitos añadidos, sin rechazos.
+10. Enfoque: ampliar `freeRooms`, frente a un comando nuevo, a un módulo aparte y a `freeRooms(slot, day?)`. Los motivos están en Approach.
+
+**Review:** pasaron dos rondas con un revisor (sonnet) cada una. La primera dio 2 Críticos y 5 Importantes; la segunda, 6 Importantes y 4 Menores. Acepté casi todo. Rechacé tres: el `MODIFIED` de la 0006 (no hay capacidad previa), sacar el Pendiente como pregunta bloqueante (el gate ya es esa pregunta) y mover el bloque de review fuera de ✋. El detalle está en la spec, en «Hallazgos de la review».
+
+**Validación:** la haces tú (`dev-lead`), porque lo que imprime el comando lo ve una persona.
+
+1. **Apruebo (Recomendada)**: escribo el plan y paso a implementar.
+2. **Cambios**: dime qué cambiar, empezando por la decisión 1 si querías otra cosa.
+

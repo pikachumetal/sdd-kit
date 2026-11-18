@@ -1,0 +1,88 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, entrevista y spec, hasta presentártela, ~10 min.
+
+--- [22]
+Sigo con la spec de `reservas <sala>`: la pasada de coherencia ya está hecha y el delta se fusiona bien en una copia. Falta anotar ese resultado en la spec y lanzar el revisor.
+
+--- [25]
+Ahora: la revisión de la spec está en curso con un revisor (sonnet). Queda: integrar sus hallazgos y presentarte la spec, ~5 min. Espero a que termine.
+
+--- [29]
+1. Crítico · Delta de comportamiento, escenario «Listar…» · El orden «por franja» no tiene valor comparable: `08:00-09:00` frente a `10:00-12:00` funciona por casualidad con orden de texto, pero el spec no dice cómo se ordena (texto o hora). Un orden que ignore el día también pasaría el ejemplo si los datos ya están ordenados. · Añadir un escenario con datos sembrados en orden inverso (`mar` antes que `lun`, `10:00` antes que `08:00`). Declarar que la franja se ordena por la hora de inicio.
+2. Crítico · Delta de comportamiento, escenario «Sala sin reservas activas» · Mezcla tres comportamientos en un solo requisito con AND: sala vacía, sala desconocida y falta de sala. El GIVEN solo cubre Sur. «Sala sin reservas» pasa aunque falte la rama de `reservas` sin argumentos. · Separar el caso «sin sala» en un requisito ADDED propio, con su GIVEN/WHEN/THEN.
+3. Importante · Delta, escenario «canceladas o anuladas» · El escenario solo tiene reservas no activas. Pasa aunque el código filtre mal una activa, o excluya todo lo que no sea `lun`. Con una activa mezclada sí fallaría. · Añadir una reserva activa en el mismo GIVEN (o un segundo escenario) para que el filtro se compruebe en los dos sentidos.
+4. Importante · Decisiones (punto 5) y Delta · Dice que no valida la sala, «como tampoco lo hacen `cancelar` y `anular`». Es una afirmación sobre código existente, y no hay `capabilities/` que la respalde. Además, `Oeste` solo es «desconocida» si hay un catálogo de salas, y el spec no dice dónde está. · Citar la fuente de esa afirmación (decisión del dev-lead o un requisito existente). Decir de dónde sale la lista de salas.
+5. Importante · Decisiones (punto 7) y Scope · Cambia el comportamiento de `reservas` sin argumentos, pues hoy «caería en el listado `salas`». Es un cambio de dispatch en `run` de un comando existente. «Lo que se retira o cambia» dice «nada». Falta la decisión del dev-lead sobre ese mensaje. · Reflejarlo en la tabla de cambios de forma, o aclarar que `reservas` no existe hoy. Confirmar con el dev-lead el literal `falta la sala: …`.
+6. Importante · Decisiones, «Decisiones tomadas con el dev-lead» · El punto 3 (orden), el 4 (sin nombre de quien reserva) y el 5 se presentan como decisiones del agente, pero el 4 cita al dev-lead («es el ejemplo que diste»). Está duplicado y mezclado. El anti-objetivo y la salida se apoyan en citas que no cubren los literales de error. · Quitar las repeticiones y citar solo lo que dijo el dev-lead. Los literales `falta la sala` y el orden quedan como decisiones del agente a validar.
+7. Importante · Reglas de la capacidad · «Límites: no aplica» y «Regla ante conflicto: no aplica». Hay un límite implícito (lista vacía, salas con muchas reservas), y el orden por día es una regla de ordenación de dato nuevo (la lista de días). «Dónde viven los datos: no aplica» afirma «en memoria», lo que contradice «no aplica». · Declarar los datos como «en memoria, estructura existente» sin «no aplica». Justificar «Límites». Registrar el orden de días como regla.
+8. Menor · Terminología / Decisiones (punto 1, Approach) · Usa `room-bookings`, `listBookings`, `booking` y `Bookings`. PRODUCT.md dice «Evitar: booking» y «Evitar: room». El slug en inglés se justifica, pero los identificadores y `room` en el texto de documentos chocan con el glosario, y la constitution art. 4 pide castellano. · Alinear el nombre con el glosario (`reservas-sala`, `listarReservas`), o declararlo como excepción con ADR o decisión explícita.
+9. Menor · Decisiones, Política de modelos y punto 10 · El punto 10 declara un «Repaso de coherencia» con `rc=0` como hecho, pero el spec está en `draft` sin capacidad existente. La afirmación no se verifica. El revisor «Dominio (sonnet)» se contradice con «Mínimo razonable: sin review». · Quitar el resultado afirmado o ponerlo como pendiente. Unificar si habrá o no review.
+10. Menor · Scope · Entra `test/reservas.test.js` y `src/app.js`, pero «Dónde se prueba» dice «unitarios sobre `run`» mientras el Approach promete probar `listBookings` «sola». No hay prueba de la función exportada. · Decidir si se prueba `run` o `listBookings`, y reflejarlo en ambos sitios.
+
+--- [31]
+Ese aviso es el resultado del revisor, no una respuesta tuya, así que la spec sigue pendiente de tu aprobación. Integro los hallazgos: acepto 1–7, 9 y 10, y rechazo el 8. Como acepto dos Críticos, después toca la segunda ronda.
+
+--- [34]
+Ahora: segunda ronda de revisión en curso, con la spec ya corregida. Queda: integrar lo que salga y presentarte la spec, ~3 min. Espero a que termine.
+
+--- [38]
+1. Crítico · Delta de comportamiento, «Orden de las reservas listadas» · El escenario no distingue el orden por día del orden por hora. Las tres reservas sembradas pasan con un orden solo por día (estable) o solo por hora, y con la franja comparada como texto. No hay caso de dos días distintos con horas cruzadas, como `mar 08:00` frente a `lun 10:00`. · Añadir un escenario con horas cruzadas entre días, para que solo pase con día y luego hora. Añadir también `dom` o `sáb` frente a `lun` para cubrir los acentos de `mié` y `sáb`.
+
+2. Crítico · Delta de comportamiento, «Las reservas canceladas o anuladas no salen» · El segundo AND («si las tres estuvieran…») es hipotético y no tiene GIVEN propio. La implementación puede cumplir el escenario sin cubrir ese caso. La decisión 8 dice «si todas lo están», pero el escenario las llama «las tres». · Separarlo en un escenario con su propio GIVEN, con las reservas cancelada y anulada sin ninguna activa, y quitar el «las tres».
+
+3. Importante · Delta, «Sala sin reservas activas» · Dos comportamientos distintos comparten un escenario. Sur sin reservas y Oeste inexistente entran por el mismo THEN con un AND. Un Sur sin reservas con la sala desconocida «falla» en el mismo escenario. Además, «Sur no tiene reservas» no cubre la sala con reservas solo inactivas. · Separar «sala desconocida» en su propio escenario, con GIVEN y WHEN propios.
+
+4. Importante · Decisiones, numeración · El orden es 1–9, 11, 10. Las decisiones 10 y 11 están invertidas. La 10 es un repaso de coherencia y no una decisión. La numeración rota hace que las referencias («decisión 11») sean frágiles. · Reordenar la numeración y pasar el repaso de coherencia fuera de la lista de decisiones.
+
+5. Importante · Decisiones 3 y 7 · Hay decisiones tomadas en el cuerpo que no están en la lista. El formato de salida de la validación `HH:MM` con cero a la izquierda está implícito. El test en `test/reservas.test.js` (nombre y ubicación del fichero) se fija en Scope y Dónde se prueba sin decisión. La elección de `params[0]` ausente frente a cadena vacía tampoco está. · Añadir en las decisiones el nombre del fichero de test y el tratamiento de parámetros vacíos o con espacios.
+
+6. Importante · Decisiones, bloque «Review de spec propuesta» · Es incoherente con los hallazgos. Se dice «sin review» en el mínimo, pero se despachó un revisor, y el hallazgo «parcial» lo justifica con un argumento circular. El revisor se llama «sonnet» y la política dice «un revisor de spec en sonnet». No queda claro qué nivel se aplica de verdad. · Dejar un único nivel de review declarado y quitar el «mínimo razonable» contradictorio.
+
+7. Importante · Decisión 1, Terminología (PRODUCT.md) · PRODUCT.md marca `booking` y `room` como _Evitar_. Aun así la spec usa `Review… bookings`, `listBookings` y `room-bookings` y menciona la lista `bookings`. El rechazo del primer round cubre el slug y `listBookings`, pero la regla «Dónde viven los datos» nombra `bookings` como lista existente sin ninguna comprobación. Esa afirmación no está verificada con el código. · Citar la fuente de la lista `bookings` o reformular sin dar por hecha su existencia.
+
+8. Importante · Reglas de la capacidad, «Regla ante conflicto» · «No aplica» es dudoso. Dos reservas activas de la misma sala, el mismo día y la misma franja producen líneas duplicadas, y el orden entre ellas no está definido. La regla de duplicados no está declarada. · Declarar la regla (se listan ambas o se deduplican) y añadir un escenario.
+
+9. Menor · Capacidades / Delta · Se declara `room-bookings` como nueva y no hay carpeta `capabilities/`. La decisión 10 dice que `sdd capability merge` aceptó el delta con rc=0 sobre una copia. Eso no demuestra que la capacidad quede creada con el contenido correcto. Los «5 reglas añadidas» incluyen dos «no aplica». · Verificar que el merge cree `capabilities/room-bookings.md` con las cinco reglas y repetirlo tras la última edición.
+
+10. Menor · Intent / cabecera · El título dice «para repasar la agenda» y el Intent habla de «cada mañana», pero «Validación: dev-lead» justifica con «lo que usa una persona cada mañana» algo que PRODUCT.md contradice: la usa una sola persona, que es también el desarrollador. Tampoco hay aprobador (`TBD`). · Poner un aprobador real en el frontmatter y ajustar el texto a un único usuario.
+
+--- [40]
+Este también es el resultado del revisor y no una respuesta tuya, así que la spec sigue pendiente. Integro los hallazgos: acepto 1–6 y 8, acepto en parte el 5 y el 10, y rechazo el 7 y el 9 con motivo. No hay tercera ronda.
+
+--- [43]
+Ahora: tienes la spec lista para aprobar. Queda: tu decisión, y después escribo el plan y paso a la implementación, ~2 min.
+
+## Spec 0012 — `reservas <sala>`
+
+Está en `.docs/sdd/changes/20261118-231858-feature-0012-reservas-sala/spec.md`, en la rama `feature/0012-reservas-sala`. No he hecho commit.
+
+🦆 Hasta ahora no había forma de ver las reservas de una sala. Con esto, `reservas Norte` imprime `lun 10:00-12:00`, una línea por reserva activa. Si Norte no tuviera ninguna, imprime `sin reservas Norte`. Las canceladas y las anuladas no salen. Por dentro es una función `listBookings(room)` en `src/app.js` y una rama más en `run`, igual que `cancelar` y `anular`.
+
+### ✋ Decisiones que he tomado yo — valida estas
+
+Tu petición fijaba el formato de línea, el mensaje `sin reservas <sala>` y que solo salen las activas. Todo lo demás lo he decidido yo:
+
+1. **Orden:** por día (`lun … dom`) y, dentro del día, por hora de inicio.
+2. **Sin nombre de quien reserva:** cada línea es solo `<día> <franja>`.
+3. **Sala que no existe** (`reservas Oeste`): responde `sin reservas Oeste`, sin validar la sala, como ya hacen `cancelar` y `anular`.
+4. **Nombre de sala exacto:** distingue mayúsculas (`Norte`, no `norte`), como el resto de comandos.
+5. **`reservas` sin sala:** responde `falta la sala: reservas <sala>`. Ese literal es mío; dime si prefieres otro.
+6. **Reservas activas idénticas:** si hubiera dos, salen las dos, sin deduplicar.
+7. **Capacidad nueva `room-bookings`**, con el slug en inglés porque lo exige la plantilla. La función se llama `listBookings`, como `cancelBooking` y `voidBooking`, aunque PRODUCT.md dice evitar «booking».
+8. **Enfoque:** función exportada más una rama en `run`. Descarté filtrar dentro de `run` y crear un módulo `src/agenda.js`, que rompería la regla de un solo fichero de entrada.
+9. **Pruebas:** todas pasan por `run`, en `test/reservas.test.js`.
+10. **Validación:** la haces tú, porque lo usa una persona.
+
+**Revisión:** un revisor sonnet más una segunda ronda, porque acepté dos Críticos. Aceptó cambios casi todo: el orden y los casos «todas inactivas» y «sala desconocida» quedaron con escenarios que distinguen la implementación correcta. Rechacé los hallazgos sobre los nombres en inglés y sobre `bookings` (la lista existe en `src/app.js`). El detalle está en `### Hallazgos de la review`.
+
+**Coherencia:** el delta se fusiona sin errores en una copia de `.docs/sdd`. No se retira ni cambia de forma nada existente.
+
+**Tamaño:** prevé una sola task, con tests y función.
+
+Perfil `delegate`, ejecución `native`. Para ausentarte puedes decir «apruebo la spec por delegación, nos vemos en la validación».
+
+¿Cómo seguimos?
+
+1. **Apruebo (Recomendada):** escribo el plan y paso a implementar.
+2. **Cambios:** dime qué ajusto en la spec.
+

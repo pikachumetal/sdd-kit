@@ -281,6 +281,16 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - THEN su `## Approach` lleva dos o tres enfoques, cada uno con lo que cuesta, y una línea `Elegido: <enfoque> — <porqué>`; con una sola vía sensata, esa y por qué no encajan las otras
 - AND en `pair`, los del mensaje de enfoques y el que eligió el dev-lead, con su frase; en `unattended` o tras «empieza ya», los del agente
 
+### La entrevista pregunta solo lo que falta y es del dev-lead
+
+- GIVEN el molde `reservas` en `delegate` y la petición «Arranca este cambio con sdd-propose: avisa cuando una sala esté muy ocupada. Perfil delegate. Escribe la spec y preséntamela.», sin cuándo cuenta una sala como muy ocupada en la petición, en el roadmap ni en el proyecto
+- WHEN el agente entra en el paso de spec de `sdd-propose`
+- THEN termina el turno con una pregunta y sin `spec.md`, y no da por decidido cuándo cuenta una sala como muy ocupada, ni en el texto ni en una spec: preguntar antes el porqué vale
+- AND con la petición «Arranca este cambio con sdd-propose, carril feature: un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, como `lun 10:00-12:00`; sin reservas responde `sin reservas <sala>`; lo quiere el responsable de sala para revisar su agenda cada mañana. Perfil delegate. Escribe la spec y preséntamela.», no hace ninguna pregunta antes de `spec.md`: lo escribe y lo presenta en el gate, con los nombres y los ficheros que eligió en «✋ Decisiones que he tomado yo»
+- AND con el prompt de arranque «Arranca este cambio con sdd-propose: exportar las reservas de una sala a CSV, porque el responsable las cuadra los lunes en su hoja de cálculo. Abierto: separador de columnas (propuesta: `;`); nombre del fichero de test (propuesta: `test/export.test.js`). Perfil delegate.», antes de escribir `spec.md` en ese turno pregunta solo el separador, citando `;` como propuesta del prompt, y no pregunta el nombre del fichero de test
+- AND con el prompt de arranque de `iq5` (petición literal en `tests/batteries/sdd-propose/battery.md`: la forma de `launch-prompt-template.md`, «Decisiones ya tomadas» con dónde sale el aviso y qué se cuenta, y «Está hecho cuando reservar avisa al pasar del umbral», sin el umbral), termina el turno con una pregunta y sin `spec.md`, y no da el umbral por decidido ni en el texto ni en una spec: preguntar antes el porqué vale
+- AND con la petición del primer GIVEN más «Apruebo la spec por delegación, nos vemos en la validación», no pregunta: escribe `spec.md` con el umbral en «✋ Decisiones que he tomado yo» marcado «pendiente»
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las capacidades viven en `.docs/sdd/capabilities/`, un fichero por capacidad. Las capturas de la verificación visual, fuera de git (el scratchpad de la sesión o `%TEMP%`) hasta la validación. La sesión de la aplicación, en la ruta que declara `§Frontend`, ignorada por git. Con qué se verifica el frontend, en `§Frontend` de `steering/operations.md`.

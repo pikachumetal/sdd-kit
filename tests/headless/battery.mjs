@@ -377,7 +377,7 @@ const mean = (values) => values.reduce((sum, value) => sum + value, 0) / values.
 
 // El precio de cada escenario es la media de la carpeta más reciente que lo midió: la que lleva el kit y el modelo de hoy.
 export function scenarioPrices(rows, specsRoot, fs) {
-  const askById = new Map(rows.map((row) => [row.Id, row['Petición'].replaceAll('\\|', '|').trim()]));
+  const askById = new Map(rows.map((row) => [row.Id, row['Petición'].replaceAll('\\|', '|').replaceAll('<br>', '\n').trim()]));
   const byId = new Map();
   // las campañas de antes de la 3.0.0 viven en specs/; las nuevas, en changes/, a su lado
   for (const root of [specsRoot, join(dirname(specsRoot), 'changes')].filter((root) => fs.exists(root))) {
