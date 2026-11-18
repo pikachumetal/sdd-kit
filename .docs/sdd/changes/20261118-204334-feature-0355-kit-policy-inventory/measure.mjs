@@ -171,7 +171,7 @@ function skillOf(file) {
 function piecesTable(pieces) {
   const header = '| Skill | Fichero | Líneas | Destino | Motivo | Palabras | Enganche |\n| --- | --- | --- | --- | --- | --- | --- |';
   const rows = pieces.map((p) => `| ${skillOf(p.file)} | \`${p.file.split('/').slice(1).join('/')}\` | ${p.from}-${p.to} | ${p.destination} | ${p.reason} | ${pieceWords(p)} | ${p.hook_words} |`);
-  return ['## Piezas', '', header, ...rows].join('\n');
+  return ['### Piezas', '', header, ...rows].join('\n');
 }
 
 function terrainsTable(terrains) {
@@ -181,7 +181,58 @@ function terrainsTable(terrains) {
     const total = files.reduce((sum, file) => sum + words(readLines(file).join('\n')), 0);
     return `| ${t.terrain} | ${files.map((f) => `\`${f}\``).join(', ')} | ${total} | ${t.note} |`;
   });
-  return ['## Otros terrenos', '', header, ...rows].join('\n');
+  return ['### Otros terrenos', '', header, ...rows].join('\n');
+}
+
+function wordsBySkill() {
+  const totals = new Map();
+  for (const file of skillFiles()) {
+    totals.set(skillOf(file), (totals.get(skillOf(file)) ?? 0) + words(readLines(file).join('\n')));
+  }
+  return totals;
+}
+
+function skillRows(pieces) {
+  return [...wordsBySkill()].map(([skill, today]) => {
+    const leaving = pieces.filter((p) => skillOf(p.file) === skill && p.destination !== 'queda');
+    const out = leaving.reduce((sum, p) => sum + pieceWords(p), 0);
+    const hook = leaving.reduce((sum, p) => sum + Number(p.hook_words), 0);
+    return { skill, today, out, hook, net: today - out + hook };
+  });
+}
+
+function skillTable(rows) {
+  const header = '| Skill | Hoy | Sale | Entra (enganche, estimado) | Neto | % que sale |\n| --- | --- | --- | --- | --- | --- |';
+  const sum = (key) => rows.reduce((total, row) => total + row[key], 0);
+  const body = rows.filter((r) => r.out > 0).sort((a, b) => b.out - a.out)
+    .map((r) => `| ${r.skill} | ${r.today} | ${r.out} | ${r.hook} | ${r.net} | ${Math.round((100 * r.out) / r.today)} % |`);
+  const total = `| **Kit (24 skills)** | ${sum('today')} | ${sum('out')} | ${sum('hook')} | ${sum('net')} | ${Math.round((100 * sum('out')) / sum('today'))} % |`;
+  return ['### Por skill', '', header, ...body, total].join('\n');
+}
+
+function destinationTable(pieces) {
+  const header = '| Destino | Piezas | Palabras |\n| --- | --- | --- |';
+  const body = [...destinations].map((d) => {
+    const of = pieces.filter((p) => p.destination === d);
+    return `| ${d} | ${of.length} | ${of.reduce((sum, p) => sum + pieceWords(p), 0)} |`;
+  });
+  return ['### Por destino', '', header, ...body].join('\n');
+}
+
+function readingSummary() {
+  const rows = readTsv(join('out', 'reading.tsv'));
+  const hitLinesOnly = new Set(readFileSync(join(outDir, 'hit-lines-only.txt'), 'utf8').split(/\r?\n/).filter(Boolean));
+  const count = (mode) => rows.filter((r) => r.mode === mode).length;
+  const read = rows.filter((r) => !hitLinesOnly.has(r.file)).reduce((sum, r) => sum + Number(r.words_read), 0);
+  return `lectura: entero ${count('entero')} · sección ${count('seccion') - hitLinesOnly.size} · solo la línea del acierto ${hitLinesOnly.size} · contexto ${count('contexto')} · índice ${count('indice')} · palabras leídas por sección o entero: ${read} de ${rows.reduce((sum, r) => sum + Number(r.words_file), 0)}`;
+}
+
+function squares(rows, pieces) {
+  const kitWords = skillFiles().reduce((sum, file) => sum + words(readLines(file).join('\n')), 0);
+  const leaving = pieces.filter((p) => p.destination !== 'queda').reduce((sum, p) => sum + pieceWords(p), 0);
+  const todayOk = rows.reduce((sum, r) => sum + r.today, 0) === kitWords;
+  const outOk = rows.reduce((sum, r) => sum + r.out, 0) === leaving;
+  return todayOk && outOk;
 }
 
 function table() {
@@ -192,9 +243,14 @@ function table() {
     process.exit(1);
   }
   const terrains = readTsv('terrains.tsv');
-  mkdirSync(outDir, { recursive: true });
-  writeFileSync(join(outDir, 'tables.md'), [piecesTable(pieces), terrainsTable(terrains)].join('\n\n') + '\n');
+  const rows = skillRows(pieces);
+  const tables = [skillTable(rows), destinationTable(pieces), piecesTable(pieces), terrainsTable(terrains)];
+  writeFileSync(join(outDir, 'tables.md'), tables.join('\n\n') + '\n');
+  console.log(readingSummary());
   console.log(`piezas: ${pieces.length} · sin destino: 0 · solapes: 0`);
+  const ok = squares(rows, pieces);
+  console.log(`cuadra: ${ok ? 'sí' : 'no'}`);
+  if (!ok) process.exit(1);
 }
 
 const commands = { sweep, table };

@@ -1,4 +1,29 @@
-## Piezas
+### Por skill
+
+| Skill | Hoy | Sale | Entra (enganche, estimado) | Neto | % que sale |
+| --- | --- | --- | --- | --- | --- |
+| sdd-archive | 9487 | 1477 | 55 | 8065 | 16 % |
+| sdd-templates | 17419 | 1072 | 25 | 16372 | 6 % |
+| sdd-tdd | 4033 | 999 | 25 | 3059 | 25 % |
+| sdd-end-release | 2111 | 823 | 20 | 1308 | 39 % |
+| sdd-implement | 6531 | 592 | 20 | 5959 | 9 % |
+| sdd-verify | 9471 | 525 | 20 | 8966 | 6 % |
+| sdd-init | 3202 | 396 | 10 | 2816 | 12 % |
+| sdd-worktrees | 1448 | 96 | 0 | 1352 | 7 % |
+| sdd-propose | 13760 | 95 | 0 | 13665 | 1 % |
+| sdd-config | 1437 | 59 | 0 | 1378 | 4 % |
+| sdd-roadmap | 3249 | 51 | 0 | 3198 | 2 % |
+| **Kit (24 skills)** | 102745 | 6185 | 175 | 96735 | 6 % |
+
+### Por destino
+
+| Destino | Piezas | Palabras |
+| --- | --- | --- |
+| queda | 29 | 4077 |
+| skill-proyecto | 32 | 3752 |
+| template | 25 | 2433 |
+
+### Piezas
 
 | Skill | Fichero | Líneas | Destino | Motivo | Palabras | Enganche |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -89,7 +114,7 @@
 | sdd-templates | `templates/walkthrough-template.md` | 55-56 | template | «Entorno de la suite» y «E2E: <duración> de <Presupuesto E2E>» en el 4.1: campos E2E que salen al template | 40 | 0 |
 | sdd-templates | `templates/walkthrough-template.md` | 83-83 | template | Suite por encima de su presupuesto (o de 10 min) como deuda: tope que fija el proyecto | 22 | 0 |
 
-## Otros terrenos
+### Otros terrenos
 
 | Terreno | Ficheros | Palabras | Nota |
 | --- | --- | --- | --- |
