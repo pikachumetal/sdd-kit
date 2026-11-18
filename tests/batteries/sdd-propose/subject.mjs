@@ -13,7 +13,8 @@ const [kit, , SC] = process.argv.slice(2);
 const guard = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
 const s = initSubject(process.argv.slice(2), existsSync(join(kit, 'skills', guard)) ? guard : 'using-sdd');
 const cell = subjectCell(HERE, s);
-let ASK = cell('Petición');
+// Una celda no admite saltos de línea: un prompt de arranque los escribe como <br>.
+let ASK = cell('Petición').replaceAll('<br>', '\n');
 const MARKER = '"channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"';
 // El comando de previsión del molde reservas-skills: una línea por escenario y la suma, a 0,70 $ por sujeto.
 const PLAN_MJS = [

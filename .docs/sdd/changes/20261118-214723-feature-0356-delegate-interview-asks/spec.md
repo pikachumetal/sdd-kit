@@ -32,15 +32,15 @@ Review de spec propuesta: un revisor con los siete puntos (sonnet) — señales:
 2. La regla 3 del `CLAUDE.md` del kit no cambia: ya para en «una decisión que es suya de verdad», que es el montón «del dev-lead»; lo que fallaba es que `spec-writing.md` no lo separaba y lo mandaba al ✋.
 3. `sdd-grilling` no se toca salvo que el RED señale su punto «Decide for me»: está a 886 de 886 palabras y el cambio sería quitar, no añadir.
 4. Los ejemplos del montón «menor» son nombres, ficheros, el orden de las tasks y un enfoque que el proyecto decide; los del montón «del dev-lead», el porqué, el criterio de hecho, el alcance, una contradicción entre la petición y el proyecto y cada punto de «Abierto» que no sea menor. Es la frontera de `brainstorming` («only your human partner can answer it, and the answer changes what gets built»), dicha con la prueba de OpenSpec (`schemas/spec-driven/schema.yaml:205`, «would change the specs, the chosen approach, or the task breakdown»; `explore.ts:21`, «ask the user when only they can answer»): «del dev-lead» si solo él puede responderlo y la respuesta cambia la spec, el enfoque o las tasks. Un enfoque que el proyecto decide es «respondido» y va al Approach, como hoy; solo se pregunta el que únicamente el dev-lead puede elegir. Lo demás de OpenSpec ya estaba: lo que no cambia nada de eso es «menor» o va al plan («Regla de contenido» de `spec-template.md`), y lo no contestado queda pendiente (`sdd-grilling`). Lo propuso el dev-lead a través de la sesión de la 0357; «es un matiz… solo la redacción» — «sí, sigue».
-5. Un punto de la sección «Abierto» del prompt de arranque nunca cuenta como respondido: va a «menor» o a «del dev-lead» por su contenido. Si es del dev-lead, la pregunta cita su propuesta como dato del prompt, y solo la recomienda con una razón del caso, como pide `interviewing` («La recomendada se gana con una razón del caso»). Acordado con la sesión de la 0357, que crea esa sección: la 0357 no toca la entrevista ni escribe «pregúntaselo» en el prompt.
+5. Un punto de la sección «Abierto» del prompt de arranque nunca cuenta como respondido: va a «menor» o a «del dev-lead» por su contenido. Si es del dev-lead, la pregunta cita su propuesta como dato del prompt, y solo la recomienda con una razón del caso, como pide `interviewing` («La recomendada se gana con una razón del caso»). Acordado con la sesión de la 0357, que crea esa sección: la 0357 no toca la entrevista ni escribe «pregúntaselo» en el prompt. Lo que trae «Decisiones ya tomadas» cuenta como respondido: que ahí solo entre lo que dijo el dev-lead es la 0357 («solo entra lo que tiene su frase literal»), y esta feature no lo vuelve a comprobar.
 6. Esas preguntas son la entrevista del paso de spec que ya existe en `pair` y `delegate` («El diseño de una feature pregunta con `sdd-grilling`», de `feature-flow`), no una parada nueva del perfil: también en `pair` la entrevista pregunta antes de la spec y no figura en la lista de «El perfil de control decide dónde para el agente», así que esa lista no cambia. La línea de `delegate` de `control-profiles.md` lo aclara; la conducta la mide `iq1`.
-7. Escenarios nuevos en la batería de `sdd-propose`, molde `reservas`: `iq1` (hueco del dev-lead, n = 3: caso de campo, la 0355) e `iq3` («Abierto» con un punto de cada montón, n = 2), que deben fallar en el RED; `iq2` (prompt completo, n = 2) y `iq4` (el hueco de `iq1` con «apruebo la spec por delegación», n = 1) son controles de no regresión, y no se espera que fallen. Controles `a5` y `pb` con n = 1 (los enfoques y las secciones siguen al ✋ en `delegate`).
-8. El perfil `delegate` no cuenta como «decide tú» ni como algo que «la petición delega» (`interviewing`, «Cuándo para la entrevista»). Es la lectura que mejor explica el fallo; la mide `iq1`, que falla si el sujeto no pregunta.
+7. Escenarios nuevos en la batería de `sdd-propose`, molde `reservas`. Con el RED medido (`tests/sdd-propose-0356-interview-asks-red.md`): `iq3` («Abierto», n = 2, rojo 1/2) e `iq4` (spec aprobada por delegación, n = 1, rojo 0/1) son los que fallan; `iq1` (hueco del dev-lead en una línea, n = 3, limpio 3/3) pasa a control de no regresión; `iq5` (el hueco de `iq1` en un prompt de arranque largo, n = 2, enmienda) intenta el caso de campo de la 0355; `iq2` (prompt completo, n = 2) es control. Controles `a5` y `pb` con n = 1 (los enfoques y las secciones siguen al ✋ en `delegate`).
+8. El perfil `delegate` no cuenta como «decide tú» ni como algo que «la petición delega» (`interviewing`, «Cuándo para la entrevista»). Lo miden `iq1` e `iq5` con la fila `IQ2`: falla si el sujeto da el umbral por decidido.
 9. La regla vale en los carriles con spec: feature, lite y spike. Con la spec aprobada por delegación o tras «empieza ya», el dev-lead no está para contestar: lo suyo va al ✋ marcado «pendiente», como hoy. En `unattended` aparca la feature («En `unattended`, lo que falta aparca la feature»). Si el dev-lead contesta «decide tú», se aplica «Decide tú» de `interviewing`. Quedan sin observar en la batería: lite, spike, `pair`, `unattended` y «decide tú»; la regla es la misma en todos y su texto no los distingue.
 10. El requisito va en `feature-flow` y no en `interviewing`, porque es qué pregunta el paso de spec; `interviewing` es cómo pregunta `sdd-grilling` a todas las skills.
 11. Validación: agente. El registro sale como «Validación en campo», porque el repo tiene `validation.mode: field`.
 12. Sin A/B contra la 2.x: no se recuerda bien cómo era y la referencia es el texto de `brainstorming` v7.0.2 de `upstream.json`.
-13. La previsión de coste va `sin medir`: los escenarios no existen hasta la Task 1, y `battery.mjs plan` no los ve; se estima con el precio medido de `a5` y `pb` (`SCENARIOS="a5 pb" N=3` → `suma: 6 sujetos · coste previsto: 6.58 $`, 1,10 $ por sujeto).
+13. La previsión de coste: el RED de `iq1`–`iq4` está medido (`red: 8 sujetos · 4.31 $`, 0,54 $ por sujeto); el resto se estima a ese precio, `sin medir`.
 14. **Tope de palabras de `sdd-propose`: de 13.927 a 14.162**, `sin medir` (ver «Topes de palabras»). Es lo medido más lo previsto más un 2 %, como en la 0349. Lo apruebas tú en el gate. Si el GREEN cabe en el tope de hoy, no se sube.
 15. Los literales de los montones en `spec-writing.md`, en inglés: **answered**, **minor** y **the dev-lead's**. `spec-writing.md` no tiene bloques copiados (sin marcas `<!-- kit:`), y la verificación de la task corre `kit:copies` y `kit:own`.
 16. Repaso de coherencia: el delta, probado en una copia de `.docs/sdd` con `sdd capability merge` → `feature-flow.md: añadido «La entrevista pregunta solo lo que falta y es del dev-lead»`; los dos literales que cambian de forma solo aparecen en sus ficheros (y en su build de `dist/`), con `git grep` fuera de las carpetas de evidencia.
@@ -85,7 +85,7 @@ Desde la v3 (`89cc7e5d8`, 2026-10-11), `sdd-propose` escribe la spec con `spec-w
 - Entra: `skills/sdd-propose/references/spec-writing.md`, el paso de los tres montones al empezar «What the spec covers», con «Abierto»; y la frase de los enfoques en `delegate` («there is no such message, because nobody chooses»), que pasa a decir solo dónde van.
 - Entra: `skills/sdd-propose/references/control-profiles.md`, la línea de `delegate` en «Profiles»: la parada de la spec incluye las preguntas de su entrevista.
 - Entra: la primera frase de «What the spec covers» («If neither the user nor the project says why they want it, ask that first, even if you can guess»), que se adelgaza: el porqué pasa a ser el primer ejemplo del montón «del dev-lead» y queda solo cómo se pregunta (abierto, sin menú).
-- Entra: `tests/batteries/sdd-propose/battery.md`, los escenarios `iq1`, `iq2`, `iq3` e `iq4`, sus filas de rúbrica y su procedencia; `subject.mjs` si los escenarios necesitan montaje.
+- Entra: `tests/batteries/sdd-propose/battery.md`, los escenarios `iq1`, `iq2`, `iq3`, `iq4` e `iq5`, sus filas de rúbrica y su procedencia; `subject.mjs` si los escenarios necesitan montaje.
 - Entra: `.docs/sdd/capabilities/feature-flow.md`, por el delta, al cerrar.
 - Entra, si el RED lo exhibe: el punto «Decide for me» de `skills/sdd-grilling/SKILL.md` y su batería, si el RED muestra que es lo que lleva al ✋ lo del dev-lead.
 - No entra: que el prompt de arranque no dé por decidido lo que propuso el agente (fila 0357). La regla 3 del `CLAUDE.md` del kit. Las entrevistas de `sdd-init`, `sdd-roadmap` y `sdd-explore`.
@@ -115,6 +115,7 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 - No pregunta con el prompt completo: escenario `iq2`, igual.
 - «Abierto» se reparte: escenario `iq3`, igual.
 - Con la spec aprobada por delegación no pregunta: control `iq4`, igual.
+- Con un prompt de arranque largo pregunta lo que falta: escenario `iq5`, igual, con la petición en varias líneas.
 - Los enfoques y las secciones siguen al ✋ en `delegate`: controles `a5` y `pb`, que ya existen.
 
 ## Términos y ADR
@@ -133,6 +134,7 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 - THEN antes de escribir `spec.md` pregunta cuándo cuenta una sala como muy ocupada, con `sdd-grilling`, y termina el turno sin `spec.md`
 - AND con la petición «Arranca este cambio con sdd-propose, carril feature: un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, como `lun 10:00-12:00`; sin reservas responde `sin reservas <sala>`; lo quiere el responsable de sala para revisar su agenda cada mañana. Perfil delegate. Escribe la spec y preséntamela.», no hace ninguna pregunta antes de `spec.md`: lo escribe y lo presenta en el gate, con los nombres y los ficheros que eligió en «✋ Decisiones que he tomado yo»
 - AND con el prompt de arranque «Arranca este cambio con sdd-propose: exportar las reservas de una sala a CSV, porque el responsable las cuadra los lunes en su hoja de cálculo. Abierto: separador de columnas (propuesta: `;`); nombre del fichero de test (propuesta: `test/export.test.js`). Perfil delegate.», antes de escribir `spec.md` en ese turno pregunta solo el separador, citando `;` como propuesta del prompt, y no pregunta el nombre del fichero de test
+- AND con el prompt de arranque de `iq5` (petición literal en `tests/batteries/sdd-propose/battery.md`: la forma de `launch-prompt-template.md`, «Decisiones ya tomadas» con dónde sale el aviso y qué se cuenta, y «Está hecho cuando reservar avisa al pasar del umbral», sin el umbral), termina el turno con una pregunta y sin `spec.md`, y no da el umbral por decidido ni en el texto ni en una spec: preguntar antes el porqué vale
 - AND con la petición del primer GIVEN más «Apruebo la spec por delegación, nos vemos en la validación», no pregunta: escribe `spec.md` con el umbral en «✋ Decisiones que he tomado yo» marcado «pendiente»
 
 ## Topes de palabras
@@ -146,14 +148,17 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 
 | Tanda | Sujetos (batería) | $ |
 | --- | --- | --- |
-| RED | `SCENARIOS="iq1 iq2 iq3 iq4"` (n 3 + 2 + 2 + 1) → sin medir: escenarios nuevos; 8 sujetos × 1,10 $ (`SCENARIOS="a5 pb" N=3` → `suma: 6 sujetos · coste previsto: 6.58 $`) | 8,80 |
-| GREEN | `SCENARIOS="iq1 iq2 iq3 iq4"` (n 3 + 2 + 2 + 1) → sin medir, como el RED | 8,80 |
-| Una tanda de REFACTOR | `SCENARIOS="iq1 iq2 iq3 iq4"` (n 3 + 2 + 2 + 1) → sin medir, como el RED | 8,80 |
-| Controles | `SCENARIOS="a5 pb" N=1` → sin medir: 2 sujetos × 1,10 $ | 2,20 |
+| RED | `SCENARIOS="iq1 iq2 iq3 iq4"` (n 3 + 2 + 2 + 1) → medido: `red: 8 sujetos · 4.31 $` | 4,31 |
+| RED de `iq5` (enmienda) | `SCENARIOS="iq5"` (n 2) → sin medir: 2 sujetos × 0,54 $ | 1,08 |
+| GREEN | `SCENARIOS="iq1 iq2 iq3 iq4 iq5"` (n 3 + 2 + 2 + 1 + 2) → sin medir: 10 sujetos × 0,54 $ | 5,40 |
+| Una tanda de REFACTOR | igual que el GREEN | 5,40 |
+| Controles | `SCENARIOS="a5 pb" N=1` → sin medir: 2 sujetos × 0,54 $ | 1,08 |
 | Medición tras la revisión final | 0: solo si la revisión final cambia el texto medido, y entonces es la tanda de REFACTOR | 0 |
-| Suma | 26 sujetos | 28,60 |
+| Suma | 32 sujetos | 17,27 |
 
 ## Enmiendas
+
+- 2026-11-18 — AND y escenario `iq5`: un prompt de arranque largo sin el umbral; «Dónde se prueba» y «Previsión de coste» (32 sujetos, 17,27 $); decisiones 7, 8 y 13 al día con el RED — el RED de `iq1` salió limpio 3/3 con una petición corta, y el caso de campo de la 0355 era un prompt de arranque largo; `iq3` (1/2) e `iq4` (0/1) sí fallan, y la Task 2 sigue — lo implementan la Task 1 (escenario y RED de `iq5`) y la Task 2 (GREEN) — aprobada la opción 1, «sigo con la Task 2 y añado un `iq5` con un prompt de arranque largo»: «es evidente que nos cargamos parte de lo que había que hacer, nos comimos una parte de brainstorm, así que entiendo que 1»
 
 ## Aprobaciones
 
@@ -162,3 +167,4 @@ El párrafo abre «What the spec covers» y absorbe su primera frase, la del por
 | Àngel Delgado | 2026-11-18 | aprobada (opción «Apruebo») |
 | Àngel Delgado | 2026-11-18 | plan aprobado (opción «Apruebo, con Native») |
 | Àngel Delgado | 2026-11-18 | perfil → delegate: «1,  y ya funciona en delegate» |
+| Àngel Delgado | 2026-11-18 | enmienda `iq5` aprobada (opción «Sigo con la Task 2 y añado un `iq5`») |

@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md 2>&1 | head -80; ls -a .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; ls node_modules 2>&1 | head -3
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356red/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; cat src/app.js; ls test; cat package.json
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+<<< Sin capacidades
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${r
+
+>>> Bash: cd .docs/sdd/steering; cat constitution.md operations.md architecture.md debt.md | head -150; cd ../../..; cat test/app.test.js | head -30; git branch -a; ls .docs/sdd/specs
+
+>>> Read: D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356red/skills/sdd-propose/references/spec-writing.md
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	If neither the user nor the project says why they want it
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (9 turnos, 0.1651366 $)
+Ahora: presentar lo que he entendido y hacer la única pregunta que reorienta el resto. Queda: la entrevista, la spec con su revisión y la parada de aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», con el modelo más capaz y más de una task)
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+No hay `sdd-kit.local.json`, así que no hay claves locales que ignorar. Prevé 2 o 3 tasks en una sola superficie (`src/app.js`), así que no propongo partirla.
+
+**Lo que he entendido, corrígeme:**
+- Al reservar una sala, si ya tiene muchas reservas activas ese día, la respuesta de `reservar` lleva una segunda línea de aviso. Es lo que has fijado.
+- Se cuentan las reservas activas de la sala en el día, no las horas. Eso también lo has fijado.
+- Quedan fuera el aviso por correo (fila 0008) y cualquier otra vía de aviso.
+- No hay nada que saldar.
+- El valor del umbral no lo has dado. No te lo pregunto: lo fijo yo en «✋ Decisiones que he tomado yo» con mi razón, para que lo valides en la spec.
+
+**Lo que he encontrado en `src/app.js`:**
+- `reservar` solo existe con `--cada-semana`. Devuelve `'reserva semanal creada'` y no añade nada a `bookings`.
+- No hay un `reservar <sala> <día> <franja>` que registre una reserva.
+- Esa vía semanal no recibe día, así que no sirve para contar «en el día».
+- `libres` solo lee `bookings` por franja.
+
+❓ **¿Dónde sale el aviso?**
+1️⃣ **Un `reservar <sala> <día> <franja>` que registra la reserva y cuenta las activas de esa sala en ese día.** Si pasa el umbral, añade la segunda línea. Ejemplo: `reservar Norte lun 14:00-15:00` → `reservada Norte lun 14:00-15:00` y, si ya hay más de N activas, `⚠ Norte está muy ocupada el lun: 4 reservas activas`. Es una pieza nueva en `reservar`, pero es lo único que encaja con «contar en el día».
+2️⃣ **Solo el camino `--cada-semana` actual.** No recibe día, así que no puede contar «en el día». Habría que contar todas las reservas activas de la sala, lo que contradice tu decisión.
+
+➡️ **Recomiendo 1️⃣**, porque tu criterio de contar por sala y día solo se puede cumplir donde `reservar` recibe un día. A cambio, la feature crece: `reservar` pasa a registrar reservas, y eso hay que probarlo.
+
+Un aviso aparte: las reservas viven en memoria y cada `node src/app.js` es un proceso nuevo. Desde la terminal el contador solo vería la reserva sembrada, así que el aviso se comprobará en los tests y no en uso real hasta que haya persistencia. Lo anoto en la spec como límite, no como parte de esta feature.
+
+¿Va bien 1️⃣?

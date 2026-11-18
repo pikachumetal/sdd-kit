@@ -1,0 +1,99 @@
+--- [3]
+Ahora: leo el contexto del proyecto (PRODUCT, ROADMAP, steering y capabilities). Queda: clasificar, entrevistar y escribir la spec, hasta presentártela para aprobar.
+
+--- [26]
+Estoy escribiendo la spec en la carpeta de la feature 0012. Después viene la pasada de coherencia y la revisión con un revisor.
+
+--- [29]
+Ahora: pasada de coherencia (el delta sobre una copia de `.docs/sdd`). Queda: revisión de la spec y presentártela.
+
+--- [33]
+Ahora: lanzo la revisión de la spec con un revisor y su vigilancia de silencio. Queda: integrar los hallazgos y presentarte la spec.
+
+--- [38]
+La spec está escrita y el revisor la está leyendo en segundo plano. Espero su resultado para meter los hallazgos y presentártela. Todavía no sé qué ha encontrado.
+
+--- [41]
+1. Crítico · Intent y Delta, escenario «ordenadas por día y hora» · El orden alfabético de los textos da el mismo resultado que el orden por día de la semana en este caso (`lun`, `lun`, `mar`). Un `sort()` ingenuo pasa el escenario sin implementar el orden de la semana. · Usar días que el alfabeto desordena: por ejemplo `jue 09:00-10:00`, `lun 15:00-16:00`, `mar 08:00-09:00`, `dom 10:00-11:00`, con salida `lun`, `mar`, `jue`, `dom`.
+
+2. Crítico · Delta, escenario «sala que no existe o mal escrita» · El GIVEN solo nombra las salas Norte y Sur y no dice que Norte tenga reservas. Con Norte vacía, `reservas norte` da `sin reservas norte` aunque la comparación ignore mayúsculas, así que el escenario no prueba la regla de la decisión 6. · Dar a Norte una reserva activa, comprobar que `reservas norte` y `reservas NORTE` dicen `sin reservas …`, y separar la sala inexistente (`Oeste`) en su propio escenario.
+
+3. Crítico · Intent («Éxito: `node src/app.js reservas Norte` imprime sus reservas activas») y regla «Dónde viven los datos» (memoria) · Las reservas están en memoria y cada invocación de `node` arranca de cero. El ejemplo de éxito del Intent solo puede imprimir `sin reservas Norte`, y ningún escenario cubre el camino por CLI. · Corregir el Intent para que el éxito se mida con `run` (o con datos sembrados). Si de verdad se espera uso por CLI, declarar la persistencia como alcance o como límite explícito.
+
+4. Importante · Approach («Un día fuera de la lista de siete va al final») · Es una decisión tomada en el cuerpo. No está en «✋ Decisiones que he tomado yo» y ningún escenario la cubre. · Añadirla a las decisiones, con un escenario de día desconocido, o quitarla.
+
+5. Importante · Approach («el texto ordena igual que la hora») · La spec supone que las horas siempre tienen la forma `HH:MM` con ceros. Eso es un dato no verificado, y las reservas con `9:00` ordenarían mal. · Declararlo como supuesto en las decisiones, o comparar por hora numérica. Añadir un escenario con `09:00` frente a `10:00` el mismo día.
+
+6. Importante · Scope y decisión 9 · El Scope dice «`src/app.js` y sus tests», pero exportar `bookings` cambia el contrato del módulo y es el único modo de probar el orden. Los escenarios no dicen cómo se prepara el GIVEN. · Listarlo en el Scope como cambio de contrato y dejar claro que los GIVEN se siembran vía `bookings`. Añadir el criterio de que el export no se usa fuera de los tests.
+
+7. Importante · Delta, complemento del comando · Faltan las entradas que quedan fuera: más de un argumento (`reservas Norte Sur`), argumento vacío y sala con espacios. Tampoco se dice qué estados distintos de `active`, `cancelled` y `voided` quedan fuera. · Declarar el comportamiento ante argumentos de más, o «no aplica». Para los estados, decir «solo `active` sale» y cubrirlo con un escenario.
+
+8. Menor · Delta, escenario «canceladas y anuladas» · Mezcla dos comportamientos y el `AND si no queda ninguna activa` no tiene GIVEN propio. Ese caso lo cubre parcialmente el escenario de la sala vacía, que no incluye reservas inactivas. · Separarlo en un escenario con Norte que solo tiene reservas cancelada y anulada, con salida `sin reservas Norte`.
+
+9. Menor · Dónde se prueba · El gate añade `node scripts/lint.mjs`, pero la constitución solo exige `node --test`. · Alinear el gate con la constitución, o anotar que lint es un añadido.
+
+10. Menor · Decisión 10 y «Lo que se retira» · «hoy no se guardan» y el `git grep` sin hits son afirmaciones de código que este review no puede verificar. `PRODUCT.md` no existe en `steering/`, y esa ausencia no se menciona. · Citar la evidencia verificable (fichero y línea) y avisar de que falta `PRODUCT.md`, o crearlo.
+
+--- [46]
+Ahora: integro los hallazgos de la review en la spec. Queda: segunda ronda (aceptó Críticos) y presentártela.
+
+--- [57]
+Ahora: segunda ronda, un revisor que relee la spec corregida (hubo Críticos aceptados), y la fusión de prueba otra vez. Queda: integrar lo que salga y presentártela.
+
+--- [66]
+La segunda revisión está en marcha y la fusión de prueba del delta sigue pasando sin rechazos. Espero el resultado del revisor antes de presentarte la spec.
+
+--- [68]
+1. Crítico · Coherencia (líneas iniciales) · Dice «7 requisitos añadidos», pero el delta tiene 10 bloques ADDED (lista, orden, sin reservas, canceladas/anuladas, sin activas, otra sala, mayúsculas, sala inexistente, primer argumento, sin sala). La afirmación de que el merge fue limpio no se sostiene tal como está escrita. · Volver a ejecutar `capability merge` y poner el número real, o corregir el delta. Si el conteo es de otra cosa, decir de qué.
+2. Importante · Decisión 13 y Delta · La decisión 13 dice que solo `active` sale y que cualquier otro estado queda fuera, pero ningún escenario lo prueba. Un filtro `!= cancelled && != voided` pasa todos los escenarios y rompe la decisión. · Añadir un escenario con una reserva de estado distinto de los tres conocidos (por ejemplo `pending`), con THEN `sin reservas Norte`. Si ese estado no puede existir, quitar «cualquier otro queda fuera» de la decisión 13.
+3. Importante · Dónde se prueba / decisión 9 · El test «vacía `bookings` al terminar cada caso» borra también el dato inicial `Norte lun 10:00-12:00`. Si el test se reasigna o se reordena, el primer escenario y la comprobación por CLI dejan de ser fiables. La decisión no dice si se restaura o se vacía. · Decidir en la spec que cada caso guarda una copia del estado inicial y lo restaura, o que siembra y vacía antes de cada caso (`beforeEach`).
+4. Importante · Dónde se prueba · El camino por CLI (lectura de `argv`, `reservas` sin argumento, `reservas Norte Sur` desde la terminal) solo se comprueba a mano y no entra en el gate. Un fallo al pasar los argumentos desde `process.argv` a `run` no lo detecta `node --test`. · Añadir un test con `child_process` (`node src/app.js reservas Norte`), o declarar que el camino de `argv` ya lo cubre `cancel.test.js`.
+5. Importante · Reglas de la capacidad · «Límites: no aplica» es dudoso: la spec ya fija límites, como un solo argumento de sala (decisión 13) y franjas `HH:MM-HH:MM` con dos dígitos (decisión 12). Tampoco se declara el complemento de rol: `operations.md` dice «sin login» y PRODUCT.md dice que hay un solo usuario, pero el Intent habla del «responsable de sala». · Rellenar «Límites» con esas dos restricciones, y añadir una línea que diga que no hay control de acceso porque cualquiera que ejecute el programa puede consultar cualquier sala (rol: no aplica).
+6. Menor · Decisión 3 y Delta · No se define el orden cuando dos reservas activas tienen el mismo día y la misma hora de inicio y distinta hora de fin. El orden sería el de guardado o el del texto completo, según cómo se escriba. · Decir «por hora de inicio y, a igualdad, por la franja completa», o añadir que esos casos no se dan, y fijar el criterio en un escenario.
+7. Menor · Delta, escenario «Una sala que no existe» · El GIVEN «las salas Norte y Sur» no dice que Norte tenga reservas activas. Una implementación que devolviera siempre `sin reservas <arg>` pasaría este escenario (los demás sí la detectarían). · Poner en el GIVEN que Norte tiene `lun 10:00-12:00` activa, para que el escenario pruebe de verdad que Oeste no hereda reservas.
+8. Menor · Delta, escenario de mayúsculas · Un solo WHEN con dos órdenes y un THEN con dos resultados mezcla dos escenarios y deja ambigua la salida de cada uno. · Dividirlo en dos escenarios, o poner «WHEN … `reservas norte` → THEN `sin reservas norte`» y lo mismo para NORTE.
+9. Menor · Cabecera de la review · El «Mínimo razonable» deja sin lente técnica un cambio que toca el contrato del módulo (exportar `bookings`) y la estructura (decisión 2). Además, el Approach llama «función pura» a `roomAgenda`, que lee el estado global `bookings`. · Corregir «pura» por «sin efectos», y justificar la omisión de la lente técnica o añadir un segundo revisor.
+10. Menor · Decisiones 1, 2 y 9 frente a PRODUCT.md · La terminología marca «evitar» `booking` y `room`, pero la spec introduce `room-bookings`, `roomAgenda(room)` y el `bookings` exportado sin mencionarlo. Solo la decisión 1 justifica el slug. · Añadir a las decisiones 1, 2 y 9 que los identificadores de código y el slug en inglés son una excepción deliberada a la terminología de PRODUCT.md, y que el texto de la interfaz sigue en castellano.
+
+--- [70]
+Ahora: integro los hallazgos de la segunda ronda y cierro. No hay tercera ronda.
+
+--- [75]
+El recuento de la fusión ha dado 0. Miro la salida completa.
+
+--- [81]
+Ahora: te presento la spec. Falta tu aprobación; sin ella no escribo el plan ni toco código.
+
+🦆 El responsable de sala escribe `reservas Norte` y ve su agenda: una línea por reserva activa, como `lun 10:00-12:00`, ordenadas por día de la semana y hora. Las canceladas y las anuladas no salen. Si no queda ninguna, ve `sin reservas Norte`. Por dentro, una función nueva en el fichero único del programa que filtra por sala y estado activo y ordena.
+
+**Spec:** `.docs/sdd/changes/20261118-222021-feature-0012-reservas-sala/spec.md`, rama `feature/0012-reservas-sala`, carril feature, perfil delegate. No la he commiteado. Sigue en `draft`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+- **Capacidad nueva** `room-bookings`, con el slug en inglés.
+- **Enfoque:** una función `roomAgenda(room)` en `src/app.js`. He descartado un módulo nuevo y listar sin ordenar.
+- **Orden:** por día (`lun…dom`), luego por hora de inicio y, a igualdad, por la franja completa.
+- **Qué sale:** solo las reservas en estado `active`.
+- **Sala que no existe:** responde `sin reservas Oeste`, igual que una sala vacía.
+- **Mayúsculas:** distingue mayúsculas, como `cancelar` y `anular`. `reservas norte` responde `sin reservas norte`.
+- **Sin argumento:** responde `falta la sala: reservas <sala>`.
+- **Argumentos de más:** solo cuenta el primero.
+- **Formato de línea:** `<día> <franja>` y nada más, sin el nombre de quien reservó.
+- **Franjas:** siempre con dos dígitos, `HH:MM-HH:MM`.
+- **Test:** se exporta `bookings` solo para sembrar los casos de los tests.
+- **Persistencia:** las reservas siguen en memoria. Por CLI hoy `reservas Norte` imprime `lun 10:00-12:00`, el dato que carga el programa. Guardarlas entre ejecuciones queda fuera.
+- **Reservas semanales:** quedan fuera.
+
+**Review:** un revisor y una segunda ronda, los dos en sonnet.
+- **Primera ronda:** 3 Críticos, aceptados. El escenario de orden lo pasaba un `sort()` alfabético. El de mayúsculas no probaba nada porque Norte estaba vacía. Un tercero sobre el uso por CLI con datos en memoria. Este último solo lo acepté en parte: el programa carga una reserva de Norte al arrancar, así que por CLI sí sale una línea.
+- **Segunda ronda:** 1 Crítico, un recuento desfasado. Está corregido. También añadí un escenario con estado `pending` y un test por CLI con `child_process`.
+- **Rechazados:** 2 Menores, el `lint` del gate, que `operations.md` ya exige, y un `PRODUCT.md` que sí existe en la raíz.
+- **Fusión de prueba:** el delta fusiona sin rechazos en una copia de `.docs/sdd`: 11 requisitos y 5 reglas. Lo comprobé después de la última edición.
+- **Tamaño:** prevé 1 o 2 tasks sobre un solo fichero. No propongo partirla.
+
+**Validación:** la haces tú (`dev-lead`), porque lo que se ve en la terminal es el producto.
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada).** Escribo el plan y paso a la implementación.
+2. **Cambios.** Dime qué cambiar y lo ajusto.
+
