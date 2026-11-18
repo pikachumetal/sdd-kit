@@ -17,45 +17,15 @@ The script opens with it. With `validation.startEnvironment: true` in `.docs/sdd
 
 ## 3. Hands off
 
-From the message that presents the script until the person answers, launch nothing against the environment and leave nothing running against it: no batch, suite, `env-up`, `env-down`, probe or data write. A batch asked for «while I test» runs **before** you present —wait for its result— or **after** the answer; say which and why. Still fine: the environment raised and checked before presenting, the `sdd validation serve` server, and reading or re-injecting the panel.
+From the message that presents the script until the person answers, launch nothing against the environment and leave nothing running against it: no batch, suite, `env-up`, `env-down`, probe or data write. A batch asked for «while I test» runs **before** you present —wait for its result— or **after** the answer; say which and why. Still fine: the environment raised and checked before presenting.
 
-## 4. The panel line
+## 4. The record
 
-The validation message carries one of these two lines, before the script; pick one, never both:
+The script ends with «Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.»
 
-```text
-Panel: Chrome sobre <url de la app>
-Panel: plan B en http://127.0.0.1:<port>/
-```
-
-Without the Chrome tools it's the second, CLI apps included: launch `sdd validation serve` (§6) and see its URL answer before presenting. «Sin panel» is not an option, also with the app's environment down; only if that command fails, the line is `Panel: no arrancó: <su error>`.
-
-## 5. The panel in Chrome
-
-With the `claude-in-chrome` tools and a browser from `list_connected_browsers`, the person marks the steps on [validation-panel.js](validation-panel.js), over their app:
-
-- `sddValidationPanel.mount(<id>, [{id, title}])` mounts validation `<id>` (the feature's or patch's id), keeping that `<id>`'s saved marks; another `<id>` starts from zero; `mount(<id>)` restores them.
-- `read()` returns `[{id, title, status, comment, markedAt}]`, `status` `pending | ok | ko`; `clear()` removes its `localStorage` keys, all prefixed `sdd-validation-`.
-
-Open the app, inject the file with `javascript_tool` and mount the steps, each `title` «action → expected result». Then the four rules of feature 0162:
-
-1. `read_network_requests` right after injecting: the network log starts at the first call.
-2. `read_console_messages` with `clear: true` when injecting, so old errors aren't attached to a KO.
-3. On «listo», or when the person says the panel is gone, re-inject before reading: `eval(localStorage.getItem('sdd-validation-panel-src')); sddValidationPanel.mount('<id>')`.
-4. Say, when presenting and with a KO, that the screenshot is from reading time, not the KO's, and that the network log has no time.
-
-If injecting fails (a CSP blocking `eval`, another origin after an SSO), go to plan B and say why. The script also goes in text.
-
-## 6. Plan B
-
-No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" validation serve --steps <steps.json> --out .temp/validation/<id>.json` in the background, `steps.json` being the script's `[{id, title}]`. Before launching it, if `.temp/` isn't in the project's `.gitignore`, say so and propose adding it. Give the URL it prints (`panel: http://127.0.0.1:<port>/`). Say what this page loses: it doesn't see the app, so no console, network or screenshot of a KO; the person tells the error in the comment. On «listo», read the `--out` file and stop the server by its PID.
-
-## 7. The record
-
-- All `ok` and «listo»: `Validado: <fecha> · panel: <n>/<n> OK · «listo»`, then `clear()`.
-- A `ko`: «No funciona», with its comment and, in Chrome, the console and network read and a screenshot; then `clear()`: the retest starts clean.
-- A `pending` step isn't OK: ask. If the person won't test it now, deferred validation ([control-profiles.md](../../sdd-propose/references/control-profiles.md)) applies to those steps.
-- What the person says in the chat wins over a mark: record their phrase.
+- «validado», «sí» or what they tried and that it works: `Validado: <fecha> · «<frase literal>»`.
+- A failing step: «No funciona», with its number and what they see; the retest starts after the fix.
+- A step they won't test now: deferred validation ([control-profiles.md](../../sdd-propose/references/control-profiles.md)) applies to it.
 
 ## Common Rationalizations
 
@@ -64,5 +34,4 @@ No Chrome tools, no connected browser, or injection failing: `node "${CLAUDE_PLU
 | "They're in a rush: the batch runs in the background while they test" | It restarts the server or writes their data: «La tanda usa el servidor del puerto 4650 y lo para al acabar», a RED subject. Before presenting, or after the answer. |
 | "My E2E covered it" | Run the exact steps the person will type. |
 | "The key is set, but I didn't start anything" | That's its case: start it (§2). |
-| "No Chrome, or it's a CLI app: they paste the results" | Plan B: `sdd validation serve`, and the `Panel:` line says so. |
 | "It runs from the CLI: no environment to start" | «Arrancar» declares one: start it, check it, give its port. |
