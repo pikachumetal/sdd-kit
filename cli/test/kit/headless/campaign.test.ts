@@ -516,7 +516,7 @@ describe('procesos del sujeto', () => {
 
   describe('procesos lanzados desde la copia del kit', () => {
     const kitCli = join(KIT, 'cli', 'bin', 'sdd.js');
-    const serve = { pid: 71, commandLine: `node ${kitCli} validation serve --steps steps.json --out .temp/validation/0001.json` };
+    const serve = { pid: 71, commandLine: `node ${kitCli} watch command -- node server.mjs` };
     const pluginDir = { pid: 72, commandLine: `claude.exe -p --plugin-dir ${KIT}` };
 
     // Como en Windows: la carpeta no se borra mientras viva el servidor que tiene su cwd dentro.
@@ -528,7 +528,7 @@ describe('procesos del sujeto', () => {
       };
     }
 
-    it('para el servidor del panel que deja un sujeto y borra su carpeta sin EPERM', async () => {
+    it('para el servidor que deja un sujeto y borra su carpeta sin EPERM', async () => {
       const fs = kitFs();
       fs.write(join(folder, 'repo', 'a.txt'), '');
       const fake = fakeDeps(fs, { processes: [serve, pluginDir] });
