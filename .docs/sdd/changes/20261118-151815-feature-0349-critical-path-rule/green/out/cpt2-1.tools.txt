@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:sdd-tdd
+<<< Launching skill: sdd-kit:sdd-tdd
+
+>>> Read: <run>\repo\e2e\cancel.spec.js
+<<< 1	import { test, expect } from '@playwright/test';
+2	
+3	test('cancelar una reserva activa', async ({ page }) => {
+4	  await page.goto('/');
+5	  await page.getByRole('button', { name: 'Cancelar Norte lun' }).click();
+6	  await expect(page.getByText('cancelada Norte lun')).toBeVisible();
+7	});
+8	
+
+>>> Bash: cd <run>/repo && git ls-files | head -50 && cat package.json && cat D:/code/.worktrees/sdd-kit/feature-0349-critical-path-rule/.temp/kit-green/skills/sdd-tdd/references/writing-e2e.md
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/critical-path.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+.gitignore
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+e2e/cancel.spec.js
+package.json
+playwright.config.js
+src/a
+
+>>> Bash: cd <run>/repo && cat src/app.js playwright.config.js .docs/sdd/steering/critical-path.md; ls .docs/sdd/changes 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Edit: <run>\repo\e2e\cancel.spec.js
+<<< The file <run>\repo\e2e\cancel.spec.js has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Bash: cd <run>/repo && timeout 90 npx --no-install playwright test e2e/cancel.spec.js 2>&1 | tail -20
+<<< npm notice run npx
+npm notice run ^"playwright^" test e2e/cancel.spec.js
+Error: Cannot find package '@playwright/test' imported from <run>\repo\e2e\cancel.spec.js
+    at eval (<anonymous>:1:1)
+Error: No tests found.
+Make sure that arguments are regular expressions matching test files.
+You may need to escape symbols like "$" or "*" and quote the arguments.
+
+=== RESULTADO (8 turnos, 0.1340743 $)
+He ampliado `e2e/cancel.spec.js`, pero no he podido ver el test fallar en rojo. `@playwright/test` no está instalado en el repo (no hay `node_modules`), así que `npx playwright test e2e/cancel.spec.js` termina con `Cannot find package '@playwright/test'` y "No tests found". Ese error es de entorno, no un rojo válido. No he instalado nada.
+
+Al test existente (`cancelar una reserva activa`) le he añadido tras la cancelación:
+
+```js
+const reservas = page.getByRole('list', { name: 'Reservas' });
+await expect(reservas).toBeVisible();
+await expect(reservas).not.toContainText('Norte lun');
+```
+
+- **Sin título nuevo:** extiendo el test de «Camino crítico», como pide la regla 1 de E2E, así que no hace falta una fila nueva en `critical-path.md`.
+- **Por qué `toBeVisible`:** sin él, el `not.toContainText` pasaría en vacío si la lista no existe. Así el rojo exige que la lista exista y que Norte lun ya no esté.
+- **Localizador supuesto:** he supuesto una lista con rol `list` y nombre «Reservas», porque el spec no define cómo se llama. Si la UI usa otro nombre o rol, hay que ajustar solo esa línea.
+- **Sin UI web:** `src/app.js` es solo CLI y no hay ninguna página servida, ni `webServer` en `playwright.config.js` ni `baseURL`. El `page.goto('/')` del test ya existente tampoco tiene a qué apuntar. Eso ya era así antes de mi cambio.
+
+Para cerrar el rojo hace falta instalar `@playwright/test` y los navegadores. El fallo esperado sería que `getByRole('list', { name: 'Reservas' })` no se encuentra. Dime si instalo y lo ejecuto. No he implementado nada ni hecho commit.
