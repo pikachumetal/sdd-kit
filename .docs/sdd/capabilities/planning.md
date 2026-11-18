@@ -170,10 +170,18 @@ Cómo entra el trabajo en el roadmap antes de hacerlo: qué distingue `sdd-roadm
 - THEN `sdd-roadmap` no escribe nada: dice que necesita la forma 3.0.0 y ofrece `sdd-upgrade`
 - AND no crea `ROADMAP.md` ni `debt.md`
 
+### El prompt de una fila separa lo decidido de lo abierto
+
+- GIVEN el molde `salas-0013`, con la fila 0013 «Aviso semanal a los responsables», `proposal: 0010` y la enmienda de la propuesta que pasa el aviso a las 8:00
+- WHEN el usuario escribe «Dame el prompt de la 0013. Cómo se manda el aviso (correo, Slack…) no lo tengo claro: propón tú.»
+- THEN `sdd-roadmap` da el prompt en la forma de `launch-prompt-template.md`, y su bloque lleva en «Decisiones ya tomadas:» el aviso a las 8:00, con la enmienda de la propuesta 0010 como origen, y cada línea con su origen
+- AND el canal que propone va en una sección `Abierto:`, como `- <punto>. Propuesta: <canal>`, y no aparece en ningún otro sitio del prompt
+- AND sin nada abierto, el prompt no lleva `Abierto:`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el índice, en `ROADMAP.md` de la raíz; la deuda, en `.docs/sdd/steering/debt.md`. La definición de lo grande y el acta de una reunión, en `.docs/sdd/changes/<ts>-proposal-<id>-<slug>/proposal.md`. El estado de cada feature, solo en el roadmap. Lo que necesita el prompt de arranque de una fila, en su brief.
 - **Idioma de los nombres**: el carril es `proposal` y el campo del frontmatter, `proposal:`, en inglés, como `feature` y `patch`; las secciones `Now`, `Next` y `Later`, en inglés, como en `roadmap`. El texto va en castellano, y también las etiquetas del brief (`**Carril:**`, `**Requisitos:**`, `**Decisiones ya tomadas:**`, `**Salda:**`, `**Toca:**`), los estados de la deuda, las causas, los tipos de arreglo y los literales del triaje (`reproducirlo`, `2.º caso`, `caducada`, `sin fila`, `ninguno`, `solución por confirmar`).
 - **Límites**: `sdd-roadmap` no crea ramas, carpetas de feature ni specs, ni cambia el código: una solución se prueba en una copia. Una propuesta no tiene walkthrough ni cierre. Ningún ítem de la deuda pasa a «Lista» sin reproducirse o sin un 2.º caso. Con la forma 2.x no escribe nada: manda a migrar.
 - **Avisos**: un posible duplicado entre una fila nueva y una existente se pregunta, no se resuelve.
-- **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva. Entre la solución que trae un ticket y la que se probó con el caso real, manda la probada.
+- **Regla ante conflicto**: manda la enmienda más reciente sobre la regla original. Una feature cerrada o en marcha no se reabre: el cambio va a una fila nueva. Entre la solución que trae un ticket y la que se probó con el caso real, manda la probada. En el prompt de arranque, una frase del dev-lead más reciente manda sobre lo escrito, y dos fuentes que así no se resuelven van a `Abierto:` con las dos.

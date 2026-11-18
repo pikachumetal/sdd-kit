@@ -17,6 +17,8 @@ Los dos nombran «avisos por correo» de la 0008 en «Fuera de alcance:» y `src
 
 ## Controles
 
-`m1` y `m4`: cada línea de «Decisiones ya tomadas:» acaba con su origen (la propuesta 0010 o la fila 0013); sin nada abierto, sin `Abierto:`; la forma de M1 y M4, igual.
+`m1` y `m4`: cada línea de «Decisiones ya tomadas:» acaba con su origen (la propuesta 0010 o la fila 0013); la forma de M1 y M4, igual. Pero `m1-1` abre el prompt con «recibirán por correo», un canal que ni la propuesta 0010 ni la fila 0013 deciden, y no lleva `Abierto:`: sin que el usuario diga que lo duda, la suposición sale como decidida (revisión final, eje Spec). M1 no lo mide; va al ticket.
+
+Tras la pasada de arreglos de la revisión final (`fix/out/`): `m8` 1/1, con el canal en `Abierto:` y las 8:00 con su origen.
 
 Coste de la tanda `green` de esta batería: 6 sujetos, 0,82 $.
