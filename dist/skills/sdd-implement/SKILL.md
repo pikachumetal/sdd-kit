@@ -17,7 +17,7 @@ If `sdd-propose` handed you a confirmed patch, or you resume one (its `patch.md`
 
 ## Method
 
-The plan's `Ejecución` line decides, for the whole plan; `plan-writing.md` of `sdd-propose` writes it. In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`. With no subagent tool in your harness, the method is Native.
+The plan's `Ejecución` line decides, for the whole plan; `sdd-plan-writing` writes it. In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`. With no subagent tool in your harness, the method is Native.
 
 After the check of [Setup](#setup), invoke the method's skill with `Skill`; it prepares the workspace and runs the tasks:
 

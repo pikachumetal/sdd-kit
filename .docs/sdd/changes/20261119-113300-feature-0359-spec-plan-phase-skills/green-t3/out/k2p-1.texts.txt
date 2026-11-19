@@ -1,0 +1,186 @@
+--- [9]
+Estoy leyendo la constitución y la plantilla de `research.md` para escribir el plan del spike.
+
+--- [19]
+Ahora commiteo la apertura (el plan) antes de pasar a implementar.
+
+--- [23]
+Ahora: paso a ejecutar el plan en Native (1 task). Queda: medir, escribir el informe y la revisión final, ~15 min.
+
+--- [42]
+Task 1 completa. Ahora la revisión final de la rama con `sdd-verify`.
+
+--- [54]
+Leeré primero el paquete de revisión.
+
+--- [58]
+Ahora leo la spec, el plan y `src/app.js` en el directorio de revisión.
+
+--- [61]
+El plan está escrito y la task 1 del spike está medida y commiteada. Ahora espero el informe del eje Spec de la revisión final, que corre en segundo plano.
+
+- **Plan:** `plan.md` tiene una sola task en modo Native, con el cierre `node --test && node scripts/lint.mjs`. Está en el commit `ee528ce`.
+- **Medida:** O1 cumple. Con la carga confirmada, 1.000 reservas `active` en `10:00-12:00` repartidas entre Norte y Sur, el máximo fue 0,011 ms. Con una segunda carga que obliga a recorrer las 1.000 (todas en Norte, Sur libre), fue 0,057 ms. El umbral es 50 ms.
+- **Recomendación del informe:** no hace falta caché para abrir `libres` a toda la oficina. El `heapUsed` sube unos cientos de KB a saltos, pero baja después, así que no crece de forma sostenida.
+- **Commit de la task:** `9fb1a6e` con `measure.mjs`, `evidence/libres-1000.txt` y `research.md`, todo dentro de `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/`. `src/` y `test/` quedan intactos.
+- **Tests:** solo he corrido el baseline (`node --test` 4/4 y lint limpio) sobre el estado previo a la task. El gate de cierre completo corre una vez en la validación.
+
+Decisiones que tomé y que conviene que revises:
+1. La spec dice «cargadas con `seed`», pero el repo no tiene `seed` y `bookings` no se exporta. El script genera una copia de `src/app.js` con la carga sembrada y mide el `freeRooms` real. Si quieres `seed` como comando, sería otra fila del roadmap.
+2. Con las reservas alternadas entre Norte y Sur, `some` sale en el primer elemento y no recorre las 1.000. Por eso añadí la segunda carga y la apunté en el ledger como `Ruling`. Si no la querías, el informe pierde una tabla.
+3. Trabajo en la rama `feature/0031-free-rooms-load` del repo actual, sin crear un worktree aparte.
+
+Falta cerrar la revisión con sus hallazgos y pasar a `sdd-archive`.
+
+--- [64]
+Ya leí todo el paquete (183 líneas). Ahora compruebo que `src/` y `test/` siguen intactos y ejecuto la medida una vez.
+
+--- [68]
+### Strengths
+
+- Todas las cifras de `research.md` coinciden con `evidence/libres-1000.txt`. Comprobé una por una las 24 filas de la tabla de la §3 (tiempo y `heapUsed`), el p50 y el máximo de cada carga, y el valor de la rep 1 (0,003 y 0,020 ms). Recalculé los dos p50 a partir de las 12 filas y salen 0,002 y 0,008.
+- La decisión del ledger (Ruling) de añadir una segunda carga está bien tomada. En `freeRooms` (`src/app.js:6`), con las salas alternas `some` termina en el índice 0 para Norte y en el 1 para Sur, así que la carga del plan no recorre las 1.000 reservas. La carga «todas en Norte, Sur libre» sí recorre las 1.000 para Sur. El informe da las dos cargas y el estado de O1 se apoya en la peor.
+- El estado de O1 está bien justificado: el máximo medido es 0,057 ms frente a 50 ms. Lo repetí una vez con `measure.mjs`: salió con código 0, cifras del mismo orden (máx 0,011 y 0,055 ms) y «cumple» en las dos cargas.
+- `src/` y `test/` no cambian: `git diff --stat 7d6f55d..9fb1a6e -- src test` sale vacío. Esto es lo que pide la regla del spike.
+- La sustitución de `seed` (decisión 3 del plan) se dice abiertamente en la §2 y en la §5. El límite de la medida (no mide concurrencia ni arranque del proceso) también está escrito.
+- La recomendación cita filas medidas (máx 0,011 y 0,057 ms) y responde a la decisión que desbloquea la spec: no hace falta caché.
+
+### Issues
+
+#### Critical (Must Fix)
+
+Ninguno.
+
+#### Important (Should Fix)
+
+**1. La repetición fría nunca se mide, y el informe presenta la rep 1 como si lo fuera.**
+- **Dónde:** `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/measure.mjs:43` y `research.md:20`.
+- **Qué pasa:** antes del bucle, la línea 43 llama a `run('libres', [FRANJA])` para imprimir el resultado, y esa llamada no se cronometra. Es la primera ejecución de `freeRooms` en cada módulo (cada carga importa una copia nueva), o sea la única llamada realmente fría. Por eso la «rep 1» de la tabla ya es la segunda llamada. En `research.md:20`, la frase «La repetición 1 se mantiene en la tabla (0,003 y 0,020 ms)» da a entender que la fría está en la tabla, y no está.
+- **Por qué importa:** la línea 1 del Review Focus pide justo que una repetición fría lenta no se oculte. Además, en el uso real (`node src/app.js libres`, un proceso por orden) cada llamada es la primera, así que la llamada fría es la que más se parece a lo que vive la persona usuaria.
+- **Cómo arreglarlo:** cronometrar la llamada que da el resultado como rep 1, o sacar el resultado del valor que devuelve la rep 1 medida. Después, regenerar la evidencia y la fila O1.
+- **Gap:** `contradicts`. Viene de la línea 1 del Review Focus y del Step 1 de la Task 1.
+
+**2. La comprobación de que hay exactamente 1.000 reservas no mira la copia sembrada y nunca puede fallar.**
+- **Dónde:** `measure.mjs:35-39`.
+- **Qué pasa:** `sembradas` se cuenta sobre `carga`, el array que el propio script acaba de construir con `slot: FRANJA` y `status: 'active'` y con `length: RESERVAS`. Por construcción da siempre 1.000. La copia escrita en disco (`copia`) no se comprueba nunca. La única salvaguarda real es la regex de las líneas 13-17, que aborta si no encuentra el literal. No detecta una copia con más reservas, por ejemplo si `src/app.js` añadiera otras reservas fuera de esa línea o sembrara después.
+- **Por qué importa:** la línea 2 del Review Focus («la copia sembrada no contiene exactamente 1.000 → aborta») y la mitigación del riesgo en la §1.7 del plan se apoyan en esta comprobación. Además, la §5 del informe invita a repetir la medida con otras cargas, que es cuando el guard haría falta. La medida de hoy sigue siendo válida: `src/app.js:3` tiene un único literal y nada más modifica `bookings` al cargar el módulo.
+- **Cómo arreglarlo:** contar sobre `copia`, por ejemplo las apariciones de `"slot":"10:00-12:00","status":"active"` en el texto resultante, y comprobar además que ya no queda el literal original.
+- **Gap:** `partial`: aborta si falta el literal, pero no si el recuento es distinto. Viene de la línea 2 del Review Focus, del Step 1 de la Task 1 y de la §1.7 del plan.
+
+#### Minor (Nice to Have)
+
+**3. La §3 y la §4 se contradicen sobre si el recurso crece.**
+- **Dónde:** `research.md:47` («sin recurso creciente (sección 3)») frente a `research.md:43` («El `heapUsed` sube unos cientos de KB a saltos»).
+- **Qué pasa:** en la primera carga de la evidencia, el `heapUsed` sube en cada una de las 12 repeticiones (de 5.716.016 a 6.396.832 B) sin ninguna bajada. La explicación «es el montón de V8» se deduce del código y de la bajada en la rep 11 de la segunda carga, pero no se midió: no hay `--expose-gc` ni un `gc()` forzado. En mi ejecución sí aparecen bajadas en las dos cargas, lo que apoya la explicación.
+- **Cómo arreglarlo:** decir en la §4 «crece entre GC; no se observa acumulación atribuible a `libres`», o medir tras un `gc()` forzado.
+- **Gap:** `partial`. Viene de la línea 3 del Review Focus y del Step 3 de la Task 1.
+
+**4. La evidencia no dice en qué entorno se midió.**
+- **Dónde:** `evidence/libres-1000.txt:1` y la §2 de `research.md`.
+- **Qué pasa:** no constan la versión de Node, la máquina ni la fecha. Quien repita la medida no puede comparar con lo que se midió. Yo la repetí con Node v26.10.0.
+- **Cómo arreglarlo:** que el script imprima `process.version` y la plataforma en la cabecera.
+- **Gap:** `missing`. Lo esperaría una persona razonable que quiera repetir la medida, aunque la spec no lo pida.
+
+### Not verified
+
+- **Cuánto tarda la llamada fría de `libres`:** no verificado, porque el script no la mide y la revisión solo me permitía ejecutar `measure.mjs`. Por escala (1.000 elementos, `some` sin JIT) lo esperable es muy por debajo de 50 ms, pero no está medido.
+- **Que las cifras de la evidencia salgan de esta versión exacta del script:** no verificado, porque no hay forma de reproducir esos números exactos. Mi ejecución da el mismo formato y el mismo orden de magnitud.
+
+### Recommendations
+
+- Arreglar los issues 1 y 2 en `measure.mjs`, regenerar `evidence/libres-1000.txt` y actualizar la fila O1 y la tabla de la §3. Con el margen actual (casi 1.000 veces por debajo del umbral), es muy probable que O1 siga cumpliéndose y que la recomendación no cambie.
+- Ajustar la frase de la §4 sobre el recurso (issue 3).
+
+### Declined to judge
+
+- **Si «responde en < 50 ms» incluye el arranque del proceso** (`node src/app.js libres`). La decisión 5 del plan fija medir la llamada a la función, el informe declara ese límite en `research.md:50` y una caché no cambiaría el tiempo de arranque.
+- **Si existe una carga aún peor** (por ejemplo, reservas de salas que no están en `rooms` para que las dos salas recorran las 1.000). La spec confirma la carga «1.000 activas en la misma franja». Como mucho duplicaría las comparaciones, lo que no cambia el resultado con este margen.
+- **Que `measure.mjs` deje directorios en el temporal sin borrar.** Es calidad de código, que corresponde a otro eje.
+- **Que la cabecera impresa añada « — <nombre>»** tras `carga: 1000 reservas active en 10:00-12:00`. La verificación del plan solo pide ese prefijo, y el prefijo se cumple.
+- **Que el plan siga en `status: draft`.** Es del proceso, no del eje Spec.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** El informe es fiel a la evidencia: las cifras cuadran y la conclusión sobre O1 y la caché está justificada. Pero dos líneas del Review Focus no tienen el comportamiento que piden. La llamada fría se ejecuta sin cronometrar mientras el informe dice que está en la tabla, y la comprobación de las 1.000 reservas nunca puede fallar.
+
+--- [81]
+Hice el único pase de fix de la revisión y lancé la re-revisión final. Espero su veredicto antes de cerrar y pasar a `sdd-archive`.
+
+- **Revisión del eje Spec:** salió «con arreglos», con 2 Important, 2 Minor y ningún Critical.
+- **Fix 1:** la llamada fría de `libres` no se cronometraba y `research.md` la presentaba como la repetición 1. Ahora la repetición 1 es la primera llamada: 0,053 ms y 0,102 ms.
+- **Fix 2:** el recuento de 1.000 reservas se hacía sobre el array generado y nunca podía fallar. Ahora cuenta sobre la copia sembrada.
+- **Evidencia e informe:** regeneré `evidence/libres-1000.txt` y actualicé las cifras de `research.md` (fila O1, tabla de la §3 y §4). O1 sigue cumpliendo (máx 0,053 ms y 0,102 ms frente a 50 ms).
+- **Commit:** el fix está en `dbfcefb`. Tras él, `node --test` da 4/4 y el lint sale limpio.
+- **Minors diferidos:**
+  - `research.md` dice «sin recurso creciente» y a la vez que el `heapUsed` sube a saltos.
+  - La evidencia no imprime la versión de Node ni la plataforma.
+- **Rulings:**
+  - Los cuatro puntos que el revisor dejó sin juzgar los resolví con un `Ruling` en el ledger. Cuestan, como mucho, una medida más.
+  - Los otros dos son los de antes: la segunda carga de la medida y trabajar en la rama sin worktree aparte.
+
+--- [91]
+**Revisión del fix pass del spike 0031 (`9fb1a6e..dbfcefb`)**
+
+**Fortalezas**
+- **Hallazgo 1 (llamada fría) resuelto.** Ya no se llama a `run('libres', …)` antes del bucle. El resultado se guarda dentro del bucle y se imprime al final, en `measure.mjs:44-52`. Como cada carga importa un módulo nuevo (`mkdtempSync` da una ruta única) y el `if (command)` de `src/app.js:35` no se dispara sin argumentos, la rep 1 es de verdad la primera llamada a `freeRooms` en ese módulo. El cambio no introduce regresiones: el resultado impreso es el de la rep 12, que es el mismo que antes, y p50, máximo y umbral no cambian.
+- **Hallazgo 2 (recuento que no podía fallar) resuelto.** `measure.mjs:35` ya no cuenta sobre `carga`, sino sobre `copia`, que es el texto exacto que se escribe y se importa. Ahora falla si la sustitución no llega a la copia (cuenta 0), si `src/app.js` trae más reservas `active` en la franja con ese formato (cuenta mayor que 1.000) o si la serialización cambia. Depende del orden de claves del JSON, pero si eso cambia el fallo es un falso negativo con `exit 1`, no un falso «cumple».
+- **Las cifras de `research.md` coinciden una a una con `evidence/libres-1000.txt`:**
+  - La fila O1 (p50 0,002 y 0,008; máximo 0,053 y 0,102).
+  - Las 12 filas de la §3: los 24 tiempos y los 24 `heapUsed`.
+  - La §4 (máximo 0,053 y 0,102).
+  - He recalculado los p50 a partir de las reps: con las dos cargas salen 0,002 y 0,008.
+- **El comentario sobre la rep 1 es cierto.** Es la llamada fría y es el máximo de las dos cargas en la evidencia. También lo es en mi ejecución.
+- **El estado «cumple» de O1 sigue justificado.** El peor valor (0,102 ms) queda unas 490 veces por debajo de 50 ms.
+- **Las tres restricciones se respetan.** El diff solo toca la carpeta del spike, `src/` y `test/` están intactos, no se añaden comentarios en `measure.mjs` y el texto está en castellano.
+- **El cambio de «rep 11» a «rep 12»** en la caída de `heapUsed` de la segunda carga (`research.md:43`) es correcto: el valor pasa de 6.714.712 a 6.165.280.
+
+**Issues**
+- **Critical:** ninguno.
+- **Important:** ninguno.
+- **Minor** (de redacción, no bloquean):
+  - `research.md:20`: «unas 500 veces por debajo del umbral» se aplica a los dos máximos, pero solo vale para 0,102 ms; 0,053 ms queda unas 940 veces por debajo. Se entiende como cota inferior, pero quedaría más claro con «al menos unas 500 veces».
+  - `research.md:43`: «las demás bajan con el calentamiento» no es monótono. En la segunda carga, la rep 4 (0,026) sube respecto a la rep 3 (0,019). La tendencia general sí es cierta.
+- **Los 2 Minor diferidos no empeoran.** La tensión entre «sin recurso creciente» y «sube a saltos» es la misma que antes: la primera carga tampoco baja. La evidencia sigue sin versión de Node.
+
+**Ejecución de `measure.mjs`**
+- La ejecuté una vez en `review-0031-dbfcefb` con Node v26.10.0. Terminó con exit 0 y el árbol quedó limpio.
+- La estructura de la salida es la misma que la de la evidencia y la rep 1 vuelve a ser el máximo: 0,041 ms en la carga repartida y 0,092 ms en la que recorre las 1.000.
+- p50: 0,002 ms en la repartida y 0,012 ms en la que recorre las 1.000. Ese 0,012 es más alto que el 0,008 registrado, pero entra en el ruido de microsegundos que ya reconoce `research.md:22`. O1 cumple igual.
+
+**No verificado**
+- No sé con qué versión de Node se generó la evidencia; es el Minor diferido.
+- No he probado con mutaciones que el nuevo recuento falle. Lo deduzco leyendo el código.
+- Los tiempos no son reproducibles exactamente entre ejecuciones; solo he comprobado que se repiten la tendencia y el margen.
+
+**Ready to merge? Yes.** Los dos fixes resuelven sus hallazgos sin regresiones en `measure.mjs`, `research.md` coincide exactamente con la evidencia y O1 cumple con un margen de unas 500 veces. Lo que queda son dos matices de redacción opcionales.
+
+--- [98]
+El plan está escrito y el spike ejecutado y revisado, pero no he cerrado ni fusionado nada: me detengo antes de `sdd-archive`.
+
+Pediste el paso 5, el plan. Como el perfil es `delegate`, el flujo encadenó solo el plan, la task y la revisión final.
+
+**Plan y medida**
+- El plan está en `.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/plan.md`. Tiene una sola task, en modo Native.
+- Respuesta a la pregunta del spike: `libres` aguanta las 1.000 reservas. El máximo medido es 0,053 ms con la carga confirmada y 0,102 ms con la que recorre las 1.000, frente al umbral de 50 ms.
+- `research.md` recomienda no añadir caché antes de abrirlo a toda la oficina.
+- El informe y la evidencia (`research.md`, `measure.mjs`, `evidence/libres-1000.txt`) están en la misma carpeta de la spec. `src/` y `test/` no se tocaron.
+
+**Revisión y estado de la rama**
+- Un revisor independiente dio «con arreglos» (2 Important, ningún Critical). Los corregí y una re-revisión posterior dio «Ready to merge: Yes».
+- Commits de la rama: `ee528ce` (plan), `9fb1a6e` (task) y `dbfcefb` (arreglos). `node --test` da 4/4 y el lint sale limpio. El árbol está limpio y borré el workspace del plan.
+
+**Rulings que tomé por mi cuenta**
+- Añadí una segunda carga (1.000 en Norte, Sur libre), porque con las reservas alternadas `some` sale en el primer elemento y no recorre las 1.000. Si no la querías, el informe pierde una tabla.
+- La spec dice «cargadas con `seed`», pero el repo no tiene `seed`. El script genera una copia de `src/app.js` con la carga sembrada. Un `seed` real sería otra fila del roadmap.
+- Los cuatro puntos que el revisor dejó sin juzgar los resolví como «no cambian la conclusión»; el coste si me equivoco es una medida más.
+
+**Minors diferidos**
+- `research.md` dice «sin recurso creciente» a la vez que el `heapUsed` sube a saltos.
+- La evidencia no imprime la versión de Node.
+- «Unas 500 veces» por debajo del umbral vale solo para 0,102 ms; 0,053 ms son unas 940 veces.
+- «Las demás bajan» no es monótono.
+
+**Lo que falta** es el cierre con `sdd-archive`: walkthrough, roadmap y fusión. La validación es de agente (son medidas). `sdd-kit.json` no tiene bloque `merge`, así que la fusión a `develop` hay que confirmarla contigo. ¿Sigo con el cierre?
+

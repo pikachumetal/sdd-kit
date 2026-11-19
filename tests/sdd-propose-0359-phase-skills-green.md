@@ -8,3 +8,12 @@ Batería de `sdd-propose`, molde `reservas`, sujetos `sonnet`. Kit: `dist/` del 
 | --- | --- | --- | --- |
 | `rq1` | 2/3 | **3/3** | RQ1 3/3: ninguno carga `AskUserQuestion`; RQ1-B 3/3: los tres terminan en una pregunta numerada con los dos revisores, el modelo de cada uno y su coste. `rq1-3` recomienda un revisor en Opus en vez de dos, con los dos en la opción 2: la fila no lo pide. `rq1-2` añade «Dime también si apruebas la spec», una segunda pregunta en el mismo turno |
 | `rv1` | — | **2/2** | RV-S 2/2 (`>>> Skill: sdd-kit:sdd-spec-review`); RV-A y RV-B 2/2; RV-C 2/2: despachan sin preguntar el nivel |
+
+## Task 3 — `sdd-plan-writing` (`PHASE=green-t3`, N = 1)
+
+| Escenario | GREEN | Filas |
+| --- | --- | --- |
+| `p2` | **1/1** | PW 1/1 (`>>> Skill: sdd-kit:sdd-plan-writing`, después `sdd-implement`); P2 1/1: §3 dice `node --test && node scripts/lint.mjs` |
+| `k2p` | **1/1** | PW 1/1; K2p 1/1: la task lleva «Evidencia» con `research.md` y el script, y la línea `Ejecución` dice Native |
+
+`sdd-plan-writing`: 2.143 palabras, 13.4 KB; `kit:copies` en verde (conserva más del 50 % de `writing-plans`).

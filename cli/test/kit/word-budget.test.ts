@@ -19,6 +19,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-grilling': { skillMd: 886, total: 886 },
   'sdd-parallel-agents': { skillMd: 1156, total: 1156 },
   'sdd-init': { skillMd: 2667, total: 3212 },
+  'sdd-plan-writing': { skillMd: 2220, total: 2220 },
   'sdd-retro': { skillMd: 622, total: 622 },
   'sdd-roadmap': { skillMd: 3222, total: 3630 },
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
