@@ -4,6 +4,6 @@
 | --- | --- | --- |
 | 1 — Escenarios y RED | hecha | 52ecebd |
 | 2 — `sdd-spec-review` | hecha | 1d43f85 |
-| 3 — `sdd-plan-writing` | hecha | |
-| 4 — `sdd-spec-writing` y `sdd-propose` reducido | pendiente | |
+| 3 — `sdd-plan-writing` | hecha | a36877e |
+| 4 — `sdd-spec-writing`, `sdd-spec-approval` y `sdd-propose` reducido | hecha | |
 | 5 — Constitución, ADR, documentos y tramo | pendiente | |

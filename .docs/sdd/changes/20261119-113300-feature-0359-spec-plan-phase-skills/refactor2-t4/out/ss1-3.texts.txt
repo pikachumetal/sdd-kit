@@ -1,0 +1,42 @@
+--- [3]
+Ahora: leo el contexto del proyecto y el código que toca el cambio. Queda: clasificar y anunciar el carril, ~2 min.
+
+--- [14]
+Ahora: reservo el id y creo la rama. Queda: entrevista y spec, ~5 min.
+
+--- [21]
+Entiendo esto: `semana <sala>` lista las reservas activas de la sala, una por línea (`lun 10:00-12:00`), para que el responsable de sala prepare la semana los lunes. Queda fuera exportar a CSV. Corrígeme si no es así.
+
+**Lo que he visto en el código**
+- `src/app.js` guarda cada reserva como `{ room, day, slot, status }`, sin fecha: «la semana» es el conjunto de reservas con `status: 'active'` de esa sala. Las canceladas y anuladas no salen.
+- `run(cmd, params)` es el único punto de entrada, y los tests existentes (`app.test.js`, `cancel.test.js`) llaman a `run` directamente.
+
+**Las tres pilas**
+- **Contestado:**
+  - Una reserva por línea con el formato `lun 10:00-12:00`: lo dice tu petición.
+  - Solo reservas activas: es el estado que ya usan `libres` y `cancelar`.
+  - Cambio solo en `src/app.js`, sin CSV: está en el alcance que me diste.
+- **Menor:** sin dependencias nuevas ni tabla de días, por la arquitectura (Node 22, un solo fichero) y por tu decisión de una línea. Pasa a ✋.
+- **Tuyo:**
+  - El orden de los días, que pregunto ahora.
+  - Qué responde una sala sin reservas (tu propuesta: `sin reservas <sala>`).
+  - El nombre del fichero de test (tu propuesta: `test/semana.test.js`).
+
+  Los dos últimos los doy por abiertos hasta que los confirmes.
+
+Una cosa que cambia lo que ve el responsable:
+
+❓ **¿Qué orden de días quieres en la lista?**
+Ordenar con `sort()` sobre el texto del día coloca los días por orden alfabético, no por el de la semana. Con reservas de lunes a viernes saldría:
+```text
+semana Norte
+jue 09:00-10:00
+lun 10:00-12:00
+mar 14:00-15:00
+mié 11:00-12:00
+vie 10:00-11:00
+```
+1️⃣ **Orden de semana (lun, mar, mié, jue, vie…).** Sigue siendo una línea (`sort` con la posición del día en una lista de siete nombres), pero hay que escribir esa lista.
+2️⃣ **`sort()` literal sobre el texto.** Cero código extra, pero el jueves sale antes que el lunes y no sirve para preparar la semana.
+➡️ **Recomiendo 1️⃣**, porque el responsable lee la lista de arriba abajo el lunes y espera empezar por lunes. A cambio, la lista de días es un dato más en `src/app.js`.
+

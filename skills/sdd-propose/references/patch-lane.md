@@ -11,7 +11,7 @@ digraph decision {
     pfailure [label="FAILURE PATCH: the root cause fixes the solution" shape=box];
     pvis [label="VISUAL PATCH: variant of step 1" shape=box];
     pclosed [label="CLOSED-REQUEST PATCH: variant of step 1" shape=box];
-    feature [label="It's a FEATURE: step 4 of sdd-propose" shape=box];
+    feature [label="It's a FEATURE: sdd-spec-writing" shape=box];
 
     wt -> appendix [label="yes"]; wt -> failure [label="no"];
     failure -> det [label="yes"]; failure -> vis [label="no"];

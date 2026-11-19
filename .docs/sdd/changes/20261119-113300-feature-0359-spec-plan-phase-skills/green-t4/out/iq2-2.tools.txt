@@ -1,0 +1,102 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md 2>&1 | head -60; ls -R .docs/sdd | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -40; ls node_modules 2>&1 | head -2; git status --short | head
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd .docs/sdd/steering; cat constitution.md operations.md architecture.md; cd ../../..; ls; cat package.json 2>&1|head -20; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/nombrado.md"
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **
+
+>>> Bash: ls src test; cat src/app.js | head -80; cat .docs/sdd/steering/debt.md | head -20; git branch --show-current
+<<< src:
+app.js
+
+test:
+app.test.js
+cancel.test.js
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!bo
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; git checkout -b feature/0012-reservas-sala && node "$S" id claim --project-root . 2>&1
+<<< Switched to a new branch 'feature/0012-reservas-sala'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.203739 $)
+Ahora: dejo claro lo que entiendo y lo que decido yo, antes de redactar la spec. Queda: tu respuesta a una pregunta, y después la spec para que la apruebes, ~4 min.
+
+**Lo que entiendo.** Quieres `reservas <sala>` para que el responsable de sala revise su agenda cada mañana. Imprime las reservas activas de esa sala, una por línea como `lun 10:00-12:00`. Si no hay ninguna, responde `sin reservas <sala>`.
+
+**Lo que he visto.**
+- Hoy las reservas viven en memoria en `src/app.js`, con `room`, `day`, `slot` y `status`.
+- Una reserva ya tiene el formato de la línea (`day` + `slot`).
+- `cancelar` y `anular` no dejan la reserva activa (`cancelled` o `voided`), así que no deben salir en la lista.
+- No hay login ni roles todavía; los roles son la 0011. El comando lo puede ejecutar cualquiera.
+
+Corrígeme si algo no encaja.
+
+**Las tres pilas**
+- **Contestado:** el porqué, la sintaxis y los dos formatos de salida. Salen de tu petición.
+- **Menor, lo decido yo:**
+  - Una sala que no existe responde igual que una sin reservas, `sin reservas Foo`. Razón: `cancelar` hace lo mismo con una reserva inexistente, y la validación de datos es deuda aparte (`debt.md`).
+  - El nombre de sala se compara exacto, como en `cancelar`.
+  - Sin argumento, `reservas` cae en la respuesta por defecto actual, sin tratarlo como caso nuevo.
+  - Es un único enfoque, ampliar `run()` con una función de listado: es el patrón de `cancelBooking` y `voidBooking`, y no hay alternativa razonable en un solo fichero.
+- **Tuyo:** el orden de las líneas, porque cambia lo que ve el responsable.
+
+❓ **Orden de las líneas**
+Con `Norte` reservada el lunes a las 10:00, el jueves a las 09:00 y el lunes a las 08:00, anotadas en ese orden:
+1️⃣ **Por semana y hora:** sale `lun 08:00-09:00`, `lun 10:00-12:00`, `jue 09:00-10:00`. Se lee como una agenda, de arriba abajo.
+2️⃣ **Por orden de reserva:** sale `lun 10:00-12:00`, `jue 09:00-10:00`, `lun 08:00-09:00`. Es lo más simple, pero la agenda queda desordenada.
+➡️ **Recomiendo 1️⃣**, porque revisa la agenda cada mañana y necesita verla cronológica. A cambio, hay que definir el orden de los días (`lun`…`dom`), porque ordenar el texto alfabéticamente pondría `jue` antes de `lun`.
+
+¿Qué orden prefieres, 1️⃣ o 2️⃣?

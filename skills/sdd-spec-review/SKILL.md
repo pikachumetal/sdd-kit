@@ -1,6 +1,6 @@
 ---
 name: sdd-spec-review
-description: Use when the spec step reaches the review of a full or lite spec, after its coherence pass, to size the review and brief the reviewers. Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-spec-approval reaches the review of a full or lite spec, after its coherence pass, to size the review and brief the reviewers. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 # sdd-spec-review
@@ -11,7 +11,7 @@ description: Use when the spec step reaches the review of a full or lite spec, a
 
 <!-- kit: incluye phase-notice -->
 
-The complexity rubric and the adversarial reviewer. Applies in full and lite mode, after writing `spec.md` and its coherence pass, and before presenting it at the gate; the message that dispatches it opens with the phase notice. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either. This skill returns the findings and doesn't approve or edit the spec: the step that wrote the spec folds them in as §4 says and presents the gate.
+The complexity rubric and the adversarial reviewer. Applies in full and lite mode, after writing `spec.md` and its coherence pass, and before presenting it at the gate; the message that dispatches it opens with the phase notice. A spike has no review: it has no delta or Scope to review, and its output is evidence that gets measured. A config change has no spec, so no review either. This skill returns the findings and doesn't approve or edit the spec: `sdd-spec-approval` folds them in as §4 says and presents the gate.
 
 ## 1. Count the signals (observable in the spec)
 
