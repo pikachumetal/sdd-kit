@@ -121,7 +121,7 @@ Si una parte no la entiendes (por ejemplo, si te propone partir y no sabes si ha
 | Perfil | Dónde para el agente |
 | --- | --- |
 | `pair` | En la spec, en el plan, tras cada task (con un guion para probarla), en los desvíos, en la validación y antes del merge |
-| `delegate` (el de defecto) | En la spec, en los desvíos y en la validación. Antes de la spec te pregunta, una por turno, lo que falta y es tuyo (el porqué, el criterio, el alcance); lo de método lo decide y te lo enseña en el ✋. El plan lo escribe y sigue sin preguntarte |
+| `delegate` (el de defecto) | En la spec, en los desvíos y en la validación. Antes de la spec te enseña lo abierto en tres montones y te pregunta, una por turno, lo que es tuyo (el porqué, el criterio, el alcance, lo que el prompt deja en «Abierto»); lo de método lo decide y te lo enseña en el ✋. El plan lo escribe y sigue sin preguntarte |
 | `unattended` | En ningún punto hasta terminar la release. Aprueba él las specs con las decisiones apuntadas, resuelve los desvíos por la opción más conservadora y deja la validación para la release. Conviene con el trabajo bien definido: si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, aparca la feature y sigue con la siguiente |
 
 En los tres, el merge a `main`, el tag, un push que no sea el de la rama de integración y abrir un PR los decides tú.
@@ -268,4 +268,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v3.0.3, noviembre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v3.0.4, noviembre de 2026.*

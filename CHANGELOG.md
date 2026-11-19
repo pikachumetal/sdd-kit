@@ -4,6 +4,18 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [3.0.4] - 2026-11-19
+
+smoke: pendiente
+
+### Changed
+
+- **Feature 0359** — La spec y el plan se escriben en cuatro skills de fase que `sdd-propose` invoca por nombre (`sdd-spec-writing`, `sdd-spec-review`, `sdd-spec-approval`, `sdd-plan-writing`), y la entrevista no tiene puerta para no preguntar: los tres montones salen a la vista antes de `spec.md` y lo de «Abierto» va siempre al del dev-lead. → [ref](.docs/sdd/changes/20261119-113300-feature-0359-spec-plan-phase-skills/)
+
+### Fixed
+
+- **Patch 0360** — `sdd estimation log` en un proyecto sin `changes/` ni `specs/` escribe el log con su cabecera y cero filas y sale con 0, en vez de fallar en el paso 5 de `sdd-init`. → [ref](.docs/sdd/changes/20261119-115321-patch-0360-estimation-log-empty-project/)
+
 ## [3.0.3] - 2026-11-19
 
 smoke: pendiente
