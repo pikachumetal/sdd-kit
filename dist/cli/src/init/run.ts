@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { isAbsolute, normalize } from 'node:path';
+import { templatePendingFiles } from '../../bin/session-start.js';
 import { UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
 import { mergeGitignore } from './gitignore.ts';
@@ -71,5 +72,8 @@ export function runInit(options: InitOptions, io: Io): number {
   const writes = plan(options, notes);
   writes.forEach((write) => io.out(apply(options.root, write)));
   notes.forEach((note) => io.out(note));
+  if (options.action.kind === 'finish') {
+    templatePendingFiles(options.root).forEach((file) => io.out(`${file}: queda <!-- sdd-template: pending -->: hasta quitarla, el kit no migra el proyecto y manda a sdd-init`));
+  }
   return 0;
 }
