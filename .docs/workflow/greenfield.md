@@ -186,7 +186,7 @@ Reducir el tiempo que va de una idea a una funcionalidad validada por el cliente
 
 ---
 
-*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.2, noviembre de 2026.*
+*Estos documentos son la documentación temprana del kit y se mantienen al día con él: cuando una release cambia un carril, un artefacto o una regla que aquí se describe, se actualizan en el mismo cierre. Última revisión: kit v3.0.3, noviembre de 2026.*
 
 ## Referencias
 

@@ -37,7 +37,7 @@ Casi todo lo del kit acaba en `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`, en la
 | **Una reunión con el cliente** | Pegas las notas de la reunión de ayer | Una propuesta con el acta literal (fecha, asistentes, notas). Cada cosa nueva que pide el cliente es una fila; lo que descarta queda `⏸️ aparcada`, sin borrarse; el orden que pide se aplica a lo pendiente |
 | **Reordenar o cambiar** | «La 0014 va tras la 0012», «quita la 0020», «el cliente ha cambiado la regla del descuento» | Solo toca las filas que nombras. Si cambia una regla ya acordada, añade una enmienda fechada a la propuesta y reparte solo lo pendiente. Una feature cerrada o en marcha no se toca: lo que el cambio le pida va a una fila nueva «tras» ella |
 | **Preparar una release** | «Prepara la release 3», «qué entra en la siguiente entrega» | Inventario (Later, deuda, lo que quedó de la anterior), orden por riesgo con los bloqueos marcados y el título de Now con la versión (`## Now — 3.0.0 · en preparación`), con las filas que decidas tú; lo pendiente que no entra pasa a Next |
-| **Un prompt o la siguiente** | «Dame el prompt de la 0014», «qué sigue», «dame la siguiente» | No escribe nada: lee la fila y su propuesta y te da el prompt de arranque. Con «qué sigue» ofrece primero las piezas abiertas de lo que ya está empezado, y luego las filas de Now y de Next en orden; no ofrece una que esté en marcha, bloqueada o en Later |
+| **Un prompt o la siguiente** | «Dame el prompt de la 0014», «qué sigue», «dame la siguiente» | No escribe nada: lee la fila y su propuesta y te da el prompt de arranque. En «Decisiones ya tomadas» solo va lo que dijiste o está escrito, con su origen; lo que propone el agente va a «Abierto», y la sesión que lo arranca te lo pregunta. Con «qué sigue» ofrece primero las piezas abiertas de lo que ya está empezado, y luego las filas de Now y de Next en orden; no ofrece una que esté en marcha, bloqueada o en Later |
 | **Triar la deuda** | «Tria el ticket», «triaje de la deuda» | Cada ítem de «Por triar» de `steering/debt.md` sale con uno de tres destinos: «En espera» (falta reproducirlo o un segundo caso), «Lista» (con su evidencia y la fila que la salda) o descartado |
 
 Tres cosas que conviene saber:
@@ -121,7 +121,7 @@ Si una parte no la entiendes (por ejemplo, si te propone partir y no sabes si ha
 | Perfil | Dónde para el agente |
 | --- | --- |
 | `pair` | En la spec, en el plan, tras cada task (con un guion para probarla), en los desvíos, en la validación y antes del merge |
-| `delegate` (el de defecto) | En la spec, en los desvíos y en la validación. El plan lo escribe y sigue sin preguntarte |
+| `delegate` (el de defecto) | En la spec, en los desvíos y en la validación. Antes de la spec te pregunta, una por turno, lo que falta y es tuyo (el porqué, el criterio, el alcance); lo de método lo decide y te lo enseña en el ✋. El plan lo escribe y sigue sin preguntarte |
 | `unattended` | En ningún punto hasta terminar la release. Aprueba él las specs con las decisiones apuntadas, resuelve los desvíos por la opción más conservadora y deja la validación para la release. Conviene con el trabajo bien definido: si una pregunta de la entrevista no tiene respuesta en los documentos del proyecto, aparca la feature y sigue con la siguiente |
 
 En los tres, el merge a `main`, el tag, un push que no sea el de la rama de integración y abrir un PR los decides tú.
@@ -268,4 +268,4 @@ En ningún caso el agente rehace el merge a mano con `git merge`, `git pull` o `
 
 ---
 
-*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v3.0.2, noviembre de 2026.*
+*Esta guía describe el kit tal como funciona en la versión indicada; cuando una release cambia un carril, una pregunta o una regla que aquí se cuenta, se actualiza en el mismo cierre. Última revisión: kit v3.0.3, noviembre de 2026.*

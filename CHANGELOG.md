@@ -4,6 +4,19 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [3.0.3] - 2026-11-19
+
+smoke: pendiente
+
+### Added
+
+- **Feature 0355** — Spike: inventario de la política de cada repo que dictan las skills (tests más allá del unitario, camino crítico, guion de validación, verificación de frontend), con 93 piezas, adónde iría cada una (skill de proyecto o template), las 6.434 palabras que saldrían y los cortes por versiones; no cambia ninguna skill. → [ref](.docs/sdd/changes/20261118-204334-feature-0355-kit-policy-inventory/)
+
+### Changed
+
+- **Feature 0356** — En `delegate`, la entrevista de la spec reparte lo abierto en tres montones como `brainstorming`: lo respondido se usa, lo menor lo decide el agente y va al ✋, y lo del dev-lead (el porqué, el criterio, el alcance, lo de «Abierto») se pregunta. → [ref](.docs/sdd/changes/20261118-214723-feature-0356-delegate-interview-asks/)
+- **Feature 0357** — El prompt de arranque solo pone en «Decisiones ya tomadas» lo que dijo o aceptó el dev-lead o está escrito, cada línea con su origen; lo que propone quien escribe el prompt va a la sección nueva `Abierto:`. → [ref](.docs/sdd/changes/20261118-215209-feature-0357-launch-prompt-open-items/)
+
 ## [3.0.2] - 2026-11-18
 
 smoke: 2026-11-18 · 0 hallazgos (humo de sdd-archive v1b y t1 sin el panel, 2/2; gates de release)
