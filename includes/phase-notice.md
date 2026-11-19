@@ -1,0 +1,1 @@
+**Phase notice** — every time you move to another step or phase, your message opens with a plain line: `Ahora: <qué haces, dicho sin número de paso>. Queda: <lo que falta hasta la próxima parada del usuario>, ~<minutos>`, and `, ~<dólares>` if the step launches subagents or subjects; a counter («van 7 de 15») doesn't replace it.

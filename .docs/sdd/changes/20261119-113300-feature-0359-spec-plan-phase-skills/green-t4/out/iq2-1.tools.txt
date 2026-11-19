@@ -1,0 +1,119 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>&1 | head -2
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+{"version": "3.0.3"
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md package.json .docs/sdd/steering/*.md; ls -R src test scripts; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd; git branch -a
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -30 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; cat .docs/sdd/changes 2>&1 | head -1; cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/nombrado.md"
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve; git remote -v
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-reservas-sala && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root .
+<<< Switched to a new branch 'feature/0012-reservas-sala'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.21096070000000003 $)
+Ahora: aclaro con usted el orden de las líneas antes de escribir la spec. Queda: ese punto, el enfoque y la spec con su aprobación, ~10 min.
+
+**Lo que entiendo.** El responsable de sala quiere revisar su agenda cada mañana. Para eso, `reservas <sala>` imprime las reservas activas de esa sala, una por línea (`lun 10:00-12:00`), y si no hay ninguna responde `sin reservas <sala>`. Corríjame si algo no es así.
+
+**Lo que he visto en el código.**
+- `src/app.js` guarda las reservas en memoria con `status` (`active`, `cancelled`, `voided`). Las canceladas y las anuladas no se listarían.
+- `run()` cae en `salas` con cualquier comando que no conozca.
+- Hoy hay una sola reserva de ejemplo (Norte, `lun 10:00-12:00`).
+- La reserva guarda el día como `lun`, `mar`…, sin fecha.
+
+**Contestado**
+- El formato de las líneas y el mensaje de vacío: los da su petición.
+- Solo las activas: la petición dice «activas». Es el mismo criterio que `findBooking`.
+- El porqué (agenda matinal del responsable): lo da su petición.
+
+**Menor (lo decido yo y irá a ✋)**
+- El nombre de la función y dónde va: sigue el patrón de `cancelBooking` y `voidBooking`, en `src/app.js`, que es el único fichero de entrada (`architecture.md`).
+- Una sala que no existe (`reservas Oeste`) responde `sin reservas Oeste`: lo da el patrón de `cancelBooking`, que no valida la sala.
+
+**Del dev-lead (queda abierta)**
+- El orden de las líneas. Lo veo en la pantalla y no lo fija nada de lo que ha escrito.
+
+❓ **Orden de las líneas**
+
+Con la Norte reservada el lunes 10:00-12:00, el martes 09:00-10:00 y el lunes 08:00-09:00, esto saldría:
+
+1️⃣ **Por día de la semana (lun→dom) y luego por hora**
+```
+lun 08:00-09:00
+lun 10:00-12:00
+mar 09:00-10:00
+```
+2️⃣ **Por orden de creación** (sin ordenar, como están guardadas)
+```
+lun 10:00-12:00
+mar 09:00-10:00
+lun 08:00-09:00
+```
+
+➡️ **Recomiendo 1️⃣**, porque una agenda que se revisa cada mañana se lee de arriba abajo en el orden del tiempo. A cambio, hay que definir el orden de los días a mano (`jue` iría antes que `lun` si se ordenara alfabéticamente), y eso es una regla más que probar.
+
+¿Prefiere 1️⃣ o 2️⃣?

@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat src/app.js PRODUCT.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; ls; ls test .docs/sdd .docs/sdd/steering; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json ROADMAP.md
+
+>>> Bash: cat test/app.test.js test/cancel.test.js; ls node_modules 2>&1 | head -3; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< Exit code 1
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room}
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md; K="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359/skills"; cat "$K/sdd-propose/references/spec-writing.md" "$K/sdd-grilling/SKILL.md"
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-
+
+=== RESULTADO (6 turnos, 0.1617768 $)
+Ahora: arranco la feature y te planteo una decisión sobre el orden antes de escribir la spec. Queda: la spec para tu aprobación (o delegación) y el plan, ~6 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido** (corrígeme):
+- `semana <sala>` imprime las reservas activas de esa sala, una por línea (`lun 10:00-12:00`), para que el responsable prepare la semana los lunes. No entran las canceladas ni las anuladas, y no entra el CSV.
+- El cambio vive en `src/app.js` (rama `run`, junto a `libres`, `cancelar` y `anular`), con su test en un fichero nuevo. Calculo 2 tasks, así que no propongo dividirlo.
+- No hay dependencias que instalar (Node 22 sin paquetes). El roadmap no tiene fila para esto, así que irá con id de secuencia propio, y `sdd merge --push` al cerrar, como pides.
+- La spec de `task-0005-weekly` solo dice `status: done`, sin contenido que reutilizar. `capabilities/` está vacío.
+
+**Un problema con una decisión que ya tomaste.** Un `sort()` sobre el texto ordena los días alfabéticamente, no por el calendario. Con reservas de lunes, martes, jueves y viernes saldría así:
+
+```text
+jue 09:00-10:00
+lun 10:00-12:00
+mar 15:00-16:00
+vie 11:00-12:00
+```
+
+El jueves iría antes que el lunes, justo en la lista con la que preparas la semana. Lo veo en contra de lo que buscas, aunque tu motivo (una línea, sin tabla) es razonable.
+
+❓ **Orden de las reservas**
+1️⃣ **Orden de calendario con una lista de días** (`['lun','mar','mié','jue','vie','sáb','dom']`) y la franja como desempate. Sigue siendo una sola función corta, sin tabla, y la salida queda `lun, mar, jue, vie`. Cuesta unas líneas más que `sort()`.
+2️⃣ **`sort()` sobre el texto, como lo decidiste.** Es una línea, pero deja `jue` antes que `lun`. Lo registro como decisión tuya y no lo vuelvo a plantear.
+
+➡️ **Recomiendo 1️⃣**, porque el orden alfabético de los días del español no coincide con el de la semana y la lista se lee los lunes para planificar. A cambio, hay unas líneas más de código y un test más.
+
+¿Cuál eliges?
+
+Quedan abiertos, y los preguntaré después de este: qué responde una sala sin reservas (tu propuesta, `sin reservas <sala>`) y el nombre del test. El nombre de `test/semana.test.js` lo decido yo y irá a «Decisiones que he tomado yo».

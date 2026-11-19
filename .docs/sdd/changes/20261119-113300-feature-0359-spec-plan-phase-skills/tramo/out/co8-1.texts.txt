@@ -1,0 +1,62 @@
+--- [2]
+Ahora: leo la spec y empiezo el repaso de coherencia. Queda: repaso, revisión y presentarte la spec para aprobar, ~10 min.
+
+--- [15]
+Sigo con el repaso de coherencia: he encontrado dos fallos en la spec y ahora los corrijo. Primero miro cómo declara el delta una capacidad nueva.
+
+--- [25]
+Ahora: despacho a un único revisor, porque la spec es pequeña (~10 líneas, sin contrato público ni `MODIFIED`). Queda: integrar sus hallazgos y presentarte la spec, ~5 min, ~0,3 $.
+
+--- [31]
+El revisor está en marcha; espero su resultado antes de seguir, porque sus hallazgos entran en la spec antes del gate.
+
+--- [37]
+1. Importante · Spec ADDED «Ver las salas libres» · El escenario pasa sin el comportamiento. Con la reserva de Norte de 10:00 a 12:00 y `libres 10:00-12:00`, «responde `Sur`» lo cumple cualquier función que devuelva `Sur` fijo. Además el GIVEN no fija el día (¿se consulta el lunes?) ni qué pasa con Norte fuera de la franja. · Añadir un segundo caso con franja que no solape (`libres 12:00-14:00` responde `Norte, Sur`). Añadir el día al WHEN o decir que la consulta no lo usa.
+
+2. Importante · Delta «Rechazar una franja no válida» · El escenario solo cubre inicio = final e invertida. No cubre los límites de la decisión 5: `libres 10:00` sin `-` o ausente «sigue como hoy», y es comportamiento que se promete sin escenario. · Añadir un escenario (o un AND) para la franja sin `-` o ausente: qué responde hoy, medido. Si no se quiere probar, quitar la decisión 5 o pasarla a Scope como «no entra».
+
+3. Importante · Approach / decisión 3 · «Comparar como texto» no está en «✋ Decisiones». Con franjas sin cero a la izquierda (`9:00-10:00`) la comparación alfabética da `9:00 > 10:00` y rechaza una franja válida. La spec deja el formato fuera (fila de deuda) pero convierte ese hueco en un falso rechazo. · Subir la comparación textual a «✋ Decisiones» con su consecuencia (`9:00-10:00` se rechaza), o añadir un escenario que fije el comportamiento aceptado.
+
+4. Importante · Decisión 1 / Intent · El Intent dice «rechazarla» sin definir «no válida». La definición sale de la decisión 3, que no es un requisito del delta. El requisito nuevo nombra solo «franja no válida» sin su regla (final no posterior al inicio). · Poner la regla en una frase del requisito ADDED (el final no es posterior al inicio) y no solo en los escenarios.
+
+5. Importante · Decisión 4 / Capacidades · `rooms` nace con «Ver las salas libres» como ADDED, descrito como «vigente», a partir de un solo test existente. Eso es documentar el comportamiento como si fuera contrato. Su escenario (salida `Sur`) puede no coincidir con lo que hace hoy `freeRooms`, y la decisión 1 ya midió `Norte, Sur` en otra entrada. Nada demuestra que ese escenario se ejecute hoy tal cual. · Citar el test existente (`test/app.test.js:5-6`) como fuente del escenario y declarar que se verificó que pasa hoy. Anotar que el nombre «Ver las salas libres» es nuevo.
+
+6. Menor · Decisión 4 · El slug `rooms` va en inglés y PRODUCT.md dice «Evitar: room» para Sala. Es un conflicto con el vocabulario del producto. La constitución pide el texto de la interfaz y de los documentos en castellano, y el slug es un nombre de fichero, así que puede ser legítimo, pero no está justificado. · Justificar el slug frente a «Evitar: room» o cambiarlo a `salas`.
+
+7. Menor · Decisión 2 / Delta · El texto «franja no válida: el final va después del inicio» no dice que el inicio y el final se contrastan, y el usuario que escribe `12:00-10:00` solo ve que «el final va después». Está en castellano, conforme a la constitución, y no hay contradicción. Tampoco aclara si la respuesta es un error con exit distinto de 0 o una cadena normal. · Declarar el canal de salida (cadena devuelta por `run` o error/exit code) en el requisito. Ahora el escenario no distingue ambos.
+
+8. Menor · Scope / Dónde se prueba · Se promete test de la franja válida (`libres 10:00-12:00`), que ya existe en `test/app.test.js:5-6`. Se dice «el escenario vigente no cambia», pero «Dónde se prueba» lo lista como nuevo. Es una inconsistencia menor sobre si se añade o se reutiliza. · Decir que el test de la franja válida se reutiliza y solo se añaden los dos de rechazo.
+
+9. Menor · Sección «Reglas de producto» (5 bis) · La constitución no tiene sección «Reglas de producto» (solo 4 reglas de proceso), así que no se pueden contrastar las cinco reglas por nombre. Un dato nuevo (el texto de error) queda sin regla contra la que validar. · Anotarlo en la spec («la constitución no declara reglas de producto») o añadir esa sección a la constitución antes de aprobar.
+
+10. Menor · Cabecera · Falta el ejemplo con nombre real; se comprobó que Norte y Sur coinciden con PRODUCT.md y que no hay clientes ni personas reales en los ejemplos. El aprobador `Laura` y «conserjería» no aparecen en PRODUCT.md, que dice que no hay más usuarios ni desarrolladores. · Aclarar quién es Laura y qué es conserjería, o quitar el reporte de conserjería de la decisión 1, porque contradice «no hay más usuarios».
+
+--- [43]
+Ahora integro los hallazgos en la spec.
+
+--- [48]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta; con ella sigo a escribir el plan, ~5 min.
+
+🦆 **En llano.** Hoy, si alguien pide `libres 10:00-10:00` (franja de cero minutos) o `libres 12:00-10:00` (al revés), la app contesta `Norte, Sur` como si fuera una consulta normal. Con esta spec, `libres` mira antes si el final de la franja va después del inicio. Si no, responde «franja no válida: el final va después del inicio». Si la franja es buena, todo sigue igual. El cambio es de unas dos líneas en `run('libres', …)` (`src/app.js:28`) y dos tests nuevos. El formato `HH:MM` queda fuera: es otra fila de deuda.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El caso de conserjería, `libres 10:00-10:00`, devuelve hoy `Norte, Sur` (lo medí). Es el caso que se cierra, y tiene su escenario.
+2. Texto de la respuesta: «franja no válida: el final va después del inicio».
+3. «No válida» significa que el final no es posterior al inicio. Cubre la franja de cero minutos y la invertida, con el mismo texto.
+4. `rooms` es una capacidad nueva. No existe `capabilities/`, así que el merge rechazaba el `MODIFIED` que escribí al principio. Nace con dos requisitos: «Ver las salas libres» (el comportamiento de hoy, tomado de `test/app.test.js:5-6`, que pasa) y «Rechazar una franja no válida».
+5. Una franja ausente o sin `-` sigue como hoy y no se prueba.
+6. La comparación es de texto. Consecuencia aceptada: `9:00-10:00`, sin cero inicial, se rechazaría. Arreglarlo es el formato, que queda fuera.
+7. El rechazo es una cadena que devuelve `run`, no un error ni un código de salida.
+
+**Cambios que hice en este repaso**
+- Coherencia: el escenario usaba `12:00-10:00` y no cubría el caso de conserjería, así que añadí `10:00-10:00`. También faltaban «Approach» y «Lo que se retira o cambia de forma».
+- Delta probado en una copia de `.docs/sdd`: `sdd capability merge` termina con exit 0 y añade los dos requisitos a `rooms.md`. `capabilities/` del repo no cambió.
+- Review: un revisor (sonnet), sin Críticos y sin segunda ronda. Acepté 7 hallazgos y rechacé 3 con su motivo. Están en «Hallazgos de la review» de la spec. Rechacé el slug `rooms` (lo pide la regla de la plantilla), la falta de «Reglas de producto» en la constitución, y lo de que Laura y conserjería no estén en `PRODUCT.md`.
+
+Spec: `.docs/sdd/specs/20261008-190000-feature-0021-slot-check/spec.md`
+
+¿Apruebas la spec?
+1. **Apruebo (Recomendada)**: escribo el plan y sigo.
+2. **Cambios**: dime qué ajusto.
+3. **Apruebo, pero paro antes de la Task 1**: escribo el plan y me detengo antes de implementar, para que lo revises.
+

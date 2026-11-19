@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && ls -R .docs/sdd | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; git branch --show-current
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd:
+decisions/
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/decisions:
+0003-bookings-in-memory.md
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/decisions/*.md; ls .docs/sdd/capabilities 2>&1; ls node_modules 2>&1 | head -2; cat package.json; find src test scripts -type f
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references" && cat nombrado.md; cat control-profiles.md | head -60; cd "<run>/repo" && wc -l src/app.js && cat src/app.js
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$SDD" id next --project-root "$PWD" --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; git checkout -b feature/0012-reservas-persistentes develop && node "$SDD" id claim --project-root "$PWD"; git branch --show-current
+<<< Switched to a new branch 'feature/0012-reservas-persistentes'
+sin remoto: la 0012 vale (contador local)
+feature/0012-reservas-persistentes
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.2152757 $)
+Ahora: te presento lo que entiendo y cómo reparto las decisiones, antes de escribir la spec. Queda: tu respuesta a una pregunta, y después las decisiones de diseño y la spec para que la apruebes, ~10 min.
+
+**Lo que entiendo.** Hoy `salas` guarda las reservas en un array en memoria (`src/app.js`). Cada arranque empieza de cero, y el único dato que aparece es una reserva de ejemplo escrita en el código (Norte, lun, 10:00-12:00). Quieres que lo reservado, cancelado o anulado siga ahí al cerrar la terminal y volver a abrirla.
+
+**Lo que he encontrado.**
+- La ADR 0003 (`accepted`) decidió lo contrario: reservas en memoria y `src/` sin `node:fs`. Su «Confirmación» fallaría con este cambio. La spec tendrá que sustituir esa ADR con una nueva, no ignorarla.
+- La ADR ya nombra lo que habrá que decidir: dónde vive el fichero, qué pasa con dos terminales a la vez y cómo se versiona el formato.
+- Ahora `node src/app.js <comando>` es un proceso por comando, y `reservar` solo devuelve un texto sin crear nada. La persistencia tocará `app.js` y los dos tests existentes.
+
+Corrígeme si algo no encaja.
+
+**Reparto de decisiones**
+- **Contestado:** las reservas sobreviven al cierre (tu petición), el idioma es castellano (constitución) y no se añaden dependencias (architecture.md).
+- **Menor, lo decido yo:** el nombre y formato interno del fichero. Va a ✋ y lo decido con lo que ya usa el proyecto, porque nadie más lee ese fichero.
+- **Tuyo, lo preguntaré una a una:** el porqué, la ubicación del fichero, el caso de dos terminales a la vez, qué pasa con la reserva de ejemplo del código, y los no-objetivos (por ejemplo, si importa sincronizar entre máquinas).
+
+Empiezo por lo que solo tú sabes: ¿qué te ha pasado, o qué esperas que pase, para querer que las reservas no se pierdan al cerrar la terminal?

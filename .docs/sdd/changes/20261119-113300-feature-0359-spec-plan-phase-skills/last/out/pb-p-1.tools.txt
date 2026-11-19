@@ -1,0 +1,101 @@
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80 && cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+scripts/lint.mjs
+src/app.js
+test/app.test.js
+test/cancel.te
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && cat src/app.js package.json PRODUCT.md ROADMAP.md .docs/sdd/steering/architecture.md .docs/sdd/steering/constitution.md; head -30 .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; head -20 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (7 turnos, 0.1438272 $)
+Ahora: te cuento lo que he entendido y cómo reparto las decisiones. Queda: tu respuesta, el mensaje de enfoques, `spec.md` y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: pair (lo pides tú; el del proyecto es delegate)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Un comando `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado. La opción `--sala` filtra las cuatro. La salida es una tabla de texto, y una vista sin reservas dice «sin reservas». El plan sale en 5 tasks, una por vista y otra para `--sala`.
+
+**Lo que he visto en el código.** Todo está en `src/app.js`. Cada reserva guarda sala, día, franja y estado (`active`, `cancelled`, `voided`). No hay horario ni aforo. `--cada-semana` no crea reservas reales, solo devuelve un texto.
+
+**Contestado:**
+- Cuatro vistas, `--sala`, tabla y «sin reservas»: tu petición.
+- Cinco tasks: tu petición.
+
+**Menor** (lo decido yo y va a ✋):
+- Ocupación = número de reservas, no porcentaje. Sin aforo ni horario en los datos no hay base para un porcentaje.
+- Solo cuentan las reservas `active`. `libres` y `findBooking` ya tratan solo esas como ocupación.
+- Días en orden de semana, `lun` a `dom`, no alfabético.
+
+**Del dev-lead** (las iré preguntando de una en una):
+- el porqué del informe;
+- qué hace `--sala` con «salas que nadie ha reservado»;
+- qué hace `--sala` con una sala que no existe;
+- cómo se ordenan y desempatan las franjas más reservadas.
+
+Empiezo por lo primero: ¿para qué vas a usar estos informes y qué decisión te ayudarán a tomar?
+
+=== RESULTADO (1 turnos, 0.1730504 $)
+No te di una recomendación sobre el porqué: era una pregunta abierta y solo tú puedes contestarla. Lo dejo **pendiente** y va a ✋ como «pendiente». No me lo invento. Sigo con la siguiente decisión, que sí traigo con recomendación.
+
+Ahora: pregunto cómo se comporta `--sala` con «salas que nadie ha reservado». Queda: dos preguntas más, los enfoques, `spec.md` y su aprobación, ~8 min.
+
+❓ **`--sala` en la vista «salas que nadie ha reservado»**
+Hoy solo hay una reserva: Norte, lunes, 10:00-12:00. Sur no tiene ninguna.
+
+1️⃣ **La vista sigue y se filtra como las otras tres**
+```text
+informes --sala Sur    → nadie la ha reservado: Sur
+informes --sala Norte  → nadie la ha reservado: ninguna
+```
+Cumple tu «filtra las cuatro». Con una sola sala la respuesta es casi un sí o un no. Tendría que inventar el texto «ninguna» cuando la lista queda vacía.
+
+2️⃣ **La vista se omite con `--sala` y la salida lo dice**
+```text
+informes --sala Sur    → (3 vistas)  salas sin reservar: no aplica con --sala
+```
+Es más natural para quien lee, pero contradice lo decidido, que `--sala` filtra las cuatro.
+
+➡️ **Recomiendo 1️⃣**, porque es lo que decidiste con el dev-lead y mantiene la salida con cuatro vistas siempre. A cambio, la vista 4 aporta poco con una sola sala, y el texto «ninguna» es una decisión mía que irá a ✋.
+
+¿Qué prefieres, 1️⃣ o 2️⃣?

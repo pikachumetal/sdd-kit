@@ -1,0 +1,80 @@
+--- [4]
+Ahora: leo el contexto del proyecto (docs SDD) para clasificar el cambio. Queda: clasificar, anunciar y arrancar la spec, ~2 min.
+
+--- [15]
+Ahora: escribo la spec (aprobada por delegación, sin turno de preguntas; lo abierto va a ✋ como «pendiente»). Queda: spec, revisión, plan y Task 1 con su commit, ~12 min.
+
+--- [23]
+Ahora: paso la spec por su coherencia, revisión y aprobación (por delegación). Queda: plan, Task 1 y su commit, ~10 min.
+
+--- [29]
+Ahora: aplico la rúbrica de revisión de la spec. Queda: plan, Task 1 y su commit, ~8 min.
+
+--- [33]
+Ahora: despacho un revisor (Sonnet; delegación, Scope pequeño, sin contrato público ni `MODIFIED`). Queda: integrar hallazgos, plan, Task 1 y commit, ~8 min, ~0,3 $.
+
+--- [35]
+Revisor despachado (un Sonnet con los siete puntos). Espero su resultado antes de seguir con el gate y el plan.
+
+--- [42]
+1. Crítico · Delta / Capacidad `booking-cancellation` y Scope · El código de hoy sí tiene `cancelar <sala> <día>` en `src/app.js:13`, así que el comportamiento «cancelar sin motivo» ya existe. Declarar la capacidad como «Nueva» con todo ADDED oculta que el cambio modifica ese comportamiento, y no hay `capabilities/` donde apoyarlo. «Cancelar sin reserva» es ADDED pero ya funciona hoy, y su escenario pasa sin implementar nada (ver 2). · Decidir si `booking-cancellation` se crea desde cero a partir del comportamiento actual (el delta recoge el estado final completo y se dice que se «documenta lo existente»). Si no, declarar el cambio de «cancelar exige motivo» como MODIFIED de una capacidad base que se añada.
+
+2. Importante · Delta, «Cancelar sin reserva» · Con el código actual `cancelar Sur mar otro` ya devuelve `sin reserva Sur mar`, porque `cancelBooking` ignora el tercer argumento. El escenario pasa sin el comportamiento nuevo y no prueba el orden de comprobación de la decisión 5. · Añadir un escenario con un motivo inválido o ausente y sin reserva (`cancelar Sur mar aburrimiento` → `sin reserva Sur mar`). Así el orden queda fijado y el escenario falla sin la implementación.
+
+3. Importante · Delta, «Listado de canceladas» · El `AND` mezcla dos escenarios (sin canceladas, y que las anuladas no salen) en un solo THEN. No hay GIVEN con una anulada, así que «las anuladas no salen» no está probado. Tampoco se prueba el orden de alta ni varias canceladas. · Partir en tres escenarios: lista vacía → `sin canceladas`; GIVEN una anulada y una cancelada → solo sale la cancelada; varias canceladas → orden de alta.
+
+4. Importante · Terminología (PRODUCT.md) y Decisión 7 · PRODUCT.md define Cancelación como «la anula el propio cliente antes de 24 h» y la Anulación como la del responsable. La spec deja fuera la regla de 24 h, pero llama «cancelación» a algo que hoy no la comprueba. «Términos resueltos: ninguno» no lo reconoce. La decisión 7 apoya su razonamiento en la terminología pero no dice que la comprobación de 24 h no existe. · Declarar en Scope y en las decisiones que la regla de 24 h sigue sin implementar y por qué no es una contradicción. Poner el término en «Términos resueltos» o en una nota.
+
+5. Importante · Decisión 3 y Delta · La spec fija la comparación de motivos como exacta, pero no dice nada sobre mayúsculas, espacios o un cuarto argumento sobrante (`cancelar Norte lun otro extra`). Los argumentos ausentes (`cancelar` sin sala o día) tampoco están cubiertos. · Declarar en una decisión la política (comparación exacta y sensible a mayúsculas, argumentos extra ignorados o rechazados) y añadir un escenario. Como mínimo, mencionarlo como «no aplica».
+
+6. Importante · Reglas de la capacidad (punto 5 bis) · No hay sección «Reglas de la capacidad» ni «no aplica» para las cinco reglas por nombre. Hay datos nuevos (`reason`, `CANCEL_REASONS`), nombres nuevos (el comando `canceladas`, las claves de motivo), un límite (lista cerrada de 3), mensajes de aviso y una condición de conflicto (cancelar una reserva ya cancelada o anulada). Nada de esto está declarado. · Añadir la sección con las cinco reglas, cada una con su valor o «no aplica» y el motivo. Cubrir al menos la cancelación repetida: `findBooking` filtra por `active`, así que devuelve `sin reserva`, y eso debería tener escenario.
+
+7. Importante · Roles/acceso (punto 5) · No se dice qué está prohibido. PRODUCT.md distingue al cliente, que cancela, del responsable de sala, que anula. La spec no restringe a nadie ni dice que no hay roles. `canceladas` expone los motivos a cualquiera, y no se dice si eso es intencionado. Lo que se prohíbe (cancelar una reserva ya anulada o cancelada) tampoco está escrito. · Declarar «sin roles ni autenticación en la CLI» y listar lo prohibido. Una reserva anulada no se puede cancelar, y una cancelada no se puede cancelar de nuevo.
+
+8. Menor · Decisiones, punto 5 y Scope · La decisión 5 (orden de comprobación) y la 7 (anuladas fuera) no llevan «Pendiente», mientras las demás sí. Además, decisiones de fondo como que `canceladas` no lleve parámetros, que `reason` se guarde en la reserva y la constante CANCEL_REASONS están en el cuerpo y no en la lista. «Pasada de coherencia» y «Política de modelos» están como viñetas de la lista de decisiones, y no son decisiones. · Marcar «Pendiente» donde corresponda, mover el diseño de `reason` y `CANCEL_REASONS` a decisiones, y sacar las dos viñetas finales de esa sección.
+
+9. Menor · Intent / 🦆 y decisión 4 · El Intent promete que «toda reserva cancelada tras esta feature» tiene motivo. Las reservas canceladas antes en memoria no existen (no hay persistencia), pero `voidBooking` sigue produciendo `status: 'voided'` sin motivo, y `canceladas` muestra `cancelled`. Si una reserva cancelada llegara sin `reason`, no habría texto definido. La etiqueta del éxito `(cambio de planes)` sale de `CANCEL_REASONS`, pero eso no se especifica en el delta. · Aclarar en el Intent que `reason` es siempre uno de los tres valores. Si el tipo de dato cambia (una reserva con `reason` y `status`), declararlo en una nota de contratos.
+
+10. Menor · «Dónde se prueba» y Scope · Los tests existentes de `cancelar` hay que cambiarlos. La tabla dice que «el test sigue verde», pero el test de éxito de `test/cancel.test.js:6` ahora falla sin motivo, y hoy `cancelar` sin reserva sigue pasando porque ignora el motivo. No hay test para `anular` que garantice que no se vea afectado, aunque el Scope lo deja fuera. El `bookings` es un array en memoria compartido entre tests, con lo que cancelar `Norte lun` en un test deja el estado sucio para el siguiente. · Pedir que cada test de `canceladas` y de `cancelar` prepare su propio estado (reiniciar `bookings`), y declarar que el test de `anular` existente seguirá igual.
+
+--- [44]
+Ahora: integro los hallazgos de la revisión en la spec. Queda: aprobar por delegación, plan, Task 1 y commit, ~7 min.
+
+--- [46]
+Ahora: spec aprobada por delegación (frase registrada). Paso al plan. Queda: plan, Task 1 y su commit, ~6 min.
+
+--- [51]
+Ahora: escribo `plan.md`. Queda: commit de apertura, Task 1 con TDD y su commit, ~6 min.
+
+--- [58]
+Ahora: paso a implementar la Task 1 (TDD) y paro en su commit, como pediste. Queda: Task 1 y su commit, ~4 min.
+
+--- [61]
+Ahora: compruebo la base y arranco la ejecución nativa de la Task 1. Queda: Task 1 con su commit, ~4 min.
+
+--- [67]
+Ahora: abro el ledger, `tasks.md` y escribo los tests RED de la Task 1.
+
+--- [72]
+RED correcto (falta el export). Ahora el código mínimo.
+
+--- [76]
+Paro aquí, como pediste: la Task 1 está hecha y commiteada (`e7aa0e4`, en `feature/0010-motivo-cancelacion`).
+
+**Estado**
+- `cancelar` exige ahora un motivo de la lista. Si falta, o no es uno de los tres, no cancela y responde con las opciones. Si va bien, responde por ejemplo `cancelada Norte lun (sala ocupada)`.
+- Los motivos se escriben sin espacios en el comando: `cambio-de-planes`, `sala-ocupada`, `otro`. En pantalla salen como `cambio de planes`, `sala ocupada`, `otro`.
+- Pasan los 7 tests de `test/cancel.test.js` (`ℹ fail 0`). Vi la RED fallar antes de escribir el código.
+- Solo corrí ese fichero. La suite entera y el lint están pendientes para el gate de cierre.
+- Spec y plan van en el commit `a92eeae`. Spec aprobada por delegación (tu frase está registrada en ella), revisada por un Sonnet y con sus hallazgos integrados.
+- Queda la Task 2: el comando `canceladas`, que lista las reservas canceladas con su motivo.
+
+**Decisiones que tomé yo (marcadas «pendiente» en la spec)**
+- El motivo es obligatorio: sin él no se cancela.
+- Los textos de aviso y la sintaxis de las claves del motivo son míos.
+- Creé el comando `canceladas`, porque el listado que menciona la fila del roadmap no existía.
+- Las anulaciones no llevan motivo ni salen en `canceladas`.
+- Exporté `bookings` desde `src/app.js` para que cada test siembre su propio estado.
+
+**Para retomar:** dime «sigue» y continúo con la Task 2, la revisión final y el cierre. Rulings: no hay ninguno en el ledger.
+

@@ -53,7 +53,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - WHEN el agente la recibe
 - THEN la rebate una vez, con el argumento y la alternativa concreta
 - AND si el usuario mantiene su respuesta, es decisión suya: la apunta con sus palabras y sigue con lo que pidió, tal como lo pidió, también cuando repite algo que existe («mantengo lo que dije» tras saber que `libres` ya está en `src/app.js`), sin volver a rebatirla ni reconvertirla en un cambio de lo que existe
-- AND en `sdd-propose`, lo que el usuario mantiene va a «Decisiones tomadas con el dev-lead»
+- AND en `sdd-spec-writing`, lo que el usuario mantiene va a «Decisiones tomadas con el dev-lead»
 
 ### «Decide tú»
 
@@ -76,10 +76,10 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 - GIVEN una entrevista que llega a la parada que fija la skill que la invoca o, sin parada propia, a la de por defecto: cada decisión del usuario contestada o pendiente (el usuario dijo no saberla, o la dejó sin contestar tras preguntarla una vez)
 - WHEN el agente termina
 - THEN devuelve a la skill que la invocó dos listas: lo que decidió el usuario y lo que decidió el agente (con su motivo), más lo pendiente
-- AND si la skill que invoca tiene gate (spec, documento de la init, propuesta), la confirmación es ese gate: no pide una confirmación propia antes
+- AND si la skill que invoca tiene gate (spec, documento de la init, propuesta), la confirmación es ese gate: no pide una confirmación propia antes, salvo el mensaje de los montones de `sdd-spec-writing` con el montón del dev-lead vacío, que pide confirmar el diseño corto antes de `spec.md`, una sola vez
 - AND invocada desde `sdd-explore`, que no tiene gate, confirma con una sola pregunta
 - AND no pregunta lo que la petición ya dice o delega, ni lo que puede averiguar leyendo el proyecto
-- AND `sdd-explore`, `sdd-propose`, `sdd-roadmap` y `sdd-config` paran con la de por defecto; en `sdd-propose`, lo de método que queda va a «Decisiones que he tomado yo» como «decidido por mí», y lo no contestado, al mismo bloque marcado «pendiente»
+- AND `sdd-explore`, `sdd-spec-writing`, `sdd-roadmap` y `sdd-config` paran con la de por defecto; en `sdd-spec-writing`, lo de método que queda va a «Decisiones que he tomado yo» como «decidido por mí», y lo no contestado, al mismo bloque marcado «pendiente»
 - AND `sdd-init` fija su parada: cuando cada tema de su tabla está contestado, pendiente o «no aplica»
 
 ### Busca fuera del repo antes de preguntar lo que depende de un hecho externo
@@ -122,7 +122,7 @@ Cómo pregunta el kit al usuario cuando una skill necesita sus decisiones: una p
 
 ### Lo que decide el agente va como suyo
 
-- GIVEN una entrevista de `sdd-propose` para exportar a CSV en la que el usuario no ha contestado para qué lo quiere ni ha dicho qué hoja de cálculo usa
+- GIVEN una entrevista de `sdd-spec-writing` para exportar a CSV en la que el usuario no ha contestado para qué lo quiere ni ha dicho qué hoja de cálculo usa
 - WHEN el agente sigue
 - THEN el para qué queda pendiente, no «lo tomo como confirmado y lo uso como base»
 - AND el separador, que depende de la hoja que el usuario no ha dicho, se pregunta o queda pendiente; no sale «**Separador:** coma» como hecho

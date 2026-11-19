@@ -1,0 +1,106 @@
+--- [3]
+Ahora: leo el proyecto (código, `.docs/sdd/`, roadmap) para saber qué hay hoy. Queda: el mensaje con lo que he entendido y las tres listas, ~3 min.
+
+--- [8]
+Ahora: te cuento lo que he entendido y separo lo contestado de lo que falta. Queda: tu respuesta, luego el spec con su aprobación y el plan de 5 tasks, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media»)
+Para otro perfil: «perfil `pair` para esta feature»
+```
+
+**Lo que he entendido.** Un comando `informes` que imprime una tabla de texto con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado. La opción `--sala` filtra las cuatro. Sin reservas, cada vista dice «sin reservas». El plan sale en 5 tasks: una por vista y otra para `--sala`.
+
+**Lo que he visto en el proyecto.** `src/app.js` es un solo fichero. Las reservas son un array en memoria con `room`, `day`, `slot` y `status` (`active`, `cancelled` o `voided`), y hoy solo hay una (Norte, lun, 10:00-12:00). Los tests usan `run(cmd, params)`. No hay fila en el roadmap para esto.
+
+**Tres listas**
+- **Contestado** (lo dijiste tú): las cuatro vistas, `--sala` sobre las cuatro, tabla de texto, «sin reservas» y las 5 tasks.
+- **Menor** (lo decido yo con el proyecto): el comando vive en `src/app.js` y se engancha en `run` junto a `libres` y `cancelar` (así lo hacen los demás comandos). Los tests van con `node --test` (`constitution.md`, punto 2).
+- **Tuyo** (lo decides tú, aún sin preguntar):
+  - qué es «ocupación» (número de reservas o porcentaje);
+  - si las reservas `cancelled` y `voided` cuentan;
+  - el orden de los días (`lun`…`dom`);
+  - qué pinta `--sala Sur` en «salas que nadie ha reservado».
+
+Corrígeme si he entendido mal algo. Y la primera pregunta, abierta: ¿para qué quieres estos informes, qué vas a decidir o a ver con ellos que hoy no puedes?
+
+--- [10]
+Ahora: escribo `spec.md` con lo que recomiendo para los cuatro puntos y el porqué sigue pendiente. Queda: pasada de coherencia, revisión y la parada de aprobación, ~8 min.
+
+--- [14]
+Aviso: el último comando se ejecutó desde el directorio del kit, no desde el proyecto. A partir de aquí trabajo con rutas absolutas en el repo del proyecto y no escribo nada en el kit.
+
+--- [26]
+Ahora: escribo `spec.md` en la rama `feature/0012-informes`, con la 0012 ya reservada. Queda: pasada de coherencia, revisión y la parada de aprobación, ~8 min.
+
+--- [32]
+Ahora: paso la spec a `sdd-spec-approval` (pasada de coherencia, revisión y gate). Queda: la parada de aprobación, ~5 min.
+
+--- [35]
+Ahora: pasada de coherencia (búsquedas en el repo y fusión del delta sobre una copia). Queda: la revisión y la parada de aprobación, ~5 min.
+
+--- [42]
+Ahora: dimensiono la revisión y despacho un revisor. Queda: sus hallazgos, integrarlos y la parada de aprobación, ~6 min, ~0,3 $.
+
+--- [49]
+El revisor está en marcha (uno, en Sonnet, con los siete puntos) y su vigilancia de silencio también. Espero su resultado para integrar los hallazgos en la spec antes de presentarte la aprobación.
+
+--- [55]
+1. Importante · Delta, «Salas que nadie ha reservado» vs ✋7 · La decisión 7 dice que cada vista lleva título, fila de cabecera y filas. El literal de esta vista es solo título más `Sur`, sin cabecera. El texto de «sin reservas» tampoco dice si va con o sin cabecera. · Fijar si la vista lleva cabecera (por ejemplo `sala`) y corregir el literal. Aclarar en «Sin reservas» si se imprime la cabecera o solo título y mensaje.
+
+2. Importante · ✋5 vs «Decisiones tomadas con el dev-lead» y Filtro por sala · El dev-lead confirmó que `--sala` filtra las cuatro vistas. La decisión 5 dice que «Salas que nadie ha reservado» cuenta todas las reservas, y que con `--sala Norte` responde `ninguna`. Con `--sala Sur` sin reservas de Sur pero con reservas de Norte, el THEN pide `sin reservas`, aunque Sur es justo una sala no reservada. Es una semántica que contradice el intent de la vista y la decisión confirmada. · Decidir una sola semántica (por ejemplo, con `--sala X` la vista lista `X` si no tiene reservas y `ninguna` si las tiene) y reescribir ✋5, ✋6 y el escenario. Marcarlo como decisión del dev-lead, no mía.
+
+3. Importante · Delta, «Ocupación por sala» · Los datos del GIVEN (Norte 2, Sur 1) pasan con cualquier orden de salas: alfabético, por conteo o por `rooms`. Ninguna decisión fija el orden. La fila de una sala con 0 reservas (`Sur  0`, prometida en la 🦆) no tiene escenario, así que una implementación que solo liste salas con reservas también pasa. · Declarar el orden de las filas en ✋ y añadir un escenario con una sala a 0 (`Sur  0`).
+
+4. Importante · Delta, «Franjas más reservadas» · El GIVEN no tiene empate, así que el desempate por franja ascendente de ✋4 no se ejercita. Además las franjas son texto libre: ordenar `9:00-10:00` y `10:00-12:00` como cadena da un orden engañoso, y no se dice cómo se compara. · Añadir un GIVEN con dos franjas empatadas, incluida una de una cifra, y declarar la comparación (cadena o numérica).
+
+5. Importante · Delta, «Las cuatro vistas juntas» · El THEN no tiene literal. Una salida con las vistas en otro orden o sin línea en blanco se puede dar por buena a ojo. Es la única comprobación del orden y la separación de ✋7. · Poner el texto completo de las cuatro vistas con las reservas del primer escenario, en un bloque `text`.
+
+6. Importante · Estructura de la spec, regla 5 bis · No existe «Reglas de la capacidad» ni un «no aplica» para las cinco reglas. Dónde viven los datos (reservas en memoria) y el idioma de los nombres están dispersos entre ✋ y Scope. Los límites (por ejemplo, sala con muchas reservas) y los avisos no se declaran. La regla de conflicto (`--sala` repetida, o `--sala` sin valor) tampoco. · Añadir la sección con las cinco reglas y valores de la constitución (castellano en la interfaz, slug en inglés). Marcar «no aplica» donde corresponda, con motivo.
+
+7. Menor · Delta, «Ocupación por sala» · Solo se ejercita `cancelled`. `voided` está en ✋2 y en Dónde se prueba, pero ningún GIVEN tiene una reserva anulada. Una implementación que excluya solo `cancelled` pasaría el escenario. · Añadir al GIVEN una reserva `voided` que no cuente.
+
+8. Menor · Filtro por sala y ✋5/✋9 · Faltan casos de entrada: `--sala` sin valor, `--sala norte` en minúsculas (la decisión 9 lo implica pero no tiene THEN) y `--sala` repetida. Tampoco se dice si `sala desconocida` sale por stdout o stderr, ni el código de salida. · Añadir el escenario de minúsculas y declarar el canal y el código de salida. Decidir el caso sin valor o dejarlo fuera de Scope.
+
+9. Menor · ✋13/Approach y «5 tasks» · Los nombres `informeSalas`, `informeDias`, `informeFranjas` y `informeSinReservas` aparecen solo en Approach, no en ✋. Mezclan castellano con el inglés de `cancelBooking` y `voidBooking`. El reparto en 5 tasks (una por vista y una para `--sala`) no cubre `sin reservas`, `sala desconocida` ni «las cuatro vistas juntas», que quedan sin dueño. · Listar los nombres en ✋ y decidir el idioma. Reasignar a una task el mensaje `sin reservas`, el error y el ensamblado.
+
+10. Menor · Dónde se prueba / contratos · Las pruebas llaman a `run('informes', ['--sala', 'Norte'])` y a funciones exportadas desde `src/app.js` (`rooms`, estado de las reservas), pero la spec no dice cómo se leen las reservas ni qué forma tiene el argumento de `run`. No hay evidencia en la spec de que coincida con el contrato actual. · Declarar en ✋ o en Approach que depende de la firma actual de `run` y del almacén en memoria, o citar de dónde sale cada uno.
+
+--- [57]
+La notificación del revisor es un evento del sistema, no una aprobación tuya. La spec sigue sin aprobar. Ahora: paro la vigilancia, integro los hallazgos en la spec y te preparo la aprobación. Queda: tu respuesta en la parada, ~4 min.
+
+--- [62]
+La vigilancia ya había terminado sola. Integro los hallazgos en la spec.
+
+--- [69]
+Ahora el delta y «Dónde se prueba».
+
+--- [75]
+Ahora: la aprobación de la spec. Queda: tu respuesta, y después el plan de 5 tasks, ~10 min.
+
+La spec está escrita y revisada: `.docs/sdd/specs/20261119-175050-feature-0012-informes/spec.md`, en la rama `feature/0012-informes`. Todavía no está aprobada y no se ha escrito código.
+
+🦆 Hoy no hay forma de ver cómo se usan las salas. Con esta feature, `node src/app.js informes` imprime cuatro tablas de texto: reservas por sala, por día de la semana, por franja y las salas que nadie ha reservado. Con Norte lun 10:00-12:00 y Norte mar 10:00-12:00, la primera tabla dice `Norte  2`. `--sala Norte` limita las cuatro tablas a esa sala. Si no hay reservas, cada tabla dice «sin reservas».
+
+**✋ Decisiones que he tomado yo, para que las valides** (la lista completa, con la 1 a la 19, está en la spec):
+- **Ocupación:** número de reservas, no porcentaje. Solo cuentan las `active`; las `cancelled` y `voided` no.
+- **Días:** `lun`…`dom` en orden de calendario, con los días sin reservas a 0.
+- **Franjas:** de más a menos reservas, y a igualdad por franja ascendente.
+- **Salas sin reservar con `--sala X`:** `ninguna` si X tiene reservas. Si X no tiene ninguna, las cuatro vistas dicen `sin reservas`, porque lo pediste literal (decisión 19). Es la que más te conviene validar.
+- **Errores:** `sala desconocida: Este` y `falta la sala: usa --sala <nombre>`. `--sala` repetida queda fuera.
+- **Formato de las tablas:** los títulos y las cabeceras (`reservas`) los puse yo.
+- **Enfoque:** una función por vista (`roomReport`, `dayReport`, `slotReport`, `unbookedRooms`) en `src/app.js`, frente a un agregado único o a un módulo nuevo.
+- **Reparto de las 5 tasks:** 1 sala y el comando, 2 día, 3 franjas, 4 salas sin reservar, 5 `--sala`.
+- **Pendiente:** el porqué de la feature. «Sigue con el que recomiendas» no lo contestó. Si el motivo cambia qué es «ocupación» (decisiones 1 y 2), se reabren.
+
+**Revisión:** un revisor en Sonnet dio 10 hallazgos, ninguno Crítico. Acepté 9 y rechacé 1, con motivo: es la decisión 19. Detalle en «Hallazgos de la review». El delta se fusiona sin rechazos sobre una copia de `.docs/sdd`.
+
+Validación: `dev-lead`.
+
+1. **Apruebo (Recomendada):** la spec pasa a `sdd-plan-writing`, que escribe el plan de 5 tasks y sigue con la implementación en Native.
+2. **Cambios:** dime qué ajusto, por ejemplo la decisión 19.
+3. **Apruebo y paro antes de la Task 1** (la spec prevé 5 tasks): para que baje la sesión a gama media antes de implementar.
+
+¿Cuál eliges?
+

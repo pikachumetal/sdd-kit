@@ -1,0 +1,77 @@
+--- [13]
+Estoy en el paso de rama: el carril es feature en modo full, el contexto ya está leído y no hay dependencias que instalar. Ahora reservo el id.
+
+--- [21]
+Ahora: te cuento lo que he entendido, las tres listas de decisiones y una pregunta. Queda: tus respuestas, el enfoque, escribir `spec.md` y su aprobación, ~10 min.
+
+**Lo que he entendido.** Quieres un comando que saque a CSV las reservas de una sala. El responsable de esa sala las abre los lunes en su hoja de cálculo para cuadrarlas. Hoy `src/app.js` tiene las reservas en memoria, con una sola de ejemplo, `{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }`. `run()` devuelve una cadena y el `console.log` final la imprime. Una reserva solo guarda sala, día de la semana y franja, sin fecha concreta. Por eso no hay «reservas de esta semana» que filtrar: el CSV saldría con las tres columnas. Dime si te sobra o te falta alguna. ¿Cuadra con lo que tienes en mente?
+
+**Contestado:**
+- Una columna por campo existente (sala, día, franja). Viene del modelo de `app.js`.
+- Cabeceras y mensajes en castellano. Lo exige la constitución (art. 4).
+- Tests con `node --test`, sin dependencias. Viene de `operations.md`.
+
+**Menor (lo decido yo):**
+- El comando se llama `exportar <sala>`, como el resto de comandos en minúsculas.
+- Sale por pantalla, y se guarda con `> norte.csv`. Es lo que ya hace `run()`, y el fichero queda en manos de la shell.
+
+**Del dev-lead (lo pregunto después):**
+- Qué debe salir si la sala no existe o no tiene reservas.
+- Qué sería un fallo aunque «funcione».
+
+Tengo una duda de la que depende cómo se escribe el CSV: una hoja de cálculo en castellano suele esperar `;` como separador y acentos en UTF-8 con marca, y una configurada en inglés espera `,`. ¿Con qué programa y en qué idioma abre el responsable de la sala el fichero?
+
+--- [26]
+Con Excel en castellano, mi propuesta es separar con `;` y empezar el fichero con la marca UTF-8 (BOM). Así Excel abre el CSV con doble clic, con tres columnas y sin romper los acentos (`Sábado`, `Reunión`). Esto lo digo de memoria: la búsqueda en la web no me la han permitido y no tengo otra fuente en la sesión. Lo dejo en la spec como no verificado, con un paso de validación al cierre: abrir el CSV real en tu Excel.
+
+Queda una decisión tuya, la de qué hace el comando cuando no hay nada que exportar:
+
+❓ **Sala sin reservas o que no existe**
+Hoy `libres` y `cancelar` no validan nada: `run()` responde siempre sin comprobar la sala.
+1️⃣ **Sala que existe y sin reservas: solo la cabecera. Sala que no existe: error.**
+`exportar Sur` → `sala;día;franja`
+`exportar Oeste` → `No existe la sala Oeste. Salas: Norte, Sur` (con código de salida 1, para que `> oeste.csv` no deje un fichero engañoso)
+2️⃣ **Ambas dan solo la cabecera.**
+`exportar Oeste` → `sala;día;franja`. Es más simple, pero un error al escribir el nombre parece una sala vacía y el lunes se cuadra con datos que no son.
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra a mano y una errata no debería pasar por «sala sin reservas». A cambio, hay un caso más que probar.
+
+¿Cuál eliges?
+
+--- [28]
+Decido yo la opción 1️⃣ (error si la sala no existe, solo la cabecera si no tiene reservas). Va a ✋ con su motivo. Las líneas de «qué sería un fallo» las dejo pendientes, porque eso solo lo sabes tú. Ahora: cargo la plantilla y escribo `spec.md`. Queda: coherencia, revisión y tu aprobación, ~8 min.
+
+--- [39]
+Ahora: repaso la spec por dentro (literales repetidos, huecos) y pruebo el delta sobre una copia. Queda: la revisión, y presentarte la spec para que la apruebes, ~6 min.
+
+--- [45]
+Ahora: cuento las señales y despacho la revisión. Queda: integrar los hallazgos y presentarte la spec, ~8 min, ~1-2 dólares.
+
+--- [56]
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta; después el plan, ~5 min.
+
+🦆 Hoy, para cuadrar las reservas de una sala, el responsable tiene que copiarlas a mano. Con el comando nuevo, `exportar Norte > norte.csv` deja un fichero que Excel en castellano abre con doble clic, con tres columnas: `Norte;lun;10:00-12:00`. Si la sala está mal escrita, el comando avisa con un error en vez de dejar un fichero que parezca una sala sin reservas.
+
+Spec: `.docs/sdd/changes/20261119-163854-feature-0010-exportar-reservas-csv/spec.md`
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Capacidad nueva `booking-export`.
+2. Comando `exportar <sala>`.
+3. El CSV sale por pantalla y se guarda con `>`. **Riesgo sin verificar:** Windows PowerShell 5.1 guarda con `>` en UTF-16 y no en UTF-8. Si esa es tu shell, se enmienda en la validación.
+4. Separador `;` y marca UTF-8 (BOM). **Sin verificar:** la búsqueda en la web no estaba permitida. Se comprueba abriendo el fichero real en tu Excel.
+5. Cabecera `sala;día;franja`.
+6. Una fila por reserva, en el orden en que están guardadas.
+7. Final de línea `\r\n`.
+8. El nombre de la sala se compara tal cual (`Norte`, no `norte`).
+9. Sala sin reservas: solo la cabecera. Sala inexistente: error `No existe la sala Oeste. Salas: Norte, Sur` con código 1.
+10. Los campos con `;`, comillas o salto de línea se entrecomillan, porque la franja horaria no se valida hoy.
+11. `exportar` sin sala: `Falta la sala. Salas: Norte, Sur`, con código 1.
+12. Enfoque: función pura que construye el CSV, frente a escribirlo dentro de `run()` o a que la app escriba el fichero.
+13. Sin límite de filas y una sola sala por comando.
+
+**Review:** la rúbrica pide dos revisores, pero esta sesión no puede lanzar subagentes. Hice yo la pasada de los siete puntos, que no es una revisión independiente. Salieron dos hallazgos y los dos están aceptados: la decisión 13 y el riesgo de PowerShell de la 3. El delta se fusiona sin rechazos en una copia de `.docs/sdd`.
+
+**Pendiente tuyo:** qué sería un fallo aunque técnicamente funcione. No lo has dicho, y lo repasamos en la validación.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**
+

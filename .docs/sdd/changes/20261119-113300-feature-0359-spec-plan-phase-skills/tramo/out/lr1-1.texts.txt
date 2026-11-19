@@ -1,0 +1,63 @@
+--- [3]
+Ahora: leo la spec y compruebo que la pasada de coherencia esté completa. Queda: la revisión, y presentártela para aprobar, ~5 min.
+
+--- [16]
+Ahora: despacho el revisor de la spec (uno, en sonnet, por ser lite) con su vigilancia de silencio. Queda: plegar sus hallazgos y presentarte el gate, ~4 min, ~0,15 $.
+
+--- [21]
+Revisor lanzado (uno, en sonnet, con la vigilancia de silencio activa). Espero su resultado antes de presentarte la spec; todavía no sé qué ha encontrado.
+
+--- [23]
+1. Crítico · Delta ADDED / Intent · El Intent dice que `libres` sin franja «responde `Norte, Sur`» hoy, es decir, ya hay un comportamiento existente y el cambio lo sustituye. Eso es un MODIFIED, no un ADDED. Como `rooms` es una capacidad nueva y no hay `capabilities/`, no existe un requisito base que modificar, pero tampoco se declara el comportamiento actual de `libres <franja>` ni el de `sin reserva`. · Declarar el comportamiento previo de `libres` como requisito base de `rooms`, o justificar en el spec por qué ADDED es correcto. La decisión 3 («añadido, sin rechazos») debe reflejarlo.
+
+2. Crítico · Delta, escenario · El escenario pasa sin el comportamiento. El texto `falta la franja: libres <franja>` es una palabra que escribe el agente, sin criterio de validación. «`libres 10:00-12:00` responde `Sur`» es un valor que el agente acierta a ojo. Depende además de una reserva «el lunes» que `libres <franja>` no recibe como parámetro, así que el GIVEN no determina el resultado. · Aclarar cómo `libres <franja>` sabe que es lunes (fixture, fecha fija o catálogo). Separar el escenario en dos: uno para sin franja y otro para la regresión de `libres <franja>`. Comprobar la salida exacta, incluido el caso de `run('libres', [])` frente a `undefined`.
+
+3. Importante · Scope / Delta · El Scope dice que `libres <franja>` «no entra», pero el delta lo afirma en el AND (`responde Sur`). Se promete una regresión que el Scope excluye, y se afirma sin que el spec diga dónde se prueba. «Dónde se prueba» solo cubre el mensaje. · Mover la regresión al Scope como «entra: no regresión de `libres <franja>`», y añadirla a «Dónde se prueba», o quitarla del delta.
+
+4. Importante · Decisiones · La decisión 2 (franja vacía o mal formada «sigue como hoy») es una decisión de comportamiento, pero no define qué es «hoy». Una cadena vacía `''` en `params[0]` es ausente a ojos del usuario, y el spec deja ese caso sin especificar. · Declarar el comportamiento de `libres ''` y `libres abc`, con su salida, o excluirlos explícitamente en el Scope con su deuda enlazada.
+
+5. Importante · Decisiones / 5 bis · Hay un mensaje nuevo (dato visible, con nombre) y no se declaran las cinco reglas: dónde vive el texto (literal en `run` o fichero de mensajes), idioma (la constitución exige castellano: el mensaje cumple, pero no se dice), límites, avisos y regla en conflicto. · Añadir una línea con las cinco reglas por nombre, o «no aplica» para cada una.
+
+6. Importante · Decisiones, punto 1 · «No hay guía de mensajes en el repo» y la forma es del agente. El mensaje además usa `<franja>` como marcador, y el ejemplo de uso `sin reserva <sala> <día>` se cita sin que el spec lo respalde: no hay `capabilities/` donde verificarlo. · Pedir al dev-lead una validación explícita del texto exacto. Citar la fuente del ejemplo de uso, o quitarla.
+
+7. Menor · Decisiones, punto 3 · Una pasada de `capability merge` sobre una copia se presenta como decisión, pero es un resultado de verificación, no una decisión. Además, «sin rechazos» no prueba nada sobre un `rooms` inexistente. · Pasarlo a una sección de verificación y dejar en las decisiones solo las que haya tomado el agente.
+
+8. Menor · Contratos / datos · El cambio toca el contrato de salida de `run` (un mensaje de error en lugar de una lista). Quien consuma `libres` sin franja, por ejemplo un script o un test existente que espere `Norte, Sur`, se rompe y el spec no lo menciona. · Declarar en el Scope que se actualiza o elimina cualquier test existente que afirme `Norte, Sur` para `libres` sin franja, y bajo qué fichero.
+
+9. Menor · Cabecera · `profile: delegate` y `approvers` con una sola persona (Laura), mientras que las decisiones se «tomaron con el dev-lead». No queda claro si Laura es la dev-lead. Además, un nombre propio real aparece en el spec cuando un rol serviría. · Alinear aprobador y dev-lead, o usar el rol en lugar del nombre. Citar las cinco condiciones de lite en vez de «sus cinco condiciones citadas».
+
+10. Menor · Estimación · «0,2 h» de spec y «0,5 h» de implementación con confianza «alta», pero hay incertidumbre abierta (fixture de fecha, franja vacía, tests existentes). · Bajar la confianza a media, o cerrar primero los puntos 2 y 4.
+
+--- [27]
+Ahora: pliego los hallazgos en la spec y repaso el delta. Queda: una segunda ronda de revisión (porque acepto un Crítico) y presentarte el gate, ~5 min, ~0,15 $.
+
+--- [32]
+Merge OK. Segunda ronda: un revisor nuevo en sonnet relee la spec corregida (aceptado un Crítico).
+
+--- [39]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta; si apruebas, paso a `sdd-implement`.
+
+## 🦆 En corto
+
+Hoy, si escribes `libres` sin franja, la app responde `Norte, Sur` como si ambas estuvieran libres a cualquier hora, y alguien puede reservar una sala ocupada. Con este cambio, ese caso responde `falta la franja: libres <franja>`. `libres 10:00-12:00` sigue igual (`Sur`). Es una rama nueva en `run` de `src/app.js` y su test. Estimo 0,5 h.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+Review de spec propuesta: un revisor (lite), sonnet, con los siete puntos. Señales: ninguna fuerte; es una rama de unas 5 líneas en 1 fichero. Mínimo razonable: el mismo, y deja sin mirar solo la franja mal formada, que queda como deuda.
+
+1. **El texto exacto del mensaje:** `falta la franja: libres <franja>`. No hay guía de mensajes en el repo; lo he elegido yo, siguiendo la forma de `sin reserva <sala> <día>`. **Es la que más te pido mirar.** El mensaje no enseña el formato `10:00-12:00`.
+2. **Franja vacía o mal formada** (`libres ''`, `libres abc`): sigue respondiendo `Norte, Sur`, como hoy. Está apuntado como deuda y no se fija con test.
+3. **Verificación (no es una decisión):** `capability merge` sobre una copia de `.docs/sdd` da `rooms.md: añadido «libres sin franja dice qué falta»`. No rechaza nada y el repo no cambia.
+
+**Review, dos rondas** (la segunda, porque acepté un Crítico):
+- **Ronda 1:** 10 hallazgos. Acepté 7, uno de ellos Crítico: el GIVEN decía «el lunes», pero `libres` no recibe el día. Rechacé 3: el Crítico de «ADDED vs MODIFIED» (`rooms` no existe en `capabilities/`, así que no hay nada que modificar), el del nombre de Laura y el de la confianza.
+- **Ronda 2:** 7 hallazgos, ninguno Crítico. Acepté 2 y rechacé 5, todos con motivo escrito en la spec.
+
+También corregí una cosa en la pasada de coherencia: la decisión 1 hablaba de «la forma de la guía» y esa guía no existe.
+
+La spec completa está en `.docs/sdd/specs/20261008-170000-feature-0019-free-without-slot/spec.md`.
+
+1. **Apruebo (Recomendada)**
+2. Cambios
+3. Apruebo, pero paro antes de la Task 1
+

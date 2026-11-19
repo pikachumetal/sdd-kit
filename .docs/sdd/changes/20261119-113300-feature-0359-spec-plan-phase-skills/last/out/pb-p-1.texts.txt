@@ -1,0 +1,58 @@
+--- [3]
+Ahora: leo el proyecto para entender qué hay de reservas y salas. Queda: mensaje con lo entendido y los tres montones, ~2 min.
+
+--- [9]
+Ahora: te cuento lo que he entendido y cómo reparto las decisiones. Queda: tu respuesta, el mensaje de enfoques, `spec.md` y su aprobación, ~10 min.
+
+```text
+Carril: feature, modo full · Perfil: pair (lo pides tú; el del proyecto es delegate)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme.** Un comando `informes` con cuatro vistas: ocupación por sala, ocupación por día de la semana, franjas más reservadas y salas que nadie ha reservado. La opción `--sala` filtra las cuatro. La salida es una tabla de texto, y una vista sin reservas dice «sin reservas». El plan sale en 5 tasks, una por vista y otra para `--sala`.
+
+**Lo que he visto en el código.** Todo está en `src/app.js`. Cada reserva guarda sala, día, franja y estado (`active`, `cancelled`, `voided`). No hay horario ni aforo. `--cada-semana` no crea reservas reales, solo devuelve un texto.
+
+**Contestado:**
+- Cuatro vistas, `--sala`, tabla y «sin reservas»: tu petición.
+- Cinco tasks: tu petición.
+
+**Menor** (lo decido yo y va a ✋):
+- Ocupación = número de reservas, no porcentaje. Sin aforo ni horario en los datos no hay base para un porcentaje.
+- Solo cuentan las reservas `active`. `libres` y `findBooking` ya tratan solo esas como ocupación.
+- Días en orden de semana, `lun` a `dom`, no alfabético.
+
+**Del dev-lead** (las iré preguntando de una en una):
+- el porqué del informe;
+- qué hace `--sala` con «salas que nadie ha reservado»;
+- qué hace `--sala` con una sala que no existe;
+- cómo se ordenan y desempatan las franjas más reservadas.
+
+Empiezo por lo primero: ¿para qué vas a usar estos informes y qué decisión te ayudarán a tomar?
+
+--- [11]
+No te di una recomendación sobre el porqué: era una pregunta abierta y solo tú puedes contestarla. Lo dejo **pendiente** y va a ✋ como «pendiente». No me lo invento. Sigo con la siguiente decisión, que sí traigo con recomendación.
+
+Ahora: pregunto cómo se comporta `--sala` con «salas que nadie ha reservado». Queda: dos preguntas más, los enfoques, `spec.md` y su aprobación, ~8 min.
+
+❓ **`--sala` en la vista «salas que nadie ha reservado»**
+Hoy solo hay una reserva: Norte, lunes, 10:00-12:00. Sur no tiene ninguna.
+
+1️⃣ **La vista sigue y se filtra como las otras tres**
+```text
+informes --sala Sur    → nadie la ha reservado: Sur
+informes --sala Norte  → nadie la ha reservado: ninguna
+```
+Cumple tu «filtra las cuatro». Con una sola sala la respuesta es casi un sí o un no. Tendría que inventar el texto «ninguna» cuando la lista queda vacía.
+
+2️⃣ **La vista se omite con `--sala` y la salida lo dice**
+```text
+informes --sala Sur    → (3 vistas)  salas sin reservar: no aplica con --sala
+```
+Es más natural para quien lee, pero contradice lo decidido, que `--sala` filtra las cuatro.
+
+➡️ **Recomiendo 1️⃣**, porque es lo que decidiste con el dev-lead y mantiene la salida con cuatro vistas siempre. A cambio, la vista 4 aporta poco con una sola sala, y el texto «ninguna» es una decisión mía que irá a ✋.
+
+¿Qué prefieres, 1️⃣ o 2️⃣?
+

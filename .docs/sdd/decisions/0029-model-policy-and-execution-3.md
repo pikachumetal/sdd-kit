@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0041
 date: 2026-11-10
 rutas:
   - skills/sdd-propose/references/control-profiles.md

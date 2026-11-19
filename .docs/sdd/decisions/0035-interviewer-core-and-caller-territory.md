@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0042
 date: 2026-11-14
 rutas:
   - skills/sdd-grilling/**

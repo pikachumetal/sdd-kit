@@ -1,0 +1,103 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd/decisions/0001-node-test-runner.md
+.docs/sdd/decisions/0002-spanish-messages.md
+.docs/sdd/decisions/0003-git-flow.md
+.docs/sdd/decisions/0004-single-process-state.md
+.docs/sdd/decisions/0005-fixed-room-list.md
+.docs/sdd/decisions/0006-plain-output.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/decisions/0004* .docs/sdd/decisions/0005*; cat package.json; ls src test scripts; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references" && cat nombrado.md; grep -n "merge.push\|Aviso" control-profiles.md | head
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && git remote -v; git branch -a; S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve
+<<< * develop
+  main
+0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-reservas-persistentes && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root "$PWD"; git status --short; git branch --show-current
+<<< Switched to a new branch 'feature/0012-reservas-persistentes'
+sin remoto: la 0012 vale (contador local)
+feature/0012-reservas-persistentes
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat scripts/lint.mjs | head -30; head -30 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+=== RESULTADO (13 turnos, 0.2208331 $)
+Ahora: entrevista de la spec. Queda: tu respuesta a una pregunta, luego el diseño corto para confirmar, y después la spec para tu aprobación, ~10 min.
+
+**Lo que entiendo.** Hoy `src/app.js` guarda las reservas en un array en memoria, con una reserva de ejemplo ya cargada. Al cerrar la terminal desaparecen todas, canceladas y anuladas incluidas. Quieres que, al volver a abrirla, las reservas sigan ahí. Corrígeme si me equivoco.
+
+**Lo que he encontrado y condiciona la spec:**
+- La ADR 0004 elige a propósito la memoria. Su consecuencia, «cerrar la terminal pierde las reservas», es justo lo que esta feature quiere cambiar. Su confirmación exige que `src/` no importe `node:fs`. La spec tendrá que sustituirla por una ADR nueva, y la 0004 pasará a «superseded».
+- La ADR enumera tres cosas que guardar obliga a decidir: dónde vive el fichero, dos terminales a la vez y cómo se migra el formato.
+- Hoy no hay ningún comando que cree reservas con datos (`reservar` solo responde un texto fijo), y las reservas existentes salen de la que está cargada en el código.
+
+**Los tres montones:**
+- **Contestado:** no hay dependencias externas (arquitectura: Node 22 sin paquetes). Los mensajes van en castellano (ADR 0002).
+- **Menor, lo decido yo con el proyecto:** el nombre y el formato del fichero (JSON, por la ADR 0004 y porque no hay dependencias), y el orden de las tasks.
+- **Del dev-lead, que te iré preguntando:** el porqué de la feature; dónde vive el fichero; qué pasa si abres dos terminales a la vez; qué pasa con la reserva de ejemplo que hoy viene cargada; y si las canceladas y anuladas también sobreviven.
+
+Empiezo por lo que solo sabes tú: ¿qué te ha pasado, o qué quieres poder hacer, para que perder las reservas al cerrar la terminal ya no te valga?

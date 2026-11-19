@@ -1,0 +1,59 @@
+--- [3]
+Ahora: leo el proyecto (la plantilla, el roadmap y las reglas) para entender qué toca el cambio. Queda: el mensaje de entendimiento y las tres listas, ~3 min.
+
+--- [16]
+Ahora: escribo la spec lite en su carpeta (el dev-lead ya decidió el qué, así que no hay mensaje de preguntas). Queda: spec escrita y pasada a su revisión y aprobación, ~4 min.
+
+--- [20]
+Ahora: repaso de coherencia de la spec (búsquedas en el repo y recuento de palabras). Queda: la revisión, y presentarte la spec para aprobar, ~3 min.
+
+--- [26]
+Ahora: lanzo un revisor (spec lite → un revisor con los siete puntos, sonnet). Queda: integrar sus hallazgos y presentarte la spec, ~3 min, ~0,3 $.
+
+--- [30]
+El revisor sigue trabajando; no conozco todavía sus hallazgos. Espero su aviso antes de presentarte la spec.
+
+--- [34]
+1. Importante · Topes de palabras / Decisión 6 · El recuento no cuadra con la plantilla. `Conserjería: 5500` son 2 palabras, pero el tope se mide sobre `docs/plantillas` entero (52 + 2 = 54, sin pasarse de 60). Ese «6» de `aviso.md` ya contiene el recuento de «Aviso de sala: {sala} el {dia}.», que por sí solo son 6 palabras sin contar `{sala}` y `{dia}`. Habría que contarlas. No hay forma de comprobar el método de conteo de `words.test.js` sin leer código. · Declarar cómo cuenta `words.test.js` (separación por espacios; `{sala}` y `{dia}` como palabras) y fijar la cifra tras el cambio como 54 medidas, no «previstas». Que el plan la compruebe ejecutando el test.
+
+2. Importante · Dónde se prueba / Decisión 4 · El test nuevo «comprueba que sus líneas son las dos de arriba», pero la spec no dice cómo trata los finales de línea. En Windows, CRLF haría fallar el test o lo dejaría pasar según el split, y la decisión 1 fija un salto de línea final sin precisar `\n`. · Fijar `\n` y que el test normalice `\r\n`, o compare las líneas tras `split(/\r?\n/)` y recorte el vacío final.
+
+3. Importante · Intent / Scope · El éxito exige «exactamente las dos líneas», pero la decisión 1 deja «el final de fichero como está hoy». Hoy no consta si el fichero acaba en salto de línea, así que «con salto de línea final» y «como está hoy» pueden contradecirse, y el test no sabe si espera una línea vacía final. · Declarar el estado actual del final de fichero (con o sin `\n`) y dejar el test coherente con él.
+
+4. Menor · Decisión 3 / Intent · El porqué del cambio está «pendiente» y es una suposición que el Intent presenta como un hecho («quien recibe el aviso no sabe a quién llamar»). · Marcar el Intent como suposición, o quitar esa frase hasta que el dev-lead la confirme.
+
+5. Menor · Cabecera / Decisiones · `profile: delegate` y «Validación: dev-lead» con `approvers: TBD`, mientras que PRODUCT.md dice que solo hay un usuario y un desarrollador («No hay más usuarios ni más desarrolladores»). Un «dev-lead» distinto del autor contradice el producto. · Aclarar que el dev-lead es el propio autor, o ajustar el rol de validación al único desarrollador.
+
+6. Menor · Decisión 5 / Términos · El PRODUCT.md define `Sala` y evita «room», pero el nombre de la rama y de la spec es `notice-room`. Solo es un identificador y no contradice el texto de la interfaz, pero el Intent habla de «aviso de sala» sin definir «aviso» en Terminology, y «Conserjería» (un actor nuevo en el dominio) tampoco está. · Dejar constancia de que «aviso» tampoco es término del dominio, o añadirlo a Terminology junto con la decisión 5.
+
+7. Menor · Decisiones / Política de modelos · La línea de «Política de modelos» está numerada dentro de la lista de decisiones y no es una decisión del contenido. Mezcla configuración del kit con decisiones de producto y puede validarse por error como una decisión más. · Sacarla de la lista numerada, o ponerle un encabezado propio.
+
+8. Menor · Lo que se retira o cambia de forma · Cita `test/words.test.js:5-8` y `docs/plantillas/aviso.md:1` con números de línea que la spec no ha podido verificar al no leerse el código. Se desactualizarán en cuanto se edite. · Citar solo el fichero y la función, sin números de línea.
+
+--- [40]
+Ahora: te presento la spec para aprobar. Queda: tu respuesta en el gate; con «Apruebo» sigo a la implementación, ~2 min.
+
+La spec está en `.docs/sdd/changes/20261119-161000-feature-0014-notice-room/spec.md`, en modo lite y con perfil `delegate`.
+
+**🦆 Qué cambia:** la plantilla del aviso de sala pasa de una línea a dos. Debajo de «Aviso de sala: {sala} el {dia}.» aparece «Conserjería: 5500». Un aviso de `Norte` el `lun` acaba con el teléfono al que llamar. Ningún código lee hoy esa plantilla, así que el cambio es solo el fichero de texto y un test que fija la línea.
+
+**✋ Decisiones que he tomado yo, para que las valides:**
+1. La línea va debajo de la existente, como línea propia. El fichero ya acaba en `\n` y sigue así. El test normaliza CRLF para que valga en Windows.
+2. El literal es exactamente `Conserjería: 5500`, sin punto final y con el 5500 escrito a mano, no como variable.
+3. El porqué del cambio queda **pendiente**: la entrevista ya estaba hecha y no lo pregunté. Mi suposición es que el destinatario necesita un teléfono al que llamar.
+4. Test nuevo `test/plantillas.test.js` que exige esa línea. Hoy ningún test lee el contenido del aviso.
+5. «Conserjería» y «aviso» no se añaden a la Terminology de `PRODUCT.md`.
+6. El tope de 60 palabras de `docs/plantillas` no cambia: medí 52 hoy y 54 con la línea nueva.
+
+**Enfoque:** elegí la línea literal más su test. Descarté el teléfono como variable de configuración, porque nada renderiza la plantilla. También descarté editar sin test, porque el único test existente solo cuenta palabras.
+
+**Review:** un revisor (sonnet) y sin Críticos, así que no hay segunda ronda. Acepté 5 hallazgos menores o de forma, y rechacé 3 con su motivo en la spec. El rechazo más relevante es el del recuento de palabras, que sí cuadra, medido con el método del test.
+
+**Validación:** la haces tú (`dev-lead`), porque es el texto que leerá quien reciba el aviso.
+
+No he tocado código ni el fichero de la plantilla; solo existe la spec. ¿Apruebas?
+
+1. **Apruebo (Recomendada)**
+2. Cambios
+3. Apruebo y paro antes de la Task 1
+

@@ -42,7 +42,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - THEN despacha también el eje Arquitectura y registra en el ledger `Final: Ruling: Eje Arquitectura no → sí — dependencia nueva zod en package.json — <coste si se equivoca>`
 - AND `tasks.md` lo escribe `Arquitectura opus+high, <veredicto> (subido: dependencia nueva zod)`
 - AND con `Eje Arquitectura: sí` nunca lo quita
-- AND sin la línea —en lite, sin plan, o con un plan anterior al kit nuevo—, el hilo lo decide al despachar con las señales de `plan-writing.md` (módulo nuevo, dependencia nueva en un manifest, contrato entre módulos, datos) y lo registra en el ledger como ruling
+- AND sin la línea —en lite, sin plan, o con un plan anterior al kit nuevo—, el hilo lo decide al despachar con las señales de `sdd-plan-writing` (módulo nuevo, dependencia nueva en un manifest, contrato entre módulos, datos) y lo registra en el ledger como ruling
 
 ### El eje Spec contrasta el diff con el delta de capacidades
 

@@ -1,0 +1,154 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar el carril y empezar la entrevista de la spec, ~3 min.
+
+--- [20]
+Ahora: te cuento lo que he entendido y qué doy por decidido; la entrevista de la spec sigue contigo. Queda: tu respuesta, luego enfoques, `spec.md` y su aprobación, ~8 min.
+
+**Lo que he entendido.** Quieres un comando nuevo de `salas` que, dada una sala, saque sus reservas en CSV. El responsable de cada sala lo abre los lunes en su hoja de cálculo para cuadrarlas.
+
+**Lo que he visto hoy.**
+- `src/app.js` tiene `run(cmd, params)` con `libres`, `reservar` y `cancelar`.
+- Una reserva guarda `{ room, day, slot }`, por ejemplo `Norte · lun · 10:00-12:00`. No guarda nombre de quién reserva ni fecha concreta, solo el día de la semana.
+- Las salas son `Norte` y `Sur`. Es un solo fichero y no hay dependencias externas. Los tests usan `run()` directamente.
+- Hay una deuda anotada sin triar: no se valida el formato de la franja horaria. Eso no entra aquí.
+
+**Lo que puede cambiar la forma del CSV.** Lo que ve el responsable depende de lo que guardan las reservas. Hoy solo hay sala, día y franja. Si necesita otra columna (quién reservó, fecha concreta), eso ya sería otra feature, porque el dato no existe.
+
+**Las tres pilas**
+
+- **Contestado:**
+  - Es un comando de línea de comandos que imprime CSV.
+  - Es por sala.
+  - Lo consume una hoja de cálculo.
+  - El texto va en castellano (constitución, art. 4).
+- **Menor (lo decido yo y va a ✋):**
+  - El nombre exacto del comando.
+  - El orden de las filas.
+  - El separador y el escapado. La fuente es la constitución y `operations.md`, que no fijan nada. Lo veo al escribir la spec.
+- **Del dev-lead (solo tú lo sabes):**
+  - Para qué lo necesitas y qué significa «cuadrar».
+  - Qué columnas necesita el responsable.
+  - Si la sala sin reservas debe dar solo la cabecera o un error.
+  - Si el CSV va a pantalla o a fichero.
+  - Qué hacer con una sala que no existe.
+
+Una pregunta antes de nada, abierta: cuando el responsable de una sala cuadra las reservas los lunes, ¿qué compara exactamente y con qué, y qué le haría ver que algo no cuadra?
+
+--- [22]
+Anoto el porqué como **pendiente**: no sé qué compara el responsable ni qué le haría ver que algo no cuadra, y no lo voy a inventar. Eso afecta a una cosa concreta: como no sé qué necesita ver, me limito a lo que las reservas guardan hoy (sala, día y franja) y no añado columnas que no existen. Si en el uso real echa algo en falta, será otra feature.
+
+Con eso, la decisión que más forma el CSV es qué columnas lleva.
+
+❓ **Columnas del CSV**
+Cada reserva guarda solo `sala`, `día` y `franja`. La sala ya la das al pedir el comando, así que repetirla en cada fila es redundante, pero puede servir si el responsable pega varios ficheros en una misma hoja.
+
+1️⃣ **Tres columnas: `sala,dia,franja`**
+```text
+sala,dia,franja
+Norte,lun,10:00-12:00
+```
+Cada fila se entiende sola y se pueden juntar exportaciones de varias salas. Cuesta una columna repetida.
+
+2️⃣ **Dos columnas: `dia,franja`**
+```text
+dia,franja
+lun,10:00-12:00
+```
+Es más limpio para una sala sola. Si juntas dos salas en una hoja, pierdes de cuál es cada fila.
+
+➡️ **Recomiendo 1️⃣**, porque no sé cómo cuadra el responsable y la sala evita que una fila quede huérfana si pega dos exportaciones. A cambio, hay una columna que, para una sola sala, no aporta nada.
+
+¿Con cuál te quedas?
+
+--- [24]
+Anotado como tuyo, con tus palabras: tres columnas, `sala;dia;franja`, con `;` como separador y la sala en cada fila. Con `;` Excel y compañía en castellano lo abren directamente en columnas, sin importar nada.
+
+Para lo que falta, doy por hecho esto y lo dejo en ✋ para que lo corrijas si no te vale:
+- Una sala que existe pero no tiene reservas da solo la cabecera `sala;dia;franja`.
+- La salida va por pantalla, como el resto de comandos, y se guarda con `> norte.csv`.
+- Las filas salen ordenadas de lunes a domingo y luego por franja.
+
+La decisión que sí es tuya es qué pasa con una sala que no existe.
+
+❓ **Sala que no existe**
+Las salas son `Norte` y `Sur`. Un typo es fácil y tiene una trampa. Una sala sin reservas ya da solo la cabecera, así que un typo daría lo mismo que una sala vacía.
+
+1️⃣ **Error**
+```text
+> salas exportar Oeste
+sala desconocida: Oeste
+```
+No sale CSV y el comando termina con fallo. Un typo no se confunde con una sala sin reservas. Cuesta que el comando falle en un caso en el que alguien podría esperar «nada».
+
+2️⃣ **Solo la cabecera**
+```text
+> salas exportar Oeste
+sala;dia;franja
+```
+Es más simple y coherente con la sala vacía. Pero el responsable vería «Oeste sin reservas» cuando en realidad se equivocó al escribir.
+
+➡️ **Recomiendo 1️⃣**, porque este CSV es justo lo que se cuadra los lunes: una hoja vacía por un typo parecería «no hay reservas» y cuadraría sin que fuera verdad. A cambio, el comando tiene un caso de fallo más.
+
+¿Con cuál te quedas?
+
+--- [26]
+Ahora: escribo `spec.md` con lo decidido. Queda: pasada de coherencia, revisión y tu aprobación de la spec, ~6 min.
+
+--- [30]
+Mi `cd` anterior me dejó en la carpeta del kit, no en el proyecto `salas`. Vuelvo al proyecto y compruebo la rama antes de escribir nada.
+
+--- [33]
+Estoy en el proyecto y en la rama `feature/0010-exportar-reservas-csv`, con el árbol limpio. Escribo la spec.
+
+--- [36]
+Ahora: paso la spec por su coherencia, su revisión y su aprobación. Queda: tu aprobación de la spec, ~5 min.
+
+--- [39]
+Ahora: pasada de coherencia de la spec (placeholders, contradicciones, alcance, ambigüedad) y prueba del delta sobre una copia. Queda: revisión de la spec y tu aprobación, ~5 min.
+
+--- [42]
+El delta se fusiona sin rechazos y `capabilities/` del repo no cambia. La búsqueda solo encuentra la fila 0009 (`.ics`), que ya está en «No entra». Corrijo en la spec lo que la pasada pide.
+
+--- [44]
+Ahora: invoco la revisión de la spec, que decide cuántos revisores hacen falta. Queda: sus hallazgos y tu aprobación, ~5 min.
+
+--- [47]
+Ahora: cuento las señales de la spec y compruebo si esta sesión puede despachar revisores. Queda: hallazgos y tu aprobación, ~5 min.
+
+--- [58]
+Ahora: te presento la spec para aprobarla. Queda: tu respuesta; con ella escribo el plan, ~5 min.
+
+🦆 Un comando nuevo, `exportar <sala>`, saca las reservas de esa sala en CSV para pegarlas en tu hoja de cálculo. `exportar Norte` imprime `sala;dia;franja` y, debajo, una fila por reserva, por ejemplo `Norte;lun;10:00-12:00`. Si la sala no existe, da un error por stderr y no imprime nada en stdout, para que un typo no parezca «sin reservas». Solo usa lo que las reservas guardan hoy (sala, día, franja).
+
+Spec: `.docs/sdd/changes/20261119-155159-feature-0010-exportar-reservas-csv/spec.md`. Está sin commitear. La rama es `feature/0010-exportar-reservas-csv`, con el id 0010 reservado en local porque no hay remoto.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. El comando se llama `exportar <sala>`, como los verbos de `reservar`, `cancelar` y `libres`.
+2. Una sala sin reservas da solo la cabecera.
+3. La salida va por pantalla y se guarda con `> norte.csv`.
+4. Las filas salen de lunes a domingo y luego por franja. Un orden alfabético pondría `jue` antes de `lun`.
+5. No hay escapado de comillas ni de `;`, porque hoy los datos no los llevan.
+6. La cabecera es `dia` sin tilde, como la escribiste. El fin de línea es `\n` y no hay BOM.
+7. `exportar` sin sala da `falta la sala: uso exportar <sala>` y código 1.
+8. El nombre de sala es exacto, `Norte` y no `norte`, igual que `libres`.
+9. El error va por stderr con código 1, y en stdout no sale nada.
+10. La capacidad nueva se llama `booking-export`.
+- **Enfoque:** una función `exportar` en `src/app.js` que `run` llama. Descarté meter el CSV dentro de `run` y crear un `src/csv.js`.
+- **Orden por franja:** es por texto. Una `9:00` sin cero saldría después de `10:00`; la validación de franjas ya está en la deuda sin triar.
+
+**Decisiones tuyas, con tus palabras:**
+- Tres columnas `sala;dia;franja`, con `;` como separador.
+- Una sala inexistente da error y no una hoja vacía.
+- Queda pendiente qué compara exactamente el responsable los lunes. Por eso el CSV se limita a lo que hay hoy.
+
+**Revisión de la spec: no se hizo como pide la rúbrica.** Salían dos revisores, por capacidad nueva y por contrato público (el formato del CSV). Esta sesión no tiene herramienta para despachar subagentes. Pasé yo los siete puntos del brief en el hilo, sin críticos y con tres menores aceptados:
+- El cambio del bloque que imprime en `app.js` entra en el Scope.
+- Los dos mensajes de error se declaran como «Avisos» de la capacidad.
+- Con `;` una hoja en castellano separa las columnas sola y una en inglés no. Lo compruebas tú al validar.
+
+Esa revisión vale menos que la de un revisor aparte, porque la hace el mismo agente que escribió la spec. El delta se fusiona sin rechazos sobre una copia de `.docs/sdd`.
+
+1. **Apruebo (Recomendada)**: escribo el plan.
+2. **Cambios**: dime qué ajusto en la spec.
+3. **Repetir la revisión con revisores aparte**: desde una sesión que pueda despacharlos, antes de aprobar.
+

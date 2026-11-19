@@ -1,0 +1,49 @@
+--- [3]
+Ahora: leer la spec de la 0010 y su contexto. Queda: pasada de coherencia, review y la puerta de aprobación, ~10 min.
+
+--- [8]
+Ahora: pasada de coherencia sobre la spec (literales, código que la implementa y delta en una copia). Queda: review y la puerta de aprobación, ~8 min.
+
+--- [17]
+Ahora: la review de la spec. Queda: aplicar lo que salga y la puerta de aprobación, ~5 min.
+
+--- [21]
+Ahora: lanzar un revisor con los siete puntos sobre la spec corregida. Queda: aplicar sus hallazgos y la puerta de aprobación, ~4 min, ~0,5 $.
+
+--- [35]
+Ahora: la puerta de aprobación de la spec. Queda: tu respuesta; si apruebas, la escritura del plan.
+
+# Spec — Motivo al cancelar (0010)
+
+🦆 Para cancelar una reserva, ahora hay que elegir un motivo entre tres: cambio de planes, sala ocupada u otro. Si cancelas la reserva de Norte del lunes por «sala ocupada», el programa responde «cancelada Norte lun (sala ocupada)». Si el motivo no es uno de los tres, o no hay motivo, el programa lo rechaza y la reserva sigue en pie. Hay un listado nuevo de cancelaciones, con una línea por cada una: sala, día, motivo y la persona a cuyo nombre estaba la reserva. Si no hay ninguna, el listado dice «sin cancelaciones».
+
+Falta decidir si el listado enseña quién canceló, porque el documento de producto dice que solo hay un usuario.
+
+**✋ Decisiones que he tomado yo — valida estas**
+
+- **Review:** un revisor con los siete puntos (Opus). La spec decía «sin review», pero el número de revisores lo fija la rúbrica, y la review no se salta. La spec cuenta dos señales: una capacidad nueva y datos nuevos. El cambio es de unas 45 líneas en 2 ficheros.
+- **Prueba del delta en una copia:** la primera vez `capability merge` falló. `bookings` estaba declarada como «Modificada», pero no hay carpeta `capabilities/`. La he puesto como «Nueva», con el nombre `reservas`, porque el glosario dice «Evitar: booking». La segunda vez pasó: 4 requisitos añadidos, exit 0.
+- **Política de modelos:** se ejecuta en Native. Esta sesión implementa todas las tareas, sin subagentes por tarea.
+- **Quién canceló:** es el titular de la reserva, que viene en los datos de arranque. **Esto choca con `PRODUCT.md`** («No hay más usuarios»). Si solo hay un usuario, quito la columna «quién». Si hay varios, corrijo `PRODUCT.md` en esta feature.
+- **Motivo obligatorio:** sin `--motivo`, la respuesta es la misma que con un motivo fuera de la lista, y la reserva no se cancela.
+- **Orden de comprobación:** primero se mira si hay reserva activa («sin reserva …») y después el motivo. Una reserva ya cancelada no se puede cancelar otra vez.
+- **Formato del listado:** «sin cancelaciones» si está vacío; si no, una línea por cancelación, en el orden en que se cancelaron.
+- **Regla de las 24 h:** el glosario la menciona, pero queda fuera. Mientras no exista, se puede cancelar con cualquier antelación.
+- **Dato de ejemplo nuevo:** la reserva de Sur del jueves, de 16:00 a 18:00, a nombre de Bruno. No rompe los tests actuales.
+- **Literal que cambia:** «cancelada Norte lun» pasa a «cancelada Norte lun (sala ocupada)». Lo usan `src/app.js:17` y `test/cancel.test.js:6`, y los dos están en la tabla del Scope.
+- **Reglas de la capacidad:** he añadido una sección nueva con las cinco: dónde vive el dato, idioma, límites, avisos y conflicto.
+
+**Hallazgos de la review:** el revisor encontró 10. Acepto 8, que ya están en la spec: los escenarios llevan su comando exacto, hay un segundo ejemplo, se fija el orden del listado, se dice qué no puede hacer una reserva cancelada y están las cinco reglas. Rechazo los 2 Críticos porque el código ya los resuelve:
+- **Que una cancelada siga bloqueando la sala:** no pasa, porque `libres` y `cancelar` ya filtran solo las reservas activas.
+- **Que nadie rellene el titular:** las reservas viven en memoria y salen de los datos de arranque, y `reservar` todavía no crea reservas.
+
+Como no he aceptado ningún Crítico, no hay segunda ronda.
+
+La spec está en `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md`, todavía sin commit.
+
+¿Apruebas la spec?
+
+1. Apruebo (Recomendada). Dime también qué hago con «quién canceló»: mantenerlo y corregir `PRODUCT.md`, o quitarlo.
+2. Cambios.
+3. Apruebo, pero para antes de la Task 1: escribo el plan, lo dejo en un commit y me detengo para que lo revises antes de implementar.
+

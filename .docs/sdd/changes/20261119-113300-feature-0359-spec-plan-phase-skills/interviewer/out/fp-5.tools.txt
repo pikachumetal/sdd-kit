@@ -1,0 +1,156 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1; ls node_modules 2>&1 | head -3
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md 2>&1 | head -200
+<<< .:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "<run>/repo" && cat package.json; cat src/app.js; ls src test; git branch -a; ls .docs/sdd/specs
+<<< {"type": "module"}
+const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return `cancelada ${params[0]} ${params[1]}`;
+  return 'salas';
+}
+
+if
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/nombrado.md"; cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/control-profiles.md" | head -60
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js; ls .docs/sdd/specs/*free*; head -40 .docs/sdd/specs/*free*/spec.md; cat README.md CHANGELOG.md | head -40
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+spec.md
+walkthrough.md
+# Spec — free
+
+status: done
+# salas
+
+Reservas de 
+
+=== RESULTADO (8 turnos, 0.14505 $)
+Ese comando ya existe, así que no he abierto ninguna feature.
+
+- **Código:** `salas libres <franja>` está en `src/app.js` (`freeRooms`, invocado desde `run('libres', …)`).
+- **Test:** `test/app.test.js` lo cubre, con `libres excluye la sala reservada en la franja`.
+- **Spec:** la tarea 0006 (`.docs/sdd/specs/20260917-090000-task-0006-free/`) está en `status: done`.
+- **Changelog:** aparece en `[Unreleased]` como «Listado de salas libres por franja (`salas libres 10:00-12:00`)».
+
+Lo que hace hoy es lo siguiente: compara la franja como texto exacto con `slot` de cada reserva. Ignora el día, porque `libres` solo recibe la franja. Tampoco detecta solapes: con `10:00-12:00` reservada, `libres 11:00-13:00` devuelve ambas salas como libres. Además, la deuda técnica ya anota que no se valida el formato de la franja.
+
+¿Qué quieres que haga? Mi recomendación es la 1:
+
+1. **Mejorar `libres`** como feature en modo full: tener en cuenta el día, detectar solapes entre franjas y validar el formato. Abriría la spec con esa ampliación, con su propia fila en el roadmap y la entrada de deuda saldada.
+2. **Es otra cosa distinta de `libres`**, por ejemplo ver la ocupación de una sala concreta o listar las reservas de una franja. Dime cuál y la planteo como feature nueva.
+3. **No hacer nada**, si habías pedido esto sin recordar que ya estaba hecho.
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$SDD" id next --project-root . --reserve
+<<< 0010
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; git checkout -b feature/0010-salas-libres-franja develop && node "$SDD" id claim --project-root .
+<<< Switched to a new branch 'feature/0010-salas-libres-franja'
+sin remoto: la 0010 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.22984130000000003 $)
+Ahora: te cuento lo que he entendido y qué dejo decidido; todavía no escribo la spec. Queda: tu respuesta, el diseño a confirmar y la spec con su aprobación, ~10 min.
+
+**Lo que he entendido.** Quieres un comando para ver qué salas están libres en una franja. Mantienes la petición aunque `salas libres <franja>` ya existe, así que la tomo como decidida y no la vuelvo a discutir.
+
+**Lo que hay hoy**, en `src/app.js` (`freeRooms`):
+- Compara la franja como texto exacto con `slot` de cada reserva.
+- No mira el día (`libres` solo recibe la franja) ni los solapes: con `10:00-12:00` reservada, `libres 11:00-13:00` devuelve `Norte, Sur`.
+- No valida el formato, y está anotado en la deuda («Por triar»).
+
+Si hay algo que no he visto, corrígeme.
+
+**Contestado** (lo dicen la petición y el proyecto):
+- Es una feature en modo full, en `src/app.js`, con `node --test`, sin dependencias y con la interfaz en castellano (constitución y operations).
+
+**Menor** (lo decido yo y irá a ✋ en la spec):
+- El nombre y la ubicación del código, y el orden de las tareas. Parto de lo que ya hay, `libres` y `freeRooms`.
+
+**Tuyo** (solo tú puedes responderlo; lo iré preguntando uno por turno):
+- Para qué lo quieres, y qué debe hacer el comando que `libres` no hace hoy.
+- Cuándo lo darás por bueno, y qué queda fuera.
+- Si cambia el `libres` actual o convive con él.
+
+Empiezo por lo primero: ¿qué te pasa hoy, o qué no puedes hacer con `salas libres`, que te lleva a pedir este comando?
