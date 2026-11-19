@@ -25,7 +25,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
   'sdd-spec-approval': { skillMd: 1250, total: 1250 },
   'sdd-spec-review': { skillMd: 1460, total: 1860 },
-  'sdd-spec-writing': { skillMd: 3350, total: 3350 },
+  'sdd-spec-writing': { skillMd: 3450, total: 3450 },
   'sdd-propose': { skillMd: 2900, total: 9400 },
   'sdd-implement': { skillMd: 2633, total: 6626 },
   'sdd-implement-native': { skillMd: 3038, total: 3038 },

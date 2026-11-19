@@ -31,6 +31,7 @@ El método (baterías, sujetos, matices de campaña) vive en `steering/operation
 - Fallo de disciplina (sabe la regla y la salta bajo presión) → prohibición + tabla de racionalizaciones + red flags.
 - Fallo de forma (cumple pero con la forma equivocada) → receta o contrato de cómo es el output.
 - Elemento omitido (cumple, pero falta una pieza del output o un paso de orden o búsqueda) → hueco obligatorio en la plantilla, no prosa al lado; con una orden delante (CLI, `grep`), esa orden, antes de reescribir texto.
+- Fase obligatoria que se lee y se salta (una referencia con «First thing: read») → la fase va en su skill, que se carga entera y deja su invocación; las referencias son de consulta ([ADR 0038](../decisions/0038-mandatory-phase-in-a-skill.md)).
 - Comportamiento condicional → predicado observable («si existe `.docs/sdd/estimation.md`…»), nunca cláusulas de excepción.
 - Una excepción de la guía lleva su contraejemplo (el motivo que no vale), y la prueba tiene un escenario donde esa excepción es la salida fácil.
 

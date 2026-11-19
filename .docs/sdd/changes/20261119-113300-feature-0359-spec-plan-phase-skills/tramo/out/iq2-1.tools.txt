@@ -1,0 +1,117 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; ls node_modules 2>&1 | head -2
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+{"version": "3.0.3"
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md package.json .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md; ls -R src test scripts
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; head -30 test/app.test.js; git branch --show-current
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references" && cat nombrado.md; grep -n -i "aviso\|merge.push" control-profiles.md | head
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" && node "$SDD" id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-reservas-sala && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root .
+<<< Switched to a new branch 'feature/0012-reservas-sala'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (14 turnos, 0.2241207 $)
+Ahora: ponerte por escrito lo que entiendo y qué me falta antes de escribir `spec.md`. Queda: tu respuesta a una pregunta, luego la spec escrita y presentada, ~8 min.
+
+**Lo que entiendo.** `reservas <sala>` es un comando de solo lectura para que el responsable de sala repase su agenda cada mañana. Saca las reservas activas de esa sala, una por línea, con el formato de hoy (`lun 10:00-12:00`). Van ordenadas de lunes a domingo y, dentro del día, por hora de inicio. Si no hay ninguna, responde `sin reservas <sala>`.
+
+**Lo que he visto en el código.** En `src/app.js` cada reserva ya guarda `room`, `day`, `slot` y `status`. Las canceladas y anuladas quedan con otro `status`, así que filtrar por `active` basta. No hay fecha, solo día de la semana. El orden será una tabla fija `lun…dom` y no un `sort()` alfabético, que pondría `jue` antes de `lun`. Corrígeme si algo no encaja.
+
+**Contestado** (lo uso sin preguntar):
+- El formato, el orden y el mensaje vacío vienen en tu petición.
+- Solo cuentan las `active`, porque lo dice «reservas activas» y lo confirma `app.js`.
+
+**Menor** (lo decido yo y va a ✋):
+- La función se llamará `listBookings` y tendrá su test aparte en `test/`, siguiendo `cancelBooking` y `voidBooking`.
+- Dentro del día ordeno por el inicio de la franja, comparando `HH:MM`.
+
+**Del dev-lead** (solo tú puedes decidirlo):
+- Qué responde con una sala que no existe.
+- Cómo se escriben los días con tilde: `mié` y `sáb`.
+- Si el comando debe limitarse a «su» sala. `PRODUCT.md` dice que solo lo usas tú y no hay login, pero la petición habla del responsable de sala.
+
+Empiezo por la primera. Hoy `reservas Este` no tiene dónde caer, y cada opción cambia lo que ve el responsable:
+
+❓ **Sala que no existe**
+1️⃣ **Tratarla como sala sin reservas:** `reservas Este` → `sin reservas Este`. Es lo mínimo y cumple tu regla literal, pero una errata (`reservas nort`) parece una sala vacía.
+2️⃣ **Avisar de que no existe:** `reservas Este` → `sala desconocida Este`. Detecta erratas, pero añade un mensaje que no pediste.
+
+➡️ **Recomiendo 2️⃣**, porque quien revisa su agenda cada mañana prefiere que una errata no se lea como «hoy no tengo nada». A cambio, introduce un mensaje nuevo en el producto.
+
+¿Cuál eliges para una sala que no existe?

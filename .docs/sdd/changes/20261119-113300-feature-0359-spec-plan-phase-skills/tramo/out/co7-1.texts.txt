@@ -1,0 +1,114 @@
+--- [3]
+Ahora: leer la spec y hacer el repaso de coherencia. Queda: revisión, y presentarte la spec para aprobar, ~10 min.
+
+--- [15]
+Ahora: compruebo que la fusión del delta ya pasa sobre una copia. Queda: la revisión con `sdd-spec-review` y presentarte la spec, ~8 min.
+
+--- [30]
+Ahora: el revisor de la spec está trabajando (uno, en Sonnet, ~0,3 $). Queda: integrar sus hallazgos y presentarte la spec para aprobar, ~5 min.
+
+Espero su resultado antes de seguir; no adelanto nada de lo que diga.
+
+--- [34]
+El aviso era del vigilante, no del revisor: `sdd` no está en el PATH y salió sin vigilar nada. El revisor sigue en marcha. Relanzo el vigilante con la ruta del CLI.
+
+--- [36]
+Sigo esperando al revisor (aún no ha devuelto nada). Cuando termine, integro sus hallazgos y te presento la spec.
+
+--- [37]
+1. Crítico · Delta de comportamiento / Intent / ✋ 3 · El Intent afirma que `exportar` «hoy deja los ficheros en la raíz», pero la propia spec admite que el comando no existe. Eso hace que el ADDED sea comportamiento nuevo, no un cambio de carpeta, y el escenario no se sostiene con el código actual. El Scope tampoco lo cierra: `src/app.js` aparece «por decidir». · Resolver ✋ 3 antes de aprobar. Reescribir el Intent como «implementar `exportar` y que escriba en `out/`», o recortar el THEN a `exportPath()`. Quitar el «por decidir» del Scope.
+
+2. Crítico · Delta de comportamiento (ADDED) · El GIVEN dice «la reserva de Norte del lunes», sin la franja ni el dato de partida. El THEN exige `Norte,lun,10:00-12:00`, así que la franja 10:00-12:00 sale de la nada. Además, el escenario pasaría igual si el fichero se escribiera en otra carpeta, porque no se comprueba que `out/` exista ni que la raíz quede limpia. · Dar en el GIVEN la reserva completa (sala Norte, lunes, 10:00-12:00). Añadir en el THEN que no se escribe `reservas.csv` en la raíz, y escenarios para `out/` inexistente y para un fichero previo.
+
+3. Importante · Delta de comportamiento / ✋ 1 · Cambiar `base` de `.` a `./out` altera una configuración existente que `test/config.test.js` ya fija. Cualquier otro consumidor de `base` cambia de carpeta sin declararlo, y no hay MODIFIED ni escenario que lo cubra. · Declarar el efecto sobre otros usos de `base`, o comprobar que `exportPath` es el único consumidor y dejarlo escrito. Añadir un escenario sobre el valor de `base`.
+
+4. Importante · Scope / Decisiones · Nadie decide quién crea `out/` cuando no existe. `config.json` solo cambia una ruta, y el revisor de la propia spec lo señala como duda técnica. El Scope lista `src/app.js` pero no la creación de la carpeta. Es una decisión tomada en el cuerpo (o ignorada) que no figura en ✋. · Añadir a ✋ una decisión sobre la creación de `out/` (recursiva, y si falla qué pasa) y reflejarla en un escenario.
+
+5. Importante · Delta / 5 roles y accesos · Ni el escenario ni el cuerpo mencionan permisos. Sí hace falta decir que `out/` puede no ser escribible, y esa condición no aparece. PRODUCT.md solo conoce a un usuario (el desarrollador). · Declarar «no aplica» para roles, o añadir el escenario de error por falta de permisos de escritura.
+
+6. Importante · 5 bis (reglas de producto) · Faltan las cinco reglas, todas sin declarar:
+   - Dónde vive el dato: `out/reservas.csv` y `config.json`.
+   - Idioma de los nombres: `reservas.csv` está en castellano y coincide con la Terminología, pero no se dice.
+   - Límites: sin tope de filas ni tamaño.
+   - Avisos: qué se muestra al terminar o al fallar.
+   - Regla de conflicto: si `reservas.csv` ya existe, no se dice si se sobrescribe.
+   La constitución no tiene «Reglas de producto», así que no hay contra qué cotejar. · Declarar las cinco, cada una con valor o «no aplica». La de conflicto es la prioritaria: sobrescribir o fallar.
+
+7. Importante · Scope / Tabla «Lo que se retira» · Se toca `.gitignore` de forma implícita: `out/` no está declarado como ignorado ni versionado. El Intent habla de que los ficheros «se mezclan con el código», pero nada dice si `out/` se commitea. Los ficheros ya existentes en la raíz tampoco se tratan. · Declarar si `out/` va a `.gitignore` y qué se hace con los `reservas.csv` ya presentes en la raíz (migrar, borrar o ignorar). Incluir `.gitignore` en el Scope si procede.
+
+8. Menor · Scope / Delta / PRODUCT · El plural «los ficheros» del Intent y «ficheros exportados» del Scope contradicen el delta, que solo cubre `reservas.csv`. Nada define qué otros ficheros existen. · Unificar a «el fichero `reservas.csv`», o listar los demás ficheros con su escenario.
+
+9. Menor · Frontmatter / Aprobaciones · `profile: delegate` con una única aprobadora (Laura) que no aparece en PRODUCT.md, donde solo hay un usuario y ningún otro desarrollador. Con ✋ 3 sin resolver, la aprobación no puede darse. · Confirmar que Laura es la aprobadora válida, o ajustar el perfil. Bloquear la aprobación hasta que ✋ 3 esté cerrado.
+
+10. Menor · ✋ 2 y 4 · Los puntos 2 y 4 son hechos de proceso (la fusión probada, `capabilities/` sin fichero), no decisiones del usuario. Diluyen la lista de lo que se valida. · Mover 2 y 4 a una nota de verificación y dejar en ✋ solo las decisiones reales (1 y 3, más la de crear `out/` y la de conflicto).
+
+--- [43]
+El escape del shell destrozó el comando: no sé en qué estado quedó `spec.md`. Lo compruebo antes de tocar nada más.
+
+--- [46]
+La spec quedó con todos los backticks comidos por el shell. La reescribo entera con la herramienta de escritura.
+
+--- [55]
+Segundo revisor lanzado. Espero su resultado; la spec no está lista para presentártela hasta integrarlo.
+
+--- [57]
+1. Importante · Delta de comportamiento, "Exportar sin poder escribir" · El THEN "no deja `out/reservas.csv`" se cumple solo porque `out` es un fichero, así que pasaría con cualquier implementación, incluso sin comportamiento. "No deja fichero a medias" (decisión 4) no lo ejercita ningún escenario. · Sustituir el THEN por algo observable: el contenido de `out` no cambia y el comando devuelve el error. Añadir un caso de fallo a mitad de escritura, o quitar la promesa de "sin fichero a medias" de la decisión 4.
+
+2. Importante · Decisión 3 (avisos) y Delta · El aviso `exportado out/reservas.csv` no lo comprueba ningún THEN. Además, `base` pasa a `./out` y `exportPath()` compone `./out/reservas.csv`, así que el texto devuelto no coincidiría. · Añadir al THEN del escenario 1 el valor devuelto exacto, y decidir si se normaliza la ruta o se muestra `./out/…`.
+
+3. Importante · Decisión 3/4 y "Exportar sin poder escribir" · "Devuelve el error de escritura" no fija texto ni formato. El error nativo de Node (`ENOTDIR`/`EEXIST`) llega en inglés y la constitución (punto 4) exige el texto de interfaz en castellano. · Fijar el mensaje en castellano (p. ej. `no se pudo escribir out/reservas.csv`) y ponerlo en el THEN.
+
+4. Importante · Delta, escenario 1 y decisión 5 · El GIVEN no declara la raíz limpia, aunque el THEN afirma "no escribe `reservas.csv` en la raíz" (el hallazgo anterior decía haberlo corregido). Si existe un `reservas.csv` antiguo en la raíz, la aserción es ambigua frente a la decisión 5. · Añadir al GIVEN "sin `reservas.csv` en la raíz", o reformular el THEN como "la raíz no cambia".
+
+5. Importante · Delta, escenario 1, y Scope "No entra" · El contenido de la exportación no está acotado y se decide sin registrarlo. "Reserva activa" no está definida en la terminología: no se dice si las cancelaciones o anulaciones se excluyen. Tampoco se cubre el caso de cero reservas, varias reservas, cabecera o salto de línea. · Registrar en las decisiones qué reservas se exportan y cuál es el resultado sin reservas (¿fichero vacío o sin fichero?). Añadir un escenario para el caso sin reservas y otro para una reserva cancelada o anulada.
+
+6. Importante · Decisiones, bloque de review (línea de tamaño) · Dice "~15 líneas en 4 ficheros", pero el Scope lista 6 (`config.json`, `app.js`, `export.js`, `.gitignore`, ambos tests). El dimensionado de la review parte de una cifra falsa. · Corregir el tamaño a 6 ficheros y revisar si el mínimo razonable sigue valiendo.
+
+7. Importante · Dónde se prueba · No se dice cómo `test/export.test.js` evita escribir en el `out/` real del repo ni sobre qué directorio de trabajo se resuelve `./out` (cwd frente a raíz del repo). Esto afecta al GIVEN "`out/` sin crear" y al gate `node --test`. · Decidirlo (directorio temporal con cwd o `base` inyectado), anotarlo en las decisiones y reflejarlo en el Scope y en "Dónde se prueba".
+
+8. Menor · Decisiones, nota "Verificación" · Remite a "resultado abajo", pero no hay ninguna sección de resultado. Es una referencia colgante, y además es un hecho de proceso metido en las decisiones. · Quitar la nota o añadir el resultado real en un sitio fuera de ✋.
+
+9. Menor · Título e Intent frente a Capacidades · El título "La exportación escribe en out/" presenta como cambio de ruta lo que es una capacidad nueva (implementar `exportar`). Un lector que solo vea el título subestima el alcance. · Retitular, p. ej. "Nuevo comando `exportar` que escribe en `out/`".
+
+10. Menor · Tabla "Lo que se retira o cambia de forma" · Cambiar `base` altera una clave de configuración existente, es decir, un contrato de datos para quien tenga su propio `config.json`. La tabla no dice si hay compatibilidad ni migración. · Declarar "sin otros consumidores ni configs externos (PRODUCT: un solo usuario)", o añadir la nota de migración.
+
+--- [59]
+La segunda ronda no trae Críticos, así que no hay tercera. Integro los diez hallazgos.
+
+--- [62]
+Ahora: presentarte la spec para aprobar. Queda: tu respuesta; si apruebas, escribo el plan.
+
+## 🦆 En corto
+
+`exportar` **no existe todavía** en el código. Solo hay `exportPath()`, que compone la ruta desde `config.json`. Así que esta feature no es solo mover la carpeta: hay que implementar el comando para que escriba `reservas.csv` en `./out/`, y `base` pasa de `.` a `./out`.
+
+## Spec 0020 — Nuevo comando `exportar` que escribe en `out/`
+
+Fichero: `.docs/sdd/specs/20261008-180000-feature-0020-export-dir/spec.md`. Modo full, perfil delegate.
+
+**Lo que ha cambiado en el repaso**
+- La spec original asumía que `exportar` ya existía. No era cierto, y eso hacía el MODIFIED imposible. Ahora `export` es una capacidad **nueva**.
+- `test/config.test.js:5-6` fija `base` a `.`. Faltaba en el Scope y ahora entra.
+- La fusión del delta sobre una copia de `.docs/sdd` pasa (exit 0, 5 escenarios añadidos). `capabilities/` del repo no se ha tocado.
+- Una revisión con un revisor y una segunda ronda, porque aceptamos dos Críticos. La segunda no trajo Críticos. Los 19 hallazgos están en la spec, uno rechazado con motivo.
+- No hay fila 0020 en `ROADMAP.md`. Ningún otro sitio del repo cita esa id.
+
+## ✋ Decisiones que he tomado yo — valida estas
+
+1. `base` pasa a `"./out"`. Solo lo lee `exportPath`: sin migración.
+2. **Implemento `exportar`** en `src/app.js`. Alternativa: recortar el THEN a la ruta de `exportPath()`.
+3. Reglas: dato en `./out/reservas.csv` · nombres en castellano · sin límites · avisos `exportado ./out/reservas.csv` / `no se pudo escribir ./out/reservas.csv` · si ya existe, **se sobrescribe**.
+4. `out/` se crea si no existe; si no se puede escribir, devuelve el error en castellano y no cambia nada.
+5. `out/` va a un `.gitignore` nuevo; los `reservas.csv` que ya haya en la raíz no se tocan.
+6. Roles y permisos: no aplica.
+7. Se exportan solo reservas **activas**, sin cabecera; sin ninguna, fichero vacío.
+8. Los tests corren en un directorio temporal para no escribir en el `out/` real.
+
+Una limitación: el aviso lleva `./out/…` tal cual, sin normalizar.
+
+¿Apruebas la spec?
+
+1. **Apruebo (Recomendada)**
+2. Cambios
+3. Apruebo y paro antes de la Task 1, tras escribir el plan
+

@@ -7,7 +7,7 @@ description: Use when sdd-propose hands off a feature, a lite or a spike, to int
 # sdd-spec-writing
 <!-- kit: incluye user-language -->
 <!-- kit: incluye phase-notice -->
-Forked from `brainstorming` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently. The spec is written in `.docs/sdd/changes/<task-folder>/spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this skill says how you get there.
+Forked from `brainstorming` of superpowers (MIT, see `NOTICE`); the text is the source's, changed only where the kit works differently.
 
 You are very good at building. You build what you believe your human
 partner wants, and that belief is usually thinner than it feels. This
@@ -45,7 +45,7 @@ Before you start implementing, you must, in order:
 4. Once approved, `sdd-spec-approval` hands off: to `sdd-plan-writing` in full and spike, to `sdd-implement` in lite.
 
 <!-- kit: 0359 · sustituye: «If nothing is open…a spike they said yes to (see Spike to…opted out of…questions.» -->
-With nothing in the dev-lead's pile, step 1 and the short design go in your first message, and step 3 is still the gate after `spec.md` (see Your First Message). Asking to start right away doesn't skip the spec (see Starting right away).
+With nothing in the dev-lead's pile, step 1 and the short design go in your first message, and step 3 is still the gate after `spec.md` (see Your First Message).
 <!-- kit: fin -->
 
 ## Look Before You Ask
@@ -61,7 +61,7 @@ already decided.
 ## Your First Message
 
 <!-- kit: 0359 -->
-Before your first question, invoke `sdd-grilling` with `Skill`: every question follows it. Your first message after `sdd-propose`'s announcement is the understanding note and the three piles, in one message; the piles aren't repeated later. ⛔ No `spec.md` until this message has gone out and the turn has ended, also with the dev-lead's pile empty: then it ends in the short design to confirm. Only nobody to answer (below) skips it; «my pile is empty, so I write the spec» is the failure this message exists for.
+Before your first question, invoke `sdd-grilling` with `Skill`: every question follows it. Your first message after classifying is the understanding note («what I understood, correct me») and the three piles, in one message; the piles aren't repeated later. ⛔ No `spec.md` until this message has gone out and the turn has ended, also with the dev-lead's pile empty: then it ends in the short design to confirm. Only nobody to answer (below) skips it; «my pile is empty, so I write the spec» is the failure this message exists for.
 
 Move the work forward, with one of these:
 
@@ -105,6 +105,19 @@ Move the work forward, with one of these:
 
 <!-- kit: 0359 · sustituye: «How the message ends depends…through the normal workflow.» -->
 The message ends with the first question of the dev-lead's pile, or with the short design to confirm; never with an offer to skip the questions. With nobody to answer —the spec approved by delegation, «empieza ya», or `unattended`— there's no piles message and no stop: what the dev-lead's pile holds goes to ✋ marked «pendiente», each point with its why, or the feature is parked in `unattended`.
+<!-- kit: fin -->
+
+<!-- kit: 0359 -->
+The message opens with the announcement of `sdd-propose`, when it hasn't gone out yet, in this form:
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», con el modelo más capaz y más de una task)
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+The profile line says which level it comes from; one `Aviso:` line per local key you ignore, literal from [control-profiles.md](../sdd-propose/references/control-profiles.md); in `pair` and `delegate`, the two phrases.
 <!-- kit: fin -->
 
 That's the whole message.
@@ -247,7 +260,7 @@ Three things the spec carries when they apply:
 <!-- kit: fin -->
 
 <!-- kit: 0359 · sustituye: «**Where it goes:**…override both.» -->
-**Where it goes:** create the folder with the id `sdd-propose` reserved (naming and predicate modules in [nombrado.md](../sdd-propose/references/nombrado.md)) and `spec.md` traced from `spec-template.md`, with `mode: full | lite | spike` in the frontmatter.
+**Where it goes:** create the folder with the id `sdd-propose` reserved (naming and predicate modules in [nombrado.md](../sdd-propose/references/nombrado.md)) and `spec.md` traced from `spec-template.md` of the `sdd-templates` skill, with `mode: full | lite | spike` in the frontmatter.
 
 <!-- kit: 0359 · sustituye: «**Builder check** (for a project):…read the document as that builder yourself.» -->
 **Then the approval**: with `spec.md` written, invoke `sdd-spec-approval` with `Skill`, in the same turn. It runs the coherence pass, invokes `sdd-spec-review`, folds in its findings and takes the spec through its gate.

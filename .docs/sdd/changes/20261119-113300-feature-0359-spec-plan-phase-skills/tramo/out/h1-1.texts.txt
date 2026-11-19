@@ -1,0 +1,78 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar y arrancar la spec, hasta tu validación, ~5 min.
+
+--- [13]
+Rama `feature/0012-libres-por-planta` creada, id 0012 válido (sin remoto). Ahora: paso a la spec.
+
+--- [16]
+Ahora: escribo la spec directamente, porque la has aprobado por delegación y no hay piles ni parada. Queda: coherencia y revisión, plan y parada antes de implementar, ~10 min.
+
+--- [27]
+Ahora: pasada de coherencia (grep, merge del delta en una copia). Queda: revisión, plan y parada, ~8 min.
+
+--- [33]
+Ahora: despacho un revisor (alcance pequeño, ~30 líneas, una capacidad nueva, sin `MODIFIED`). Queda: integrar hallazgos, plan y parada, ~6 min, ~0,3 $.
+
+--- [36]
+Revisor despachado (uno, Sonnet). Espero su resultado antes de integrar los hallazgos en la spec; no sigo hasta que llegue.
+
+--- [41]
+1. Crítico · Delta de comportamiento, «Planta sin salas libres» · El GIVEN mezcla dos casos con un solo WHEN/THEN. `--planta 1` (Norte reservada) y `--planta 9` (sin salas) dan salida vacía por motivos distintos. Un escenario que acepta cualquier salida vacía pasa aunque el filtro ignore la planta o falle con otra cosa. Además, Decisión 4 dice que `--planta 9` da vacío, pero eso solo se ve si la sala de la planta 1 también se oculta. Separarlo en dos escenarios. En el de planta inexistente, añadir un GIVEN con una sala libre en otra planta (`Sur` libre) y exigir salida vacía, para que se note que el filtro actúa.
+
+2. Importante · Delta de comportamiento, «Libres de una franja» · ADDED que describe el comportamiento actual de `libres` (con `Sur` como única libre). En el GIVEN, `Sur` está sin reservas y `Norte` reservada, así que el escenario pasa sin ninguna lógica de planta y no protege el anti-goal «sin `--planta` igual que hoy». Falta además el caso de la franja que sigue sin ser el primer parámetro y el de varias libres. Mantenerlo como línea base declarada, y exigir que el escenario de regresión cubra «sin `--planta`, todas las libres, mismo orden y formato que hoy». Añadir el formato de salida (separador, orden) como regla.
+
+3. Importante · «Filtrar libres por planta» · El THEN usa `Sur` y la rama AND usa `Norte, Sur`, pero el formato de salida (separador coma, orden, una línea o varias) no está definido en ninguna parte. El comportamiento actual no está documentado. Un implementador o un test puede aceptar cualquier formato. Fijar el formato literal en un requisito o en las «Reglas de la capacidad», citando la salida actual.
+
+4. Importante · «Planta no válida» / Decisión 5 · Falta cubrir `--planta 0`, `--planta -1`, `--planta 2.5`, `--planta 02`, `--planta` repetido, y `--planta` como último token con la franja ausente (`libres --planta 2`). Con «solo enteros» sin definir si el 0 o los negativos valen, el límite queda abierto. Tampoco se dice qué pasa si falta la franja o si el valor de `--planta` parece una franja (`libres --planta 10:00-12:00`). Añadir los límites a «Reglas de la capacidad» (rango, cero, negativos, repetición) y un escenario por cada caso que se decida.
+
+5. Importante · Reglas de la capacidad (5 bis) · Solo se declaran «Dónde viven los datos» y «Límites». Faltan por nombre «Idioma de los nombres», «Avisos» y «Regla ante conflicto», sin «no aplica». El mensaje `planta no válida…` es un aviso nuevo, y el conflicto (`--planta` duplicada, valor que choca con la franja) es una condición nueva. Añadir las tres reglas, con «no aplica» o el contenido que corresponda. En idioma: el flag es `--planta` (castellano), pero el campo interno es `floor`; declarar que el código usa inglés.
+
+6. Importante · Decisiones («✋») vs. cuerpo · El cuerpo toma decisiones que no están en la lista. Por ejemplo, que el error de planta no válida tiene prioridad sobre el de franja (o no). También el orden de la salida. Y que el valor negativo o cero es inválido (no se dice). Y la cobertura «`--planta` extraído "donde esté"», más amplia que la Decisión 3. Y en el Approach: «lo restante, primer parámetro, es la franja», lo que cambia el contrato actual de `params[0]`. Listarlas o eliminarlas.
+
+7. Importante · Decisión 1 / Reglas «Dónde viven los datos» / escenarios · El reparto de plantas (Norte 1, Sur 2) está «pendiente», pero los escenarios y las Reglas lo dan como hecho, y la spec figura aprobada por delegación con la validación pendiente. Si el dev-lead corrige el reparto, los GIVEN de tres escenarios dejan de ser ciertos. Los GIVEN deberían declarar la planta en cada caso (ya lo hacen) y las Reglas no deberían fijar el valor. Marcar la spec como «con dato pendiente» en la aprobación, o no darla por aprobada hasta confirmar el dato.
+
+8. Menor · Aprobaciones / cabecera · `approvers` TBD con `approved_at: null` y `status: draft`, pero la tabla de Aprobaciones dice «aprobada por delegación», y el aprobador es el propio autor (Fixture). Es una incoherencia de estado, y la delegación la da el dev-lead, no quien escribe. Alinear el frontmatter con la tabla (estado, aprobador, fecha), o dejar la tabla vacía hasta la validación.
+
+9. Menor · «Lo que se retira o cambia de forma» / contratos (6) · No se dice nada sobre el contrato de `freeRooms` (su firma cambia si recibe la planta) ni sobre `rooms` como dato exportado, usado por `reservar`, `cancelar` y `anular` (la spec los excluye del alcance, pero la nueva forma `{ name, floor }` los toca, porque validan el nombre de la sala). Declarar en esa tabla las demás funciones que leen `rooms`, y un escenario o test de regresión para ellas (`reservar Norte` sigue funcionando).
+
+10. Menor · Intent y «🦆» / Scope · La palabra «planta» no está en la terminología del PRODUCT.md (Sala, Reserva…), y aparece `room`/`floor` en código frente a «Evitar: room» del PRODUCT. «Términos resueltos» define planta solo en la spec. Añadir **Planta** a la terminología del producto en el cierre, y decidir cómo se nombra el campo para no contradecir «Evitar: room» (`rooms` ya existe, pero se está ampliando).
+
+--- [43]
+Ahora: integro los hallazgos en la spec; al haber aceptado un Crítico, toca una segunda ronda con un revisor Sonnet. Queda: segunda ronda, plan y parada, ~6 min, ~0,3 $.
+
+--- [48]
+Segunda ronda despachada. Espero su resultado antes de pasar al plan.
+
+--- [54]
+1. Importante · «Delta de comportamiento» (decisión 9) · Hay dos comportamientos sin escenario: el error de planta no válida con prioridad sobre cualquier otra salida (por ejemplo `libres --planta 0` sin franja, o con franja mal formada), y `libres --planta 2` sin franja «como hoy». Hoy ningún test los exige, así que la implementación puede incumplirlos sin que el gate lo note. · Añadir un escenario `ADDED — El aviso prima` con `libres --planta 0` (sin franja) → aviso. Añadir otro con `libres --planta 2` (sin franja) → salida idéntica a la de hoy, o sacar esa frase de la decisión 9.
+
+2. Importante · «Delta de comportamiento» (todos los GIVEN) y decisión 1 · Todos los escenarios fijan Norte=1 y Sur=2, un reparto que la propia spec marca como «pendiente» y que el dev-lead debe corregir. La spec está `approved` con ese dato sin confirmar. Si el reparto cambia, los escenarios y los tests quedan mal sin que la spec lo diga. · Marcar en la decisión 1 y en los GIVEN que las plantas son provisionales y que el cambio de reparto obliga a revisar los escenarios `Norte (planta 1)` y `--planta 1/2/9`. O pedir la confirmación antes de pasar de `approved`.
+
+3. Menor · «Delta de comportamiento», escenarios con «reservada lun 10:00-12:00» · `libres 10:00-12:00` no lleva día en la franja. La spec no dice cómo se relaciona la reserva del lunes con la consulta, es decir, qué día usa `libres`. Es una ambigüedad de contrato que afecta al GIVEN de cuatro escenarios. · Indicar en el GIVEN o en una regla qué día evalúa `libres` (por ejemplo, el de hoy o cualquiera). O reformular las reservas sin día.
+
+4. Menor · Decisión 7 y «Límites» · «Entero ≥ 1 sin signo ni decimales» no cubre `02`, `007`, `1e1` ni valores enormes. La implementación puede aceptarlos o rechazarlos según la regex que elija, y no hay escenario que lo fije. · Precisar el formato como `^[1-9][0-9]*$` (o el que se quiera) y añadir un caso, por ejemplo `--planta 02` → no válida.
+
+5. Menor · «Reglas de la capacidad», «Idioma de los nombres» · La regla mezcla el nombre de la opción con el nombre del campo interno `floor`. Las reglas de capacidad deberían ser comportamiento observable. Un detalle interno como `floor` ya está en Approach y en la tabla «Lo que se retira o cambia de forma». · Dejar en la regla solo que la opción de la interfaz es `--planta` en castellano. Quitar `floor`.
+
+--- [59]
+Ahora: escribo `plan.md` desde la plantilla. Queda: commit de apertura y parada antes de implementar (como pediste), ~5 min.
+
+--- [71]
+Spec y plan escritos y commiteados en `feature/0012-libres-por-planta`; no he tocado código de producto y paro aquí, antes de implementar, como pediste.
+
+Ahora: cierro la parada. Queda: nada hasta tu validación.
+
+**Lo que hay** (commit `115d131`, carpeta `.docs/sdd/changes/20261119-160359-feature-0012-libres-por-planta/`):
+- **Carril**: feature, modo full, perfil delegate, ejecución native (fijada en `sdd-kit.json`).
+- **Spec** (`spec.md`): `libres <franja> --planta <n>` filtra por planta. Sin `--planta`, lista todas las salas como hoy. La aprobé por delegación con tu frase literal, anotada en la spec.
+- **Revisión**: dos rondas con un revisor Sonnet. Acepté todos los hallazgos salvo dos, que rechacé con su motivo en la spec. Uno era esperar a confirmar las plantas antes de aprobar; el otro, declarar otras funciones que leen `rooms`, que no existen.
+- **Plan** (`plan.md`): dos tasks. La 1 es el filtro con valores válidos; la 2 rechaza valores no válidos. Gate de cierre: `node --test && node scripts/lint.mjs`.
+
+**Para tu validación**:
+1. **Plantas de las salas**: puse Norte → 1 y Sur → 2 porque nadie lo dijo. Es mi suposición, marcada como pendiente en la spec y de la que dependen los tests.
+2. **`--planta` válida**: entero ≥ 1 sin ceros a la izquierda. Si falta el valor, está repetida o no es válida, sale `planta no válida: usa --planta <número>`.
+3. **Planta sin salas libres**: devuelve salida vacía, igual que hoy cuando no hay ninguna libre.
+4. **Carpeta de artefactos**: el proyecto tenía los antiguos en `.docs/sdd/specs/`; usé `.docs/sdd/changes/`, que es la que fija el kit.
+
+Cuando quieras seguir, di «retoma la feature» y arranco la Task 1.
+

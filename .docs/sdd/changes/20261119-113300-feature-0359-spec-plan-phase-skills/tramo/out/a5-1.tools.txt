@@ -1,0 +1,113 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && find .docs -type f | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/estimation.md
+.docs/sdd/steering/operations.md
+{"version": "3.0.3"
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; ls -R src test scripts; git branch -a; ls node_modules 2>&1 | head -2
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md; grep -n "libres" test/*.js | head
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references" && cat nombrado.md; ls
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-libres-por-planta && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root .; git status --short
+<<< Switched to a new branch 'feature/0012-libres-por-planta'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.22001070000000003 $)
+Ahora: te presento lo que he entendido y qué dejo abierto, antes de escribir la spec. Queda: tu respuesta, el diseño corto y `spec.md`, ~5 min.
+
+Ya tengo rama (`feature/0012-libres-por-planta`) y carril. Aún no escribo `spec.md`: el kit exige que antes salga este mensaje y tú contestes, aunque lo pedido esté bastante claro.
+
+**Lo que he entendido.** Quieres que `libres <franja>` pueda acotarse a una planta con `--planta`. Sin `--planta`, sigue listando todas las salas libres, como hoy.
+
+**Lo que he visto en el código.**
+- `freeRooms(slot)` en `src/app.js` filtra `rooms = ['Norte', 'Sur']` por la franja. Hoy una sala es solo un nombre: ninguna tiene planta.
+- Para que `--planta` filtre algo, cada sala tiene que saber en qué planta está. Eso es un dato nuevo.
+- `reservar` ya usa un flag (`--cada-semana`). `--planta` puede ir igual, después de la franja.
+
+**Contestado** (lo uso sin preguntar):
+- La opción se llama `--planta`: lo dijiste tú.
+- Sin `--planta` se listan todas las salas: lo dijiste tú.
+- Perfil delegate: lo dijiste tú y coincide con `sdd-kit.json`.
+
+**Menor** (lo decido yo y irá a ✋):
+- Sintaxis `libres 10:00-12:00 --planta 1`, porque `reservar` ya pone el flag tras los argumentos (`src/app.js:26`).
+- Los tests van en `test/app.test.js`, junto al de `libres` que ya existe (línea 5).
+
+**Del dev-lead** (los nombro, los preguntaré uno a uno):
+- En qué planta está cada sala, y cómo se escribe una planta (número, nombre…).
+- Qué debe ver quien pide una planta que no existe, o escribe `--planta` sin valor.
+
+Corrígeme lo que no encaje. Empiezo por lo que solo sabes tú, y lo pregunto abierto:
+
+¿Qué te ha llevado a querer filtrar por planta, y qué haces hoy cuando buscas una sala libre?

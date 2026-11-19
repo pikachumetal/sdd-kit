@@ -37,3 +37,19 @@ Batería de `sdd-propose`, molde `reservas`, sujetos `sonnet`. Kit: `dist/` del 
 | 2 (`refactor2-t4`, aprobada por el dev-lead) | ⛔ sin `spec.md` hasta que el mensaje de los montones ha salido y el turno ha acabado, también con el montón vacío | **3/3** | montones y parada antes de `spec.md` 3/3; los tres preguntan la sala que no existe, un hueco real de la petición | — |
 
 El camino «montón del dev-lead vacío → diseño corto para confirmar» queda **sin observar**: la petición de `iq2` se corrigió una vez (enmienda 30) y el segundo hueco va como hallazgo del ticket, sin editarla otra vez. Lo que la ronda 2 arregla —escribir la spec sin enseñar los montones— sale 3/3. Coste de la Task 4: 2,26 + 1,91 (ronda 1) + 1,30 (ronda 2) $.
+
+## Task 5 — tramo, entrevistador y arreglos
+
+Tramo de `sdd-propose` a N = 1 (`PHASE=tramo`, 43 sujetos, 32,21 $): puerta y filas automáticas verdes en 41 de 43. `co2p` (CO2P-M) se lee verde: la previsión del tope va en la tabla «Topes de palabras» con «=» en vez de «→». `iq4` (SA2) se queda en 1/3 a n = 3: los dos rojos presentan la spec y paran porque la petición dice «preséntamela»; la fila de racionalización que se probó no lo cambió y se quitó (Art. IX). Entrevistador (`PHASE=interviewer`, 16 sujetos, 4,90 $): puerta 16/16.
+
+Filas de prosa, leídas por un agente en Sonnet (~197 filas×sujeto): 7 fallos y 18 dudas. Tres eran reglas perdidas al moverse, restauradas y medidas:
+
+| Fallo | Causa | Arreglo | Medida |
+| --- | --- | --- | --- |
+| `a1` A1: sin anuncio | el bloque del anuncio quedó en `sdd-propose` y el primer mensaje se escribe en `sdd-spec-writing`; dos frases de guía no lo arreglaron (0/1, 0/2) | el bloque `text` del anuncio pasa al primer mensaje de `sdd-spec-writing` (Art. II, elemento omitido) | **2/2** |
+| `g1` G1-N: tercera opción sin «prevé <n> tasks» | se perdió al reescribirla para `kit:own` | restaurado en `sdd-spec-approval` | **1/1** |
+| `sp1` SP1: sin tabla de topes | el sujeto lee la plantilla pero no `test/words.test.js`; la 3.0.0 lo leía | «of the `sdd-templates` skill» en «Where it goes» | 0/1: duda de un caso, al ticket |
+
+Dudas de un caso, al ticket: `t1` (puntero a la 0009), `rc1` (un aviso de fase en inglés), `p3-1` E3 y `pe-2` E7 del entrevistador (pregunta lo que la fila dice; no para a tiempo), `iq2` (el camino del montón vacío sin observar).
+
+Campaña entera: 104 sujetos, 54,69 $.

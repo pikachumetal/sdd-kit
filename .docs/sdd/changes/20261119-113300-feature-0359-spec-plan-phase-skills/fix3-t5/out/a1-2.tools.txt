@@ -1,0 +1,136 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a . .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json; echo ---; cat .docs/sdd/sdd-kit.json 2>&1 | head -50; echo ---; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+
+>>> Bash: cd "<run>/repo" && for f in PRODUCT.md ROADMAP.md .docs/sdd/PRODUCT.md .docs/sdd/ROADMAP.md; do echo "=== $f"; cat "$f" 2>&1 | head -80; done
+<<< ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"merge": {"push": true}}
+---
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+---
+Sin capacidades
+<<< === PRODUCT.md
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el pro
+
+>>> Bash: cd "<run>/repo" && for f in .docs/sdd/steering/*.md; do echo "=== $f"; cat "$f"; done; ls node_modules 2>&1 | head -2; find src test scripts -type f | head -40; cat package.json
+<<< === .docs/sdd/steering/architecture.md
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature/<id>`).
+=== .docs/sdd/steering/constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; ls .docs/sdd/specs; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/skills/sdd-propose/references" && cat nombrado.md | head -60; grep -n "merge.push" -B2 -A2 control-profiles.md | head -20
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0011-anular-reservas-ajenas && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" id claim --project-root "$(pwd)" 2>&1; git branch --show-current
+<<< Switched to a new branch 'feature/0011-anular-reservas-ajenas'
+sin remoto: la 0011 vale (contador local)
+feature/0011-anular-reservas-ajenas
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.2172243 $)
+**Lo que he entendido:** quieres que quien es responsable de una sala pueda anular reservas que hizo otra persona. La fila 0011 del roadmap añade que **solo** el responsable de cada sala puede hacerlo. Es una *anulación*, no una *cancelación* (según PRODUCT.md, esta última la hace el propio cliente antes de 24 h).
+
+**Lo que he encontrado en el código:**
+- Ya existe `anular <sala> <día>` en `src/app.js` y deja la reserva en estado `voided`. Hoy la puede ejecutar cualquiera.
+- No existe el concepto de persona. Las reservas no guardan a nombre de quién están, no hay login y no hay "responsable" de ninguna sala. PRODUCT.md dice además que la usas solo tú.
+- Por eso, la restricción a "solo el responsable" no se puede hacer sin decidir antes cómo se sabe quién es quién.
+
+Corrígeme si algo de esto no encaja.
+
+**Contestado:**
+- Anular y cancelar son cosas distintas. Sale de la terminología de PRODUCT.md.
+- Solo el responsable de cada sala puede anular. Sale de la fila 0011.
+
+**Menor** (lo decido yo y irá a ✋):
+- El texto de los mensajes va en castellano, por la constitución, art. 4.
+- El código va en `src/app.js` y los tests con `node --test`, porque el proyecto es un solo fichero y no tiene dependencias.
+
+**Del dev-lead** (las nombro, no las pregunto todavía):
+- El motivo del cambio.
+- Cómo se identifica a quien ejecuta el comando y quién es el responsable de cada sala.
+- Qué ocurre cuando alguien que no es responsable intenta anular.
+- Si el responsable puede anular también sus propias reservas.
+
+¿Para qué quieres que el responsable de sala pueda anular reservas de otros, y qué pasa hoy que te lo hace necesitar?

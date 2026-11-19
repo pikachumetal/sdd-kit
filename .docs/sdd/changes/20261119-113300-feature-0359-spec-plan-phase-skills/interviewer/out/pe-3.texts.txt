@@ -1,0 +1,97 @@
+--- [13]
+Rama `feature/0010-exportar-reservas-csv` creada y el id 0010 queda reservado (no hay remoto, vale el contador local). Paso a la entrevista de la spec.
+
+--- [18]
+Ahora: te cuento lo que he entendido y lo que me falta de ti. Queda: tu respuesta, luego el diseño corto, `spec.md` y su aprobación, ~8 min.
+
+**Lo que entiendo.** Quieres `exportar <sala>`, que saque en CSV las reservas de esa sala. Cada lunes el responsable de la sala las pega en su hoja de cálculo y las cuadra. Hoy `src/app.js` tiene `run(cmd, params)` con `libres`, `reservar` y `cancelar`, y cada reserva guarda solo `room`, `day` y `slot`, sin fecha. El comando sería un caso más de `run`. Corrígeme lo que no encaje.
+
+**Contestado**
+- Un comando que devuelve CSV de una sala: tu petición.
+- Texto en castellano, `node --test` en verde y sin dependencias: constitución y `operations.md`.
+
+**Menor** (lo decido yo y va a ✋)
+- Se llama `exportar`, como los verbos de `run`: sigue el patrón de `libres` y `cancelar`.
+- Columnas `sala,dia,franja`, con una fila por reserva: son los campos que guarda `bookings`.
+- Sale por la salida estándar, como el resto de comandos: `run` devuelve texto y `console.log` lo imprime.
+
+**Del dev-lead** (las preguntas son tuyas)
+- El separador y la codificación del CSV.
+- Qué pasa con una sala que no existe o que no tiene reservas.
+- Si hace falta filtrar por día.
+
+Empiezo por el separador, porque es lo que más cambia lo que se construye. Un Excel en castellano espera `;` y, sin marca de codificación, rompe las tildes. Un Google Sheets o un Excel en inglés espera `,`.
+
+❓ **¿En qué hoja de cálculo se abre el CSV?**
+1️⃣ **Excel en castellano:** `sala;dia;franja` y `Norte;lun;10:00-12:00`, con marca de codificación para que no rompa las tildes. Falla en una hoja que espere comas.
+2️⃣ **Google Sheets o Excel en inglés:** `sala,dia,franja` y `Norte,lun,10:00-12:00`. En un Excel en castellano todo cae en una sola columna.
+➡️ **Recomiendo 1️⃣**, porque el producto y sus documentos están en castellano y el responsable de la sala lo abrirá casi seguro en un Excel con esa configuración. A cambio, el fichero no sirve tal cual en una hoja con coma. ¿Cuál usa el responsable de la sala?
+
+--- [20]
+Queda fijado: `;` como separador y marca de codificación para que Excel respete las tildes. Eso lo apunto como tuyo, con tu frase.
+
+Siguiente decisión: qué ve el responsable si pide una sala que no existe. Una sala existente sin reservas, como `Sur` hoy, es otro caso, y ahí propongo solo la cabecera.
+
+❓ **¿Qué sale con una sala que no existe?**
+1️⃣ **Un error en castellano:** `exportar Este` → `No existe la sala Este. Salas: Norte, Sur`. No genera fichero, así que un fallo al teclear la sala no acaba en la hoja como si no hubiera reservas.
+2️⃣ **Solo la cabecera:** `exportar Este` → `sala;dia;franja`. Es el mismo resultado que una sala sin reservas, así que una errata se confunde con un lunes tranquilo.
+➡️ **Recomiendo 1️⃣**, porque el responsable cuadra los lunes y un fichero vacío por una errata le haría creer que no hay reservas. A cambio, el comando tiene una rama de error más que probar. ¿Cuál prefieres?
+
+--- [22]
+Queda fijado: sala inexistente → error en castellano con las salas existentes y sin fichero. Lo apunto con tu frase.
+
+Falta una decisión tuya: si el comando necesita filtrar por día. Hoy una reserva solo guarda el día de la semana (`lun`), sin fecha, así que no puedo acotar por semana concreta, solo por día de la semana.
+
+❓ **¿Exporta todas las reservas de la sala o se puede filtrar por día?**
+1️⃣ **Siempre todas:** `exportar Norte` → `sala;dia;franja` y `Norte;lun;10:00-12:00`. Es lo que pides y el comando queda mínimo. El responsable filtra en la hoja si quiere un día.
+2️⃣ **Todas, o un día con parámetro opcional:** `exportar Norte lun` saca solo los lunes. Añade un parámetro y un caso de error más, para un filtro que la hoja ya hace.
+➡️ **Recomiendo 1️⃣**, porque tu petición habla de las reservas de una sala y el responsable ya las cuadra en la hoja. A cambio, no hay filtro en el comando; se puede añadir después sin romper nada. ¿Cuál prefieres?
+
+--- [24]
+Entendido, lo decido yo y queda como decisión mía, no tuya. El filtro por día **no entra**: exporta siempre todas las reservas de la sala. Mi razón es que lo que cuentas, cuadrar los lunes en la hoja, se resuelve con todas las filas y la hoja ya filtra. Si más adelante lo echas en falta, se añade sin romper nada.
+
+Ya no queda nada abierto de tu lado. En `delegate` los enfoques van dentro de la spec, y tú los apruebas al aprobarla. Ahora: escribo `spec.md`. Queda: su revisión y tu aprobación, ~6 min.
+
+--- [33]
+Ahora: paso la spec por su repaso de coherencia y su revisión. Queda: tu aprobación, ~5 min.
+
+--- [41]
+Ahora: despacho la revisión de la spec con dos revisores, uno de dominio y otro técnico, en Sonnet los dos. Queda: sus hallazgos y tu aprobación, ~6 min, ~2 $.
+
+--- [52]
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta; con ella paso al plan, ~5 min.
+
+🦆 El responsable de cada sala podrá escribir `exportar Norte` y obtener sus reservas como un CSV que Excel en castellano abre en columnas y con las tildes bien: `sala;dia;franja` y `Norte;lun;10:00-12:00`. Si la sala no existe (`exportar Este`), recibe `No existe la sala Este. Salas: Norte, Sur` y ningún CSV. Hoy tiene que copiar las reservas a mano cada lunes.
+
+La spec está en `.docs/sdd/changes/20261119-163406-feature-0010-exportar-reservas-csv/spec.md`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. Capacidad nueva `booking-export`.
+2. El comando se llama `exportar <sala>`, como los verbos de `run`.
+3. Columnas `sala;dia;franja`, con cabecera y una fila por reserva.
+4. El CSV sale por la salida estándar, y el fichero se obtiene con `exportar Norte > norte.csv`. El comando no escribe ficheros. **Sin verificar:** que la marca de codificación llegue intacta con la redirección de tu shell.
+5. Saltos de línea `\n` y valores sin comillas.
+6. **Matiz sobre «no genere fichero»:** el comando no escribe ficheros, pero con `>` el shell crea un fichero vacío igualmente. Por eso el error va por la salida de errores y el código de salida es 1, para que el mensaje no acabe dentro del CSV.
+7. Una sala existente sin reservas (`exportar Sur`) da solo la cabecera.
+8. El nombre de la sala se compara tal cual: `exportar norte` da el error de sala inexistente.
+9. **No entra** filtrar por día. Lo decidí yo cuando respondiste «decide tú».
+10. El texto del error es `No existe la sala Este. Salas: Norte, Sur`, con la redacción y el orden míos.
+10 bis. Enfoque: una función en `src/app.js`, frente a un módulo nuevo o una librería de CSV.
+11. El delta probado sobre una copia con `capability merge` da 3 requisitos y 5 reglas añadidos, sin correcciones.
+
+**Sobre la review:** el rubric pedía dos revisores, pero esta sesión no tiene herramienta para lanzar subagentes, así que no los despaché. Hice yo la lectura de los siete puntos y corregí tres cosas: el literal del error, una frase inexacta sobre `libres` y la verificación de la codificación. Queda un punto abierto para el plan: `run` hoy solo devuelve texto, y el error por la salida de errores con código 1 exige cambiarlo.
+
+¿Cómo seguimos?
+1. **Apruebo (Recomendada):** paso a escribir el plan.
+2. **Cambios:** me dices qué corregir.
+3. **Repetir la review con revisores independientes:** tendrías que lanzarla desde una sesión que pueda despachar subagentes.
+
+--- [54]
+Lo dejamos aquí. La spec sigue sin aprobar y no he escrito plan ni código.
+
+- **Rama:** `feature/0010-exportar-reservas-csv`, con el id 0010 reservado.
+- **Spec:** `.docs/sdd/changes/20261119-163406-feature-0010-exportar-reservas-csv/spec.md`, en estado `draft`. No está commiteada: no me lo has pedido y el estado es provisional.
+- **Pendiente tuyo:** aprobar o pedir cambios. También decidir si quieres repetir la review con revisores independientes, que aquí no pude despachar.
+
+Cuando quieras seguir, di «retoma la feature» desde esa rama. Parto de la spec tal como está.
+

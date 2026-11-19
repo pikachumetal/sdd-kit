@@ -1,0 +1,133 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json .docs/sdd/sdd-kit.json; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" capability index --path .docs/sdd
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/PRODUCT.md .docs/sdd/ROADMAP.md 2>&1 | head -150
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"merge": {"push": true}}
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+Sin capacidades
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd .docs/sdd/steering; cat constitution.md operations.md architecture.md | head -200; cd ../../..; ls -R src test scripts .docs/sdd/specs | head -60; cat package.json; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **
+
+>>> Bash: cat src/app.js; ls node_modules 2>&1 | head -1
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: sed -n 1,60p "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/skills/sdd-propose/references/nombrado.md"
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: git checkout -b feature/0011-anular-reservas-de-otros develop && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" id claim --project-root "$(pwd)"
+<<< Switched to a new branch 'feature/0011-anular-reservas-de-otros'
+sin remoto: la 0011 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.20310370000000003 $)
+Ahora: te cuento lo que he entendido y qué dejo abierto. Queda: tus respuestas a las preguntas de diseño (una por turno), la aprobación de la spec y el plan, ~10 min.
+
+**Lo que he entendido.** Quieres que el responsable de una sala pueda anular reservas hechas por otras personas, y que solo él pueda (fila 0011: «solo el responsable de cada sala anula reservas de otras personas»). En `PRODUCT.md` la *anulación* ya es lo que hace el responsable «por cualquier motivo», distinta de la *cancelación* del propio cliente.
+
+**Lo que he visto en el código** (`src/app.js`):
+- Ya existe `anular <sala> <día>`. Marca la reserva como `voided` y responde `anulada Norte lun`.
+- Hoy lo puede ejecutar cualquiera: no hay usuarios, ni roles, ni responsables.
+- Las reservas no guardan a nombre de quién están, solo sala, día, franja y estado.
+
+Es decir, el comando ya anula; lo que falta es saber quién lo ejecuta y quién es responsable de cada sala. Corrígeme si lo he entendido mal.
+
+**Lo que ya está contestado**
+- La palabra del producto es *anulación*, no «baja». Lo dicen `PRODUCT.md` y la fila 0011.
+- El estado `voided` y el comando `anular` ya existen. Los reutilizo en vez de crear otros (`src/app.js`).
+
+**Lo que decido yo (menor)**
+- Los textos de respuesta siguen el estilo actual (`anulada Norte lun`, `sin reserva Norte lun`), porque así lo hace `app.js`.
+- Los tests van junto a los existentes, en `test/`, y el gate es `node --test && node scripts/lint.mjs` (`operations.md`).
+
+**Lo que solo puedes decidir tú**
+- El porqué: qué situación quieres resolver.
+- Cómo se sabe quién ejecuta el comando, y dónde se define el responsable de cada sala.
+- Qué ocurre cuando lo intenta alguien que no es responsable.
+- Si el responsable también puede anular reservas propias, y si la anulación debe dejar motivo o rastro.
+
+Empiezo por el porqué, porque condiciona el resto. `PRODUCT.md` dice que ahora lo usas solo tú, así que quiero entender qué ha cambiado.
+
+**¿Qué ha pasado, o qué quieres evitar, para que ahora haga falta que solo el responsable de cada sala pueda anular reservas de otros?**

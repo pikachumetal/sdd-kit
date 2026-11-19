@@ -13,7 +13,7 @@ El principio que lo gobierna: **el resultado debe depender del proceso, no del c
 
 ## Capabilities and Constraints
 
-- **Es**: las 24 skills (`sdd-init`, `sdd-upgrade`, `sdd-roadmap`, `sdd-propose`, `sdd-implement`, `sdd-archive`, `sdd-end-release`, `sdd-explore`, `sdd-config`, `add-to-changelog`…) y las plantillas canónicas.
+- **Es**: las 28 skills (`sdd-init`, `sdd-upgrade`, `sdd-roadmap`, `sdd-propose`, `sdd-implement`, `sdd-archive`, `sdd-end-release`, `sdd-explore`, `sdd-config`, `add-to-changelog`…) y las plantillas canónicas.
 - **No es**: skills técnicas por stack (nivel 2: sql-migration, backend-*, frontend-*) ni específicas de proyecto (nivel 3: build, dialogs, styles) — esas viven en cada repo o en futuros kits.
 
 ### Cómo se trabaja con el kit

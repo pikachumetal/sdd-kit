@@ -1,0 +1,43 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar, anunciar y arrancar la spec, ~3 min.
+
+--- [16]
+Ahora: escribo la spec directamente, sin ronda de preguntas, porque la apruebas por delegación y lo abierto va a ✋ como «pendiente». Queda: spec escrita, revisada y presentada, ~5 min.
+
+--- [30]
+Ahora: repaso de coherencia y prueba del delta en una copia. Queda: revisión, aprobación por delegación y presentación, ~4 min.
+
+--- [36]
+Ahora: despacho un revisor (spec pequeña, una sola capacidad nueva, sin contratos públicos). Queda: integrar hallazgos y presentar, ~4 min, ~0,3 $.
+
+--- [50]
+Ahora: segunda lectura de la spec corregida (se aceptaron dos Críticos). Queda: aprobar por delegación y presentar, ~3 min, ~0,3 $.
+
+--- [61]
+Ahora: spec aprobada por delegación, te la presento. Queda: nada hasta que me digas «sigue» para escribir el plan.
+
+La spec está escrita en `.docs/sdd/changes/20261119-160221-feature-0012-sala-ocupada/spec.md`, rama `feature/0012-sala-ocupada`, carril feature en modo full, perfil `delegate`. No hay commit ni código todavía. La dejo aquí y no paso al plan: me pediste escribirla y presentártela.
+
+🦆 Hoy no hay forma de ver cuánta carga lleva una sala un día. Con este cambio, `node src/app.js ocupacion lun` lista cada sala con sus reservas de ese día. Si una llega a 3 reservas activas sale `Norte: 3 reservas ⚠ muy ocupada`. Las canceladas y las anuladas no cuentan.
+
+## ✋ Decisiones que he tomado yo
+
+Tu petición no decía qué es «muy ocupada», dónde sale el aviso ni qué cuenta. Como no hubo entrevista, estas son mis propuestas y las tres primeras te las dejo como **pendientes** para la validación:
+
+1. **Umbral:** «muy ocupada» son 3 o más reservas activas de la sala en el día. El código no tiene catálogo de franjas, así que no se puede medir «% de horas ocupadas». El 3 no tiene ningún dato detrás.
+2. **Dónde sale el aviso:** en un comando nuevo `ocupacion <día>`. `libres` no recibe día y `reservar` todavía no crea reservas, así que avisar al reservar no es posible sin ampliar el alcance.
+3. **Texto:** `Norte: 1 reserva` o `Norte: 3 reservas ⚠ muy ocupada`, siempre con Norte y Sur en ese orden. El `⚠` va con un espacio delante y la salida es UTF-8; si tu terminal lo pinta mal, se cambia por `(!)`.
+4. **Día:** se compara tal cual con el guardado (`lun`). Un día desconocido (`xyz`, `LUN`) da 0 reservas y no es error. Sin día sale `falta el día`. Los argumentos sobrantes se ignoran.
+5. **Duplicadas:** dos reservas de la misma sala, día y franja suman 2 hacia el umbral.
+6. **Enfoque:** una función pura `occupancy` más el comando, frente a meter el aviso en `libres` o guardar un estado «ocupada» en cada sala.
+7. **Cambio en `run`:** gana un tercer parámetro opcional con la lista de reservas, porque la memoria solo trae una y los tests necesitan más. Con el valor por defecto, los comandos existentes no cambian.
+8. **Capacidad nueva:** `room-occupancy`. El delta se probó en una copia de `.docs/sdd` y el merge y el check salieron válidos.
+
+## Revisión
+
+La hizo un revisor sonnet que decidí yo, sin preguntarte, porque delegaste la aprobación. Hizo dos rondas, la segunda sin Críticos. Aceptó 11 hallazgos y rechacé 4 con su motivo escrito en la spec: la fuente de los estados `cancelled` y `voided`, el sitio técnico de las decisiones de enfoque, `scripts/lint.mjs` en el gate (dos veces) y comprobar que ese script exista. Entre lo aceptado, el revisor me obligó a separar los escenarios de umbral (4 reservas, 3+3) y a quitar de la spec el código de salida 0, que no se podía probar.
+
+La aprobación quedó registrada con tu frase literal: «apruebo la spec por delegación, nos vemos en la validación». La validación la haces tú.
+
+Dime «sigue» y escribo el plan.
+

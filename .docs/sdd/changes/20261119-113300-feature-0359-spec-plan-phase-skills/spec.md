@@ -460,9 +460,15 @@ Saldo de las skills que toca: hoy 14.823 (`sdd-propose` + `sdd-grilling`); con l
 | Una tanda de REFACTOR | `SCENARIOS="ss1 rq1 iq2"` → `sin medir`: 8 sujetos × 0,88 $ | 7,04 |
 | Controles | `SCENARIOS="p1 p2 p3 fp pe"` de `interviewer` → `suma: 16 sujetos · coste previsto: 4.87 $` | 4,87 |
 | Medición tras la revisión final | `SCENARIOS="ss1 rq1 iq1 iq2 iq3"` → `sin medir`: ~12 sujetos × 0,88 $ | 10,56 |
-| Suma | 93 sujetos | 72,31 |
+| Tras el tramo (dev-lead, 2026-11-19: «1») | `SCENARIOS="iq4" N=3` → 3 sujetos × ~1 $; y un lector de las filas de prosa del tramo y del entrevistador en Sonnet, ~2 $ | ~5 |
+| El anuncio de `a1` (dev-lead, 2026-11-19: «1») | `SCENARIOS="a1" N=2` | ~0,5 |
+| Suma | 104 sujetos | ~55 gastados y previstos |
 
 ## Enmiendas
+
+- 2026-11-19, tras el tramo — dos sujetos más para medir el anuncio de `a1` desde el primer mensaje de `sdd-spec-writing`. Aprobada por el dev-lead, 2026-11-19: «1».
+
+- 2026-11-19, tras el tramo — la previsión sube a 100 sujetos para medir el arreglo de `iq4` (el traspaso tras aprobar por delegación) y leer las filas de prosa con un agente. Aprobada por el dev-lead, 2026-11-19: «1».
 
 - 2026-11-19, GREEN de la Task 4 — el AND de `ss1` sobre la primera pregunta y la petición de `iq2` (decisión 30). Aprobada por el dev-lead, 2026-11-19: «1».
 
