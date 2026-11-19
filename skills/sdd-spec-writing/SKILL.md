@@ -1,6 +1,6 @@
 ---
 name: sdd-spec-writing
-description: Use when sdd-propose hands off a feature, a lite or a spike, to interview the user and write spec.md through its approval. Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-propose hands off a feature, a lite or a spike, to interview the user and write spec.md, then hand it to sdd-spec-approval. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 <!-- kit: 0359 · sustituye: «# Brainstorming» -->
@@ -28,9 +28,9 @@ why?
 
 - **answered**: the request, its «Decisiones ya tomadas», the roadmap row or the project say it, and nothing contradicts it. Use it; don't ask.
 - **minor**: a sensible builder would settle it without changing what gets built (a name, a file, the order of the tasks, an approach the project decides). Decide it with the project; if it shows in the spec, it goes to ✋.
-- **the dev-lead's**: only they can answer it, and the answer changes the spec, the approach or the tasks: the why first, open, even if you can guess; then the done criterion, the goals, non-goals and anti-goals; a contradiction between the request and the project, and whatever the request asks you to ask. Ask it in `pair` and in `delegate`: the profile isn't a «decide for me».
+- **the dev-lead's**: only they can answer it, and the answer changes the spec, the approach or the tasks: the why first, open, even if you can guess («what will you do with it?», not «a spreadsheet, a colleague, a backup?»); then the done criterion, the goals, non-goals and anti-goals; a contradiction between the request and the project, and whatever the request asks you to ask. Ask it in `pair` and in `delegate`: the profile isn't a «decide for me».
 
-Every point under «Abierto» of a launch prompt goes to the dev-lead's pile, a method one too: its proposal isn't a decision, and «it's method, and in `delegate` I decide it» doesn't take it out, because the prompt left it open for the dev-lead. «The technique imposes it» doesn't take a point out of the dev-lead's pile either when it changes what the user sees: an approach fixed in the request that orders the days with `sort()` puts `jue` before `lun`, and that order is theirs. Each point you don't ask carries one line of why that names where it comes from: the prompt's line, the file or the rule; «it's technical» or «the project decides it» without saying where is no reason.
+Every point under «Abierto» of a launch prompt goes to the dev-lead's pile, a method one too: its proposal isn't a decision, and «it's method, and in `delegate` I decide it» doesn't take it out, because the prompt left it open for the dev-lead. «The technique imposes it» doesn't take a point out of the dev-lead's pile either when it changes what the user sees: an approach fixed in the request that orders the days with `sort()` puts `jue` before `lun`, and that order is theirs. Each point you don't ask carries one line of why that names where it comes from: the prompt's line, the file or the rule; «it's technical» or «the project decides it» without saying where is no reason. What the user says goes to Intent; what they leave unanswered or can't answer, to ✋ marked «pendiente», even the value you chose.
 <!-- kit: fin -->
 
 Before you start implementing, you must, in order:
@@ -108,16 +108,8 @@ The message ends with the first question of the dev-lead's pile, or with the sho
 <!-- kit: fin -->
 
 <!-- kit: 0359 -->
-The message opens with the announcement of `sdd-propose`, when it hasn't gone out yet, in this form:
-
-```text
-Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
-Aviso: se ignora merge.push de sdd-kit.local.json: solo admite control.profile, execution y validation.startEnvironment; lo demás es del proyecto y va en sdd-kit.json.
-Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación» (o «…, y paras antes de la Task 1 para que baje la sesión a gama media», con el modelo más capaz y más de una task)
-Para otro perfil: «perfil `<otro>` para esta feature»
-```
-
-The profile line says which level it comes from; one `Aviso:` line per local key you ignore, literal from [control-profiles.md](../sdd-propose/references/control-profiles.md); in `pair` and `delegate`, the two phrases.
+In a feature or a spike, your first message —this one or, with nobody to answer, the first you write— opens with the announcement of `sdd-propose`, when it hasn't gone out yet:
+<!-- kit: incluye announcement -->
 <!-- kit: fin -->
 
 That's the whole message.
@@ -214,7 +206,9 @@ In a full feature with **4 or more tasks foreseen**, after the approaches, close
 
 Only what they said goes in as theirs. Anything you filled in goes in
 as your proposal, with your reason. End each chunk by asking what's wrong
-or missing.
+<!-- kit: 0359 · sustituye: «or missing.» -->
+or missing: each section ends with «¿va bien?».
+<!-- kit: fin -->
 
 <!-- kit: 0359 · sustituye: «Before you send a chunk,…put a mockup next to the description.» -->
 Each section opens with what changes for whoever uses the product, in plain words and with an example with data, and its question is about that: «al exportar, cada factura sale con su vencimiento: `F-2026-014 · vence 30/11`», not «añado `dueDate` a `InvoiceDto` y lo mapeo en `ExportService`». Code names, files and internal flags go after it, only if needed (the short mode of `sdd-rubber-duck`): a «sí» to a section nobody understood approves nothing. What the user corrects goes into the spec before you write it.
@@ -225,7 +219,7 @@ The sections are interview turns, inside the spec's stop, not a new stop of the 
 ## Size the Work
 
 <!-- kit: 0359 · sustituye: «Once you understand…written design (below) |» -->
-Splitting was `sdd-propose`'s question, and the lane sets the size: full, lite or spike.
+Splitting was `sdd-propose`'s question; the lane sets the size.
 <!-- kit: fin -->
 
 Short or full, the design doc has an **Approaches** part: the two or
@@ -252,18 +246,14 @@ from without going back to your human partner. Cover:
 <!-- kit: fin -->
 
 <!-- kit: 0359 · sustituye: «For a small change,…the builder check.» -->
-Three things the spec carries when they apply:
-
-- **A new capability**: if the delta creates one in `capabilities/`, declare it in the decisions with its name in English kebab-case: the slug is a file name, even if the content is in Spanish.
-- **`§Frontend`**: if the feature changes what is seen and `operations.md` has no `§Frontend` —or lacks the Access and the app asks for login—, «Decisiones que he tomado yo» carries the `§Frontend` proposal with its fields filled: impeccable as detector, Playwright and the access visible in the code ([frontend-verification.md](../sdd-implement/references/frontend-verification.md)); when the spec is approved, write it in `operations.md`. With `Detector: ninguno` already written, don't propose it again.
-- **`Se valida en:`**: if a THEN depends on the integration branch, the git history, the remote or an environment the branch doesn't reproduce —a «no changes compared to `develop`» that the feature branch, which always changes something, can't give—, write under its scenario `Se valida en:` with `worktree con la base al día` or `validación post-merge con fecha`, also if the scenarios aren't in a capability delta: from the branch it can't be observed, and step 1 of `sdd-archive` prepares that environment.
+What the spec carries when it applies —a new capability with its English kebab-case name, the `§Frontend` proposal, `Se valida en:`— is in the help blocks of `spec-template.md`.
 <!-- kit: fin -->
 
 <!-- kit: 0359 · sustituye: «**Where it goes:**…override both.» -->
 **Where it goes:** create the folder with the id `sdd-propose` reserved (naming and predicate modules in [nombrado.md](../sdd-propose/references/nombrado.md)) and `spec.md` traced from `spec-template.md` of the `sdd-templates` skill, with `mode: full | lite | spike` in the frontmatter.
 
 <!-- kit: 0359 · sustituye: «**Builder check** (for a project):…read the document as that builder yourself.» -->
-**Then the approval**: with `spec.md` written, invoke `sdd-spec-approval` with `Skill`, in the same turn. It runs the coherence pass, invokes `sdd-spec-review`, folds in its findings and takes the spec through its gate.
+**Then the approval**: with `spec.md` written, invoke `sdd-spec-approval` with `Skill`, in the same turn. ⛔ No gate, review or plan of your own: they are its. It runs the coherence pass, invokes `sdd-spec-review`, folds in its findings and takes the spec through its gate.
 
 <HARD-GATE>
 <!-- kit: 0359 · sustituye: «your human partner…for a project.» -->

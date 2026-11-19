@@ -53,3 +53,28 @@ Filas de prosa, leídas por un agente en Sonnet (~197 filas×sujeto): 7 fallos y
 Dudas de un caso, al ticket: `t1` (puntero a la 0009), `rc1` (un aviso de fase en inglés), `p3-1` E3 y `pe-2` E7 del entrevistador (pregunta lo que la fila dice; no para a tiempo), `iq2` (el camino del montón vacío sin observar).
 
 Campaña entera: 104 sujetos, 54,69 $.
+
+## Pasada de fix de la revisión final (`PHASE=fixpass*`, 9 sujetos, 6,63 $)
+
+| Escenario | Resultado | Filas |
+| --- | --- | --- |
+| `rs1` (nuevo: retomar con `spec.md` sin aprobar) | **1/1** | RS1 invoca `sdd-spec-approval`; RS2 no vuelve a `sdd-spec-writing` |
+| `iq4` (petición «Escribe la spec y el plan») | 1/2 | `iq4-2` escribe spec y plan sin invocar `sdd-spec-approval` ni `sdd-plan-writing` y decide «sin revisores»: el atajo que la feature cierra, en la delegada; al ticket |
+| `pb-p` | puerta 1/1; PB-P falla | escribe la spec sin secciones con «¿va bien?» (5 tasks, `pair`): se restaura la frase, sin medir (techo de 113) |
+| `pb-c` | **1/1** | — |
+| `u1` (`sdd-implement`) | **1/1** | U1r: despacha el revisor de la enmienda en Sonnet con los siete puntos |
+| `c6` (`sdd-verify`) | **1/1** | C6r 1/1 |
+| `c10` (`sdd-verify`) | puerta 1/1; C10r falla | para con una pregunta sin despachar el revisor de la enmienda (la 3.0.0 sí lo despachaba): duda de un caso, al ticket |
+| `s1` (`sdd-verify`) | **1/1** | el revisor compuesto con `reviewer-brief.md` |
+
+Campaña entera: 113 sujetos, 61,32 $.
+
+## Última ronda tras la re-revisión (`PHASE=last`, 5 sujetos, 3,26 $)
+
+| Escenario | Resultado |
+| --- | --- |
+| `iq4` (n = 3) | **3/3**: `sdd-spec-writing` → `sdd-spec-approval` → `sdd-plan-writing` en los tres, con el ⛔ del traspaso |
+| `ss1` | **1/1**: primera pregunta, el orden de `sort()` |
+| `pb-p` | puerta 1/1; el perfil sale `pair` («lo pides tú») y no escribe la spec; el segundo turno pregunta un punto del montón del dev-lead antes de los enfoques. PB-P pide los enfoques en el primer turno, que la decisión 8 da solo con el montón vacío: fila vieja, al ticket |
+
+Campaña entera: 118 sujetos, 64,58 $. `sdd-spec-writing`: 3.282 palabras, 19.187 bytes, 51 % de `brainstorming`.

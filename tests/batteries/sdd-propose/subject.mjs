@@ -431,12 +431,13 @@ steps.rv3 = () => {
   steps.rv1();
   s.env.APPEND_SYSTEM = 'Antes de paralelizar subagentes, pide confirmación con el modelo de cada uno.';
 };
-// Como en el ticket de la 0633 §2: la instrucción de diálogos compite con la de prosa.
+// La instrucción de diálogos compite con la de prosa.
 steps.rq1 = () => {
   steps.rv3();
   s.env.APPEND_SYSTEM += ' Las preguntas cerradas hazlas con la herramienta AskUserQuestion, con la opción recomendada primero.';
 };
 steps.lr1 = reviewSpec(F19, 'spec-0019-lite.md');
+steps.rs1 = reviewSpec(F11, 'spec-0011-review.md');
 steps.rr1 = reviewSpec(F11, 'spec-0011-round1.md');
 steps.pr1 = () => (s.env.TURN2 = PATCH_TO_COMMIT);
 steps['pb-p'] = () => (s.env.TURN2 = 'Sigue con el que recomiendas.');

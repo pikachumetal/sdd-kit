@@ -21,14 +21,14 @@ Desde la 3.0.0, `sdd-propose` escribía la spec y el plan siguiendo referencias 
 
 ## Decisión
 
-Una fase obligatoria del flujo va en su propia skill, que la anterior invoca con `Skill`: `sdd-spec-writing` (la entrevista hasta `spec.md`), `sdd-spec-approval` (el repaso, la review y el gate), `sdd-spec-review` (la rúbrica) y `sdd-plan-writing` (el plan). Un fichero de `references/` es de consulta: un brief que se pega a un subagente, una tabla, un árbol; nunca un paso que hay que seguir. Una skill de fase no es puerta de entrada: su `description` dice de dónde se invoca. Las ADR 0024, 0028, 0029 y 0035, cuyas `rutas` nombraban las referencias movidas, las sustituyen la 0039, la 0040, la 0041 y la 0042.
+Una fase obligatoria del flujo va en su propia skill, que la anterior invoca con `Skill`: `sdd-spec-writing` (la entrevista hasta `spec.md`), `sdd-spec-approval` (el repaso, la review y el gate), `sdd-spec-review` (la rúbrica) y `sdd-plan-writing` (el plan). Un fichero nuevo de `references/` es de consulta: un brief que se pega a un subagente, una tabla, un árbol; nunca un paso que hay que seguir. Las referencias que ya llevan un paso obligatorio migran cuando fallan, como dice el Art. II, no todas a la vez. Una skill de fase no es puerta de entrada: su `description` dice de dónde se invoca. Las ADR 0024, 0028, 0029 y 0035, cuyas `rutas` nombraban las referencias movidas, las sustituyen la 0039, la 0040, la 0041 y la 0042.
 
 ### Consecuencias
 
 - Cada fase deja su invocación en el transcript: si no aparece, falta la fase (dev-lead, 2026-11-19: «si no los veo invocados se que falta algo»).
 - Cada skill nueva suma su `description` a la lista cargada en todas las sesiones, y su `SKILL.md` tiene que caber en 20.000 bytes: una fase que no cabe se parte en dos, como la spec (enmienda 29 de la feature 0359).
-- Las demás referencias con «First thing in this step: read» (`patch-lane.md`, `config-lane.md`, las de `sdd-implement` y `sdd-archive`) quedan para otra fila.
+- Las demás referencias con «First thing in this step: read» (`patch-lane.md`, `config-lane.md`, las de `sdd-implement` y `sdd-archive`) quedan para otra fila, que la sesión de coordinación abre desde el ticket de esta feature.
 
 ### Confirmación
 
-La batería de `sdd-propose`: las filas de `tools:` que piden cada invocación (`SW1`, `SA1`, `SA2`, `RV-S`, `PW`), y la prueba de campo, el recuento de invocaciones sobre los transcripts de las sesiones de feature tras la release.
+La batería de `sdd-propose`: las filas de `tools:` que piden cada invocación (`SW1`, `SA1`, `SA2` en `iq4`, que pide la spec y el plan; `RV-S`, `PW`; `RS1` al retomar), y la prueba de campo, el recuento de invocaciones sobre los transcripts de las sesiones de feature tras la release.

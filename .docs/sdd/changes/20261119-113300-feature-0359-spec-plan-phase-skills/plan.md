@@ -31,7 +31,7 @@ created: 2026-11-19
 
 **Ejecución**: native, porque son 5 tasks encadenadas por los mismos ficheros (`sdd-propose/SKILL.md`, `upstream.json`, `word-budget.test.ts`, `battery.md`), un error lo cazan `kit:copies`, `kit:own`, `kit:skill-size` y la batería de su task, y el plan cabe en un contexto; además, tus instrucciones piden agentes al mínimo. Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: invoca `sdd-implement-subagent` y despacha con él las que quedan sobre el mismo ledger. La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.
 
-**Eje Arquitectura**: sí — tres skills nuevas y una regla nueva de descomposición de skills en `architecture.md` punto 6 y en la constitución.
+**Eje Arquitectura**: sí — cuatro skills nuevas (tres antes de la enmienda 29) y una regla nueva de descomposición de skills en `architecture.md` punto 6 y en la constitución.
 
 ## Restricciones globales
 

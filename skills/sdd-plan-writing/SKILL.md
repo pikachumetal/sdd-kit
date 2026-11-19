@@ -1,6 +1,6 @@
 ---
 name: sdd-plan-writing
-description: Use when sdd-propose hands off an approved full or spike spec, to write plan.md and hand it to sdd-implement. Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-spec-approval hands off an approved full or spike spec, or sdd-propose resumes one without plan.md, to write plan.md and hand it to sdd-implement. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 <!-- kit: 0359 · sustituye: «# Writing Plans» -->

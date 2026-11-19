@@ -3,6 +3,7 @@ status: accepted
 date: 2026-11-19
 rutas:
   - skills/sdd-spec-review/**
+  - skills/sdd-spec-approval/**
   - skills/sdd-propose/SKILL.md
   - skills/sdd-implement/references/patch-flow.md
 ---

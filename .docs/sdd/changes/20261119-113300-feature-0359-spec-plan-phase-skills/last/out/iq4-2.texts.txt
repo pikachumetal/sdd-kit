@@ -1,0 +1,68 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (docs, no código). Queda: clasificar el cambio y arrancar la spec, ~2 min.
+
+--- [16]
+Ahora: escribo la spec. Hay delegación, así que no hay entrevista: lo que solo tú puedes decidir va a ✋ como «pendiente». Queda: aprobación por delegación y plan, ~8 min.
+
+--- [23]
+Ahora: paso la spec por el repaso de coherencia y la aprobación por delegación. Queda: plan, ~5 min.
+
+--- [25]
+Ahora: repaso de coherencia (grep del repo y prueba del delta sobre una copia). Queda: revisión de la spec, aprobación por delegación y plan, ~6 min.
+
+--- [36]
+La revisión sigue en marcha. Espero a que termine para integrar sus hallazgos antes de aprobar la spec.
+
+--- [41]
+1. Crítico · Delta de comportamiento (ADDED «Aviso al alcanzar el umbral») · El escenario cubre solo "3 activas → 4.ª con aviso". No hay escenario del umbral por encima (5.ª, 6.ª reserva), y la regla dice "4 o más" y "(n reservas)". El Intent dice "y en ningún otro caso", lo que contradice la decisión 1 ("4 o más"). Una implementación con `=== 4` pasa todos los escenarios y rompe la decisión 1. · Elegir una de las dos semánticas (aviso desde la 4.ª en adelante, o solo en la 4.ª) y alinear Intent, decisión 1 y regla «Límites». Añadir un escenario con 5 activas en el que aparezca «(5 reservas)».
+
+2. Crítico · Delta de comportamiento / Scope · El comando `reservar {sala} {día} <franja>` es una capacidad nueva (decisión 6), pero no tiene ningún requisito ADDED propio. No hay escenario de que la reserva se cree, de qué ocurre con una sala inexistente, con un día o una franja inválidos, ni con un solape de franja. La decisión 6 admite que hoy no existe. Los tres escenarios pasan con un stub que solo imprima textos fijos, sin persistir nada. · Añadir ADDED «Reservar crea la reserva activa», con un escenario que compruebe que la reserva queda en `bookings` (por ejemplo, que `libres` la refleje). Declarar el comportamiento ante entradas inválidas y solapes, o ponerlo en «No entra».
+
+3. Importante · Delta de comportamiento · No hay escenario de que el aviso no bloquea (decisión 3 y anti-goal «que impida reservar»). Tampoco de que no sale por otra sala. Los escenarios existentes no comprueban que la reserva se cree con el aviso. · Añadir un escenario en el que, con aviso, la reserva queda activa. Añadir otro en el que 4 reservas activas en otra sala no avisan en Norte.
+
+4. Importante · Delta de comportamiento (tercer escenario) · "Solo cuentan activas del mismo día" mezcla dos variables, y el resultado cuadra por casualidad. 2 activas lun + la nueva = 3, y las 3 del mar y las 2 canceladas no suman. Si la implementación contase todo lo del lun, daría 5 y avisaría, así que el escenario sí detecta ese fallo. Pero si contase activas de cualquier día, daría 6 y también avisaría. Cubre las dos cosas, pero sin separar la causa de un fallo. · Partir en dos escenarios: uno con canceladas (que no suman) y otro con otro día (que no suma).
+
+5. Importante · ✋ Decisiones / Delta · Hay decisiones tomadas en el cuerpo y no declaradas. (a) La franja es parte del comando, pero no se dice si cuenta para el conteo. (b) Los estados "cancelada" y "anulada" se mencionan, pero no se dice cómo se distinguen en el código. La decisión 5 afirma `status === 'active'` y la coherencia con `freeRooms` y `findBooking`, y esa coherencia no se puede verificar desde la spec. (c) El día se escribe como `lun`/`mar` sin decir si hay normalización. · Declarar en ✋ cómo se identifica el día (abreviatura literal) y la franja. Citar la fuente de la coherencia con `freeRooms` y `findBooking`, o quitar la afirmación.
+
+6. Importante · Capacidades / contradicción con la verdad viva · No existe la carpeta `capabilities/`. La spec declara `room-busy-warning` como «Nueva» y la verdad viva aún no recoge `freeRooms`, `findBooking` ni el stub `reservar … --cada-semana`. El comando nuevo `reservar` convive con ese stub y no se define cómo se distinguen (¿el stub captura `reservar` sin `--cada-semana`?). Es un riesgo de colisión y un posible MODIFIED no declarado sobre el comportamiento de `reservar`. · Declarar cómo se despacha `reservar` frente al stub. Si el stub cambia de comportamiento, declarar MODIFIED o ponerlo en «Lo que se retira o cambia de forma». Revisar si el comando nuevo debería ser una capacidad aparte (`room-booking`).
+
+7. Importante · Reglas de la capacidad · Faltan las cinco reglas por nombre, o están mal declaradas. «Dónde viven los datos: no aplica» es dudoso, porque `reservar` crea una reserva en `bookings` (dato nuevo escrito). «Idioma de los nombres: no aplica» cuando los literales llevan `lun`/`sala` en castellano y los identificadores del código van en inglés (`bookings`, `status`, `room`, `day`), lo que contradice PRODUCT.md (Evitar: room, booking). · Reformular «Dónde viven los datos» (escribe en `bookings` en memoria; ¿hay persistencia?). Decidir el idioma de los identificadores a la vista de Terminology, o declarar que el código sigue otra convención.
+
+8. Menor · Intent / Scope · El Scope dice «avisar en `libres`» fuera, pero el Intent promete saberlo «en el momento» sin decir qué pasa con un `reservar` que falla. La sección «Lo que se retira o cambia de forma» dice «nada cambia», aunque se añade un comando nuevo, una función `reservar` nueva y un contador en `src/app.js`. · Listar el comando y el contador como adiciones en esa tabla, o aclarar que la tabla es solo para retiradas.
+
+9. Menor · Decisiones 1 y 4 / Reglas · Los ejemplos y reglas repiten las decisiones «pendiente» como si estuvieran cerradas (umbral 4, texto literal) en la sección de reglas y en los escenarios. Con 4 sin validar, tres escenarios se rompen si cambia el número. Además, «reservas» en plural para `n` fijo en 4 y el texto «(1 reservas)» no aplica por el umbral, pero el literal «(n reservas)» queda raro si el umbral baja a 1. · Parametrizar los escenarios con el umbral (por ejemplo, «umbral − 1 activas») o dejar constancia de que cambiarlos es parte de validar la decisión 1.
+
+10. Menor · Dónde se prueba / Términos · La sección usa `run('reservar', …)` y `test/app.test.js`, aunque la restricción es no leer código. No se puede verificar que `run` exista. Además, la spec usa «room», «booking» y «bookings» en el cuerpo (`bookings`, `room`, `day`), mientras PRODUCT.md dice «Evitar: booking, room». La constitución exige texto en castellano. «Términos resueltos: ninguno» es incorrecto si se usan esos términos. · Usar «reserva» y «sala» en el texto en prosa y dejar los identificadores solo en backticks. Confirmar que `run` y `test/app.test.js` existen, o referenciarlos de forma genérica.
+
+--- [43]
+Ahora: integro los hallazgos de la revisión y apruebo la spec por delegación con tu frase. Queda: plan, ~4 min.
+
+--- [50]
+Ahora: escribo el plan. Queda: nada más hasta la validación, ~4 min.
+
+--- [60]
+La spec y el plan están escritos y commiteados en `feature/0012-aviso-sala-ocupada`. No he implementado nada: pediste solo spec y plan, así que me he parado antes de `sdd-implement`.
+
+Lo único que no está en el plan es el código: `src/app.js` y los tests no se han tocado.
+
+**Spec** (`.docs/sdd/changes/20261119-183549-feature-0012-aviso-sala-ocupada/spec.md`)
+- Es una feature en modo full, con perfil delegate (el del proyecto). La aprobé por delegación con tu frase y la dejé registrada en «Aprobaciones».
+- Al hacer `reservar Norte lun 15:00-16:00`, si ese día la sala ya tiene 4 o más reservas activas, la respuesta añade una línea: «aviso: Norte está muy ocupada el lun (4 reservas)». El aviso solo informa, no impide reservar.
+- Hoy no existe un `reservar` simple (solo el stub `--cada-semana`), así que la feature lo crea. Sin él no había dónde avisar.
+- Un revisor (Sonnet) encontró dos hallazgos críticos y varios menores. Acepté los críticos, que eran el umbral ambiguo y que `reservar` no tenía requisito propio. Rechacé tres: identificadores en inglés en el código, parametrizar los escenarios con el umbral y una capacidad aparte para `reservar`. Los motivos están en la spec.
+- No hay remoto, así que el id 0012 queda reservado solo en local.
+
+**Plan** (`plan.md`, misma carpeta)
+- Una sola task, en ejecución native con Sonnet y effort medium. Toca `src/app.js` y un test nuevo, `test/reservar.test.js`.
+- Los tests solo usan `run` y cada uno trabaja con un día propio, para no contaminarse.
+- Estimación: unas 1,5 h en total (0,7 h de spec y plan, 0,5 h de implementación, 0,3 h de revisión y 0,3 h de cierre).
+
+**Pendiente para la validación**
+Como la spec se aprobó por delegación, estos puntos van marcados «pendiente» en ✋ y te toca confirmarlos tú:
+- El umbral: 4 o más reservas activas por sala y día (lo elegí yo, nadie dio un número).
+- El lugar del aviso: solo al reservar, no en un listado.
+- Que el aviso no bloquee la reserva.
+- El texto literal del aviso.
+
+Cuando quieras, `retoma la feature` arranca la Task 1.
+

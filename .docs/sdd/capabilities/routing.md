@@ -11,7 +11,8 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un proyecto con `.docs/sdd/` y superpowers instalado
 - WHEN el usuario pide una feature o un cambio con comportamiento sin nombrar ninguna skill («añade…», «hazme…», «let's build…», «es un cambio pequeño, hazlo rápido»)
 - THEN la primera skill que se invoca es `sdd-kit:sdd-propose`
-- AND `superpowers:brainstorming` no se invoca en ningún momento: la entrevista la lleva `sdd-grilling` y la spec, `references/spec-writing.md` de `sdd-propose`
+- AND `superpowers:brainstorming` no se invoca en ningún momento: la spec la lleva `sdd-spec-writing`, que pregunta con `sdd-grilling`
+- AND `sdd-spec-writing`, `sdd-spec-approval`, `sdd-spec-review` y `sdd-plan-writing` no son la primera skill de ninguna petición: las invoca la skill anterior del flujo
 
 ### Un bug pequeño y determinista entra por el carril patch
 
@@ -118,7 +119,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - GIVEN un patch abierto con `sdd-implement`
 - WHEN el agente escribe `patch.md`
 - THEN el frontmatter lleva `solution: ticket | dev-lead | causa raíz`, y §3 una lista `Decisiones` con el autor en cada línea: `ticket`, `dev-lead` o `sin el dev-lead`
-- AND una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` hace que el agente pare el patch y lo suba a feature por el paso de la spec de `sdd-propose`, y se lo diga al usuario
+- AND una decisión sobre lo que el usuario ve o puede hacer con autor `sin el dev-lead` hace que el agente pare el patch y lo suba a feature por `sdd-propose`, que lo pasa a `sdd-spec-writing`, y se lo diga al usuario
 - AND el mensaje final del cierre de `sdd-archive` lista las decisiones con autor `sin el dev-lead` leídas de esa lista
 
 ### Un patch muy grande para y pregunta
@@ -164,7 +165,7 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 
 - GIVEN el molde `reservas` en `delegate`
 - WHEN el usuario pide «que el responsable de sala pueda anular reservas de otros», que es feature full
-- THEN `sdd-propose` anuncia el carril, el perfil y de qué nivel sale, y la frase para aprobar la spec por delegación, y sigue con la entrevista en el mismo mensaje, sin pregunta de confirmación
+- THEN el primer mensaje de la feature anuncia el carril, el perfil y de qué nivel sale, y la frase para aprobar la spec por delegación, sin pregunta de confirmación: `sdd-propose` invoca `sdd-spec-writing` en el mismo turno, y el mensaje de los montones abre con esas líneas y cierra ese turno; `sdd-propose` no pregunta nada de la entrevista antes de invocarla
 - AND con «si cancelo una reserva que no existe me dice "cancelada" igual», que es patch, pregunta en prosa antes de abrir rama, carpeta o id, con el 🦆 de lo que hará y, si existe `estimation.md`, la estimación en horas
 - AND con un cambio que cumple el predicado de lite, la pregunta ofrece lite citando sus condiciones una por una
 - AND si la feature prevé más de 5 tasks, la pregunta de partir sustituye al anuncio y lleva la opción de aprobar la spec por delegación
@@ -288,7 +289,8 @@ Cómo entra una petición en lenguaje natural por el carril que le toca del kit,
 - THEN la primera skill que se invoca es `sdd-kit:sdd-implement`, no `sdd-kit:sdd-propose`
 - AND no crea carpeta ni rama, no repite la Task 1 y sigue por la Task 2, tras mirar la base
 - AND en la rama `patch/0021-cancel-missing`, con `patch.md` hasta el fix y sin commitear, «Retoma el patch, lo dejé ayer a medias.» invoca primero `sdd-kit:sdd-implement`, que sigue por el primer paso cuya salida falta, sin crear otro `patch.md`
-- AND sin `spec.md` aprobada ni `patch.md` en la rama, lo manda a `sdd-propose`
+- AND sin `spec.md` aprobada ni `patch.md` en la rama, o con la spec aprobada en full o spike y sin `plan.md`, lo manda a `sdd-propose`
+- AND `sdd-propose`, con `spec.md` sin aprobar en la carpeta de la rama, invoca `sdd-spec-approval` y no vuelve a entrevistar; con la spec aprobada en full o spike y sin `plan.md`, invoca `sdd-plan-writing`
 
 ### El kit carga y enruta sin superpowers
 

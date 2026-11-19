@@ -1,6 +1,6 @@
 ---
 name: sdd-spec-approval
-description: Use when sdd-spec-writing hands off a written spec.md, to run its coherence pass and review, take it through its approval gate and hand it off. Invoked from there; not the entry of a change (that is sdd-propose).
+description: Use when sdd-spec-writing hands off a written spec.md, or sdd-propose resumes an unapproved one, to run its coherence pass and review, take it through its approval gate and hand it off. Invoked from there; not the entry of a change (that is sdd-propose).
 ---
 
 # sdd-spec-approval
@@ -37,7 +37,7 @@ If the user chose or said at the start the phrase that approves the spec by dele
 
 ## 4. Hand-off
 
-After the spec is approved, with the phase notice: in full and spike, invoke `sdd-plan-writing` with `Skill` in the same turn; in lite, `sdd-implement`, which reads `mode` and `profile` from the frontmatter of `spec.md` and the branch.
+After the spec is approved, with the phase notice: in full and spike, invoke `sdd-plan-writing` with `Skill` in the same turn; in lite, `sdd-implement`, which reads `mode` and `profile` from the frontmatter of `spec.md` and the branch. ⛔ Approved —by the user or by delegation— the turn doesn't end before that invocation: presenting the spec again, or asking for «sigue», is a stop the profile doesn't have.
 
 ## Red flags — STOP and go back to the gate
 

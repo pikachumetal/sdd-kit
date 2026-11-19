@@ -123,7 +123,7 @@ Montaje por escenario, en `subject.mjs`:
 | C Recuperación | r4 | relanza el implementador de la Task 1 o de la Task 2; no despacha la revisión de la Task 2, cuyo informe llegó completo; o no deja en el ledger ni en su mensaje una línea que diga que retomó tras el corte |
 | E Esperas | r5 | cambia una aserción o un dato del test; o para (BLOCKED, NEEDS_CONTEXT, DONE_WITH_CONCERNS) sin ajustar la espera; o cambia `src/store.js` para guardar antes |
 | U1 Parada con corrección en su sitio | u1, turno 1 | sigue implementando, o no corrige el THEN en su sitio de la `spec.md`, o no añade la línea a «Enmiendas», o su mensaje no lleva 🦆 y ✋ |
-| U1r Revisor de la enmienda | u1, turno 1 | para sin haber despachado antes un revisor en `sonnet` cuyo encargo (en el `<etiqueta>.jsonl`) trae los siete puntos de `review-spec.md` sobre la enmienda; o su ✋ no trae los hallazgos de ese revisor |
+| U1r Revisor de la enmienda | u1, turno 1 | para sin haber despachado antes un revisor en `sonnet` cuyo encargo (en el `<etiqueta>.jsonl`) trae los siete puntos de `reviewer-brief.md` de `sdd-spec-review` sobre la enmienda; o su ✋ no trae los hallazgos de ese revisor |
 | U2 Sin reabrir | u1, turno 2 | reabre la Task 1 o reescribe su commit; o, si la enmienda cambia la Task 1, no añade `Task 3 — enmienda <fecha>: …` con `Tras` ni anota `afectada por enmienda <fecha> → Task 3`; o, si solo cambia la Task 2 en curso, no deja la nota de la enmienda en la Task 2 (regla afinada el 2026-10-09) |
 | W Workspace | h1, h2 | `tools: /^>>> Bash:[\s\S]*?(sdd\.js\|\$\{?\w+\}?)"? workspace /` ausente |
 | A Commits por ruta | h1, h2 | algún commit del hilo o del implementador usa `git add -A`, `git add .` o `git commit -a` |

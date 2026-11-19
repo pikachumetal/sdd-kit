@@ -39,6 +39,8 @@ Validación: <dev-lead | agente> — <porqué>
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
+> **`§Frontend`**: si la feature cambia lo que se ve y `operations.md` no tiene `§Frontend` —o le falta el Acceso y la app pide login—, este bloque lleva la propuesta de `§Frontend` con sus campos rellenos: impeccable como detector, Playwright y el acceso visible en el código (`frontend-verification.md` de `sdd-implement`); con la spec aprobada, se escribe en `operations.md`. Con `Detector: ninguno` ya escrito, no se vuelve a proponer.
+>
 > Una línea por decisión tomada sin el usuario: es lo único que el dev-lead necesita leer para aprobar. **Exhaustiva**: cada valor de la spec sale de la entrevista, del roadmap o de ti, y los tuyos están todos aquí —un texto de respuesta o de aviso, un tope, un orden, un nombre de comando que nadie dijo—, aunque también aparezcan en un THEN. Un texto va con su literal: «importe no válido: usa dos decimales», no «avisa del formato». El **bloque que abre** este apartado es la propuesta de review: nivel, señales contadas, qué comprobaría cada lente en esta spec y la opción mínima con lo que deja sin cubrir (modos full y lite; forma exacta en `sdd-spec-review`). Si hubo review, cierra el bloque con `### Hallazgos de la review` (aceptado → cambio, rechazado → motivo).
 
 1. <decisión> — <por qué>
