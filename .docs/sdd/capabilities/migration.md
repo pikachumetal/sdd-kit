@@ -47,10 +47,11 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND con el marcador y el kit cargado en `2.3.4` y `v3.0.0.md` en la carpeta de migraciones, no hay aviso de migraciones ni orden de ofrecerlas
 - AND con el kit cargado menor que el marcador, sale solo el aviso de la versión
 - AND con el marcador en `2.1.0`, sin `sdd-kit.json`, con un `sdd-kit.json` en curso (sin `version`) o sin carpeta de migraciones en el kit cargado, no hay aviso de migraciones, y el hook sigue inyectando `using-sdd`
+- AND con una marca de template, en su lugar sale el aviso de «Una instancia de template sin inicializar no recibe la oferta de migrar», sin ninguna de estas órdenes
 
 ### Un proyecto ya inicializado se migra, no se re-inicializa
 
-- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` sin la clave `init`, o con `.docs/sdd/mission.md` y sin `sdd-kit.json`, y la petición «actualízame al kit»
+- GIVEN un proyecto sin marca de template, con `.docs/sdd/sdd-kit.json` sin la clave `init`, o con `.docs/sdd/mission.md` y sin `sdd-kit.json`, y la petición «actualízame al kit»
 - WHEN el agente invoca `sdd-upgrade`
 - THEN ejecuta `sdd upgrade --root <raíz>`, que lista las migraciones posteriores a la `version` de `sdd-kit.json` hasta la mayor del kit cargado, en orden SemVer
 - AND sin `sdd-kit.json`, la pregunta de si es un proyecto anterior a la v0.2.0, la recomendada, o una init de la 2.x que se cortó la hace el predicado 4 de `sdd-init`: si la sesión aún no la respondió, `sdd-upgrade` invoca `sdd-init`; con «anterior a la v0.2.0», `sdd-upgrade` las aplica todas, y con «init cortada», sigue la init sin migrar
@@ -59,6 +60,7 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND con la `version` igual a la mayor migración del kit cargado, `sdd upgrade` escribe «el proyecto ya está al día con el kit <versión>» y el agente no toca nada
 - AND un `sdd-kit.json` con la clave `init` no se migra: `sdd upgrade` escribe «init en curso: sigue con sdd-init», y la init sigue por `sdd-init` ([`onboarding`](onboarding.md))
 - AND pedida a `sdd-init`, la migración la hace `sdd-upgrade`: `sdd-init` no aplica ninguna migración
+- AND con una marca de template no se migra: `sdd upgrade` escribe «template sin inicializar: sigue con sdd-init» (requisito «`sdd upgrade` no migra una instancia de template sin inicializar»)
 
 ### El `funcional.md` heredado se conserva como legado
 
@@ -218,10 +220,38 @@ La migración de un proyecto consumidor entre versiones del kit: cómo declara l
 - AND con el dev-lead presente, presenta el borrado y espera su «sí» antes de ejecutarlo
 - AND lo mismo vale para un paso sin marca que borra una sección entera o una clave de un JSON, o cambia la ruta de un fichero; un paso que solo sustituye un nombre, o uno que su migración marca «no gate», se ejecuta sin preguntar
 
+### Una instancia de template sin inicializar no recibe la oferta de migrar
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.2`, una sesión que carga el kit con `v3.0.3.md` como mayor migración, y `PRODUCT.md` con la línea `<!-- sdd-template: pending -->`
+- WHEN arranca la sesión
+- THEN el usuario ve «AVISO sdd-kit: el proyecto viene de un template sin inicializar (`PRODUCT.md` lleva `<!-- sdd-template: pending -->`): entra primero por la skill `sdd-init`; las migraciones del kit, hasta la 3.0.3, después.», sin «actualízame al kit»
+- AND el agente recibe el mismo aviso al principio de su contexto, sin orden de ofrecer ni de aplicar migraciones
+- AND con `control.profile: unattended` en `sdd-kit.json`, el mismo aviso, sin «no ofrezcas ni migres»
+- AND con `sdd-kit.json` en `2.3.2`, `v3.0.0.md` en el kit y `.docs/sdd/mission.md` con `<!-- sdd-template: pending — el usuario no tiene respuesta todavía («no sé») -->`, sale el mismo aviso con `.docs/sdd/mission.md` y la marca en su forma canónica, sin la orden de migrar antes de nada
+- AND con la marca en una celda de tabla de `.docs/sdd/steering/constitution.md` (`| Reglas | <!-- sdd-template: pending --> |`), sale el mismo aviso con ese fichero
+- AND sin migraciones pendientes no hay aviso, haya o no marca
+
+### Una marca citada no cuenta como marca de template
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.2`, una sesión que carga el kit con `v3.0.3.md` como mayor migración, y `ROADMAP.md` con la fila «el aviso mira `<!-- sdd-template: pending -->`»
+- WHEN arranca la sesión
+- THEN sale el aviso de migraciones pendientes de siempre, con «actualízame al kit»
+- AND lo mismo con la marca en una línea propia dentro de un bloque vallado con ``` de `.docs/sdd/steering/operations.md`, o solo en `.docs/sdd/changes/`
+
+### `sdd upgrade` no migra una instancia de template sin inicializar
+
+- GIVEN un proyecto con `.docs/sdd/sdd-kit.json` a `3.0.2` y `.docs/sdd/steering/constitution.md` con la línea `<!-- sdd-template: pending -->`
+- WHEN el agente ejecuta `sdd upgrade --root <raíz>`, con o sin `--mark 3.0.3`
+- THEN sale con error de dominio y escribe `template sin inicializar: sigue con sdd-init`
+- AND `sdd-kit.json` no cambia
+- AND con `sdd-kit.json` ya en la mayor migración del kit, el mismo error, no «el proyecto ya está al día»
+- AND con la clave `init` en `sdd-kit.json`, gana «init en curso: sigue con sdd-init»
+- AND el agente invoca `sdd-init`, que entra por su predicado 1
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: las migraciones viven en `skills/sdd-upgrade/references/migrations/vX.Y.Z.md`; la versión aplicada, en `.docs/sdd/sdd-kit.json` del proyecto, que escribe `sdd upgrade --mark`; lo que escribe cada migración, en su línea `**Writes**:`. La memoria automática, en `~/.claude/projects/<project>/memory/` (o en `autoMemoryDirectory` si el proyecto la redefine), una por repositorio y compartida por sus worktrees; cada entrada es un fichero de memoria indexado en `MEMORY.md`. El roadmap anterior a la migración a v2.3.0, en el commit que nombran el informe y el commit de la migración. Los `mission.md`, `tech-stack.md`, `environments.md` y `roadmap.md` anteriores a la migración a v3.0.0, en el commit que nombran su informe y su commit (`git show <sha>:<ruta>`); los documentos de estado, en `.docs/sdd/steering/` tras ella.
 - **Idioma de los nombres**: los nombres que una migración crea o renombra en el proyecto van en inglés kebab-case, salvo los tres documentos de la raíz que fija el Art. IV en mayúsculas: `PRODUCT.md`, `ROADMAP.md` y `CHANGELOG.md`.
 - **Límites**: no aplica.
-- **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado que no pasa de la versión de su `plugin.json` (migrar el proyecto); en el segundo caso el agente ofrece migrar antes de atender la primera petición y no migra sin el «sí», salvo con `control.profile: unattended` (el de `sdd-kit.local.json` manda sobre el de `sdd-kit.json`), que ni ofrece ni migra y lo anota en su mensaje final; con un proyecto 2.x y la migración a la 3.0.0 en el kit, migrar no es una oferta: el agente migra antes de atender nada, o no hace el trabajo; un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado; un paso sin marca que borra un fichero, una sección entera o una clave, o que cambia la ruta de un fichero, es un gate.
-- **Regla ante conflicto**: un paso que su migración marca «no gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un paso «no gate» que choca con el estado del proyecto (árbol sucio, una carpeta repetida en el destino, algo sin versionar) para sin escribir nada y lo dice. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro.
+- **Avisos**: la sesión avisa, al usuario y al agente, cuando el kit cargado es menor que el marcador del proyecto (actualizar el plugin) y cuando el marcador es menor que la mayor migración del kit cargado que no pasa de la versión de su `plugin.json` (migrar el proyecto); en el segundo caso el agente ofrece migrar antes de atender la primera petición y no migra sin el «sí», salvo con `control.profile: unattended` (el de `sdd-kit.local.json` manda sobre el de `sdd-kit.json`), que ni ofrece ni migra y lo anota en su mensaje final; con un proyecto 2.x y la migración a la 3.0.0 en el kit, migrar no es una oferta: el agente migra antes de atender nada, o no hace el trabajo; un paso con gate que el dev-lead no responde queda como pendiente explícito en el informe, con cómo reanudarlo; no se ejecuta ni se deja preparado; un paso sin marca que borra un fichero, una sección entera o una clave, o que cambia la ruta de un fichero, es un gate; con una marca de template (`<!-- sdd-template: pending` sin backtick delante, fuera de un bloque vallado, en `PRODUCT.md`, `ROADMAP.md`, `.docs/sdd/*.md` o `.docs/sdd/steering/*.md`), en lugar del aviso de migraciones sale el de template sin inicializar, que remite a `sdd-init` y no lleva orden de migrar.
+- **Regla ante conflicto**: un paso que su migración marca «no gate» se ejecuta sin preguntar aunque borre o reestructure; la regla del gate de un paso que borra o reestructura cubre solo los pasos sin marca. Un paso «no gate» que choca con el estado del proyecto (árbol sucio, una carpeta repetida en el destino, algo sin versionar) para sin escribir nada y lo dice. Un documento que una migración lleva a la raíz y ya existe allí (`PRODUCT.md` de impeccable, un `CHANGELOG.md`) se funde sección a sección con gate: ninguno pisa al otro. Una marca de template gana a una migración pendiente: la instancia se inicializa con `sdd-init` antes de migrar, y `sdd upgrade` lo dice después de `init en curso` y antes de «ya está al día».
