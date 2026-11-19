@@ -1,0 +1,187 @@
+--- [3]
+Ahora: leo la spec aprobada del spike 0031 y la plantilla del plan. Queda: escribir `plan.md` y presentarlo para aprobación, ~5 min.
+
+--- [20]
+Estoy puliendo dos párrafos confusos del plan (el test RED y una línea de `tasks.md`) antes de pasarlo a `sdd-implement`.
+
+--- [29]
+Ahora: preparo el espacio de trabajo y cargo `sdd-worktrees` y `sdd-tdd`. Queda: tarea 1, revisión final y cierre, ~30 min.
+
+--- [33]
+Estoy usando la skill sdd-worktrees para comprobar el espacio de trabajo aislado.
+
+--- [36]
+Estoy en el repo normal, en la rama `feature/0031-free-rooms-load` (no en `main`), así que trabajo aquí. Ahora lanzo el gate base en un worktree desacoplado.
+
+--- [41]
+Gate base en verde: `ℹ fail 0` y `lint: sin hallazgos`. Ahora abro el ledger y arranco la task 1.
+
+--- [46]
+Ahora: prueba negativa de la carga (Step 2) y medida (Step 3).
+
+--- [51]
+La prueba negativa del plan rompe el guard del módulo principal (con `node -e`, `process.argv[1]` es `undefined`). Lo corrijo y lo anoto como ruling.
+
+--- [57]
+Ahora: verifico y hago el commit de la task.
+
+--- [60]
+Ahora: la revisión final de la rama con `sdd-verify`. Queda: revisión en ejes, cierre y entrega a `sdd-archive`, ~15 min y algún dólar de subagentes.
+
+--- [65]
+Ahora: preparo el paquete de revisión del eje Spec (en un spike solo sale ese eje). Queda: esperar su informe, cierre y entrega a `sdd-archive`, ~10 min.
+
+--- [70]
+Ahora: lanzo el eje Spec (`sdd-kit:effort-high` + `opus`) en segundo plano, con su vigilancia de silencio.
+
+--- [74]
+El eje Spec está revisando en segundo plano. Mientras tanto, anoto en el ledger las líneas del cierre.
+
+--- [80]
+El plan del spike 0031 está escrito y la task 1 hecha, pero no he cerrado nada. La revisión final del eje Spec sigue en marcha en segundo plano y aún no sé qué dirá. Falta aplicar sus hallazgos y pasar a `sdd-archive`.
+
+**Qué hay**
+- **Plan:** `plan.md` en la carpeta de la spec. Es una task Native, porque la spec es un spike y `sdd-kit.json` fija `native`.
+- **Medida:** con 1.000 reservas activas en `10:00-12:00`, `libres` tardó como máximo 0,132 ms en 12 repeticiones seguidas, frente al umbral de 50 ms. O1 sale `cumple`. El heap sube 17.768 B entre la repetición 1 y la 12, un crecimiento demasiado pequeño para sacar nada con solo 12 repeticiones.
+- **Recomendación:** `research.md` recomienda no cachear `libres` antes de abrirlo a toda la oficina. Dice que solo se midió la llamada en proceso, no el comando de consola de punta a punta.
+- **Verificación:** `src/` está intacto, `node --test` da `ℹ fail 0` y `node scripts/lint.mjs` da `lint: sin hallazgos`. Todo va en el commit `1a58caa`.
+
+**Decisiones mías que conviene que valides**
+- **`seed` no existe en el repo.** La spec habla de reservas «cargadas con `seed`», pero `src/app.js` no tiene ningún `seed` y `bookings` es un `const` interno. Como un spike no deja código de producción, `seed` es una función del script de medida (`measure-libres.mjs`), que carga las 1.000 reservas sobre una copia temporal de `src/app.js`. Si querías un comando `seed` en la app, es otra feature.
+- **Carga concreta.** Las 1.000 reservas son todas de Norte, mismo día y franja, para que `libres` recorra las 1.000 al decidir que Sur está libre. La spec no fijaba la distribución.
+- **Ruling:** el guard de «módulo principal» que dictaba el plan fallaba con `node -e`, o sea con su propia prueba negativa. Le añadí `process.argv[1] &&`. Si me equivoco, la prueba negativa no corre.
+
+Dos detalles más:
+- Dejé `status: draft` en `plan.md`, sin aprobación explícita; en `delegate` no hay parada para eso.
+- No creé worktree: trabajo en `feature/0031-free-rooms-load`, que no es `main`.
+
+**Deferred minors:** ninguno por ahora.
+
+Siguiente paso: cuando llegue el informe del eje Spec, lo aplico y sigo con el cierre. El worktree de revisión `review-0031-1a58caa` queda para retirar cuando vuelva el informe.
+
+--- [85]
+## Revisión del eje Spec: spike 0031 (`1a58caa`)
+
+### Strengths
+- **El spike responde a su pregunta con medidas reales.** O1 usa el umbral literal de 50 ms y la peor carga literal: 1.000 reservas activas en la misma franja, confirmada con «esa es la peor, sí». El script hace 12 repeticiones seguidas (la plantilla pide ≥ 10) y decide con el máximo, no con la media (`measure-libres.mjs:98-99`).
+- **La carga es de verdad la peor posible.** Con 2 salas y 1.000 reservas activas en una franja, `freeRooms` hace como mucho unas 1.001 iteraciones de `some`. Con todo en Norte, Norte corta en la primera reserva y Sur recorre las 1.000. La decisión 2 del plan y `research.md` §3 lo explican bien.
+- **Las cifras cuadran.** Comparé las 12 filas de `research.md` §3 con `libres-raw.txt` y coinciden todas, tanto `ms` como `heapUsed`. `max_ms` = 0,132. La resta 5.638.808 − 5.621.040 = 17.768 B es correcta.
+- **La medida se reproduce.** Ejecuté el script una vez en el directorio de revisión: código 0, `max_ms=0.101`, `O1: cumple` y el árbol limpio después. La diferencia con el bruto commiteado es ruido de la máquina; el veredicto es el mismo.
+- **`src/` queda intacto.** `git diff --stat 03014fd..1a58caa -- src` sale vacío. Un spike no deja código de producción.
+- **Leer `seed` como función del script (decisión 1 del plan) es aceptable.** `seed` no existe en el repo y el spike no puede añadir código de producción. La decisión está avisada en el plan, en `research.md` §3 y en §5, donde un comando `seed` en la app queda como `nada`.
+- **Medir la llamada en proceso es defendible para la decisión que desbloquea la spec.** Una caché de `libres` solo puede ahorrar el filtrado, no el arranque de Node. Esa es justo la parte que se midió.
+- **Las 5 líneas del Review Focus, una a una:**
+  1. *La carga no se aplica:* `seed` lanza un error si el patrón no casa (`measure-libres.mjs:14-16`). El `await` de nivel superior lo rechaza y Node sale con código 1 antes de medir. La prueba negativa del Step 2 cubre ese camino.
+  2. *Recuento distinto de 1.000:* la comprobación existe (`:25-30`), pero discrimina poco. Lo detallo en Minor.
+  3. *Rep 1 en frío:* va en su fila, cuenta para el máximo y `research.md:20` lo dice.
+  4. *Memoria que crece:* `research.md:41` lo dice con la cifra y la cautela correcta.
+  5. *Umbral ≥ 50 ms:* `max < LIMIT_MS ? 'cumple' : 'no cumple'` da `no cumple` a partir de 50,000 ms. Lo verifiqué leyendo el código; ver «Not verified».
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+Ninguno.
+
+#### Minor (Nice to Have)
+
+1. **`measure-libres.mjs:25-30` y `:47-50`: la comprobación del recuento no puede fallar por una causa real.**
+   - **Qué pasa:** el script cuenta `status: 'active'` en una línea que ha generado él mismo con `Array(N).fill(BOOKING)`, así que siempre salen N. No mira la franja (la línea 2 del Review Focus dice «en la franja»). Además, la respuesta `'Sur'` es la misma con la reserva única por defecto que con las 1.000, así que tampoco demuestra que la carga se aplicó.
+   - **Por qué importa:** la única garantía real de la carga es el error de `seed` (línea 1 del Review Focus). La mitigación «el script comprueba el recuento» de la tabla de riesgos del plan (§1.7) promete más de lo que hace.
+   - **Cómo arreglarlo:** basta con decirlo en `research.md` §3. Si se quiere un control independiente, contar en la línea sustituida las reservas que casan con `slot: '${SLOT}'` y `status: 'active'` a la vez, y comprobar que la línea original ya no está.
+   - **Gap:** `partial`.
+   - **Origen:** el plan, Task 1 Step 1 «Comprobación previa». El ledger lo marca como Ruling y se implementó como pedía el plan.
+
+2. **`research.md:20`: lo `no medido` va dentro de la fila que dice `cumple`.**
+   - **Qué pasa:** la medida de punta a punta (`node src/app.js libres …`, lo que ve un usuario de la oficina) se declara `no medido` dentro del Detalle. Así, la columna Estado dice `cumple` sin matiz.
+   - **Por qué importa:** quien solo lea la columna Estado se queda con «responde en < 50 ms» en el sentido de usuario, y eso no se midió. La recomendación no cambia, porque una caché no evita el arranque de Node, pero la tabla de objetivos debería separar lo que se midió de lo que no.
+   - **Cómo arreglarlo:** poner en Estado `cumple (llamada en proceso)`, o añadir una fila aparte «O1 — punta a punta» con `no medido`, como pide la plantilla.
+   - **Gap:** `partial`.
+   - **Origen:** el plan, decisión 3 y Step 4 §2.
+
+3. **`research.md:41`: el motivo de la cautela sobre la memoria es impreciso.**
+   - **Qué pasa:** `research.md` dice que 12 repeticiones «no distinguen una fuga del ruido del recolector». La causa de fondo es otra. `heapUsed` se lee sin forzar el recolector (sin `--expose-gc` ni `global.gc()`), así que incluye basura sin recoger, y el propio bucle del script reserva memoria en cada vuelta (las cadenas de `lines`, los `BigInt`).
+   - **Prueba:** en mi ejecución, `heapUsed` no crece de forma continua: sube a 5.867.384 en la rep 7 y baja a 5.644.192 en la rep 8.
+   - **Por qué importa:** la conclusión («no se distingue») es prudente y correcta, pero el motivo puede llevar a pensar que con más repeticiones bastaría.
+   - **Cómo arreglarlo:** decir que la columna no aísla la memoria de `libres` y que haría falta `global.gc()` antes de cada lectura.
+   - **Gap:** `partial`.
+   - **Origen:** el plan, Task 1 Step 4 §3.
+
+4. **`research.md:46`: la razón de «Descartadas» no sale de ninguna medida y parte es incorrecta.**
+   - **Qué pasa:** «una caché obliga a invalidarla en cada `reservar`, `cancelar` y `anular`». Hoy `reservar` no toca `bookings`: en `src/app.js` solo devuelve `'reserva semanal creada'`.
+   - **Por qué importa:** la plantilla pide que la recomendación cite solo filas medidas. «Elegida» lo cumple; «Descartadas» mete un argumento de diseño y además inexacto.
+   - **Cómo arreglarlo:** basar el descarte en lo medido («no hace falta: 0,132 ms frente a 50 ms») y quitar o corregir lo de `reservar`.
+   - **Gap:** `contradicts`, en la parte de `reservar`.
+   - **Origen:** el plan, Task 1 Step 4 §4.
+
+### Declined to judge
+- La comparación con espacios raros (`===pathToFileURL`, `measure-libres.mjs:59`) y si el guard del módulo principal funciona con rutas de distinta mayúscula o con uniones de Windows: es calidad de código, de otro eje. En la ejecución real sí midió.
+- El redondeo en el borde (un `max` de 49,9996 imprime `50.000` y aun así `cumple`): es irrelevante con 0,1 ms.
+- Si hacía falta un comando `seed` en la app: el plan lo saca del alcance (decisión 1) y `research.md` §5 lo deja en `nada`. Si se quería, es otra feature.
+- La salida de error de `seed` es la traza completa del error y no solo el mensaje. El código de salida es 1, que es lo que pide el Review Focus; el formato es calidad.
+- El coste de leer 1.000 reservas en el arranque real (hoy no hay persistencia; el origen de las reservas no está definido): la spec no lo pregunta.
+
+### Not verified
+- **Que el camino `no cumple` del script y la redacción `no cumple tal como se definió` en `research.md` funcionen de verdad:** con estos datos no se pueden ejecutar. Solo lo comprobé leyendo el código (línea 5 del Review Focus).
+- **Que el Step 2 (prueba negativa de `seed`) se ejecutara y diera ese mensaje y un código distinto de 0:** el ledger lo da a entender (el Ruling sobre `node -e`), pero no guarda la salida. Tampoco lo ejecuté yo, porque se me permitía ejecutar solo `measure-libres.mjs`.
+- **Que `research.md` siga al pie de la letra la plantilla del kit:** no tengo acceso a `research-template.md` (Glob denegado). Lo juzgué con la descripción del plan, Step 4.
+- **Que el dev-lead haya validado las decisiones 1 a 3 del plan:** el plan está en `status: draft` y no hay aprobación registrada.
+
+### Recommendations
+- Separar en `research.md` §2 lo medido (en proceso) de lo no medido (punta a punta), y matizar §3 sobre `heapUsed`.
+- Si se quiere que la línea 2 del Review Focus tenga un control que pueda fallar de verdad: contar franja y estado a la vez, y comprobar que la línea original ya no está en el código sustituido.
+- Que el dev-lead confirme la decisión 1 (`seed` como función del script) antes de `sdd-archive`.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** La medida es correcta, se reproduce, usa la carga y el umbral literales, y los números de `research.md` coinciden con el bruto. `src/` queda intacto. Lo pendiente es menor y casi todo de redacción: la fila O1 mezcla lo medido con lo no medido, la columna `heapUsed` no aísla la memoria de `libres`, el descarte de la caché dice algo inexacto de `reservar` y la comprobación del recuento no puede fallar.
+
+Ficheros revisados (en `<run>/review-0031-1a58caa/.docs/sdd/specs/20261015-110000-feature-0031-free-rooms-load/`): `measure-libres.mjs`, `libres-raw.txt`, `research.md`, `plan.md`, `spec.md`.
+
+--- [87]
+Ahora: aplico la pasada de fix y cierro la revisión. Queda: commit del fix, gate, borrar el workspace y entrega a `sdd-archive`, ~5 min.
+
+El informe no trae Critical. Re-gradué por efecto el Minor 4: `research.md` afirma algo falso sobre `reservar` en una recomendación, así que lo trato como Important y entra en la pasada de fix. Los Minor 1–3 se aplazan, porque `review.minors` no está en `sdd-kit.json`.
+
+--- [93]
+Ahora: paso al cierre con `sdd-archive`. Queda: validación, walkthrough y registros, ~10 min.
+
+--- [106]
+Ahora: validación por el agente (`Validación: agente` en la spec). Ejecuto el smoke real de O1 y el gate.
+
+--- [111]
+Ahora: aprendizajes y retro del cierre (`sdd-retro`, argumento `cierre`).
+
+--- [118]
+Ahora: roadmap, estimation-log y comprobaciones de capacidades y decisiones.
+
+--- [125]
+El spike está cerrado en la rama, pero no está fusionado: `sdd merge` aborta porque `sdd-kit.json` no declara el bloque `merge` (`merge.into` y `merge.noFf`). Sin ese bloque, el cierre presenta el merge y espera tu decisión.
+
+**Decisiones que tomé sin ti**
+- **`seed`:** la spec habla de reservas «cargadas con `seed`», pero el repo no tiene ningún `seed` y `bookings` es un `const` interno. Lo implementé como función del script de medida, que carga las reservas sobre una copia temporal de `src/app.js`, y no toqué `src/`. Si querías un comando `seed` en la app, es otra feature. El revisor lo aceptó.
+- **Guard del script:** el plan decía comprobar «módulo principal» con `process.argv[1]`, y eso fallaba con `node -e`, o sea con su propia prueba negativa. Añadí `process.argv[1] &&`. Si me equivoco, esa prueba negativa no corre.
+- **Recuento de carga:** la comprobación cuenta los `status: 'active'` de la línea sustituida, como fijaba el plan. Si falla, el script sale con 1 sin medir.
+- **Fix de la revisión final:** el descarte de la caché en `research.md` decía que había que invalidarla en `reservar`, que hoy no toca `bookings`. Lo reescribí para citar solo la medida (0,132 ms frente a 50 ms).
+- **Minors aplazados** (no están en `sdd-kit.json` como `review.minors: fix`):
+  - La comprobación del recuento cuenta lo que ella misma genera. Solo el error de `seed` prueba que la carga se aplicó.
+  - `research.md` §2 deja el «no medido» de punta a punta dentro de la fila `cumple`.
+  - `research.md` §3 atribuye la cautela sobre `heapUsed` a tener solo 12 repeticiones, cuando la causa es que no se fuerza el GC.
+
+**Qué quedó hecho**
+- **Validación:** por el agente, porque la spec dice `Validación: agente`. O1 salió `cumple`: 0,132 ms en la medida commiteada y 0,104 ms en la del cierre. Suite 4/4, lint limpio y `src/` intacto. La medida de punta a punta (comando de consola) no se midió.
+- **Revisión final:** en un spike solo sale el eje Spec. Dio 0 Critical, 1 Important (el de `reservar`, ya corregido) y 3 Minor.
+- **Retro:** dos líneas. Una corrige `operations.md` (no existe `seed`). La otra es un ticket del kit: `sdd-plan-writing` manda guardar el plan en `.docs/sdd/changes/<carpeta>/` y este proyecto lo guarda en `.docs/sdd/specs/<id>/`.
+- **Registros:** walkthrough con tiempo real (0,10 h frente a 0,5 h estimadas), `estimation-log.md` regenerado y fila 0031 en Now (`✅`).
+- **Historia:** un solo commit de cierre sobre el de la task 1.
+- **Gate:** `` Gate: `node --test` → 4/4 `` y `lint: sin hallazgos`. Los comandos corrieron sobre `b17c26a`; el commit de cierre `5aece52` solo añade documentación.
+
+Para fusionar propongo `sdd merge` de `feature/0031-free-rooms-load` en `develop` con `--no-ff`, que es el git-flow de la constitution. Para que otros cierres no tengan que preguntar, habría que fijar `merge.into: develop` y `merge.noFf: true` en `sdd-kit.json`. Dime si lo hago y fusiono, o si prefieres otro destino.
+
+**Ofrezco el ticket del kit** con `sdd-feedback` para el desajuste de carpeta que describe la línea de retro.
+
+**No terminado.** Falta el merge de `feature/0031-free-rooms-load` en `develop`. Es el checkout principal del repo, no un worktree enlazado, así que no hay worktree que borrar.
+

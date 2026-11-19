@@ -61,8 +61,8 @@ describe('estimation log con la estructura 3.0.0', () => {
     expect(warnings).toContain('aviso: también existe .docs/sdd/changelog.md, que no se lee');
   });
 
-  it('sin changes ni specs dice qué carpetas buscó', () => {
-    const root = projectAt({ '.docs/sdd/estimation.md': '' });
+  it('sin .docs/sdd ni docs/sdd dice qué carpetas buscó', () => {
+    const root = projectAt({ 'README.md': '' });
     expect(() => build(root)).toThrow(DomainError);
     expect(() => build(root)).toThrow(/changes\/ ni specs\//);
   });

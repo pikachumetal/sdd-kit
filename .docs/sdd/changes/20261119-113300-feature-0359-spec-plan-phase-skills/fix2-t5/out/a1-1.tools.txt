@@ -1,0 +1,146 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.local.json; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -3
+
+>>> Read: <run>\repo\PRODUCT.md
+
+>>> Read: <run>\repo\ROADMAP.md
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"merge": {"push": true}}
+Sin capacidades
+ls: cannot access 'node_modules': No such file or directory
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+<<< 1	# Roadmap — salas
+2	
+3	## Now
+4	
+5	| Id | Externo | Tarea | Estado | Tras | Tamaño |
+6	| --- | --- | --- | --- | --- | --- |
+7	| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+8	| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature<br>**R
+
+>>> Bash: cd .docs/sdd; cat sdd-kit.json; for f in steering/constitution.md steering/operations.md steering/architecture.md; do echo "=== $f"; cat $f; done; cd ../..; cat package.json; ls -R src test scripts | head -50; ls .docs/sdd/specs
+<<< {"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+=== steering/constitution.md
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y d
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Bash: cat test/cancel.test.js | head -40; ls .docs/sdd/specs/*
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+});
+
+test('cancelar sin reserva lo dice', () => {
+  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+});
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/skills/sdd-propose/references"; cat nombrado.md; grep -n -i "merge.push" -B2 -A2 control-profiles.md
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && git checkout -b feature/0011-anular-reservas-de-otros develop && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" id claim --project-root "$(pwd)"
+<<< develop
+Switched to a new branch 'feature/0011-anular-reservas-de-otros'
+sin remoto: la 0011 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (15 turnos, 0.222988 $)
+Ahora: te cuento lo que he entendido y qué queda abierto, antes de escribir la spec. Queda: tus respuestas, la spec y su aprobación, ~10 min.
+
+**Lo que he entendido (corrígeme).** Quieres que una persona con el papel de responsable de una sala pueda anular reservas hechas por otras personas, y que solo ella pueda hacerlo (la fila 0011 dice «solo el responsable de cada sala»). Según `PRODUCT.md`, eso es una **anulación** (la del responsable, por cualquier motivo), distinta de la **cancelación** (la del propio cliente, antes de 24 h).
+
+**Lo que he visto en el código.** Hoy `node src/app.js anular Norte lun` ya existe (`voidBooking` en `src/app.js:20`), pero cualquiera lo ejecuta: no hay usuarios, ni dueño en la reserva, ni responsable de sala (`rooms` es solo `['Norte', 'Sur']`). Es decir, la feature no es solo «permitir», sino «restringir», y para eso el programa tiene que saber quién actúa y quién es responsable de qué sala. No hay login (`operations.md`).
+
+**Contestado** (lo uso sin preguntar):
+- Es una feature en modo full: vienen de la fila 0011 y de `PRODUCT.md` el nombre «anulación» y el estado `voided`.
+- Los tests van antes que el código y el gate de cierre es `node --test && node scripts/lint.mjs` (constitución, `operations.md`).
+
+**Menor** (lo decido yo, irá a ✋):
+- Nombres de funciones y ficheros de test, y dónde viven los datos de responsables: el proyecto es un solo `src/app.js` sin dependencias (`architecture.md`).
+
+**Del dev-lead** (nombrado, lo preguntaré uno a uno): cómo se identifica quien ejecuta el comando; cómo se define el responsable de cada sala (uno o varios); qué ocurre cuando alguien sin permiso intenta anular; si la reserva guarda quién la hizo; si la anulación pide motivo o avisa a la persona afectada; y si `anular` sigue aceptando a cualquiera mientras tanto.
+
+Antes de nada, porque cambia todo lo demás: ¿qué problema te ha pasado, o quieres evitar, para que el responsable necesite anular reservas de otros?

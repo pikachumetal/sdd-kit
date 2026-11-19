@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { join } from 'node:path';
-import { isOlder, migrationVersions } from '../../bin/session-start.js';
+import { isOlder, migrationVersions, templatePendingFile } from '../../bin/session-start.js';
 import { DomainError, UsageError } from '../cli/args.ts';
 import { kitConfigPath, readText } from '../cli/files.ts';
 import { isRecord, type Json } from '../cli/records.ts';
@@ -55,6 +55,7 @@ function markVersion(marker: Json | null, options: UpgradeOptions & { mark: stri
 
 export function runUpgrade(options: UpgradeOptions, io: Io): number {
   const marker = readMarker(options.root);
+  if (templatePendingFile(options.root)) throw new DomainError('template sin inicializar: sigue con sdd-init');
   if (options.mark === null) return listPending(marker, options, io);
   return markVersion(marker, { ...options, mark: options.mark }, io);
 }

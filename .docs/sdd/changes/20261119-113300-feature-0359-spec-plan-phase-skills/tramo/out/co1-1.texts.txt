@@ -1,0 +1,33 @@
+--- [3]
+Ahora: leo la spec de la 0013 y hago el repaso de coherencia. Queda: repaso, revisión y presentarte la spec para aprobar, ~10 min.
+
+--- [16]
+Ahora: el repaso de coherencia encontró una contradicción de fondo, y necesito tu decisión antes de lanzar la revisión. Queda: tu respuesta, luego la revisión y el gate, ~8 min.
+
+**Qué he comprobado**
+- `capability merge` sobre una copia de `.docs/sdd` acepta el delta: `bookings.md: añadido «Cancelar varios días de una vez»`. El `capabilities/` del repo no ha cambiado.
+- `node --test` da 4 de 4 en verde.
+- He corregido dos cosas en la spec:
+  - La fila de la 0013 está en `ROADMAP.md:9`. El `grep` anterior solo buscaba en `.docs` y `README.md`, y no la veía.
+  - El Scope ahora nombra `test/cancel.test.js`. También dice que `run` pasa hoy solo `params[0]` y `params[1]`, así que hay que tocarlo.
+
+**La contradicción**
+
+La capacidad `bookings` ya tiene este requisito: «Un comando con varios días trata cada día aparte». Con un día que no se puede atender, el comando atiende los demás y responde una línea por día.
+
+Tu delta dice lo contrario para `cancelar`:
+- Con `cancelar Norte lun mar`, sin reserva el martes, no cancela ninguna.
+- Responde una sola línea, `sin reserva Norte mar`.
+- El éxito también es una sola línea: `canceladas Norte lun mie`.
+
+El delta es solo `ADDED`, así que dejaría dos reglas incompatibles en la misma capacidad. Además, el Intent dice «saber si la operación entera salió», que apunta a todo o nada, pero eso no está decidido.
+
+¿Qué hacemos?
+
+1. **Todo o nada con `MODIFIED` (Recomendada).** Mantengo tu comportamiento y acoto la regla existente para que `cancelar` sea la excepción: «cualquier comando salvo `cancelar`». Lo escribo como `MODIFIED` y lo anoto en ✋. Es lo que dice tu Intent.
+2. **Cada día aparte.** Cambio el delta a una línea por día: `cancelada Norte lun`, `cancelada Norte mie` y `sin reserva Norte mar`. Cancela los que puede. Se ajusta a la regla actual, pero no te dice si «la operación entera salió».
+
+Dos huecos más que cerraré con la opción que elijas:
+- `cancelar Norte` sin días.
+- Un día repetido, como `cancelar Norte lun lun`.
+

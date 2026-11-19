@@ -1,0 +1,132 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>&1 | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -60; ls; ls node_modules 2>&1 | head -2
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -30; cat PRODUCT.md ROADMAP.md 2>&1 | head -60
+<<< ls: cannot access '.docs/sdd/changes': No such file or directory
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+./
+../
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access 'node_modules': No such file or directory
+<<< Sin capacidades
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el pr
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md | head -150; cat package.json; ls -R src test scripts .docs/sdd/specs | head -40; git branch -a
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `f
+
+>>> Bash: cat src/app.js; head -40 test/app.test.js
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/nombrado.md"; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" --help 2>&1 | head -30
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve 2>&1
+<<< 0012
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; git checkout -b feature/0012-reservas-sala && node "$S" id claim --project-root . 2>&1; git branch --show-current; git status --short
+<<< Switched to a new branch 'feature/0012-reservas-sala'
+sin remoto: la 0012 vale (contador local)
+feature/0012-reservas-sala
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (14 turnos, 0.2209122 $)
+Ahora: te cuento lo que he entendido y lo que queda por decidir. Queda: tu respuesta, luego el enfoque y la spec para presentártela, ~4 min.
+
+**Lo que he entendido.** El responsable de sala quiere revisar su agenda cada mañana. Para eso `reservas <sala>` imprime las reservas activas de esa sala, una por línea (`lun 10:00-12:00`). Van ordenadas de lunes a domingo y, dentro del día, por hora. Si no hay ninguna, responde `sin reservas <sala>`. Corrígeme si me he dejado algo.
+
+**Lo que he visto en el código.** `src/app.js` guarda cada reserva como `{ room, day, slot, status }`, con `day` como `lun` y `slot` como `10:00-12:00`. Las canceladas y anuladas quedan con `status` distinto de `active`, así que basta filtrar por `active`. Ordenar los días alfabéticamente pondría `jue` antes de `lun`; hará falta un orden explícito de lunes a domingo.
+
+**Contestado** (lo dice tu petición):
+- El formato de línea.
+- El orden: día y luego hora.
+- El texto `sin reservas <sala>`.
+- Que solo salen las activas.
+
+**Menor** (lo decido yo y irá a ✋ de la spec):
+- Una función exportada junto a `cancelBooking`, porque es el patrón del fichero (`src/app.js`).
+- Un test nuevo en `test/`, porque la constitución exige tests antes que código.
+- Orden por un array fijo de días, porque lo fija tu petición.
+
+**Del dev-lead** (solo tú puedes responderlo):
+- Qué ve el usuario cuando la sala no existe o falta el argumento. Es la pregunta de abajo.
+
+❓ **¿Qué responde `reservas` ante una sala que no existe, o sin sala?**
+Hoy las salas son `Norte` y `Sur`. `cancelar` con una sala inexistente responde `sin reserva Oeste lun`, igual que si no hubiera reserva.
+1️⃣ **Avisar del error.** `reservas Oeste` → `sala desconocida Oeste`, y `reservas` → `falta la sala`.
+2️⃣ **Tratarla como vacía.** `reservas Oeste` → `sin reservas Oeste`, y `reservas` sin argumento → `sin reservas` (o error).
+➡️ **Recomiendo 1️⃣**, porque quien revisa su agenda por la mañana, al teclear `norte` en minúscula, leería `sin reservas norte` y creería que tiene el día libre. A cambio, hay un mensaje más que mantener y es distinto del precedente de `cancelar`.
+
+¿Cuál eliges?

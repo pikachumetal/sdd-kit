@@ -1,0 +1,96 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md 2>&1 | head -80; ls -a .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3; git branch --show-current
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+<<< Sin capacidades
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md; ls; cat package.json; cat src/app.js; ls test; ls .docs/sdd/specs; cat .docs/sdd/steering/debt.md | head -30
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- **Arrancar**: `node src/app.js <comando> <argumentos>`
+
+## Testing
+
+- **Suites**: `unit` · `node --test` · ~1 s
+- **
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references"; cat nombrado.md | head -80
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && git branch --show-current && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id next --reserve --project-root "$PWD"
+<<< develop
+0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-aviso-sala-ocupada && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root "$PWD" 2>&1; git branch --show-current
+<<< Switched to a new branch 'feature/0012-aviso-sala-ocupada'
+sin remoto: la 0012 vale (contador local)
+feature/0012-aviso-sala-ocupada
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.21061090000000002 $)
+Ahora: la nota de lo que entiendo y las tres pilas, antes de escribir la spec. Queda: tus respuestas, la spec y su aprobación, ~10 min.
+
+## Lo que entiendo
+
+Quieres que `reservar` avise cuando una sala ya va muy cargada ese día. El aviso sale como una segunda línea de la respuesta, que es el único momento en que se ve. Se cuentan las reservas activas de la sala en el día, no las horas, porque las franjas son texto libre. El aviso por correo es la fila 0008 y no entra. Está hecho cuando `reservar` avisa al pasar del umbral.
+
+Esto es lo que he visto en `src/app.js` y que afecta al diseño:
+- Hoy `reservar` solo reconoce `--cada-semana` y devuelve el texto fijo `reserva semanal creada`. No crea reservas sueltas, así que no hay nada que contar al reservar.
+- `libres` filtra por franja, no por día. La cuenta por sala y día (`room`, `day`, `status === 'active'`) es nueva.
+- En `bookings` solo existe `Norte lun 10:00-12:00`.
+
+Corrígeme si algo de esto no encaja.
+
+## Las tres pilas
+
+**Contestado** (no lo pregunto):
+- El aviso va como segunda línea de la respuesta: es tu decisión.
+- Se cuentan reservas activas por sala y día: también tuya, y encaja con `status` y `day`.
+- El correo queda fuera: fila 0008.
+
+**Menor** (lo decido yo y irá a ✋ de la spec):
+- El test irá en `test/busy.test.js`, como indicaste, y la cuenta será una función exportada junto a `cancelBooking`/`voidBooking`, que es el patrón del fichero. La razón es `src/app.js`.
+
+**Del dev-lead** (las nombro, no las pregunto todas a la vez):
+- El porqué: qué te preocupa que pase cuando una sala va muy cargada.
+- El valor del umbral.
+- Si la reserva que acabas de hacer cuenta para el umbral.
+- Qué hace `reservar` hoy sin `--cada-semana`, porque ahora no reserva nada.
+- El texto exacto del aviso.
+
+❓ Empiezo por el porqué, con tus palabras: ¿qué situación quieres evitar o provocar con este aviso, y qué debería hacer quien lo lee?

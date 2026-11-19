@@ -1,0 +1,155 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>&1; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1; ls node_modules 2>&1 | head -3
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+ls: cannot access '.docs/sdd/capabilities': No such file or directory
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+ls: cannot access 'node_modules': No such file or directory
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md package.json; cat .docs/sdd/steering/*.md; ls -R src test .docs/sdd/specs
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references"; cat nombrado.md; cat control-profiles.md | head -60; cd - >/dev/null; cat src/app.js
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$S" id next --project-root "$PWD" --reserve; git remote -v; git branch -a
+<<< 0010
+* develop
+  main
+
+>>> Bash: S="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; git checkout -b feature/0010-exportar-reservas-csv && node "$S" id claim --project-root "$PWD"
+<<< Switched to a new branch 'feature/0010-exportar-reservas-csv'
+sin remoto: la 0010 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.2060625 $)
+Ahora: te cuento lo que he entendido y lo que veo en el código, antes de escribir la spec. Queda: tus respuestas a la entrevista, la spec y su aprobación (parada tuya), ~8 min.
+
+**Lo que he entendido.** Quieres un comando de `salas` que, dada una sala, saque sus reservas en CSV. El responsable de la sala lo abre los lunes en su hoja de cálculo para cuadrarlas. Si algo no es así, corrígeme.
+
+**Lo que he visto.** `src/app.js` tiene un único `run(cmd, params)` con `libres`, `reservar`, `cancelar`, y las reservas son `{ room, day, slot }`: sala, día de la semana (`lun`) y franja (`10:00-12:00`). No hay fecha concreta ni nombre de quien reserva. Así que el CSV solo puede llevar esas tres columnas, y no hay «reservas de esta semana» que filtrar. No hay capabilities que toquen esto.
+
+**Contestado**
+- Una sala por ejecución, con las reservas que haya. Sale de tu enunciado.
+- Sin dependencias, en `src/app.js` y con tests en `test/`. Sale de `operations.md` y de la constitución.
+
+**Menor** (lo decido yo, irá a ✋ de la spec)
+- Nombre del comando: `exportar <sala>`. Va en castellano por la constitución, art. 4.
+- Cabecera `sala,dia,franja`. Es lo único que existe en los datos.
+
+**Tuyo** (te lo pregunto, una cosa por turno)
+- Cómo llega el fichero a la hoja de cálculo: es la que sigue.
+- Qué pasa con una sala sin reservas o que no existe.
+- Si el resultado va a pantalla o a un fichero.
+
+❓ **Separador del CSV**
+Un Excel configurado en castellano abre `sala,dia,franja` en una sola columna, porque espera `;`. Google Sheets y un Excel en inglés esperan `,`.
+1️⃣ **`;`** Sale `Norte;lun;10:00-12:00`. Se abre en columnas en un Excel en castellano. En un Excel en inglés o en Sheets hay que indicar el separador al importar.
+2️⃣ **`,`** Sale `Norte,lun,10:00-12:00`. Es el CSV estándar, y se abre bien en Sheets y en Excel en inglés. En un Excel en castellano queda todo en una columna.
+➡️ **Recomiendo 1️⃣**, porque el coworking y la herramienta están en castellano y es lo que abre bien un Excel en castellano. A cambio, si el responsable usa Sheets, tendrá que elegir `;` al importar.
+
+¿Con qué programa abre el responsable de cada sala el fichero los lunes, y por tanto qué separador quieres?
+
+=== RESULTADO (1 turnos, 0.22283740000000002 $)
+Decidido: separador `;`, que es lo que abre bien un Excel en castellano. Queda en la spec con tu frase.
+
+❓ **Dónde sale el CSV**
+El código actual solo imprime con `console.log`, y el comando no escribe ficheros en ninguna parte.
+1️⃣ **A pantalla**: `salas exportar Norte` imprime las líneas y el responsable las guarda con `salas exportar Norte > norte.csv`. No hace falta nada más en el código. A cambio, el responsable tiene que usar la redirección de la consola.
+2️⃣ **A un fichero**: `salas exportar Norte` escribe `Norte.csv` en la carpeta actual y responde `Norte.csv: 1 reserva`. Es más cómodo de usar. A cambio, hay que decidir qué pasa si el fichero ya existe, y el código escribe en disco, cosa que hoy no hace nada.
+➡️ **Recomiendo 1️⃣**, porque el único usuario eres tú y la salida a pantalla ya encaja con cómo funciona `run`, que devuelve texto. A cambio, `> norte.csv` no avisa si sobrescribe el del lunes anterior.
+
+¿Quieres que el comando imprima a pantalla o que escriba el fichero?
+
+=== RESULTADO (1 turnos, 0.2375962 $)
+Decidido: a pantalla, por la salida estándar, y tú rrediriges a fichero. Queda en la spec con tu frase.
+
+❓ **Sala sin reservas o que no existe**
+Con la redirección, todo lo que se imprima acaba dentro del fichero, mensajes incluidos. Hoy `run` lo imprime todo con `console.log`, o sea por la salida estándar. `rooms` solo conoce `Norte` y `Sur`, y `Sur` no tiene reservas.
+1️⃣ **Sala sin reservas: solo la cabecera. Sala inexistente: error por la salida de errores, sin imprimir nada por la estándar**
+`salas exportar Sur` → `sala;dia;franja`
+`salas exportar Este > este.csv` → `este.csv` queda vacío y la consola muestra `La sala Este no existe`.
+Una sala válida da siempre un CSV con cabecera, y un nombre mal escrito no deja un fichero con basura. Cuesta tocar la parte que imprime, porque hoy todo sale por `console.log`.
+2️⃣ **Ambos casos imprimen un mensaje por la salida estándar**
+`salas exportar Este > este.csv` → `este.csv` contiene `La sala Este no existe`, y el Excel lo abre como si fuera una fila de datos.
+Es lo que ya hacen los demás comandos, y no toca nada más. A cambio, el fichero engaña a quien lo cuadra.
+➡️ **Recomiendo 1️⃣**, porque 2️⃣ mete texto que no es una reserva en el fichero que se cuadra los lunes. A cambio, hay que cambiar cómo `app.js` imprime, que hoy no distingue errores de resultados.
+
+¿Qué quieres que pase con una sala inexistente?
+
+=== RESULTADO (1 turnos, 0.2571392 $)
+Vale, lo decido yo, que es una cuestión de cómo se imprime y no de lo que quieres ver.
+
+**Lo que decido yo**
+- Sala sin reservas: sale solo la cabecera, `sala;dia;franja`. Así el fichero siempre se abre en columnas.
+- Sala inexistente: mensaje `La sala Este no existe` por la salida de errores y código de salida 1, sin nada por la salida estándar. Es la opción 1️⃣ de antes. Con `> este.csv`, el fichero queda vacío en vez de llevar un texto que parezca una reserva.
+- Nombre de sala exacto, `Norte` y no `norte`, como en `libres`, `reservar` y `cancelar`.
+- Las filas salen en el orden en que están las reservas. No las reordeno, porque no hay fechas con las que ordenar.
+
+**El diseño, corto.** Hay una sola forma sensible de hacerlo, así que no hay alternativas que sopesar. Se añade `exportar <sala>` a `run` en `src/app.js`, que devuelve el texto del CSV con `;` como separador y salto de línea `\n`, igual que el resto de comandos. Para la sala inexistente, `run` lanza un error y el final del fichero, que hoy hace `console.log`, lo captura, lo escribe por la salida de errores y sale con código 1. Prevé 2 tasks: el comando con sus tests, y el manejo del error con su test. El README lleva una línea con el comando, y entra en la primera.
+
+Los comandos actuales no cambian: `libres`, `reservar` y `cancelar` se imprimen igual que ahora.
+
+Escribo la spec con esto, y pasa por su aprobación. ¿Te cuadra el diseño?
+
+=== RESULTADO (1 turnos, 0.2712779 $)
+Lo dejamos aquí. No he escrito `spec.md` ni tocado código, así que no hay nada que se pierda.
+
+**Estado de la feature 0010 (exportar reservas a CSV)**
+- Estoy en la rama `feature/0010-exportar-reservas-csv`, con el id 0010 reservado en local (no hay remoto). No hay carpeta de spec ni commits.
+- Tu decisión sobre el separador, con tu frase: «Abre el responsable cada sala el fichero en un Excel en castellano, así que quiero `;`».
+- Tu decisión sobre la salida, con tu frase: «A pantalla, por la salida estándar. Yo lo rediriges a un fichero».
+- Decisiones mías, pendientes de tu visto bueno: sala sin reservas devuelve solo la cabecera; sala inexistente da error por la salida de errores con código 1 y nada por la estándar; nombre de sala exacto; filas en el orden en que están guardadas; nombre del comando `exportar <sala>`.
+- Pendiente: que confirmes el diseño. Con tu OK escribo la spec y sigue su aprobación.
+
+Para retomarla, dime «retoma la feature» en esta rama.
+
+=== RESULTADO (4 turnos, 0.27778123 $)
+conversación con persona: 4 respuestas

@@ -1,0 +1,41 @@
+--- [3]
+Ahora: leo el proyecto (gate.json, el test, `.docs/sdd/`) para escribir la spec. Queda: spec.md y su aprobación, ~5 min.
+
+--- [18]
+Ahora: repaso de coherencia de la spec (busco `slow`, `paths.test` y `fast` en todo el repo y ejecuto el test). Queda: la review, y presentarte la spec para aprobar, ~5 min.
+
+--- [25]
+Ahora: lanzo un revisor (lite, sonnet) sobre la spec. Queda: integrar sus hallazgos y presentarte la spec, ~3 min, ~0,3 $.
+
+--- [33]
+Ahora: segunda vuelta de revisión, porque acepté un Crítico. Queda: presentarte la spec, ~2 min, ~0,3 $.
+
+--- [42]
+La spec está escrita y revisada, y espera tu aprobación. Está en `.docs/sdd/changes/20261119-161216-feature-0015-paths-in-fast/spec.md`, en modo lite. No he tocado `gate.json` ni `operations.md`.
+
+**Qué cambia.** Hoy una ruta de más de 140 caracteres solo la vería `slow`, que el pre-commit no corre. Con el cambio la frena `fast`. `gate.json` quedaría así:
+
+```json
+{ "tasks": { "fast": {
+  "command": "node --test test/app.test.js test/paths.test.js",
+  "inputs": ["**/*"] } } }
+```
+
+- **Por qué `inputs` pasa a `**/*`:** el test lee `git ls-files`, o sea cualquier fichero del repo. Con las entradas actuales de `fast` (`src/**` y `app.test.js`), la caché se saltaría el test al añadir una ruta larga en otra carpeta, y mover el test no frenaría nada.
+- **Coste:** `fast` se ejecuta en casi todo commit, unos 0,4 s medidos. El test de rutas tarda ~43 ms aquí, no 1 s; no cambia tu decisión.
+- **Medido:** `node --test test/app.test.js test/paths.test.js` da 3 pass en 0,4 s.
+
+**Cosas que has de validar** (están en «✋ Decisiones que he tomado yo»):
+1. **Id 0015:** sale de la rama. No hay fila en `ROADMAP.md` y `sdd id` no está en el PATH, así que no sé si otro clon lo ha reservado.
+2. **Quitar `slow`:** se queda sin tests y nada del repo la nombra. Confirma que el ejecutor, el hook y la CI tampoco la invocan por nombre.
+3. **`operations.md:16`:** propongo un texto nuevo que dice que `fast` incluye la comprobación de rutas.
+4. **Sin test automático nuevo:** es una excepción a la constitución §2 y la propongo yo. «141 falla» necesitaría un repo git temporal; lo dejo como mejora aparte.
+5. **Fuera de alcance:** `test/cancel.test.js` no está en ninguna tarea de `gate.json`. Lo vi y no lo toco.
+
+**Riesgo que no puedo medir desde el repo** (condición de aprobación): el ejecutor y el hook viven fuera. Si hay un fichero largo sin rastrear, `fast` ya ha corrido en verde y luego haces `git add`, el contenido del árbol no cambia y la caché puede saltar el test. En ese caso el objetivo solo se cumple a medias y habría que cambiar de enfoque, por ejemplo con una entrada derivada de `git ls-files`. Por eso la Validación quedó en `dev-lead` y no en `agente`. También hay que comprobar que `**/*` cuenta `.docs/**` y los dotfiles.
+
+**Review.** Hubo un revisor y una segunda lectura, las dos con sonnet. Los hallazgos y lo que hice con cada uno están en la spec. El único rechazado fue el del test automático, que quedó como la excepción del punto 4.
+
+1. **Apruebo (Recomendada)**: se hace el cambio; el id, `slow` y la comprobación de caché los confirmas tú antes o después.
+2. **Cambios**: dime qué ajusto en la spec.
+

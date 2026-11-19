@@ -1,0 +1,112 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering). Queda: clasificar, abrir la rama y escribir la spec, ~5 min.
+
+--- [16]
+Ahora: escribo `spec.md`. Con la aprobación delegada no hay turno de preguntas: lo que solo tú puedes decidir va a ✋ como «pendiente». Queda: la revisión de la spec y su aprobación, ~5 min.
+
+--- [22]
+Ahora: paso la spec por coherencia, revisión y aprobación delegada. Queda: el plan, ~5 min.
+
+--- [25]
+Ahora: repaso de coherencia (búsquedas y prueba del delta en una copia). Queda: revisión de la spec, aprobación delegada y plan, ~5 min.
+
+--- [28]
+El delta se fusiona sin errores en la copia. Anoto el resultado en ✋ y paso a la revisión.
+
+--- [32]
+Ahora: despacho un revisor (señal: capacidad nueva; tamaño pequeño, sin contrato ni MODIFIED). Queda: integrar hallazgos, aprobar por delegación y escribir el plan, ~5 min, ~0,5 $.
+
+--- [38]
+He lanzado al revisor de la spec y su vigilancia de silencio. Espero su resultado antes de seguir.
+
+--- [41]
+1. Crítico · Delta de comportamiento / Capacidades · La spec declara «Modificadas: ninguna», pero la decisión 7 y la tabla «Lo que se retira o cambia de forma» cambian el comportamiento de `reservar` sin `--cada-semana` (hoy devuelve `salas`) y ninguna capacidad lo recoge. Ese cambio no aparece en ningún requisito del delta ni en una capacidad de `reservar`. · Añadir un requisito ADDED con GIVEN/WHEN/THEN para `reservar <sala> <día> <franja>` (crea la reserva y responde `reservada …`), o declarar la capacidad que lo recoge. Si ese comportamiento existente fuera un requisito vivo, declararlo MODIFIED. Ahora mismo queda como hecho de código sin capacidad.
+
+2. Crítico · Delta de comportamiento (ADDED 1) · El escenario del aviso pasa con un `reservar` que solo imprime el aviso y no crea la reserva. Nada verifica que «la reserva se hace igual» (regla ante conflicto) ni que el recuento incluya la nueva. · Añadir un escenario con THEN que compruebe que la reserva queda registrada (p. ej. una consulta posterior la cuenta o aparece en `bookings`), y otro de que la 5.ª reserva sigue avisando con `(5 reservas)`.
+
+3. Importante · Delta de comportamiento (ADDED 3) · El escenario «no cuentan canceladas/anuladas» pasa también si el umbral fuera 4 y se contaran solo las activas más la nueva, o con cualquier implementación que ignore el estado. Con 3 activas no hay aviso, y no se contrasta con un caso que sí avise. Tampoco comprueba que las canceladas empujarían el total a 5 si contaran. · Reforzar con un caso límite en el que contar las no activas cambiaría el resultado. Por ejemplo, 2 activas y 2 canceladas: con la nueva, 3 activas sin aviso, mientras que contando todo avisaría. Añadir también un escenario en el umbral exacto con 4 activas más la nueva.
+
+4. Importante · Delta de comportamiento / Reglas de la capacidad · Faltan reglas de la capacidad: dónde viven los datos (reservas en memoria, `bookings`; en el Approach, no en las reglas), el idioma de los nombres (el producto evita «room» y «booking» y el código usa `occupancy`/`bookings`), y el alcance por día y sala (qué es «el día»: igualdad de texto `lun`). Solo se declaran límites, avisos y conflicto. · Declarar en «Reglas de la capacidad» las cinco reglas por nombre (datos, idioma de los nombres, límites, avisos, conflicto), con «no aplica» donde corresponda y motivo.
+
+5. Importante · Decisiones / Intent · El Intent y el 🦆 hablan de «`libres`», pero el recuento por día choca con la decisión 6, que dice que `libres` y `cancelar` ya filtran por `active`. La spec afirma comportamiento existente sin capacidades que lo respalden, y sin un `libres` por día no queda claro qué es «el día» (la franja es texto libre). · Definir en una regla de la capacidad cómo se identifica el día (cadena exacta) y retirar o matizar la afirmación sobre `libres` y `cancelar`, que no se puede contrastar con `capabilities/`.
+
+6. Importante · Decisiones tomadas por mí · Hay decisiones de cuerpo que no están en la lista o que contradicen su estado. «Persistencia en memoria» (decisión 7: «crea la reserva en memoria») aparece como decisión pero no como límite, y el comportamiento de `reservar` con argumentos incompletos o sala/día inválidos, así como el de la reserva duplicada o solapada en la misma franja, no se decide. La constante `BUSY_THRESHOLD` y el nombre `occupancy` están en el Approach, sin pasar por la lista. · Listar el no-validar entrada y el no-detectar solapes como decisiones explícitas, o llevarlos a «No entra». Indicar qué hace `reservar` con argumentos incompletos.
+
+7. Importante · Lo que se retira o cambia de forma / Scope · La decisión 7 es hidden scope: la forma simple de `reservar` es una feature por sí misma (crear reservas, estado `active`, almacén `bookings`) y el Intent solo promete el aviso. Además, «hoy `reservar` no crea reservas sueltas» sugiere que no hay un almacén de `bookings` que se alimente, pero `libres` y `cancelar` leen estados. Se toca la estructura de datos sin declararlo. · Declarar en el Scope el almacén `bookings` y su forma (campos sala, día, franja, estado) como dato tocado, y confirmar cómo se alimenta, o separar la forma simple de `reservar` en su propia capacidad.
+
+8. Menor · Decisiones / Intent · El umbral aparece como «pendiente de tu visto bueno» y a la vez como decidido en Reglas y en Intent (éxito: 4.ª reserva). Con aprobación delegada y status `draft` esto es inconsistente: la cifra de 4 se trata como cerrada en los escenarios. · Marcar los escenarios como dependientes de la validación del umbral, o cerrar la cifra y quitar «pendiente» de las decisiones 2 a 4.
+
+9. Menor · Decisiones tomadas con el dev-lead / Aprobaciones · La aprobación delegada («apruebo la spec por delegación») no está ligada a que el dev-lead haya visto las decisiones marcadas «pendiente» (1 a 4), que la spec dice que se confirman luego. Aprobar antes de la validación contradice «valida estas». · Aclarar que la aprobación delegada no cubre las decisiones pendientes, o recoger su visto bueno antes de pasar a approved.
+
+10. Menor · Dónde se prueba / Términos · El Approach y las pruebas usan «booking»/`bookings` e `occupancy` en inglés, y PRODUCT.md dice «Evitar: booking» y «Evitar: room». La regla «idioma de los nombres» no se declara, y `aviso: <sala> …` en castellano sí cumple la constitución. · Declarar en las reglas que los identificadores de código son internos y el texto de usuario en castellano, o alinear los nombres con el término del producto.
+
+--- [43]
+Ahora: integro los hallazgos en la spec. Queda: segunda ronda de revisión (hay un Crítico aceptado), aprobación delegada y plan, ~5 min.
+
+--- [46]
+Ahora: segunda ronda, un revisor sobre la spec corregida (hay un Crítico aceptado). Queda: aprobar por delegación y escribir el plan, ~4 min.
+
+--- [48]
+Esperando el resultado de la segunda revisión.
+
+--- [57]
+1. Importante · Delta, escenario «Reservar una sala en un día y una franja» · El AND `cancelar Norte lun` → `cancelada Norte lun` depende del contrato de `cancelar`, que la spec no describe. PRODUCT.md define la cancelación como la del cliente antes de 24 h, y el escenario no dice que haya regla de tiempo ni de titular. El escenario puede fallar por `cancelar` y no por `reservar`. · Citar el contrato de `cancelar` como dependencia, o cambiar el AND por una comprobación que no dependa de él, p. ej. que `occupancy` cuente 1.
+
+2. Importante · Decisión 7 / Delta · «Con menos de tres argumentos, `reservar` responde `salas`» es un comportamiento nuevo sin ningún escenario GIVEN/WHEN/THEN. Tampoco define qué pasa con más de tres argumentos ni con `--cada-semana` mezclado con ellos. · Añadir un escenario para el caso de argumentos incompletos, y decidir o mandar a «No entra» los argumentos sobrantes y la mezcla con `--cada-semana`.
+
+3. Importante · Decisión 7 y Rules «Dónde viven los datos» · Las reservas viven solo en memoria y la herramienta se usa «desde la terminal». Si cada invocación es un proceso nuevo, `bookings` empieza vacío y el aviso (4 o más) nunca se dispara fuera de los tests. La spec no dice cuál es el modelo de ejecución (REPL, proceso largo o un solo proceso). · Declarar el modelo de ejecución y su efecto en el valor de la feature. Si la persistencia queda fuera, ponerlo en «No entra» como limitación conocida y pedir el visto bueno en la validación.
+
+4. Menor · Decisión 7 / Scope · El registro `{room, day, slot, status}` no guarda a nombre de quién se hace la reserva, aunque PRODUCT.md define reserva como «a nombre de quien la pide». Es una decisión sobre el contrato de datos que no está en la lista. · Anotarlo en «✋ Decisiones que he tomado yo» («reserva sin titular, igual que `--cada-semana`») o en «No entra».
+
+5. Menor · Escenarios «Sin aviso por debajo del umbral» y «canceladas y anuladas» · Los dos pasan igual si el aviso no existe, así que solo discriminan en conjunto con el escenario de 3 activas. Además, «la reserva queda hecha igual» (AND del aviso) no es observable, porque no dice cómo se comprueba. · Hacer observable el AND, p. ej. con `cancelar` o con un recuento posterior de 5, y dejar claro que los escenarios negativos dependen del positivo.
+
+6. Menor · Capacidad `room-occupancy` y Approach (`occupancy(room, day)`, «función pura») · PRODUCT.md dice «Evitar: room» para «sala». La regla de idioma cubre los identificadores del código, pero un nombre de capacidad es un documento y no código. Además, `occupancy` lee `bookings`, que es estado global, así que no es «pura». · Renombrar la capacidad a `ocupacion-de-salas`, o justificar la excepción en la decisión 9. Cambiar «pura» por «sin efectos».
+
+--- [59]
+Segunda ronda sin Críticos, así que no hay tercera. Integro los hallazgos y apruebo por delegación.
+
+--- [62]
+Ahora: spec aprobada por delegación (fecha y frase anotadas); paso al plan. Queda: plan, implementación y validación contigo, ~15 min.
+
+--- [65]
+Ahora: te presento la spec. No he escrito el plan ni he tocado código: pediste ver la spec, así que paro aquí aunque la aprobación por delegación ya esté anotada. Dime «sigue» y paso al plan.
+
+La spec está en `.docs/sdd/changes/20261119-144207-feature-0012-busy-room-warning/spec.md`, en la rama `feature/0012`. Sin commitear, y la id 0012 no tiene fila en el `ROADMAP.md`.
+
+**Carril:** feature, modo full, perfil `delegate`. Prevé 3 tasks o menos, así que no la divido.
+
+## Qué cambia para quien la usa
+
+Al reservar una sala que ya acumula reservas ese día, sale un aviso:
+
+```text
+$ reservar Norte lun 14:00-15:00
+reservada Norte lun 14:00-15:00
+aviso: Norte muy ocupada el lun (4 reservas)
+```
+
+La reserva se hace igual y el aviso solo informa. Con 1 a 3 reservas activas no sale nada. Las canceladas y anuladas no cuentan.
+
+## ✋ Decisiones mías, para que las valides
+
+Todas son mías, porque no dijiste motivo ni cifras. Las cuatro primeras y la 12 las marqué «pendiente»:
+
+1. **Motivo (pendiente):** supongo que quieres evitar reservar sin darte cuenta una sala casi llena.
+2. **Umbral (pendiente):** «muy ocupada» son 4 o más reservas activas de la sala ese día, contando la recién hecha. Las franjas son texto libre y no hay horario de sala, así que no se puede medir un porcentaje.
+3. **Dónde (pendiente):** el aviso sale al reservar, no en `libres` ni en un comando aparte.
+4. **No bloquea (pendiente):** la reserva se crea igual.
+5. **Texto del aviso:** `aviso: <sala> muy ocupada el <día> (<n> reservas)`, en línea aparte.
+7. **`reservar` suelto no existe hoy:** solo conoce `--cada-semana`. La feature añade `reservar <sala> <día> <franja>`, que guarda la reserva en memoria. Sin validar entradas, sin detectar duplicados ni solapes. Con menos de 3 argumentos sigue respondiendo `salas`.
+12. **Modelo de ejecución (pendiente, el más importante):** las reservas viven en memoria. Si cada `node src/app.js` es un proceso nuevo, el aviso solo se vería en los tests o en un proceso largo. La spec no lo cambia: persistir queda fuera. Decide en la validación si hace falta una feature de persistencia.
+13. **Sin titular:** la reserva no guarda a nombre de quién va, igual que `--cada-semana` hoy.
+
+**Enfoque elegido:** aviso al reservar, con una función `occupancy(room, day)`. Descarté un comando `ocupacion` aparte y el aviso dentro de `libres`.
+
+## Revisión
+
+Un revisor y una segunda ronda, ambos sonnet. La primera dio 2 Críticos: el cambio de `reservar` no tenía requisito, y nada comprobaba que la reserva se registra. Los acepté y están corregidos. De 10 hallazgos acepté 9 y rechacé 1, con motivo anotado. La segunda ronda no dio Críticos.
+
+El delta se fusiona sin errores en una copia de `.docs/sdd`. `node --test` está en verde (4 tests).
+
+**Validación:** la haces tú, dev-lead.
+

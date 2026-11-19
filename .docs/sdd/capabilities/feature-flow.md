@@ -67,7 +67,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La spec se repasa antes del gate
 
 - GIVEN una spec redactada en la que un mismo literal (una expresión, un fichero, un umbral) aparece en una decisión y en un escenario que se contradicen
-- WHEN el agente termina el paso 4, con o sin review de spec
+- WHEN el agente termina `spec.md` y entra en `sdd-spec-approval`, con o sin review de spec
 - THEN corrige la contradicción, o la señala, antes de pedir la aprobación
 - AND para cada `MODIFIED` busca en el código dónde se implementa lo que cambia y lista en el Scope cada fichero que lo implementa, o dice por qué queda fuera: con «Búsqueda por cliente» en `src/search.js` y en `src/phone.js` y un Scope que solo nombra el primero, el Scope pasa a nombrar los dos
 - AND lo que cambió aparece en «Decisiones que he tomado yo»
@@ -81,7 +81,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### Cada cambio de paso lleva un aviso en llano
 
-- GIVEN una feature en curso con `sdd-propose` o `sdd-implement`
+- GIVEN una feature en curso con `sdd-propose`, `sdd-spec-writing`, `sdd-spec-approval`, `sdd-spec-review`, `sdd-plan-writing` o `sdd-implement`
 - WHEN el agente pasa de un paso del flujo al siguiente
 - THEN su mensaje dice, en lenguaje llano, qué hace ahora, lo que queda hasta la próxima parada del usuario y cuánto tardará, y cuánto costará cuando el paso lanza subagentes o sujetos
 - AND un contador («van 7 de 15») o un número de paso sin esa frase no cuentan como aviso
@@ -161,10 +161,11 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El diseño de una feature pregunta con `sdd-grilling`
 
-- GIVEN el paso de spec de `sdd-propose`, con el diseño de una feature que cambia lo que ve el usuario
+- GIVEN `sdd-spec-writing`, con el diseño de una feature que cambia lo que ve el usuario
 - WHEN el agente necesita una decisión del usuario
 - THEN la pregunta sigue `sdd-grilling` ([`interviewing`](interviewing.md)): una por turno, en texto con el formato fijo, con escena concreta si es de producto
-- AND la spec se escribe siguiendo `references/spec-writing.md` de `sdd-propose`, y el plan, `references/plan-writing.md`, sin invocar `superpowers:brainstorming` ni `superpowers:writing-plans`
+- AND la spec se escribe en la skill `sdd-spec-writing`, se repasa y se aprueba en `sdd-spec-approval`, su review va en `sdd-spec-review` y el plan en `sdd-plan-writing`, cada una invocada con `Skill` por la anterior, sin invocar `superpowers:brainstorming` ni `superpowers:writing-plans`
+- AND `sdd-spec-review` devuelve los hallazgos y no aprueba ni edita la spec: los incorpora `sdd-spec-approval`
 
 ### La spec dice dónde se prueba cada comportamiento
 
@@ -184,34 +185,35 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### El gate de cierre del plan sale de `operations.md`
 
 - GIVEN el molde `reservas`, con `operations.md` §Testing «Gate de cierre: `node --test`» y sin script `test` en `package.json`
-- WHEN `sdd-propose` escribe el plan
+- WHEN `sdd-plan-writing` escribe el plan
 - THEN la línea del gate de cierre de §3 dice `node --test`, literal
 - AND sin `steering/operations.md`, toma el de la constitution; y si no hay ninguno, escribe `no declarado` y lo apunta en las decisiones del plan, sin inventar un comando como `npm test`
 
 ### `sdd-propose` entrega el cambio a la skill que lo sigue
 
-- GIVEN la feature 0010 en `delegate`, con la spec aprobada y el plan escrito por `sdd-propose`
-- WHEN `sdd-propose` termina el plan
+- GIVEN la feature 0010 en `delegate`, con la spec aprobada y el plan escrito por `sdd-plan-writing`
+- WHEN `sdd-plan-writing` termina el plan
 - THEN invoca `sdd-implement`, que sigue desde la implementación leyendo `mode` y `profile` del frontmatter de `spec.md`, la línea `Ejecución` del plan y la rama
-- AND en lite, la invoca con la spec aprobada; en patch, invoca `sdd-implement` con la clase del patch y la estimación de la pregunta
+- AND en lite, `sdd-spec-approval` la invoca con la spec aprobada; en patch, `sdd-propose` invoca `sdd-implement` con la clase del patch y la estimación de la pregunta; en feature, lite y spike, `sdd-propose` invoca `sdd-spec-writing` tras el anuncio o la pregunta del carril
 - AND si se invoca `sdd-implement` sin una `spec.md` aprobada en la rama, manda a `sdd-propose`
 
 ### Una feature grande devuelve el diseño por secciones antes de la spec
 
-- GIVEN la feature 0012 en `pair`, con 5 tasks previstas en el recuento del paso 2 y la entrevista cerrada
+- GIVEN la feature 0012 en `pair`, con 5 tasks previstas en el recuento de `sdd-propose` y la entrevista cerrada
 - WHEN el agente va a escribir `spec.md`
 - THEN antes dice los enfoques en un mensaje propio —dos o tres maneras de construirlo, con lo que cuesta cada una y la que recomienda— y, elegido uno, presenta el diseño por secciones, una por mensaje, y pregunta «¿va bien?» tras cada una
 - AND lo que el usuario corrige en una sección entra en la spec antes de escribirla
 - AND lo que el agente rellenó sin que el usuario lo dijera va en la sección como su propuesta, con su motivo
-- AND el recuento es el de la feature que se especifica, hecho al entrar en el paso de spec: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
+- AND el recuento es el de la feature que se especifica, hecho al entrar en `sdd-spec-writing`: un lite o un patch que suben a full cuentan ahí, y tras partir cuenta la pieza
 - AND con 2 tasks previstas, en lite o en spike, escribe la spec sin secciones y la presenta en el gate
-- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con su coste y el porqué del elegido, van al Approach de la spec, y «✋ Decisiones que he tomado yo» nombra el elegido y los descartados («Enfoque: A, frente a B y C (ver Approach)») y lleva las secciones; la parada de la spec los aprueba, sin un turno por enfoque ni por sección
+- AND en `delegate` no hay mensaje de los enfoques: los enfoques, con su coste y el porqué del elegido, van al Approach de la spec, y «✋ Decisiones que he tomado yo» nombra el elegido y los descartados («Enfoque: A, frente a B y C (ver Approach)») y lleva las secciones; la parada de la spec los aprueba, sin un turno por enfoque ni por sección; con el montón del dev-lead vacío, el mensaje de los montones nombra el enfoque elegido en una línea con el diseño corto, y esa es la única confirmación antes de `spec.md`
+- AND en `pair`, con el montón del dev-lead vacío, el mensaje de los montones es el mensaje de los enfoques: los lleva enteros y pregunta cuál; no hay un mensaje de enfoques aparte
 - AND con la spec aprobada por delegación o en `unattended` no presenta secciones ni mensaje de enfoques: los enfoques van al Approach de la spec y lo que habría preguntado, a «✋ Decisiones que he tomado yo»; si el usuario pide empezar ya, tampoco
 - AND cada sección abre con lo que cambia para quien usa el producto, con un ejemplo con datos («`informes --sala Norte` enseña las cuatro vistas solo de Norte»), y la pregunta es sobre eso; un nombre de código (`active`, `rooms`, `src/app.js`) no abre ninguna sección y, si hace falta, va detrás
 
 ### Pedir empezar ya no se lleva la spec
 
-- GIVEN una feature en el paso de spec de `sdd-propose`
+- GIVEN una feature en `sdd-spec-writing`
 - WHEN el agente pregunta al usuario
 - THEN no le ofrece saltarse las preguntas
 - AND si el usuario pide empezar ya, el agente escribe `spec.md` con lo que hay, con los huecos en «✋ Decisiones que he tomado yo», y la spec pasa por su gate
@@ -284,12 +286,29 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### La entrevista pregunta solo lo que falta y es del dev-lead
 
 - GIVEN el molde `reservas` en `delegate` y la petición «Arranca este cambio con sdd-propose: avisa cuando una sala esté muy ocupada. Perfil delegate. Escribe la spec y preséntamela.», sin cuándo cuenta una sala como muy ocupada en la petición, en el roadmap ni en el proyecto
-- WHEN el agente entra en el paso de spec de `sdd-propose`
+- WHEN el agente entra en `sdd-spec-writing`
 - THEN termina el turno con una pregunta y sin `spec.md`, y no da por decidido cuándo cuenta una sala como muy ocupada, ni en el texto ni en una spec: preguntar antes el porqué vale
-- AND con la petición «Arranca este cambio con sdd-propose, carril feature: un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, como `lun 10:00-12:00`; sin reservas responde `sin reservas <sala>`; lo quiere el responsable de sala para revisar su agenda cada mañana. Perfil delegate. Escribe la spec y preséntamela.», no hace ninguna pregunta antes de `spec.md`: lo escribe y lo presenta en el gate, con los nombres y los ficheros que eligió en «✋ Decisiones que he tomado yo»
-- AND con el prompt de arranque «Arranca este cambio con sdd-propose: exportar las reservas de una sala a CSV, porque el responsable las cuadra los lunes en su hoja de cálculo. Abierto: separador de columnas (propuesta: `;`); nombre del fichero de test (propuesta: `test/export.test.js`). Perfil delegate.», antes de escribir `spec.md` en ese turno pregunta solo el separador, citando `;` como propuesta del prompt, y no pregunta el nombre del fichero de test
+- AND con la petición «Arranca este cambio con sdd-propose, carril feature: un comando `reservas <sala>` que lista las reservas activas de la sala, una por línea, como `lun 10:00-12:00`, de lunes a domingo y por hora dentro del día; sin reservas responde `sin reservas <sala>`; lo quiere el responsable de sala para revisar su agenda cada mañana. Perfil delegate. Escribe la spec y preséntamela.», termina el turno sin `spec.md`, con los tres montones, el enfoque elegido en una línea y el diseño corto, pidiendo que lo confirme, y sin preguntar nada que la petición ya dice (el formato de línea, el orden de las líneas, el texto sin reservas, para quién es)
+- AND con el prompt de arranque «Arranca este cambio con sdd-propose: exportar las reservas de una sala a CSV, porque el responsable las cuadra los lunes en su hoja de cálculo. Abierto: separador de columnas (propuesta: `;`); nombre del fichero de test (propuesta: `test/export.test.js`). Perfil delegate.», antes de escribir `spec.md` en ese turno pregunta solo el separador, citando `;` como propuesta del prompt, y el nombre del fichero de test queda en el montón del dev-lead con su propuesta, para un turno posterior
 - AND con el prompt de arranque de `iq5` (petición literal en `tests/batteries/sdd-propose/battery.md`: la forma de `launch-prompt-template.md`, «Decisiones ya tomadas» con dónde sale el aviso y qué se cuenta, y «Está hecho cuando reservar avisa al pasar del umbral», sin el umbral), termina el turno con una pregunta y sin `spec.md`, y no da el umbral por decidido ni en el texto ni en una spec: preguntar antes el porqué vale
-- AND con la petición del primer GIVEN más «Apruebo la spec por delegación, nos vemos en la validación», no pregunta: escribe `spec.md` con el umbral en «✋ Decisiones que he tomado yo» marcado «pendiente»
+- AND con la petición del primer GIVEN, «Escribe la spec y el plan» en vez de «Escribe la spec y preséntamela», más «Apruebo la spec por delegación, nos vemos en la validación», no pregunta ni enseña el mensaje de los montones: escribe `spec.md` con el umbral en «✋ Decisiones que he tomado yo» marcado «pendiente» e invoca `sdd-spec-writing`, `sdd-spec-approval` y `sdd-plan-writing` en ese orden
+
+### La spec se escribe en `sdd-spec-writing`, con los tres montones a la vista
+
+- GIVEN el molde `reservas` en `delegate` y el prompt de arranque de `ss1` (petición literal en `tests/batteries/sdd-propose/battery.md`: la forma de `launch-prompt-template.md`, «Abierto» con dos puntos con su propuesta, un enfoque técnico que obliga a un efecto visible no pedido y una lista de ficheros en «Antes de diseñar, lee»)
+- WHEN el agente pasa la clasificación
+- THEN invoca `sdd-spec-writing` con `Skill` y, antes de escribir `spec.md`, enseña en un solo mensaje los tres montones —contestado, menor, del dev-lead—, con una línea de porqué por cada punto que no va al del dev-lead
+- AND el porqué de cada punto de «contestado» o «menor» cita la línea del prompt, el fichero o la regla de la que sale; «es técnico» o «lo decide el proyecto» sin decir dónde no es porqué
+- AND los dos puntos de «Abierto» están en el montón del dev-lead, cada uno con su propuesta citada como «propuesta del prompt», no como decidida, y la primera pregunta es de ese montón, la que más cambia lo demás ([`interviewing`](interviewing.md)): aquí, el orden que sale de `sort()`
+- AND el efecto visible que impone el enfoque técnico está en el montón del dev-lead: «lo impone la técnica» no lo saca
+- AND el turno termina con esa pregunta y sin `spec.md`
+
+### El plan se escribe en `sdd-plan-writing`
+
+- GIVEN la spec de la 0010 aprobada en modo full, o la del spike 0031
+- WHEN se escribe el plan
+- THEN la sesión invoca `sdd-plan-writing` con `Skill` antes de escribir `plan.md`
+- AND en lite no se invoca: no hay plan
 
 ## Reglas de la capacidad
 

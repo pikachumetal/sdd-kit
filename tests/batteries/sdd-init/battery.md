@@ -15,6 +15,7 @@ Moldes:
 - `code-gate-progress`: `code-progress` con el script `lint` (`eslint .`) en `package.json`, `package-lock.json`, `vitest.config.ts`, `playwright.config.ts` (sin `outputDir`), `tests/helpers/rooms.ts` y `src/app.test.ts`, que lo importa.
 - `code-claude`: `code` con todos los documentos aprobados salvo `CLAUDE.md`. Con `sdd-init`, en `init.approved`; en el RED, los documentos 2.x en `.docs/sdd/`.
 - `template`: un proyecto instanciado de un template 3.0.0: `package.json`, `src/login.ts`, `steering/operations.md` y `steering/architecture.md` completos, `PRODUCT.md`, `ROADMAP.md` y una sección de `steering/constitution.md` con `<!-- sdd-template: pending -->`, y `sdd-kit.json` con `"version": "3.0.0"`. Con un kit sin `sdd-init` (RED), el template 2.x de antes, con `"version": "1.1.0"`. Hasta la 0152 era siempre 2.x: con la 3.0.0 un proyecto 2.x migra antes de nada (ADR 0034), y el aviso de arranque ofrecía migrar antes de la init.
+- `template-finish`: el template con todos los documentos completos y aprobados en `init.approved`, `CLAUDE.md` incluido, a falta de `--finish`; `.claude/settings.json` propio, `.gitignore` con todas las líneas de la init, `sdd-kit.json` en la versión del kit y la rama `develop`. Sin marca de template: con una, el predicado 1 de `sdd-init` vuelve a entrevistar y el sujeto no llega a `--finish`.
 
 **Dos veredictos.** `battery.mjs run` da el de la puerta. El de la conducta lo da quien lanza la batería, leyendo `texts.txt`, `tools.txt`, `state.txt` y los ficheros que deja cada sujeto con la rúbrica de abajo.
 
@@ -29,6 +30,7 @@ Moldes:
 | n6 | e2e | Usa la skill sdd-kit:sdd-init. Sigue con la init, se cortó ayer. | code-e2e-progress | `sdd-kit:sdd-init` | 2 | 2/2 | sonnet | 0180: los campos E2E de `operations.md` (flujos core, retries, timeouts y presupuesto), propuestos desde el código |
 | n7 | gate | Usa la skill sdd-kit:sdd-init. Sigue con la init, se cortó ayer. | code-gate-progress | `sdd-kit:sdd-init` | 2 | 2/2 | sonnet | 0236: nivel por suite, «Sin filtro», «Lint» y «CI de la base» en `operations.md` (propuesta 0234; tickets de document-manager y OdySIF) |
 | n5 | template | Usa la skill sdd-kit:sdd-init. Inicializa el proyecto desde el template. | template | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | dev-lead, 2026-10-17: un template recién instanciado es greenfield aunque traiga código |
+| n8 | finish | Usa la skill sdd-kit:sdd-init. Sigue con la init, se cortó ayer. | template-finish | `sdd-kit:sdd-init` | 2 | 2/2 | sonnet | 0347: el resumen de cierre no nombraba lo que `--finish` escribió fuera de `.docs/`, y quien commiteó después lo tomó por cambios no anunciados (ticket de la feature 0100 del proyecto de templates, §1) |
 
 ## Rúbrica
 
@@ -36,6 +38,10 @@ Moldes:
 | --- | --- | --- |
 | C1 Gate de `CLAUDE.md` | n1 | el `CLAUDE.md` del molde cambia en el turno, o el mensaje final no presenta el `CLAUDE.md` nuevo para aprobar |
 | C2 Cosecha | n1 | el mensaje no lleva «Las fechas van en UTC» a discrepancias (o como no verificada), o borra la línea del puerto 3000 sin decir dónde va |
+| F1 Nombra settings.json | n8 | `text: /\.claude\/settings\.json\x60?: actualizado/` |
+| F2 Nombra el hook | n8 | `text: /sdd-kit-loaded\.mjs\x60?: creado/` |
+| F3 Commit de cierre | n8 | `text: /commit de cierre/` |
+| F4 Sin cambios fuera del commit | n8 | el resumen pone `.gitignore` entre lo que va en el commit de cierre, o lo da por cambiado (`--finish` lo imprime `sin cambios`) |
 | R1 Retoma por el registro | n2 | vuelve a presentar `PRODUCT.md` o la constitution, o no dice que están aprobados |
 | R2 Sin migrar | n2 | aplica migraciones o escribe `version` en `sdd-kit.json` |
 | R3 Siguiente documento | n2 | el siguiente documento que presenta no es `operations.md` (o su equivalente 2.x), o lo escribe antes del «sí» |

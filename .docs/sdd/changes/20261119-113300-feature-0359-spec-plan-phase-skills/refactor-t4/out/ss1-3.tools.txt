@@ -1,0 +1,201 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls node_modules 2>&1 | head -3; cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>&1
+
+>>> Read: <run>\repo\src\app.js
+<<< 1	const [command, ...args] = process.argv.slice(2);
+2	const rooms = ['Norte', 'Sur'];
+3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+4	
+5	function freeRooms(slot) {
+6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+7	}
+8	
+9	function findBooking(room, day) {
+10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+11	}
+12	
+13	export function cancelBooking(room, day) {
+14	  const booking = findBooking(room, day);
+15	  if (!booking) return `sin reser
+
+>>> Read: <run>\repo\PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>\repo\.docs\sdd\steering\architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+
+>>> Read: <run>\repo\.docs\sdd\steering\operations.md
+<<< 1	# Operations — salas
+2	
+3	## Comandos
+4	
+5	- **Arrancar**: `node src/app.js <comando> <argumentos>`
+6	
+7	## Testing
+8	
+9	- **Suites**: `unit` · `node --test` · ~1 s
+10	- **Lo afectado**: `node --test <fichero de test>`
+11	- **Gate de cierre**: `node --test && node scripts/lint.mjs`
+12	- **Gate de merge**: `node --test && node scripts/lint.mjs`
+13	- **Acceso a la aplicación**: `sin login`
+14	- **Motor de producción**: sin base de datos; las reservas viven en memoria
+15	
+
+>>> Read: <run>\repo\.docs\sdd\specs\20260915-090000-task-0005-weekly\spec.md
+<<< 1	# Spec — weekly
+2	
+3	status: done
+4	
+
+>>> Read: <run>\repo\test\app.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('libres excluye la sala reservada en la franja', () => {
+6	  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+7	});
+8	
+9	test('reservar --cada-semana crea la reserva semanal', () => {
+10	  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+11	});
+12	
+<<< Exit code 1
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+ls: cannot access 'node_modules': No such file or directory
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+
+>>> Read: <run>\repo\test\cancel.test.js
+<<< 1	import { test } from 'node:test';
+2	import assert from 'node:assert/strict';
+3	import { run } from '../src/app.js';
+4	
+5	test('cancelar una reserva activa', () => {
+6	  assert.equal(run('cancelar', ['Norte', 'lun']), 'cancelada Norte lun');
+7	});
+8	
+9	test('cancelar sin reserva lo dice', () => {
+10	  assert.equal(run('cancelar', ['Sur', 'mar']), 'sin reserva Sur mar');
+11	});
+12	
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd; cat ROADMAP.md; cat package.json; ls .docs/sdd .docs/sdd/steering
+<<< Sin capacidades
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0010 | — | **Motivo al cancelar**<br>*al cancelar una reserva se elige un motivo de una lista, y el listado de canceladas lo enseña*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** —<br>**Decisiones ya tomadas:** —<br>**Salda:** nada<br>**Toca:** —</details> | ⏳ | — | M |
+| 0011 | — | **Anular reservas de otros**<br>*solo el responsable de cada sala anula reservas de otras personas*<details><summary>Brief</summary>**Carril:** feature
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/debt.md; ls .docs/sdd/specs
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Deuda técnica — salas
+
+## Por triar
+
+| Ítem | Origen | Fecha |
+| --- | --- | --- |
+| Sin validación del formato de franja horaria | roadmap 2.x | 2026-09-
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/nombrado.md"; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" --help 2>&1 | head -30
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+<<< 0012
+
+>>> Bash: git switch -c feature/0012-semana && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root "$PWD"
+<<< Switched to a new branch 'feature/0012-semana'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (20 turnos, 0.23796510000000004 $)
+Ahora: te devuelvo lo que he entendido y qué dejo para ti. Queda: tu respuesta sobre el orden, luego escribo la spec y paso a su aprobación, ~4 min.
+
+**Lo que he entendido.** El responsable de sala prepara la semana los lunes y quiere ver de un vistazo las reservas activas de una sala. `semana Norte` debe listarlas, una por línea, como `lun 10:00-12:00`. Hoy `src/app.js` guarda las reservas en memoria con `room`, `day`, `slot` y `status`, y `run` despacha por comando. El cambio es un comando más ahí, con las canceladas y anuladas fuera. No hay fechas, solo día de la semana. Corrígeme si algo no encaja.
+
+**Contestado** (lo uso sin preguntar):
+- Una reserva por línea con `día franja`: es tu decisión.
+- Solo reservas `active`: PRODUCT.md distingue cancelación y anulación como bajas de la reserva, y `findBooking` ya filtra por `active`.
+- Fuera de alcance, el CSV: lo dices tú.
+- Está hecho cuando `semana Norte` lista sus reservas: lo dices tú.
+
+**Menor** (lo decido yo y va a ✋):
+- Los días se escriben `lun mar mié jue vie sáb dom`, como el dato existente `lun`.
+- El comando vive en `src/app.js` junto a `cancelBooking`: es tu alcance y la arquitectura dice un solo fichero.
+
+**Tuyo** (lo pregunto o te lo dejo nombrado):
+- El orden de las reservas. Es lo que pregunto ahora.
+- Qué responde una sala sin reservas (tu propuesta, `sin reservas <sala>`): sigue abierto y te lo pregunto después.
+- El nombre del fichero de test (tu propuesta, `test/semana.test.js`): también abierto, después.
+
+❓ **Orden de las reservas**
+Tu decisión es `sort()` sobre el texto del día. Con la inicial alfabética, un responsable que mira la semana el lunes vería esto:
+1️⃣ **Orden de la semana** con un índice de días.
+```text
+lun 10:00-12:00
+mar 09:00-10:00
+jue 15:00-16:00
+```
+Cuesta una lista fija de días y un `sort` por posición, unas pocas líneas más.
+2️⃣ **`sort()` sobre el texto**, como decidiste.
+```text
+jue 15:00-16:00
+lun 10:00-12:00
+mar 09:00-10:00
+```
+Es una línea, pero `jue` sale antes que `lun` y `mié` antes que `mar`.
+➡️ **Recomiendo 1️⃣**, porque quien prepara la semana el lunes la lee de lunes a domingo, y el orden alfabético se la desordena. A cambio, hay una pequeña lista de días que mantener.
+
+¿Qué orden quieres para el listado?

@@ -157,6 +157,16 @@ describe('--project-root', () => {
     expect(byRoot.code).toBe(0);
   });
 
+  it('estimation log without changes/ nor specs/ writes the header and no rows', async () => {
+    const sdd = sddFolder({ 'steering/estimation.md': '# Estimación\n' });
+    const result = await runReal(['estimation', 'log', '--root', dirname(dirname(sdd))]);
+    expect(result.code).toBe(0);
+    const log = readFileSync(join(sdd, 'steering', 'estimation-log.md'), 'utf8').split('\n');
+    expect(log[0]).toMatch(/^<!-- AUTO-GENERADO por sdd estimation log/);
+    const table = log.filter((line) => line.startsWith('| '));
+    expect(table).toEqual([expect.stringMatching(/^\| Fecha \| Id \|/), expect.stringMatching(/^\| --- \|/)]);
+  });
+
   it('project-root is an alias of --path in session tokens', async () => {
     const { root } = project();
     const empty = join(root, 'sin-sesiones');

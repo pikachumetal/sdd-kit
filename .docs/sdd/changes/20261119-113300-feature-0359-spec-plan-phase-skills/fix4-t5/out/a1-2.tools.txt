@@ -1,0 +1,112 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd . && ls -a; ls .docs .docs/sdd .docs/sdd/steering 2>&1; cat .docs/sdd/sdd-kit.local.json; cat .docs/sdd/sdd-kit.json 2>&1 | head -40
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head -50
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"merge": {"push": true}}
+{"version": "3.0.3", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+<<< Sin capacidades
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md; ls node_modules 2>&1 | head -3; ls src test .docs/sdd/specs
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cat src/app.js; cat .docs/sdd/steering/debt.md | head -20; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: git checkout -b feature/0011 develop 2>&1 && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359h/cli/bin/sdd.js" id claim --project-root "$(pwd)" 2>&1
+<<< Switched to a new branch 'feature/0011'
+sin remoto: la 0011 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.18761450000000002 $)
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Aviso: se ignora `merge.push` de `sdd-kit.local.json`: solo admite `control.profile`, `execution` y `validation.startEnvironment`; lo demás es del proyecto y va en `sdd-kit.json`.
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+Ahora: entender qué quieres y qué deja abierto el proyecto. Queda: tus respuestas, la spec y su aprobación, ~10 min.
+
+**Lo que he entendido (corrígeme):** quieres que solo el responsable de una sala pueda anular reservas de otras personas. Es la fila 0011 del roadmap, ya abierta en la rama `feature/0011`.
+
+**Lo que he visto en el código:**
+- `anular <sala> <día>` ya existe (`voidBooking` en `src/app.js`) y marca la reserva como `voided`.
+- No comprueba quién lo pide. Cualquiera puede anular cualquier reserva.
+- El proyecto no tiene ningún concepto de usuario, ni de responsable de sala. Las reservas tampoco guardan a nombre de quién están (`{ room, day, slot, status }`). `operations.md` dice «sin login».
+
+**Contestado**
+- Anulación es el término del producto para lo que hace el responsable. Es distinta de la cancelación, que hace el propio cliente (`PRODUCT.md`).
+- La regla de fondo viene de la fila 0011: «solo el responsable de cada sala».
+
+**Menor** (lo decido yo y irá a ✋)
+- Los textos de salida van en castellano (constitution, art. 4).
+- Test primero y el código en `src/app.js`, que es el único fichero de entrada (constitution, art. 2 y architecture).
+- Reutilizo `findBooking` y `voidBooking` en vez de crear otra vía.
+
+**Del dev-lead** (te lo preguntaré después, una cosa por turno)
+- Cómo se identifica quién pide la anulación, sin login.
+- Quién es el responsable de cada sala y dónde se guarda ese dato.
+- Qué ve quien no es responsable e intenta anular.
+- Si «reservas de otros» exige saber de quién es cada reserva, que hoy no se guarda.
+
+¿Por qué quieres que solo el responsable de sala pueda anular? ¿Qué pasa hoy que te lleva a pedirlo?

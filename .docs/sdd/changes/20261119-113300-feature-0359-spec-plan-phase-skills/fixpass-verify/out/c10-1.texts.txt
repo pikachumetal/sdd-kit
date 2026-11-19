@@ -1,0 +1,97 @@
+--- [14]
+Leyendo los informes de la revisión final (Spec y Código) para ordenarlos antes del fix.
+
+--- [23]
+RED reproducido: solo, el test de `canceladas` recibe `''`. Hago que cada test cargue su propia instancia del módulo y monte su propio GIVEN:
+
+--- [27]
+GREEN: solo 1/1, suite 6/6. Escribo el registro y `tasks.md`, y hago el commit de la pasada de fix.
+
+--- [32]
+Ahora: lanzo la re-revisión única de `f7e048b..fa77227` en su worktree. Queda: su vuelta y la presentación, ~10 min, ~$2.
+
+--- [41]
+Mientras tanto anoto en `tasks.md` (sin commit) la pasada de fix y la re-revisión que ha salido.
+
+--- [47]
+Lancé la re-revisión única (`f7e048b..fa77227`, opus+high) en segundo plano, con su vigilancia de silencio. Cuando vuelva, cierro la revisión y te presento el resultado.
+
+--- [52]
+### Finding Verdicts
+
+1. **Spec Minor: the `canceladas` test only passed after the `cancelar` test had run** — **ADDRESSED.**
+   - `test/cancel.test.js:57-61` (`freshApp`) now gives each test its own module instance through a cache-busting query string. Node ESM treats each different URL as a separate module, so the `bookings` array in `src/app.js:4` no longer carries over from one test to the next.
+   - `test/cancel.test.js:78-82` now sets up its own GIVEN: it cancels Norte lun with «sala ocupada», then checks that `canceladas` returns `'Norte lun — sala ocupada'`. That is the spec's THEN (spec.md:57-60), checked through the command output that «Dónde se prueba» names.
+   - The test name and the assertion did not change. The only addition is the setup the GIVEN requires.
+   - This matches the ledger's RED claim. Run alone, the fresh instance has no cancelled bookings, so the assertion fails with `''` until the setup line is present.
+
+2. **Code Important: `reasonOf` (`src/app.js:14-17`) keeps spaces around the reason** — **RULING DOES NOT HOLD.**
+   - The ruling says trimming "changes observable output the approved spec fixes". The spec doesn't fix any output for an input with extra spaces. Its delta covers only three inputs: an exact list value (spec.md:52-53), a reason that is clearly off the list, «me aburro» (spec.md:54), and a missing `--motivo` (spec.md:55).
+   - Decision 1 (spec.md:24) closes the list of reasons. Trimming doesn't add a reason to that list; it only normalises the input before comparing it.
+   - Every THEN/AND in the spec gives the same result with or without the trim. Nothing in the approved spec would need an amendment.
+   - At most, whether «sala ocupada » counts as valid is a gap in the spec, not a conflict with it. The ruling's reason is wrong, so the finding stays open.
+   - To close it, either:
+     - add the trim with a test for a reason with extra spaces, or
+     - if the dev-lead must decide, record it as an open question about unspecified behaviour, not as a change that contradicts the spec.
+
+3. **Code Minor: the ` — ` in `canceladas` (`src/app.js:36`) breaks on a cp850 console** — **RULING HOLDS.**
+   - The spec's THEN states the exact text «Norte lun — sala ocupada» (spec.md:60).
+   - Decision 4 (spec.md:26) explicitly chooses ` — ` as the separator.
+   - Switching to ` - ` would fail an approved THEN, so sending it to the dev-lead as an amendment is correct. The cp850 concern is about the environment, not a defect against the spec.
+
+### New Breakage in the Fix Diff
+
+None.
+
+- The whole-file rewrite of `test/cancel.test.js` comes from converting CRLF to LF. Other files in the repo use LF (`src/app.js`, `package.json`, `README.md`, spec.md all have 0 CR), so this is formatting, not a change to the tests. The existing test names and assertions are unchanged.
+- The comment at `test/cancel.test.js:55-56` explains why each test gets a fresh instance. It does not repeat the code.
+- The added test `cancelar sin --motivo` (`test/cancel.test.js:73-76`) checks the spec's AND at spec.md:55 through the real path: `reasonOf` returns `undefined`, then `includes` fails. It is correct, and it fills a gap in coverage.
+- `tasks.md` (new) records task status and the summary of the final review. It is consistent with the commits.
+
+### Out-of-Scope Observations
+
+- The ledger lists the added `cancelar sin --motivo` test under "Ruling", but it is a coverage fix for an AND of the spec, not a ruling. Only the label is wrong; the content is fine.
+- `test/cancel.test.js:68-71` uses `Sur mar`, a booking that doesn't exist. The test only passes because the reason is checked before the booking is looked up (`src/app.js:20-22`). This existed before the fix and is harmless, but a GIVEN with a real booking would describe the scenario more faithfully.
+
+### Verdict
+
+**Fix round:** Findings remain open.
+- Code Important, `src/app.js:14-17` (`reasonOf` doesn't trim the reason): the ruling does not hold, because no THEN/AND or decision in the spec fixes the output for a reason with extra spaces.
+
+--- [57]
+La revisión final está cerrada salvo una pregunta para ti. Un hallazgo quedó abierto, adjudicado como ruling: Laura tiene que decidir sobre él antes de la validación.
+
+🦆 Los dos ejes revisaron hasta `f7e048b`. Hice la única pasada de fix en `fa77227`. Arreglé el hallazgo que podía arreglar sin tocar la spec. Los otros dos los dejé sin cambiar, cada uno con su motivo, y la re-revisión acepta uno y rechaza el otro.
+
+**Arreglado: el test de `canceladas` dependía del orden** (Minor de Spec)
+- Ejecutado solo fallaba: devolvía `''` en vez de `'Norte lun — sala ocupada'`.
+- Ahora cada test carga su propia copia de la app y prepara él mismo la reserva cancelada.
+- Añadí además el test del caso «cancelar sin `--motivo`», que estaba en la spec sin test.
+- Ejecutado solo pasa (1/1) y la suite completa también: `node --test` → 6/6.
+
+**Se queda como está: el separador ` — ` del listado** (Minor de Código)
+- El revisor proponía cambiarlo por ` - ` porque en una consola Windows con codificación cp850 sale como `ÔÇö`. No lo comprobé.
+- La spec fija ` — ` en su THEN y en la decisión 4, así que cambiarlo sería modificar la spec.
+- La re-revisión confirma que no se puede cambiar sin una enmienda de la spec.
+
+**Abierto: el motivo no ignora los espacios de alrededor** (Important de Código, `src/app.js:14-17`)
+- `--motivo "sala ocupada "` (con un espacio al final) responde «motivo no válido…».
+- Mi primer motivo para no tocarlo era que contradecía la spec, y la re-revisión lo rechazó con razón: la spec no dice qué pasa con un motivo con espacios. Es un hueco, no un conflicto.
+- Quitar los espacios cambiaría lo que ve el usuario en un caso que la spec no decide, así que no lo hago yo.
+- Dejarlo como está no cambia ninguna decisión aprobada. Lo apunté en el registro como ruling corregido.
+
+✋ **Pregunta para Laura:** ¿quitamos los espacios de alrededor del motivo antes de compararlo con la lista?
+- **Recomiendo que sí.** Es un cambio de una línea, con su test, y entraría como enmienda de la spec. Un commit nuevo ya no tendría re-revisión y te llegaría marcado como `sin revisar`.
+- **Si no,** se queda como está: quien deje un espacio de más ve el error con la lista de motivos válidos y repite el comando.
+
+Más cosas:
+- El separador ` — ` solo cambia si lo pides tú, con una enmienda de la spec.
+- `tasks.md` ya tiene las líneas de la revisión final, la pasada de fix y la re-revisión. Estas dos últimas están sin commit.
+- La carpeta del worktree de revisión está quitada del registro de git, pero Windows no deja borrarla porque está en uso: `../review-0010-fa77227`.
+- No hay Minors aplazados: `review.minors` está en `fix`.
+
+Cuando decidas lo del espacio, sigo con la validación y el cierre.
+
+--- [59]
+La vigilancia de silencio de la re-revisión ha terminado sin avisos, porque la re-revisión volvió a tiempo. Sigue abierta la misma pregunta: ¿quitamos los espacios de alrededor del motivo antes de compararlo con la lista? Mi recomendación sigue siendo que sí.
+

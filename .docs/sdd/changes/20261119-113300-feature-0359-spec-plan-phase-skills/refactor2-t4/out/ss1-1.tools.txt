@@ -1,0 +1,85 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -300; echo ----; cat src/app.js; echo ----; cat test/app.test.js test/cancel.test.js; echo ----; cat .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; ls node_modules 2>&1 | head -3; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references"; cat nombrado.md | head -80; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id --help 2>&1 | head -30
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && SDD="D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; node "$SDD" id next --project-root . --reserve; git status --short | head
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && git checkout -b feature/0012-semana && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root . ; git branch --show-current
+<<< Switched to a new branch 'feature/0012-semana'
+sin remoto: la 0012 vale (contador local)
+feature/0012-semana
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (11 turnos, 0.21390369999999997 $)
+Ahora: te devuelvo lo que entiendo y lo que queda abierto, antes de escribir la spec. Queda: tu respuesta a una pregunta, luego la spec y su aprobación, ~5 min.
+
+**Lo que entiendo.** Quieres `semana <sala>`: el responsable de sala lo lanza los lunes y ve las reservas activas de esa sala, una por línea (`lun 10:00-12:00`). Hecho cuando `semana Norte` lista sus reservas de la semana. Fuera: CSV.
+
+**Lo que he visto en el código.**
+- `bookings` guarda `day` (`lun`) y `slot`, sin fecha. Todas las reservas activas son «de la semana»; no hay nada que filtrar por fecha.
+- Hoy solo existe `Norte lun 10:00-12:00`. `reservar --cada-semana` solo devuelve un texto y no guarda nada, así que no aparecería en el listado.
+- Las canceladas y anuladas quedan fuera, porque pides «activas».
+- No hay capacidades en `.docs/sdd/` y la spec 0005 está vacía, así que no hay reglas previas que choquen.
+
+Dime si algo de esto no es lo que querías.
+
+**Piles**
+- **Contestado**
+  - Una reserva por línea con el formato `lun 10:00-12:00`: lo dices en «Decisiones ya tomadas».
+  - Solo cambia `src/app.js`, sin CSV: lo dices en el alcance.
+  - Solo activas: `findBooking` y `freeRooms` ya filtran por `status === 'active'`.
+- **Menor** (lo decido yo y va a ✋)
+  - Las líneas se unen con salto de línea. Razón: `libres` ya devuelve un solo texto con `join`, y `run` devuelve una cadena.
+  - La función va junto a `freeRooms`, en el mismo fichero. Razón: `architecture.md` fija un solo fichero de entrada.
+- **Del dev-lead**
+  - El orden de las líneas. Es la pregunta de abajo.
+  - La respuesta con sala sin reservas. Está en «Abierto» y tu propuesta es `sin reservas <sala>`.
+  - El nombre del fichero de test. Está en «Abierto» y tu propuesta es `test/semana.test.js`.
+
+Las dos últimas las cierro contigo después.
+
+❓ **Orden de las líneas**
+`sort()` sobre el texto del día ordena alfabéticamente, y `jue` queda antes que `lun`. Con una sala que tenga reservas de varios días:
+1️⃣ **Orden de lunes a domingo**, con una constante `['lun','mar','mié','jue','vie','sáb','dom']` y comparando por su posición:
+```
+lun 10:00-12:00
+mar 09:00-10:00
+jue 16:00-17:00
+```
+2️⃣ **`sort()` sobre el texto**, como decidiste:
+```
+jue 16:00-17:00
+lun 10:00-12:00
+mar 09:00-10:00
+```
+➡️ **Recomiendo 1️⃣**, porque el responsable prepara la semana los lunes y espera leerla de lunes a domingo; con 2️⃣ tendría que reordenar de cabeza, y `mié` y `sáb` con tilde quedan en posiciones raras. A cambio, 1️⃣ añade una constante y un comparador a lo que querías en una línea. ¿Qué orden prefieres?

@@ -1,0 +1,142 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs 2>/dev/null | head -50; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>/dev/null; ls node_modules 2>/dev/null | head -3
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"version": "3.0.3", "channel": "
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/architecture.md package.json; ls src test scripts; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cat src/app.js; head -30 test/app.test.js; cat .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -40; git branch -a
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g"; cat skills/sdd-propose/references/nombrado.md; node cli/bin/sdd.js id --help 2>&1 | head -30
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && pwd && git status --short && git branch --show-current && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id next --project-root "$PWD" --reserve
+<<< <run>/repo
+develop
+0012
+
+>>> Bash: cd "<run>/repo" && git switch -c feature/0012-exportar-csv && node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" id claim --project-root "$PWD"; git branch --show-current
+<<< Switched to a new branch 'feature/0012-exportar-csv'
+sin remoto: la 0012 vale (contador local)
+feature/0012-exportar-csv
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.21596189999999998 $)
+Ahora: entender el cambio y ordenar lo que está decidido y lo que falta. Queda: tus respuestas a las preguntas abiertas, la spec y su aprobación, ~10 min.
+
+**Lo que entiendo.** Quieres un comando que saque las reservas de una sala en CSV. El responsable lo abre los lunes en su hoja de cálculo para cuadrar las reservas.
+
+Hoy `src/app.js` guarda las reservas en memoria, cada una con `room`, `day`, `slot` y `status` (`active`, `cancelled` o `voided`). Los comandos pasan por `run(cmd, params)` y devuelven un texto que se imprime. El proyecto no tiene capabilities. No hay ningún `exportar`, y `.ics` está aparcado como la idea 0004, que es otra cosa.
+
+Corrígeme si algo no cuadra.
+
+**Contestado**
+- Para qué sirve: lo cuadra el responsable los lunes en su hoja de cálculo (lo dices tú).
+- Dónde va: en `src/app.js`, dentro de `run()`, porque es el único fichero de entrada (`architecture.md`).
+- Sin dependencias: el CSV se monta a mano (`architecture.md`).
+
+**Menor (lo decido yo, irá a ✋)**
+- Nombre del comando: `exportar <sala>`, porque los demás son verbos en castellano (`libres`, `cancelar`, `anular`).
+- Salida: el CSV se imprime por pantalla, como el resto de comandos. Se puede redirigir a un fichero.
+
+**Del dev-lead (no lo decido yo)**
+- Separador de columnas. Tu «Abierto» propone `;`, y lo tomo como propuesta, no como decisión.
+- Nombre del fichero de test. Propones `test/export.test.js`, y también queda abierto.
+- Qué reservas salen (solo activas, o también canceladas y anuladas) y qué columnas lleva.
+
+Empiezo por el separador, porque decide cómo se abre el fichero:
+
+❓ **Separador de columnas**
+Con el Excel configurado en castellano, el separador de lista suele ser `;`. Con `,` todo suele caer en una sola columna. Con un Excel en inglés pasa al revés.
+
+1️⃣ **`;`** (tu propuesta)
+`sala;dia;franja` / `Norte;lun;10:00-12:00`. Se abre en columnas con un Excel en castellano. Con uno en inglés habría que importarlo a mano.
+
+2️⃣ **`,`**
+`sala,dia,franja` / `Norte,lun,10:00-12:00`. Es el CSV «estándar», pero en el Excel del responsable puede salir todo en una celda.
+
+➡️ **Recomiendo 1️⃣**, porque la oficina y el producto van en castellano y tu propuesta ya apunta ahí. A cambio, se depende de que el Excel del responsable esté en castellano. ¿Confirmas `;` o prefieres otro separador?

@@ -19,10 +19,14 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-grilling': { skillMd: 886, total: 886 },
   'sdd-parallel-agents': { skillMd: 1156, total: 1156 },
   'sdd-init': { skillMd: 2667, total: 3212 },
+  'sdd-plan-writing': { skillMd: 2220, total: 2220 },
   'sdd-retro': { skillMd: 622, total: 622 },
   'sdd-roadmap': { skillMd: 3222, total: 3630 },
   'sdd-rubber-duck': { skillMd: 600, total: 600 },
-  'sdd-propose': { skillMd: 3157, total: 14162 },
+  'sdd-spec-approval': { skillMd: 1250, total: 1250 },
+  'sdd-spec-review': { skillMd: 1460, total: 1860 },
+  'sdd-spec-writing': { skillMd: 3450, total: 3450 },
+  'sdd-propose': { skillMd: 2900, total: 9400 },
   'sdd-implement': { skillMd: 2633, total: 6626 },
   'sdd-implement-native': { skillMd: 3038, total: 3038 },
   'sdd-implement-subagent': { skillMd: 2951, total: 8462 },
@@ -37,7 +41,7 @@ const skillBudgets: Record<string, Budget> = {
 };
 
 const anchorBudgets: Record<string, number> = {
-  '.docs/sdd/steering/constitution.md': 2250,
+  '.docs/sdd/steering/constitution.md': 2303,
   'PRODUCT.md': 1799,
   '.docs/sdd/steering/architecture.md': 4877,
   '.docs/sdd/steering/operations.md': 20785,

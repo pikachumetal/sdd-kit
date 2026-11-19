@@ -1,0 +1,104 @@
+--- [4]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar, anunciar el carril y pasar a la entrevista de la spec, ~2 min.
+
+--- [20]
+Ahora: te cuento cómo entiendo la petición y qué voy a decidir yo y qué te toca a ti. Queda: tu respuesta, el enfoque, la spec y su aprobación, ~8 min.
+
+**Lo que entiendo.** Cada responsable de sala quiere llevarse a su hoja de cálculo las reservas de su sala para cuadrarlas los lunes. Hoy `src/app.js` guarda cada reserva como `{ sala, día, franja }`, por ejemplo `Norte · lun · 10:00-12:00`, y solo se pueden consultar con `libres`. El comando nuevo sacaría esas filas en CSV. Las reservas no llevan fecha, solo el día de la semana. Por eso no se podrá filtrar por «la semana pasada». Dime si esperabas eso. Corrígeme si algo no encaja.
+
+**Contestado** (no pregunto):
+- Texto en castellano, por la constitución (art. 4).
+- Sin dependencias y todo en `src/app.js`, por `operations.md`.
+- La sala va como argumento, como en `reservar Norte`.
+
+**Menor** (lo decido yo, irá a ✋):
+- El comando se llamará `exportar`, como `reservar` y `cancelar` están en castellano.
+- Escribe por la salida estándar, como `libres`, y quien quiera un fichero redirige (`> norte.csv`).
+- La cabecera será `sala,día,franja`, que son los campos que existen hoy.
+
+**Tuyo** (lo iré preguntando uno a uno):
+- Separador y codificación del CSV.
+- Qué pasa con una sala que no existe o que no tiene reservas.
+- Qué haría fallar la función aunque «funcione».
+
+Empiezo por el separador y la codificación, que dependen de cómo lo abren. ¿En qué programa abre cada responsable el CSV, y cómo lo importa?
+
+--- [22]
+Anotado: separador `;`, por tu Excel en castellano.
+
+Como no sabes cómo lo importan, decido yo el resto: el fichero llevará codificación UTF-8 con BOM. Así Excel lo abre con doble clic y se ve bien la `í` de `día`. Sin BOM, un Excel en castellano suele mostrar `dÃ­a`. Va a ✋ como decisión mía.
+
+❓ **Sala que existe pero no tiene reservas**
+Hoy solo `Norte` tiene una reserva y `Sur` ninguna. Un responsable que exporta `Sur` y lo redirige a un fichero (`> sur.csv`) verá una de estas dos cosas:
+
+1️⃣ **Solo la cabecera**
+```
+$ exportar Sur
+sala;día;franja
+```
+Cuesta que el responsable ve una hoja vacía y no un aviso. La salida sigue siendo siempre un CSV válido.
+
+2️⃣ **Un mensaje en lugar del CSV**
+```
+$ exportar Sur
+Sur no tiene reservas
+```
+Cuesta que, al redirigir, el fichero tiene esa frase como si fuera una fila. Excel la abriría como dato.
+
+➡️ **Recomiendo 1️⃣**, porque la petición es llevar los datos a una hoja y con 2️⃣ el fichero deja de ser un CSV cuando no hay reservas. A cambio, «sin reservas» y «sala mal escrita» se distinguirían solo si decido aparte que una sala inexistente da error, y te lo preguntaré a continuación.
+
+¿Te vale 1️⃣ o prefieres 2️⃣?
+
+--- [24]
+Decido yo **1️⃣, solo la cabecera**. La razón es que la salida siempre es un CSV válido, aunque la sala no tenga reservas, y el fichero redirigido no mezcla frases con datos. Va a ✋ con esa razón.
+
+También decido lo de la sala que no existe: `exportar Oeste` dará el error `sala desconocida: Oeste`. Así una sala mal escrita no se confunde con una sala sin reservas. Va a ✋.
+
+Con eso, lo técnico queda cubierto. Me falta lo que solo sabes tú: el criterio de éxito.
+
+Cuando el responsable abra el CSV un lunes, ¿qué te haría torcer el gesto si saliera mal, aunque el comando «funcione»?
+
+--- [26]
+Esto choca con un hecho del código y te lo planteo una vez.
+
+Hoy una reserva es `{ sala, día, franja }`, por ejemplo `Norte · lun · 10:00-12:00`. No lleva fecha, solo el día de la semana. Por eso «falta una reserva de la semana del lunes que viene» y «aparece una de otra semana» no se pueden dar ni comprobar, porque no hay nada que distinga una semana de otra. El `;` sí lo cubro, con el BOM y los datos en el orden de la cabecera.
+
+❓ **Qué significa «la semana» si las reservas no tienen fecha**
+1️⃣ **Cada reserva vale para cualquier semana, y se exportan todas las de la sala**
+```
+$ exportar Norte
+sala;día;franja
+Norte;lun;10:00-12:00
+```
+Cuesta que no se puede exportar «solo esta semana». Una reserva puntual de una fecha concreta no se puede representar hoy. Eso sería una feature aparte, con su fila en el roadmap.
+
+2️⃣ **Añadir fecha a las reservas y exportar una semana concreta**
+```
+$ exportar Norte 2026-11-23
+sala;fecha;día;franja
+Norte;2026-11-23;lun;10:00-12:00
+```
+Cuesta que `reservar` y `cancelar` tendrían que pedir fecha y cambiaría el modelo. Es bastante más que un comando de exportación y toca lo que ya cerraste en 0005, 0006 y 0007.
+
+➡️ **Recomiendo 1️⃣**, porque hoy todas las reservas son del patrón semanal y exportarlas todas es justo lo que verá el responsable el lunes. A cambio, tus dos primeros criterios quedan sin objeto hasta que existan las fechas.
+
+¿Vamos con 1️⃣ o prefieres 2️⃣?
+
+--- [28]
+Lo dejamos aquí. No he escrito `spec.md` ni código. Solo hay creada la rama `feature/0010-exportar-csv` y reservado el id 0010, sin carpeta ni commits.
+
+**Decidido por ti**
+- El separador es `;`, por tu Excel en castellano.
+- Falta por cerrar la decisión sobre qué es «la semana»: 1️⃣ o 2️⃣, o lo que se te ocurra.
+
+**Decidido por mí, con su razón** (irá a ✋ en la spec)
+- UTF-8 con BOM, para que Excel muestre bien la `í` de `día` al abrirlo con doble clic.
+- Una sala sin reservas da solo la cabecera, así el fichero redirigido sigue siendo un CSV válido.
+- Una sala que no existe da el error `sala desconocida: <sala>`, para no confundirla con una sala sin reservas.
+- El comando se llama `exportar`, escribe por la salida estándar y la cabecera es `sala;día;franja`.
+
+**Pendiente**
+- Qué significa «la semana» para las reservas, porque hoy no llevan fecha. Mi recomendación es 1️⃣, exportar todas las de la sala. Esa decisión condiciona la spec y las tareas.
+
+Cuando quieras seguir, di «retoma la feature» en esta rama. Empiezo por tu respuesta a esa pregunta y después paso a la spec.
+

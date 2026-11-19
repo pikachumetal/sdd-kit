@@ -50,7 +50,7 @@ The name of whoever works isn't kept in any kit file: if needed, it comes from `
 | Point | `pair` | `delegate` | `unattended` |
 | --- | --- | --- | --- |
 | Start (lane, mode, profile, statement from the branch) | asks in patch, lite and config, and if splitting applies; announces in feature and spike | same as `pair` | decides and records: lite goes as full |
-| Spec review | the rubric of `review-spec.md` decides how many reviewers and dispatches them without asking; one question only if the user's instructions ask to confirm before parallelizing and the spec isn't delegated | same as `pair` | decides and records, never fewer reviewers than the rubric gives |
+| Spec review | the rubric of `sdd-spec-review` decides how many reviewers and dispatches them without asking; one question only if the user's instructions ask to confirm before parallelizing and the spec isn't delegated | same as `pair` | decides and records, never fewer reviewers than the rubric gives |
 | Spec | stops with fixed options in prose, except the spec delegated at the start: the agent approves it and records the phrase | same as `pair` | the agent approves it with the decisions recorded |
 | Plan | stops: one question approves the plan and chooses the method, with the handoff's recommendation first; with `execution` fixed, it only approves | no gate: checks scenario → task, writes the method the handoff recommends (or the one fixed in `execution`) and goes on | same as `delegate` |
 | After each task | stops | goes on | goes on |
@@ -235,7 +235,7 @@ Closed set:
 | `review.minors` | `fix` \| `defer` (only in `sdd-kit.json`) | `"defer"` |
 | `pricing` | object: `source`, `updated`, `usdPerMillionTokens` (only in `sdd-kit.json`) | — (without it, the closing gives «sin precio») |
 
-`execution` chooses the plans' execution method. With `auto`, the handoff of `plan-writing.md` of `sdd-propose` recommends one per plan and the agent writes it in the header as `Ejecución: <native | subagent>, porque <motivo del plan>`; with `native` or `subagent`, the method is given and isn't asked in any profile: the header says `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` or `sdd-kit.local.json`, the one that fixes it—, even if the handoff recommends the other. It has no release level (precedence in «sdd-kit.local.json»): the method stays written in each feature's plan, and a method the dev-lead names for a concrete feature counts as given.
+`execution` chooses the plans' execution method. With `auto`, the handoff of `sdd-plan-writing` recommends one per plan and the agent writes it in the header as `Ejecución: <native | subagent>, porque <motivo del plan>`; with `native` or `subagent`, the method is given and isn't asked in any profile: the header says `Ejecución: <valor>, fijado en <fichero>` —`sdd-kit.json` or `sdd-kit.local.json`, the one that fixes it—, even if the handoff recommends the other. It has no release level (precedence in «sdd-kit.local.json»): the method stays written in each feature's plan, and a method the dev-lead names for a concrete feature counts as given.
 
 `merge` has no default: if the block or any of its three fields (`into`, `noFf`, `removeWorktree`) is missing, the closing's branch step (the merge of `sdd-archive`) asks as today — a policy nobody declared whole isn't applied. `merge.push` is optional and doesn't count for the full block: absent, the closing doesn't push.
 

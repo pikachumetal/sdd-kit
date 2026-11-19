@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by 0039
 date: 2026-11-05
 rutas:
   - skills/sdd-propose/references/review-spec.md

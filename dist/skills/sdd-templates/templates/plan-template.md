@@ -9,7 +9,7 @@ created: <YYYY-MM-DD>
 
 # Plan de implementación — <título>
 
-> Se escribe siguiendo `plan-writing.md` de `sdd-propose`. El método lo recomienda su handoff y va en la línea
+> Se escribe con `sdd-plan-writing`. El método lo recomienda su handoff y va en la línea
 > `Ejecución` de abajo, para el plan entero.
 > Borra los bloques de ayuda (`>`) al redactar.
 
@@ -29,7 +29,7 @@ created: <YYYY-MM-DD>
 
 **Ejecución**: <native | subagent>, porque <motivo del plan> (el motivo pesa la dependencia entre las interfaces de las tasks, cuántas son, el coste de un error que llegue a la rama y si el plan cabe en un contexto, sin umbral: «native, porque 3 tasks encadenadas por la interfaz de Ledger, un error lo caza el test de su task y el plan cabe en un contexto») · o, con `execution` fijado en `sdd-kit.json` o `sdd-kit.local.json`: <valor>, fijado en <sdd-kit.json | sdd-kit.local.json>, el fichero que lo fija · con native, añade: Si esta sesión se retomó tras una compactación (empieza por «This session is being continued from a previous conversation») y quedan dos o más tasks sin su línea `complete` en el ledger, no las hagas tú: invoca `sdd-implement-subagent` y despacha con él las que quedan sobre el mismo ledger. · con native, añade también: La sesión que ejecuta va bien en gama media (Sonnet, effort medium); el modelo más capaz se reserva para los ejes Spec y Arquitectura de la revisión final.
 
-**Eje Arquitectura**: <sí — <la frontera que cruza> | no — <motivo>> (sí si el diff añade un módulo, una dependencia en un manifest, un contrato entre módulos o datos; lo juzga `plan-writing.md` de `sdd-propose` contra `architecture.md`, y en la revisión final el hilo solo puede subirlo: «no — solo cambia el texto de `cancelar`» · «sí — dependencia nueva `zod` en `package.json`»)
+**Eje Arquitectura**: <sí — <la frontera que cruza> | no — <motivo>> (sí si el diff añade un módulo, una dependencia en un manifest, un contrato entre módulos o datos; lo juzga `sdd-plan-writing` contra `architecture.md`, y en la revisión final el hilo solo puede subirlo: «no — solo cambia el texto de `cancelar`» · «sí — dependencia nueva `zod` en `package.json`»)
 
 ## Restricciones globales
 
@@ -53,7 +53,7 @@ created: <YYYY-MM-DD>
 
 ## Review Focus
 
-> La pide `plan-writing.md` de `sdd-propose` en todo plan, y `sdd-verify` se la pasa literal al eje Spec de la revisión final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero. Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda.
+> La pide `sdd-plan-writing` en todo plan, y `sdd-verify` se la pasa literal al eje Spec de la revisión final: por eso el título va así, en inglés y en este sitio. Son las entradas o los fallos que la spec implica y que ningún test de las tasks ejercita, los más probables primero. Una línea por entrada: la entrada o la condición, lo que esperaría una persona razonable, y la task y el test que lo fijan; ese test se añade a la task. Si una línea no se fija con un test (lo que se ve, un entorno), nombra la verificación que la cubre, p. ej. la «Verificación visual» de su task. Sin entradas, escribe «ninguna: comprobado»: esta sección no se borra con los bloques de ayuda.
 
 - <entrada o condición> → <comportamiento esperado> · Task <n>, `<nombre del test>` — p. ej. `GET /bookings?status=Foo` → 400 con los estados válidos, no la lista entera · Task 1, `Rejects_unknown_status`
 

@@ -17,7 +17,7 @@ If `sdd-propose` handed you a confirmed patch, or you resume one (its `patch.md`
 
 ## Method
 
-The plan's `Ejecución` line decides, for the whole plan; `plan-writing.md` of `sdd-propose` writes it. In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`. With no subagent tool in your harness, the method is Native.
+The plan's `Ejecución` line decides, for the whole plan; `sdd-plan-writing` writes it. In lite mode, without a plan, `spec.md` is the plan: the method is `execution` if `sdd-kit.json` fixes it, and Native with `auto`. With no subagent tool in your harness, the method is Native.
 
 After the check of [Setup](#setup), invoke the method's skill with `Skill`; it prepares the workspace and runs the tasks:
 
@@ -28,7 +28,7 @@ Both run in this session, over the same workspace and ledger, and never pause be
 
 ## Setup
 
-With no approved `spec.md` on the branch, stop and send the change to `sdd-propose`: an unapproved spec isn't a contract. Resuming without a ledger, `tasks.md` and `git log` say what's done: start it from them and go on at the first pending task.
+With no approved `spec.md` on the branch, or an approved full or spike spec without `plan.md`, stop and send the change to `sdd-propose`: an unapproved spec isn't a contract, and an approved one without its plan has no tasks to run. Resuming without a ledger, `tasks.md` and `git log` say what's done: start it from them and go on at the first pending task.
 
 **Effort**: before the first dispatch of the feature —the implementer in SDD, the final review's axes in Native— check that the `sdd-kit:effort-<level>` type is among the session's agents.
 <!-- kit: incluye effort-unavailable -->
@@ -60,7 +60,7 @@ The closing gate —the project's full build and suite— runs at the baseline o
 ## Deviations and rulings
 
 - **Rulings.** Scope brakes and the deviations below aren't rulings: they stop; a `Ruling:` in the ledger doesn't stop you.
-- **How you stop**, in `pair` and `delegate`: with 🦆 and ✋. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's quote); with none, `Copia: no encuentro el commit del kit que lo cambió`. A deviation that changes the delta: write in `spec.md` the correction you recommend; once written, dispatch one `sonnet` reviewer (`sdd-kit:effort-medium`) with the seven points of `review-spec.md` in the foreground, and stop once its findings are in the ✋.
+- **How you stop**, in `pair` and `delegate`: with 🦆 and ✋. When the stop's file is a copy in `upstream.json`, the first line of the ✋ is `Copia:` and the literal output of `git log -1 --format='%h %s' <sha7>`, `<sha7>` the id after `kit:` in the block's mark; with a task id, the first line of `git log -S '<S>' --reverse --format='%h %s' -- <file>` (S the mark's quote); with none, `Copia: no encuentro el commit del kit que lo cambió`. A deviation that changes the delta: write in `spec.md` the correction you recommend; once written, dispatch one `sonnet` reviewer (`sdd-kit:effort-medium`) with the seven points of [reviewer-brief.md](../sdd-spec-review/references/reviewer-brief.md) in the foreground, and stop once its findings are in the ✋.
 - **Scope brakes** stop the same way: the third discovered fix, a decision that changes the observable output, the feature's row or the task's lines changed in the base ([control-profiles.md](../sdd-propose/references/control-profiles.md)).
 <!-- kit: incluye deviation -->
 The approval's detail and the files an amendment adds: [Deviation](../sdd-propose/references/control-profiles.md#deviation).

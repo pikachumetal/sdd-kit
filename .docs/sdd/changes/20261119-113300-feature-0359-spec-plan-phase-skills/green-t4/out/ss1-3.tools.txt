@@ -1,0 +1,72 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; echo ----; cat src/app.js test/app.test.js test/cancel.test.js; ls -a . .docs/sdd; cat .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json; ls node_modules | head -3
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+<<< Sin capacidades
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/skills/sdd-propose/references/nombrado.md"; cat package.json; git branch -a
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: S="node D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js"; $S id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: git switch -c feature/0012-semana-sala && node D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359g/cli/bin/sdd.js id claim --project-root "$PWD"
+<<< Switched to a new branch 'feature/0012-semana-sala'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.2029513 $)
+Ahora: te cuento lo que he entendido y te pregunto lo que solo tú puedes decidir. Queda: tus respuestas, la spec y su aprobación, ~10 min.
+
+**Lo que he entendido.** `semana <sala>` imprime las reservas activas de esa sala, una por línea (`lun 10:00-12:00`), para que el responsable de sala prepare la semana los lunes. Es un cambio solo en `src/app.js`, con su test, y el CSV queda fuera. Hoy `run()` ya filtra por `status === 'active'` (como `libres` y `cancelar`) y cada reserva guarda solo `day` y `slot`, sin fecha. Dime si algo no cuadra.
+
+**Contestado**
+- Formato `lun 10:00-12:00`, una por línea: tu decisión.
+- Solo reservas activas, no canceladas ni anuladas: tu petición y `status` en `src/app.js`.
+- «Hecho» cuando `semana Norte` lista sus reservas: tu criterio.
+
+**Menor (lo decido yo)**
+- «La semana» son todas las activas de la sala, sin filtro de fechas, porque `bookings` no guarda fecha (`src/app.js:3`).
+
+**Tuyo (esperan su turno)**
+- Qué responde una sala sin reservas (tu propuesta: `sin reservas <sala>`).
+- Nombre del test (tu propuesta: `test/semana.test.js`).
+
+**La primera, porque cambia lo que ve el responsable:** `sort()` sobre el texto ordena los días por alfabeto, no por semana. Con reservas el lunes, martes, jueves y viernes saldría así:
+
+```text
+1️⃣ sort() sobre el texto        2️⃣ orden de semana
+jue 09:00-10:00                 lun 10:00-12:00
+lun 10:00-12:00                 mar 15:00-16:00
+mar 15:00-16:00                 jue 09:00-10:00
+vie 11:00-12:00                 vie 11:00-12:00
+```
+
+1️⃣ mantiene tu `sort()` de una línea, pero el jueves aparece antes que el lunes. 2️⃣ añade una lista `lun…dom` de una línea y ordena por la posición del día, y por hora dentro del día. Recomiendo 2️⃣, porque el responsable lee la lista como una agenda de lunes a viernes. A cambio, el código crece unas líneas. ¿Con cuál te quedas?

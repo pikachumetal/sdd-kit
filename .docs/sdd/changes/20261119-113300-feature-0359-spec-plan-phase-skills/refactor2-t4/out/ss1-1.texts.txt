@@ -1,0 +1,47 @@
+--- [3]
+Ahora: leo el contexto del proyecto y el código que toca el comando. Queda: clasificar y anunciar el carril, ~2 min.
+
+--- [14]
+Ahora: te devuelvo lo que entiendo y lo que queda abierto, antes de escribir la spec. Queda: tu respuesta a una pregunta, luego la spec y su aprobación, ~5 min.
+
+**Lo que entiendo.** Quieres `semana <sala>`: el responsable de sala lo lanza los lunes y ve las reservas activas de esa sala, una por línea (`lun 10:00-12:00`). Hecho cuando `semana Norte` lista sus reservas de la semana. Fuera: CSV.
+
+**Lo que he visto en el código.**
+- `bookings` guarda `day` (`lun`) y `slot`, sin fecha. Todas las reservas activas son «de la semana»; no hay nada que filtrar por fecha.
+- Hoy solo existe `Norte lun 10:00-12:00`. `reservar --cada-semana` solo devuelve un texto y no guarda nada, así que no aparecería en el listado.
+- Las canceladas y anuladas quedan fuera, porque pides «activas».
+- No hay capacidades en `.docs/sdd/` y la spec 0005 está vacía, así que no hay reglas previas que choquen.
+
+Dime si algo de esto no es lo que querías.
+
+**Piles**
+- **Contestado**
+  - Una reserva por línea con el formato `lun 10:00-12:00`: lo dices en «Decisiones ya tomadas».
+  - Solo cambia `src/app.js`, sin CSV: lo dices en el alcance.
+  - Solo activas: `findBooking` y `freeRooms` ya filtran por `status === 'active'`.
+- **Menor** (lo decido yo y va a ✋)
+  - Las líneas se unen con salto de línea. Razón: `libres` ya devuelve un solo texto con `join`, y `run` devuelve una cadena.
+  - La función va junto a `freeRooms`, en el mismo fichero. Razón: `architecture.md` fija un solo fichero de entrada.
+- **Del dev-lead**
+  - El orden de las líneas. Es la pregunta de abajo.
+  - La respuesta con sala sin reservas. Está en «Abierto» y tu propuesta es `sin reservas <sala>`.
+  - El nombre del fichero de test. Está en «Abierto» y tu propuesta es `test/semana.test.js`.
+
+Las dos últimas las cierro contigo después.
+
+❓ **Orden de las líneas**
+`sort()` sobre el texto del día ordena alfabéticamente, y `jue` queda antes que `lun`. Con una sala que tenga reservas de varios días:
+1️⃣ **Orden de lunes a domingo**, con una constante `['lun','mar','mié','jue','vie','sáb','dom']` y comparando por su posición:
+```
+lun 10:00-12:00
+mar 09:00-10:00
+jue 16:00-17:00
+```
+2️⃣ **`sort()` sobre el texto**, como decidiste:
+```
+jue 16:00-17:00
+lun 10:00-12:00
+mar 09:00-10:00
+```
+➡️ **Recomiendo 1️⃣**, porque el responsable prepara la semana los lunes y espera leerla de lunes a domingo; con 2️⃣ tendría que reordenar de cabeza, y `mié` y `sáb` con tilde quedan en posiciones raras. A cambio, 1️⃣ añade una constante y un comparador a lo que querías en una línea. ¿Qué orden prefieres?
+

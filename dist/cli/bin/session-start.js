@@ -73,6 +73,55 @@ function versionWarning(loaded, wanted, migrations) {
   return [`AVISO sdd-kit: esta sesión carga el kit ${loaded} y el proyecto pide el ${wanted} (.docs/sdd/sdd-kit.json), así que las skills pueden ser las de una versión vieja. Actualiza con \`claude plugin update sdd-kit@sdd-kit --scope project\` y reinicia Claude Code: /reload-plugins no aplica una actualización de ámbito proyecto.`];
 }
 
+// la marca citada con un backtick delante o dentro de un bloque vallado es documentación, no un hueco del template
+const TEMPLATE_MARK = /(?<!`)<!-- sdd-template: pending/;
+const FENCE_OPEN = /^ {0,3}(`{3,}(?=[^`]*$)|~{3,})/;
+const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
+
+function markdownIn(projectDir, folder) {
+  try {
+    return readdirSync(join(projectDir, folder)).filter((name) => name.endsWith('.md')).sort().map((name) => `${folder}/${name}`);
+  } catch {
+    return [];
+  }
+}
+
+function hasTemplateMark(text) {
+  let fence = '';
+  for (const line of text.replace(/^﻿/, '').split(/\r?\n/)) {
+    if (fence) {
+      const closer = FENCE_CLOSE.exec(line)?.[1];
+      if (closer && closer[0] === fence[0] && closer.length >= fence.length) fence = '';
+      continue;
+    }
+    fence = FENCE_OPEN.exec(line)?.[1] ?? '';
+    if (!fence && TEMPLATE_MARK.test(line)) return true;
+  }
+  return false;
+}
+
+// un fichero que no se puede leer (un directorio con nombre de documento, sin permisos) no corta el arranque de la sesión
+function readMarkdown(file) {
+  try {
+    return readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
+export function templatePendingFiles(projectDir) {
+  const candidates = ['PRODUCT.md', 'ROADMAP.md', ...markdownIn(projectDir, '.docs/sdd'), ...markdownIn(projectDir, '.docs/sdd/steering')];
+  return candidates.filter((path) => hasTemplateMark(readMarkdown(join(projectDir, path))));
+}
+
+export function templatePendingFile(projectDir) {
+  return templatePendingFiles(projectDir)[0] ?? '';
+}
+
+function templateWarning(file, latest) {
+  return `AVISO sdd-kit: el proyecto viene de un template sin inicializar (\`${file}\` lleva \`<!-- sdd-template: pending -->\`): entra primero por la skill \`sdd-init\`; las migraciones del kit, hasta la ${latest}, después.`;
+}
+
 function migrationWarning(wanted, latest) {
   if (!latest || !wanted || !isOlder(wanted, latest)) return [];
   return [`AVISO sdd-kit: el proyecto tiene aplicado el kit ${wanted} (.docs/sdd/sdd-kit.json) y el kit cargado trae migraciones hasta la ${latest}. Para aplicarlas, pide «actualízame al kit».`];
@@ -84,8 +133,10 @@ export function sessionStartOutput(projectDir, pluginRoot, nodeVersion) {
   const wanted = readJsonVersion(join(projectDir, '.docs', 'sdd', 'sdd-kit.json'));
   const migrations = join(pluginRoot, 'skills', 'sdd-upgrade', 'references', 'migrations');
   const latest = latestMigration(migrations, loaded);
-  const migration = migrationWarning(wanted, latest);
-  const warnings = [...versionWarning(loaded, wanted, migrationVersions(migrations)), ...migration];
+  const pending = migrationWarning(wanted, latest);
+  const template = pending.length > 0 ? templatePendingFile(projectDir) : '';
+  const migration = template ? [] : pending;
+  const warnings = [...versionWarning(loaded, wanted, migrationVersions(migrations)), ...migration, ...(template ? [templateWarning(template, latest)] : [])];
   const nodeProblem = nodeVersionProblem(nodeVersion);
   if (nodeProblem) warnings.push(nodeProblem.replace(/^sdd /, 'sdd-kit '));
   const joined = warnings.join('\n\n');

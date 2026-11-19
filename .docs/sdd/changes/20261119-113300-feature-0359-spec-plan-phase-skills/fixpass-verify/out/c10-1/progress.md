@@ -1,0 +1,12 @@
+# SDD ledger — plan: .docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+Task 1: complete (commits 3f8381b..953fd87, tests: node --test test/cancel.test.js → 2/2 pass)
+Task 2: complete (commits 953fd87..f7e048b, tests: node --test test/cancel.test.js → 3/3 pass)
+Final: Eje Arquitectura: no en el plan · señales en el diff: ninguna (solo src/app.js y test/cancel.test.js; ningún manifiesto, módulo, contrato ni datos) → no sale
+Final: review returned — Spec opus+high, Ready (1 Minor) · Código sonnet+high, With fixes (1 Important, 1 Minor), sobre f7e048b
+Final: fixed Spec Minor «el test de canceladas depende del orden» — canceladas enseña sala, día y motivo RED (solo: '' ≠ 'Norte lun — sala ocupada') →GREEN, suite 6/6
+Final: Ruling: test añadido «cancelar sin --motivo» — el AND de la spec no tenía test; no cambia comportamiento (ya pasaba) — si sobra, es un test de más
+Final: Ruling: Código Important «reasonOf no recorta espacios» — no se arregla: recortar cambia la salida observable («sala ocupada » pasa de «motivo no válido…» a cancelada) y la spec fija la lista cerrada (decisión 1) y el AND «fuera de la lista → motivo no válido»; el error ya lista los motivos válidos y quien lo lee reescribe; normalizar es decisión del dev-lead (enmienda) — si se equivoca: una persona con un espacio de más ve el error y repite el comando
+Final: Ruling: Código Minor «— rompe en consola cp850, usar -» — no se arregla: el THEN «Norte lun — sala ocupada» y la decisión 4 de la spec fijan ` — `; cambiarlo es una desviación que decide el dev-lead — si se equivoca: en una consola cp850 con salida redirigida se lee «ÔÇö»
+Final: re-review f7e048b..fa77227 (opus+high): Spec Minor ADDRESSED · Código Minor «—» RULING HOLDS · Código Important «trim» RULING DOES NOT HOLD (la spec no fija la salida con espacios: es un hueco, no un conflicto) · sin rotura nueva
+Final: Ruling: (corrige la anterior) Código Important «reasonOf no recorta espacios» — la spec no fija qué pasa con «sala ocupada »: es un hueco. Recortar sería una decisión que cambia la salida observable (freno de alcance), así que no la tomo yo; dejarlo como está mantiene todas las decisiones aprobadas. Va al ✋ como pregunta abierta para el dev-lead — si me equivoco: una persona que deja un espacio de más ve «motivo no válido…» con la lista y repite el comando
+Final: nota (corrige la etiqueta «Ruling» anterior): el test «cancelar sin --motivo» da cobertura al AND de spec.md:55; no es un ruling
