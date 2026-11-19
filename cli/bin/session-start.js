@@ -73,37 +73,45 @@ function versionWarning(loaded, wanted, migrations) {
   return [`AVISO sdd-kit: esta sesión carga el kit ${loaded} y el proyecto pide el ${wanted} (.docs/sdd/sdd-kit.json), así que las skills pueden ser las de una versión vieja. Actualiza con \`claude plugin update sdd-kit@sdd-kit --scope project\` y reinicia Claude Code: /reload-plugins no aplica una actualización de ámbito proyecto.`];
 }
 
-const TEMPLATE_MARK = '<!-- sdd-template: pending';
-const FENCE = /^\s*(`{3,}|~{3,})/;
+// la marca citada con un backtick delante o dentro de un bloque vallado es documentación, no un hueco del template
+const TEMPLATE_MARK = /(?<!`)<!-- sdd-template: pending/;
+const FENCE_OPEN = /^ {0,3}(`{3,}(?=[^`]*$)|~{3,})/;
+const FENCE_CLOSE = /^ {0,3}(`{3,}|~{3,})[ \t]*$/;
 
 function markdownIn(projectDir, folder) {
-  const dir = join(projectDir, folder);
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir).filter((name) => name.endsWith('.md')).sort().map((name) => `${folder}/${name}`);
+  try {
+    return readdirSync(join(projectDir, folder)).filter((name) => name.endsWith('.md')).sort().map((name) => `${folder}/${name}`);
+  } catch {
+    return [];
+  }
 }
 
-// la marca citada con un backtick delante o dentro de un bloque vallado es documentación, no un hueco del template
 function hasTemplateMark(text) {
   let fence = '';
-  for (const line of text.split(/\r?\n/)) {
-    const opener = FENCE.exec(line)?.[1];
+  for (const line of text.replace(/^﻿/, '').split(/\r?\n/)) {
     if (fence) {
-      if (opener && opener[0] === fence[0] && opener.length >= fence.length) fence = '';
-    } else if (opener) {
-      fence = opener;
-    } else if (line.split(TEMPLATE_MARK).slice(0, -1).some((before) => !before.endsWith('`'))) {
-      return true;
+      const closer = FENCE_CLOSE.exec(line)?.[1];
+      if (closer && closer[0] === fence[0] && closer.length >= fence.length) fence = '';
+      continue;
     }
+    fence = FENCE_OPEN.exec(line)?.[1] ?? '';
+    if (!fence && TEMPLATE_MARK.test(line)) return true;
   }
   return false;
 }
 
+// un fichero que no se puede leer (un directorio con nombre de documento, sin permisos) no corta el arranque de la sesión
+function readMarkdown(file) {
+  try {
+    return readFileSync(file, 'utf8');
+  } catch {
+    return '';
+  }
+}
+
 export function templatePendingFiles(projectDir) {
   const candidates = ['PRODUCT.md', 'ROADMAP.md', ...markdownIn(projectDir, '.docs/sdd'), ...markdownIn(projectDir, '.docs/sdd/steering')];
-  return candidates.filter((path) => {
-    const file = join(projectDir, path);
-    return existsSync(file) && hasTemplateMark(readFileSync(file, 'utf8'));
-  });
+  return candidates.filter((path) => hasTemplateMark(readMarkdown(join(projectDir, path))));
 }
 
 export function templatePendingFile(projectDir) {

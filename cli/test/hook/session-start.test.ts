@@ -220,6 +220,43 @@ describe('sdd hook session-start', () => {
       expect(output.systemMessage).toBe(TEMPLATE_WARNING);
     });
 
+    it.each([
+      ['CRLF line endings', '# Producto\r\n\r\n<!-- sdd-template: pending -->\r\n'],
+      ['a BOM before the mark', '﻿<!-- sdd-template: pending -->\n'],
+      ['a quoted mark and a real one on the same line', '`<!-- sdd-template: pending -->` y <!-- sdd-template: pending -->\n'],
+      ['a fence closed by plain backticks before the mark', '```md\ncódigo\n```\n<!-- sdd-template: pending -->\n'],
+      ['backticks indented four spaces, an indented code block and no fence', '    ```\n<!-- sdd-template: pending -->\n'],
+    ])('counts the mark with %s', (_name, text) => {
+      expect(run(templateAt('3.0.2', { 'PRODUCT.md': text })).systemMessage).toBe(TEMPLATE_WARNING);
+    });
+
+    it.each([
+      ['only quoted marks on a line', '`<!-- sdd-template: pending -->` y `<!-- sdd-template: pending -->`\n'],
+      ['a fence that an info-string line does not close', '```\n```md\n<!-- sdd-template: pending -->\n```\n'],
+      ['a mark split across lines', '<!--\nsdd-template: pending -->\n'],
+    ])('ignores %s', (_name, text) => {
+      expect(run(templateAt('3.0.2', { 'PRODUCT.md': text })).systemMessage).toContain('actualízame al kit');
+    });
+
+    it('skips a directory named like a document', () => {
+      const root = templateAt('3.0.2', { 'ROADMAP.md': '<!-- sdd-template: pending -->\n' });
+      mkdirSync(join(root, 'PRODUCT.md'));
+      mkdirSync(join(root, '.docs', 'sdd', 'notes.md'));
+      expect(run(root).systemMessage).toContain('(`ROADMAP.md` lleva');
+    });
+
+    it('gives no warning without a version, mark or not', () => {
+      const root = templateAt('3.0.2', { 'PRODUCT.md': '<!-- sdd-template: pending -->\n' });
+      writeFileSync(join(root, '.docs', 'sdd', 'sdd-kit.json'), '{"ids": {"mode": "sequence"}}');
+      expect(run(root).systemMessage).toBeUndefined();
+    });
+
+    it('gives the template warning with an init in progress that keeps a version', () => {
+      const root = templateAt('3.0.2', { 'PRODUCT.md': '<!-- sdd-template: pending -->\n' });
+      writeFileSync(join(root, '.docs', 'sdd', 'sdd-kit.json'), JSON.stringify({ version: '3.0.2', init: { approved: [] } }));
+      expect(run(root).systemMessage).toBe(TEMPLATE_WARNING);
+    });
+
     it('ignores an uppercase mark', () => {
       const output = run(templateAt('3.0.2', { 'PRODUCT.md': '<!-- SDD-TEMPLATE: pending -->\n' }));
       expect(output.systemMessage).toContain('actualízame al kit');

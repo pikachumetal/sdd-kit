@@ -34,6 +34,16 @@ describe('sdd init --finish with template marks', () => {
     expect(finish(root)).toContain(MARK_LINE);
   });
 
+  it('finish prints one mark line per file, in reading order', () => {
+    const root = projectWith({
+      '.docs/sdd/steering/constitution.md': '<!-- sdd-template: pending -->\n',
+      'PRODUCT.md': '<!-- sdd-template: pending -->\n',
+      '.docs/sdd/sdd-kit.json': '{"version": "3.0.2"}',
+    });
+    const marks = finish(root).filter((line) => line.includes('queda <!-- sdd-template: pending -->'));
+    expect(marks).toEqual([MARK_LINE, MARK_LINE.replace('PRODUCT.md', '.docs/sdd/steering/constitution.md')]);
+  });
+
   it('finish prints no mark line without marks', () => {
     const root = projectWith({ 'PRODUCT.md': '# Producto\n', '.docs/sdd/sdd-kit.json': '{"version": "3.0.2"}' });
     expect(finish(root).some((line) => line.includes('sdd-template'))).toBe(false);

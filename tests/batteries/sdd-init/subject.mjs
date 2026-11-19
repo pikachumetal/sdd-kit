@@ -96,7 +96,7 @@ function moldTemplateFinish() {
   doc('Estimation', 'Método: horas.', '.docs/sdd/steering/estimation.md');
   s.put('CLAUDE.md', '# Reservas\n\n- Documentos de anclaje: `PRODUCT.md`, `ROADMAP.md` y `.docs/sdd/steering/`.\n');
   s.put('CHANGELOG.md', '# Changelog\n\n## [Unreleased]\n');
-  // sdd estimation log falla sin changes/ ni specs/: el paso 5 ya hecho deja al sujeto llegar a --finish.
+  // sdd estimation log falla sin changes/ ni specs/: con el log ya escrito, el sujeto llega a --finish.
   s.put('.docs/sdd/steering/estimation-log.md', '# Estimation log\n\n| Fecha | Id | Tipo | Estimado | Real |\n| --- | --- | --- | --- | --- |\n');
   s.put('.claude/settings.json', '{\n  "permissions": {\n    "allow": ["Bash(npm test)"]\n  }\n}\n');
   s.put('.gitignore', 'node_modules/\n.playwright-mcp/\n.superpowers/\n.docs/sdd/sdd-kit.local.json\n.temp/\n');
