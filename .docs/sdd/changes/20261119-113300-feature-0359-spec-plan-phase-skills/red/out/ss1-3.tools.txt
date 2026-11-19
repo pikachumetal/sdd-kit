@@ -1,0 +1,83 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md .docs/sdd/sdd-kit.json .docs/sdd/sdd-kit.local.json 2>&1 | head -300; ls node_modules 2>&1 | head -3; ls .docs/sdd .docs/sdd/specs .docs/sdd/changes 2>&1
+
+>>> Bash: cat src/app.js test/app.test.js test/cancel.test.js .docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md; node "D:/code/.worktrees/sdd-kit/feature-0359-spec-plan-phase-skills/.temp/k359/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< Exit code 2
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0359-spec-plan-phase-skills\.temp\k359\skills\sdd-propose\references\spec-writing.md
+<<< 1	# Writing the spec
+2	
+3	Inspired by superpowers `brainstorming` (MIT).
+4	
+5	You build what you believe the user wants, and that belief is usually thinner than it feels. The interview finds out what they want and why; when you know the why, you make the hundred decisions they never mention the way they would. Ask with `sdd-grilling`. This file turns the answers into `spec.md`, traced from `spec-template.md` of `sdd-templates`: the template says what each section holds, this file says how you get there.
+6	
+7	## What the spec covers
+8	
+9	Before the first question, sort what the change needs int
+
+=== RESULTADO (8 turnos, 0.1672729 $)
+Ahora: te presento lo que he entendido y te hago la única pregunta que reorganiza el diseño. Queda: resolver esa pregunta, escribir la spec con la revisión y pararme en tu aprobación, ~10 min.
+
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+
+**Lo que he entendido**
+- `semana <sala>` devuelve las reservas **activas** de esa sala, una por línea, con el formato `lun 10:00-12:00`. Lo usa el responsable de sala los lunes para preparar la semana.
+- Hoy una reserva solo tiene `room`, `day`, `slot` y `status`, sin fecha. Por eso «de la semana» significa todas las activas de la sala: las canceladas y las anuladas no salen.
+- Cambia solo `src/app.js`. La exportación a CSV queda fuera. Serán unas 2 tasks, así que no hay nada que dividir.
+- Los tests irán en un fichero nuevo, probablemente `test/semana.test.js`. Es una decisión menor mía y la dejo en ✋.
+- Al fusionar usaré `sdd merge --push`, como pides.
+
+**Una cosa que contradice el objetivo**
+Ordenar con `sort()` sobre el texto del día no deja la semana en orden. Alfabéticamente, `jue` va antes que `lun` y `vie` va después de `sáb`. Con tres reservas de Norte el resultado sería este:
+
+```text
+jue 09:00-10:00
+lun 10:00-12:00
+vie 15:00-16:00
+```
+
+El responsable querría ver `lun`, `jue`, `vie`.
+
+❓ **¿Cómo se ordenan las reservas?**
+1️⃣ **Orden de calendario** (`lun mar mié jue vie sáb dom`, y dentro del día por franja). Se hace con una lista de días y un `sort` que usa su posición. Siguen siendo 2 o 3 líneas, no una tabla. Resultado: `lun 10:00-12:00`, `jue 09:00-10:00`, `vie 15:00-16:00`.
+2️⃣ **`sort()` sobre el texto, como decidiste.** Es una sola línea, pero el resultado sale `jue`, `lun`, `vie`.
+➡️ **Recomiendo 1️⃣**, porque el responsable prepara la semana de lunes a domingo y con 2️⃣ tendría que reordenar a ojo. A cambio, añade una constante con los días y un comparador. Si prefieres 2️⃣, lo dejo anotado con tus palabras y sigo.
+
+Dos puntos de «Abierto» los dejo para la spec, con tu propuesta como valor provisional: `sin reservas <sala>` para una sala sin reservas y `test/semana.test.js` para el test. Ambos irán marcados en ✋.
