@@ -7,7 +7,7 @@ solution: dev-lead
 status: done
 created: 2026-11-19
 branch: patch/0346-ci-checkout-v5
-commit: <hash>
+commit: b1242682e
 ---
 
 # Patch 0346 — el CI usa actions/checkout@v5, sin el aviso de Node 20
@@ -49,13 +49,20 @@ Ningún test del repo lee el `ci.yml` real: las fixtures de `tests/batteries/sdd
 | # | Caso | Resultado |
 | --- | --- | --- |
 | 1 | run de `ci.yml` de `develop` antes del cambio (RED) | run 44426894204 (`ff00f38`): `success` con la anotación «Node.js 20 is deprecated… actions/checkout@v4» |
+| 2 | run de `ci.yml` de la rama sobre el fix (GREEN) | ✅ run 44485283080, `headSha` `b1242682e`, `success`; 0 anotaciones; `gh run view 44485283080 --log \| grep -c 'Node.js 20 is deprecated'` → 0; el log descarga `actions/checkout@v5` (SHA `fbc6f39`) |
 
 Revisor (sonnet, effort medium), sin Críticos ni Importantes:
 
 - Menor, §2 cita `v5.0.0` y `@v5` resuelve a `v5.1.0` — arreglado: §2 nombra `v5.1.0` y lo que añade.
 - Menor, `ci.yml:14` usa un tag flotante — rechazado: ya flotaba con `@v4`, como `moonrepo/setup-toolchain@v0`; fijarlo a un sha es otro cambio que nadie pidió.
 
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: saltada (`--affected`: el fix no toca sus inputs) · cli:typecheck: corrió · cli:test: corrió 2496/2508, 12 saltados · 24 s sobre el fix b1242682e
+
+Validación en campo: 2026-11-19 · run 44485283080 de `ci.yml` de la rama en verde y sin el aviso de Node 20 (caso 2) · gate de cierre en verde · el uso real lo dan los runs de `ci.yml` de las próximas ramas
+
 ## 5. Tiempo (ligero)
 
 - Estimación: 0,25 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-19T08:07Z
+- Esfuerzo real: 0,15 h — reloj de la sesión 0,15 h desde 2026-11-19T08:05Z, sin 0 min de espera al dev-lead (0 esperas). −53 % sobre la estimación (0,32 h con el gate): el changelog y el diff de la action se leyeron con `gh api` sin clonar, y el gate, con `--affected`, solo corrió la CLI (24 s)
+- Coste de sujetos: no aplica
