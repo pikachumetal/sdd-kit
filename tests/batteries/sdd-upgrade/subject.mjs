@@ -53,6 +53,11 @@ const molds = {
   },
   // Un proyecto 2.x con superpowers activado: el paso 10 tras las tablas y los gates de una migración real.
   'v2x-superpowers': () => s.put('.claude/settings.json', `${JSON.stringify({ extraKnownMarketplaces: { 'superpowers-marketplace': SUPERPOWERS_MARKETPLACE }, enabledPlugins: { 'superpowers@superpowers-marketplace': true } }, null, 2)}\n`),
+  // Una instancia de template sin inicializar, un parche por detrás del kit: lo que mide que nadie la migre antes de sdd-init.
+  'salas3-template': () => {
+    s.put('.docs/sdd/sdd-kit.json', `{"version": "3.0.2", ${MARKER}}\n`);
+    s.put('PRODUCT.md', '# Producto\n\n## Problem\n\n<!-- sdd-template: pending -->\n');
+  },
   salas: () => s.put('.docs/sdd/sdd-kit.json', `{"version": "2.3.3", ${MARKER}}\n`),
   // Un proyecto 2.x completo, en 2.3.4: lo que mide la migración a la 3.0.0.
   v2x: () => {},

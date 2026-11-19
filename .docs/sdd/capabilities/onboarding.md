@@ -209,10 +209,18 @@ La inicialización de un proyecto con el kit (`sdd-init`): qué puede esperar un
 - THEN ofrece el test de títulos, y con el «sí» deja «Títulos heredados» salidos de `playwright test --list` y el test en verde
 - AND en un proyecto sin E2E no lo nombra
 
+### El resumen de cierre nombra lo que `--finish` escribió fuera de `.docs/`
+
+- GIVEN un `sdd-init`, sobre un template o no, con todos los documentos aprobados, un `.claude/settings.json` propio y un `.gitignore` que ya trae todas las líneas de la init
+- WHEN ejecuta `sdd init --root <raíz> --finish` y escribe su resumen de cierre
+- THEN el resumen nombra, literales, `.claude/settings.json: actualizado` y `.claude/hooks/sdd-kit-loaded.mjs: creado`, como `--finish` los imprimió, y dice que van en el commit de cierre
+- AND no pone `.gitignore`, que `--finish` imprimió `sin cambios`, entre lo que va en el commit de cierre
+- AND con `PRODUCT.md` aún con `<!-- sdd-template: pending -->`, `--finish` imprime `PRODUCT.md: queda <!-- sdd-template: pending -->: hasta quitarla, el kit no migra el proyecto y manda a sdd-init`
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el funcional aportado, en `.docs/sdd/sources/`, literal y sin editar. El progreso de una init en curso, en la clave `init` de `.docs/sdd/sdd-kit.json` (`approved` y `config`), que `sdd init --finish` quita. El bloque de `.claude/settings.json` que escribe la init, en una constante de `cli/src/init/`, que el README reproduce. Los temporales del proyecto, en `.temp/` de la raíz, que la init ignora en `.gitignore`.
 - **Idioma de los nombres**: no aplica.
 - **Límites**: un repo es «con código» si su raíz tiene `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json` o `Gemfile`, o, fuera de `node_modules/`, `.git/` y `.docs/`, un fichero `.ts`, `.js`, `.cs`, `.java`, `.py`, `.go`, `.rs`, `.php`, `.rb`, `.kt` o `.swift`; si no, «sin código».
-- **Avisos**: la init dice su modo en una línea antes de la primera pregunta, y con «con código» ofrece corregirlo si es un template; con `autoMemoryEnabled: true` pregunta antes de cambiarlo, y un «no» lo anota el resumen de cierre; tras un template 2.x, el resumen de cierre dice que el proyecto se pone al día con la migración.
+- **Avisos**: la init dice su modo en una línea antes de la primera pregunta, y con «con código» ofrece corregirlo si es un template; con `autoMemoryEnabled: true` pregunta antes de cambiarlo, y un «no» lo anota el resumen de cierre; tras un template 2.x, el resumen de cierre dice que el proyecto se pone al día con la migración; el resumen de cierre nombra cada línea de `--finish` fuera de `.docs/` que dice `creado` o `actualizado`, y que van en el commit de cierre; `--finish` imprime cada marca de template que queda.
 - **Regla ante conflicto**: lo aprobado es lo que lista `init.approved`, no lo que hay en disco; un fichero previo de la raíz se cosecha y pasa por su gate; en `.claude/settings.json`, una hoja que ya existe con otro valor manda sobre la de la init.

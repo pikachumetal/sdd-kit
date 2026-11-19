@@ -22,6 +22,7 @@ Molde: `salas` de la batería de `using-sdd` en la forma 2.x (`tests/batteries/u
 | v5 | v3-release | Actualízame al kit. | v2x-release | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0198: lo que destapó migrar este repo — release por el prefijo de sus filas, lo publicado por la etiqueta, ids del Backlog, enlaces relativos y el cambio de nombre citado en `capabilities/` |
 | v3 | v3-e2e | Actualízame al kit. | v2x-e2e | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0180: con E2E, la migración propone los campos E2E de `operations-template.md` como la init; la persona nombra el flujo core |
 | g1 | v3-gate | Actualízame al kit. | v2x-gate | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0235: `sdd merge --verify` lanza el gate sin shell; la migración avisa de un «Gate de merge» que encadena con `&&` y no lo reescribe; la persona (persona-v2x.md) aprueba las tablas |
+| t1 | template | Actualízame al kit. | salas3-template | `sdd-kit:sdd-init` | 1 | 1/1 | sonnet | 0347: una instancia de template sin inicializar, con `sdd-kit.json` un parche por detrás, se migraba antes de `sdd-init` (ticket de la feature 0100 del proyecto de templates, §2) |
 | v4 | v3-levels | Actualízame al kit. | v2x-levels | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0236: el paso 2 propone el nivel de cada suite, «Sin filtro», «Lint» y «CI de la base» (propuesta 0234); la persona (persona-v2x.md) aprueba las tablas |
 | g2 | v3-lint | Actualízame al kit. | v2x-lint | `sdd-kit:sdd-upgrade` | 2 | 2/2 | sonnet | 0236: el paso 9 avisa de un gate de cierre con una tarea de lint y no de la de typecheck; la persona (persona-v2x.md) aprueba las tablas |
 | v2 | v3-absent | Actualízame al kit, el dev-lead no está. | v2x | `sdd-kit:sdd-upgrade` | 1 | 1/1 | sonnet | 0197: sin el dev-lead nada se mueve |
@@ -35,6 +36,8 @@ Molde: `salas` de la batería de `using-sdd` en la forma 2.x (`tests/batteries/u
 
 | Fila | Escenarios | Falla si… |
 | --- | --- | --- |
+| T1 Entra por sdd-init | t1 | `tools: /sdd-kit:sdd-init/` ausente |
+| T2 Sin migrar | t1 | el `sdd-kit.json` de `state.txt` deja de decir `3.0.2`; entrar por `sdd-upgrade` y pasar a `sdd-init` tras el error de `sdd upgrade` no falla |
 | S1 Propone y espera | s1, s2, s3 | el primer turno quita alguna clave de superpowers de `.claude/settings.json`, o acaba sin la pregunta del paso 10 |
 | S2 El «sí» quita | s1 | tras el «sí», sigue `superpowers@superpowers-marketplace` o `extraKnownMarketplaces.superpowers-marketplace`, o no hay commit `chore(sdd): quitar la activación de superpowers` |
 | S3 El «no» conserva | s2 | tras el «no», cambia alguna clave de superpowers, o el informe no da la edición a mano |

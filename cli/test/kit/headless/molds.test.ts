@@ -81,8 +81,8 @@ it.concurrent.each(closing)('el molde de cierre $mold ($id) lleva la versión de
   expect(check.status, `${check.stdout}${check.stderr}`).toBe(0);
 });
 
-// sdd-init parte sin versión o en la 1.1.0 y sdd-upgrade/salas3* en la 2.3.4: migran a propósito.
-const MIGRATING = new Set(['sdd-upgrade/salas3', 'sdd-upgrade/salas3-shared']);
+// sdd-init parte sin versión o en la 1.1.0, sdd-upgrade/salas3* en la 2.3.4 y salas3-template un parche por detrás: migran a propósito.
+const MIGRATING = new Set(['sdd-upgrade/salas3', 'sdd-upgrade/salas3-shared', 'sdd-upgrade/salas3-template']);
 const current = (moldCase: MoldCase): boolean => !is2x(moldCase) && moldCase.battery !== 'sdd-init' && !MIGRATING.has(`${moldCase.battery}/${moldCase.mold}`);
 
 // Con el marcador por debajo de la última migración, el hook de inicio avisa de migrar y el sujeto lo atiende en vez de su petición.

@@ -156,6 +156,131 @@ describe('sdd hook session-start', () => {
     expect(output.hookSpecificOutput.additionalContext).not.toContain('Antes de atender la primera petición');
   });
 
+  describe('template instance', () => {
+    const TEMPLATE_WARNING = 'AVISO sdd-kit: el proyecto viene de un template sin inicializar (`PRODUCT.md` lleva `<!-- sdd-template: pending -->`): entra primero por la skill `sdd-init`; las migraciones del kit, hasta la 3.0.3, después.';
+    const plugin = () => pluginWith('3.0.3', ['v3.0.2.md', 'v3.0.3.md']);
+
+    function templateAt(version: string, files: Record<string, string>): string {
+      const root = projectAt(version);
+      for (const [path, text] of Object.entries(files)) {
+        mkdirSync(join(root, path, '..'), { recursive: true });
+        writeFileSync(join(root, path), text);
+      }
+      return root;
+    }
+
+    const run = (root: string, pluginDir = plugin()) => JSON.parse(sessionStartOutput(root, pluginDir, '26.10.0'));
+
+    it('warns template instead of migrations', () => {
+      const output = run(templateAt('3.0.2', { 'PRODUCT.md': '# Producto\n\n<!-- sdd-template: pending -->\n' }));
+      expect(output.systemMessage).toBe(TEMPLATE_WARNING);
+      expect(output.hookSpecificOutput.additionalContext).toContain(TEMPLATE_WARNING);
+      expect(output.hookSpecificOutput.additionalContext).not.toContain('actualízame al kit');
+      expect(output.hookSpecificOutput.additionalContext).not.toContain('Antes de atender la primera petición');
+    });
+
+    it('finds the mark in a table cell', () => {
+      const output = run(templateAt('3.0.2', { '.docs/sdd/steering/constitution.md': '| Reglas | <!-- sdd-template: pending --> |\n' }));
+      expect(output.systemMessage).toContain('(`.docs/sdd/steering/constitution.md` lleva `<!-- sdd-template: pending -->`)');
+    });
+
+    it('uses the canonical mark for a mark with text', () => {
+      const root = templateAt('2.3.2', { '.docs/sdd/mission.md': '<!-- sdd-template: pending — el usuario no tiene respuesta todavía («no sé») -->\n' });
+      const output = run(root, pluginWith('3.0.0', ['v2.3.4.md', 'v3.0.0.md']));
+      expect(output.systemMessage).toBe('AVISO sdd-kit: el proyecto viene de un template sin inicializar (`.docs/sdd/mission.md` lleva `<!-- sdd-template: pending -->`): entra primero por la skill `sdd-init`; las migraciones del kit, hasta la 3.0.0, después.');
+      expect(output.hookSpecificOutput.additionalContext).not.toContain('El kit cargado exige');
+    });
+
+    it('names the first file in reading order', () => {
+      const output = run(templateAt('3.0.2', {
+        'ROADMAP.md': '<!-- sdd-template: pending -->\n',
+        '.docs/sdd/steering/operations.md': '<!-- sdd-template: pending -->\n',
+        'PRODUCT.md': '<!-- sdd-template: pending -->\n',
+      }));
+      expect(output.systemMessage).toBe(TEMPLATE_WARNING);
+    });
+
+    it('ignores a quoted mark', () => {
+      const output = run(templateAt('3.0.2', { 'ROADMAP.md': '| 0347 | el aviso mira `<!-- sdd-template: pending -->` |\n' }));
+      expect(output.systemMessage).toContain('Para aplicarlas, pide «actualízame al kit».');
+    });
+
+    it.each([
+      ['backticks', '```md\n<!-- sdd-template: pending -->\n```\n'],
+      ['tildes', '~~~\n<!-- sdd-template: pending -->\n~~~\n'],
+      ['four backticks around three', '````\n```\n<!-- sdd-template: pending -->\n````\n'],
+      ['an unclosed fence', 'texto\n\n```\n<!-- sdd-template: pending -->\n'],
+    ])('ignores a mark in a fenced block with %s', (_name, text) => {
+      const output = run(templateAt('3.0.2', { '.docs/sdd/steering/operations.md': text }));
+      expect(output.systemMessage).toContain('actualízame al kit');
+    });
+
+    it('counts a mark after a closed fence', () => {
+      const output = run(templateAt('3.0.2', { 'PRODUCT.md': '```\ncódigo\n```\n\n<!-- sdd-template: pending -->\n' }));
+      expect(output.systemMessage).toBe(TEMPLATE_WARNING);
+    });
+
+    it.each([
+      ['CRLF line endings', '# Producto\r\n\r\n<!-- sdd-template: pending -->\r\n'],
+      ['a BOM before the mark', '﻿<!-- sdd-template: pending -->\n'],
+      ['a quoted mark and a real one on the same line', '`<!-- sdd-template: pending -->` y <!-- sdd-template: pending -->\n'],
+      ['a fence closed by plain backticks before the mark', '```md\ncódigo\n```\n<!-- sdd-template: pending -->\n'],
+      ['backticks indented four spaces, an indented code block and no fence', '    ```\n<!-- sdd-template: pending -->\n'],
+    ])('counts the mark with %s', (_name, text) => {
+      expect(run(templateAt('3.0.2', { 'PRODUCT.md': text })).systemMessage).toBe(TEMPLATE_WARNING);
+    });
+
+    it.each([
+      ['only quoted marks on a line', '`<!-- sdd-template: pending -->` y `<!-- sdd-template: pending -->`\n'],
+      ['a fence that an info-string line does not close', '```\n```md\n<!-- sdd-template: pending -->\n```\n'],
+      ['a mark split across lines', '<!--\nsdd-template: pending -->\n'],
+    ])('ignores %s', (_name, text) => {
+      expect(run(templateAt('3.0.2', { 'PRODUCT.md': text })).systemMessage).toContain('actualízame al kit');
+    });
+
+    it('skips a directory named like a document', () => {
+      const root = templateAt('3.0.2', { 'ROADMAP.md': '<!-- sdd-template: pending -->\n' });
+      mkdirSync(join(root, 'PRODUCT.md'));
+      mkdirSync(join(root, '.docs', 'sdd', 'notes.md'));
+      expect(run(root).systemMessage).toContain('(`ROADMAP.md` lleva');
+    });
+
+    it('gives no warning without a version, mark or not', () => {
+      const root = templateAt('3.0.2', { 'PRODUCT.md': '<!-- sdd-template: pending -->\n' });
+      writeFileSync(join(root, '.docs', 'sdd', 'sdd-kit.json'), '{"ids": {"mode": "sequence"}}');
+      expect(run(root).systemMessage).toBeUndefined();
+    });
+
+    it('gives the template warning with an init in progress that keeps a version', () => {
+      const root = templateAt('3.0.2', { 'PRODUCT.md': '<!-- sdd-template: pending -->\n' });
+      writeFileSync(join(root, '.docs', 'sdd', 'sdd-kit.json'), JSON.stringify({ version: '3.0.2', init: { approved: [] } }));
+      expect(run(root).systemMessage).toBe(TEMPLATE_WARNING);
+    });
+
+    it('ignores an uppercase mark', () => {
+      const output = run(templateAt('3.0.2', { 'PRODUCT.md': '<!-- SDD-TEMPLATE: pending -->\n' }));
+      expect(output.systemMessage).toContain('actualízame al kit');
+    });
+
+    it('ignores a mark only under changes', () => {
+      const output = run(templateAt('3.0.2', { '.docs/sdd/changes/20261119-feature-0001-x/spec.md': '<!-- sdd-template: pending -->\n' }));
+      expect(output.systemMessage).toContain('actualízame al kit');
+    });
+
+    it('gives no warning without pending migrations', () => {
+      const output = run(templateAt('3.0.3', { 'PRODUCT.md': '<!-- sdd-template: pending -->\n' }));
+      expect(output.systemMessage).toBeUndefined();
+    });
+
+    it('gives unattended the same template warning', () => {
+      const root = templateAt('3.0.2', { 'PRODUCT.md': '<!-- sdd-template: pending -->\n' });
+      writeFileSync(join(root, '.docs', 'sdd', 'sdd-kit.json'), JSON.stringify({ version: '3.0.2', control: { profile: 'unattended' } }));
+      const context = run(root).hookSpecificOutput.additionalContext;
+      expect(context).toContain(TEMPLATE_WARNING);
+      expect(context).not.toContain('no ofrezcas ni migres');
+    });
+  });
+
   it('old node keeps the migration warning', () => {
     const output = JSON.parse(sessionStartOutput(project('pending-migration'), pluginRoot, '20.11.0'));
     expect(output.systemMessage).toContain('trae migraciones hasta la 2.3.0');

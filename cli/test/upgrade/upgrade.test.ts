@@ -67,6 +67,31 @@ describe('sdd upgrade: pending migrations', () => {
     expect(readMarker(root)).toBe('{"init": {"approved": []}}');
   });
 
+  describe('template instance', () => {
+    const TEMPLATE = new DomainError('template sin inicializar: sigue con sdd-init');
+
+    function template(marker: string): string {
+      const root = project(marker);
+      mkdirSync(join(root, '.docs', 'sdd', 'steering'), { recursive: true });
+      writeFileSync(join(root, '.docs', 'sdd', 'steering', 'constitution.md'), '## Reglas de producto\n\n<!-- sdd-template: pending -->\n', 'utf8');
+      return root;
+    }
+
+    it.each([null, '2.3.2'])('refuses a template instance (mark %s)', (mark) => {
+      const root = template('{"version": "2.3.1"}');
+      expect(() => upgrade(root, kit(), mark)).toThrow(TEMPLATE);
+      expect(readMarker(root)).toBe('{"version": "2.3.1"}');
+    });
+
+    it('refuses a template instance already up to date', () => {
+      expect(() => upgrade(template('{"version": "2.3.2"}'), kit())).toThrow(TEMPLATE);
+    });
+
+    it('init in progress wins over a template mark', () => {
+      expect(() => upgrade(template('{"version": "2.3.1", "init": {"approved": []}}'), kit(), '2.3.2')).toThrow(new DomainError('init en curso: sigue con sdd-init'));
+    });
+  });
+
   it('refuses a broken marker', () => {
     expect(() => upgrade(project('{'), kit())).toThrow(new DomainError('.docs/sdd/sdd-kit.json no es JSON válido: no se toca'));
   });
