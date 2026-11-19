@@ -1,0 +1,116 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd .docs/sdd/steering .docs/sdd/capabilities 2>/dev/null; cat PRODUCT.md ROADMAP.md 2>/dev/null | head -80; ls node_modules 2>/dev/null | head -3; git branch -a
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+{"version": "3.0.2", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "execution": "native"}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+# Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del co
+<<< Sin capacidades
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md package.json; ls src test scripts; wc -l src/* test/*; ls .docs/sdd/specs
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Architecture — salas
+
+## Estructura
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `f
+
+>>> Bash: cd "<run>/repo" && cat src/app.js test/app.test.js; cat README.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/skills/sdd-propose/references" && cat nombrado.md | head -80; echo ======; cat spec-writing.md
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/cli/bin/sdd.js"; node "$S" id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0356-delegate-interview-asks/.temp/k0356green/cli/bin/sdd.js"; git checkout -b feature/0012-export-csv && node "$S" id claim --project-root .; git status --short
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Switched to a new branch 'feature/0012-export-csv'
+sin remoto: la 0012 vale (contador local)
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (12 turnos, 0.1941812 $)
+Ahora: acabo de crear la rama `feature/0012-export-csv` (id 0012 reservado y confirmado) y te paso la nota de comprensión. Queda: tu respuesta a una pregunta, la spec con su revisión y tu aprobación, y luego el plan y la implementación sin más paradas hasta la validación, ~15 min.
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+**Lo que he entendido, corrígeme:**
+
+- Hoy no hay forma de sacar las reservas de una sala de `salas`. El responsable las cuadra los lunes en su hoja de cálculo, así que hace falta un comando que las exporte a un CSV que esa hoja abra bien.
+- Éxito: el responsable lanza el comando para una sala, abre el fichero y ve una fila por reserva con sala, día, franja y estado, sin arreglar nada a mano.
+- Lo preveo en 1 o 2 tasks, sobre una sola superficie (`src/app.js`). No propongo dividirla.
+- Lo que decido yo por ser menor, y que irá a «✋ Decisiones que he tomado yo»:
+  - Nombre del comando.
+  - Cabecera en castellano.
+  - Entran todas las reservas de la sala con su estado (`active`, `cancelled`, `voided`), no solo las activas.
+  - Fichero de test: `test/export.test.js`, como propones.
+- No voy a explorar más código: ya vi lo que hacía falta para clasificar.
+
+❓ **Separador de columnas**
+Propones `;`. No lo doy por decidido, porque depende de cómo abre el CSV la hoja del responsable. Con coma como separador, una hoja en configuración regional española mete cada fila entera en una sola celda. Con `;`, una hoja configurada con separador coma hace lo mismo.
+
+¿Qué programa de hoja de cálculo usa el responsable, y con qué idioma o región lo tiene configurado?

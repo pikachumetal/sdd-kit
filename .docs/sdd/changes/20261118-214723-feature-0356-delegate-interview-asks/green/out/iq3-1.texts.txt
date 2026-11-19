@@ -1,0 +1,37 @@
+--- [3]
+Ahora: leo el contexto SDD del proyecto (PRODUCT, ROADMAP, steering, capabilities). Queda: clasificar el cambio y darte la nota de comprensión, ~2 min.
+
+--- [10]
+Ahora: creo la rama reservando el id (no hay fila de roadmap). Queda: nota de comprensión y entrevista de diseño, ~3 min.
+
+--- [17]
+Ahora: te cuento lo que entiendo y te hago la única pregunta que es tuya. Queda: aprobar la spec, que escribo después de tu respuesta; el plan y la implementación siguen solos en `delegate`. ~10 min, ~0 $ (sin subagentes de momento).
+
+```text
+Carril: feature, modo full · Perfil: delegate, del proyecto (sdd-kit.json)
+Si te vas a ausentar: «apruebo la spec por delegación, nos vemos en la validación»
+Para otro perfil: «perfil `<otro>` para esta feature»
+```
+
+Es una feature (cambia lo que el usuario puede hacer) y no la parto: prevé unas 2 tasks, en una sola superficie. La rama es `feature/0012-exportar-reservas-csv`, con el id 0012 reservado.
+
+**Lo que he entendido, corrígeme:**
+- **Qué:** un comando para sacar las reservas de una sala en formato CSV.
+- **Para qué:** el responsable las cuadra los lunes en su hoja de cálculo. Por eso el fichero tiene que abrirse bien en su hoja sin tocar nada.
+- **Hoy:** `src/app.js` solo tiene en memoria `{room, day, slot, status}`. No hay ninguna salida tabular.
+- **Mis decisiones (irán a ✋ en la spec):**
+  - **Comando:** `exportar <sala>`, que escribe el CSV por stdout para poder redirigirlo (`> norte.csv`).
+  - **Columnas:** `sala;dia;franja;estado`, con cabecera.
+  - **Contenido:** entran todas las reservas de la sala, también las canceladas y las anuladas, y el estado distingue cada una. Cuadrar una semana exige ver lo que se cayó, no solo lo activo.
+  - **Sala inexistente:** mensaje de error en castellano, sin CSV.
+  - **Fichero de test:** `test/export.test.js`. Es menor y lo decido yo.
+- **Fuera de alcance:** el `.ics` (0004), filtrar por fechas y escribir el fichero a disco.
+
+Una cosa queda abierta y es tuya. Tu mensaje la deja en «Abierto» con la propuesta `;`, y esa propuesta no cuenta como decisión:
+
+❓ **Separador de columnas**
+Un CSV con el separador que no espera la hoja de cálculo se abre con todo en una sola columna. Con `libres`, por ejemplo, la reserva de hoy sale así:
+1️⃣ **`;`** → `sala;dia;franja;estado` / `Norte;lun;10:00-12:00;active`. Se abre en columnas en una hoja con configuración regional española, donde la coma es el separador decimal. En una hoja en inglés saldría todo en una columna.
+2️⃣ **`,`** → `sala,dia,franja,estado` / `Norte,lun,10:00-12:00,active`. Es el estándar y se abre bien en una hoja en inglés, pero en una española saldría todo en una columna.
+➡️ **Recomiendo 1️⃣**, porque trabajáis en castellano (la constitución lo exige para la interfaz) y la hoja del responsable lo más probable es que sea española. A cambio, si su hoja está en inglés tendrá que importarlo indicando el separador. Dime en qué configuración regional está su hoja y lo cierro según eso.
+

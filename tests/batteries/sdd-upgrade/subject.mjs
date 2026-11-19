@@ -48,7 +48,7 @@ const molds = {
   // Ya migrado, con una regla que repite el kit: lo que mide que la revisión de reglas no abra el paso de superpowers.
   'salas3-current': () => {
     salas3WithSuperpowers({ 'superpowers@superpowers-marketplace': true });
-    s.put('.docs/sdd/sdd-kit.json', `{"version": "3.0.1", ${MARKER}}\n`);
+    s.put('.docs/sdd/sdd-kit.json', `{"version": "3.0.3", ${MARKER}}\n`);
     s.put('CLAUDE.md', '# salas\n\n- El id de una feature se elige a mano.\n');
   },
   // Un proyecto 2.x con superpowers activado: el paso 10 tras las tablas y los gates de una migración real.

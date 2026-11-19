@@ -1,0 +1,32 @@
+--- [3]
+Ahora: leo el contexto del proyecto (docs, no código). Queda: clasificar, entrevistar y escribir la spec hasta presentártela, ~10 min.
+
+--- [28]
+Ahora: repaso de coherencia (`git grep`, delta sobre una copia). Queda: revisión de la spec con un revisor y presentártela, ~5 min.
+
+--- [61]
+La spec está escrita, revisada y aprobada por delegación, y la he commiteado en `feature/0012-aviso-sala-ocupada` (commit `600c24d`). Está en `.docs/sdd/changes/20261118-222003-feature-0012-aviso-sala-ocupada/spec.md`.
+
+Me he parado antes de escribir el plan. Pediste que te presentara la spec, y el perfil `delegate` por sí solo habría seguido hasta implementar. Dime «sigue» y escribo el plan y paso a implementar.
+
+🦆 Con este cambio, `reservar Norte lun 14:00-15:00` reserva la sala y responde `reservada Norte lun 14:00-15:00`. Si con esa reserva Norte llega a 3 reservas activas ese lunes, añade una segunda línea: `aviso: Norte muy ocupada el lun (3 reservas)`. Las canceladas y las anuladas no cuentan, y el aviso no bloquea la reserva.
+
+**Límite importante (decisión 12):** las reservas viven solo en memoria y cada ejecución arranca con una sola reserva (Norte, lun). Desde la terminal una ejecución nunca llega a 3, así que el aviso solo se ve en los tests. Si lo quieres ver desde la terminal, hace falta persistir reservas, que es otra feature. Dime si prefieres una enmienda o una fila nueva en el roadmap.
+
+**✋ Decisiones que he tomado yo — valida estas** (en la spec hay 17):
+- **Umbral:** «muy ocupada» es 3 o más reservas activas de una sala el mismo día. Cuento reservas porque las franjas son texto libre sin validar. El 3 es provisional.
+- **Cuándo avisa:** en la respuesta de `reservar`, que es el único momento posible sin estado entre ejecuciones.
+- **Canal y texto:** una segunda línea en la salida estándar, sin correo (eso es la fila 0008).
+- **`reservar <sala> <día> <franja>`:** es un comando nuevo. La forma `--cada-semana` no cambia.
+- **Sala inexistente:** responde `sala desconocida: Oeste` y no reserva.
+- **Capacidad nueva:** `room-occupancy`.
+- **Enfoque:** aviso al reservar, frente a un comando `ocupacion <día>` o un aviso dentro de `libres`.
+- **Tests:** exporto `resetBookings()` para aislar cada test, porque `bookings` es estado del módulo.
+- **Quedan fuera:** detectar la misma franja reservada dos veces (cuenta como dos) y validar el formato de franja.
+
+**Pendiente de ti:** no dijiste para qué quieres el aviso ni si 3 es tu umbral real. Lo dejé como pendiente para la validación.
+
+**Revisión:** hubo dos rondas con un revisor cada una, sin tercera. Acepté casi todos los hallazgos, entre ellos un Crítico: los escenarios no decían cómo se llegaba a 2 reservas, y de ahí salió la decisión 12. Rechacé separar `room-booking` de `room-occupancy` y el comentario sobre `PRODUCT.md` (existe, en la raíz). Todo está en «Hallazgos de la review». El delta se fusiona sin rechazos sobre una copia: 6 requisitos y 5 reglas.
+
+**Validación:** la haces tú. Como el aviso no se ve desde la terminal, valida con `node --test test/occupancy.test.js`.
+
