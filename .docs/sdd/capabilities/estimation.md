@@ -17,7 +17,8 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - AND la fecha de la fila es la de cierre: la primera línea `created: AAAA-MM-DD` o `date: AAAA-MM-DD` del artefacto; sin ella, o con el placeholder de la plantilla, la fecha de la carpeta, que es la de apertura
 - AND `Sesión ($)` es la cifra de `Coste de la sesión`; «sin precio» y «no medido» aparecen tal cual, y sin la línea la celda es `—`
 - AND el fichero lleva cabecera "AUTO-GENERADO — no editar a mano"
-- AND sin `changes/` ni `specs/` bajo `.docs/sdd/` ni `docs/sdd/`, sale con error y dice qué carpetas buscó
+- AND con `.docs/sdd/steering/estimation.md` y sin `changes/` ni `specs/`, sale con 0 y `.docs/sdd/steering/estimation-log.md` tiene la cabecera y ninguna fila
+- AND sin `.docs/sdd/` ni `docs/sdd/`, sale con error y dice qué carpetas buscó
 
 ### El script vive en el kit y las skills de cierre lo invocan
 

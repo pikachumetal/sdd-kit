@@ -31,7 +31,8 @@ function notFound(root: string): DomainError {
 
 function resolveDocsPath(root: string): string {
   const candidates = ['.docs/sdd', 'docs/sdd'].map((candidate) => join(root, candidate));
-  const docsPath = candidates.find((path) => changeFolders(path).length > 0);
+  // Un proyecto recién iniciado no tiene changes/ ni specs/: su log sale con la cabecera y cero filas.
+  const docsPath = candidates.find((path) => changeFolders(path).length > 0) ?? candidates.find((path) => existsSync(path));
   if (docsPath === undefined) throw notFound(root);
   return docsPath;
 }
