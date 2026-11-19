@@ -195,7 +195,7 @@ Para el resumen de `sdd-init`, una sola vía sensata: el paso 8 lista lo que `--
 - GIVEN un `sdd-init`, sobre un template o no, con todos los documentos aprobados, un `.claude/settings.json` propio y un `.gitignore` que ya trae todas las líneas de la init
 - WHEN ejecuta `sdd init --root <raíz> --finish` y escribe su resumen de cierre
 - THEN el resumen nombra, literales, `.claude/settings.json: actualizado` y `.claude/hooks/sdd-kit-loaded.mjs: creado`, como `--finish` los imprimió, y dice que van en el commit de cierre
-- AND no nombra `.gitignore`, que `--finish` imprimió `sin cambios`
+- AND no pone `.gitignore`, que `--finish` imprimió `sin cambios`, entre lo que va en el commit de cierre
 - AND con `PRODUCT.md` aún con `<!-- sdd-template: pending -->`, `--finish` imprime `PRODUCT.md: queda <!-- sdd-template: pending -->: hasta quitarla, el kit no migra el proyecto y manda a sdd-init`, y el resumen lo nombra entre lo pendiente
 
 #### Reglas de la capacidad — onboarding
@@ -223,6 +223,8 @@ Los escenarios `n8` y `t1` no existen aún: el comando de previsión no los lee,
 | Suma | 7 sujetos, ~35 min | 0,91 |
 
 ## Enmiendas
+
+- 2026-11-19 — el AND de `.gitignore` del requisito «El resumen de cierre nombra lo que `--finish` escribió fuera de `.docs/`» pasa de «no nombra `.gitignore`» a «no lo pone entre lo que va en el commit de cierre» — los dos sujetos del GREEN de `n8` listan `.gitignore: sin cambios` y lo dejan fuera del commit, que es lo que pedía el ticket; Task 3 — aprobada: «1»
 
 ## Aprobaciones
 

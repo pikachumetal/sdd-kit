@@ -83,6 +83,26 @@ function moldTemplate() {
   doc('Environments', '- **Runner**: `pnpm env:setup`', '.docs/sdd/environments.md');
   s.put('.docs/sdd/sdd-kit.json', '{"version": "1.1.0", "channel": "plugin", "updated": "2026-09-01"}\n');
 }
+// Un template con todo aprobado, a falta de --finish: settings.json propio y .gitignore completo, para que --finish diga actualizado, creado y sin cambios.
+function moldTemplateFinish() {
+  s.put('package.json', '{\n  "name": "nuevo-proyecto",\n  "scripts": { "dev": "ng serve", "test": "ng test" }\n}\n');
+  s.put('src/login.ts', 'export function login(user: string): boolean {\n  return user.length > 0;\n}\n');
+  doc('Product', '## Problem\n\nLas salas se reservan por correo y se pisan.\n\n## Terminology\n\n- **Franja**: una hora de una sala.', 'PRODUCT.md');
+  s.put('ROADMAP.md', '# Roadmap — Reservas\n\n## Now\n\n## Next\n\n## Later\n');
+  doc('Constitution', '## Convenciones\n\n- Commits convencionales.\n- Ramas git-flow: `main`, `develop` y `feature/<id>` desde `develop`.\n\n## Reglas de producto\n\n- **Dónde viven los datos**: en la base de datos.', '.docs/sdd/steering/constitution.md');
+  doc('Operations', '## Stack\n\n- Angular 20 y .NET 10.\n\n## Testing\n\n- **Gate de cierre**: `ng test`', '.docs/sdd/steering/operations.md');
+  doc('Architecture', 'Frontend Angular, backend .NET, login con cookie.', '.docs/sdd/steering/architecture.md');
+  doc('Debt', '## Por triar', '.docs/sdd/steering/debt.md');
+  doc('Estimation', 'Método: horas.', '.docs/sdd/steering/estimation.md');
+  s.put('CLAUDE.md', '# Reservas\n\n- Documentos de anclaje: `PRODUCT.md`, `ROADMAP.md` y `.docs/sdd/steering/`.\n');
+  s.put('CHANGELOG.md', '# Changelog\n\n## [Unreleased]\n');
+  // sdd estimation log falla sin changes/ ni specs/: el paso 5 ya hecho deja al sujeto llegar a --finish.
+  s.put('.docs/sdd/steering/estimation-log.md', '# Estimation log\n\n| Fecha | Id | Tipo | Estimado | Real |\n| --- | --- | --- | --- | --- |\n');
+  s.put('.claude/settings.json', '{\n  "permissions": {\n    "allow": ["Bash(npm test)"]\n  }\n}\n');
+  s.put('.gitignore', 'node_modules/\n.playwright-mcp/\n.superpowers/\n.docs/sdd/sdd-kit.local.json\n.temp/\n');
+  const approved = ['PRODUCT.md', '.docs/sdd/steering/constitution.md', '.docs/sdd/steering/operations.md', '.docs/sdd/steering/architecture.md', 'ROADMAP.md', '.docs/sdd/steering/debt.md', '.docs/sdd/steering/estimation.md', 'CHANGELOG.md', 'CLAUDE.md'];
+  s.put('.docs/sdd/sdd-kit.json', `${JSON.stringify({ version: '3.0.3', init: { approved, config: { ids: { mode: 'sequence' }, control: { profile: 'delegate' }, execution: 'auto', validation: { mode: 'manual' } } } })}\n`);
+}
 function progress() {
   if (!fresh) return progressOld();
   progressNew();
@@ -112,11 +132,13 @@ const molds = {
     else claudeOld();
   },
   template: moldTemplate,
+  'template-finish': moldTemplateFinish,
 };
 const mold = moldFrom(() => MOLD, s, molds);
 mold();
 s.git('init', '-q', '-b', 'main');
 s.commit('feat: base del molde');
+if (MOLD === 'template-finish') s.git('checkout', '-q', '-b', 'develop');
 
 // Una pregunta por turno: si n7 para en una, el segundo turno la contesta para que llegue a proponer ## Testing entero.
 // n3 y n6 también: con una pregunta por turno, los dos sujetos de n3 preguntan antes de proponer el `## Testing`.
