@@ -7,7 +7,7 @@ solution: causa raíz
 status: done
 created: 2026-11-19
 branch: patch/0360-estimation-log-empty-project
-commit: <hash>
+commit: d72ee91ee
 ---
 
 # Patch 0360 — sdd estimation log sin changes/ ni specs/ escribe el log con su cabecera y cero filas
@@ -49,6 +49,8 @@ exit=1
 | 2 | sin `.docs/sdd/` ni `docs/sdd/` sigue fallando con el mensaje de hoy | ✅ `test/estimation/layout.test.ts` y `test/estimation/fixtures.test.ts` («falla con mensaje si no hay specs») |
 | 3 | sin regresión en lo que llama a `generateEstimationLog` (`sdd merge` incluido) | ✅ `npx vitest run test/cli.test.ts test/estimation test/merge` → 367/368 con el test viejo de layout en rojo (el del `AND` retirado); reescrito, `test/estimation/layout.test.ts test/cli.test.ts test/estimation/fixtures.test.ts` → 63/63. `moon run cli:typecheck` en verde |
 
+Validación en campo: 2026-11-19 · smoke con ejecución real de la CLI construida (`dist/`): proyecto con solo `.docs/sdd/steering/estimation.md` → exit 0, «Generado …\.docs\sdd\steering\estimation-log.md con 0 filas.», primera línea `<!-- AUTO-GENERADO por sdd estimation log (sdd-kit)` y solo las 2 líneas de cabecera de la tabla; carpeta sin `.docs/sdd/` ni `docs/sdd/` → exit 1 con «No se encuentra changes/ ni specs/ bajo .docs/sdd ni docs/sdd en '…\bare'.» · la suite corre sobre el merge de sincronización (hay otra rama abierta, `feature/0359-spec-plan-phase-skills`) · el uso real lo da el paso 5 de `sdd-init` en el próximo proyecto recién iniciado
+
 Revisión del fix (un revisor `sonnet`, `sdd-kit:effort-medium`): causa raíz y fix correctos, sin Crítico ni Importante. Sus cuatro Menores:
 
 - El mensaje «No se encuentra changes/ ni specs/…» ya solo sale sin `.docs/sdd/` ni `docs/sdd/`, y nombra un criterio que ya no aplica — rechazado aquí: cambiar el texto que ve el usuario no lo fija el ticket; queda en el ticket del patch.
@@ -60,7 +62,10 @@ Revisión del fix (un revisor `sonnet`, `sdd-kit:effort-medium`): causa raíz y 
 
 - Estimación: 0,25 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-19T11:53Z
-- Esfuerzo real:
+- Esfuerzo real: 0,18 h — reloj de la sesión 0,18 h desde 2026-11-19T11:51Z, sin 0 min de espera al dev-lead (0 esperas). −44 % sobre la estimación (0,32 h con el gate): la causa estaba en una línea y se confirmó con una sola reproducción, sin esperas ni huecos
+- Tokens del hilo: 5.934.281 — claude-opus-5-5 5.934.281
+- Tokens de subagentes: 183.389 en 1 despacho — Revisar patch 0360 claude-sonnet-5-5 183.389 / 0 min
+- Coste de la sesión: 2,79 $ (hilo 2,63 $ + subagentes 0,16 $)
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
