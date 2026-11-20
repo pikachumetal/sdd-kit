@@ -122,14 +122,14 @@ call and your reason as a proposal they can correct, and move the work
 forward. Process steps are always your calls: writing things up, where
 files go, looking further, how to show something. Do them and say so.
 <!-- kit: 0359 · sustituye: «one at a time.» -->
-Ask with `sdd-grilling`. Use plain language, pitched just a little above where
+Ask with `sdd-grilling`.
 <!-- kit: fin -->
-your human partner is. Match their vocabulary; never use process jargon.
+<!-- kit: 0361 · quita: «Use plain language,…never use process jargon.» -->
 You never need to quote this skill to your human partner.
 
-Be clear and concise. Lead with what matters. Avoid jargon. When you
-report what you found, give them the most important findings and offer
-the rest.
+<!-- kit: 0361 · sustituye: «Be clear and concise.…Avoid jargon.» -->
+When you report what you found, give them the most important findings and offer the rest.
+<!-- kit: fin -->
 
 **Get them describing.** Until you know why they want it, ask open
 questions, with no example answers attached. Their own words carry
@@ -211,7 +211,7 @@ or missing: each section ends with «¿va bien?».
 <!-- kit: fin -->
 
 <!-- kit: 0359 · sustituye: «Before you send a chunk,…put a mockup next to the description.» -->
-Each section opens with what changes for whoever uses the product, in plain words and with an example with data, and its question is about that: «al exportar, cada factura sale con su vencimiento: `F-2026-014 · vence 30/11`», not «añado `dueDate` a `InvoiceDto` y lo mapeo en `ExportService`». Code names, files and internal flags go after it, only if needed (the short mode of `sdd-rubber-duck`): a «sí» to a section nobody understood approves nothing. What the user corrects goes into the spec before you write it.
+Each section opens with what changes for whoever uses the product, with an example with data, and its question is about that, asked as `sdd-grilling` says: a «sí» to a section nobody understood approves nothing. What the user corrects goes into the spec before you write it.
 
 The sections are interview turns, inside the spec's stop, not a new stop of the profile: they apply in `pair`; in `delegate` they go to the spec's ✋ and its stop approves them. No sections with 3 tasks or fewer, in lite, in a spike, with the spec approved by delegation, in `unattended`, or once the user asks to start right away; in the last three there's no approaches message either, and the approaches go to the spec's Approach and what you'd have asked to ✋ marked «pendiente». The sections don't replace the gate: the spec is approved the same way.
 <!-- kit: fin -->

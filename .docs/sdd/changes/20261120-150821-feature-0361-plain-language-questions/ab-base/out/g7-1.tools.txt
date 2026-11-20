@@ -1,0 +1,197 @@
+
+>>> Skill: sdd-kit:sdd-config
+<<< Launching skill: sdd-kit:sdd-config
+
+>>> Bash: cd "<run>/repo"; ls -a . .docs/sdd 2>&1; echo ---; cat .docs/sdd/sdd-kit.json; echo ---; cat .docs/sdd/sdd-kit.local.json; echo ---; cat .gitignore
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0361-plain-language-questions\.temp\k361-base\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec (its interview asks what only the user can answer), the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than
+<<< Exit code 1
+.:
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+
+.docs/sdd:
+./
+../
+sdd-kit.json
+specs/
+steering/
+---
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+cat: .gitignore: No such file or directory
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.15944570000000002 $)
+Revisé los dos ficheros. Existe `.docs/sdd/sdd-kit.json`; `sdd-kit.local.json` no existe y tampoco hay `.gitignore`.
+
+| # | Clave | Valor | Fichero |
+| --- | --- | --- | --- |
+| 1 | `ids.mode` | `sequence` | `sdd-kit.json` |
+| 2 | `control.profile` | falta → `delegate` | — |
+| 3 | `merge` (`into`, `noFf`, `removeWorktree`) | falta → el cierre pregunta | — |
+| 4 | `merge.push` | falta → no hace push | — |
+| 5 | `control.maxParallelAgents` y `control.silence.*` | faltan → 3 agentes, 8 min entre pasos y 20 min en comandos largos | — |
+| 6 | `execution` | falta → `auto` | — |
+| 7 | `validation.mode` | falta → `manual` | — |
+| 8 | `validation.startEnvironment` | falta → `false` | — |
+| 9 | `review.minors` | falta → `defer` | — |
+| 10 | `pricing` | falta → el cierre dice «sin precio» | — |
+
+Además del catálogo, `sdd-kit.json` tiene `version: 3.0.4`, `channel: plugin` y `release.hasRecipient: false`. No hay avisos de claves ignoradas, porque no existe el fichero local.
+
+Voy una pregunta por turno, empezando por la que más condiciona las demás.
+
+❓ **Perfil de control**
+Ahora rige `delegate`, el valor por defecto, porque nadie lo ha declarado.
+1️⃣ **`delegate`**: para en la spec, en las desviaciones y en la validación, y se ahorra la puerta del plan.
+2️⃣ **`pair`**: para en todas las puertas, incluido el plan y cada task.
+3️⃣ **`unattended`**: no para hasta el final de la release. El merge a `main`, el tag y cualquier acción hacia fuera siguen siendo de una persona.
+➡️ **Recomiendo 1️⃣**, porque con menos paradas la 0.6.0 cerró tres tasks en un día. A cambio, el plan se aprueba sin que lo veas.
+
+¿Qué perfil quieres?
+
+=== RESULTADO (1 turnos, 0.17187410000000003 $)
+Queda `delegate`. Ahora falta decidir dónde se escribe.
+
+❓ **¿A quién aplica `control.profile: delegate`?**
+La clave no existe en ningún fichero, así que hoy rige por defecto.
+1️⃣ **Para todo el equipo** (`sdd-kit.json`, en git): queda declarado para el proyecto y lo ve cualquiera que lo abra.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`, fuera de git): no cambia nada para el resto, y yo crearía el fichero y la línea en `.gitignore`.
+➡️ **Recomiendo 1️⃣**, porque la clave falta en el proyecto y `delegate` es la política que ya rige para todos. A cambio, si alguien del equipo prefiere otro perfil, tendrá que sobrescribirlo en su fichero local.
+
+¿Equipo o solo tú?
+
+=== RESULTADO (1 turnos, 0.18308680000000002 $)
+Queda sin escribir: `delegate` sigue rigiendo por defecto, sin declarar en ningún fichero.
+
+❓ **Merge al cerrar una feature**
+El repo usa `main` como rama estable y `develop` como integración. Hoy, al cerrar, el kit pregunta cómo hacer el merge.
+1️⃣ **Sí, merge a `develop` con `--no-ff` y sin borrar el worktree**: guarda `merge: {into: "develop", noFf: true, removeWorktree: false}` en `sdd-kit.json`. La feature queda en un commit que se revierte de una vez, y borrar un worktree con cambios sin commitear no tiene vuelta atrás.
+2️⃣ **No**: no se escribe nada y el cierre sigue preguntando cada vez.
+3️⃣ **Otra combinación**: me dices la política completa, por ejemplo con borrado automático del worktree.
+➡️ **Recomiendo 1️⃣**, porque deja el merge decidido y el borrado, que es lo irreversible, en manos de una persona. A cambio, los worktrees cerrados los borras tú a mano.
+
+¿Qué opción eliges?
+
+>>> Bash: cd "<run>/repo" && cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+EOF
+cat .docs/sdd/sdd-kit.json
+<<< {"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false}}
+
+=== RESULTADO (2 turnos, 0.20252320000000001 $)
+Escrito en `sdd-kit.json`: `merge: {into: "develop", noFf: true, removeWorktree: false}`. No he hecho commit.
+
+❓ **Push de `develop` tras el merge**
+Como `main` es la rama estable y `develop` la de integración (git-flow), `develop` es compartida. Hoy el cierre no hace push.
+1️⃣ **Sí**: se guarda `merge.push: true`, y tras el merge del cierre se hace push de `develop` sin preguntar. Un merge sin push no lo ve nadie más. La rama estable, los tags y cualquier otro push siguen siendo de una persona.
+2️⃣ **No**: se guarda `merge.push: false` y el push lo haces tú.
+3️⃣ **No sé**: no se escribe nada y el cierre no hace push.
+➡️ **Recomiendo 1️⃣**, porque `develop` es la rama de integración compartida. A cambio, un merge con un error llega al remoto antes de que lo veas.
+
+¿Qué opción eliges?
+
+>>> Bash: cd "<run>/repo" && cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}}
+EOF
+cat .docs/sdd/sdd-kit.json
+<<< {"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}}
+
+=== RESULTADO (2 turnos, 0.2226723 $)
+Escrito en `sdd-kit.json`: `merge.push: true` y `validation.mode: manual`. Sigue sin haber commit.
+
+❓ **Frenos por defecto**
+Hoy rigen estos valores: hasta 3 agentes en paralelo, aviso tras 8 minutos de silencio entre pasos y tras 20 en un comando largo.
+1️⃣ **Sí, los valores por defecto están bien**: se guardan `control.maxParallelAgents: 3`, `control.silence.betweenStepsMinutes: 8` y `control.silence.longCommandMinutes: 20`.
+2️⃣ **Números propios**: me das los tres valores y los guardo.
+3️⃣ **No sé**: no se escribe nada y rigen los valores por defecto.
+➡️ **Recomiendo 1️⃣**, porque tope y vigilancia ya funcionan con esos números. A cambio, si más adelante quieres otros, hay que cambiarlos en `sdd-kit.json`.
+
+¿Qué opción eliges?
+
+>>> Bash: cd "<run>/repo" && cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}, "control": {"maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}}
+EOF
+cat .docs/sdd/sdd-kit.json
+<<< {"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}, "control": {"maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}}
+
+=== RESULTADO (2 turnos, 0.2433839 $)
+Escrito en `sdd-kit.json`: `control.maxParallelAgents: 3`, `control.silence.betweenStepsMinutes: 8` y `control.silence.longCommandMinutes: 20`.
+
+❓ **Método de ejecución de los planes**
+Hoy rige `auto`, porque la clave no está declarada.
+1️⃣ **`auto`**: cada plan recomienda su método. Native es lo más barato, y subagentes se recomiendan para planes largos o con revisión por task.
+2️⃣ **`native`**: siempre en la sesión. Tras una compactación con dos o más tasks pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes.
+4️⃣ **No sé**: no se escribe nada y rige `auto`.
+➡️ **Recomiendo 1️⃣**, porque el handoff de `sdd-plan-writing` pesa cada plan y elige el método que le conviene. A cambio, el método puede cambiar de un plan a otro.
+
+¿Qué opción eliges?
+
+=== RESULTADO (1 turnos, 0.25497339999999996 $)
+Elegido `auto`, pero todavía no lo escribo: falta decidir en qué fichero va.
+
+❓ **¿A quién aplica `execution: auto`?**
+La clave no existe en ningún fichero, y `auto` ya rige por defecto.
+1️⃣ **Para todo el equipo** (`sdd-kit.json`, en git): queda declarado para el proyecto.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`, fuera de git): no afecta al resto. Crearía el fichero y añadiría su línea a `.gitignore`, que hoy no existe.
+3️⃣ **No sé**: no se escribe nada y `auto` sigue rigiendo.
+➡️ **Recomiendo 1️⃣**, porque la clave falta en el proyecto. A cambio, cada persona que prefiera otro método tendrá que sobrescribirlo en su fichero local.
+
+¿Qué opción eliges?
+
+>>> Bash: cd "<run>/repo" && cat > .docs/sdd/sdd-kit.json <<'EOF'
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}, "control": {"maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto"}
+EOF
+cat .docs/sdd/sdd-kit.json
+<<< {"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": true}, "validation": {"mode": "manual"}, "control": {"maxParallelAgents": 3, "silence": {"betweenStepsMinutes": 8, "longCommandMinutes": 20}}, "execution": "auto"}
+
+=== RESULTADO (2 turnos, 0.27630369999999993 $)
+Escrito `execution: "auto"` en `sdd-kit.json`.
+
+❓ **Hallazgos Minor de la revisión final**
+Hoy rige `defer`, porque la clave no está declarada.
+1️⃣ **`defer`**: los Minor van al ledger como diferidos. Un Minor no cambia lo que recibe quien usa el producto, y cada fix alarga la pasada de fix.
+2️⃣ **`fix`**: los Minor entran en la pasada de fix y se cierran en cada feature.
+3️⃣ **No sé**: no se escribe nada y rige `defer`.
+➡️ **Recomiendo 1️⃣**, porque el cierre sale más corto. A cambio, los Minor se acumulan en el ledger hasta que alguien los triaje.
+
+¿Qué opción eliges?
+
+=== RESULTADO (1 turnos, 0.2882294999999999 $)
+Queda sin escribir: `review.minors` no se declara y rige `defer`. Si más adelante quieres cambiarlo, me lo dices y lo escribo.
+
+❓ **Entorno arrancado antes de validar**
+Esta pregunta es personal: si respondes, se guarda en `sdd-kit.local.json`, fuera de git. Yo crearía el fichero y añadiría su línea a `.gitignore`, que hoy no existe. Cuando te toque validar una feature, el kit puede arrancar el entorno antes de darte el guion de pruebas.
+1️⃣ **No** (`validation.startEnvironment: false`): la validación te dice cómo arrancarlo y no queda nada corriendo hasta que pruebes.
+2️⃣ **Sí** (`validation.startEnvironment: true`): lo encuentras ya corriendo al empezar a probar.
+3️⃣ **No sé**: no se escribe nada y rige `false`.
+➡️ **Recomiendo 1️⃣**, porque así no queda nada corriendo sin que lo uses. A cambio, arrancarlo lo haces tú cuando te toque probar.
+
+¿Qué opción eliges?
+
+=== RESULTADO (8 turnos, 0.30115556999999993 $)
+conversación con persona: 8 respuestas

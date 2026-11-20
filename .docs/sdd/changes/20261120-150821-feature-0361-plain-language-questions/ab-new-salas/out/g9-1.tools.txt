@@ -1,0 +1,82 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: node -v; cat package.json 2>/dev/null; ls; ls .docs/sdd 2>/dev/null; grep -ril "cobertura\|coverage" .docs 2>/dev/null | head
+<<< v26.10.0
+{"type": "module"}
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cat PRODUCT.md | head -30; ls src test .docs/sdd/steering; cat .docs/sdd/steering/*.md | head -60; head -20 test/* | head -40
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+
+src:
+app.js
+
+test:
+app.test.js
+# Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-f
+
+>>> Bash: node --test --experimental-test-coverage 2>&1 | tail -25; node --test --help 2>&1 | grep -i coverage | head
+<<< ✔ libres excluye la sala reservada en la franja (1.0267ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1524ms)
+✔ cancelar respeta el día (0.181ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 172.0749
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ---------------------------------------------
+
+=== RESULTADO (8 turnos, 0.1330521 $)
+Estoy mirando qué trae Node y qué dice el proyecto antes de preguntarte nada. Ya lo tengo.
+
+**Lo que he encontrado**
+- `operations.md` dice «Node 22, sin dependencias externas». `package.json` no tiene dependencias.
+- Node trae cobertura propia. He ejecutado `node --test --experimental-test-coverage` en el repo (Node 26.10 aquí) y da líneas 93,75 %, ramas 83,33 % y funciones 100 %. También marca la línea sin cubrir, la 13 de `src/app.js`.
+- Admite umbrales que hacen fallar el comando: `--test-coverage-branches`, `--test-coverage-functions` y su equivalente para líneas. También admite `--test-coverage-include` y `--test-coverage-exclude`.
+- El flag sigue llevando `experimental` en el nombre. Su salida o sus opciones podrían cambiar entre versiones de Node.
+- No he mirado `src/app.js` más allá de lo que enseña el informe.
+
+❓ **¿Qué usamos para medir la cobertura?**
+
+1️⃣ **El de Node.** Añadimos el flag al comando de tests, sin instalar nada. Se mantiene la regla de cero dependencias. Lo que cuesta: el informe es solo texto en terminal, sin HTML ni lcov, y el flag es experimental.
+
+2️⃣ **c8.** Añadimos una devDependency y `package.json` pasa a tener `node_modules` y lockfile. Da informes HTML y lcov, y es estable. Lo que cuesta: rompe «sin dependencias externas», así que habría que cambiar `operations.md`. Además es otra pieza que mantener.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto lo usas solo tú, solo lo ejecutas en tu terminal y declara cero dependencias. Un informe en texto con línea y rama sin cubrir te basta. A cambio, si algún día quieres HTML o lcov para un servicio externo, tocará pasar a c8.
+
+¿Cuál eliges?
