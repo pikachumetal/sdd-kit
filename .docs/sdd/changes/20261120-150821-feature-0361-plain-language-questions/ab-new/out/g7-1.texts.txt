@@ -1,0 +1,137 @@
+--- [8]
+Esta es la configuración actual del kit. No existe `sdd-kit.local.json`, así que no hay claves ignoradas ni avisos.
+
+| Clave | Valor | Origen / por defecto |
+| --- | --- | --- |
+| `version` | 3.0.4 | `sdd-kit.json` |
+| `channel` | plugin | `sdd-kit.json` |
+| `ids.mode` | sequence | `sdd-kit.json` |
+| `release.hasRecipient` | false | `sdd-kit.json` |
+| `control.profile` | falta | `delegate` |
+| `merge` (`into`, `noFf`, `removeWorktree`, `push`) | falta | el cierre pregunta; no hace push |
+| `control.maxParallelAgents` | falta | 3 |
+| `control.silence.betweenStepsMinutes` | falta | 8 |
+| `control.silence.longCommandMinutes` | falta | 20 |
+| `execution` | falta | `auto` |
+| `validation.mode` | falta | `manual` |
+| `validation.startEnvironment` | falta | `false` (solo personal) |
+| `review.minors` | falta | `defer` |
+| `pricing` | falta | el cierre da «sin precio» |
+
+Empiezo por la decisión que condiciona a las demás.
+
+❓ **Perfil de control**
+Ahora rige `delegate` por defecto, porque `sdd-kit.json` no declara `control.profile`.
+1️⃣ **`delegate`**: para en la spec, en las desviaciones y en la validación. No tiene puerta en el plan.
+2️⃣ **`pair`**: para en todas las puertas, también en el plan y tras cada tarea.
+3️⃣ **`unattended`**: no para hasta el final de la release. El merge a `main`, el tag y cualquier acción hacia fuera siguen siendo de una persona.
+➡️ **Recomiendo 1️⃣**, porque ahorra la puerta del plan y mantiene las paradas donde solo tú puedes responder. A cambio, no ves el plan antes de que se ejecute.
+
+¿Qué perfil quieres?
+
+--- [10]
+Anotado: `delegate`.
+
+❓ **¿A quién se aplica el perfil `delegate`?**
+La clave `control.profile` no existe en ningún fichero.
+1️⃣ **Para todo el equipo** (`sdd-kit.json`, en git): lo heredan todas las personas del proyecto.
+2️⃣ **Solo para ti** (`sdd-kit.local.json`, fuera de git): no cambia lo que ve el resto. Hay que crear el fichero y añadir su línea a `.gitignore`, que ahora no existe.
+➡️ **Recomiendo 1️⃣**, porque la clave falta en el proyecto y `delegate` ya es el valor por defecto, así que dejarlo declarado fija el criterio común. A cambio, para trabajar distinto tendrías que sobrescribirlo en tu fichero local.
+
+¿Equipo o solo para ti?
+
+--- [12]
+Entendido: no escribo nada para `control.profile` y rige `delegate` por defecto.
+
+❓ **Merge al cerrar una feature**
+El repo tiene `main` como rama estable y `develop` como rama de integración. Ahora `sdd-kit.json` no declara `merge`, así que cada cierre te lo pregunta.
+1️⃣ **Declarar la política**: se hace merge a `develop` con `--no-ff` y la eliminación del worktree se deja a una persona (`merge.into: develop`, `noFf: true`, `removeWorktree: false`).
+2️⃣ **No declararla**: cada cierre te presenta la política y espera tu respuesta.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature en un solo commit que se revierte de una vez, y borrar un worktree con cambios sin confirmar no tiene vuelta atrás. A cambio, ya no te preguntan en cada cierre, aunque puedes cambiarlo cuando quieras.
+
+¿Declaro la política de merge a `develop`?
+
+--- [13]
+Escribo el bloque `merge` en `sdd-kit.json`.
+
+--- [15]
+Hecho: `merge` queda declarado en `sdd-kit.json` (`into: develop`, `noFf: true`, `removeWorktree: false`).
+
+❓ **Push de `develop` tras el merge**
+Con `main` estable y `develop` como rama de integración, `develop` es una rama compartida. Ahora el cierre no hace push.
+1️⃣ **Sí, sin preguntar** (`merge.push: true`): tras el merge, el cierre sube `develop` a su remoto. La rama estable, los tags y cualquier otro push siguen siendo de una persona.
+2️⃣ **No** (`merge.push: false`): el cierre no sube nada y lo haces tú.
+➡️ **Recomiendo 1️⃣**, porque un merge sin push no lo ve nadie más del equipo. A cambio, si el merge no era el que querías, ya estará en el remoto.
+
+¿Hago el push de `develop` automáticamente?
+
+--- [19]
+Escrito en `sdd-kit.json`: `merge.push: true` y `validation.mode: manual`. Esta última es el valor por defecto, pero queda declarada.
+
+Quedan dos claves por decidir, una cada vez.
+
+❓ **Frenos por defecto**
+Ahora rigen los valores por defecto: hasta 3 agentes en paralelo, aviso tras 8 minutos de silencio entre pasos y tras 20 minutos en un comando largo.
+1️⃣ **Dejarlos como están** (no escribo nada y siguen rigiendo).
+2️⃣ **Fijar tus propios números** (`control.maxParallelAgents`, `control.silence.betweenStepsMinutes`, `control.silence.longCommandMinutes`).
+➡️ **Recomiendo 1️⃣**, porque son los valores con los que se ha probado el kit y no hay señal de que te estorben. A cambio, si un agente tarda más de lo normal, el aviso puede saltar antes de lo que quieres.
+
+¿Te sirven los frenos por defecto?
+
+--- [20]
+Anotado: no escribo nada y siguen los frenos por defecto.
+
+❓ **Método de ejecución de los planes**
+Ahora rige `auto`, porque `sdd-kit.json` no declara `execution`.
+1️⃣ **`auto`**: cada plan recomienda su método. Native es lo más barato; subagentes, para planes largos o con revisión por tarea.
+2️⃣ **`native`**: siempre en la sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes.
+➡️ **Recomiendo 1️⃣**, porque el plan pesa su propio tamaño y elige el método más barato que le sirve. A cambio, el método cambia de un plan a otro.
+
+¿Qué método quieres?
+
+--- [23]
+Decidido `auto` y escrito como `execution: "auto"` en `sdd-kit.json`.
+
+❓ **¿Arranco el entorno antes del guion de prueba?**
+Cuando te toque validar una feature, ahora no lo arranco. El guion de validación te explica cómo hacerlo. Es una preferencia personal: iría a `sdd-kit.local.json`, fuera de git, y habría que crear ese fichero y su línea en `.gitignore`.
+1️⃣ **No** (`validation.startEnvironment: false`): nada queda corriendo hasta que pruebes.
+2️⃣ **Sí** (`true`): te lo encuentras ya arrancado.
+➡️ **Recomiendo 1️⃣**, porque nada queda consumiendo recursos hasta el momento de probar. A cambio, arrancarlo lo haces tú siguiendo el guion.
+
+¿Arranco el entorno antes de darte el guion de prueba?
+
+--- [24]
+Entendido: no escribo nada y rige `false`, así que no creo `sdd-kit.local.json`.
+
+❓ **Hallazgos Minor de la revisión final**
+Ahora rige `defer`, porque `sdd-kit.json` no declara `review.minors`.
+1️⃣ **`defer`**: los Minor van al ledger como diferidos y no entran en la pasada de fix.
+2️⃣ **`fix`**: los Minor entran en la pasada de fix y se cierran en cada feature.
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe quien usa el producto y cada fix alarga la pasada. A cambio, los Minor se acumulan en el ledger hasta que alguien los trate.
+
+¿Los Minor se difieren o se corrigen?
+
+--- [26]
+Entendido: no escribo nada y rige `defer`. Antes de la última pregunta leo la página de precios para proponerte la tabla.
+
+--- [30]
+He leído la página de precios (https://platform.claude.com/docs/en/about-claude/pricing). Como no imprime los ids de API, he usado los que da el entorno para la familia 5.5.
+
+❓ **Tabla de precios para el coste de la sesión**
+Ahora `sdd-kit.json` no declara `pricing`, así que el cierre dice «sin precio». Esta es la tabla que escribiría, en USD por millón de tokens, con fecha 2026-11-20:
+
+| Modelo | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` (prompts hasta 100.000 tokens) | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Haiku 5.5 cuesta más con prompts de más de 100.000 tokens: 0.50 / 0.625 / 1 / 0.05 / 2.50. La tabla solo guarda un precio por modelo, así que uso el tramo bajo.
+
+1️⃣ **Sí, escribir esta tabla** (`pricing.usdPerMillionTokens`, `pricing.source`, `pricing.updated`): el cierre da el coste.
+2️⃣ **No**: el cierre sigue diciendo «sin precio».
+➡️ **Recomiendo 1️⃣**, porque el coste de cada sesión queda a la vista sin que lo calcules a mano. A cambio, los precios envejecen y habrá que releer la página para actualizarlos, y las sesiones con prompts largos de Haiku saldrán infravaloradas.
+
+¿Escribo la tabla de precios?
+

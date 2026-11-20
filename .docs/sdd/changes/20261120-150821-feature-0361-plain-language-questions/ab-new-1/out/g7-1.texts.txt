@@ -1,0 +1,140 @@
+--- [7]
+Esta es la configuración actual del kit. Solo existe `.docs/sdd/sdd-kit.json`. No hay `sdd-kit.local.json` ni `.gitignore`, así que no hay claves locales que avisar como ignoradas.
+
+| Clave | Valor | Origen / por defecto |
+| --- | --- | --- |
+| `version` | 3.0.4 | `sdd-kit.json` |
+| `channel` | plugin | `sdd-kit.json` |
+| `release.hasRecipient` | false | `sdd-kit.json` |
+| `ids.mode` | sequence | `sdd-kit.json` |
+| `control.profile` | falta | se aplica el valor por defecto |
+| `merge` (`into`, `noFf`, `removeWorktree`) | falta | el cierre de cada feature pregunta |
+| `merge.push` | falta | el cierre no hace push |
+| `control.maxParallelAgents` y `control.silence.*` | faltan | 3 agentes, aviso a los 8 min entre pasos y a los 20 en comando largo |
+| `execution` | falta | `auto` |
+| `validation.mode` | falta | `manual` |
+| `validation.startEnvironment` | falta | no arranca el entorno |
+| `review.minors` | falta | `defer` |
+| `pricing` | falta | el cierre da «sin precio» |
+
+Hay varias claves sin valor. Te las pregunto una por turno, empezando por la que más condiciona a las demás.
+
+❓ **Perfil de control (`control.profile`)**
+Ahora mismo no hay ninguno declarado. Decide cuánto me paro a consultarte.
+1️⃣ **`delegate`**: me paro en la spec, en las desviaciones y en la validación. Me ahorro la puerta del plan.
+2️⃣ **`pair`**: me paro más, también en el plan, y trabajamos casi al paso.
+3️⃣ **`unattended`**: casi no me paro. Es el que menos te interrumpe y el que menos control te deja.
+➡️ **Recomiendo 1️⃣**, porque deja los tres puntos donde tu criterio cambia el resultado y quita el resto de paradas. Con menos paradas, la 0.6.0 cerró tres tareas en un día. A cambio, el plan no pasa por tu aprobación.
+
+¿Qué perfil eliges, y lo quieres para todo el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`)? Como el proyecto aún no tiene la clave, te recomiendo «para el equipo».
+
+--- [9]
+Entendido. No escribo `control.profile` y se aplica el valor por defecto.
+
+La siguiente es el cierre de cada feature. La rama de integración es `develop` y la estable es `main`.
+
+❓ **Merge al cerrar una feature (`merge`)**
+Ahora el cierre de cada feature te pregunta cómo hacer el merge.
+1️⃣ **Sí**: hago merge en `develop` con `--no-ff` y borrar el worktree lo dejo en manos de una persona. Se escribe `merge` con `into: develop`, `noFf: true` y `removeWorktree: false`.
+2️⃣ **No**: no escribo nada y el cierre sigue preguntando cada vez.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` deja la feature en un solo commit que se revierte de golpe. Además, borrar un worktree con cambios sin commitear no tiene vuelta atrás. A cambio, el historial de `develop` tiene un commit de merge por feature.
+
+¿Quieres que el cierre haga el merge en `develop` con `--no-ff` y deje el borrado del worktree a una persona?
+
+--- [13]
+Ya está escrito en `.docs/sdd/sdd-kit.json`: `merge` con `into: develop`, `noFf: true` y `removeWorktree: false`.
+
+Como `merge` ya está declarado, toca la pregunta del push.
+
+❓ **Push tras el merge (`merge.push`)**
+Tras hacer merge en `develop`, ahora no se hace push de esa rama.
+1️⃣ **Sí**: hago push de `develop` a su remoto sin preguntar. Se escribe `merge.push: true`. `main`, las tags y cualquier otro push siguen siendo tuyos.
+2️⃣ **No**: se escribe `merge.push: false` y el cierre no hace push.
+➡️ **Recomiendo 1️⃣**, porque tu convención es `main` estable y `develop` para integración. `develop` es una rama compartida, y un merge sin push no lo ve nadie más. A cambio, un merge malo llega al remoto sin que lo mires antes.
+
+¿Quieres que tras el merge haga push de `develop` sin preguntar?
+
+--- [15]
+Escrito en `.docs/sdd/sdd-kit.json`: `merge.push: true` y `validation.mode: manual`.
+
+Siguen sin valor los frenos, `execution`, `review.minors` y `pricing`. Pregunto los frenos.
+
+❓ **Frenos por defecto (`control.*`)**
+Ahora se aplican hasta 3 agentes en paralelo, un aviso tras 8 minutos de silencio entre pasos y otro tras 20 minutos en un comando largo.
+1️⃣ **Dejarlos así**: no escribo nada y se aplican esos valores.
+2️⃣ **Cambiarlos**: me dices tus números y escribo `control.maxParallelAgents`, `control.silence.betweenStepsMinutes` y `control.silence.longCommandMinutes`.
+➡️ **Recomiendo 1️⃣**, porque son los valores con los que trabajan el tope de agentes y el aviso de silencio, y no hay nada en este proyecto que pida otros. A cambio, si una tarea larga te hace esperar más de 20 minutos, te aviso igual.
+
+¿Te valen los frenos por defecto?
+
+--- [16]
+Anotado: no escribo nada para los frenos ni para `control.profile`, y se aplican los valores por defecto.
+
+Quedan `execution`, `review.minors` y `pricing`. Sigo con `execution`.
+
+❓ **Ejecución de los planes (`execution`)**
+Ahora se aplica `auto`.
+1️⃣ **`auto`**: cada plan recomienda su método al escribirse.
+2️⃣ **`native`**: se ejecuta en esta sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`**: siempre con subagentes.
+➡️ **Recomiendo 1️⃣**, porque el traspaso de `sdd-plan-writing` valora cada plan. `native` es lo más barato y los subagentes se reservan para planes largos o con revisión por tarea. A cambio, el método cambia de un plan a otro.
+
+¿Qué método eliges, y lo quieres para todo el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`)?
+
+--- [19]
+He escrito `execution: "auto"` en `.docs/sdd/sdd-kit.json`, el archivo del equipo. No me dijiste el destino, así que lo decidí yo: el proyecto no tenía la clave y el método de ejecución es una política del proyecto. Si prefieres que sea solo tuyo, lo muevo a `sdd-kit.local.json`.
+
+Quedan `review.minors` y `pricing`. Sigo con `review.minors`.
+
+❓ **Hallazgos Minor de la revisión final (`review.minors`)**
+Ahora se aplica `defer`.
+1️⃣ **`defer`**: los Minor pasan al ledger como diferidos.
+2️⃣ **`fix`**: los Minor entran en la pasada de arreglos de cada feature.
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe la persona usuaria del producto, y cada arreglo alarga la pasada de arreglos. A cambio, los Minor se acumulan en el ledger hasta que alguien los trate.
+
+¿Los Minor van al ledger como diferidos (`defer`)?
+
+--- [21]
+De acuerdo. No escribo `review.minors` y se aplica `defer`.
+
+Queda `pricing`. Antes de preguntarte leo la página de precios para proponerte la tabla.
+
+--- [25]
+Pude leer la página de precios (https://platform.claude.com/docs/en/about-claude/pricing). Esta es la tabla que propongo, en USD por millón de tokens, con los modelos de la familia 5.5. Es la actual y los ids de API los conozco por esta sesión.
+
+| Modelo (API id) | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Dos cosas conviene que sepas antes de decidir:
+- La página no lista los ids de API, así que la correspondencia entre nombre e id sale de los ids que conozco, no de la página.
+- Haiku 5.5 tiene dos tarifas. Aquí pongo la de prompts de hasta 100.000 tokens. Con prompts más largos cuesta 0.50 de input y 2.50 de output, así que el coste real de una sesión larga quedaría subestimado.
+
+❓ **Tabla de precios (`pricing`)**
+Ahora el cierre da «sin precio».
+1️⃣ **Sí, con esta tabla**: escribo `pricing.usdPerMillionTokens` con esas tres filas, `pricing.source` con la URL y `pricing.updated: 2026-11-20`.
+2️⃣ **No**: no escribo nada y el cierre sigue dando «sin precio».
+➡️ **Recomiendo 1️⃣**, porque así el cierre te da el coste de cada sesión en vez de «sin precio». A cambio, el precio de Haiku con prompts largos quedaría por debajo del real.
+
+¿Escribo la tabla tal como está?
+
+--- [26]
+Entendido. No escribo `pricing` y el cierre sigue dando «sin precio». Con esto he terminado de repasar la configuración.
+
+**Escrito en `.docs/sdd/sdd-kit.json`:**
+- `merge`: `into: develop`, `noFf: true`, `removeWorktree: false`, `push: true`
+- `validation.mode: manual`
+- `execution: auto`. El destino lo decidí yo, porque no me dijiste si era para el equipo o para ti.
+
+**Sin escribir, con el valor por defecto aplicado:**
+- `control.profile`, que quedó sin declarar.
+- Los frenos (3 agentes, avisos a los 8 y a los 20 minutos).
+- `review.minors` (`defer`).
+- `pricing` («sin precio»).
+
+No hay `sdd-kit.local.json` y no he tocado `.gitignore`. No he hecho commit, así que el cambio de `sdd-kit.json` está sin commitear.
+
+Si más adelante quieres definir los precios o el perfil de control, vuelve a invocarme con «revisa la configuración».
+

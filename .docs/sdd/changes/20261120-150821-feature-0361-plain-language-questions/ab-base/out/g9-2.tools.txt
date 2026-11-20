@@ -1,0 +1,91 @@
+
+>>> Skill: sdd-kit:sdd-explore
+<<< Launching skill: sdd-kit:sdd-explore
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: node -v; cat package.json; ls; ls .docs/sdd 2>/dev/null; git ls-files | head -50
+<<< v26.10.0
+{"type": "module"}
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+sdd-kit.json
+specs/
+steering/
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+.docs/sdd/steering/operations.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.jso
+
+>>> Bash: cat .docs/sdd/steering/constitution.md .docs/sdd/steering/operations.md .docs/sdd/steering/debt.md; head -20 test/app.test.js; wc -l src/app.js test/app.test.js; cat .docs/sdd/sdd-kit.json
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código: `node --test` en verde antes de cada commit.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+# Operations — salas
+
+## Comandos
+
+- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+- Git: git-flow (`main`, `develop`, `feature
+
+>>> Bash: node --test --experimental-test-coverage --test-coverage-lines=80 2>&1 | tail -25
+<<< ✔ libres excluye la sala reservada en la franja (0.9373ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1276ms)
+✔ cancelar respeta el día (0.119ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 151.3516
+ℹ start of coverage report
+ℹ ----------------------------------------------------------
+ℹ file      | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------
+ℹ src       |        |          |         | 
+ℹ  app.js   |  93.75 |    83.33 |  100.00 | 13
+ℹ ---------------------------------------------
+
+=== RESULTADO (8 turnos, 0.1254062 $)
+Estoy comprobando qué trae Node y qué dice el proyecto, y ya tengo lo necesario para plantearte la decisión.
+
+❓ **¿Cobertura con Node o con c8?**
+Lo que he encontrado:
+- `operations.md` dice «Node 22, sin dependencias externas». El `package.json` es solo `{"type": "module"}` y no tiene `devDependencies`.
+- Los tests usan `node --test` (`test/app.test.js`, 3 tests sobre un `src/app.js` de 16 líneas).
+- Lo he probado aquí con Node v26.10.0: `node --test --experimental-test-coverage --test-coverage-lines=80` da un informe por fichero. Ahora mismo marca 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones, con la línea 13 sin cubrir. El umbral falla el comando si no se alcanza.
+- No lo he probado en Node 22, la versión que declara el proyecto. Lo de abajo sobre la bandera en 22 sale de lo que recuerdo, sin comprobar.
+
+1️⃣ **Cobertura de Node (`--experimental-test-coverage` más umbrales)**
+- Funciona con los tres tipos de métrica y con umbrales que rompen el comando, sin instalar nada.
+- Se cumple la constitución («sin dependencias externas»).
+- En Node 22 la bandera sigue llamándose experimental y la salida podría cambiar entre versiones. Solo da informe de texto y lcov, sin HTML.
+
+2️⃣ **c8**
+- Da informe HTML, ficheros de configuración, exclusiones finas y formatos para CI.
+- Es la primera `devDependency` del proyecto. Habría que cambiar `operations.md`, y es un paquete más que mantener para 16 líneas de código.
+
+➡️ **Recomiendo 1️⃣**, porque el proyecto ya declara «sin dependencias externas» y el código es tan pequeño que el informe de texto basta. A cambio, si más adelante necesitáis HTML o integrarlo con un servicio de CI, habrá que pasar a c8.
+
+¿Te encaja empezar con la cobertura de Node (1️⃣)?
