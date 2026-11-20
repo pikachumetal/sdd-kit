@@ -175,6 +175,8 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 4: A/B** brazo nuevo; tabla por fila y brazo.
 - [ ] **Step 5: Commit de la task** — `test(sdd-grilling): j1 sobre reservas y medida de la enmienda`.
 
+> Enmiendas segunda y tercera (2026-11-20): la Task 3 añadió la tanda de corrección (la regla en la nota de entendimiento de `sdd-spec-writing` y la devolución en «Answers» de `sdd-grilling`), siguió en rojo y cerró devolviendo las skills, `dist/` y los topes a los de `develop`; su commit real es `test(sdd-grilling): j1 sobre reservas y cierre solo con la prueba`.
+
 ---
 
 ## Estimación y esfuerzo
@@ -190,6 +192,8 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 ---
 
 ## 3. Validación final
+
+> Tercera enmienda: el criterio de éxito pasa a ser la prueba `j1` en rojo con el kit de `develop` y su evidencia; los ADDED y el rojo → verde del Self-review de abajo ya no se entregan.
 
 - [ ] Gate de cierre, una vez y en el hilo principal: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop`
 - [ ] Verificación de los criterios de éxito de la spec (Intent): `j1` rojo → verde; g7, g8, g9 y p2 igual o mejor
