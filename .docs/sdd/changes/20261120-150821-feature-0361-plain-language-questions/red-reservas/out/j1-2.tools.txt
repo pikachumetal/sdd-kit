@@ -1,0 +1,320 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; node "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+test/cancel.test.js
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "relea
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md package.json src/app.js .docs/sdd/steering/*.md; cat .docs/sdd/specs/*free/spec.md; head -40 test/app.test.js
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/skills/sdd-propose/references" && sed -n 1,60p control-profiles.md; cd <run>/repo; git branch --show-current; cat .docs/sdd/specs/*0006-free/walkthrough.md | head -30
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec (its interview asks what only the user can answer), the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration b
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/skills/sdd-propose/references" && cat nombrado.md | head -60; node ../../../cli/bin/sdd.js id --help 2>&1 | head -20
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ 
+
+>>> Bash: R="<run>/repo"; S="D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/cli/bin/sdd.js"; cd "$R" && node "$S" id next --project-root "$R" --reserve
+<<< 0012
+
+>>> Bash: R="<run>/repo"; S="D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/cli/bin/sdd.js"; cd "$R" && git checkout -b feature/0012-libres-por-dia && node "$S" id claim --project-root "$R"
+<<< Switched to a new branch 'feature/0012-libres-por-dia'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (13 turnos, 0.2272651 $)
+Ahora: te cuento lo que entendí y lo que dejo abierto, antes de escribir la spec. Queda: tu respuesta a una pregunta y luego la spec, ~5 min.
+
+**Lo que entendí (corrígeme).** `libres <franja>` debe decir qué salas están libres *un día concreto*. Hoy solo mira la franja: `freeRooms(slot)` en `src/app.js` no recibe el día. Por eso Norte, que solo está reservada el lunes de 10:00 a 12:00, sale ocupada de 10:00 a 12:00 *todos* los días. Lo que cambia: `libres` pasa a recibir el día y a filtrar las reservas por día y franja. Tocaría `freeRooms`, el despacho de `libres` en `run`, y el test actual `libres excluye la sala reservada en la franja`. Ese test llama sin día y espera `Sur`.
+
+**Contestado**
+- Solo cuentan las reservas activas, no las canceladas ni las anuladas. Sale de `freeRooms` y `PRODUCT.md`.
+- Los días se escriben como en las reservas (`lun`). Sale de los datos de `src/app.js`.
+
+**Menor, lo decido yo**
+- Cómo se parte el trabajo en tasks y qué nombre llevan los tests. Es método y no cambia lo que se construye.
+
+**Tuyo**
+- Cómo se pide el día en `libres`. Es lo único abierto, y es la pregunta de abajo.
+
+❓ **¿Cómo se pasa el día a `libres`?**
+1️⃣ **Día obligatorio tras la franja:** `libres 10:00-12:00 lun` → `Sur`, y `libres 10:00-12:00 mar` → `Norte, Sur`. Sin día no se puede preguntar, así que `libres 10:00-12:00` pasa a dar un error de uso. Rompe el test actual y cualquier uso que tengas.
+2️⃣ **Día opcional:** igual que el 1️⃣ con día. Sin día se queda como hoy: sala ocupada si lo está *cualquier* día. Es compatible, pero mantiene la respuesta engañosa que quieres quitar.
+➡️ **Recomiendo 1️⃣**, porque la respuesta sin día es justo el bug, y con un solo usuario no hay quien dependa de la forma antigua. A cambio, el comando viejo deja de funcionar y hay que acordarse de poner el día.
+
+¿Prefieres 1️⃣ o 2️⃣?
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/skills" && ls sdd-templates sdd-templates/* | head -40; cat sdd-templates/spec-template.md 2>/dev/null || cat sdd-templates/*/spec-template.md; cat "<run>/repo/.docs/sdd/specs/20260917-090000-task-0006-free/spec.md"
+<<< sdd-templates/SKILL.md
+
+sdd-templates:
+SKILL.md
+templates/
+
+sdd-templates/templates:
+adr-template.md
+architecture-template.md
+capability-template.md
+changelog-template.md
+constitution-template.md
+critical-path-template.md
+data-model-template.md
+debt-template.md
+estimation-template.md
+kit-feedback-template.md
+launch-prompt-template.md
+now-next-later-template.md
+operations-template.md
+patch-template.md
+plan-template.md
+PRODUCT-template.md
+proposal-template.md
+release-notes-template.md
+research-template.md
+retro-template.md
+roadmap-template.md
+spec-template.md
+tasks-template.md
+validation-templat
+
+>>> Bash: date -u +%Y%m%d-%H%M%S; git -C "<run>/repo" config user.name
+<<< 20261120-151417
+Fixture
+
+>>> Write: <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md
+<<< File created successfully at: <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md (file state is current in your context — no need to Read it back)
+
+>>> Skill: sdd-kit:sdd-spec-approval
+<<< Launching skill: sdd-kit:sdd-spec-approval
+
+>>> Bash: R="<run>/repo"; S="D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/cli/bin/sdd.js"; cd "$R"; git grep -n "libres" -- . ':!.docs/sdd/changes' ; T=$(mktemp -d); cp -r .docs/sdd "$T/sdd"; node "$S" capability merge --path "$T/sdd" --artifact "$R/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md" 2>&1 | tail -8
+<<< CHANGELOG.md:10:- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](.docs/sdd/specs/20260917-090000-task-0006-free/)
+src/app.js:28:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+test/app.test.js:6:  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+room-availability.md: añadido «Salas libres por día y franja»
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Edit: <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md
+<<< The file <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+>>> Skill: sdd-kit:sdd-spec-review
+<<< Launching skill: sdd-kit:sdd-spec-review
+
+>>> Bash: cat "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/skills/sdd-spec-review/references/reviewer-brief.md"; grep -n -A12 -i "silence-watch\|## Silence" "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/skills/sdd-propose/references/control-profiles.md" | head -40
+<<< # The reviewer's brief
+
+Paste it into each reviewer's dispatch, with the points its lens gets (§3 of `sdd-spec-review`):
+
+> You are an adversarial reviewer of an SDD spec, with the `<domain|technical>` lens. Your job is to find what will make the implementation or the gate fail, not to approve. Read: `<path of spec.md>`, `.docs/sdd/steering/constitution.md`, `PRODUCT.md`, `<touched capabilities from capabilities/>` [technical lens: and `.docs/sdd/steering/architecture.md`]. Don't read code or other specs. Look, in this order, for: (1) contradictions with the living truth of `capabilities/`
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisión adversarial spec 0012
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a4785084686c0bdf1 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/repo" && node "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/cli/bin/sdd.js" watch subagent --description "Revisión adversarial spec 0012"
+<<< Command running in background with ID: b5d33m96e. Output is being written to: D:\code\.worktrees\sdd-kit\feature-0361-plain-language-questions\.temp\claude\9a613868f0d49825\a524a8b7-b25d-4685-abeb-0e945f6660a2\tasks\b5d33m96e.output. You will be notified when it completes. To check interim output, use Read on that file path.
+Session cwd remains <run>\repo; directory changes made by the backgrounded command do not apply to subsequent commands.
+
+>>> Read: <run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md
+<<< 1	---
+2	id: 20261120-151417-feature-0012-libres-por-dia
+3	feature: 0012
+4	title: libres tiene en cuenta el día
+5	mode: full
+6	status: draft
+7	created: 2026-11-20
+8	author: Fixture
+9	approvers:
+10	  - name: TBD
+11	    approved_at: null
+12	---
+13	
+14	# Spec — libres tiene en cuenta el día
+15	
+16	🦆 Hoy `libres 10:00-12:00` dice que Norte está ocupada de 10:00 a 12:00 todos los días, porque no mira el día. Con el cambio, `libres 10:00-12:00 lun` da `Sur` (Norte está reservada el lunes) y `libres 10:00-12:00 mar` da `Norte, Sur`. Por dentro, `freeRooms` pasa a recibir el día y a filtrar las reserv
+
+>>> Read: <run>/repo/.docs/sdd/steering/constitution.md
+<<< 1	# Constitution — salas
+2	
+3	1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+4	2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+5	3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+6	4. Texto de la interfaz y de los documentos en castellano.
+7	
+
+>>> Read: <run>/repo/PRODUCT.md
+<<< 1	# Producto — salas
+2	
+3	Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+4	
+5	## Product Purpose
+6	
+7	Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+8	
+9	## Terminology
+10	
+11	- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+12	- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+13	- **Cancelación**: la reserva que anula el 
+
+>>> Read: <run>/repo/.docs/sdd/steering/architecture.md
+<<< 1	# Architecture — salas
+2	
+3	## Estructura
+4	
+5	- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.
+6	- Git: git-flow (`main`, `develop`, `feature/<id>`).
+7	
+
+>>> Bash: cd "<run>/repo/.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia" && python - <<'EOF'
+import re
+p='spec.md'
+s=open(p,encoding='utf-8').read()
+# Capacidades
+s=s.replace("- Nuevas: `room-availability` — qué salas están libres un día y una franja.",
+"- Nuevas: `room-availability` — qué salas están libres un día y una franja. No existe capacidad previa (no hay `capabilities/`): se parte de cero, y que `libres` sin día pase a dar `uso:` es un cambio de contrato respecto a la 0006.")
+# decisions block
+a=s.index("- Revisión de la spec:")
+b=s.index("- Delta probado")
+new_dec='''- Revisión de la spec: nivel mínimo, un solo revisor (Sonnet, los siete puntos). Un cambio de una función pequeña (~60 líneas en 3 ficheros), sin datos ni migración. Mínimo razonable: sin revisor, deja sin cubrir las contradicciones entre el delta y el test que cambia.
+1. **pendiente** — El día se pasa como segundo argumento obligatorio: `libres <franja> <día>`. El dev-lead no eligió entre día obligatorio y opcional; respondió solo la regla de «libre». Elijo obligatorio porque un día opcional conserva la respuesta engañosa que se quiere quitar, y un solo usuario no depende de la forma antigua. Los escenarios del delta dependen de esta decisión y de la 2.
+2. **pendiente** — Sin día, `libres` responde `uso: libres <franja> <día>`. Texto mío, nadie lo dijo.
+3. El test existente `libres excluye la sala reservada en la franja` se reescribe con día (`lun`); no se conserva la llamada sin día. Consecuencia de la decisión 1.
+4. Una reserva cancelada o anulada no ocupa la sala: solo cuentan las reservas activas. Es la regla que ya aplica `freeRooms`.
+5. La franja se compara por igualdad exacta, como hoy: una reserva `10:00-12:00` ocupa `10:00-12:00`, y una `11:00-13:00` o `12:00-14:00` no ocupa `10:00-12:00`. El solapamiento parcial no entra: es una regla nueva que nadie pidió y que `PRODUCT.md` no define.
+6. Un día que no coincide con ninguna reserva (también uno mal escrito como `xyz`) devuelve todas las salas. Validar el formato del día es la deuda «Sin validación del formato de franja horaria», fuera de esta feature.
+7. Enfoque: A frente a B (ver Approach).
+'''
+s=s[:a]+new_dec+s[b:]
+# retira table
+s=s.replace("| `libres <franja>` sin día | `src/app.js` (`freeRooms`, `run`), `test/app.test.js` | decisiones 1 y 3 |\n\n| Entrada «Listado de salas libres por franja» | `CHANGELOG.md:10` | queda: es historial de la 0006; la entrada de la 0012 la escribe el cierre de la release |",
+"| `libres <franja>` sin día | `src/app.js` (`freeRooms`, `run`), `test/app.test.js` | decisiones 1 y 3 |\n| Entrada «Listado de salas libres por franja» | `CHANGELOG.md` | queda: es historial de la 0006; la entrada de la 0012 la escribe el cierre de la release |")
+s=s.replace("- Filas que implementa: nada: comprobado con `git grep -n libres` fuera de `changes/`","- Filas que implementa: nada: la 0012 no tiene fila en `ROADMAP.md` (comprobado leyéndolo) y `git grep -n libres` fuera de `changes/` solo da los sitios de la tabla")
+s=s.replace("- No entra: validar el formato de la franja o del día (está en la deuda técnica «Por triar»); reservar, cancelar y anular.","- No entra: validar el formato de la franja o del día (está en la deuda técnica «Por triar»); solapamiento parcial de franjas; reservar, cancelar y anular.")
+s=s.replace("- Términos resueltos: ninguno","- Términos resueltos: «libre» — una sala está libre si ese día a esa hora no tiene reserva activa; «franja» — el texto `hh:mm-hh:mm` tal cual se reservó")
+# delta
+a=s.index("#### ADDED")
+b=s.index("## Aprobaciones")
+delta='''#### ADDED — Salas libres por día y franja
+
+- GIVEN Norte con una reserva activa el lunes `10:00-12:00`
+- WHEN `libres 10:00-12:00 lun`
+- THEN `Sur`
+- GIVEN la misma reserva
+- WHEN `libres 10:00-12:00 mar`
+- THEN `Norte, Sur`
+- GIVEN la misma reserva
+- WHEN `libres 10:00-12:00 mie`
+- THEN `Norte, Sur`
+- GIVEN la misma reserva
+- WHEN `libres 12:00-14:00 lun`
+- THEN `Norte, Sur`
+- GIVEN la reserva de Norte del lunes `10:00-12:00` cancelada
+- WHEN `libres 10:00-12:00 lun`
+- THEN `Norte, Sur`
+- GIVEN la reserva de Norte del lunes `10:00-12:00` anulada
+- WHEN `libres 10:00-12:00 lun`
+- THEN `Norte, Sur`
+- GIVEN la reserva de Norte del lunes `10:00-12:00` activa
+- WHEN `libres 10:00-12:00` sin día
+- THEN `uso: libres <franja> <día>`
+
+'''
+s=s[:a]+delta+s[b:]
+# findings
+s=s.replace("- Política de modelos",'''### Hallazgos de la review
+
+- **Aceptado** — 1 · contrato sin día sin capacidad previa → Capacidades dice que se parte de cero y que el cambio de contrato es el `uso:`.
+- **Aceptado** — 2 · borde de la franja → decisión 5 (igualdad exacta) y escenario `12:00-14:00`; el solapamiento parcial queda en «No entra».
+- **Aceptado** — 3 · GIVEN concreto, día `mie` → escenarios reescritos.
+- **Aceptado** — 4 · anulada sin escenario → decisión 4 reformulada como regla y escenario de reserva anulada.
+- **Rechazado** — 5 · decisiones 1 y 2 pendientes → son pendientes a propósito: las responde el dev-lead en el gate; el delta ya avisa de la dependencia en la decisión 1.
+- **Aceptado** — 6 · formato del día → decisión 6 (día desconocido devuelve todas las salas) y fuera de Scope por la deuda ya apuntada.
+- **Aceptado** — 7 y 8 · tabla unida, sin número de línea, y fila de roadmap comprobada.
+- **Rechazado** — 9 · separar decisiones de producto y de proceso: es una lista corta y una sola sección; sí se numera todo lo que es decisión.
+- **Aceptado** — 10 · términos «libre» y «franja» → «Términos resueltos». «Cancelada o anulada» usado de forma coherente.
+
+- Política de modelos''',1)
+open(p,'w',encoding='utf-8').write(s)
+EOF
+R=$(pwd); T=$(mktemp -d); cp -r ../.. "$T/sdd"; node "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-base/cli/bin/sdd.js" capability merge --path "$T/sdd" --artifact "$R/spec.md" | tail -3
+<<< room-availability.md: añadido «Salas libres por día y franja»
+
+=== RESULTADO (14 turnos, 0.5871899 $)
+Lancé el revisor de la spec y espero su informe. Hasta que llegue no puedo plegar sus hallazgos ni presentarte la spec para aprobar.
+
+=== RESULTADO (2 turnos, 0.5871899 $)
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta; después escribo el plan, ~2 min.
+
+🦆 Hoy `libres 10:00-12:00` da `Sur` todos los días, porque no mira el día y Norte tiene una reserva el lunes. Con el cambio, `libres 10:00-12:00 lun` da `Sur`, y `libres 10:00-12:00 mar` o `mie` dan `Norte, Sur`. Una sala está libre si ese día a esa hora no tiene reserva activa, como dijiste. Por dentro, `freeRooms` pasa a recibir el día y a filtrar por día y franja. La spec está en `.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Pendiente:** el día es un segundo argumento obligatorio, `libres <franja> <día>`. No elegiste entre obligatorio y opcional. Lo pongo obligatorio porque un día opcional conserva la respuesta engañosa.
+2. **Pendiente:** sin día, `libres` responde `uso: libres <franja> <día>`. El texto es mío.
+3. El test actual de `libres` se reescribe con día (`lun`).
+4. Una reserva cancelada o anulada no ocupa la sala.
+5. La franja se compara por igualdad exacta, como hoy. Una reserva `12:00-14:00` no ocupa `10:00-12:00`, y el solapamiento parcial no entra.
+6. Un día sin reservas, o mal escrito como `xyz`, devuelve todas las salas. Validar el formato del día queda en la deuda que ya tienes apuntada.
+7. Enfoque: añadir el día a `freeRooms` (A), frente a reutilizar `findBooking` (B, que solo ve una reserva por día).
+
+**Revisión:** un revisor en Sonnet. Aceptó 8 de sus 10 hallazgos y rechacé 2: dejar las decisiones 1 y 2 pendientes, y separar las decisiones de producto de las de proceso. Ningún hallazgo fue crítico, así que no hay segunda ronda. El delta se probó en una copia de `.docs/sdd` y se fusiona bien.
+
+Las decisiones 1 y 2 siguen pendientes: te toca confirmarlas o cambiarlas con tu respuesta.
+
+1. **Apruebo (Recomendada):** confirmo el día obligatorio y el texto de `uso:`. Prevé 2 tasks.
+2. **Cambios:** dime qué cambio, por ejemplo el día opcional.
+3. **Apruebo y paras antes de la Task 1** para cambiar de modelo.

@@ -19,7 +19,7 @@ Validación: agente — validación en campo (`validation.mode: field` de `.docs
 
 ## Capacidades
 
-- Modificadas: `interviewing` — la pregunta nombra cada pieza con el vocabulario del proyecto, con el nombre del código y la fuente detrás; el caso que el usuario no trajo va marcado como del agente; la regla que el usuario ya dijo se le devuelve en sus palabras
+Ninguna, porque herramientas: la feature cierra solo con el escenario `j1` de la batería de `sdd-grilling` (tercera enmienda).
 
 ## ✋ Decisiones que he tomado yo — valida estas
 
@@ -105,7 +105,7 @@ Las preguntas de la entrevista llevan nombres de ficheros, funciones y claves si
 ## Scope
 
 - Entra: el texto de «Shape of a question» de `skills/sdd-grilling/SKILL.md` (decisiones 1, 3 y 4); lo que sale de «The Conversation» y «Play It Back» de `skills/sdd-spec-writing/SKILL.md` (decisión 2); el escenario `j1`, sus filas J1 y J2 y su línea en «Procedencia de las reglas» de la batería, y tras la enmienda su reescritura en `battery.md` (molde `reservas`, J1 de vocabulario, procedencia con el RED nuevo) en la Task 2, sin tocar `TURN2` de `subject.mjs`, que no cambia; los topes de `cli/test/kit/word-budget.test.ts`; el delta de `interviewing`.
-- No entra: la tabla «regla medida → se queda literal · sustituida · sale con A/B» de las specs que mueven reglas (0345); la nota de entendimiento del primer mensaje de `sdd-spec-writing` («Add what you found…»), que no es una pregunta; el resto de la batería de `sdd-grilling` y la de `interviewer`.
+- No entra: la tabla «regla medida → se queda literal · sustituida · sale con A/B» de las specs que mueven reglas (0345); la nota de entendimiento del primer mensaje de `sdd-spec-writing` salvo la frase que la segunda enmienda le añade; el resto de la batería de `sdd-grilling` y la de `interviewer`.
 
 ## Lo que se retira o cambia de forma
 
@@ -117,7 +117,7 @@ Las preguntas de la entrevista llevan nombres de ficheros, funciones y claves si
 | Ejemplo `dueDate` y «Code names, files…(the short mode of `sdd-rubber-duck`)» de «Play It Back» | `skills/sdd-spec-writing/SKILL.md:214` | decisión 2: la regla pasa a `sdd-grilling`, sin el ejemplo (enmienda 2026-11-20) |
 | Topes `sdd-grilling` 886 y `sdd-spec-writing` 3450 | `cli/test/kit/word-budget.test.ts` | decisión 11 |
 
-- Filas que implementa: la fila 0361 de `ROADMAP.md` y la fila «Lista» de las preguntas con jerga de `.docs/sdd/steering/debt.md` (columna final `0361`) → las marca el cierre | comprobado con `grep -n "0361" ROADMAP.md .docs/sdd/steering/debt.md`
+- Filas que implementa: la fila 0361 de `ROADMAP.md` y la fila «Lista» de las preguntas con jerga de `.docs/sdd/steering/debt.md` (columna final `0361`) → las marca el cierre | comprobado con `grep -n "0361" ROADMAP.md .docs/sdd/steering/debt.md` — tras la tercera enmienda, la fila 0361 cierra y la de deuda queda abierta, con lo aprendido
 
 ## Approach
 
@@ -142,26 +142,7 @@ El molde pasa a pedir lo hallado con las palabras del proyecto, con el nombre de
 
 ## Delta de comportamiento
 
-### Capacidad: `interviewing`
-
-#### ADDED — La pregunta habla en el idioma del proyecto
-
-- GIVEN la petición «`libres` no tiene en cuenta el día: Norte tiene reserva el lunes de 10:00 a 12:00 y `libres 10:00-12:00` no la da ningún día», en un proyecto cuya terminología llama «Reserva» a lo que el código llama `bookings` (_Evitar_: booking) y donde `freeRooms` de `src/app.js` filtra las reservas solo por franja
-- WHEN el agente hace su primera pregunta de diseño
-- THEN nombra cada pieza como la llama el proyecto, o por lo que hace en el producto, y deja el nombre del código detrás, entre paréntesis: «la consulta de salas libres solo mira la franja de cada reserva (`freeRooms`, `src/app.js`)»
-- AND no llama a una pieza con una palabra que la terminología marca _Evitar_ («booking», «room»)
-- AND la fuente de un hecho sacado de un fichero o de la web va en ese paréntesis: es obligatoria también para un fichero del repo, no solo para lo que sale de fuera
-- AND una clave de la que trata la decisión (`merge.push` en `sdd-config`) sigue la misma regla: lo que hace, y la clave entre paréntesis
-- AND en una pregunta de diseño, un caso que la petición no trae (la reserva de 10:00 a 12:00 frente a una búsqueda de 11:00 a 13:00) va en una línea con sus datos, diciendo que lo trae el agente y de dónde sale
-- AND una pregunta de descubrimiento sigue como dice «El descubrimiento no se ancla»: abierta, sin casos añadidos, y el hecho encontrado con su fuente (`roles.ts` con `clinic_admin`), porque ahí el nombre del código es el hecho que se pregunta
-
-#### ADDED — La regla que el usuario ya dijo se le devuelve
-
-- GIVEN una entrevista en la que el usuario contesta con su regla en una frase («una sala está libre si ese día a esa hora no tiene reserva»)
-- WHEN el agente sigue
-- THEN la repite con las palabras del usuario y pregunta solo si es así, en prosa o como decisión operativa con sus opciones numeradas («Toda pregunta va en texto…»)
-- AND no le presenta alternativas sobre esa misma regla
-- AND si la regla choca con un hecho del proyecto, antes la rebate una vez, como dice «Rebatir una vez»
+Sin delta desde la tercera enmienda: la feature cierra solo con la prueba, y `interviewing` no cambia. Los dos ADDED propuestos («La pregunta habla en el idioma del proyecto» y «La regla que el usuario ya dijo se le devuelve») están en esta spec en el commit `92313cce4`, como historia.
 
 ## Topes de palabras
 
@@ -183,13 +164,16 @@ Precio por sujeto de Sonnet en esta batería: 0,19-0,21 $ (`battery.mjs plan`).
 | Una tanda de REFACTOR | `j1` N=2 → `suma: 2 sujetos · coste previsto: 0.42 $` | 0,42 |
 | Controles | A/B, brazo base: `SCENARIOS="g7 g8 g9 p2" N=2` → `suma: 8 sujetos · coste previsto: 1.52 $`; brazo rama, igual | 3,04 |
 | Medición tras la revisión final | 0: la revisión final no cambia el texto medido; si lo cambia, se relanza `j1` N=2 (0,42 $) | 0 |
-| Suma | 22 sujetos | 4,30 |
+| Suma | 38 sujetos | 10,10 |
 | Enmienda 2026-11-20 | RED `j1` en `reservas` N=2 en la base, GREEN N=2 en la rama (`SCENARIOS="j1" N=2` → `suma: 2 sujetos · coste previsto: 0.94 $`, cada tanda) y el brazo nuevo del A/B entero otra vez: `SCENARIOS="g7 g8 g9 p2" N=2` → `suma: 8 sujetos · coste previsto: 1.52 $` | 3,40 |
+| Tanda de corrección 2026-11-20 (dev-lead: «1») | GREEN `j1` en `reservas` N=2 → `suma: 2 sujetos · coste previsto: 0.94 $`; brazo nuevo del A/B N=2 → `suma: 8 sujetos · coste previsto: 1.52 $` | 2,46 |
 
 Gastado antes de la enmienda: 4,03 $ en 16 sujetos (RED y GREEN de `j1` en `salas`, brazo base del A/B entero y 4 de 8 del brazo nuevo, cortado).
 
 ## Enmiendas
 
+- 2026-11-20 (tercera) — La tanda de corrección siguió en rojo (J1 0 de 2, J2 1 de 2 en `reservas`): la feature cierra solo con la prueba. `skills/sdd-grilling/SKILL.md`, `skills/sdd-spec-writing/SKILL.md`, su `dist/` y los topes de `cli/test/kit/word-budget.test.ts` vuelven a los de `develop` (`004c18a3d`); se quedan el escenario `j1` en `reservas`, sus filas J1 y J2 y la evidencia de las tres tandas; sin delta. La fila «Lista» de la deuda no se salda: sigue abierta con lo aprendido (la jerga nace en la nota de entendimiento; mover prosa no la quita; Art. II pide hueco en la plantilla). Lo implementa la Task 3 — aprobada: «1, cerramos con la prueba» (2026-11-20)
+- 2026-11-20 (segunda) — Tras el GREEN en rojo (J1 y J2, 2 de 2 en `reservas`): la nota de entendimiento del primer mensaje de `sdd-spec-writing` entra en el Scope, con «Name parts as `sdd-grilling` says.» en su bloque del kit 0359; la devolución de la regla del usuario pasa de «Shape of a question» a «Answers» de `sdd-grilling` («An answer that states a rule: repeat it in their words; your next question is only whether that's it.»); la viñeta de nombrar pierde «to show where it lives» para que las dos skills no crezcan (4166 frente a 4167). Lo implementa la Task 3 — por qué: la jerga salía sobre todo en la nota, y la regla de devolver se leía en la forma de la pregunta, no al recibir la respuesta — aprobada: «1» (opción «Una tanda de corrección», 2026-11-20)
 - 2026-11-20 — Los nombres del código no salen de la pregunta: cada pieza se nombra con el vocabulario del proyecto (`architecture.md`, «Terminology» de `PRODUCT.md`) o por lo que hace, con el nombre del código y la fuente detrás, entre paréntesis; la devolución de la regla del usuario pasa a viñeta propia; `j1` pasa al molde `reservas` y J1 mide el vocabulario; sin literales de un proyecto real en la skill. Cambian las decisiones 1 a 5, el primer ADDED (título, GIVEN, THEN y AND) y la previsión de coste. Lo implementa la Task 2 (sin cerrar) — por qué: corrección del dev-lead, por la sesión «sdd-kit develop», y el GREEN de J2 en rojo 2 de 2 con la frase metida en otra viñeta — aprobada: «1» (opción «Apruebo», 2026-11-20)
 
 ## Aprobaciones

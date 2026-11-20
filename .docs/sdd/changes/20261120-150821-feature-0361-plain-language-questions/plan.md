@@ -151,6 +151,30 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 6: A/B** — los dos brazos; tabla por fila y brazo en el ledger y en `walkthrough.md`.
 - [ ] **Step 7: Commit de la task** — `feat(sdd-grilling): la pregunta habla en el idioma del producto`.
 
+> Enmienda 2026-11-20: la Task 2 cerró con el texto enmendado de las skills y los topes; su GREEN y su A/B (Steps 5 y 6) pasan a la Task 3.
+
+### Task 3 — enmienda 2026-11-20: `j1` en `reservas`, RED, GREEN y A/B
+
+**Tras**: Task 2
+**Modelo**: hilo principal (Native)
+**Tests RED**: hilo principal · `j1` sobre el molde `reservas`, puntuado con J1 (vocabulario del proyecto) y J2
+**Superficies**: tooling (batería)
+**Verificación**:
+- RED: `BATTERY=sdd-grilling SCENARIOS="j1" N=2 PHASE=red-reservas KIT_DIR=.temp/k361-base …` → al menos 1 de 2 falla J1 o J2
+- GREEN: `PHASE=green-reservas KIT_DIR=.temp/k361-new` → J1 y J2 pasan 2 de 2 (con 1 de 2, n = 4)
+- A/B: `SCENARIOS="g7 g8 g9 p2" N=2 PHASE=ab-new KIT_DIR=.temp/k361-new` frente a `ab-base/` → igual o mejor por fila
+**Interfaces**:
+- Consume: el texto de las skills de la Task 2; `ab-base/` del brazo base
+- Produce: nada
+
+**Ficheros**: modificar `tests/batteries/sdd-grilling/battery.md`
+
+- [ ] **Step 1: `j1`** — molde `reservas` en su fila; fila J1 con el texto de la decisión 5 de la spec enmendada; J2 con «una pregunta que confirme esa regla (en prosa, o con opciones numeradas de confirmarla o corregirla)»; procedencia con el RED nuevo.
+- [ ] **Step 2: RED** en la base; ledger con J1/J2 y citas.
+- [ ] **Step 3: GREEN** con `.temp/k361-new` reconstruido desde `dist/`.
+- [ ] **Step 4: A/B** brazo nuevo; tabla por fila y brazo.
+- [ ] **Step 5: Commit de la task** — `test(sdd-grilling): j1 sobre reservas y medida de la enmienda`.
+
 ---
 
 ## Estimación y esfuerzo

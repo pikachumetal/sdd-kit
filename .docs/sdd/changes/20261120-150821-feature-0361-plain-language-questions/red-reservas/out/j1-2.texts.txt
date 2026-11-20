@@ -1,0 +1,77 @@
+--- [19]
+Ahora: te cuento lo que entendí y lo que dejo abierto, antes de escribir la spec. Queda: tu respuesta a una pregunta y luego la spec, ~5 min.
+
+**Lo que entendí (corrígeme).** `libres <franja>` debe decir qué salas están libres *un día concreto*. Hoy solo mira la franja: `freeRooms(slot)` en `src/app.js` no recibe el día. Por eso Norte, que solo está reservada el lunes de 10:00 a 12:00, sale ocupada de 10:00 a 12:00 *todos* los días. Lo que cambia: `libres` pasa a recibir el día y a filtrar las reservas por día y franja. Tocaría `freeRooms`, el despacho de `libres` en `run`, y el test actual `libres excluye la sala reservada en la franja`. Ese test llama sin día y espera `Sur`.
+
+**Contestado**
+- Solo cuentan las reservas activas, no las canceladas ni las anuladas. Sale de `freeRooms` y `PRODUCT.md`.
+- Los días se escriben como en las reservas (`lun`). Sale de los datos de `src/app.js`.
+
+**Menor, lo decido yo**
+- Cómo se parte el trabajo en tasks y qué nombre llevan los tests. Es método y no cambia lo que se construye.
+
+**Tuyo**
+- Cómo se pide el día en `libres`. Es lo único abierto, y es la pregunta de abajo.
+
+❓ **¿Cómo se pasa el día a `libres`?**
+1️⃣ **Día obligatorio tras la franja:** `libres 10:00-12:00 lun` → `Sur`, y `libres 10:00-12:00 mar` → `Norte, Sur`. Sin día no se puede preguntar, así que `libres 10:00-12:00` pasa a dar un error de uso. Rompe el test actual y cualquier uso que tengas.
+2️⃣ **Día opcional:** igual que el 1️⃣ con día. Sin día se queda como hoy: sala ocupada si lo está *cualquier* día. Es compatible, pero mantiene la respuesta engañosa que quieres quitar.
+➡️ **Recomiendo 1️⃣**, porque la respuesta sin día es justo el bug, y con un solo usuario no hay quien dependa de la forma antigua. A cambio, el comando viejo deja de funcionar y hay que acordarse de poner el día.
+
+¿Prefieres 1️⃣ o 2️⃣?
+
+--- [25]
+Ahora: paso la spec por su revisión y su aprobación. Queda: tu aprobación de la spec, que es la próxima parada, ~3 min.
+
+--- [32]
+Ahora: reviso la spec con la regla de revisión. Queda: tu aprobación, ~2 min.
+
+--- [36]
+Con ~60 líneas en 3 ficheros, un solo revisor con los siete puntos, en Sonnet (no hay reglas de negocio ni roles). Lo lanzo junto con su vigilancia de silencio.
+
+--- [41]
+Lancé el revisor de la spec y espero su informe. Hasta que llegue no puedo plegar sus hallazgos ni presentarte la spec para aprobar.
+
+--- [44]
+1. Importante · Delta de comportamiento · El ADDED sustituye el contrato de `libres <franja>` sin día (hoy válido, ahora devuelve `uso:`), pero no hay capabilities/ y la spec lo declara «Nuevas». Si `room-availability` o el comportamiento de `libres` ya está documentado en otro sitio (CHANGELOG 0006), es un MODIFIED encubierto. · Comprobar que de verdad no existe capacidad previa. Si existe, pasar a MODIFIED con lo que se retira. Si no existe, decir en la spec que se parte de cero y que la respuesta sin día es un cambio de contrato.
+
+2. Importante · Delta de comportamiento · Ningún escenario cubre el borde de la franja. Una reserva de 11:00 a 13:00 solapa con `10:00-12:00`, pero una de 12:00 a 14:00 solo toca el límite. «Filtra por día y franja» no dice si se exige coincidencia exacta o solapamiento. · Añadir escenarios de solapamiento parcial y de franja contigua, y decidir por escrito si la regla es igualdad o solapamiento.
+
+3. Importante · Delta de comportamiento · El escenario «cualquier reserva / sin día → uso» no es verificable tal cual: «cualquier reserva» no es un GIVEN concreto, y no hay escenario que pruebe que un día presente sí se usa. Un `libres` que ignore el día y solo compruebe el número de argumentos pasaría los demás escenarios. · Concretar el GIVEN con la reserva de Norte del lunes. Añadir un escenario con otro día (`mie`) y otro con una reserva anulada, no solo cancelada.
+
+4. Importante · Decisiones que he tomado yo · La decisión 4 (anulada y cancelada no ocupan sala) está presentada como lo que ya hace `freeRooms`, pero el delta solo prueba «cancelada». La «anulada» (término distinto en PRODUCT.md) queda sin escenario. Además, el estado `status === 'active'` es un detalle de implementación que condiciona una regla de negocio. · Añadir un escenario de reserva anulada. Reformular la decisión como regla de negocio y no como cita del código.
+
+5. Importante · Decisiones que he tomado yo · Las decisiones 1 y 2 están «pendiente» y son las que fijan el contrato de entrada y el mensaje de error. La spec está en `draft` y no podrá aprobarse hasta validarlas. Además, el texto `uso: libres <franja> <día>` aparece como acordado en el delta. · Marcar en el delta que los escenarios dependen de las decisiones 1 y 2. Resolverlas antes de aprobar.
+
+6. Importante · Scope / Delta · Falta definir el formato del día. Los ejemplos usan `lun` y `mar`, y el Scope deja fuera validar el formato del día. No se dice qué responde `libres 10:00-12:00 xyz`, ni si `Lunes` o `LUN` son válidos. Sin validación, `xyz` devolvería todas las salas libres sin avisar, que es una respuesta engañosa como la que se quiere quitar (el Anti-objetivo del Intent). · Fijar el vocabulario de días admitido, o declarar expresamente que un día desconocido devuelve todas las salas y por qué es aceptable.
+
+7. Menor · Lo que se retira o cambia de forma · Hay dos tablas con una sola cabecera: la fila de `CHANGELOG.md:10` queda separada por una línea en blanco y no se renderiza como parte de la tabla. Se cita un número de línea concreto, que caduca. · Unir las filas en una sola tabla y citar la entrada por su título, sin número de línea.
+
+8. Menor · Lo que se retira o cambia de forma · «Filas que implementa: nada: comprobado con `git grep -n libres`» es una frase confusa. Además, el `grep` busca la palabra `libres` y no comprueba las filas de la hoja de ruta. · Decir si la hoja de ruta tiene fila para la 0012 y cómo se comprobó.
+
+9. Menor · Decisiones que he tomado yo · La decisión 5 («Enfoque: A frente a B») y la línea del delta probado no son decisiones del usuario. Son resultado del método y mezclan procedimiento con decisiones de producto. La línea «Revisión de la spec: nivel mínimo, un solo revisor» tampoco está numerada. · Separar las decisiones de producto (1, 2, 4) de las de proceso, y numerar todas.
+
+10. Menor · Dónde se prueba / Términos · Hay incoherencia de terminología. PRODUCT.md define «Cancelación» y «Anulación» como estados distintos y la spec usa solo «cancelada». «Términos resueltos: ninguno» cuando el término «libre» está definido en las decisiones con el dev-lead, y la constitución no tiene un término «franja» en PRODUCT.md. · Añadir «Franja», «Libre» y «Día» a Terminology de PRODUCT.md, o listarlos como términos resueltos. Usar «cancelada o anulada» de forma coherente.
+
+--- [47]
+Ahora: te presento la spec para que la apruebes. Queda: tu respuesta; después escribo el plan, ~2 min.
+
+🦆 Hoy `libres 10:00-12:00` da `Sur` todos los días, porque no mira el día y Norte tiene una reserva el lunes. Con el cambio, `libres 10:00-12:00 lun` da `Sur`, y `libres 10:00-12:00 mar` o `mie` dan `Norte, Sur`. Una sala está libre si ese día a esa hora no tiene reserva activa, como dijiste. Por dentro, `freeRooms` pasa a recibir el día y a filtrar por día y franja. La spec está en `.docs/sdd/changes/20261120-151417-feature-0012-libres-por-dia/spec.md`.
+
+**✋ Decisiones que he tomado yo — valida estas**
+1. **Pendiente:** el día es un segundo argumento obligatorio, `libres <franja> <día>`. No elegiste entre obligatorio y opcional. Lo pongo obligatorio porque un día opcional conserva la respuesta engañosa.
+2. **Pendiente:** sin día, `libres` responde `uso: libres <franja> <día>`. El texto es mío.
+3. El test actual de `libres` se reescribe con día (`lun`).
+4. Una reserva cancelada o anulada no ocupa la sala.
+5. La franja se compara por igualdad exacta, como hoy. Una reserva `12:00-14:00` no ocupa `10:00-12:00`, y el solapamiento parcial no entra.
+6. Un día sin reservas, o mal escrito como `xyz`, devuelve todas las salas. Validar el formato del día queda en la deuda que ya tienes apuntada.
+7. Enfoque: añadir el día a `freeRooms` (A), frente a reutilizar `findBooking` (B, que solo ve una reserva por día).
+
+**Revisión:** un revisor en Sonnet. Aceptó 8 de sus 10 hallazgos y rechacé 2: dejar las decisiones 1 y 2 pendientes, y separar las decisiones de producto de las de proceso. Ningún hallazgo fue crítico, así que no hay segunda ronda. El delta se probó en una copia de `.docs/sdd` y se fusiona bien.
+
+Las decisiones 1 y 2 siguen pendientes: te toca confirmarlas o cambiarlas con tu respuesta.
+
+1. **Apruebo (Recomendada):** confirmo el día obligatorio y el texto de `uso:`. Prevé 2 tasks.
+2. **Cambios:** dime qué cambio, por ejemplo el día opcional.
+3. **Apruebo y paras antes de la Task 1** para cambiar de modelo.
+

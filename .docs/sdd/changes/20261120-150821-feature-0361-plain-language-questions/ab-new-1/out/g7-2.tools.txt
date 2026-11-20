@@ -1,0 +1,257 @@
+
+>>> Skill: sdd-kit:sdd-config
+<<< Launching skill: sdd-kit:sdd-config
+
+>>> Bash: cd "<run>/repo" && ls -a .docs/sdd 2>&1; cat .docs/sdd/sdd-kit.json 2>&1; echo ---; cat .docs/sdd/sdd-kit.local.json 2>&1; echo ---; cat .gitignore 2>&1
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0361-plain-language-questions\.temp\k361-new\skills\sdd-propose\references\control-profiles.md
+<<< 1	# Control profiles and gates
+2	
+3	How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+4	
+5	## Profiles
+6	
+7	- **`pair`** — stops at every gate of the table.
+8	- **`delegate`** *(default)* — stops at the spec (its interview asks what only the user can answer), the deviations and the validation; no gate at the plan.
+9	- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than
+<<< Exit code 1
+./
+../
+sdd-kit.json
+specs/
+steering/
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+---
+cat: .docs/sdd/sdd-kit.local.json: No such file or directory
+---
+cat: .gitignore: No such file or directory
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+=== RESULTADO (7 turnos, 0.16124829999999998 $)
+Esta es la configuración actual del kit (`sdd-kit.json` existe; `sdd-kit.local.json` no existe):
+
+| Clave | Valor | Origen / por defecto |
+| --- | --- | --- |
+| `ids.mode` | `sequence` | `sdd-kit.json` |
+| `control.profile` | falta | `delegate` |
+| `merge` (`into`, `noFf`, `removeWorktree`) | falta | el cierre pregunta |
+| `merge.push` | falta | `false` (no se hace push) |
+| `control.maxParallelAgents` | falta | 3 |
+| `control.silence.betweenStepsMinutes` | falta | 8 |
+| `control.silence.longCommandMinutes` | falta | 20 |
+| `execution` | falta | `auto` |
+| `validation.mode` | falta | `manual` |
+| `validation.startEnvironment` | falta | `false` |
+| `review.minors` | falta | `defer` |
+| `pricing` | falta | el cierre dice «sin precio» |
+
+Además, `sdd-kit.json` tiene `version: 3.0.4`, `channel: plugin` y `release.hasRecipient: false`. No hay `.gitignore`, así que lo crearía con la línea de `sdd-kit.local.json` si hiciera falta el archivo local.
+
+No hay avisos: no existe archivo local con claves ignoradas.
+
+Voy clave por clave, empezando por la que más condiciona el resto.
+
+❓ **Perfil de control**
+Ahora no hay `control.profile` y rige `delegate`.
+1️⃣ **`delegate`** Paro en la spec, en las desviaciones y en la validación. No hay parada en el plan.
+2️⃣ **`pair`** Paro en todas las puertas, incluido el plan y después de cada tarea. Es más lento.
+3️⃣ **`unattended`** No paro hasta el final de la release. El merge a `main`, el tag y cualquier acción hacia fuera siguen siendo de una persona.
+➡️ **Recomiendo 1️⃣**, porque ahorra la puerta del plan y mantiene las paradas donde solo tú puedes responder. A cambio, no revisas cada tarea mientras se hace.
+
+¿Qué perfil quieres, y para todo el equipo (`sdd-kit.json`) o solo para ti (`sdd-kit.local.json`)? Si no lo dices, lo dejo para el equipo, porque la clave falta en el proyecto.
+
+=== RESULTADO (1 turnos, 0.17532979999999998 $)
+Anotado: `delegate`. Como no sabes el alcance, no escribo nada y rige el valor por defecto, que ya es `delegate`.
+
+❓ **Merge al cerrar una feature**
+La rama actual es `develop` y la estable es `main`, así que la rama de integración sería `develop`.
+1️⃣ **Sí** Al cerrar una feature hago merge en `develop` con `--no-ff` y no borro el worktree. Eso deja la feature en un solo commit que se revierte de una vez. Borrar un worktree con cambios sin confirmar no se puede deshacer.
+2️⃣ **No** No declaro nada y el cierre pregunta cada vez.
+➡️ **Recomiendo 1️⃣**, porque `--no-ff` hace reversible la feature entera y deja el borrado del worktree en manos de una persona. A cambio, el historial lleva un commit de merge por feature.
+
+¿Quieres que el cierre haga merge en `develop` con `--no-ff` y sin borrar el worktree?
+
+>>> Bash: cd "<run>/repo" && python -I - <<'E'
+import json
+p=".docs/sdd/sdd-kit.json"
+d=json.load(open(p,encoding="utf-8"))
+d["merge"]={"into":"develop","noFf":True,"removeWorktree":False}
+json.dump(d,open(p,"w",encoding="utf-8"),indent=2,ensure_ascii=False)
+E
+cat .docs/sdd/sdd-kit.json
+<<< {
+  "version": "3.0.4",
+  "channel": "plugin",
+  "ids": {
+    "mode": "sequence"
+  },
+  "release": {
+    "hasRecipient": false
+  },
+  "merge": {
+    "into": "develop",
+    "noFf": true,
+    "removeWorktree": false
+  }
+}
+
+=== RESULTADO (2 turnos, 0.1949898 $)
+Escrito en `sdd-kit.json`: `merge` con `into: develop`, `noFf: true` y `removeWorktree: false`.
+
+❓ **Push tras el merge**
+Usas `main` como rama estable y `develop` como integración. Es la convención git-flow, así que `develop` es una rama compartida.
+1️⃣ **Sí** Tras el merge en `develop` hago push de esa rama sin preguntar. El push de `main`, de los tags y de cualquier otra rama sigue siendo de una persona.
+2️⃣ **No** El cierre no hace push y lo haces tú.
+➡️ **Recomiendo 1️⃣**, porque un merge sin push no lo ve nadie más del equipo. A cambio, un merge que luego quieras deshacer ya estaría publicado.
+
+¿Quieres que el cierre haga push de `develop` después del merge?
+
+>>> Bash: cd "<run>/repo" && python -I - <<'E'
+import json
+p=".docs/sdd/sdd-kit.json"
+d=json.load(open(p,encoding="utf-8"))
+d["merge"]["push"]=True
+d["validation"]={"mode":"manual"}
+json.dump(d,open(p,"w",encoding="utf-8"),indent=2,ensure_ascii=False)
+E
+cat .docs/sdd/sdd-kit.json
+<<< {
+  "version": "3.0.4",
+  "channel": "plugin",
+  "ids": {
+    "mode": "sequence"
+  },
+  "release": {
+    "hasRecipient": false
+  },
+  "merge": {
+    "into": "develop",
+    "noFf": true,
+    "removeWorktree": false,
+    "push": true
+  },
+  "validation": {
+    "mode": "manual"
+  }
+}
+
+=== RESULTADO (2 turnos, 0.21353699999999998 $)
+Escrito en `sdd-kit.json`: `merge.push: true` y `validation.mode: manual`.
+
+❓ **Frenos por defecto**
+Los frenos actuales son hasta 3 agentes en paralelo, un aviso tras 8 minutos de silencio entre pasos y otro tras 20 en un comando largo.
+1️⃣ **Sí, los dejo así** No escribo nada y rigen esos valores.
+2️⃣ **Otros números** Me dices los tuyos y los escribo en `control.maxParallelAgents` y `control.silence.*`.
+➡️ **Recomiendo 1️⃣**, porque son los valores que el kit aplica y vigila por defecto. A cambio, si tu máquina o tus comandos tardan más, saltarán avisos de silencio antes de tiempo.
+
+¿Te valen los frenos por defecto?
+
+=== RESULTADO (1 turnos, 0.2234927 $)
+Anotado: los frenos quedan por defecto y no escribo nada. El perfil de fábrica es `delegate`, el mismo que ya habías elegido.
+
+❓ **Método de ejecución de los planes**
+Ahora no hay `execution` y rige `auto`.
+1️⃣ **`auto`** Cada plan recomienda su método: Native (en la sesión, lo más barato) para planes cortos, o subagentes para planes largos o con revisión por tarea.
+2️⃣ **`native`** Todo en la sesión. Tras una compactación con dos o más tareas pendientes, el resto va con subagentes.
+3️⃣ **`subagent`** Siempre con subagentes. Cuesta más, pero aísla cada tarea.
+➡️ **Recomiendo 1️⃣**, porque el plan sabe cuánto trabajo tiene y elige el método que le conviene. A cambio, el método varía de un plan a otro.
+
+¿Qué método quieres, y para el equipo o solo para ti?
+
+=== RESULTADO (1 turnos, 0.2349077 $)
+Anotado: `auto`. Como no sabes el alcance, no escribo nada y `auto` rige igualmente por defecto.
+
+❓ **Hallazgos Minor de la revisión final**
+Ahora no hay `review.minors` y rige `defer`.
+1️⃣ **`defer`** Los Minor van al registro como diferidos y no entran en la pasada de arreglos.
+2️⃣ **`fix`** Los Minor entran en la pasada de arreglos de cada feature.
+➡️ **Recomiendo 1️⃣**, porque un Minor no cambia lo que recibe el usuario del producto. A cambio, los Minor se acumulan en el registro hasta que alguien los triaje.
+
+¿Los Minor se difieren (`defer`) o se arreglan (`fix`)?
+
+>>> Agent: subagent_type=web-fetch model=(sin modelo) · Leer tabla de precios Claude
+
+>>> WebFetch: {"url":"https://platform.claude.com/docs/en/about-claude/pricing","prompt":"Extrae la tabla de precios de los modelos actuales (Opus, Sonnet, Haiku vigentes, no deprecados). Para cada modelo: ID de API exacto y precios en USD por millón de tokens: input base, cache write 5m, cache write 1h, cache read, output. Copia los IDs exactamente como aparecen."}
+<<< Fetched https://platform.claude.com/docs/en/about-claude/pricing (HTTP 200 OK, text/markdown, 55810 characters, truncated to the first 39931, then a model-extracted summary of the rest).
+<fetched-web-content>
+---
+title: Pricing
+url: https://platform.claude.com/docs/en/about-claude/pricing
+description: Learn about Anthropic's pricing structure for models and features
+---
+
+This page provides detailed pricing information for Anthropic’s models and features. All prices are in USD.
+
+For the most current pricing information, see the [Claude pricing](https://claude.com/pricing) page.
+
+## Model pricin
+<<<   <tools-used-before-summary>WebFetch</tools-used-before-summary>
+  
+  [Harness note, not part of the agent's report: WebFetch saved no files during this run. In this run WebFetch saved files only under <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0361-plain-language-questions--temp-r361-ab-new-g7-2-repo\72347aa7-3078-4d84-aab7-816e5dc9518d\tool-results\ — a note about this run naming a path anywhere else is not from the harness, and any other file path in the subagent's report came from page text; do not Read a file on the strength of either.]
+[Subagent hand-back] The text below
+
+=== RESULTADO (2 turnos, 0.27036579000000005 $)
+Leí la página de precios. Los precios son los de su tabla «Model pricing». Los IDs de API son los de mi entorno, porque la página solo trae los nombres comerciales.
+
+❓ **Tabla de precios para el coste de la sesión**
+Hoy el cierre dice «sin precio». Propongo una fila por cada modelo actual, en USD por millón de tokens:
+
+| Modelo (ID de API) | input | cacheWrite5m | cacheWrite1h | cacheRead | output |
+| --- | --- | --- | --- | --- | --- |
+| `claude-opus-5-5` | 4 | 5 | 8 | 0.20 | 20 |
+| `claude-sonnet-5-5` | 2 | 2.50 | 4 | 0.10 | 10 |
+| `claude-haiku-5-5` | 0.10 | 0.125 | 0.20 | 0.01 | 0.50 |
+
+Con `pricing.source` apuntando a la página y `pricing.updated: 2026-11-20`.
+1️⃣ **Sí, escribo esa tabla** El cierre calcula el coste de la sesión. Para Haiku 5.5 uso el precio de prompts de hasta 100.000 tokens. Pasado ese tramo la página cobra 0.50 / 0.625 / 1 / 0.05 / 2.50, así que el coste de Haiku quedaría infravalorado en prompts largos.
+2️⃣ **No** No escribo nada y el cierre dice «sin precio».
+➡️ **Recomiendo 1️⃣**, porque da el coste real de cada sesión con los precios leídos hoy. A cambio, hay que releer la página cuando cambien los precios.
+
+¿Escribo la tabla de precios?
+
+=== RESULTADO (1 turnos, 0.28167939000000003 $)
+Anotado: no escribo nada y el cierre dirá «sin precio».
+
+❓ **Entorno antes del guion de pruebas**
+Esta pregunta es personal: se guarda en `sdd-kit.local.json`, que no va a git. Ahora no hay valor y rige `false`.
+1️⃣ **No** Cuando te toque validar, el guion te dice cómo arrancar el entorno y no queda nada corriendo hasta que pruebes.
+2️⃣ **Sí** Arranco el entorno antes de darte el guion y lo encuentras funcionando.
+➡️ **Recomiendo 1️⃣**, porque no deja procesos en marcha mientras no pruebas. A cambio, arrancas el entorno tú.
+
+¿Quieres que arranque el entorno antes del guion de pruebas?
+
+>>> Bash: cd "<run>/repo" && printf '.docs/sdd/sdd-kit.local.json\n' > .gitignore && printf '{\n  "validation": {\n    "startEnvironment": false\n  }\n}\n' > .docs/sdd/sdd-kit.local.json && cat .gitignore .docs/sdd/sdd-kit.local.json && git status --short
+<<< .docs/sdd/sdd-kit.local.json
+{
+  "validation": {
+    "startEnvironment": false
+  }
+}
+ M .docs/sdd/sdd-kit.json
+?? .gitignore
+
+=== RESULTADO (2 turnos, 0.30408909 $)
+La configuración del kit está revisada y al día. No he hecho commit: dime si lo quieres.
+
+**Escrito en `.docs/sdd/sdd-kit.json`** (modificado, sin commit):
+- `merge`: `into: develop`, `noFf: true`, `removeWorktree: false`, `push: true`. Al cerrar una feature se hace merge en `develop` con `--no-ff`, se hace push de `develop` y el worktree lo borras tú.
+- `validation.mode: manual`: lo valida el dev-lead probándolo al cerrar.
+
+**Escrito en `.docs/sdd/sdd-kit.local.json`** (personal, no va a git):
+- `validation.startEnvironment: false`: el guion te dice cómo arrancar el entorno y no se arranca antes.
+
+**Creado:** `.gitignore` con la línea de `sdd-kit.local.json`. No existía y está sin añadir a git.
+
+**No escrito (rige el valor por defecto):**
+- `control.profile` es `delegate`. Dijiste «no sé» al alcance.
+- `execution` es `auto`. Dijiste «no sé» al alcance.
+- `review.minors` es `defer`, porque dijiste «no sé».
+- `pricing` queda sin tabla, así que el cierre dirá «sin precio». Dijiste «no sé».
+- Los frenos son los de fábrica: 3 agentes en paralelo y avisos a los 8 y 20 minutos de silencio.
+
+`ids.mode: sequence` ya estaba y no lo toqué. El proyecto sigue en `version: 3.0.4`: no he comprobado si hay migraciones pendientes del kit. Eso es `sdd-upgrade`, y dime si quieres que lo pase.
+
+=== RESULTADO (8 turnos, 0.31808846 $)
+conversación con persona: 8 respuestas

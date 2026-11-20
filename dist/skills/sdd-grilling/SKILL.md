@@ -27,7 +27,7 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 
 ```text
 ❓ **<title>**
-<what you found, in the project's words (code name, source)>
+<what you found, with sources>
 1️⃣ **<recommended>** <what happens, what it costs>
 … from 1 to N, as the decision has
 <N>️⃣ **<other>** <what happens, what it costs>
@@ -36,9 +36,7 @@ A design decision (an alternative needs over a line to explain its cost) goes in
 
 - The decision sets the count: one defensible path: say it, confirm it; 🔀 marks a mix defensible alone. A habitual mix is filler, like one you say «I don't think you want».
 - «They're the defaults» or «it's simpler» is not a reason. With no reason to prefer one, say «tie, it depends on X» and ask X.
-- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`.
-- Name each part as the project does (`architecture.md`, «Terminology» of `PRODUCT.md`), or by what it does in the product; the code name follows in brackets, to show where it lives. In a design question, a case the user didn't bring: one line with its data, saying it's yours and from where.
-- A rule the user already said: repeat it in their words and ask only whether that's it, no alternatives.
+- A decision about what the product's user sees or does gets a scene with data per alternative: `reservar Norte` → `Norte ocupada; en espera (1.º)`. Tell limits by their effect, not their cause.
 - For how a screen looks or feels, show it instead of asking: if the screen exists, on the running app with what `§Frontend` declares (the live detector, or a screenshot of the current screen next to the variant); if it doesn't, or without `§Frontend`, an Artifact with the options. Without the app or the Artifact tool, describe each option's scene and say why you can't show it. «I haven't started the app» or a missing Playwright is not a reason: install it outside the project, start the app as `§Frontend` says, and stop what you started.
 - **A flow** (states, a process) or a structure easier to see than read (a timeline, a map) is drawn before asking, never a list or a table: a diagram skill if the session has one (`archify` preferred), else an Artifact; without either, an ASCII or Mermaid block, saying why it isn't drawn.
 - Icons mark only this question's alternatives; name earlier ones. If the user answers with an icon this question doesn't have, ask which one they meant.
