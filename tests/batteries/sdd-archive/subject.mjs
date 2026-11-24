@@ -9,16 +9,20 @@ import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs'
 import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// La batería de sdd-validate lanza este mismo sujeto con su carpeta: la tabla de escenarios es la suya y los moldes y las fixtures, los de aquí.
+const BATTERY = process.env.BATTERY_DIR ?? HERE;
 const IMPL = join(HERE, '..', 'sdd-implement');
 const [kit, , SC] = process.argv.slice(2);
 // Un kit anterior a sdd-archive (el RED, con el kit de develop de entonces) cierra con sdd-end-feature o sdd-end-patch: la guarda y la petición usan la de ese kit.
-const GUARD = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
-const OLD = (scenarioCell(HERE, SC, 'Molde') ?? '').startsWith('salas-') ? 'sdd-end-patch' : 'sdd-end-feature';
+const GUARD = (scenarioCell(BATTERY, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
+// El RED de sdd-validate, con el kit anterior a ella, pide la validación sin nombrar la skill y la guarda mira la de implementación.
+const RED_VALIDATE = GUARD === 'sdd-validate';
+const OLD = RED_VALIDATE ? 'sdd-implement' : (scenarioCell(BATTERY, SC, 'Molde') ?? '').startsWith('salas-') ? 'sdd-end-patch' : 'sdd-end-feature';
 const current = existsSync(join(kit, 'skills', GUARD));
 const s = initSubject(process.argv.slice(2), current ? GUARD : OLD);
-const cell = subjectCell(HERE, s);
+const cell = subjectCell(BATTERY, s);
 let ASK = cell('Petición');
-if (!current) ASK = ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
+if (!current) ASK = RED_VALIDATE ? ASK.replace('Invoca la skill sdd-kit:sdd-validate y sigue. ', '') : ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const P8 = '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing';
 const CAP = '.docs/sdd/capabilities/bookings.md';
@@ -49,6 +53,18 @@ function addTableRow(path, section, row) {
   for (let i = start + 1; i < lines.length && !lines[i].startsWith('## '); i++) if (lines[i].startsWith('|')) last = i;
   lines.splice(last + 1, 0, row);
   writeFileSync(at(path), lines.join('\n'));
+}
+// Las tasks de la 0010 acabadas y la revisión final sin hacer: el sujeto llega a la validación con la revisión por hacer.
+function reviewPending(finding) {
+  edit(`${F10}/tasks.md`, [/^Revisión final:.*$/, finding ? `Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important: ${finding}, sobre ${short('HEAD')}` : '']);
+  s.commit('docs(sdd): la revisión final de la 0010');
+}
+// `libres` da por ocupada una sala cancelada: ningún test lo cubre y solo un paso del guion lo enseña.
+function freeRoomsBug(withStep) {
+  edit('src/app.js', [/b\.slot === slot && b\.status === 'active'/, "b.slot === slot && b.status !== 'voided'"]);
+  const step = '\n**Se prueba en la aplicación**: la persona cancela Norte el lunes con un motivo y comprueba con `libres 10:00-12:00` que Norte vuelve a estar libre: «Norte, Sur».\n';
+  if (withStep) appendFileSync(at(`${F10}/plan.md`), step);
+  s.commit('feat(bookings): libres según el estado de la reserva');
 }
 // La validación la hace la persona: el cierre para con el guion.
 const manualValidation = () => (MARKER = MARKER.replace('"mode": "field"', '"mode": "manual"'));
@@ -657,6 +673,34 @@ const molds = {
     s.commit('docs(sdd): la decisión que deja la revisión final');
   },
   'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-final': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), reviewPending()),
+  'reservas-final-bug': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), freeRoomsBug(true), reviewPending()),
+  'reservas-final-late': () => {
+    manualValidation();
+    moldReservas();
+    e2eSuite();
+    done0010();
+    freeRoomsBug(false);
+    reviewPending();
+    s.env.TURN2 = 'El paso 3 falla: tras cancelar Norte el lunes, `libres 10:00-12:00` no me da Norte. Arréglalo.';
+  },
+  'reservas-final-defer': () => {
+    manualValidation();
+    moldReservas();
+    e2eSuite();
+    done0010();
+    reviewPending();
+    s.env.TURN2 = 'Lo pruebo mañana en la primera exportación, a cargo del dev-lead.';
+  },
+  'reservas-final-gate': () => {
+    manualValidation();
+    moldReservas();
+    affectedGate();
+    done0010();
+    reviewPending();
+    s.env.TURN2 = 'El paso 1 falla: la app no declara su versión de Node; añade `engines` a `package.json` y sigue.';
+  },
+  'reservas-final-important': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), reviewPending('`canceladas` con la lista vacía imprime una línea en blanco')),
   'reservas-ticket': () => {
     moldReservas();
     done0010();
