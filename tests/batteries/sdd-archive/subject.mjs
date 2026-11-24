@@ -66,8 +66,8 @@ function freeRoomsBug(withStep) {
   if (withStep) appendFileSync(at(`${F10}/plan.md`), step);
   s.commit('feat(bookings): libres según el estado de la reserva');
 }
-// El cierre llega sin la validación registrada.
-let RECORD = true;
+// El cierre llega con la validación registrada; en la batería de sdd-validate, que la mide, todavía no.
+let RECORD = BATTERY === HERE;
 // El patch 0008 con su validación registrada debajo de §4, en el commit del fix.
 function recordValidation0008() {
   appendFileSync(at(`${P8}/patch.md`), '\nValidación en campo: 2026-10-10 · `node --test` 4/4 y smoke de `cancelar mie 10:00` con ejecución real\n');
