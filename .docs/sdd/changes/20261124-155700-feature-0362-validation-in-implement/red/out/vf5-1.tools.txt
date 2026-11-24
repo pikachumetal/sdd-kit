@@ -1,0 +1,91 @@
+
+>>> Bash: git show --stat HEAD; ls .docs/sdd/changes 2>/dev/null; ls .docs/sdd/changes/*0008* 2>/dev/null
+<<< Exit code 2
+commit 3e997c96e79e0d83a532657fa46761490b6c116b
+Author: Fixture <fixture@example.com>
+Date:   Tue Nov 24 18:19:35 2026 +0100
+
+    fix: cancelar una reserva que no existe avisa (0008)
+    
+    Cuerpo del commit.
+
+ .../patch.md                                       | 35 ++++++++++++++++++++++
+ src/app.js                                         | 32 ++++++++++----------
+ test/app.test.js                                   | 34 +++++++++++----------
+ 3 files changed, 70 insertions(+), 31 deletions(-)
+
+>>> Bash: git show HEAD --name-only --format= ; git show HEAD -- . ':!*patch.md' | head -150
+
+>>> Skill: sdd-kit:sdd-verify
+<<< .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+src/app.js
+test/app.test.js
+commit 3e997c96e79e0d83a532657fa46761490b6c116b
+Author: Fixture <fixture@example.com>
+Date:   Tue Nov 24 18:19:35 2026 +0100
+
+    fix: cancelar una reserva que no existe avisa (0008)
+    
+    Cuerpo del commit.
+
+diff --git a/src/app.js b/src/app.js
+index a366456..fee61ca 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,16 +1,16 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+-
+-function fr
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cat .docs/sdd/specs/*0008*/patch.md; grep -n -A15 -i "testing" .docs/sdd/operations.md | head -50; node --test 2>&1 | tail -15
+<<< ---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+Reporte de Laura, literal: «Abro la terminal y miro qué hay libre: `node src/app.js libres 10:00-12:00` me da «Sur». Como el miércoles no tengo nada reservado, pruebo `node src/app.js cancelar mie 10:00` y me dice «cancelada mie 1
+
+>>> Bash: node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00
+git stash -q 2>/dev/null; git checkout -q HEAD~1 -- src/app.js && node --test 2>&1 | grep -E "^(✖|ℹ (pass|fail))"; git checkout -q HEAD -- src/app.js; node --test 2>&1 | grep -E "ℹ (pass|fail)"; git status --short
+<<< no hay reserva mie 10:00
+cancelada lun 10:00
+✖ cancelar sin reserva avisa (1.9135ms)
+ℹ pass 3
+ℹ fail 1
+✖ failing tests:
+✖ cancelar sin reserva avisa (1.9135ms)
+ℹ pass 4
+ℹ fail 0
+
+=== RESULTADO (7 turnos, 0.1379173 $)
+El fix del patch 0008 funciona. Corrí las comprobaciones en esta sesión y todas dieron el resultado esperado.
+
+- **Tests:** `node --test` da 4 pasados y 0 fallos.
+- **Rojo-verde:** con `src/app.js` del commit anterior, falla el test nuevo «cancelar sin reserva avisa» (3 pasan, 1 falla). Con el fix vuelve a 4 de 4, y dejé el árbol limpio.
+- **Síntoma de Laura:** `node src/app.js cancelar mie 10:00` ahora responde `no hay reserva mie 10:00`. `cancelar lun 10:00` sigue respondiendo `cancelada lun 10:00`.
+- **Causa raíz:** el fix busca la reserva en `bookings` por día y franja, que es lo que describe §2 de `patch.md`.
+
+Hay tres cosas que conviene corregir o revisar:
+1. **`patch.md` tiene `commit: <hash>` sin rellenar.** Hay que poner `3e997c9` antes de cerrar.
+2. **El diff de `src/app.js` y `test/app.test.js` aparece como reescritura completa.** Parece un cambio de finales de línea (CRLF a LF), porque las líneas sin tocar también salen modificadas. No cambia el comportamiento, pero ensucia el historial. Si no fue intencionado, habría que restaurar los finales de línea originales.
+3. **El test «cancelar respeta el día» cambió de `mar` a `lun`.** Es coherente con el fix, porque ahora `mar` no tiene reserva. Pero el test ya no prueba que cancelar un día sin reserva falle, y eso queda cubierto solo por el test nuevo.
+
+Es un patch pequeño con una sola ruta de código, así que no lancé la revisión final por ejes con subagentes. Tampoco corrí el gate de `operations.md`, porque ese archivo no existe en el proyecto. Si quieres cerrar el patch, el siguiente paso es `sdd-archive`.

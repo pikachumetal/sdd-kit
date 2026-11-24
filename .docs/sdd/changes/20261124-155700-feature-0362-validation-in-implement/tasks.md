@@ -17,8 +17,8 @@ created: 2026-11-24
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
 | 1 | Batería nueva de `sdd-validate`: escenarios, moldes y los que se mueven | done | aa65156 | |
-| 2 | Batería de `sdd-archive`: sin validación, con `Validado:` y la reentrada | done | — | |
-| 3 | RED: los escenarios nuevos exhiben el fallo con el texto vigente | pending | — | |
+| 2 | Batería de `sdd-archive`: sin validación, con `Validado:` y la reentrada | done | d124e1a | |
+| 3 | RED: los escenarios nuevos exhiben el fallo con el texto vigente | done | — | vf6 es control (la regla ya existe); coste del RED 17,91 $ frente a 12,8 $ |
 | 4 | `sdd-validate`: la skill nueva | pending | — | |
 | 5 | `sdd-implement` y sus métodos: el pase a `sdd-validate` | pending | — | |
 | 6 | `sdd-archive` y los textos que nombran la validación | pending | — | |

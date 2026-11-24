@@ -1,0 +1,56 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [9]
+La revisión final cubre 3b828f3 y `HEAD` es 7a9b2c6. Miro qué cambió entre los dos.
+
+--- [12]
+El commit nuevo toca un test, no solo documentación, así que hay que re-revisarlo. Antes compruebo si el test es sólido, porque comparte estado con el anterior.
+
+--- [15]
+No he cerrado la 0010: la suite está en rojo en `HEAD` (7a9b2c6), y el walkthrough borrador dice que estaba en verde sobre ese mismo commit. No he escrito ni fusionado nada.
+
+Al lanzar `node --test test/` falla un test:
+
+```
+✖ canceladas sin canceladas avisa
+  actual:   'Norte lun — sala ocupada'
+  expected: 'ninguna'
+```
+
+Hay dos causas, y las dos vienen del commit 7a9b2c6, posterior a la revisión final (que cubre 3b828f3):
+
+- **El código no lo cumple:** `cancelledList()` en `src/app.js` devuelve `''` cuando no hay canceladas, no `'ninguna'`. Ese commit solo añade el test, sin tocar `src/`.
+- **Los tests comparten estado:** el test anterior ya ha cancelado Norte lun en el mismo módulo, así que la lista nunca está vacía. Es el workaround que ya recoge el Ruling de la Task 2, y aquí rompe el test nuevo.
+
+Qué pasa con el cierre:
+
+- **Sin validación válida:** la línea `Validación en campo: … suite en verde sobre 7a9b2c6` del borrador no se sostiene. Con `validation.mode: field` tendría que volver a pasar el smoke y la suite en verde, y no puedo registrarla tal cual.
+- **Re-revisión pendiente:** aunque se arregle, 7a9b2c6 toca un test, que es más que documentación. La revisión final sobre 3b828f3 no basta, así que hará falta la re-revisión de `3b828f3..HEAD`.
+
+Los demás pre-checks están bien. Solo está sin commitear el borrador del walkthrough. `merge --check` da `destino: listo` para `develop`. No hay otras ramas abiertas y el spec está `approved`.
+
+Hay dos formas de arreglarlo, y te recomiendo la primera:
+
+1. **Implementar el aviso:** hacer que `canceladas` devuelva `'ninguna'` cuando no hay canceladas. Y aislar el estado del test, por ejemplo moviéndolo a su propio fichero o reiniciando los datos, para que no dependa del orden. Eso cambia lo que ve el usuario, así que lo decidirías tú.
+2. **Quitar el test:** borrar `canceladas sin canceladas avisa` si el aviso no está en el alcance de la 0010.
+
+Dime cuál y sigo. Después paso la suite, la re-revisión, el walkthrough corregido y el merge a `develop`.
+
+--- [17]
+Entendido: el walkthrough sin commitear es el borrador del cierre, y ese pre-check ya estaba pasado. No era lo que me paraba.
+
+Lo que me para es el test rojo, y sigue igual. El cierre no puede registrar la validación en campo ni fusionar con `canceladas sin canceladas avisa` fallando. El walkthrough declara la suite en verde sobre 7a9b2c6, y eso no es cierto. Elegir cómo se arregla es decisión tuya, no mía: la primera opción cambia lo que ve el usuario y la segunda recorta el alcance de la 0010.
+
+Responde con un número y sigo hasta el final sin más preguntas:
+
+1. **Implementar el aviso:** `canceladas` devuelve `ninguna` cuando no hay canceladas, y el test pasa a tener su propio estado. Es lo que recomiendo, porque el test ya está escrito y es razonable.
+2. **Quitar el test** y cerrar la 0010 sin ese aviso.
+
+Con tu respuesta hago esto, por orden:
+
+1. Arreglo el rojo y repito la suite y el smoke.
+2. Lanzo la re-revisión de `3b828f3..HEAD`.
+3. Corrijo el walkthrough con la evidencia real.
+4. Hago el merge a `develop` con `sdd merge`.
+

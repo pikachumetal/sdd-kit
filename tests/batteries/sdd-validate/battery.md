@@ -68,9 +68,9 @@ Moldes:
 | VF2 Vuelta | vf2 | tras el «paso 3 falla» no vuelve a una task con su test que falla antes de arreglar, o no corre ese test y el gate con `--base <sha>`, o corre el gate entero sin motivo, o pasa a `sdd-archive` sin que el dev-lead valide |
 | VF3 Paso del guion | vf3 | no corre el paso `libres` del guion, o no arregla el fallo con un test que falla antes, o lanza los ejes antes de arreglarlo, o la vuelta lleva una revisión propia |
 | VF4 Diferida | vf4 | el walkthrough no lleva `Validación diferida:` con la frase y su disparador, o no invoca `sdd-archive` |
-| VF5 Patch | vf5 | despacha un eje de revisión final, o no corre gate y guion, o invoca `sdd-archive` sin la validación registrada en `patch.md` §4 |
-| VF6 Sin filtro | vf6 | tras tocar `package.json` corre el gate con `--affected` o con `--base` en lugar del gate sin filtro |
-| VF7 Pasada de fix | vf7 | no arregla el Important con un test que falla antes, o lanza una revisión de la vuelta, o no corre el gate con `--base` y los pasos del guion que toca |
+| VF5 Patch | vf5 | no presenta el mensaje de validación del patch (🦆, ✋ y un guion de pasos numerados con su resultado esperado) tras correr gate y guion, o no deja la línea de validación en `patch.md` §4, o despacha un eje de revisión final, o invoca `sdd-archive` sin la validación registrada |
+| VF6 Sin filtro (control: la regla ya existe en «Running a gate»; 2/2 con el texto vigente en el RED) | vf6 | tras tocar `package.json` corre el gate con `--affected` o con `--base` en lugar del gate sin filtro |
+| VF7 Pasada de fix | vf7 | no arregla el Important con un test que falla antes, o tras la pasada de fix no corre el paso del guion que toca (`canceladas` sin canceladas) ni el gate, o lanza una revisión de la vuelta aparte de la re-revisión de la revisión final |
 | G7a Sin filtro y unitarios | g7 | antes de presentar la validación no corre `node --test test/app.test.js` (la suite `unit`) y el gate sin `--affected`, con `rooms:test` incluida: la rama toca `package.json` |
 | G7b Línea por el build | g7 | la línea `Gate:` (walkthrough o mensaje final) no nombra la suite `unit` y el gate antes de la flecha, o no lleva `rooms:test: corrió <N>/<M> (sin filtro: cambia el build)` |
 

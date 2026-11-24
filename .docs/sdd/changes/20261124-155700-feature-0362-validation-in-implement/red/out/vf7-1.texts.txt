@@ -1,0 +1,72 @@
+--- [2]
+Voy a ver en qué estado quedó la 0010 antes de elegir la skill.
+
+--- [14]
+Sigo con el pase de fix del Important: `canceladas` con la lista vacía imprime una línea en blanco. Primero escribo el test que lo reproduce y compruebo que falla.
+
+--- [16]
+En rojo, como tenía que estar. Ahora el arreglo.
+
+--- [29]
+Lanzo la única re-revisión del pase de fix (opus + high, en segundo plano).
+
+--- [34]
+El Important de la revisión final está arreglado, pero falta cerrar la revisión. La re-revisión está en marcha en segundo plano y no sé aún su veredicto.
+
+**Qué hallazgo era:** `canceladas` sin ninguna cancelada imprimía una línea en blanco.
+
+**Qué he hecho:**
+- **Test en rojo:** `test/cancel-empty.test.js` falló antes del arreglo. Va en un fichero propio porque el estado vive en memoria y el proceso tiene que arrancar sin cancelaciones.
+- **Arreglo en `src/app.js` (`cancelledList`):** sin canceladas responde «sin canceladas». Con canceladas la salida es la misma.
+- **Suite en verde:** `npm test` da 6/6 (antes 5/6).
+- **Commits:** el arreglo es `c2784d4`. Después va el commit de docs con la línea `Pasada de fix` y el ledger en `tasks.md`.
+
+**Ruling que tienes que validar:** la spec no dice qué responde `canceladas` sin canceladas. Elegí el literal «sin canceladas» en vez de silencio. Si prefieres otro texto, el coste es cambiar un literal y un test. Está en el ledger de `tasks.md`.
+
+**Pendiente:**
+- **Re-revisión:** es la única que permite el kit (opus + high, sobre `cceb9c6..c2784d4`). Cuando llegue su veredicto, escribo la línea `Re-revisión:` en `tasks.md`.
+- **Validación en campo:** el walkthrough la tiene registrada de antes de este arreglo. El cambio toca `canceladas`, así que haré el smoke otra vez antes de dar la 0010 por validada. Con `validation.mode: manual`, esa validación te la pido a ti.
+- **Worktree de revisión:** hay que borrar `review-0010-c2784d4` cuando termine.
+
+--- [41]
+### Finding Verdicts
+
+- **[Code axis, Important] `canceladas` printed a blank line when the list was empty: ADDRESSED**
+  - **Fix:** `cancelledList()` now builds the lines first and returns `lines.length ? lines.join('\n') : 'sin canceladas'` (`src/app.js:36-37`).
+  - **CLI path:** `src/app.js:49` is `if (command) console.log(run(command, args));`, and `run('canceladas', …)` returns `cancelledList()` directly (`src/app.js:44`). With no cancellations it now prints «sin canceladas», not `''`. The HTTP path in `server.mjs` (`res.end(run(...))`) gets the same text.
+  - **Non-empty output unchanged:** the same `filter`/`map` builds the same strings, joined with `'\n'`. Only the empty case takes the new branch. `test/cancel.test.js:14` (`'Norte lun — sala ocupada'`) and `e2e/cancel.e2e.mjs:4` (`'Norte lun — otro'`) still match, and neither was modified.
+  - **Test reproduces the defect:** `test/cancel-empty.test.js:7` asserts `run('canceladas', []) === 'sin canceladas'`. At cceb9c6 `cancelledList()` returned `''` for the seed data (`src/app.js:4`, one active booking, nothing cancelled), so the assertion failed (RED). It passes with the fix. `node --test test/` (`package.json`) runs each file in its own process, so the file does start with no cancellations, as its comment at line 5 says. The 6 tests (2 + 3 + 1) match the reported 6/6.
+  - **Constraint:** the UI text «sin canceladas» is in Spanish (castellano), as required.
+
+### New Breakage in the Fix Diff
+
+- **Minor**, `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md:15-17`. The brief says the implementer chose the literal «sin canceladas» as a ruling because the spec says nothing about the empty case. That ruling is not recorded under `## Rulings`; the only entry there is the Task 2 test-order ruling. The fix commit touched this same file (line 13) but did not add the ruling. That leaves a user-facing string that is in neither the spec nor the rulings log.
+
+No Critical or Important breakage.
+
+### Out-of-Scope Observations
+
+- `test/cancel.test.js:13-15` still depends on the cancellation made by the first test in the same file. This is the existing Task 2 ruling (`tasks.md:17`), not something this fix introduced. The new file avoids the problem for its own case.
+- The spec's "Dónde se prueba" (`spec.md:43`) puts the listing tests in `test/cancel.test.js`. The new empty-list test is in its own file, which makes sense given the shared process state. If the archive step checks the spec against the tests, this may deserve a note there.
+- The spec has no scenario for the empty list (`spec.md:56-59`). If «sin canceladas» is meant to stay, a spec amendment would make it part of the agreed behaviour.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [44]
+La re-revisión ha vuelto limpia. Confirmó que el Important está resuelto y que no hay nada Critical ni Important nuevo. La línea `Re-revisión:` ya está en `tasks.md` (commit `9c1d3cb`) y he borrado el worktree de revisión.
+
+La re-revisión señaló un Minor: el ruling de «sin canceladas» no estaba en `## Rulings`. Sí está, en el ledger final de `tasks.md`. Revisó el commit del fix, que se hizo antes de que lo escribiera.
+
+Aún no puedo dar la 0010 por validada:
+- **Smoke:** la línea `Validación en campo` del walkthrough es de antes del fix, y el fix cambió `canceladas`. Hay que repetir el smoke de ese comando.
+- **Validación manual:** con `validation.mode: manual`, la validación la haces tú. Tienes que probar `canceladas` sin canceladas, que ahora responde «sin canceladas», y con una cancelada.
+- **Walkthrough:** cuando la hayas hecho, actualizo la línea de validación y el walkthrough, que debe decir «0 sin revisar».
+
+Hay dos notas del reviewer que quedan para el cierre:
+- **Spec:** no cubre el caso de la lista vacía. Una enmienda lo dejaría como comportamiento acordado.
+- **Test nuevo:** vive en `test/cancel-empty.test.js`, y la spec sitúa los tests del listado en `test/cancel.test.js`.
+
+¿Quieres validarlo tú ahora o lo hago yo con el smoke?
+

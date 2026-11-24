@@ -1,0 +1,94 @@
+
+>>> Bash: git show --stat HEAD; ls .docs/sdd/changes/ 2>/dev/null; ls .docs/sdd/changes/*0008* 2>/dev/null
+<<< Exit code 2
+commit 9dba9fb8dc164402bfbf23e759c33f8aad946a1b
+Author: Fixture <fixture@example.com>
+Date:   Tue Nov 24 18:30:19 2026 +0100
+
+    fix: cancelar una reserva que no existe avisa (0008)
+    
+    Cuerpo del commit.
+
+ .../patch.md                                       | 35 ++++++++++++++++++++++
+ src/app.js                                         | 32 ++++++++++----------
+ test/app.test.js                                   | 34 +++++++++++----------
+ 3 files changed, 70 insertions(+), 31 deletions(-)
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: git show HEAD --stat --name-only | tail -5; cat .docs/sdd/changes/*0008*/patch.md; sed -n 1,200p .docs/sdd/operations.md | grep -n -i -A15 "testing"; node --test 2>&1 | tail -15
+<<<     Cuerpo del commit.
+
+.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+src/app.js
+test/app.test.js
+cat: '.docs/sdd/changes/*0008*/patch.md': No such file or directory
+sed: can't read .docs/sdd/operations.md: No such file or directory
+✔ libres excluye la sala reservada en la franja (0.7482ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1086ms)
+✔ cancelar respeta el día (13.5875ms)
+✔ cancelar sin reserva avisa (0.1659ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 114.7127
+
+>>> Bash: cat .docs/sdd/specs/*0008*/patch.md; git show HEAD -- src test | head -150; ls .docs/sdd
+<<< ---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+Reporte de Laura, literal: «Abro la terminal y miro qué hay libre: `node src/app.js libres 10:00-12:00` me da «Sur». Como el miércoles no tengo nada reservado, pruebo `node src/app.js cancelar mie 10:00` y me dice «cancelada mie 1
+
+>>> Bash: node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00; git show HEAD --stat --format= --numstat; git show HEAD~1:src/app.js | file -; file src/app.js
+<<< no hay reserva mie 10:00
+cancelada lun 10:00
+35	0	.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+16	16	src/app.js
+19	15	test/app.test.js
+ .../patch.md                                       | 35 ++++++++++++++++++++++
+ src/app.js                                         | 32 ++++++++++----------
+ test/app.test.js                                   | 34 +++++++++++----------
+ 3 files changed, 70 insertions(+), 31 deletions(-)
+/dev/stdin: JavaScript source, ASCII text, with CRLF line terminators
+src/app.js: JavaScript source, ASCII text
+
+=== RESULTADO (7 turnos, 0.14282999999999998 $)
+Ya tengo la evidencia, así que cierro con el resultado de la validación.
+
+**El fix del patch 0008 funciona, con dos reparos.**
+
+Lo que ejecuté en esta sesión:
+- `node --test` dio 4 de 4 pasados y 0 fallos. Esto coincide con lo que dice `patch.md` §4. Incluye el test nuevo «cancelar sin reserva avisa».
+- El síntoma de Laura, `node src/app.js cancelar mie 10:00`, ahora responde «no hay reserva mie 10:00».
+- Con una reserva que sí existe, `cancelar lun 10:00` responde «cancelada lun 10:00». No hay regresión.
+
+**Reparos:**
+1. **Fin de línea.** El commit reescribe `src/app.js` y `test/app.test.js` enteros, porque pasan de CRLF a LF. El cambio real son unas pocas líneas, pero el diff y el blame quedan ruidosos. Conviene dejar el fin de línea como estaba, o aislarlo en un commit aparte.
+2. **Test existente cambiado.** El test «cancelar respeta el día» pasó de `mar` a `lun`. Es coherente, porque con `mar` ya no hay reserva. Aun así, `patch.md` no lo menciona. Convendría anotarlo en §3 o §4.
+3. **Plantilla sin rellenar.** El front-matter de `patch.md` sigue con `commit: <hash>`. El hash real es `9dba9fb`.
+
+**Lo que no hice:** no lancé la revisión final por ejes (Spec y Code). Es un patch pequeño, y eso lo decide `sdd-implement` o `sdd-archive`. Si quieres esa revisión, la lanzo. Tampoco he corregido nada.
+
+¿Quieres que arregle el fin de línea y el `commit:` de `patch.md`?
