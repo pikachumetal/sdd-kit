@@ -19,8 +19,8 @@ created: 2026-11-24
 | 1 | Batería nueva de `sdd-validate`: escenarios, moldes y los que se mueven | done | aa65156 | |
 | 2 | Batería de `sdd-archive`: sin validación, con `Validado:` y la reentrada | done | d124e1a | |
 | 3 | RED: los escenarios nuevos exhiben el fallo con el texto vigente | done | 2dad1e4 | vf6 es control (la regla ya existe); coste del RED 17,91 $ frente a 12,8 $ |
-| 4 | `sdd-validate`: la skill nueva | done | — | |
-| 5 | `sdd-implement` y sus métodos: el pase a `sdd-validate` | pending | — | |
+| 4 | `sdd-validate`: la skill nueva | done | 4e80c80 | |
+| 5 | `sdd-implement` y sus métodos: el pase a `sdd-validate` | done | — | |
 | 6 | `sdd-archive` y los textos que nombran la validación | pending | — | |
 | 7 | ADR, topes, docs del flujo y enmiendas de redacción | pending | — | |
 | 8 | GREEN, REFACTOR y controles | pending | — | |

@@ -58,9 +58,9 @@ digraph process {
     "Base check; write the RED tests; sdd task brief" [shape=box];
     "Base check; write the RED tests; sdd task brief" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "More tasks remain?" [shape=diamond];
-    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [shape=box];
+    "Final review and finish: sdd-validate, then Finish of sdd-implement-native" [shape=box];
     "Final review clean: delete this plan's workspace" [shape=box];
-    "sdd-archive (validation)" [shape=box style=filled fillcolor=lightgreen];
+    "sdd-archive" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, ledger check, read plan, pre-flight review" -> "Base check; write the RED tests; sdd task brief";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer asks questions?";
@@ -74,9 +74,9 @@ digraph process {
     "Fix loop: read references/fix-loop.md before every round" -> "Append completion to ledger, mark todo complete" [label="addressed, or parked at the cap"];
     "Append completion to ledger, mark todo complete" -> "More tasks remain?";
     "More tasks remain?" -> "Base check; write the RED tests; sdd task brief" [label="yes"];
-    "More tasks remain?" -> "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [label="no"];
-    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" -> "Final review clean: delete this plan's workspace";
-    "Final review clean: delete this plan's workspace" -> "sdd-archive (validation)";
+    "More tasks remain?" -> "Final review and finish: sdd-validate, then Finish of sdd-implement-native" [label="no"];
+    "Final review and finish: sdd-validate, then Finish of sdd-implement-native" -> "Final review clean: delete this plan's workspace";
+    "Final review clean: delete this plan's workspace" -> "sdd-archive";
 }
 ```
 
@@ -293,7 +293,7 @@ Squash the task's range into one commit, as [commit-milestones.md](../sdd-implem
 
 ## Final Review
 
-When every task is complete, invoke `sdd-verify` with `Skill`: the final review and its single closing are its. When its closing is done, finish with [Finish](../sdd-implement-native/SKILL.md#finish) of `sdd-implement-native`.
+When every task is complete, invoke `sdd-validate` with `Skill`. When the validation is recorded, finish with [Finish](../sdd-implement-native/SKILL.md#finish) of `sdd-implement-native`.
 
 ## Common Rationalizations
 

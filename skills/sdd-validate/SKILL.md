@@ -19,7 +19,7 @@ The phase between the last task and the close: what it finds is fixed through `s
 2. **The script, walked by you**: every step of the dev's script, as the person will walk it, with the project's own means (this skill names no tool). A failing step goes to the turn below.
 3. **The final review** of the axes, on what is already validated: invoke `sdd-verify` with `Skill` and follow its «Closing the review», before any stop.
 4. **The dev's validation**, per its mode: first thing, read [validation-modes.md](references/validation-modes.md); with `manual`, the script you present is one you have walked ([dev-validation.md](references/dev-validation.md)).
-5. **The record** in the draft walkthrough (in a patch, `patch.md` §4), then invoke `sdd-archive` with `Skill`.
+5. **The record** in the draft walkthrough (in a patch, `patch.md` §4), then «Finish» of `sdd-implement-native`, which invokes `sdd-archive` (a patch invokes it directly).
 
 A patch has no final review: 1, 2, 4, 5.
 
@@ -29,7 +29,7 @@ A failure of the script, of the final review or of the dev goes back to `sdd-imp
 
 ## Closing drafts
 
-While the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time, and the delta merged into `capabilities/` with the `sdd capability merge` of step 3 of `sdd-archive`; the roadmap isn't touched. The record goes into that draft.
+While the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time, and the delta merged into `capabilities/` with the `sdd capability merge` of step 3 of `sdd-archive`; the roadmap isn't touched.
 
 **Every dispatch** and every slow verification in the background gets its silence watch: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, through `watch command -- <the command…>`; its warning, in [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch).
 
