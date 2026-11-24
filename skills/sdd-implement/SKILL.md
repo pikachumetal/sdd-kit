@@ -51,11 +51,11 @@ Before the first task, with more than one task, write `tasks.md`, the **living r
 
 **Processes you start**: save the PID (`$!`, `Start-Process -PassThru`, the harness's background task) or the port it listens on; stop it by that PID or by the process listening on that port, never by executable name (`taskkill /IM`, `pkill node`, `killall`, `Stop-Process -Name`) or a command-line pattern (`pkill -f`, filtering `CommandLine`): the dev-lead's machine runs others alike. Before starting, check the port is free (if not, it isn't yours: use another); after stopping, check it's free again: the PID of `$!` or `Start-Process -PassThru` can be a launcher's, and if something still listens, stop that one, your child.
 
-**In `pair`**, with the task's commit done, stop before the next one and present that task's test script, shaped as [dev-validation.md](../sdd-archive/references/dev-validation.md) says, from its plan line «Se prueba en la aplicación»; if it says «no, porque…», the script says so and gives the check that can be done.
+**In `pair`**, with the task's commit done, stop before the next one and present that task's test script, shaped as [dev-validation.md](../sdd-validate/references/dev-validation.md) says, from its plan line «Se prueba en la aplicación»; if it says «no, porque…», the script says so and gives the check that can be done.
 <!-- kit: incluye visual-evidence -->
 It goes before the script. `delegate` and `unattended` don't stop here.
 
-The closing gate —the project's full build and suite— runs at the baseline of `sdd-worktrees` and once in the validation (step 1 of `sdd-archive`), never inside a task.
+The closing gate —the project's full build and suite— runs at the baseline of `sdd-worktrees` and once, in `sdd-validate`, never inside a task.
 
 ## Deviations and rulings
 
@@ -72,11 +72,7 @@ After a crash or a quota cut, first reread the ledger, `git log` and the workspa
 
 ## After the last task
 
-**When the axes return**, first thing: invoke `sdd-verify` with `Skill` and follow its «Closing the review», before any stop.
-
-**Every dispatch** —implementer, reviewers, re-review— and every slow verification in the background gets its silence watch in the same turn: `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" watch subagent --description "<the dispatch's description>"` in the background, or, for a slow verification, through `watch command -- <the command…>`; its warning, in [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch).
-
-**Closing drafts**: while the axes review, write in their place, uncommitted, `walkthrough.md` without the verification or the time, and the delta merged into `capabilities/` with the `sdd capability merge` of step 3 of `sdd-archive`; the roadmap isn't touched. `sdd-archive` only completes them.
+Invoke `sdd-validate` with `Skill`: the gate, the script, the final review and the dev's validation are its; a failure comes back here as a task at the end of the plan.
 
 ## Red flags — STOP
 

@@ -1,10 +1,10 @@
 # Validation by mode
 
-Step 1 of `sdd-archive`.
+Step 4 of `sdd-validate`; a hotfix or a spike, which don't go through it, validate like this in step 1 of `sdd-archive`.
 
 ## With `validation.mode: field`
 
-You run your smoke —one row per THEN— and the suite only if «In the validation» of [closing-suite.md](closing-suite.md#in-the-validation) leaves it here (another open branch or a base ahead leaves it for step 6), and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`, with the rulings or «nada». If the user does say what they tried, the line is `Validado` with their words.
+You run your smoke —one row per THEN—, with the gate of step 1 already green on this tree, and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example with data>` and `**✋ Me salí del plan en…**`, with the rulings or «nada». If the user does say what they tried, the line is `Validado` with their words.
 <!-- kit: incluye field-validation-defined -->
 
 ## With `Validación: agente`

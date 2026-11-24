@@ -31,6 +31,7 @@ const skillBudgets: Record<string, Budget> = {
   'sdd-implement-native': { skillMd: 3038, total: 3038 },
   'sdd-implement-subagent': { skillMd: 2951, total: 8462 },
   'sdd-verify': { skillMd: 2606, total: 9503 },
+  'sdd-validate': { skillMd: 655, total: 1735 },
   'sdd-tdd': { skillMd: 1723, total: 4036 },
   'sdd-upgrade': { skillMd: 980, total: 980 },
   'sdd-debugging': { skillMd: 1681, total: 3426 },
