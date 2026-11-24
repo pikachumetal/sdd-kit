@@ -427,6 +427,25 @@ La batería nueva `tests/batteries/sdd-validate/` (con su `subject.mjs`) lleva l
 - AND con «Camino crítico» y `critical-path.md` ausente o sin filas, o con una línea `sin-base:` antes del borrado, para sin borrar nada y lo dice
 - AND en un patch con el mismo proyecto, igual, con la fila propuesta de `patch.md` §4 y el borrado en su commit de cierre
 
+#### MODIFIED — El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite
+
+- GIVEN una feature cerrada con `sdd-archive`
+- WHEN se escribe «4. Verificación» del walkthrough
+- THEN «4.1 Builds» lleva la línea `Gate:` del gate de cierre, con las suites unitarias, su duración, su configuración (la del gate, o lo que se añadió) y el sha del gate de cierre; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
+- AND si el sha del gate de cierre cae en el tramo que el cierre junta (una pasada de fix o un borrador tras la última task), «4.1 Builds» dice «sobre el commit de cierre» en lugar del sha, y `--verified-at` y el mensaje final llevan el sha del commit de cierre; nunca el de la última task
+- AND con E2E, «4.1 Builds» lleva el comando de «Entorno de la suite» con su comprobación, levantado en esa sesión, y la duración de la suite E2E frente a «Presupuesto E2E»
+- AND «4.2 Smoke / tests» tiene una fila por THEN, o por objetivo en un spike, con su evidencia (`suite` · `ejecución real` · `no probado`)
+- AND si la suite E2E pasó de su presupuesto, o, sin presupuesto, la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
+
+#### MODIFIED — La suite E2E del cierre corre sobre un entorno que levanta la sesión
+
+- GIVEN un proyecto cuyo `operations.md` declara `Entorno de la suite: node scripts/env-up.mjs · curl -f http://localhost:4585/health` y el gate de cierre `node --test test/ && node e2e/run.mjs`
+- AND en el puerto 4585 ya escucha un servidor que arrancó otra pasada con el código de `develop`
+- WHEN el hilo pasa la suite del gate de cierre
+- THEN antes de la primera pasada ejecuta `node scripts/env-up.mjs` y comprueba `/health`
+- AND la pasa con `node --test test/ && node e2e/run.mjs` literal, sin `E2E_TRACE` ni otra variable que el gate no declare
+- AND ante un `ERR_CONNECTION_REFUSED` vuelve a levantar el entorno, lo comprueba y repite la pasada antes de abrir el código o contrastar con la base
+
 ### Capacidad: `verification`
 
 #### REMOVED — El revisor final sale en segundo plano con el commit de la última task
@@ -494,6 +513,28 @@ La batería nueva `tests/batteries/sdd-validate/` (con su `subject.mjs`) lleva l
 - AND con un `sin revisar` o un «no verificado» sin resolver, esa línea no dice «limpia»: dice cuántos quedan (`…, re-revisión limpia, 1 sin revisar`)
 - AND la fila de la 0030 en el roadmap queda ✅, y la del patch 0031 en «Patches» no lleva el prefijo 🧪 ni tiene fila en la tabla de la release abierta
 - AND sin la clave, o con `"mode":"manual"`, la validación es la de hoy: para en `pair` y `delegate` y se difiere al smoke de la release en `unattended`
+
+#### MODIFIED — La validación puede diferirse con condiciones
+
+- GIVEN una feature o un patch verificados por el agente y un usuario que, presente y con el trabajo delante, dice que probará más tarde; o una feature o un patch en `unattended`; en un proyecto con `validation.mode` `manual` o sin la clave
+- WHEN el agente valida
+- THEN el walkthrough registra `Validación diferida: <fecha> · «<frase literal>» · disparador: <feature, release o uso con dueño>` y el roadmap marca la fila `🧪 validación diferida a <disparador>`, no ✅; en un patch, la línea va en `patch.md` §4, debajo de la tabla, y la fila de la tabla de patches empieza por `🧪 validación diferida a <disparador> — `
+- AND sin frase del usuario (salvo en `unattended`, cuyo disparador es el smoke de la release) no hay diferido: la feature o el patch siguen esperando la validación
+- AND con la frase y sin disparador, o con uno vago («diferida», «se prueba en uso»), el agente no vuelve a preguntar: concreta el uso más próximo, con quien difiere como dueño (`disparador: la primera exportación del informe mensual, a cargo del dev-lead`), y lo dice en el mensaje de cierre para que lo corrija
+- AND la pregunta de validación ofrece diferir con un disparador concreto con dueño que elige el agente («Diferir: lo pruebo en <uso más próximo>, a cargo de <quien valida>»); elegir esa opción, aunque sea sin texto, es la frase literal y el disparador, y el agente no vuelve a preguntar
+- AND cuando el usuario valida, el agente añade una adenda fechada con **solo lo que él dice que probó** (en un patch, en `patch.md` §4) y pasa la fila a ✅ (en un patch, quita el prefijo 🧪)
+- AND si la fila ya salió en el corte de una release (el dev-lead dice «probé la 0022, va bien» y `### v1.3.0 — 2026-10-05` tiene `validaciones pendientes: 0022, 0025`), el agente añade la misma adenda y quita el id de esa línea (`validaciones pendientes: 0025`); si queda vacía, borra la línea
+
+#### MODIFIED — La spec dice quién valida
+
+- GIVEN una spec o un `patch.md` con la línea `Validación: agente — solo fija Node 22 en package.json y .nvmrc` y un proyecto con `validation.mode` `manual`
+- WHEN el agente valida
+- THEN no presenta guion ni espera validación, y el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación por el agente: <fecha> · <evidencia>`, con el smoke y la suite que ejecutó
+- AND la fila del roadmap queda ✅
+- AND sin la línea, o con `Validación: dev-lead`, valida el dev-lead
+- AND con la spec aprobada por delegación o en `unattended`, `agente` solo vale si la frase del dev-lead lo nombra; en un patch, solo con su frase literal en la petición o en la pregunta del carril
+- AND si al implementar aparece algo visible para el usuario, la línea vuelve a `dev-lead` como desvío
+- AND con `validation.mode: field`, el registro es `Validación en campo:`
 
 ### Capacidad: `closing-merge`
 
@@ -575,6 +616,7 @@ Cada fila cita la línea `suma:` del comando de previsión cuando existe. Las fi
 
 ## Enmiendas
 
+- 2026-11-24 — los requisitos «El walkthrough dice de dónde sale cada THEN y cuánto tarda la suite» y «La suite E2E del cierre corre sobre un entorno que levanta la sesión» (`closing-suite`), y «La validación puede diferirse con condiciones» y «La spec dice quién valida» (`control-profiles`) entran en el delta como `MODIFIED` de redacción (el sha del gate de cierre, quién pasa la suite, quién valida) — lo anunciaba el Scope — aplica literal una decisión tomada con el dev-lead — sin aprobar
 - 2026-11-24 — `a3r` no cambia su esperado: ya mide un rojo que también falla sin la rama y para a preguntar, que sigue siendo cierto; el rojo de la rama lo mide `av2` — corrige una frase de «Dónde se prueba» que no se aplica; no cambia lo que se mide — sin aprobar, avisado en el mensaje de cierre de la task
 - 2026-11-24 — `g7` pasa también a la batería de `sdd-validate` y `g6` se retira de la de `sdd-archive`: el gate ya no corre en el cierre y la suite única tras la base es el requisito que la spec quita; la batería nueva lleva 11 escenarios movidos y la previsión sube ~3 $ (~89 $) — encontrado al empezar la Task 2, al leer qué miden `g6` y `g7` — aprobada: «1» (dev-lead, 2026-11-24)
 - 2026-11-24 — el enfoque pasa de A (dentro de `sdd-implement`) a C (una skill nueva `sdd-validate`) y la capacidad `validation` nace del delta; el resto de la spec cambia solo el nombre del sitio — «sí, pero entonces esto necesita ser quirúrgico» (dev-lead, 2026-11-24) — aprobada: «Apruebo, commitea y sigue con la Task 1» (dev-lead, 2026-11-24)

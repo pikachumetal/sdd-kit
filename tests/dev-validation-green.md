@@ -1,6 +1,6 @@
 # GREEN y REFACTOR — Validación del dev con guion desde el reporte (feature 0208)
 
-Misma batería que la [RED](dev-validation-red.md) (`sdd-archive`, escenarios `g1`-`g4`), con el kit de la rama: [dev-validation.md](../skills/sdd-archive/references/dev-validation.md), el paso 1 de `sdd-archive` y el paso 7 de `sdd-start-feature` que la nombran, y `sdd validation serve`. Sujetos Sonnet con `tests/headless/battery.sh` y superpowers 7.0.0. La rúbrica gana G6 (plan B sin Claude in Chrome: los sujetos headless no la tienen). Campaña completa: 26 sujetos, 6,14 $ (techo 26 por la enmienda del 2026-10-23).
+Misma batería que la [RED](dev-validation-red.md) (`sdd-archive`, escenarios `g1`-`g4`), con el kit de la rama: [dev-validation.md](../skills/sdd-validate/references/dev-validation.md), el paso 1 de `sdd-archive` y el paso 7 de `sdd-start-feature` que la nombran, y `sdd validation serve`. Sujetos Sonnet con `tests/headless/battery.sh` y superpowers 7.0.0. La rúbrica gana G6 (plan B sin Claude in Chrome: los sujetos headless no la tienen). Campaña completa: 26 sujetos, 6,14 $ (techo 26 por la enmienda del 2026-10-23).
 
 ## GREEN — 8 sujetos
 
