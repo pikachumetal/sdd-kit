@@ -202,7 +202,7 @@ Con `validation.mode: field` o `Validación: agente`, el paso 4 es la verificaci
 
 ## Dónde se prueba
 
-La batería nueva `tests/batteries/sdd-validate/` (con su `subject.mjs`) lleva los escenarios nuevos `vf1`…`vf7` y los 10 que se mueven desde `sdd-archive` (`g1`, `g2`, `g3`, `g4`, `v1a`, `v1b`, `se1`, `t1`, `t2`, `t3`), que conservan su id y su procedencia; en la batería de `sdd-archive` entran `av1` y `av2`. Ningún id nuevo choca con los de su batería.
+La batería nueva `tests/batteries/sdd-validate/` (con su `subject.mjs`) lleva los escenarios nuevos `vf1`…`vf7` y los 11 que se mueven desde `sdd-archive` (los diez de la validación y `g7`, el gate entero si la rama toca el build, que ya no corre en el cierre; `g6`, la suite única tras la base, se retira porque mide un requisito que la spec quita) (`g1`, `g2`, `g3`, `g4`, `v1a`, `v1b`, `se1`, `t1`, `t2`, `t3`), que conservan su id y su procedencia; en la batería de `sdd-archive` entran `av1` y `av2`. Ningún id nuevo choca con los de su batería.
 
 - El orden de `sdd-validate` (gate, guion, revisión, dev-lead, `sdd-archive`): `vf1`, un sujeto de feature con `validation.mode: manual` que acaba las tasks y llega al mensaje de validación; se mide por la secuencia de sus comandos.
 - El bucle de vuelta tras un fallo del dev-lead: `vf2`, con «el paso 3 falla» tras la presentación; se mide que devuelve el control a `sdd-implement`, que la vuelta es una task con su test y que corre el test, el gate con `--base <sha del último verde>`, el paso tocado y la revisión del diff, y no el gate entero.
@@ -213,7 +213,7 @@ La batería nueva `tests/batteries/sdd-validate/` (con su `subject.mjs`) lleva l
 - El fallo que sale de la revisión final: `vf7`; se mide que sigue la pasada de fix de la revisión, que después corre el gate con `--base` y los pasos del guion que toca, y que no lleva revisión de vuelta.
 - `validation.mode: field` y `Validación: agente`: los movidos `v1b` y `t3`.
 - El paso de `sdd-implement` a `sdd-validate` al acabar la última task: los humos `h1` y `h2` de la batería de `sdd-implement` (su rúbrica cambia: la invocación siguiente es `sdd-validate`).
-- `sdd-archive` sin validación registrada, que la devuelve a `sdd-validate`: `av1`, con un molde sin `Validado:`. Con validación registrada, los escenarios existentes de cierre (`a1`…`a8`, `c*`, `cpt*`, `e*`…) miden lo suyo con moldes que llevan `Validado:` (decisión 16); `a3r` cambia su esperado (el rojo de la rama devuelve a `sdd-implement`).
+- `sdd-archive` sin validación registrada, que la devuelve a `sdd-validate`: `av1`, con un molde sin `Validado:`. Con validación registrada, los escenarios existentes de cierre (`a1`…`a8`, `c*`, `cpt*`, `e*`…) miden lo suyo con moldes que llevan `Validado:` (decisión 16).
 - La reentrada tras un rojo posterior al commit de cierre: `av2`, con un rojo de la rama tras `sdd merge --sync`; se mide que devuelve el trabajo a `sdd-implement` sin arreglarlo, y que al volver rehace el commit de cierre y repite el sync.
 - Los `MODIFIED` que solo cambian el nombre del sitio (`feature-flow`: «decisión sola», «entorno parado», «base al día»; `frontend-verification`; `routing`; `control-profiles`, fila de la tabla de paradas) son de redacción: no llevan escenario, y el cambio lo comprueba la lectura del texto y el test de que `sdd-validate` no nombra ninguna herramienta de proyecto.
 - Los `MODIFIED` de `closing-suite` y `closing-merge` los miden `a3`, `a3r`, `a3a` y `a5` ya existentes, que corren como controles.
@@ -575,6 +575,8 @@ Cada fila cita la línea `suma:` del comando de previsión cuando existe. Las fi
 
 ## Enmiendas
 
+- 2026-11-24 — `a3r` no cambia su esperado: ya mide un rojo que también falla sin la rama y para a preguntar, que sigue siendo cierto; el rojo de la rama lo mide `av2` — corrige una frase de «Dónde se prueba» que no se aplica; no cambia lo que se mide — sin aprobar, avisado en el mensaje de cierre de la task
+- 2026-11-24 — `g7` pasa también a la batería de `sdd-validate` y `g6` se retira de la de `sdd-archive`: el gate ya no corre en el cierre y la suite única tras la base es el requisito que la spec quita; la batería nueva lleva 11 escenarios movidos y la previsión sube ~3 $ (~89 $) — encontrado al empezar la Task 2, al leer qué miden `g6` y `g7` — aprobada: «1» (dev-lead, 2026-11-24)
 - 2026-11-24 — el enfoque pasa de A (dentro de `sdd-implement`) a C (una skill nueva `sdd-validate`) y la capacidad `validation` nace del delta; el resto de la spec cambia solo el nombre del sitio — «sí, pero entonces esto necesita ser quirúrgico» (dev-lead, 2026-11-24) — aprobada: «Apruebo, commitea y sigue con la Task 1» (dev-lead, 2026-11-24)
 
 ## Aprobaciones

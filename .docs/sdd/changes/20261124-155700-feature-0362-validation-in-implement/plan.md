@@ -159,11 +159,11 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Verificación**: `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-archive/battery.md` → `suma: 4 sujetos` y `SCENARIOS="a3 a3r a3a a5" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-archive/battery.md` → `suma: 8 sujetos`
 **Interfaces**:
 - Consume: los ids movidos de Task 1 (`g1`…`t3`) para retirar sus filas de esta batería.
-- Produce: `av1` (molde `reservas` sin `Validado:`, «Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala.»: devuelve el trabajo a `sdd-implement` sin escribir nada), `av2` (molde `reservas-red`, con `Validado:` y commit de cierre hecho, un rojo de la rama tras `sdd merge --sync`: devuelve a `sdd-implement`; al volver rehace el commit de cierre y repite el sync); `a3r` con su C1 cambiado a «devuelve el trabajo a `sdd-implement`»; los moldes de cierre (`reservas*`, `salas*`) con un borrador de `walkthrough.md` que lleva `Validado: 2026-11-24 · «probé reservar y cancelar y funciona»` (en `salas-*`, `patch.md` §4).
+- Produce: `av1` (molde `reservas-sinvalidar`, sin el registro, «Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala.»: devuelve el trabajo a `sdd-implement` sin escribir nada), `av2` (molde `reservas-rojo-cierre`, con la validación registrada y commit de cierre hecho, un rojo de la rama tras `sdd merge --sync`: devuelve a `sdd-implement`; al volver rehace el commit de cierre y repite el sync); `a3r` con su C1 cambiado a «devuelve el trabajo a `sdd-implement`»; los moldes de cierre (`reservas*`, `salas*`) con un borrador de `walkthrough.md` que lleva `Validado: 2026-11-24 · «probé reservar y cancelar y funciona»` (en `salas-*`, `patch.md` §4).
 
 **Ficheros**: modificar `tests/batteries/sdd-archive/battery.md`; modificar los moldes de `tests/batteries/sdd-archive/fixtures/` y de `tests/batteries/using-sdd/mold-salas` que usa la batería, salvo el molde de `av1`.
 
-- [ ] **Step 1: Retirar y cambiar** — quita de `battery.md` las filas `g1 g2 g3 g4 v1a v1b se1 t1 t2 t3` y sus rúbricas; cambia el esperado de `a3r` (C1: «el rojo de la rama devuelve el trabajo a `sdd-implement`» en lugar de «arregla con un test que falla primero»).
+- [ ] **Step 1: Retirar y cambiar** — quita de `battery.md` las filas `g1 g2 g3 g4 v1a v1b se1 t1 t2 t3` y sus rúbricas; quita también `g6` y `g7` (`g7` pasa a `sdd-validate`) y cambia la petición de `c1` y `c2` («su walkthrough solo tiene el registro de la validación, complétalo»).
 - [ ] **Step 2: Escenarios nuevos** — escribe `av1` y `av2` como arriba, con su rúbrica (`av1`: C1 dice «falta la validación de la 0010», C2 no escribe ningún registro, C3 no corre el gate; `av2`: C1 no edita código, C2 devuelve a `sdd-implement`, C3 al volver rehace el commit de cierre y repite `sdd merge --sync` con el `--verified-at` del nuevo gate).
 - [ ] **Step 3: Moldes** — añade la línea `Validado:` al borrador de walkthrough de cada molde de cierre, salvo el de `av1`; no cambia ninguna otra línea del molde.
 - [ ] **Step 4: Previsión** — corre los dos comandos de «Verificación».
@@ -231,7 +231,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 **Tras**: Task 5
 **Modelo**: el hilo en Native (Sonnet, effort medium).
-**Tests RED**: los escenarios `av1`, `av2` y el esperado de `a3r`.
+**Tests RED**: los escenarios `av1`, `av2`.
 **Superficies**: docs
 **Verificación**: `moon run kit:build kit:own kit:skill-size kit:copies` → sin errores y, desde `cli/`, `pnpm exec vitest run test/kit/skills.test.ts test/kit/skills-3x-paths.test.ts test/kit/word-budget.test.ts` → `Tests  N passed (N)`; `sdd-archive` ≤ 8450 total y ≤ 2625 `SKILL.md`
 **Interfaces**:
@@ -272,7 +272,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: el hilo en Native (Sonnet, effort medium); sujetos en Sonnet.
 **Tests RED**: los de T3, ahora en GREEN.
 **Superficies**: docs, tooling
-**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md`, `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-archive/battery.md`, `SCENARIOS="g1 g2 g3 g4 v1a v1b se1 t1 t2 t3" N=1 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md` y los controles `SCENARIOS="h1 h2 g1 a1" N=2` (`sdd-implement`) y `SCENARIOS="a3 a3r a3a a5" N=2` (`sdd-archive`) → cada escenario con su umbral; los de `vf*` y `av*` en 2/2
+**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md`, `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-archive/battery.md`, `SCENARIOS="g1 g2 g3 g4 g7 v1a v1b se1 t1 t2 t3" N=1 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md` y los controles `SCENARIOS="h1 h2 g1 a1" N=2` (`sdd-implement`) y `SCENARIOS="a3 a3r a3a a5" N=2` (`sdd-archive`) → cada escenario con su umbral; los de `vf*` y `av*` en 2/2
 **Interfaces**:
 - Consume: el texto final de T4 a T7 y la previsión de coste de la spec.
 - Produce: `tests/validation-in-implement-green.md`, la carpeta `green/` de la spec y, si un escenario no llega a su umbral, una tanda de REFACTOR (un cambio de texto y una nueva ronda de los escenarios que fallaron).

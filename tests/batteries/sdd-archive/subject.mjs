@@ -66,6 +66,13 @@ function freeRoomsBug(withStep) {
   if (withStep) appendFileSync(at(`${F10}/plan.md`), step);
   s.commit('feat(bookings): libres según el estado de la reserva');
 }
+// El cierre llega sin la validación registrada.
+let RECORD = true;
+// El patch 0008 con su validación registrada debajo de §4, en el commit del fix.
+function recordValidation0008() {
+  appendFileSync(at(`${P8}/patch.md`), '\nValidación en campo: 2026-10-10 · `node --test` 4/4 y smoke de `cancelar mie 10:00` con ejecución real\n');
+  amend();
+}
 // La validación la hace la persona: el cierre para con el guion.
 const manualValidation = () => (MARKER = MARKER.replace('"mode": "field"', '"mode": "manual"'));
 
@@ -116,6 +123,12 @@ function done0010(where, extra) {
     '- Task 2: Ruling: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya — workaround hasta que cada test prepare sus datos — coste si es erróneo: el test falla si corre solo o en otro orden', '',
   ].join('\n'));
   s.commit('docs(sdd): tasks.md con la revisión final');
+  if (RECORD) recordValidation0010();
+}
+// El borrador del walkthrough que deja la validación con su registro: el cierre arranca de ahí.
+function recordValidation0010() {
+  s.put(`${F10}/walkthrough.md`, '# Walkthrough — Motivo al cancelar\n\nValidación en campo: 2026-10-26 · smoke con una fila por THEN y suite en verde\n');
+  s.commit('docs(sdd): borrador del walkthrough con la validación registrada');
 }
 // La 0020 solo fija la versión de Node: nada que una persona vea, implementada y revisada; `line` es la línea `Validación:` de su spec.
 function doneConfig0020(line = '') {
@@ -588,7 +601,7 @@ const molds = {
   'reservas-adr': () => (moldReservas(), done0010(), adrs0010()),
   'reservas-sha': () => (moldReservas(), done0010(), citedSha0010()),
   'reservas-300': () => (moldReservas(), onlyRow0010(), done0010()),
-  'salas-capability': () => (capability0008(), done0008(), patchDelta0008()),
+  'salas-capability': () => (capability0008(), done0008(), recordValidation0008(), patchDelta0008()),
   'reservas-base': () => {
     moldReservas();
     done0010();
@@ -654,7 +667,7 @@ const molds = {
   'reservas-e2e-refused': () => (moldReservas(), e2eSuite(), serverDiesOnce(), done0010()),
   'reservas-e2e-timeout': () => (moldReservas(), e2eSuite(), slowList(), done0010()),
   'reservas-plan': openPlan0010,
-  'salas-patch': () => done0008(),
+  'salas-patch': () => (done0008(), recordValidation0008()),
   'salas-report': () => (manualValidation(), done0008(), report0008()),
   'reservas-e2e-manual': () => (manualValidation(), moldReservas(), e2eSuite(), done0010()),
   'reservas-ui': () => {
@@ -673,6 +686,22 @@ const molds = {
     s.commit('docs(sdd): la decisión que deja la revisión final');
   },
   'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-sinvalidar': () => {
+    RECORD = false;
+    moldReservas();
+    done0010();
+  },
+  // Un test de la rama que falla cuando el gate corre entero tras la base: la rama lo trae roto y la base solo añade el lockfile.
+  'reservas-rojo-cierre': () => {
+    moldReservas();
+    affectedGate();
+    done0010();
+    appendFileSync(at('test/cancel.test.js'), "\ntest('canceladas sin canceladas avisa', () => {\n  assert.equal(run('canceladas', []), 'ninguna');\n});\n");
+    s.commit('test(bookings): canceladas sin canceladas avisa');
+    developLockfile();
+    validated0010();
+    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
+  },
   'reservas-final': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), reviewPending()),
   'reservas-final-bug': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), freeRoomsBug(true), reviewPending()),
   'reservas-final-late': () => {
