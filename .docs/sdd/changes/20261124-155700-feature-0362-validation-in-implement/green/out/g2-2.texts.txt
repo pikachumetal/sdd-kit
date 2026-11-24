@@ -1,0 +1,104 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo cómo se corre el gate de cierre. Queda: gate, guion, revisión final y tu validación, ~15 min.
+
+--- [14]
+Ahora: corro el gate de cierre (la rama toca `package.json`, así que sin filtro). Queda: gate, tus tres pasadas E2E, guion, revisión final y tu validación, ~12 min.
+
+--- [21]
+Las tres pasadas están en verde (21/21). Ahora: recorro yo el guion tal como lo recorrerás tú. Queda: guion, revisión final y tu validación, ~8 min.
+
+--- [29]
+Ahora: te presento el guion y espero tu validación. Queda: tu respuesta; después el registro y `sdd-archive`.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Además, `canceladas` lista lo cancelado con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Nada. En `tasks.md` queda el ruling de la Task 2: el test unitario de `canceladas` reutiliza la cancelación del test anterior, así que falla si corre solo o en otro orden.
+
+**Las tres pasadas E2E las corrí antes del guion, no mientras pruebas.** El runner usa el mismo servidor (puerto 60048) y `env-up` lo reinicia, así que en paralelo te habría pisado la prueba. Ya no hay nada corriendo.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro». La reserva sigue activa: después cancela con «cambio de planes». |
+| Sin `--motivo` | ejecución real | La misma respuesta de motivo no válido. |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada». Otra sesión ve la lista vacía. |
+
+**Suites**
+
+- Gate: `node --test test/ && node e2e/run.mjs` → `node --test test/`: 5/5 · `node e2e/run.mjs`: 7/7 (48,2 s), sobre 47ffe82. Corrió sin filtro porque la rama toca `package.json`.
+- Estabilidad de E2E: `node e2e/run.mjs --repeat-each=3 e2e/cancel.e2e.mjs e2e/free.e2e.mjs` → 21/21 (144,4 s), sin ningún fallo.
+- La revisión final no se ha vuelto a lanzar. `tasks.md` la recoge limpia sobre 40e5b6c, y desde ese commit solo cambia `tasks.md`.
+
+**Sin probar**
+
+- Nada del guion. Una nota sobre el E2E: la suite entera tarda unos 48 s y el «Presupuesto E2E» de `operations.md` dice `0,5 min`. Se pasa por unos 18 s, no por un fallo. El README indica que `E2E_TRACE=light` la acelera.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (queda parado; el servidor escucha en `http://localhost:60048`):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+Usa una sesión nueva en cada bloque (`x-session`). El servidor guarda las reservas en memoria por sesión, así que partes de «Norte lun 10:00-12:00 activa».
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -sG http://localhost:60048/run -H "x-session: dev-a" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Ver las canceladas, en la misma sesión → «Norte lun — sala ocupada»
+
+```
+curl -sG http://localhost:60048/run -H "x-session: dev-a" --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+3. Motivo fuera de la lista, en sesión nueva → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -sG http://localhost:60048/run -H "x-session: dev-b" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+4. Sin `--motivo`, misma sesión `dev-b` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -sG http://localhost:60048/run -H "x-session: dev-b" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+5. Las canceladas de `dev-b`: no se canceló nada → respuesta vacía
+
+```
+curl -sG http://localhost:60048/run -H "x-session: dev-b" --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+6. En `dev-b`, la reserva sigue activa y acepta otro motivo → «cancelada Norte lun (cambio de planes)»
+
+```
+curl -sG http://localhost:60048/run -H "x-session: dev-b" --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","cambio de planes"]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves. Dime "validado" o qué paso falla.
+

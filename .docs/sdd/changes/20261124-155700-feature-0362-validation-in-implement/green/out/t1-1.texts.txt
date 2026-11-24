@@ -1,0 +1,98 @@
+--- [3]
+Ahora: leo la feature 0010 y su configuración para lanzar el gate de cierre. Queda: gate, script, revisión final y tu validación, ~15 min.
+
+--- [14]
+Ahora: corro el gate de cierre completo (la rama toca `package.json`, así que sin filtro). Queda: guion, revisión final y tu validación, ~12 min.
+
+--- [17]
+El gate no levanta el entorno; el rojo es de conexión, no de código. Levanto el entorno de la suite y repito.
+
+--- [21]
+Gate en verde: unit 5/5 y e2e 7/7 sobre `0d212da`. Ahora: recorro el guion yo mismo, un paso por THEN de la spec. Queda: revisión final y tu validación, ~10 min.
+
+--- [26]
+Gate y guion en verde. Ahora: paso a la revisión final, invocando `sdd-verify`. Queda: tu validación, ~8 min.
+
+--- [41]
+Gate, guion y revisión final están en verde. Falta tu validación.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista cerrada (cambio de planes, sala ocupada, otro). Con `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o ninguno, responde «motivo no válido: cambio de planes, sala ocupada, otro». El comando nuevo `canceladas` lista lo cancelado con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround. Si me equivoco, el test falla al correr solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista (`vacaciones`) | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre `0d212da`.
+- `node e2e/run.mjs`: 7/7 sobre `0d212da`, 48 s (presupuesto 30 s, lo pasa). La primera pasada dio 7/7 rojos por conexión rechazada, porque el gate no levanta el entorno. Con `node scripts/env-up.mjs` arriba pasó 7/7.
+- Revisión final: Spec y Código limpias, sobre `c84bd8c`. Desde entonces solo cambian `plan.md` y `tasks.md`, así que no la repetí. El eje de arquitectura no sale (sin dependencias nuevas en `package.json`).
+
+**Sin probar**
+
+- Nada. Las reservas viven en la memoria del proceso hasta la 0014. Por eso el guion usa el servidor con `x-session` y no `node src/app.js`, donde `cancelar` y `canceladas` no comparten estado.
+
+**Borradores sin commitear:** `walkthrough.md` y `.docs/sdd/capabilities/bookings.md`.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (queda en el puerto 55346):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con sesión `guion-dev`, que arranca sin reservas canceladas:
+
+```
+cd <run>\repo
+```
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: guion-dev" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"vacaciones\"]" http://localhost:55346/run
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: guion-dev" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]" http://localhost:55346/run
+```
+
+3. Cancelar con motivo → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G -H "x-session: guion-dev" --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]" http://localhost:55346/run
+```
+
+4. Listado → «Norte lun — sala ocupada»
+
+```
+curl -s -G -H "x-session: guion-dev" --data-urlencode "cmd=canceladas" --data-urlencode "args=[]" http://localhost:55346/run
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

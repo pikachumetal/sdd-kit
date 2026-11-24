@@ -1,0 +1,196 @@
+
+>>> Skill: sdd-kit:sdd-validate
+<<< Launching skill: sdd-kit:sdd-validate
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0362-validation-in-implement\.temp\kit-green\skills\sdd-validate\references\validation-modes.md
+<<< 1	# Validation by mode
+2	
+3	Step 4 of `sdd-validate`; a hotfix or a spike, which don't go through it, validate like this in step 1 of `sdd-archive`.
+4	
+5	## With `validation.mode: field`
+6	
+7	You run your smoke —one row per THEN—, with the gate of step 1 already green on this tree, and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with an example 
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0362-validation-in-implement\.temp\kit-green\skills\sdd-validate\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 4 of `sdd-validate`). Form and order: [validation-template.md](../../sdd-templates/templates/validation-template.md). With `validation.mode: field` or `Validación: agente` none of this runs.
+4	
+5	## 1. The script
+6	
+7	Each step is a numbered action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in th
+
+>>> Bash: cd "<run>/repo" && ls .docs/sdd/changes/ && ls .docs/sdd/changes/*0010* && git diff --stat main...HEAD && cat .docs/sdd/sdd-kit.json; ls .docs/sdd
+<<< ls: cannot access '.docs/sdd/changes/': No such file or directory
+sdd-kit.json
+specs/
+steering/
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -80; cat .docs/sdd/sdd-kit.json; ls .docs/sdd/specs .docs/sdd/steering; git diff --stat main...HEAD
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/plan.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/spec.md
+.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sd
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/steering/operations.md .docs/sdd/specs/*0010*/spec.md .docs/sdd/specs/*0010*/tasks.md e2e/run.mjs e2e/config.json server.mjs scripts/env-up.mjs scripts/env-down.mjs package.json; git diff main...HEAD -- src/app.js e2e/cancel.e2e.mjs e2e/free.e2e.mjs
+<<< # Operations — salas
+
+## Comandos
+
+- **Build**: no aplica
+- **Arrancar**: `node scripts/env-up.mjs`
+
+## Testing
+
+> Lo leen el plan de cada cambio, la pasada de fix y el cierre. TDD si hay tests automáticos; smoke manual documentado si no los hay.
+
+- **Suites**: `unit` · `node --test test/` · ~1 s; `e2e` · `node e2e/run.mjs` · ~50 s
+- **Lo afectado**: `node --test test/`
+- **Gate de cierre**: `node --test test/ && node e2e/run.mjs`
+- **Gate de merge**: `node --test test/`
+- **Acceso a la aplicación**: sin login; cada test abre su propia sesión (cabecera `x-session`), distinta de la de la person
+
+>>> Bash: cd "<run>/repo" && cat src/app.js | tail -15; ls .docs/sdd/; cat .docs/sdd/sdd-kit.local.json 2>&1 | head; cat "D:/code/.worktrees/sdd-kit/feature-0362-validation-in-implement/.temp/kit-green/skills/sdd-templates/templates/validation-template.md"; grep -n -i "sin filtro" -r "D:/code/.worktrees/sdd-kit/feature-0362-validation-in-implement/.temp/kit-green/skills/sdd-verify" | head; git status --short; ls .docs/sdd/specs/*0010*
+<<< function cancelledList() {
+  return bookings.filter((b) => b.status === 'cancelled').map((b) => `${b.room} ${b.day} — ${b.reason}`).join('\n');
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return cancelBooking(params[0], params[1], reasonOf(params));
+  if (cmd === 'canceladas') return cancelledList();
+  if (cmd === 'anular') return voidBooking(params[0], params[1]);
+  return 'salas';
+}
+
+if (command) consol
+
+>>> Bash: cd "<run>/repo" && git rev-parse --short HEAD && git diff --stat 0a2ec95 HEAD && node scripts/env-up.mjs && node --test test/ 2>&1 | tail -15 && node e2e/run.mjs 2>&1 | tail -20
+<<< 1fea9e3
+ .../20261008-100000-feature-0010-cancel-reason/tasks.md | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+entorno arriba: http://localhost:51856 (pid 8420)
+✔ libres excluye la sala reservada en la franja (0.6714ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1048ms)
+✔ cancelar con un motivo de la lista (0.7077ms)
+✔ cancelar con un motivo fuera de la lista (0.118ms)
+✔ canceladas enseña sala, día y motivo (6.9512ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 145.8126
+Running 7 tests using 1 worker (trace: on, retries: 0, timeou
+
+>>> Bash: B="http://localhost:51856/run"; H="x-session: agente-validate"
+echo "1:"; curl -s -H "$H" "$B?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"; echo
+echo "2:"; curl -s -H "$H" "$B?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"; echo
+echo "3:"; curl -s -H "$H" "$B?cmd=canceladas&args=%5B%5D"; echo "[vacío arriba]"
+echo "4:"; curl -s -H "$H" "$B?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"; echo
+echo "5:"; curl -s -H "$H" "$B?cmd=canceladas&args=%5B%5D"; echo
+cd "<run>/repo" && node scripts/env-down.mjs; git status --short
+<<< 1:
+motivo no válido: cambio de planes, sala ocupada, otro
+2:
+motivo no válido: cambio de planes, sala ocupada, otro
+3:
+[vacío arriba]
+4:
+cancelada Norte lun (sala ocupada)
+5:
+Norte lun — sala ocupada
+entorno parado
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+=== RESULTADO (13 turnos, 0.2829501 $)
+Ahora: te presento el guion, que ya he recorrido entero. Queda: tu prueba, ~2 min. Después la tanda, ~2,5 min.
+
+🦆 Cancelar una reserva pide un motivo de la lista (cambio de planes, sala ocupada, otro). Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, se rechaza. El comando nuevo `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un apaño hasta que cada test prepare sus datos. Si es erróneo, el test falla al correr solo o en otro orden.
+
+**Sobre la tanda de E2E:** no la lanzo mientras pruebas. Usa tu mismo servidor (puerto 51856) y su `env-up` lo reinicia, así que te cortaría el entorno a media prueba. La corro en segundo plano en cuanto contestes. No tienes que esperarla para validar.
+
+**Smoke que he corrido**
+
+Con mi sesión `agente-validate`, distinta de la tuya.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo fuera de la lista se rechaza | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` se rechaza | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Cancelar con motivo | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- Gate: `node --test test/ && node e2e/run.mjs` → 5/5 unit y 7/7 e2e sobre 1fea9e3, 48 s. Corrió entero (sin filtro: la rama cambia `package.json`).
+
+**Sin probar**
+
+- La revisión final no la he vuelto a lanzar. `tasks.md` la da por limpia sobre 0a2ec95 (Spec opus+high, Código sonnet+high, Arquitectura no, según el plan). Desde entonces solo cambió `tasks.md`, según `git diff --stat`. No he leído esos informes en esta sesión.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (queda en http://localhost:51856):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con sesión `dev`. Las reservas viven en memoria por sesión; si repites, cambia `dev` por otro nombre.
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+3. Cancelar con motivo → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+4. Listado de canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.

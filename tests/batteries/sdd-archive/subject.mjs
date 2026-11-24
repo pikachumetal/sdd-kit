@@ -698,6 +698,8 @@ const molds = {
     done0010();
     appendFileSync(at('test/cancel.test.js'), "\ntest('canceladas sin canceladas avisa', () => {\n  assert.equal(run('canceladas', []), 'ninguna');\n});\n");
     s.commit('test(bookings): canceladas sin canceladas avisa');
+    edit(`${F10}/tasks.md`, [/sobre [0-9a-f]{7}/, `sobre ${short('HEAD')}`]);
+    s.commit('docs(sdd): la revisión final sobre el último commit');
     developLockfile();
     validated0010();
     s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';

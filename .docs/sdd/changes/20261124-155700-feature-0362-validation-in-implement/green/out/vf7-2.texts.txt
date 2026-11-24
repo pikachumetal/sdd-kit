@@ -1,0 +1,131 @@
+--- [3]
+Ahora: leo el estado de la 0010 (tasks.md, la revisión final y el hallazgo Important) para decidir el siguiente paso. Queda: devolver el hallazgo a `sdd-implement` como task nueva, ~5 min.
+
+--- [12]
+Ahora: retomo la 0010 en Native para añadir la Task 3 (la línea en blanco de `canceladas` con lista vacía). Queda: test en RED, arreglo, commit, y volver a validar, ~10 min.
+
+--- [15]
+Ahora: leo el código de `canceladas` y su test. Queda: Task 3 en RED, GREEN, commit, ~8 min.
+
+--- [20]
+Ruling: el spec no dice qué sale con la lista vacía; elijo no imprimir nada (sin texto nuevo que decida el contrato). Escribo el test en RED, por el proceso real.
+
+--- [26]
+RED confirmado (`'\n'` en vez de `''`). La nota dice que el fichero cambió antes de mi edición; compruebo que no haya duplicados.
+
+--- [28]
+Sin duplicados. Ahora el GREEN: la salida del CLI no imprime nada cuando la respuesta es vacía.
+
+--- [34]
+GREEN. Commit de la Task 3 y registro en plan y `tasks.md`.
+
+--- [47]
+Revisión de la Task 3: sin Important, dos Minor. Sigo con el paso 4: leo la plantilla de validación y ensayo cada paso del script tal como lo recorrerá la persona.
+
+--- [56]
+Los 7 fallos son `ERR_CONNECTION_REFUSED`: el e2e necesita el entorno arriba (`Entorno de la suite` de `operations.md`) y no lo estaba. No es un fallo del código. Lo levanto y repito.
+
+--- [59]
+Gate verde: 6/6 unitarios y 7/7 e2e. Ahora ensayo el guion contra el entorno con mi propia sesión (`x-session: agente`), con los mismos comandos que escribirá la persona.
+
+--- [62]
+Los 5 pasos salen como dice el spec. Paro el entorno que levanté (no hay `validation.startEnvironment`) y compruebo que el puerto queda libre.
+
+--- [64]
+Ahora: pido tu validación de la 0010. Queda: que me digas «validado» o qué paso falla; después registro la validación y cierro con `sdd-archive`, ~3 min.
+
+🦆 Cancelar una reserva ahora pide un motivo de una lista cerrada (cambio de planes, sala ocupada, otro), y `canceladas` enseña cada cancelada con el suyo. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y luego `canceladas` responde «Norte lun — sala ocupada». La revisión final encontró que `canceladas` sin ninguna cancelada imprimía una línea en blanco. Ya no imprime nada.
+
+**✋ Me salí del plan en…**
+
+- Task 3, que el plan no tenía: arreglo del Important de la revisión final. Ruling: con la lista vacía `canceladas` no imprime nada. El spec no fija ese texto y no he inventado uno. Si te sobra, el coste es cambiar una línea para que diga, por ejemplo, «sin canceladas».
+- Task 2, de antes: el test de `canceladas` reutiliza la cancelación del primer test. Falla si corre solo o en otro orden.
+- El `if (output !== '')` de `src/app.js` vale para cualquier comando, no solo para `canceladas`. Hoy ningún otro comando devuelve cadena vacía por la CLI.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | la misma respuesta |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+| `canceladas` vacía, sin línea en blanco | ejecución real | 0 bytes por la CLI; `''` por el servidor |
+
+**Suites**
+
+- `node --test test/`: 6/6 sobre 6e79d6a, 0,2 s.
+- `node e2e/run.mjs`: 7/7 sobre 6e79d6a, 48 s. La primera tanda dio 7 fallos `ERR_CONNECTION_REFUSED` por no tener el entorno arriba, no por el código. Con `env-up` pasó entera.
+- Revisión del diff de la Task 3 (`effort-high` + `sonnet`): sin Important y con dos Minor, sin arreglar y sin revisar por otra pasada:
+  - `test/cancel.test.js:19` usa la ruta relativa `src/app.js`, así que solo funciona lanzado desde la raíz.
+  - No hay test por CLI de que una salida no vacía sigue imprimiéndose.
+
+**Sin probar**
+
+- Nada. Las reservas viven en la memoria del proceso: por eso el guion usa el servidor, donde cancelar y listar comparten sesión. Por la CLI, cada comando es un proceso nuevo y `canceladas` sale vacía.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (puerto 63406):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con tu propia sesión `tu-sesion`:
+
+```
+cd <run>\repo
+```
+
+1. Mira las canceladas antes de cancelar nada → responde vacío, sin texto.
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:63406/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+2. Cancela Norte el lunes con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:63406/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+3. Cancela con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:63406/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Sur\",\"mar\",\"--motivo\",\"me aburro\"]"
+```
+
+4. Cancela sin `--motivo` → la misma respuesta que el paso 3
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:63406/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Sur\",\"mar\"]"
+```
+
+5. Mira las canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -G -H "x-session: tu-sesion" http://localhost:63406/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+6. Por la CLI, en un proceso nuevo → no sale nada, ni una línea en blanco
+
+```
+node src/app.js canceladas
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+
