@@ -1,6 +1,6 @@
 # Mensaje de validación — plantilla
 
-> Lo presenta `sdd-archive` (paso 1). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+> Lo presenta `sdd-validate` (paso 4). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
 >
 > **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` no hay guion. En los dos no paras: lo de «Sin probar» se informa, no se pregunta, y sigues con el cierre. Con `agente`, sin `field`, registras `Validación por el agente: <fecha> · <evidencia>`.
 >
@@ -8,7 +8,7 @@
 >
 > **Bloques**: sin lenguaje, que el terminal los pinta de azul. Uno por terminal: un servidor se queda bloqueando y, pegados seguidos, el siguiente comando no corre. Cada comando en su línea y sin puntuación al final, para copiarlo sin tocarlo.
 >
-> Cómo se compone y se ensaya el guion y el entorno: `dev-validation.md` de `sdd-archive`. Borra los bloques de ayuda (`>`) al redactar.
+> Cómo se compone y se ensaya el guion y el entorno: `dev-validation.md` de `sdd-validate`. Borra los bloques de ayuda (`>`) al redactar.
 
 🦆 <qué cambia para quien usa el producto, con un ejemplo con datos>
 

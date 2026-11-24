@@ -62,7 +62,7 @@ Skip any step = lying, not verifying
 **Running a gate.** Wherever you run the closing gate —the validation, the close, the config lane, the baseline—, from `operations.md` §Testing; after a red, item 3 holds for any gate, the merge's `--verify` too:
 
 <!-- kit: 0312 -->
-1. In the validation and the close:
+1. At the end of the tasks and in the close:
 <!-- kit: incluye suites-before-gate -->
 2. If the branch —or, after `sdd merge --sync`, what the base brought— touches a file of «Sin filtro» (without the field: `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json`, `Gemfile`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `packages.lock.json`, `poetry.lock`, `uv.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, `.moon/**`, `tsconfig*.json`, `Directory.Build.*`, `Directory.Packages.props`, `global.json`, `.prototools`, `vitest.config.*`, `jest.config.*`, `playwright.config.*`, at any depth), the gate runs without `--affected` and every task carries `(sin filtro: cambia el build)`. A project's `moon.yml` is «cambia su definición», not the build.
 3. After a red pass at `<sha>`:
