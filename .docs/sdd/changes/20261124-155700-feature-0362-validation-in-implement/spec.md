@@ -14,20 +14,21 @@ approvers:
 
 # Spec — La validación vuelve al final de `sdd-implement`
 
-🦆 Hoy, cuando el agente acaba las tasks, pasa a `sdd-archive`, y es ahí, ya en el cierre, donde corre el gate, recorre el guion de pruebas y se lo presenta al dev-lead. Lo que el guion destapa se arregla después de la revisión final y se fusiona sin revisar (en 17 sesiones de un proyecto consumidor, 10,8 ediciones de código por sesión; en la 0760, 80). Después de esta feature, el trabajo no sale de `sdd-implement` hasta que el dev-lead lo valida: primero el gate, luego el agente recorre el guion entero y arregla lo que falle, luego la revisión final sobre código ya probado, y solo entonces el dev-lead. Si el dev-lead dice «el paso 3 falla: `cancelar Norte lun` dice «cancelada lun» y me quita también la del martes», el arreglo vuelve a una task con su test y corre solo lo que ese arreglo toca: ese test, el gate desde el último verde y el paso 3 del guion; `sdd-archive` solo cierra.
+🦆 Hoy, cuando el agente acaba las tasks, pasa a `sdd-archive`, y es ahí, ya en el cierre, donde corre el gate, recorre el guion de pruebas y se lo presenta al dev-lead. Lo que el guion destapa se arregla después de la revisión final y se fusiona sin revisar (en 17 sesiones de un proyecto consumidor, 10,8 ediciones de código por sesión; en la 0760, 80). Después de esta feature, el trabajo pasa a una skill nueva, `sdd-validate`, y no sale de ella hasta que el dev-lead lo valida: primero el gate, luego el agente recorre el guion entero y arregla lo que falle, luego la revisión final sobre código ya probado, y solo entonces el dev-lead. Si el dev-lead dice «el paso 3 falla: `cancelar Norte lun` dice «cancelada lun» y me quita también la del martes», el arreglo vuelve a `sdd-implement` como una task con su test y corre solo lo que ese arreglo toca: ese test, el gate desde el último verde y el paso 3 del guion; `sdd-archive` solo cierra.
 
 Validación: dev-lead — el cambio es el orden de las paradas que ve el dev-lead; en este repo `validation.mode` es `field`, así que la cierra el uso real de los proyectos a través de los tickets de `sdd-feedback`.
 
 ## Capacidades
 
 - Modificadas: `verification` — la revisión final sale tras el gate y el guion recorrido; una vuelta del bucle posterior a la revisión final se revisa una vez sobre su diff; el cierre devuelve a `sdd-implement` lo que no está revisado
-- Modificadas: `implementation` — el final de `sdd-implement` lleva el gate, el guion recorrido, la revisión y la validación; el bucle de arreglos; el gate una sola vez; el final de un patch
+- Nuevas: `validation` — la fase entre las tasks y el cierre: el gate, el guion recorrido, la revisión final y la validación del dev-lead, y el bucle de vuelta a `sdd-implement`
+- Modificadas: `implementation` — `sdd-implement` pasa a `sdd-validate` al acabar la última task; el gate una sola vez; el final de un patch
 - Modificadas: `feature-flow` — la validación se presenta al final de la implementación, tras la revisión, y antes de invocar `sdd-archive`
 - Modificadas: `archive` — el cierre arranca con la validación registrada y no edita código; dónde viven las referencias y el límite del gate
 - Modificadas: `closing-suite` — el gate corre al acabar las tasks; tras el merge de sincronización solo corren las tareas que cruzan la rama y la base
-- Modificadas: `control-profiles` — con `validation.mode: field` el agente cierra su verificación al final de `sdd-implement` y pasa a `sdd-archive`
+- Modificadas: `control-profiles` — con `validation.mode: field` el agente cierra su verificación en `sdd-validate` y pasa a `sdd-archive`
 - Modificadas: `closing-merge` — el bloque `merge` no autoriza la validación, y el gate ya corrió al acabar las tasks
-- Modificadas: `frontend-verification` — las capturas y el detector se enseñan en la validación del final de `sdd-implement`
+- Modificadas: `frontend-verification` — las capturas y el detector se enseñan en la validación de `sdd-validate`
 - Modificadas: `routing` — la validación visual de un patch se presenta antes de `sdd-archive`
 
 ## ✋ Decisiones que he tomado yo — valida estas
@@ -37,23 +38,24 @@ Review de spec propuesta: dos revisores — señales: `MODIFIED` (13 requisitos)
 - Técnica (sonnet): si cada `MODIFIED` copia entera la cláusula vigente y no pierde ninguna línea, y si el reparto de referencias de la «Decisión 6» deja algún enlace roto en `skills/`, `tests/` o la plantilla `validation-template.md` (señal: ocho capacidades y trece `MODIFIED`)
 - Mínimo razonable: solo la técnica — deja sin mirar si el bucle cubre los casos de borde del dominio, que es donde está el riesgo de esta spec
 
-1. **Enfoque**: A, la validación pasa a ser el final de `sdd-implement`, frente a B (dejarla en `sdd-archive` y que un fallo devuelva el trabajo a `sdd-implement`) y C (una skill nueva entre las dos) — ver Approach.
-2. **Los patches validan igual, al final de `sdd-implement`** — el criterio de hecho pide que `sdd-archive` no tenga ningún paso que edite código, y su paso 1 sirve a los tres carriles; si el patch siguiera validando en el cierre, quedaría una rama del paso 1 con el mismo defecto. Un patch no lleva revisión final: su orden es gate, guion recorrido, dev-lead. El patch que sube a feature (cláusula de escalada) sigue el orden de la feature.
+1. **Enfoque**: C, una skill nueva `sdd-validate` entre `sdd-implement` y `sdd-archive`, frente a A (la validación dentro de `sdd-implement`) y B (dejarla en `sdd-archive`) — ver Approach. Lo pidió el dev-lead al ver que las baterías crecían: «separar en un paso, si no valida devuelve el control a implement».
+2. **Los patches validan igual, en `sdd-validate`** — el criterio de hecho pide que `sdd-archive` no tenga ningún paso que edite código, y su paso 1 sirve a los tres carriles; si el patch siguiera validando en el cierre, quedaría una rama del paso 1 con el mismo defecto. Un patch no lleva revisión final: su orden es gate, guion recorrido, dev-lead. El patch que sube a feature (cláusula de escalada) sigue el orden de la feature.
 3. **El registro de la validación vive en el borrador del walkthrough (en un patch, §4 de `patch.md`) y `sdd-archive` lo lee de ahí** — su paso 0 ya parte de ese borrador, y su paso 1 actual ya acepta una línea `Validación en campo:` ya escrita en él; el cambio generaliza lo que ya existe. Las cuatro líneas son las vigentes: `Validado:`, `Validación diferida:`, `Validación en campo:` y `Validación por el agente:`.
 4. **Un rojo del gate tras el merge de sincronización que no viene de la base devuelve el trabajo a `sdd-implement`**, y su arreglo es una task con su test; el cierre no lo arregla. Es la consecuencia de «`sdd-archive` no tiene ningún paso que edite código». Borrar los tests de feature de «Camino crítico» y juntar el commit de cierre no son arreglos de código y siguen en el cierre.
 5. **«Camino crítico» se queda en `sdd-archive`**, con su suite sobre el árbol ya borrado (es otro árbol que el del gate del final de las tasks, y «una vez por árbol» se cumple), sin la frase «In `manual`, 1-2 run before the script» (el guion ya pasó antes del cierre). No añado política de tests al kit: ni «Camino crítico» obligatorio ni «Lo afectado» obligatorio.
-6. **Los ficheros `validation-modes.md` y `dev-validation.md` pasan de `skills/sdd-archive/references/` a `skills/sdd-implement/references/`**; `closing-suite.md` se queda en `sdd-archive` (el merge de sincronización y «Camino crítico» son del cierre) y `sdd-implement` lo enlaza para «What runs» y la línea `Gate:`. `validation-template.md` y `sdd-verify` («Running a gate», punto 1, «In the validation and the close») cambian solo el nombre del sitio.
+6. **Los ficheros `validation-modes.md` y `dev-validation.md` pasan de `skills/sdd-archive/references/` a `skills/sdd-validate/references/`**; `closing-suite.md` se queda en `sdd-archive` (el merge de sincronización y «Camino crítico» son del cierre) y `sdd-validate` lo enlaza para «What runs» y la línea `Gate:`. `validation-template.md` y `sdd-verify` («Running a gate», punto 1, «In the validation and the close») cambian solo el nombre del sitio.
 7. **En el kit no hay «sonda»**: es el nombre de la fila. El kit dice «el agente recorre el guion antes de entregarlo» (ya lo dice `dev-validation.md` §1: «Run every step yourself before presenting it») y el proyecto pone el cómo (un proyecto puede tener una skill propia con Playwright). No añado a la skill ningún nombre de herramienta ni de skill de proyecto.
 8. **Los requisitos del guion se quedan en la capacidad `archive`** («El guion de la validación empieza por el reporte y lo ha corrido el agente», «Mientras la persona prueba, el agente no lanza nada contra el entorno»): su texto no nombra `sdd-archive` y moverlos de capacidad no cambia ningún comportamiento; solo cambia dónde viven las referencias, en «Reglas de la capacidad».
-9. **Topes de palabras**: `sdd-archive` baja y `sdd-implement` sube; el saldo conjunto es de +~310 palabras. Pido en el gate subir `sdd-implement` (`SKILL.md` y total) y bajar el de `sdd-archive` (tabla «Topes de palabras»).
-10. **Previsión de coste: ~86 $ en ~118 sujetos**, con 9 escenarios nuevos (`vf1`…`vf7` en `sdd-implement`, `av1` y `av2` en `sdd-archive`) y una fila de humo por cada skill editada que no tiene escenario propio y 10 que se mueven de la batería de `sdd-archive` a la de `sdd-implement` con id nuevo (tabla «Previsión de coste»). Es una previsión sin medir en las filas de escenarios nuevos; si la prueba la supera, paro y decide el dev-lead. Pongo la calidad por delante del coste, como pidió el dev-lead.
+9. **Topes de palabras**: `sdd-archive` baja, `sdd-implement` casi no cambia y `sdd-validate` entra con tope propio; el saldo conjunto es de +~310 palabras. Pido en el gate el tope de la skill nueva y bajar el de `sdd-archive` (tabla «Topes de palabras»).
+10. **Previsión de coste: ~86 $ en ~118 sujetos**, con 9 escenarios nuevos (`vf1`…`vf7` en la batería nueva de `sdd-validate`, `av1` y `av2` en `sdd-archive`), 10 que se mueven de la batería de `sdd-archive` a la de `sdd-validate` con el mismo id y una fila de humo por cada skill editada que no tiene escenario propio (tabla «Previsión de coste»). Es una previsión sin medir en las filas de escenarios nuevos; si la prueba la supera, paro y decide el dev-lead. Pongo la calidad por delante del coste, como pidió el dev-lead.
 11. **El bucle de vuelta** — cada vuelta (un fallo del agente al recorrer el guion, de la revisión final o del dev-lead) es una task con su test y corre solo lo que toca el arreglo: los tests que fallaron o nacen, el gate con `--base <sha del último verde>`, los pasos del guion que toca y, solo si la vuelta es posterior a la revisión final, la revisión de su diff. No hay tope de vueltas: cada una cuesta menos que la anterior y el dev-lead decide cuándo parar. Es la forma que pide la fila 0362 y la ampliación de «Una re-revisión nunca abre otra» de la decisión 12.
 12. **Una vuelta posterior a la revisión final se revisa una vez, sobre su diff, con un revisor `sdd-kit:effort-high` + `sonnet`** — la fila pide «la revisión de su diff» en cada vuelta; las vueltas anteriores a la revisión final (gate o guion del agente) no llevan revisión propia, porque las cubre la revisión final, para no revisar dos veces el mismo código (dev-lead, al pedir menos revisiones). La regla viva dice que una re-revisión nunca abre otra. Elijo declarar el `MODIFIED` de esa regla: la revisión de una vuelta es una revisión nueva de un diff nuevo, no una re-revisión de la revisión final; un hallazgo suyo entra en la misma vuelta y, si queda abierto, va a ✋ como `sin revisar: <sha>`, sin otra revisión. Descarto «dejar los arreglos de la vuelta sin revisar» porque es el defecto que mide la fila. El modelo es mío (el dev-lead no lo nombró): lo cambia en el gate.
 13. **La revisión final sale tras el gate y el guion recorrido, no justo tras el commit de la última task** — cambia el disparador de «El revisor final sale en segundo plano con el commit de la última task» (`verification`); sigue en segundo plano mientras el hilo escribe los borradores de cierre. La ADR nueva sustituye en ese punto a la 0040 (la 0015 y la 0028 ya están sustituidas).
-14. **Con validación diferida, o sin respuesta del dev-lead, el final de `sdd-implement` registra `Validación diferida:` y pasa a `sdd-archive`; sin respuesta, la feature queda en espera en `sdd-implement`** — son las condiciones vivas de «La validación puede diferirse con condiciones» y «El trabajo se valida con el usuario antes de cerrar», que no cambian; solo cambia dónde ocurren. En `unattended` se difiere al smoke de la release, como hoy.
-15. **El rojo tras el commit de cierre** (decisión 4) vuelve a `sdd-implement`: el arreglo es una task con su test que corre solo lo que toca; la validación ya dada sigue valiendo y el cambio se registra como «Lo cambiado tras la validación se separa de lo validado» (`feature-flow`, sin cambio); `sdd-archive` reentra rehaciendo el commit de cierre con el arreglo dentro (`commit-history`) y repite el merge de sincronización desde su paso 6, con el `--verified-at` del nuevo gate. Un cambio que el dev-lead pide después de validar sigue esa misma regla.
+14. **Con validación diferida, o sin respuesta del dev-lead, `sdd-validate` registra `Validación diferida:` y pasa a `sdd-archive`; sin respuesta, la feature queda en espera en `sdd-validate`** — son las condiciones vivas de «La validación puede diferirse con condiciones» y «El trabajo se valida con el usuario antes de cerrar», que no cambian; solo cambia dónde ocurren. En `unattended` se difiere al smoke de la release, como hoy.
+15. **El rojo tras el commit de cierre** (decisión 4) vuelve a `sdd-implement` y de ahí a `sdd-validate`: el arreglo es una task con su test y la vuelta corre solo lo que toca; la validación ya dada sigue valiendo y el cambio se registra como «Lo cambiado tras la validación se separa de lo validado» (`feature-flow`, sin cambio); `sdd-archive` reentra rehaciendo el commit de cierre con el arreglo dentro (`commit-history`) y repite el merge de sincronización desde su paso 6, con el `--verified-at` del nuevo gate. Un cambio que el dev-lead pide después de validar sigue esa misma regla.
 16. **Los moldes de la batería de `sdd-archive` llevan un borrador de walkthrough con `Validado:`** — con el paso 1 nuevo, un molde sin esa línea devuelve el trabajo a `sdd-implement`; los escenarios existentes de cierre (`a1`…`a8`, `c*`, `cpt*`, `e*`, `g5`…, `ci*`, `tk*`) siguen midiendo lo que miden. Solo `av1` usa un molde sin la línea. Los moldes cambiados cuyos escenarios no corren aquí (`a1`, `a2`, `a4`…`a8`, `c*`, `cpt*`, `e*`, `g5`…, `ci*`, `tk*`) corren con la batería completa de `sdd-archive` antes de la release (Art. I), fuera de esta previsión.
-17. **Hotfix y spike quedan fuera de este cambio: su validación no se mueve** — `sdd-archive` conserva para ellos lo que hoy hace en el paso 1, sin bucle, porque no pasan por el final de `sdd-implement`; la lite sí lo recorre como una feature, con su borrador de walkthrough. Pendiente del dev-lead: si quiere que el hotfix también valide antes de `sdd-archive` (es el único carril que dejaría una rama del paso 1 que no es una comprobación).
+18. **Una skill nueva, `sdd-validate`, y una capacidad nueva, `validation`** — la fase entre las tasks y el cierre (decisión 1). El nombre se parece a `sdd-verify`: su descripción dice que es la validación del dev-lead y la revisión de ejes, y la de `sdd-verify` sigue siendo la evidencia antes de afirmar y la revisión final. El orden y el bucle del dev-lead («gate → guion → revisión → dev-lead», «un fallo vuelve a una task») viven en la capacidad `validation`, no en `implementation`. Es el tope de la skill nueva lo que pido en el gate (decisión 9).
+17. **Hotfix y spike quedan fuera de este cambio: su validación no se mueve** — `sdd-archive` conserva para ellos la rama del paso 1 de hoy (smoke y mensaje de `validation-modes.md`, sin bucle), porque no pasan por `sdd-validate`; la lite sí lo recorre como una feature, con su borrador de walkthrough. Es mi decisión mientras el dev-lead no diga otra cosa: si quiere que el hotfix también valide antes de `sdd-archive`, es otro cambio.
 - Repaso de coherencia: el delta probado en una copia de `.docs/sdd` con `capability merge` fusiona sin rechazos (9 capacidades, 22 requisitos sustituidos o añadidos, 2 quitados, 3 reglas de `archive` sustituidas) y su diff contra el texto vivo solo muestra las ediciones previstas; `capability check` sobre la spec solo da los avisos de longitud de requisitos de `routing.md` que ya existen en la base; la tabla de «Lo que se retira» recoge cada sitio hallado con `git grep`; `.docs/sdd/steering/operations.md:115` y `PRODUCT.md:57` (que ya dice «antes de `sdd-archive`») no cambian.
 - Política de modelos (solo en `delegate`): revisores de la spec, dominio en `opus` y técnica en `sonnet` (arriba) · ejes de la revisión final: Spec opus+high, Código sonnet+high, Arquitectura según el plan · sujetos de las baterías, en `sonnet` y por tandas · en paralelo hasta `control.maxParallelAgents` (3) — al aprobar la spec, esta línea es la confirmación de paralelizar que piden las instrucciones del usuario; lo que no nombra se confirma aparte
 
@@ -64,7 +66,7 @@ Dominio (opus):
 - **Aceptado** — Crítico: la revisión del diff de cada vuelta choca con «Una re-revisión nunca abre otra» → decisión 12 y `MODIFIED` de esa regla, con revisor, modelo, una sola pasada y su salida a ✋.
 - **Aceptado** — Crítico: «ningún paso del cierre arregla código» contradice «Un rojo ajeno se busca en la deuda…» (`archive`) y «El cierre no repite la revisión final» (`verification`) → los dos entran como `MODIFIED`, y `final-review-check.md` entra en el Scope.
 - **Aceptado** — Importante: «La implementación la lleva `sdd-implement`» dice «invoca `sdd-archive`, que abre con la validación» → `MODIFIED`. «Lo cambiado tras la validación» no cambia y la decisión 15 dice cómo encaja.
-- **Aceptado** — Importante: la validación diferida y la que no se responde bloqueaban el pase a `sdd-archive` → decisión 14 y un AND en el requisito del final de `sdd-implement`.
+- **Aceptado** — Importante: la validación diferida y la que no se responde bloqueaban el pase a `sdd-archive` → decisión 14 y un AND en el requisito de `sdd-validate`.
 - **Aceptado** — Importante: el rojo tras el commit de cierre no decía qué pasa con la validación, el commit de cierre ni el merge de sincronización → decisión 15 y un escenario en el delta de `archive`.
 - **Aceptado** — Importante: el bucle de un patch no decía quién revisa el diff → el revisor Sonnet de §4 de `patch.md`, en el `MODIFIED` del patch, y el escenario `vf5`.
 - **Rechazado** — Importante: declarar las cinco «Reglas de la capacidad» de `archive` → la plantilla pide solo las entradas que cambian; sí añado «Avisos» (el aviso nuevo) y dejo `Límites` en `archive`, porque lo que dice sigue siendo del cierre salvo la frase que cambia.
@@ -95,6 +97,17 @@ Segunda ronda (sonnet, siete puntos):
 - **Aceptado** — Menor: «cuánto tardó la suite completa» → «el gate de cierre».
 - **Aceptado** — Menor: el GIVEN del bucle y el criterio «edite código» → ejemplo `cancelar Norte lun` y «arregle código».
 
+Enmienda al enfoque C (sonnet, siete puntos):
+- **Aceptado** — Crítico: hotfix y spike quedaban sin carril → el paso 1 de `sdd-archive` conserva su rama de hoy para ellos (decisión 17 y un AND del requisito).
+- **Aceptado** — Importante: la aprobación seguía siendo la del enfoque A → `status: in-review` y una fila de aprobación pendiente.
+- **Aceptado** — Importante: restos del renombrado (tres sitios) → corregidos a `sdd-validate`.
+- **Aceptado** — Importante: la capacidad `validation` no tenía sus reglas → bloque «Reglas de la capacidad — validation».
+- **Aceptado** — Importante: el disparador de los ejes en SDD → los despacha `sdd-validate` en los dos métodos.
+- **Aceptado, en parte** — Importante: lo que cuesta una skill nueva → el recuento y las `description` de `sdd-archive`, `sdd-verify` y `sdd-implement` entran en el plan; `using-sdd`, `architecture.md` y los tests no listan skills que no son de entrada, comprobado con `git grep`.
+- **Aceptado** — Importante: topes de palabras → `sdd-validate` 1735 y 655, `sdd-implement` baja.
+- **Aceptado** — Importante: el plan nombraba `sdd-implement` donde era `sdd-validate`, y `av1`/`av2` en la batería equivocada → corregido.
+- **Aceptado** — Menor: conteos, `document-manager` en el test de neutralidad y por dónde reentra el rojo posterior al cierre → corregidos (decisión 15).
+
 ### Decisiones tomadas con el dev-lead
 
 - La revisión de la vuelta solo va tras la revisión final; las vueltas anteriores las cubre esa revisión — «sí, déjalo así y apruebo» (dev-lead, 2026-11-24, a la pregunta de si la revisión de la vuelta va solo después de la revisión final, por su preocupación de «hacer demasiadas revisiones»)
@@ -108,6 +121,7 @@ Segunda ronda (sonnet, siete puntos):
 - El kit fija el orden y que el agente recorra el guion; el cómo es del proyecto — «el kit no puede hacer lo que debe hacer el repo» (dev-lead, 2026-11-24, por la sesión «sdd-kit develop»)
 - La calidad por delante de los tokens: no se recorta ningún paso para ahorrar — «si trada lo mismo gasta mas tokens y sale mejor codigo me sirve… lo principal es la calidad de la solucion» (dev-lead, 2026-11-24, por la sesión «sdd-kit develop»)
 - El agente recorre el guion antes de la revisión final, y la revisión va sobre lo ya validado — «la repsuesta es 1» (dev-lead, 2026-11-24, a la pregunta de si la revisión final va después de que el agente recorra el guion)
+- Una skill propia para la validación, para que las baterías sean más pequeñas y la frontera clara: «separar en un paso, si no valida devuelve el control a implement», y que el cambio sea «quirúrgico» (dev-lead, 2026-11-24)
 - Se escribe una ADR nueva y las baterías de `sdd-archive` y de `sdd-implement` que miden la validación se actualizan (fila 0362 del roadmap, `Toca:`)
 
 ## Intent
@@ -120,10 +134,10 @@ Anti-goals: que el kit nombre una herramienta o una skill de proyecto para recor
 
 ## Scope
 
-- Entra: el final de `sdd-implement` (y sus dos métodos, Native y SDD) con el orden gate → guion recorrido → revisión final → validación del dev-lead; el bucle de vuelta; `sdd-archive` que comprueba que la validación está registrada y no edita código; las referencias de validación en `sdd-implement`; las capacidades y la ADR; las baterías.
+- Entra: la skill nueva `sdd-validate` con el orden gate → guion recorrido → revisión final → validación del dev-lead y el bucle de vuelta a `sdd-implement`; `sdd-implement` y sus dos métodos, Native y SDD, que la invocan al acabar la última task; `sdd-archive` que comprueba que la validación está registrada y no arregla código; las referencias de validación en `sdd-validate`; las capacidades y la ADR; las baterías.
 - Entra: los patches, sin revisión final (decisión 2).
-- Entra, además: las marcas `<!-- kit: incluye … -->` de los ficheros que se mueven y las reglas de `kit:own` y `kit:copies`, que comprueba el gate del repo; la frase de `verification.md` «la comprobación de la revisión final de `sdd-archive` invoca `sdd-verify`» (delta); y la redacción de los requisitos de `closing-suite` («El walkthrough dice de dónde sale cada THEN», «La suite E2E del cierre…») y de `control-profiles` que dicen «el cierre» o «la validación» para el gate o el cierre, que se alinean en la task de capacidades con una enmienda a esta spec.
-- Entra, además de lo de la lista siguiente: `skills/sdd-archive/references/final-review-check.md` (si falta una re-revisión, el cierre devuelve a `sdd-implement` en vez de despacharla), `skills/sdd-implement/references/commit-milestones.md`, `skills/sdd-templates/SKILL.md`, `tests/dev-validation-green.md` (el enlace roto) y un test de `cli/test/kit/` que comprueba que ni `skills/sdd-implement/` ni sus referencias nombran Playwright, `validation-script` ni un proyecto concreto.
+- Entra, además: el recuento de skills (28 → 29) y la lista de PRODUCT.md en `README.md:3`, `PRODUCT.md:16` y `CLAUDE.md:22`; las marcas `<!-- kit: incluye … -->` de los ficheros que se mueven y las reglas de `kit:own` y `kit:copies`, que comprueba el gate del repo; la frase de `verification.md` «la comprobación de la revisión final de `sdd-archive` invoca `sdd-verify`» (delta); y la redacción de los requisitos de `closing-suite` («El walkthrough dice de dónde sale cada THEN», «La suite E2E del cierre…») y de `control-profiles` que dicen «el cierre» o «la validación» para el gate o el cierre, que se alinean en la task de capacidades con una enmienda a esta spec.
+- Entra, además de lo de la lista siguiente: `skills/sdd-archive/references/final-review-check.md` (si falta una re-revisión, el cierre devuelve a `sdd-validate` en vez de despacharla), `skills/sdd-implement/references/commit-milestones.md`, `skills/sdd-templates/SKILL.md`, `tests/dev-validation-green.md` (el enlace roto) y un test de `cli/test/kit/` que comprueba que ni `skills/sdd-validate/` ni sus referencias nombran Playwright, `validation-script` ni un proyecto concreto.
 - Entra, los ficheros que implementan los `MODIFIED`: `skills/sdd-implement/SKILL.md`, `skills/sdd-implement/references/patch-flow.md` y `frontend-verification.md`, `skills/sdd-implement-native/SKILL.md`, `skills/sdd-implement-subagent/SKILL.md`, `skills/sdd-archive/SKILL.md`, `skills/sdd-archive/references/closing-suite.md`, `merge-recipe.md`, `validation-modes.md` y `dev-validation.md` (estos dos, movidos), `skills/sdd-verify/SKILL.md`, `skills/sdd-propose/references/control-profiles.md`, `skills/sdd-templates/templates/validation-template.md` y `patch-template.md`, `cli/test/kit/word-budget.test.ts` (los topes), las ocho capacidades, `.docs/workflow/`, la ADR y las dos baterías.
 - No entra: cómo se recorre el guion (es del proyecto); el contenido del guion y del mensaje de validación (`validation-template.md` cambia solo el nombre del sitio); el modo `field` y `Validación: agente` (siguen igual, en su sitio nuevo); la migración de los proyectos (el cambio no pide nada al proyecto: sin pasos propios, solo el marcador de la release); el merge de sincronización y el merge (siguen como hoy).
 
@@ -131,8 +145,8 @@ Anti-goals: que el kit nombre una herramienta o una skill de proyecto para recor
 
 | Qué | Dónde aparece | Destino |
 | --- | --- | --- |
-| Paso 1 «Validation» de `sdd-archive` (los tres modos y «The suite») | `skills/sdd-archive/SKILL.md` paso 1, y sus referencias en pasos 6 y 7 («The suite on the sync merge», «A red suite») | Decisiones 3, 4 y 6: el paso 1 comprueba el registro de la validación; la validación vive en `sdd-implement` |
-| `validation-modes.md` y `dev-validation.md` en `sdd-archive/references/` | `skills/sdd-archive/references/`, `skills/sdd-implement/SKILL.md:54`, `skills/sdd-templates/templates/validation-template.md` (cabecera), `archive.md` «Dónde viven los datos» | Decisión 6: pasan a `sdd-implement/references/`; el delta modifica «Reglas de la capacidad — archive» |
+| Paso 1 «Validation» de `sdd-archive` (los tres modos y «The suite») | `skills/sdd-archive/SKILL.md` paso 1, y sus referencias en pasos 6 y 7 («The suite on the sync merge», «A red suite») | Decisiones 3, 4 y 6: el paso 1 comprueba el registro de la validación; la validación vive en `sdd-validate` |
+| `validation-modes.md` y `dev-validation.md` en `sdd-archive/references/` | `skills/sdd-archive/references/`, `skills/sdd-implement/SKILL.md:54`, `skills/sdd-templates/templates/validation-template.md` (cabecera), `archive.md` «Dónde viven los datos» | Decisión 6: pasan a `sdd-validate/references/`; el delta modifica «Reglas de la capacidad — archive» |
 | «In the validation» y la frase «In `manual`, 1-2 run before the script» | `skills/sdd-archive/references/closing-suite.md` («In the validation», «With "Camino crítico"» punto 5) | Decisión 5 y delta de `closing-suite`: el gate corre al acabar las tasks |
 | «el gate… una sola vez, en la validación final» | `skills/sdd-implement/SKILL.md:58`, `implementation.md` «El gate de cierre se ejecuta una vez» | Delta de `implementation`, `MODIFIED` |
 | «su primer paso es la validación» | `skills/sdd-implement-native/SKILL.md:303`, diagrama de `skills/sdd-implement-subagent/SKILL.md:75,101` | El pase a `sdd-archive` va tras la validación registrada: edición de las dos skills |
@@ -141,11 +155,11 @@ Anti-goals: que el kit nombre una herramienta o una skill de proyecto para recor
 | «El trabajo se valida con el usuario antes de cerrar» (orden: revisión → validación) | `feature-flow.md:41-53`, `feature-flow.md:89-95`, `feature-flow.md:131-138`, `feature-flow.md:140-145` | Delta de `feature-flow`, `MODIFIED` |
 | «Con otra rama abierta o la base por delante, la suite corre una sola vez, tras el merge de sincronización» | `closing-suite.md:58-66`, `archive.md` «Límites» | Delta de `closing-suite`, `REMOVED`, y «Reglas de la capacidad — archive» |
 | Validación «del cierre de `sdd-archive`» en el bloque `merge`, el gate y las capturas | `closing-merge.md:15,103`, `frontend-verification.md:24`, `control-profiles.md:119-125` | Delta de `closing-merge`, `frontend-verification` y `control-profiles`, `MODIFIED` |
-| «the validation's suite», «the validation (step 1 of `sdd-archive`)», «validation of `sdd-archive`» | `skills/sdd-archive/references/merge-recipe.md:9`, `skills/sdd-implement/references/frontend-verification.md:38`, `skills/sdd-propose/references/control-profiles.md:150`, `skills/sdd-implement-native/SKILL.md:99,124,290`, `skills/sdd-templates/templates/patch-template.md:63`, `skills/sdd-templates/templates/validation-template.md:3` | Decisión 6: solo cambia el nombre del sitio (el gate de «al acabar las tasks», la validación de «`sdd-implement`»); edición de cada fichero en la task de textos |
+| «the validation's suite», «the validation (step 1 of `sdd-archive`)», «validation of `sdd-archive`» | `skills/sdd-archive/references/merge-recipe.md:9`, `skills/sdd-implement/references/frontend-verification.md:38`, `skills/sdd-propose/references/control-profiles.md:150`, `skills/sdd-implement-native/SKILL.md:99,124,290`, `skills/sdd-templates/templates/patch-template.md:63`, `skills/sdd-templates/templates/validation-template.md:3` | Decisión 6: solo cambia el nombre del sitio (el gate de «al acabar las tasks», la validación de «`sdd-validate`»); edición de cada fichero en la task de textos |
 | «No suite yet (step 1 left it for here)», «the validation's suite», «the validation's sha», «the validation's run» | `skills/sdd-archive/references/closing-suite.md:7,31,32,33,37` | «No suite yet» desaparece porque el gate siempre corre al acabar las tasks; «the validation's suite/sha» pasa a «el gate de cierre del final de las tasks» y su sha |
 | Ancla `closing-suite.md#in-the-validation` | `skills/sdd-archive/references/validation-modes.md:7` | La sección «In the validation» se reescribe y el enlace reapunta a `../../sdd-archive/references/closing-suite.md#what-runs`; los demás enlaces relativos de los dos ficheros movidos conservan su profundidad |
 | «fixes… of the validation» en el commit de cierre | `skills/sdd-implement/references/commit-milestones.md:11` | Se mantiene el juntado, pero los arreglos de la validación ya existen al llegar al cierre: se reescribe la frase |
-| «Presented by `sdd-archive`» | `skills/sdd-templates/SKILL.md:24`, `skills/sdd-templates/templates/validation-template.md:3,11` | Decisión 6: pasa a `sdd-implement` |
+| «Presented by `sdd-archive`» | `skills/sdd-templates/SKILL.md:24`, `skills/sdd-templates/templates/validation-template.md:3,11` | Decisión 6: pasa a `sdd-validate` |
 | «the message the closing is invoked with» | `skills/sdd-propose/references/control-profiles.md:86` | Pasa a «the message `sdd-archive` is invoked with, after the validation» |
 | Enlace a `skills/sdd-archive/references/dev-validation.md` | `tests/dev-validation-green.md:3` | Evidencia histórica: se reapunta a la ruta nueva |
 | «Un rojo ajeno se busca en la deuda…»: «vuelve a ella, arregla con un test que falla primero y vuelve al gate» | `.docs/sdd/capabilities/archive.md:27-40`, rúbrica de `a3r` en `tests/batteries/sdd-archive/battery.md:158` | Delta de `archive`, `MODIFIED` (el rojo de la rama devuelve a `sdd-implement`); cambia el esperado de `a3r` |
@@ -155,53 +169,53 @@ Anti-goals: que el kit nombre una herramienta o una skill de proyecto para recor
 | Fila «Validation (closing of feature and patch)» de la tabla de paradas | `skills/sdd-propose/references/control-profiles.md:60` | Se renombra a «Validation (end of implementation of feature and patch)»; las celdas no cambian |
 | La validación «antes de cerrar» descrita en el flujo para el dev | `.docs/workflow/greenfield.md:75`, `.docs/workflow/usage-guide.md:159,182,197` | Doc del flujo del repo: se relee al subir de versión (`workflow-docs.test.ts`); se actualiza en la task de textos con el marcador «Última revisión» |
 | «Gate:» en el «paso 1 de `sdd-archive`» como ejemplo histórico | `.docs/sdd/steering/operations.md:115` | Se queda: es el registro de una feature pasada (0236), no una instrucción |
-| Escenarios que miden la validación en la batería de `sdd-archive`: `g1`, `g2`, `g3`, `g4`, `v1a`, `v1b`, `se1`, `t1`, `t2`, `t3` | `tests/batteries/sdd-archive/battery.md:90-99` | Se mueven a `tests/batteries/sdd-implement/battery.md` con su procedencia; `a1` y `a2` cambian su petición |
+| Escenarios que miden la validación en la batería de `sdd-archive`: `g1`, `g2`, `g3`, `g4`, `v1a`, `v1b`, `se1`, `t1`, `t2`, `t3` | `tests/batteries/sdd-archive/battery.md:90-99` | Se mueven a `tests/batteries/sdd-validate/battery.md` con su procedencia; los moldes de los demás llevan `Validado:` (decisión 16) |
 
 - Filas que implementa: 0362 → ficheros que la nombran: `ROADMAP.md` (la fila, que `sdd-archive` marca) y `.docs/sdd/steering/estimation-log.md` (lo genera el script) | nada más: comprobado con `grep -rn "0362" --include="*.md" . --exclude-dir=dist --exclude-dir=.git`
 
 ## Approach
 
-- **A. La validación es el final de `sdd-implement`** — mover el paso 1 de `sdd-archive` y sus dos referencias a `sdd-implement`; `sdd-archive` comprueba el registro. Cuesta: un `SKILL.md` de `sdd-implement` más largo (~150 palabras) y ficheros movidos, con los enlaces de la lista de arriba; ocho capacidades y trece requisitos retocados.
-- **B. La validación sigue en `sdd-archive` y un fallo devuelve el trabajo a `sdd-implement`** — el cambio mínimo en texto. Cuesta: `sdd-archive` sigue teniendo una parada con el dev-lead y un paso que puede editar, y el criterio de hecho («sin ningún paso que edite código») no se cumple; el cierre y la implementación se pasarían el trabajo de una skill a otra.
-- **C. Una skill nueva entre las dos (`sdd-validate`)** — la validación aislada. Cuesta: una skill más (28 → 29) con su entrada medida (Art. I), el bucle de arreglos que vuelve a `sdd-implement` desde fuera y otro cambio de contexto en cada feature, sin ganar nada sobre A.
-- Elegido: **A** — es la forma que ya dice la capacidad `feature-flow` y la que pidió el dev-lead («la validacione s parte de la implementracion»). Las otras dos dejan el defecto o lo mueven.
+- **A. La validación es el final de `sdd-implement`** — mover el paso 1 de `sdd-archive` y sus dos referencias a `sdd-implement`. Cuesta: un `SKILL.md` de `sdd-implement` más largo y las baterías de `sdd-implement` y de `sdd-archive` más grandes: los escenarios de la validación necesitan los moldes de «la 0010 con las tasks acabadas», que hoy solo están en `subject.mjs` de `sdd-archive`.
+- **B. La validación sigue en `sdd-archive` y un fallo devuelve el trabajo a `sdd-implement`** — el cambio mínimo en texto. Cuesta: `sdd-archive` sigue teniendo una parada con el dev-lead y un paso que puede editar, y el criterio de hecho («sin ningún paso que arregle código») no se cumple.
+- **C. Una skill nueva entre las dos (`sdd-validate`)** — la fase entre las tasks y el cierre, con su propia batería. Cuesta: una skill más (28 → 29) con su entrada medida (Art. I), los moldes de la validación copiados a su batería, un nombre que se parece a `sdd-verify` (la descripción de cada una dice cuál es la validación del dev-lead y cuál la revisión del agente) y un pase más entre skills.
+- Elegido: **C** — lo pidió el dev-lead al ver que las baterías crecían: «separar en un paso, si no valida devuelve el control a implement». Gana frente a A porque la validación tiene su contrato, su batería y su bucle, y `sdd-implement` no engorda; frente a B, porque `sdd-archive` deja de tener un paso que edita. El OpenSpec que usa el kit como fuente separa igual `apply`, `verify` y `archive`.
 
-Las partes del cómo que fija A:
+Las partes del cómo que fija C:
 
-**El orden del final de `sdd-implement`** (decisión del dev-lead: «la repsuesta es 1»). Al acabar las tasks, en una feature:
+**El orden de `sdd-validate`** (decisión del dev-lead: «la repsuesta es 1»). `sdd-implement` la invoca al acabar la última task. En una feature:
 
 1. El gate de cierre, una vez: el de `operations.md` §Testing, filtrado por lo afectado si el proyecto lo declara, y entero solo si la rama toca un fichero de «Sin filtro» (`closing-suite.md`, «What runs»).
-2. El agente recorre el guion entero, tal como lo hará el dev-lead, y arregla lo que falle (cada arreglo, una task con su test).
+2. El agente recorre el guion entero, tal como lo hará el dev-lead.
 3. La revisión final de ejes (`sdd-verify`), sobre lo ya validado.
 4. La validación del dev-lead, con el mensaje de `validation-template.md`: guion con sus pasos ya recorridos.
 5. Registro de la validación en el borrador del walkthrough y pase a `sdd-archive`.
 
 Con `validation.mode: field` o `Validación: agente`, el paso 4 es la verificación del agente, sin parada, y el 5 igual. En un patch el orden es 1, 2, 4, 5 (sin revisión final).
 
-**El bucle de vuelta.** Un fallo del agente al recorrer el guion, de la revisión final o del dev-lead vuelve a una task con su test (RED → GREEN). Cada vuelta corre solo lo que toca el arreglo: el test nuevo y los que fallaron, el gate con `--base <sha del último verde>` («Running a gate», punto 3, de `sdd-verify`), los pasos del guion que toca el arreglo y, si la vuelta es posterior a la revisión final, la revisión de su diff. Un arreglo que toca un fichero de «Sin filtro» corre el gate sin filtro. La revisión de una vuelta posterior a la revisión final la hace un revisor `sdd-kit:effort-high` + `sonnet`, una sola vez (en un patch, el revisor Sonnet de §4 de `patch.md`); las vueltas anteriores a la revisión final no llevan revisión propia, porque las cubre; un hallazgo suyo entra en la misma vuelta y, si queda abierto, va a ✋ como `sin revisar: <sha>`. Tras la vuelta, la validación sigue desde donde se paró. Un cambio que el dev-lead pide después de validar sigue «Lo cambiado tras la validación se separa de lo validado» y no vuelve a pedir la validación.
+**El bucle de vuelta.** Un fallo del agente al recorrer el guion, de la revisión final o del dev-lead devuelve el control a `sdd-implement`, que lo hace como una task nueva al final del plan con su test (RED → GREEN), y vuelve a `sdd-validate`. Cada vuelta corre solo lo que toca el arreglo: el test nuevo y los que fallaron, el gate con `--base <sha del último verde>` («Running a gate», punto 3, de `sdd-verify`), los pasos del guion que toca el arreglo y, si la vuelta es posterior a la revisión final, la revisión de su diff. Un arreglo que toca un fichero de «Sin filtro» corre el gate sin filtro. La revisión de una vuelta posterior a la revisión final la hace un revisor `sdd-kit:effort-high` + `sonnet`, una sola vez (en un patch, el revisor Sonnet de §4 de `patch.md`); las vueltas anteriores a la revisión final no llevan revisión propia, porque las cubre; un hallazgo suyo entra en la misma vuelta y, si queda abierto, va a ✋ como `sin revisar: <sha>`. Tras la vuelta, la validación sigue desde donde se paró. Un cambio que el dev-lead pide después de validar sigue «Lo cambiado tras la validación se separa de lo validado» y no vuelve a pedir la validación.
 
-**La revisión final** sale en segundo plano cuando acaban el gate y el guion recorrido, y el hilo escribe los borradores de cierre mientras trabaja (como hoy, pero con otro disparador). Con la validación diferida, o sin respuesta del dev-lead, el final de `sdd-implement` registra `Validación diferida:` o espera, como dicen «La validación puede diferirse con condiciones» y «El trabajo se valida con el usuario antes de cerrar».
+**La revisión final** sale en segundo plano cuando acaban el gate y el guion recorrido, y el hilo escribe los borradores de cierre mientras trabaja (como hoy, pero con otro disparador). Con la validación diferida, o sin respuesta del dev-lead, `sdd-validate` registra `Validación diferida:` o espera, como dicen «La validación puede diferirse con condiciones» y «El trabajo se valida con el usuario antes de cerrar».
 
-**Qué hace `sdd-archive` con la validación.** Su paso 1 comprueba que el borrador del walkthrough (en un patch, `patch.md` §4) lleva una de las cuatro líneas de registro; sin ella, no valida ni presenta guion: devuelve el trabajo a `sdd-implement`. Los pasos que vienen después (registros, commit de cierre, merge de sincronización, merge) quedan como hoy. Tras el merge de sincronización, solo corren las tareas que cruzan la rama y la base. Un rojo ahí que no viene de la base vuelve a `sdd-implement` (decisiones 4 y 15). Si la comprobación de la revisión final (`final-review-check.md`) encuentra un commit sin revisar, tampoco despacha la re-revisión: devuelve el trabajo a `sdd-implement`.
+**Qué hace `sdd-archive` con la validación.** Su paso 1 comprueba que el borrador del walkthrough (en un patch, `patch.md` §4) lleva una de las cuatro líneas de registro; sin ella, no valida ni presenta guion: devuelve el trabajo a `sdd-validate`. Los pasos que vienen después (registros, commit de cierre, merge de sincronización, merge) quedan como hoy. Tras el merge de sincronización, solo corren las tareas que cruzan la rama y la base. Un rojo ahí que no viene de la base vuelve a `sdd-implement` (decisiones 4 y 15). Si la comprobación de la revisión final (`final-review-check.md`) encuentra un commit sin revisar, tampoco despacha la re-revisión: devuelve el trabajo a `sdd-validate`.
 
-**Qué hace cada método.** `sdd-implement` lleva el orden, el bucle y las referencias de validación; `sdd-implement-native` y `sdd-implement-subagent` solo cambian dónde acaban: tras la revisión final limpia, siguen en el paso de validación de `sdd-implement` y, con la validación registrada, invocan `sdd-archive`. El borrador de cierre que `sdd-implement` ya escribe mientras los ejes revisan (el «Closing drafts») es donde queda el registro.
+**Qué hace cada skill.** `sdd-validate` lleva el orden, el bucle y las referencias de validación (`validation-modes.md`, `dev-validation.md`); `sdd-implement` acaba invocándola con `Skill` y sus dos métodos, Native y SDD, solo cambian dónde acaban: tras la última task, siguen en `sdd-validate`, que con la validación registrada invoca `sdd-archive`. El borrador de cierre que `sdd-implement` ya escribe mientras los ejes revisan (el «Closing drafts») es donde queda el registro, y pasa a escribirlo `sdd-validate`.
 
 ## Dónde se prueba
 
-Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` en la de `sdd-implement` y `av1` en la de `sdd-archive`. Los que se mueven de `sdd-archive` a `sdd-implement` cambian de id (`g1`→`vg1`, `g2`→`vg2`, `g3`→`vg3`, `g4`→`vg4`, `v1a`→`vv1a`, `v1b`→`vv1b`, `se1`→`vse1`, `t1`→`vt1`, `t2`→`vt2`, `t3`→`vt3`) y conservan su procedencia en la columna.
+La batería nueva `tests/batteries/sdd-validate/` (con su `subject.mjs`) lleva los escenarios nuevos `vf1`…`vf7` y los 10 que se mueven desde `sdd-archive` (`g1`, `g2`, `g3`, `g4`, `v1a`, `v1b`, `se1`, `t1`, `t2`, `t3`), que conservan su id y su procedencia; en la batería de `sdd-archive` entran `av1` y `av2`. Ningún id nuevo choca con los de su batería.
 
-- El orden del final de `sdd-implement` (gate, guion, revisión, dev-lead, `sdd-archive`): `vf1`, un sujeto de feature con `validation.mode: manual` que acaba las tasks y llega al mensaje de validación; se mide por la secuencia de sus comandos.
-- El bucle de vuelta tras un fallo del dev-lead: `vf2`, con «el paso 3 falla» tras la presentación; se mide que la vuelta es una task con su test y que corre el test, el gate con `--base <sha del último verde>`, el paso tocado y la revisión del diff, y no el gate entero.
+- El orden de `sdd-validate` (gate, guion, revisión, dev-lead, `sdd-archive`): `vf1`, un sujeto de feature con `validation.mode: manual` que acaba las tasks y llega al mensaje de validación; se mide por la secuencia de sus comandos.
+- El bucle de vuelta tras un fallo del dev-lead: `vf2`, con «el paso 3 falla» tras la presentación; se mide que devuelve el control a `sdd-implement`, que la vuelta es una task con su test y que corre el test, el gate con `--base <sha del último verde>`, el paso tocado y la revisión del diff, y no el gate entero.
 - El agente que arregla un paso del guion al recorrerlo, antes de la revisión: `vf3`, con un paso que falla al recorrerlo; se mide que la vuelta no lleva revisión propia, porque la cubre la revisión final.
 - La validación diferida y la que no se responde: `vf4`, con «lo pruebo mañana en la primera exportación, a cargo del dev-lead»: registra `Validación diferida:` y pasa a `sdd-archive`.
-- El final de un patch (gate, guion, dev-lead; sin revisión final) y su vuelta: `vf5`, sobre el molde `salas-patch`, con un fallo del dev-lead que pasa por el revisor Sonnet de §4.
+- El final de un patch (gate, guion y dev-lead; sin ejes) y su vuelta: `vf5`, sobre el molde `salas-patch`, con un fallo del dev-lead que pasa por el revisor Sonnet de §4.
 - La vuelta que toca un fichero de «Sin filtro»: `vf6`, con un arreglo en `package.json`; corre el gate sin filtro.
 - El fallo que sale de la revisión final: `vf7`; se mide que sigue la pasada de fix de la revisión, que después corre el gate con `--base` y los pasos del guion que toca, y que no lleva revisión de vuelta.
-- `validation.mode: field` y `Validación: agente`: los escenarios movidos `vv1b` y `vt3`.
+- `validation.mode: field` y `Validación: agente`: los movidos `v1b` y `t3`.
+- El paso de `sdd-implement` a `sdd-validate` al acabar la última task: los humos `h1` y `h2` de la batería de `sdd-implement` (su rúbrica cambia: la invocación siguiente es `sdd-validate`).
+- `sdd-archive` sin validación registrada, que la devuelve a `sdd-validate`: `av1`, con un molde sin `Validado:`. Con validación registrada, los escenarios existentes de cierre (`a1`…`a8`, `c*`, `cpt*`, `e*`…) miden lo suyo con moldes que llevan `Validado:` (decisión 16); `a3r` cambia su esperado (el rojo de la rama devuelve a `sdd-implement`).
 - La reentrada tras un rojo posterior al commit de cierre: `av2`, con un rojo de la rama tras `sdd merge --sync`; se mide que devuelve el trabajo a `sdd-implement` sin arreglarlo, y que al volver rehace el commit de cierre y repite el sync.
-- `sdd-archive` sin validación registrada, que la devuelve: `av1`, con un molde sin `Validado:`. Con validación registrada, los escenarios existentes de cierre (`a1`…`a8`, `c*`, `cpt*`, `e*`…) miden lo suyo con moldes que llevan `Validado:` (decisión 16); `a3r` cambia su esperado (el rojo de la rama devuelve a `sdd-implement`).
-- Los escenarios de la validación que hoy viven en `sdd-archive` se mueven a la batería de `sdd-implement` con su procedencia (lista arriba).
-- Los `MODIFIED` que solo cambian el nombre del sitio (`feature-flow`: «decisión sola», «entorno parado», «base al día»; `frontend-verification`; `routing`; `control-profiles`, fila de la tabla de paradas) son de redacción: no llevan escenario, y el cambio lo comprueba la lectura del texto y el test de que `sdd-implement` no nombra ninguna herramienta de proyecto.
+- Los `MODIFIED` que solo cambian el nombre del sitio (`feature-flow`: «decisión sola», «entorno parado», «base al día»; `frontend-verification`; `routing`; `control-profiles`, fila de la tabla de paradas) son de redacción: no llevan escenario, y el cambio lo comprueba la lectura del texto y el test de que `sdd-validate` no nombra ninguna herramienta de proyecto.
 - Los `MODIFIED` de `closing-suite` y `closing-merge` los miden `a3`, `a3r`, `a3a` y `a5` ya existentes, que corren como controles.
 - `kit:copies`, `kit:skill-size`, `kit:own` y el test `word-budget.test.ts`: por el gate del repo.
 
@@ -218,18 +232,38 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 
 - GIVEN una constitution que pide el gate completo en verde al cerrar cada task
 - WHEN se escribe el plan y se despacha una task de solo frontend
-- THEN el gate de cierre aparece una sola vez, al acabar las tasks, en el final de `sdd-implement`, y lo ejecuta el hilo principal
+- THEN el gate de cierre aparece una sola vez, al acabar las tasks, en `sdd-validate`, y lo ejecuta el hilo principal
 - AND no aparece en «De código» ni en la verificación de esa task, y el encargo de su implementador le dice que ejecute su verificación y no la suite completa
 - AND corre el que declara `operations.md` §Testing, filtrado por lo afectado si el proyecto lo declara, y entero solo si la rama toca un fichero de «Sin filtro»
 - AND tras su merge de sincronización, el cierre de `sdd-archive` repite solo lo que afecta lo que trajo la base: las tareas que cruzan la rama y la base
 
-#### ADDED — El final de `sdd-implement` valida antes de pasar al cierre
+#### MODIFIED — Un patch sigue en `sdd-implement`, con verificación y sin revisión final
+
+- GIVEN el patch 0031, confirmado en `sdd-propose`: si cancelo Norte el martes, que no tengo reservado, me quita la del lunes
+- WHEN `sdd-propose` lo entrega
+- THEN invoca `sdd-implement`, que lee lo primero `references/patch-flow.md` y sigue su flujo: causa raíz, `patch.md`, fix mínimo y commit; ni el Setup ni los bucles de tasks aplican
+- AND antes de decir que está arreglado, §4 de `patch.md` lleva el comando del test y su salida leída en esta sesión, como dice la «Gate Function» de `sdd-verify`
+- AND antes del commit del fix, un revisor en Sonnet lee `patch.md` y el diff —la causa raíz, el arreglo y su test— y §4 responde cada hallazgo: arreglado, o rechazado con su motivo
+- AND no se despacha ningún eje de la revisión final; tras el commit del fix invoca `sdd-validate`, que corre el gate, recorre el guion y presenta la validación, como en una feature, y solo con la validación registrada sigue en `sdd-archive`; una vuelta tras un fallo del dev-lead pasa por ese mismo revisor Sonnet de §4 antes de volver a presentar
+
+#### MODIFIED — La implementación la lleva `sdd-implement`
+
+- GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
+- WHEN `sdd-propose` entrega la feature
+- THEN invoca `sdd-implement`, que invoca `sdd-implement-native` con `Skill`; esta ejecuta las dos tasks en Native y, con la última hecha, invoca `sdd-validate`, que corre el gate, recorre el guion, hace la revisión final y presenta la validación, y con la validación registrada invoca `sdd-archive`, que abre comprobando esa validación
+- AND con `Ejecución: subagent`, `sdd-implement` invoca `sdd-implement-subagent`
+- AND ningún texto que carga el agente (`skills/` sin las marcas `<!-- kit: … -->`) invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
+- AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
+
+### Capacidad: `validation`
+
+#### ADDED — `sdd-validate` valida antes de pasar al cierre
 
 - GIVEN la 0012 en `validation.mode: manual`, con sus tres tasks acabadas y commiteadas
-- WHEN el hilo acaba la Task 3
+- WHEN `sdd-implement` acaba la Task 3 e invoca `sdd-validate`
 - THEN corre el gate de cierre una vez, después recorre el guion de pruebas entero tal como lo recorrerá el dev-lead, después despacha la revisión final sobre lo ya validado y por último presenta el mensaje de validación
 - AND no invoca `sdd-archive` hasta que el dev-lead valida; con `validation.mode: field` o `Validación: agente` no para, y lo invoca cuando ha registrado su verificación
-- AND con la validación diferida (`Diferir: lo pruebo en la primera exportación, a cargo del dev-lead`) o en `unattended`, registra `Validación diferida:` con su disparador y pasa a `sdd-archive`; si el dev-lead no responde, la feature queda en espera en `sdd-implement` con el smoke documentado
+- AND con la validación diferida (`Diferir: lo pruebo en la primera exportación, a cargo del dev-lead`) o en `unattended`, registra `Validación diferida:` con su disparador y pasa a `sdd-archive`; si el dev-lead no responde, la feature queda en espera en `sdd-validate` con el smoke documentado
 - AND un paso del guion que falla al recorrerlo, `cancelar Norte lun → «cancelada lun»` que, con la reserva del lunes creada, devuelve «no hay reserva lun», se arregla en una task con su test, antes de la revisión final
 - AND el kit fija ese orden y que el agente recorra el guion; con qué herramienta lo recorre lo declara el proyecto, y la skill no nombra ninguna
 - AND la validación se registra en el borrador del walkthrough (en un patch, §4 de `patch.md`) con una de `Validado:`, `Validación diferida:`, `Validación en campo:` o `Validación por el agente:`
@@ -237,7 +271,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 #### ADDED — Un fallo de la validación vuelve a una task y la vuelta corre solo lo que toca el arreglo
 
 - GIVEN la 0012 con el gate en verde en `a1b2c3d`, la revisión final hecha y el dev-lead que responde «el paso 3 falla: `cancelar Norte lun` dice «cancelada lun» y me quita también la del martes»
-- WHEN el agente lo arregla
+- WHEN `sdd-validate` lo devuelve a `sdd-implement` y el agente lo arregla
 - THEN el arreglo es una task con su test, que falla antes y pasa después
 - AND corre el test nuevo y los que fallaron, el gate con `--base a1b2c3d`, los pasos del guion que toca el arreglo y, al ser posterior a la revisión final, la revisión de su diff
 - AND no corre el gate entero, el guion entero ni la revisión final entera
@@ -247,23 +281,13 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 - AND una vuelta anterior a la revisión final (un fallo del gate o del guion del agente) no lleva revisión propia: la cubre la revisión final, que sale después
 - AND tras la vuelta la validación sigue desde el paso que falló, y no pasa a `sdd-archive` hasta que el dev-lead valida; un cambio que el dev-lead pide después de validar sigue «Lo cambiado tras la validación se separa de lo validado» y no repite la validación
 
-#### MODIFIED — Un patch sigue en `sdd-implement`, con verificación y sin revisión final
+#### Reglas de la capacidad — validation
 
-- GIVEN el patch 0031, confirmado en `sdd-propose`: si cancelo Norte el martes, que no tengo reservado, me quita la del lunes
-- WHEN `sdd-propose` lo entrega
-- THEN invoca `sdd-implement`, que lee lo primero `references/patch-flow.md` y sigue su flujo: causa raíz, `patch.md`, fix mínimo y commit; ni el Setup ni los bucles de tasks aplican
-- AND antes de decir que está arreglado, §4 de `patch.md` lleva el comando del test y su salida leída en esta sesión, como dice la «Gate Function» de `sdd-verify`
-- AND antes del commit del fix, un revisor en Sonnet lee `patch.md` y el diff —la causa raíz, el arreglo y su test— y §4 responde cada hallazgo: arreglado, o rechazado con su motivo
-- AND no se despacha ningún eje de la revisión final; tras el commit del fix corre el gate, el agente recorre el guion y presenta la validación, como en una feature, y solo con la validación registrada sigue en `sdd-archive`; una vuelta tras un fallo del dev-lead pasa por ese mismo revisor Sonnet de §4 antes de volver a presentar
-
-#### MODIFIED — La implementación la lleva `sdd-implement`
-
-- GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
-- WHEN `sdd-propose` entrega la feature
-- THEN invoca `sdd-implement`, que invoca `sdd-implement-native` con `Skill`; esta ejecuta las dos tasks en Native y, con el gate, el guion recorrido, la revisión final de vuelta y su pasada de fix hechos y la validación registrada, invoca `sdd-archive`, que abre comprobando esa validación
-- AND con `Ejecución: subagent`, `sdd-implement` invoca `sdd-implement-subagent`
-- AND ningún texto que carga el agente (`skills/` sin las marcas `<!-- kit: … -->`) invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
-- AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
+- **Dónde viven los datos**: la skill en `skills/sdd-validate/`; qué corre, envía y registra cada modo de validación, en `skills/sdd-validate/references/validation-modes.md`; cómo se compone y se ensaya el guion y el entorno, en `skills/sdd-validate/references/dev-validation.md`; la forma del mensaje, en `validation-template.md` de `sdd-templates`; la batería, en `tests/batteries/sdd-validate/`
+- **Idioma de los nombres**: skill y ficheros en inglés kebab-case; las líneas de registro, en castellano (`Validado:`, `Validación diferida:`, `Validación en campo:`, `Validación por el agente:`, `no ensayado:`)
+- **Límites**: tope de palabras de `sdd-validate`, el de `cli/test/kit/word-budget.test.ts`; el gate de cierre corre una vez al acabar las tasks; cada vuelta corre solo lo que toca el arreglo y no hay tope de vueltas; una vuelta posterior a la revisión final lleva una sola revisión de su diff
+- **Avisos**: `no ensayado: <motivo>` y `sin revisar: <sha> — <qué cambia>`
+- **Regla ante conflicto**: un hallazgo del dev-lead que cambia la spec es un desvío y para como dice `sdd-implement`; una vuelta nunca abre otra revisión final
 
 ### Capacidad: `feature-flow`
 
@@ -284,13 +308,13 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 #### MODIFIED — Una decisión del dev-lead que sale de la revisión final se pregunta sola
 
 - GIVEN la revisión final de rama con un hallazgo cuya resolución es del dev-lead
-- WHEN el agente llega a la validación del final de `sdd-implement`
+- WHEN el agente llega a la validación de `sdd-validate`
 - THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
 - AND no la resuelve por defecto ni la mete en el mensaje de la validación
 
 #### MODIFIED — El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado
 
-- GIVEN la validación del final de `sdd-implement` de la feature 0012, con la web levantada por el agente en el puerto 4656
+- GIVEN la validación de `sdd-validate` de la feature 0012, con la web levantada por el agente en el puerto 4656
 - WHEN el agente presenta el guion de pruebas sin `validation.startEnvironment` en `.docs/sdd/sdd-kit.local.json`, o con `false`
 - THEN antes de presentarlo ha parado lo que arrancó, y el guion empieza por cómo arrancarla
 - AND con `validation.startEnvironment: true`, la deja arrancada, y el guion dice en qué puerto está y cómo pararla
@@ -302,7 +326,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 - GIVEN la fila 0012 «`npm run check:changed` … si la rama no cambia ninguno, escribe «Nada que comprobar» y sale con 0», cuyo THEN negativo no se puede observar desde `feature/0012`, porque la rama siempre cambia `scripts/check-changed.mjs`
 - WHEN el agente escribe la spec
 - THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
-- AND en la validación del final de `sdd-implement` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
+- AND en la validación de `sdd-validate` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
 
 ### Capacidad: `archive`
 
@@ -310,11 +334,12 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 
 - GIVEN la 0010 con las tasks acabadas y la revisión final limpia, y sin ninguna línea de validación en el borrador del walkthrough
 - WHEN se invoca `sdd-archive`
-- THEN no valida: no presenta el guion, no corre el gate de la validación y dice «falta la validación de la 0010»; devuelve el trabajo a `sdd-implement` sin escribir nada
+- THEN no valida: no presenta el guion, no corre el gate de la validación y dice «falta la validación de la 0010»; devuelve el trabajo a `sdd-validate` sin escribir nada
 - AND con `Validado: 2026-11-24 · «probé reservar y cancelar y funciona»` en el borrador, sigue por los pre-checks, los registros, el commit de cierre, el merge de sincronización y el merge
 - AND con `Validación en campo:` o `Validación por el agente:` registrada, sigue igual, sin presentar guion
 - AND ningún paso del cierre arregla código: un rojo del gate tras el merge de sincronización que no viene de la base devuelve el trabajo a `sdd-implement`, y su arreglo es una task con su test
 - AND borrar los tests de feature de «Camino crítico» y juntar el commit de cierre siguen en el cierre
+- AND un hotfix o un spike, que no pasan por `sdd-validate`, validan en el paso 1 como hoy, sin devolverse
 
 #### ADDED — Un rojo tras el commit de cierre devuelve el trabajo a `sdd-implement` y el cierre reentra
 
@@ -341,7 +366,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 
 #### Reglas de la capacidad — archive
 
-- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; cuándo corre la suite del cierre y qué corre tras el merge de sincronización, en `skills/sdd-archive/references/closing-suite.md`; la comprobación de la revisión final, en `skills/sdd-archive/references/final-review-check.md`; qué corre, envía y registra cada modo de validación, en `skills/sdd-implement/references/validation-modes.md`; adónde va cada aprendizaje, en `skills/sdd-archive/references/learnings.md`; la de la validación del dev en `skills/sdd-implement/references/dev-validation.md`; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md`; la lista del camino crítico del proyecto en `.docs/sdd/steering/critical-path.md`, y su check y su alcance en «Camino crítico» y «Tests de feature» de `operations.md` §Testing
+- **Dónde viven los datos**: la skill en `skills/sdd-archive/`; la receta del merge en `skills/sdd-archive/references/merge-recipe.md`; cuándo corre la suite del cierre y qué corre tras el merge de sincronización, en `skills/sdd-archive/references/closing-suite.md`; la comprobación de la revisión final, en `skills/sdd-archive/references/final-review-check.md`; qué corre, envía y registra cada modo de validación, en `skills/sdd-validate/references/validation-modes.md`; adónde va cada aprendizaje, en `skills/sdd-archive/references/learnings.md`; la de la validación del dev en `skills/sdd-validate/references/dev-validation.md`; las ADR en `.docs/sdd/decisions/`; la deuda en `.docs/sdd/steering/debt.md`; la lista del camino crítico del proyecto en `.docs/sdd/steering/critical-path.md`, y su check y su alcance en «Camino crítico» y «Tests de feature» de `operations.md` §Testing
 - **Límites**: tope de palabras de `sdd-archive`, el de `cli/test/kit/word-budget.test.ts`; el gate de cierre corre una vez por árbol, al acabar las tasks; con «Camino crítico», «Tests de feature» corre una vez por cierre, antes del borrado, y el árbol de la suite del cierre es el ya borrado; corre enteras las suites unitarias y `pendiente` de «Suites», y el gate por lo afectado, o entero si la rama toca un fichero de «Sin filtro»; tras un rojo corren los tests que fallaron, los que no llegaron a correr y el gate con `--base <sha rojo>`, y con un arreglo solo de docs, solo los tests que fallaron; tras el merge de sincronización se repiten solo las tareas que tocan la rama y la base a la vez: con un gate filtrado, las que selecciona contra `<merge.into>` y también contra el sha de la última suite en verde; sin filtro, el gate entero si la base trae cambios fuera de `.docs/` que no sean `*.md`; si la base trae un fichero de «Sin filtro», el gate entero; el informe de rojo lleva las últimas 20 líneas; el aviso de `ya-en-base:` nombra hasta diez tests; una suite E2E que pasa de su «Presupuesto E2E», o sin presupuesto, una suite de más de 10 minutos, va a la deuda del proyecto; un sha citado es una cadena de 7 a 40 caracteres hexadecimales; los nombres `finishing-a-development-branch`, `sdd-end-feature` y `sdd-end-patch` solo aparecen en `skills/` en la línea de procedencia de `skills/sdd-archive/SKILL.md` y en las migraciones de versiones pasadas (v0.4.0, v2.0.0, v3.0.0)
 - **Avisos**: «Hay cambios sin commitear: `<ficheros>`. ¿Los commiteo en la rama, los descarto o paro?» · «Abiertas a la vez: `<rama>` (`<ruta>`). La que fusione segunda integra la base y repite sus gates.» · «¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?» · el bloque del rojo (comando, código de salida, ruta del log, últimas 20 líneas, línea `base:`, «`<merge.into>` sin tocar en `<hash>`») · «`base: en rojo: el mismo comando también falla sin la rama`» (contraste a mano) · «Para acabar la `<madre>` falta: `<id>` — `<título de la fila>`[, …]. Recomiendo `<id>`, la primera del roadmap sin dependencias abiertas; su prompt lo da `sdd-roadmap`: «dame el prompt de la `<id>`».» · «Ninguna se puede arrancar todavía: `<id>` espera a `<ids>`.» · «Para acabar la propuesta `<N>` falta: …» · «La `<madre>` ya no tiene piezas abiertas: su fila se puede cerrar.» · «`<documento>` no existía: creado desde la plantilla» · `ADR: <candidata> → decisions/NNNN-<slug>.md` · `no ensayado: <motivo>` · `Conflicto de la base resuelto por el agente: <fichero> — <qué juntó de cada lado>` · «¿Pegas en `critical-path.md` la fila `<fila>`? Si no, el cierre borra `<test>`.» · «La base trae `<cuántos>` tests fuera de la lista (`ya-en-base:`): `<test>`[, …]. Recomiendo un patch que los borre; decide el dev-lead.» · «`Camino crítico` declarado sin `critical-path.md`: no borro nada.» · «Falta la validación de la `<id>`: el trabajo vuelve a `sdd-implement`.»
 
@@ -349,7 +374,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 
 #### REMOVED — Con otra rama abierta o la base por delante, la suite corre una sola vez, tras el merge de sincronización
 
-- motivo: el gate de cierre corre una vez, al acabar las tasks, en `sdd-implement`; tras el merge de sincronización solo corren las tareas que cruzan la rama y la base («El cierre integra la base tras su commit y repite solo lo que afecta lo que trae la base»)
+- motivo: el gate de cierre corre una vez, al acabar las tasks, en `sdd-validate`; tras el merge de sincronización solo corren las tareas que cruzan la rama y la base («El cierre integra la base tras su commit y repite solo lo que afecta lo que trae la base»)
 
 #### MODIFIED — El cierre integra la base tras su commit y repite solo lo que afecta lo que trae la base
 
@@ -415,7 +440,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 - THEN corre el gate de cierre y recorre el guion de pruebas, y con los dos en verde sobre `a1b2c3d` despacha los ejes en segundo plano sobre ese sha
 - AND mientras los ejes trabajan, el hilo escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
 - AND la validación se presenta cuando el cierre de la revisión ha terminado (la pasada de fix y la re-revisión, si las hay), con lo residual en ✋, no antes
-- AND en SDD el disparador es el commit juntado de la última task, tras su revisión limpia, con el gate y el guion en verde
+- AND en los dos métodos, Native y SDD, los ejes los despacha `sdd-validate` con `sdd-verify`, con el gate y el guion en verde
 - AND un arreglo del guion que cambia el código después de `a1b2c3d` da otro sha: los ejes salen sobre el último
 
 #### MODIFIED — Una re-revisión nunca abre otra
@@ -433,17 +458,17 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 - GIVEN una feature cuya línea `Revisión final:` de `tasks.md` registra la revisión `sobre a1b2c3d`, y después de ese commit solo hay commits que se revisan en el hilo
 - WHEN se entra en `sdd-archive`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué ejes y modelos
-- AND si después del último revisado hay un commit `e4f5a6b` que cambia `src/slots.js` y `tasks.md` no tiene `Re-revisión:`, no despacha nada: devuelve el trabajo a `sdd-implement`, que lo revisa antes de la validación
+- AND si después del último revisado hay un commit `e4f5a6b` que cambia `src/slots.js` y `tasks.md` no tiene `Re-revisión:`, no despacha nada: devuelve el trabajo a `sdd-validate`, que lo revisa antes de la validación
 - AND si `tasks.md` ya tiene `Re-revisión:`, no despacha: el walkthrough lleva `sin revisar: e4f5a6b — <qué cambia>` en ✋
 - AND el último revisado es el segundo sha de la `Re-revisión:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
 - AND una línea en el formato 2.x (`Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d`, sin ejes) cuenta como revisión final, y el tramo de la única re-revisión empieza en su `sobre`, con la pasada de fix dentro, como en el cierre único
-- AND sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe de los ejes en esta sesión) no invoca `sdd-verify`: devuelve el trabajo a `sdd-implement`, porque la revisión final no es del cierre
+- AND sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe de los ejes en esta sesión) no invoca `sdd-verify`: devuelve el trabajo a `sdd-validate`, porque la revisión final no es del cierre
 
 #### MODIFIED — El kit no invoca las skills de superpowers que sustituye `sdd-verify`
 
 - GIVEN los ficheros de `skills/` de la rama
 - WHEN se buscan `superpowers:verification-before-completion`, `superpowers:requesting-code-review` y `code-reviewer.md` de superpowers
-- THEN ninguno aparece: el contrato de cierre y la revisión final de `sdd-implement` invocan `sdd-verify`
+- THEN ninguno aparece: el contrato de cierre de `sdd-implement` y la revisión final de `sdd-validate` invocan `sdd-verify`
 - AND los nombres de las fuentes solo aparecen en el `NOTICE` de `sdd-verify` y en su anexo de procedencia
 
 #### MODIFIED — La revisión se cierra una vez
@@ -463,7 +488,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 #### MODIFIED — Con `validation.mode: field`, la validación es en campo
 
 - GIVEN un proyecto con `"validation":{"mode":"field"}` en `.docs/sdd/sdd-kit.json` y la feature 0030 con las tasks acabadas, el gate en verde, el guion recorrido por el agente, su smoke por THEN y el cierre de su revisión final terminado, en cualquier perfil
-- WHEN el agente llega a la validación (el final de `sdd-implement`), o termina el patch 0031 en `sdd-implement`
+- WHEN el agente llega a la validación (`sdd-validate`), o termina el patch 0031 en `sdd-implement`
 - THEN no pregunta qué ha probado el usuario ni ofrece diferir, y pasa a `sdd-archive` sin parar
 - AND el walkthrough (en un patch, `patch.md` §4, debajo de la tabla) registra `Validación en campo: <fecha> · <verificación del agente>`, con la evidencia que ejecutó (p. ej. `suite 412/412 en 96 s · smoke 5/5 THEN con ejecución real · revisión final Spec y Código sobre a1b2c3d, re-revisión limpia`)
 - AND con un `sin revisar` o un «no verificado» sin resolver, esa línea no dice «limpia»: dice cuántos quedan (`…, re-revisión limpia, 1 sin revisar`)
@@ -478,7 +503,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 - WHEN el agente llega al paso del merge de `sdd-archive`
 - THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
 - AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta salvo en un hotfix con la frase del dev-lead en `--order`
-- AND el bloque autoriza el merge, no la validación: `sdd-archive` no arranca sin la validación registrada, y en `pair` y `delegate` el final de `sdd-implement` para con el smoke y la pregunta de validación antes de invocarlo
+- AND el bloque autoriza el merge, no la validación: `sdd-archive` no arranca sin la validación registrada, y en `pair` y `delegate` `sdd-validate` para con el smoke y la pregunta de validación antes de invocarlo
 - AND en cualquier perfil, con la CI de la base en `failure` no fusiona («Antes del merge, el cierre lee la CI de la base y no fusiona sobre un rojo», en `archive`)
 
 #### MODIFIED — La verificación del merge es el gate de merge, no la suite completa
@@ -495,7 +520,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 #### MODIFIED — La verificación visual se enseña con medidas y capturas
 
 - GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, el criterio «el selector filtra la lista por estado» y contraste del texto ≥ 4,5:1
-- WHEN el agente para tras la task en `pair`, o presenta la validación del final de `sdd-implement` en `delegate`
+- WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-validate` en `delegate`
 - THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
 - AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
 - AND sin detector declarado, el aviso literal «composición no medida: `operations.md` no declara detector en §Frontend»
@@ -512,7 +537,7 @@ Los escenarios nuevos llevan ids que no existen en las baterías: `vf1`…`vf7` 
 - AND §4 lleva la ruta de una captura en navegador real de cada pantalla tocada antes y después del cambio, guardadas fuera de git, y la salida del detector en los dos viewports con cada hallazgo resuelto o justificado, con los mismos contraejemplos que una task full
 - AND sin detector declarado, el aviso «composición no medida», y con el detector declarado sin ejecutar, «no probado» con el error concreto
 - AND con «sube el badge de estado a 14px», la verificación visual (capturas y detector) dura menos de 5 minutos, sin build dedicado ni suite de specs nueva
-- AND la validación del final de `sdd-implement` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `steering/operations.md` no la tiene
+- AND la validación de `sdd-validate` enseña las capturas y la salida del detector al usuario, y propone `§Frontend` si `steering/operations.md` no la tiene
 - AND la entrada del changelog va en `Changed`, no en `Fixed`; en una retirada, en `Removed`
 - AND en una retirada, §4 lleva además la búsqueda de cada símbolo retirado, sin otros usos
 - AND un bug determinista sigue con la causa raíz de `sdd-debugging` y cierra en `Fixed`
@@ -523,23 +548,25 @@ Medido sobre `dist/skills/` en `b25a8c27d`, con el conteo de `cli/test/kit/word-
 
 | Fichero | Medido / tope | Margen | Tope propuesto |
 | --- | --- | --- | --- |
+| `sdd-validate` (total) | — (skill nueva) | — | +1054 (las dos referencias movidas) +~640 (orden, bucle, registro, «Closing drafts», vigilancia de silencio y «When the axes return», que salen de `sdd-implement`) = ~1700 + 2 % → **1735** (previsto, sin medir, al ✋) |
+| `sdd-validate` (`SKILL.md`) | — (skill nueva) | — | ~640 + 2 % → **655** (previsto, sin medir, al ✋) |
 | `sdd-archive` (total) | 9487 / 9904 | 417 | −1054 (dos referencias movidas) −~250 (paso 1 y «In the validation») +~100 (la comprobación del registro) = ~8280 + 2 % → **8450** (previsto, sin medir, al ✋) |
 | `sdd-archive` (`SKILL.md`) | 2921 / 2932 | 11 | −~350 (el paso 1 baja de ~480 a ~130 palabras) = ~2570 + 2 % → **2625** (previsto, sin medir, al ✋) |
-| `sdd-implement` (total) | 6556 / 6626 | 70 | +1054 (dos referencias movidas) +~450 (final, bucle y registro) = ~8060 + 2 % → **8221** (previsto, sin medir, al ✋) |
-| `sdd-implement` (`SKILL.md`) | 2577 / 2633 | 56 | +~150 (el final lo escribe `SKILL.md`, el cómo está en las referencias) = ~2727 + 2 % → **2781** (previsto, sin medir, al ✋) |
+| `sdd-implement` (total) | 6556 / 6626 | 70 | −~190 (pasan a `sdd-validate`) +~40 (la invocación y la línea del gate) = ~6400; el tope baja a lo medido + 2 % en la task de topes |
+| `sdd-implement` (`SKILL.md`) | 2577 / 2633 | 56 | −~150 = ~2430; el tope baja a lo medido + 2 % en la task de topes |
 | `sdd-implement-native` | 2965 / 3038 | 73 | sin cambio (una frase sustituida) |
 | `sdd-implement-subagent` (total) | 8426 / 8462 | 36 | sin cambio (una etiqueta del diagrama) |
 
-Pieza que entra y pieza que sale: sale el paso 1 de `sdd-archive` con sus tres modos y «The suite» (de ~480 a ~130 palabras), «In the validation» de `closing-suite.md` y la frase «In `manual`, 1-2 run before the script»; entra el final de `sdd-implement` con su orden y su bucle. El saldo conjunto es de +~310 palabras (decisión 9).
+Pieza que entra y pieza que sale: sale el paso 1 de `sdd-archive` con sus tres modos y «The suite» (de ~480 a ~130 palabras), «In the validation» de `closing-suite.md` y la frase «In `manual`, 1-2 run before the script»; entra `sdd-validate` con su orden y su bucle. El saldo conjunto es de +~310 palabras (decisión 9).
 
 ## Previsión de coste
 
-Cada fila cita la línea `suma:` del comando de previsión cuando existe. Las filas con escenarios nuevos (`vf1`…`vf7`, `av1`) no tienen su fila en la batería hasta que se escriban: su coste sale de ~0,83 $ por sujeto de `sdd-implement` (`SCENARIOS="h1 h2 g1 a1" N=2` → `suma: 8 sujetos · coste previsto: 6.67 $`) y ~0,29 $ por sujeto de `sdd-archive` (`SCENARIOS="a1 a2 g1 g2 v1a v1b se1 t1 t2 t3" N=1` → `suma: 10 sujetos · coste previsto: 2.86 $`), y se corrige con el comando cuando existan.
+Cada fila cita la línea `suma:` del comando de previsión cuando existe. Las filas con escenarios nuevos (`vf1`…`vf7`, `av1`, `av2`) no tienen su fila en la batería hasta que se escriban: su coste sale de ~0,83 $ por sujeto de `sdd-implement` (`SCENARIOS="h1 h2 g1 a1" N=2` → `suma: 8 sujetos · coste previsto: 6.67 $`) y ~0,29 $ por sujeto de `sdd-archive` (`SCENARIOS="a1 a2 g1 g2 v1a v1b se1 t1 t2 t3" N=1` → `suma: 10 sujetos · coste previsto: 2.86 $`), y se corrige con el comando cuando existan.
 
 | Tanda | Sujetos (batería) | $ |
 | --- | --- | --- |
 | RED | `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2` (14 sujetos × ~0,83 $) y `SCENARIOS="av1 av2" N=2` (4 sujetos × ~0,29 $), sin medir: escenarios nuevos | 12,8 |
-| GREEN | los 9 nuevos (18 sujetos, ~12,8 $) y los 10 que se mueven con id nuevo, `N=1` (10 sujetos × ~0,83 $, ya en la batería de `sdd-implement`) | 21,1 |
+| GREEN | los 9 nuevos (18 sujetos, ~12,8 $) y los 10 que se mueven a `sdd-validate`, `N=1` (10 sujetos × ~0,83 $) | 21,1 |
 | Una tanda de REFACTOR | la mitad de RED y GREEN (23 sujetos) | 16,9 |
 | Controles | `SCENARIOS="h1 h2 g1 a1" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-implement/battery.md` → `suma: 8 sujetos · coste previsto: 6.67 $` y `SCENARIOS="a3 a3r a3a a5" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-archive/battery.md` → `suma: 8 sujetos · coste previsto: 3.23 $` | 9,9 |
 | Humo de las skills editadas (Art. I) | un escenario, `N=1`, por `sdd-verify`, `sdd-implement-native`, `sdd-implement-subagent`, `sdd-propose` y `sdd-templates`, elegido de su batería al escribir la task: 5 sujetos × ~0,6 $, sin medir | 3,0 |
@@ -548,10 +575,11 @@ Cada fila cita la línea `suma:` del comando de previsión cuando existe. Las fi
 
 ## Enmiendas
 
-- (ninguna)
+- 2026-11-24 — el enfoque pasa de A (dentro de `sdd-implement`) a C (una skill nueva `sdd-validate`) y la capacidad `validation` nace del delta; el resto de la spec cambia solo el nombre del sitio — «sí, pero entonces esto necesita ser quirúrgico» (dev-lead, 2026-11-24) — aprobada: «Apruebo, commitea y sigue con la Task 1» (dev-lead, 2026-11-24)
 
 ## Aprobaciones
 
 | Nombre | Fecha | Estado |
 | --- | --- | --- |
-| Àngel Delgado | 2026-11-24 | aprobada: «sí, déjalo así y apruebo» |
+| Àngel Delgado | 2026-11-24 | aprobada, enfoque A (anterior a la enmienda): «sí, déjalo así y apruebo» |
+| Àngel Delgado | 2026-11-24 | aprobada, enmienda al enfoque C (`sdd-validate`): «Apruebo, commitea y sigue con la Task 1» |

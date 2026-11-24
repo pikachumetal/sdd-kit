@@ -16,15 +16,15 @@ created: 2026-11-24
 
 | # | Task | Status | Commit | Notas |
 | --- | --- | --- | --- | --- |
-| 1 | Batería de `sdd-implement`: escenarios nuevos y movidos | pending | — | |
+| 1 | Batería nueva de `sdd-validate`: escenarios, moldes y los que se mueven | pending | — | |
 | 2 | Batería de `sdd-archive`: sin validación, con `Validado:` y la reentrada | pending | — | |
 | 3 | RED: los escenarios nuevos exhiben el fallo con el texto vigente | pending | — | |
-| 4 | `sdd-implement`: el final lleva la validación | pending | — | |
-| 5 | Métodos Native y SDD: el pase a `sdd-archive` y el disparador de los ejes | pending | — | |
+| 4 | `sdd-validate`: la skill nueva | pending | — | |
+| 5 | `sdd-implement` y sus métodos: el pase a `sdd-validate` | pending | — | |
 | 6 | `sdd-archive` y los textos que nombran la validación | pending | — | |
 | 7 | ADR, topes, docs del flujo y enmiendas de redacción | pending | — | |
 | 8 | GREEN, REFACTOR y controles | pending | — | |
 
 ## Rulings
 
-- Pre-flight: cada task sube en su commit el tope de palabras de la skill que engorda (T4 `sdd-implement`, T6 `sdd-archive`), con el valor de la spec; T7 lo ajusta a lo medido + 2 %.
+- Pre-flight: cada task fija en su commit el tope de palabras de la skill que engorda (T4 la entrada nueva de `sdd-validate`, T6 `sdd-archive`), con el valor de la spec; T7 lo ajusta a lo medido + 2 %.

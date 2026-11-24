@@ -3,7 +3,7 @@ id: 20261124-155700-feature-0362-validation-in-implement
 feature: 0362
 title: Plan de implementación — La validación vuelve al final de sdd-implement
 spec: ./spec.md
-status: draft
+status: approved
 created: 2026-11-24
 ---
 
@@ -15,15 +15,15 @@ created: 2026-11-24
 2. **Ejecución**: Native, porque las 8 tasks se encadenan por los nombres de ficheros y de escenarios (T1 y T2 producen los ids que T3 y T8 miden), un error lo caza el test de su task o la revisión final, y el plan cabe en un contexto.
 3. **Orden RED antes que texto** (Art. I): T1 y T2 escriben los escenarios, T3 los corre contra el texto vigente y solo si exhiben el fallo siguen T4 a T7. Si un escenario pasa con el texto vigente, se para: la guidance que ese escenario mide no se escribe.
 4. **`capability merge` lo hace `sdd-archive`, no una task**: el delta de la spec se fusiona en el cierre. T7 solo añade a la spec las enmiendas de redacción que el Scope anunció.
-5. **Los topes de palabras se miden al escribir cada skill** (T4 a T6) y T7 los fija en `word-budget.test.ts` con lo medido + 2 %; la spec ya los propone (8450, 2625, 8221, 2781) y el dev-lead los aprobó al aprobarla.
+5. **Los topes de palabras se miden al escribir cada skill** (T4 a T6) y T7 los fija en `word-budget.test.ts` con lo medido + 2 %; la spec ya los propone (`sdd-validate` 1735 y 655; `sdd-archive` 8450 y 2625) y el dev-lead los aprobó al aprobarla.
 6. **Gate de cierre**: el de `operations.md` §Testing, literal en §3. `kit:test-headless` corre porque cambia `skills/`.
 7. **Coste**: ~86 $ de sujetos (tabla de la spec); si T3 o T8 lo superan, se para y decide el dev-lead. Horas: ver «Estimación y esfuerzo».
-8. **Riesgos altos**: mover dos referencias de `sdd-archive` a `sdd-implement` rompe enlaces y anclas (T4 y T6 lo comprueban con `skills.test.ts`); la batería de `sdd-archive` entera pide `Validado:` en sus moldes (T2).
+8. **Riesgos altos**: mover dos referencias de `sdd-archive` a `sdd-validate` rompe enlaces y anclas, y copiar los moldes de la validación a la batería nueva puede dejar uno sin su fixture (T1) (T4 y T6 lo comprueban con `skills.test.ts`); la batería de `sdd-archive` entera pide `Validado:` en sus moldes (T2).
 9. **Review Focus** resumido: moldes sin `Validado:`, validación diferida, arreglo en «Sin filtro», rojo tras el commit de cierre, enlaces de las referencias movidas.
 
-**Goal**: el final de `sdd-implement` lleva gate, guion recorrido, revisión final y validación del dev-lead; `sdd-archive` solo comprueba que la validación está registrada y cierra.
+**Goal**: la skill nueva `sdd-validate` lleva gate, guion recorrido, revisión final y validación del dev-lead; `sdd-archive` solo comprueba que la validación está registrada y cierra.
 
-**Architecture**: la validación (tres modos, guion, bucle de vuelta) pasa de `skills/sdd-archive/` a `skills/sdd-implement/`; `sdd-archive` conserva el cierre y la suite del merge de sincronización. Cada skill editada lleva su batería (Art. I): escenarios nuevos `vf1`…`vf7` y `av1`, `av2`, y los 10 de la validación movidos con id nuevo.
+**Architecture**: la validación (tres modos, guion, bucle de vuelta) pasa de `skills/sdd-archive/` a `skills/sdd-validate/`, que `sdd-implement` invoca al acabar la última task; `sdd-archive` conserva el cierre y la suite del merge de sincronización. Cada skill editada lleva su batería (Art. I): escenarios nuevos `vf1`…`vf7` y `av1`, `av2`, en la batería nueva de `sdd-validate`, `av1` y `av2` en la de `sdd-archive`, y los 10 de la validación movidos a la nueva con su id.
 
 **Tech Stack**: Markdown de skills (inglés), baterías de `tests/batteries/` con `tests/headless/battery.mjs`, Vitest en `cli/test/kit/`, moon (`kit:build`, `kit:own`, `kit:skill-size`, `kit:copies`).
 
@@ -41,8 +41,8 @@ created: 2026-11-24
 - Sin comentarios que citen documentos: un comentario nunca referencia la constitution, una spec, una task, un requisito ni `capabilities/`.
 - Clean Code: nombres descriptivos en inglés, funciones ≤ 20 líneas y ≤ 3 parámetros, early returns, sin duplicación; texto humano (mensajes, ayuda) en castellano con tildes.
 - Las skills y sus referencias se escriben en inglés (`kit:own` rechaza castellano en `skills/`); antes de editar una skill, carga `sdd-agent-writing`.
-- Ningún `SKILL.md` de 20.000 bytes o más; los topes de `cli/test/kit/word-budget.test.ts` solo suben a los valores de la spec: `sdd-archive` 8450 total y 2625 `SKILL.md`, `sdd-implement` 8221 total y 2781 `SKILL.md`; `sdd-implement-native` y `sdd-implement-subagent` no cambian.
-- La skill de `sdd-implement` no nombra Playwright, `validation-script` ni ningún proyecto concreto: el cómo se recorre el guion es del proyecto.
+- Ningún `SKILL.md` de 20.000 bytes o más; los topes de `cli/test/kit/word-budget.test.ts` solo suben a los valores de la spec: `sdd-archive` 8450 total y 2625 `SKILL.md`, `sdd-validate` 1735 total y 655 `SKILL.md`; `sdd-implement`, `sdd-implement-native` y `sdd-implement-subagent` no cambian.
+- La skill `sdd-validate` y sus referencias no nombran Playwright, `validation-script` ni ningún proyecto concreto: el cómo se recorre el guion es del proyecto.
 - `kit:build` regenera `dist/`; se edita `skills/`, nunca `dist/`.
 
 ### De proceso
@@ -53,8 +53,8 @@ created: 2026-11-24
 
 ## Review Focus
 
-- Un molde de `sdd-archive` sin `Validado:` → devuelve el trabajo a `sdd-implement` sin escribir nada · Task 2, escenario `av1`
-- Una validación diferida o sin respuesta del dev-lead → registra `Validación diferida:` y pasa a `sdd-archive`, o espera en `sdd-implement` · Task 1, escenario `vf4`
+- Un molde de `sdd-archive` sin `Validado:` → devuelve el trabajo a `sdd-validate` sin escribir nada · Task 2, escenario `av1`
+- Una validación diferida o sin respuesta del dev-lead → registra `Validación diferida:` y pasa a `sdd-archive`, o espera en `sdd-validate` · Task 1, escenario `vf4`
 - Un arreglo del guion que toca un fichero de «Sin filtro» → el gate corre sin filtro · Task 1, escenario `vf6`
 - Un rojo de la rama tras el commit de cierre → vuelve a `sdd-implement`, y al volver `sdd-archive` rehace el commit de cierre y repite el sync · Task 2, escenario `av2`
 - Las referencias movidas (`validation-modes.md`, `dev-validation.md`) → ningún enlace ni ancla roto en `skills/`, `dist/` ni `tests/` · Tasks 4 y 6, `cli/test/kit/skills.test.ts` y `skills-3x-paths.test.ts`
@@ -63,7 +63,7 @@ created: 2026-11-24
 
 ## Phase -1 — Pre-Implementation Gates
 
-- [x] **Simplicity gate**: el cambio mueve y reescribe texto existente; la única pieza nueva es una sección corta de `sdd-implement` y un test pequeño.
+- [x] **Simplicity gate**: el cambio mueve y reescribe texto existente; la única pieza nueva es una skill corta, `sdd-validate`, y un test pequeño.
 - [x] **YAGNI gate**: no se añade herramienta ni configuración nueva; el bucle reutiliza «Running a gate» de `sdd-verify`.
 - [x] **Brownfield gate**: retrocompatible con los proyectos (`sdd-kit.json` sin claves nuevas); los enlaces movidos se comprueban.
 - [x] **Constitution check**: Art. I (RED antes del texto, previsión de coste, una pieza entra otra sale), Art. III (inglés en skills), Art. XI (ADR nueva, spec y capabilities con su dueño).
@@ -76,20 +76,22 @@ created: 2026-11-24
 
 **Crear**:
 
+- `skills/sdd-validate/SKILL.md` — la skill nueva: gate, guion recorrido, revisión final, validación del dev-lead y bucle de vuelta a `sdd-implement`.
+- `tests/batteries/sdd-validate/` — su batería (`battery.md`, `subject.mjs`, `fixtures/`), con los escenarios nuevos y los 10 movidos desde `sdd-archive`.
 - `.docs/sdd/decisions/0043-validation-in-implementation.md` — ADR: la validación es parte de la implementación; sustituye a la 0040 en el disparador de la revisión final.
 - `tests/validation-in-implement-red.md`, `tests/validation-in-implement-green.md` y las carpetas `red/` y `green/` de la spec — evidencia de la campaña.
-- `cli/test/kit/validation-project-neutral.test.ts` — el test de que `skills/sdd-implement/` no nombra herramientas ni proyectos.
+- `cli/test/kit/validation-project-neutral.test.ts` — el test de que `skills/sdd-validate/` no nombra herramientas ni proyectos.
 
 **Modificar**:
 
-- `skills/sdd-implement/SKILL.md` — sección «Validation» y red flag; línea del gate (:58) y enlace de `dev-validation.md` (:54).
-- `skills/sdd-implement/references/validation-modes.md` y `dev-validation.md` — movidos desde `skills/sdd-archive/references/` con `git mv`; sus enlaces y «step 1 of `sdd-archive`» se reescriben.
-- `skills/sdd-implement/references/patch-flow.md`, `frontend-verification.md` (:38) y `commit-milestones.md` (:11) — el patch valida aquí; nombre del sitio.
+- `skills/sdd-implement/SKILL.md` — «After the last task» solo invoca `sdd-validate`; línea del gate (:58) y enlace de `dev-validation.md` (:54).
+- `skills/sdd-validate/references/validation-modes.md` y `dev-validation.md` — movidos desde `skills/sdd-archive/references/` con `git mv`; sus enlaces y «step 1 of `sdd-archive`» se reescriben.
+- `skills/sdd-implement/references/patch-flow.md`, `frontend-verification.md` (:38) y `commit-milestones.md` (:11) — el patch valida en `sdd-validate`; nombre del sitio.
 - `skills/sdd-implement-native/SKILL.md` (:99, :124, :290, :303) y `skills/sdd-implement-subagent/SKILL.md` (:75, :101) — el pase a `sdd-archive` va tras la validación registrada; los ejes salen tras el gate y el guion.
 - `skills/sdd-verify/SKILL.md` («Running a gate», punto 1) y `references/closing-the-review.md` — nombre del sitio.
 - `skills/sdd-archive/SKILL.md` (paso 1, pasos 6 y 7, red flags), `references/closing-suite.md`, `final-review-check.md`, `merge-recipe.md:9`.
 - `skills/sdd-propose/references/control-profiles.md` (:60, :86, :150) y `skills/sdd-templates/` (`SKILL.md:24`, `templates/validation-template.md:3,11`, `templates/patch-template.md:63`).
-- `tests/batteries/sdd-implement/battery.md` y `tests/batteries/sdd-archive/battery.md` con sus moldes; `tests/dev-validation-green.md` (el enlace).
+- `tests/batteries/sdd-validate/battery.md` y `tests/batteries/sdd-archive/battery.md` con sus moldes; `tests/dev-validation-green.md` (el enlace).
 - `cli/test/kit/word-budget.test.ts` — topes de la spec con lo medido.
 - `.docs/workflow/greenfield.md:75` y `usage-guide.md:159,182,197`, con su marcador «Última revisión».
 - `spec.md` de esta carpeta — enmiendas de redacción de capacidades (Task 7).
@@ -129,23 +131,24 @@ Ninguna.
 
 Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada una.
 
-### Task 1 — Batería de `sdd-implement`: escenarios nuevos y movidos
+### Task 1 — Batería nueva de `sdd-validate`: escenarios, moldes y los que se mueven
 
 **Tras**: —
-**Modelo**: el hilo en Native (Sonnet, effort medium): filas de tabla y rúbricas con los literales de la spec.
+**Modelo**: el hilo en Native (Sonnet, effort medium): copia de moldes y filas de tabla con los literales de la spec.
 **Tests RED**: n/a — la task escribe los escenarios que T3 corre en RED.
 **Superficies**: tooling, docs
-**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-implement/battery.md` → `suma: 14 sujetos` y `SCENARIOS="vg1 vg2 vg3 vg4 vv1a vv1b vse1 vt1 vt2 vt3" N=1 node tests/headless/battery.mjs plan tests/batteries/sdd-implement/battery.md` → `suma: 10 sujetos`
+**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-validate/battery.md` → `suma: 14 sujetos` y `SCENARIOS="g1 g2 g3 g4 v1a v1b se1 t1 t2 t3" N=1 node tests/headless/battery.mjs plan tests/batteries/sdd-validate/battery.md` → `suma: 10 sujetos`
 **Interfaces**:
-- Consume: los ids vigentes de `tests/batteries/sdd-archive/battery.md:90-99` (`g1 g2 g3 g4 v1a v1b se1 t1 t2 t3`) y sus moldes (`reservas-ui`, `reservas-campo`, `reservas-decision`, `reservas-valida-en`, `reservas-conf*`, `reservas-start`, `salas-report`).
-- Produce: filas `vf1`…`vf7` (Id, Paso `validation-end`, Petición «Invoca la skill sdd-kit:sdd-implement y sigue. …», Molde, Esperado `sdd-kit:sdd-implement`, n 2, Umbral 2/2, Modelo sonnet, Procedencia «feature 0362 …») y las 10 filas movidas con id `vg1`, `vg2`, `vg3`, `vg4`, `vv1a`, `vv1b`, `vse1`, `vt1`, `vt2`, `vt3` y la procedencia de su fila de origen; sus rúbricas en la sección «Rúbrica».
+- Consume: las filas `g1 g2 g3 g4 v1a v1b se1 t1 t2 t3` de `tests/batteries/sdd-archive/battery.md:90-99` y sus moldes de `tests/batteries/sdd-archive/subject.mjs` (`moldReservas`, `done0010`, `done0008`, `report0008`, `doneConfig0020`, `manualValidation`, `e2eSuite`, `startEnv`, y los moldes por nombre `reservas-ui`, `reservas-campo`, `reservas-decision`, `reservas-valida-en`, `reservas-e2e-manual`, `reservas-config-manual`, `reservas-config-agent`, `reservas-start`, `reservas-start-down`, `salas-report`, `salas-patch`); las fixtures de `tests/batteries/sdd-implement/fixtures/` que ya usa la de `sdd-archive`.
+- Produce: `tests/batteries/sdd-validate/` con `battery.md` (cabecera y columnas como la de `sdd-archive`), `subject.mjs` (el montaje y solo los moldes de arriba) y `fixtures/` si hacen falta; las 10 filas movidas con su id y su procedencia, la petición reescrita para `sdd-validate` y su rúbrica; y las filas nuevas `vf1`…`vf7` (Paso `validation`, Petición «Invoca la skill sdd-kit:sdd-validate y sigue. …», Molde, Esperado `sdd-kit:sdd-validate`, n 2, Umbral 2/2, Modelo sonnet, Procedencia «feature 0362 …»).
 
-**Ficheros**: modificar `tests/batteries/sdd-implement/battery.md`; crear moldes `reservas-final*` en `tests/batteries/sdd-implement/fixtures/` solo si ningún molde vigente sirve.
+**Ficheros**: crear `tests/batteries/sdd-validate/battery.md`, `tests/batteries/sdd-validate/subject.mjs`; copiar los moldes sin cambiarlos, salvo su nombre de fichero de salida.
 
-- [ ] **Step 1: Escenarios nuevos** — un escenario por línea de «Dónde se prueba» de la spec: `vf1` orden gate → guion → revisión → dev-lead (se mide por la secuencia de comandos); `vf2` «el paso 3 falla» tras la presentación: task con test que falla antes, y corre el test, el gate con `--base <sha del último verde>`, el paso tocado y la revisión del diff, no el gate entero; `vf3` un paso que falla al recorrer el guion, la vuelta sin revisión propia; `vf4` «lo pruebo mañana en la primera exportación, a cargo del dev-lead»: registra `Validación diferida:` y pasa a `sdd-archive`; `vf5` patch sobre `salas-patch`: gate, guion y dev-lead sin ejes, y su vuelta pasa por el revisor Sonnet de §4; `vf6` un arreglo que toca `package.json`: el gate corre sin filtro; `vf7` fallo de la revisión final: pasada de fix, después gate con `--base` y pasos del guion, sin revisión de vuelta. Cada rúbrica lleva sus C1…Cn con el literal esperado.
-- [ ] **Step 2: Escenarios movidos** — copia las 10 filas de la validación con id nuevo (`g1`→`vg1`, `g2`→`vg2`, `g3`→`vg3`, `g4`→`vg4`, `v1a`→`vv1a`, `v1b`→`vv1b`, `se1`→`vse1`, `t1`→`vt1`, `t2`→`vt2`, `t3`→`vt3`), con la petición reescrita para `sdd-implement` («Las tasks de la 0010 están acabadas y su revisión final está limpia: sigue») y la rúbrica adaptada; la procedencia conserva el id viejo.
-- [ ] **Step 3: Previsión** — corre los dos comandos de «Verificación» y comprueba las líneas `suma:` esperadas.
-- [ ] **Step 4: Commit de la task** — `test(sdd-implement): escenarios de la validación al final de la implementación`, referenciando la 0362.
+- [ ] **Step 1: Esqueleto** — crea `tests/batteries/sdd-validate/` con `battery.md` (cabecera, «Montaje por escenario», «Escenarios», «Rúbrica», «Procedencia de las reglas») y `subject.mjs` calcando las líneas 1-130 de `tests/batteries/sdd-archive/subject.mjs` (constantes, `moldReservas`, `open0010`, `done0010`, `manualValidation`); `BATTERY=sdd-validate` es su nombre.
+- [ ] **Step 2: Escenarios movidos** — copia al `battery.md` nuevo las 10 filas `g1 g2 g3 g4 v1a v1b se1 t1 t2 t3` con su id, su molde y su procedencia, la petición reescrita («Invoca la skill sdd-kit:sdd-validate y sigue. Las tasks de la 0010 están acabadas y su revisión final está limpia: sigue.») y la rúbrica adaptada; copia a `subject.mjs` los moldes de «Consume» que usan, y nada más.
+- [ ] **Step 3: Escenarios nuevos** — un escenario por línea de «Dónde se prueba» de la spec: `vf1` orden gate → guion → revisión → dev-lead (se mide por la secuencia de comandos); `vf2` «el paso 3 falla» tras la presentación: devuelve el control a `sdd-implement`, task con test que falla antes, y corre el test, el gate con `--base <sha del último verde>`, el paso tocado y la revisión del diff, no el gate entero; `vf3` un paso que falla al recorrer el guion, la vuelta sin revisión propia; `vf4` «lo pruebo mañana en la primera exportación, a cargo del dev-lead»: registra `Validación diferida:` y pasa a `sdd-archive`; `vf5` patch sobre `salas-patch`: gate, guion y dev-lead sin ejes, y su vuelta pasa por el revisor Sonnet de §4; `vf6` un arreglo que toca `package.json`: el gate corre sin filtro; `vf7` fallo de la revisión final: pasada de fix, después gate con `--base` y pasos del guion, sin revisión de vuelta. Cada rúbrica lleva sus C1…Cn con el literal esperado.
+- [ ] **Step 4: Previsión** — corre los dos comandos de «Verificación» y comprueba las líneas `suma:` esperadas.
+- [ ] **Step 5: Commit de la task** — `test(sdd-validate): batería nueva de la validación con los escenarios movidos`, referenciando la 0362.
 
 ### Task 2 — Batería de `sdd-archive`: sin validación, con `Validado:` y la reentrada
 
@@ -155,7 +158,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Superficies**: tooling, docs
 **Verificación**: `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-archive/battery.md` → `suma: 4 sujetos` y `SCENARIOS="a3 a3r a3a a5" N=2 node tests/headless/battery.mjs plan tests/batteries/sdd-archive/battery.md` → `suma: 8 sujetos`
 **Interfaces**:
-- Consume: los ids movidos de Task 1 (`vg1`…`vt3`) para retirar sus filas de esta batería.
+- Consume: los ids movidos de Task 1 (`g1`…`t3`) para retirar sus filas de esta batería.
 - Produce: `av1` (molde `reservas` sin `Validado:`, «Invoca la skill sdd-kit:sdd-archive y sigue. La 0010 está implementada y su revisión final está limpia. Ciérrala.»: devuelve el trabajo a `sdd-implement` sin escribir nada), `av2` (molde `reservas-red`, con `Validado:` y commit de cierre hecho, un rojo de la rama tras `sdd merge --sync`: devuelve a `sdd-implement`; al volver rehace el commit de cierre y repite el sync); `a3r` con su C1 cambiado a «devuelve el trabajo a `sdd-implement`»; los moldes de cierre (`reservas*`, `salas*`) con un borrador de `walkthrough.md` que lleva `Validado: 2026-11-24 · «probé reservar y cancelar y funciona»` (en `salas-*`, `patch.md` §4).
 
 **Ficheros**: modificar `tests/batteries/sdd-archive/battery.md`; modificar los moldes de `tests/batteries/sdd-archive/fixtures/` y de `tests/batteries/using-sdd/mold-salas` que usa la batería, salvo el molde de `av1`.
@@ -172,7 +175,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: el hilo en Native (Sonnet, effort medium); sujetos en Sonnet.
 **Tests RED**: la propia campaña: `vf1`…`vf7` y `av1`, `av2`, con el texto vigente de las skills.
 **Superficies**: docs, tooling
-**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-implement/battery.md` y `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-archive/battery.md` → cada escenario con sus C1…Cn evaluados en `tests/validation-in-implement-red.md`; el RED vale si cada escenario falla por la rúbrica esperada
+**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md` y `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-archive/battery.md` → cada escenario con sus C1…Cn evaluados en `tests/validation-in-implement-red.md`; el RED vale si cada escenario falla por la rúbrica esperada
 **Interfaces**:
 - Consume: los escenarios de Task 1 y 2 y la sección «Lanzamiento» de `operations.md` §Cómo se testean las skills (`RUNS_DIR` corto en `.temp/`, copia limpia del kit).
 - Produce: `tests/validation-in-implement-red.md` con una fila por escenario (veredicto por criterio) y la carpeta `red/` de la spec con el molde, los ficheros de cada sujeto y el `git status` de cada run.
@@ -184,44 +187,45 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - [ ] **Step 3: Leer** — evalúa cada criterio con la rúbrica de su escenario; un escenario cuyo texto vigente ya cumple la rúbrica se para: esa guidance no se escribe y se dice al dev-lead.
 - [ ] **Step 4: Evidencia y commit** — escribe `tests/validation-in-implement-red.md` y versiona `red/`; commit `test: RED de la validación al final de sdd-implement`.
 
-### Task 4 — `sdd-implement`: el final lleva la validación
+### Task 4 — `sdd-validate`: la skill nueva
 
 **Tras**: Task 3
-**Modelo**: el hilo en Native (Sonnet, effort medium).
+**Modelo**: el hilo en Native (Sonnet, effort medium); antes de escribir la skill, carga `sdd-agent-writing`.
 **Tests RED**: los escenarios `vf1`…`vf7` de Task 1, en RED desde Task 3.
 **Superficies**: docs
-**Verificación**: `moon run kit:build` y, desde `cli/`, `pnpm exec vitest run test/kit/skills.test.ts test/kit/skills-3x-paths.test.ts test/kit/skill-size.test.ts test/kit/validation-project-neutral.test.ts` → `Tests  N passed (N)`; los dos primeros ficheros no se pierden por enlaces rotos de las referencias movidas
+**Verificación**: `moon run kit:build` y, desde `cli/`, `pnpm exec vitest run test/kit/skills.test.ts test/kit/skills-3x-paths.test.ts test/kit/skill-size.test.ts test/kit/validation-project-neutral.test.ts` → `Tests  N passed (N)`; los dos primeros no se pierden por enlaces rotos de las referencias movidas
 **Interfaces**:
-- Consume: «Running a gate» de `sdd-verify` y la sección «When the axes return» de `sdd-implement` (no cambian).
-- Produce: en `skills/sdd-implement/SKILL.md`, la sección `## Validation` y el red flag «You're about to invoke `sdd-archive` without the validation recorded»; en `skills/sdd-implement/references/`, `validation-modes.md` y `dev-validation.md` con sus enlaces corregidos.
+- Consume: «Running a gate» de `sdd-verify` y la sección «When the axes return» de `sdd-implement` (no cambian); la sección de Approach de la spec («El orden de `sdd-validate`», «El bucle de vuelta»).
+- Produce: `skills/sdd-validate/SKILL.md` (frontmatter `name: sdd-validate`, `description: Use when sdd-implement has finished its last task …`) con el orden, el bucle, el registro y los red flags, y `skills/sdd-validate/references/validation-modes.md` y `dev-validation.md` con sus enlaces corregidos.
 
-**Ficheros**: modificar `skills/sdd-implement/SKILL.md`, `references/patch-flow.md`, `references/frontend-verification.md`, `references/commit-milestones.md`; mover `skills/sdd-archive/references/validation-modes.md` y `dev-validation.md` a `skills/sdd-implement/references/`.
+**Ficheros**: crear `skills/sdd-validate/SKILL.md` y `cli/test/kit/validation-project-neutral.test.ts`; mover `skills/sdd-archive/references/validation-modes.md` y `dev-validation.md` a `skills/sdd-validate/references/`; modificar `skills/sdd-implement/references/patch-flow.md`, `frontend-verification.md` y `commit-milestones.md`; modificar `cli/test/kit/word-budget.test.ts` (entrada nueva).
 
-- [ ] **Step 1: Mover** — `git mv skills/sdd-archive/references/validation-modes.md skills/sdd-implement/references/validation-modes.md` y lo mismo con `dev-validation.md`; en `validation-modes.md` cambia el enlace `closing-suite.md#in-the-validation` por `../../sdd-archive/references/closing-suite.md#what-runs`, «Step 1 of `sdd-archive`» por «The end of `sdd-implement`», y conserva las marcas `<!-- kit: incluye … -->`; en `dev-validation.md`, «(step 1 of `sdd-archive`)» por «(the end of `sdd-implement`)».
-- [ ] **Step 2: La sección** — añade a `skills/sdd-implement/SKILL.md`, entre «After the last task» y «Red flags», `## Validation` con estas frases: «After the last task, in this order, and `sdd-archive` is not invoked until the validation is recorded: 1. the closing gate, once (the project's, filtered by what the branch affects, whole only with a file of «Sin filtro»); 2. you walk the dev's script step by step, as the person will, and fix what fails in a task with its test (how the project walks it is the project's); 3. the final review of the axes, on what is already validated, as «When the axes return» says; 4. the dev's validation, per its mode: first thing, read [validation-modes.md](references/validation-modes.md); 5. the record in the draft walkthrough (in a patch, `patch.md` §4), and then `sdd-archive`. A failure of 2, 3 or 4 goes back to a task with its test and each turn runs only what the fix touches: the tests that failed or are born, the gate with `--base <sha of the last green>`, the script steps it touches and, if the turn comes after the final review, one review of its diff by `sdd-kit:effort-high` + `sonnet`. With a validation deferred or unanswered, record `Validación diferida:` and go on, or wait.»
-- [ ] **Step 3: Frases que cambian** — en `SKILL.md` línea del gate: «runs at the baseline of `sdd-worktrees` and once, at the end of the tasks (see Validation), never inside a task»; el enlace de `dev-validation.md` pasa a `references/dev-validation.md`; «When the axes return» pasa a empezar «After the gate and the script»; en `patch-flow.md`, el final del patch sigue gate, guion y dev-lead (sin ejes) y registra en §4; en `frontend-verification.md:38`, «the validation of `sdd-archive`» pasa a «the validation at the end of `sdd-implement`»; en `commit-milestones.md:11`, los arreglos de la validación ya están en el hito de su task.
-- [ ] **Step 4: Red flag** — añade a la tabla y a la lista de `SKILL.md` el red flag y su excusa («The user is away, close and ask later» → «A validation not recorded sends the work back here»).
-- [ ] **Step 5: Test de neutralidad** — crea `cli/test/kit/validation-project-neutral.test.ts` con `it('does not name project tools in sdd-implement')`: lee `skills/sdd-implement/**/*.md` y `expect(text).not.toMatch(/playwright|validation-script|document-manager/i)` salvo en `references/frontend-verification.md`, que ya nombra Playwright y se excluye por nombre.
-- [ ] **Step 6: Build y verificación** — corre `moon run kit:build` y los tests de «Verificación»; mide con el conteo del test las palabras de `sdd-implement` y anótalas en el ledger; sobre el tope de la spec (8221 total, 2781 `SKILL.md`), mueve la regla a una referencia.
-- [ ] **Step 7: Commit de la task** — `feat(sdd-implement): la validación pasa al final de la implementación`.
+- [ ] **Step 1: Mover** — `git mv skills/sdd-archive/references/validation-modes.md skills/sdd-validate/references/validation-modes.md` y lo mismo con `dev-validation.md`; en `validation-modes.md` cambia el enlace `closing-suite.md#in-the-validation` por `../../sdd-archive/references/closing-suite.md#what-runs`, «Step 1 of `sdd-archive`» por «`sdd-validate`», y conserva las marcas `<!-- kit: incluye … -->`; en `dev-validation.md`, «(step 1 of `sdd-archive`)» por «(`sdd-validate`)».
+- [ ] **Step 2: La skill** — `skills/sdd-validate/SKILL.md` en inglés, con descripción «Use when sdd-implement has finished its last task, or a patch its fix, to run the gate, walk the dev's script, run the final review and take the dev's validation before the close; not the entry of a change (that is sdd-propose), and not the final review's evidence rules (that is sdd-verify)». El cuerpo: «After the last task, in this order, and `sdd-archive` is not invoked until the validation is recorded: 1. the closing gate, once (the project's, filtered by what the branch affects, whole only with a file of «Sin filtro»); 2. you walk the dev's script step by step, as the person will (how the project walks it is the project's); 3. the final review of the axes, on what is already validated: invoke `sdd-verify` with `Skill` and follow its «Closing the review»; 4. the dev's validation, per its mode: first thing, read [validation-modes.md](references/validation-modes.md); 5. the record in the draft walkthrough (in a patch, `patch.md` §4), and then `sdd-archive`. A failure of 2, 3 or 4 goes back to `sdd-implement` as a new task at the end of the plan with its test (RED → GREEN), and then back here; each turn runs only what the fix touches: the tests that failed or are born, the gate with `--base <sha of the last green>`, the script steps it touches and, if the turn comes after the final review, one review of its diff by `sdd-kit:effort-high` + `sonnet`. With a validation deferred or unanswered, record `Validación diferida:` and go on, or wait.» Más los «Closing drafts» y la vigilancia de silencio que hoy están en «After the last task» de `sdd-implement` y un red flag con su excusa («The user is away, close and ask later» → «A validation not recorded sends the work back here»). `sdd-implement` conserva «After the last task» solo para invocarla (Task 5).
+- [ ] **Step 3: Frases que cambian** — en `patch-flow.md`, el final del patch invoca `sdd-validate` (gate, guion y dev-lead, sin ejes) y registra en §4; en `frontend-verification.md:38`, «the validation of `sdd-archive`» pasa a «the validation of `sdd-validate`»; en `commit-milestones.md:11`, los arreglos de la validación ya están en el hito de su task.
+- [ ] **Step 4: Test de neutralidad** — crea `cli/test/kit/validation-project-neutral.test.ts` con `it('does not name project tools in sdd-validate')`: lee `skills/sdd-validate/**/*.md` y `expect(text).not.toMatch(/playwright|validation-script/i)`.
+- [ ] **Step 5: Tope** — en `word-budget.test.ts` añade `'sdd-validate': { skillMd: 655, total: 1735 }`; mide con el conteo del test las palabras y, sobre el tope de la spec, mueve la regla a una referencia.
+- [ ] **Step 6: Build y verificación** — corre `moon run kit:build` y los tests de «Verificación».
+- [ ] **Step 7: Commit de la task** — `feat(sdd-validate): la validación pasa a una skill propia`.
 
-### Task 5 — Métodos Native y SDD: el pase a `sdd-archive` y el disparador de los ejes
+### Task 5 — `sdd-implement` y sus métodos: el pase a `sdd-validate`
 
 **Tras**: Task 4
 **Modelo**: el hilo en Native (Sonnet, effort medium).
-**Tests RED**: los escenarios `vf1` y `vf7`.
+**Tests RED**: los humos `h1` y `h2` de la batería de `sdd-implement` (su rúbrica pasa a «invoca `sdd-validate`»), y `vf1`.
 **Superficies**: docs
-**Verificación**: `moon run kit:build` y, desde `cli/`, `pnpm exec vitest run test/kit/skills.test.ts test/kit/word-budget.test.ts` → `Tests  N passed (N)`; `sdd-implement-native` ≤ 3038 y `sdd-implement-subagent` ≤ 8462 palabras
+**Verificación**: `moon run kit:build` y, desde `cli/`, `pnpm exec vitest run test/kit/skills.test.ts test/kit/word-budget.test.ts` → `Tests  N passed (N)`; `sdd-implement` ≤ 6626 y `sdd-implement-native` ≤ 3038 y `-subagent` ≤ 8462 palabras
 **Interfaces**:
-- Consume: la sección `## Validation` de Task 4.
-- Produce: en `sdd-implement-native/SKILL.md:303`, «Then, with the validation recorded as `sdd-implement`'s Validation says, invoke `sdd-archive` with `Skill`.»; las etiquetas del diagrama de las dos skills pasan de `sdd-archive (validation)` a `sdd-archive`, y su flecha parte de «Validation recorded»; el disparador de los ejes dice «after the closing gate and the script are green on that sha».
+- Consume: el nombre `sdd-validate` y su descripción de Task 4.
+- Produce: en `sdd-implement/SKILL.md`, «After the last task» abre con «Invoke `sdd-validate` with `Skill`: the gate, the script, the final review and the dev's validation are its; a failure comes back here as a task»; en `sdd-implement-native/SKILL.md:303`, «Then invoke `sdd-validate` with `Skill`.»; las etiquetas del diagrama de las dos skills pasan de `sdd-archive (validation)` a `sdd-validate`.
 
-**Ficheros**: modificar `skills/sdd-implement-native/SKILL.md` y `skills/sdd-implement-subagent/SKILL.md`.
+**Ficheros**: modificar `skills/sdd-implement/SKILL.md`, `skills/sdd-implement-native/SKILL.md` (:99, :124, :290, :303), `skills/sdd-implement-subagent/SKILL.md` (:75, :101) y la rúbrica de `h1`/`h2` en `tests/batteries/sdd-validate/battery.md`.
 
-- [ ] **Step 1: Native** — cambia las líneas 99, 124, 290 y 303 como en «Produce» y, donde dice que los ejes salen con el commit de la última task, añade «once the closing gate and the script are green on it».
-- [ ] **Step 2: SDD** — cambia las líneas 75 y 101 del diagrama y el mismo disparador.
-- [ ] **Step 3: Verificación** — `kit:build` y los tests; cuenta palabras y deja `sdd-implement-native` y `-subagent` en su tope.
-- [ ] **Step 4: Commit de la task** — `feat(sdd-implement): los ejes salen tras el gate y el guion`.
+- [ ] **Step 1: `sdd-implement`** — «After the last task» deja solo la invocación de arriba (los «Closing drafts», la vigilancia de silencio y «When the axes return» pasaron a `sdd-validate`); la línea del gate (:58) dice «runs at the baseline of `sdd-worktrees` and once, in `sdd-validate`, never inside a task»; el enlace de `dev-validation.md` (:54) apunta a `../sdd-validate/references/dev-validation.md`.
+- [ ] **Step 2: Native y SDD** — cambia las líneas nombradas en «Produce»; en las dos skills, el final de la última task pasa a `sdd-validate`.
+- [ ] **Step 3: Rúbrica** — en `h1` y `h2` de `battery.md`, el criterio de la invocación siguiente pasa de `sdd-archive` a `sdd-validate`.
+- [ ] **Step 4: Verificación** — `kit:build` y los tests; cuenta palabras y deja las tres skills en su tope.
+- [ ] **Step 5: Commit de la task** — `feat(sdd-implement): al acabar la última task invoca sdd-validate`.
 
 ### Task 6 — `sdd-archive` y los textos que nombran la validación
 
@@ -231,15 +235,15 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Superficies**: docs
 **Verificación**: `moon run kit:build kit:own kit:skill-size kit:copies` → sin errores y, desde `cli/`, `pnpm exec vitest run test/kit/skills.test.ts test/kit/skills-3x-paths.test.ts test/kit/word-budget.test.ts` → `Tests  N passed (N)`; `sdd-archive` ≤ 8450 total y ≤ 2625 `SKILL.md`
 **Interfaces**:
-- Consume: los nombres de Task 4 (`validation-modes.md`, `dev-validation.md` en `sdd-implement/references/`).
-- Produce: el paso 1 de `sdd-archive` («Validation recorded») y los textos de las demás skills con «the end of `sdd-implement`».
+- Consume: los nombres de Task 4 (`validation-modes.md`, `dev-validation.md` en `sdd-validate/references/`).
+- Produce: el paso 1 de `sdd-archive` («Validation recorded») y los textos de las demás skills con «`sdd-validate`».
 
 **Ficheros**: modificar `skills/sdd-archive/SKILL.md`, `references/closing-suite.md`, `references/final-review-check.md`, `references/merge-recipe.md`; `skills/sdd-verify/SKILL.md` y `references/closing-the-review.md`; `skills/sdd-propose/references/control-profiles.md`; `skills/sdd-templates/SKILL.md`, `templates/validation-template.md`, `templates/patch-template.md`.
 
-- [ ] **Step 1: Paso 1** — sustituye el paso 1 «Validation» por: «1. **Validation recorded** — before touching anything: the draft walkthrough (in a patch, `patch.md` §4) carries `Validado:`, `Validación diferida:`, `Validación en campo:` or `Validación por el agente:`. Without one, say «falta la validación de la `<id>`», write nothing and send the work back to `sdd-implement`: the validation, its fixes and the final review are its. Nothing in the close fixes code: a red that is the branch's goes back there too.»; en el paso 0.6, «write nothing until that review is back and closed» pasa a «if it isn't back and closed, send the work back to `sdd-implement`»; borra los textos del modo `field`, `agente` y `manual` que ya viven en `validation-modes.md`.
+- [ ] **Step 1: Paso 1** — sustituye el paso 1 «Validation» por: «1. **Validation recorded** — before touching anything: the draft walkthrough (in a patch, `patch.md` §4) carries `Validado:`, `Validación diferida:`, `Validación en campo:` or `Validación por el agente:`. Without one, say «falta la validación de la `<id>`», write nothing and send the work back to `sdd-implement`: the validation, its fixes and the final review are its. Nothing in the close fixes code: a red that is the branch's goes back there too.»; en el paso 0.6, «write nothing until that review is back and closed» pasa a «if it isn't back and closed, send the work back to `sdd-implement`»; borra los textos del modo `field`, `agente` y `manual` que ya viven en `validation-modes.md`, y deja para un hotfix o un spike, que no pasan por `sdd-validate`, la rama de hoy del paso 1 (smoke y mensaje de `../../sdd-validate/references/validation-modes.md`, sin bucle).
 - [ ] **Step 2: Pasos 6 y 7, red flags** — en el paso 6, «The suite on the sync merge» y «A red suite» dicen que un rojo de la rama devuelve el trabajo a `sdd-implement`; en los red flags, «You're about to merge without step 1's record» pasa a «without the validation recorded».
 - [ ] **Step 3: `closing-suite.md`** — borra «In the validation», renombra «What runs» con el ancla `#what-runs` y quita «In `manual`, 1-2 run before the script»; «After the sync merge» pierde «No suite yet» y «the validation's suite» pasa a «the closing gate of the end of the tasks»; el 4.1 del walkthrough cita el sha de ese gate.
-- [ ] **Step 4: Referencias** — `final-review-check.md`: si falta una re-revisión, devuelve a `sdd-implement`; `merge-recipe.md:9`, «the validation's suite» pasa a «the closing gate»; `sdd-verify` «Running a gate» punto 1 dice «At the end of the tasks and in the close»; `closing-the-review.md:33` y `sdd-propose/references/control-profiles.md` (:60 «Validation (end of implementation of feature and patch)», :86, :150) y `sdd-templates` (`SKILL.md:24`, `validation-template.md:3,11`, `patch-template.md:63`) cambian «`sdd-archive`» por «`sdd-implement`» donde nombran quién presenta la validación.
+- [ ] **Step 4: Referencias** — `final-review-check.md`: si falta una re-revisión, devuelve a `sdd-validate`; `merge-recipe.md:9`, «the validation's suite» pasa a «the closing gate»; `sdd-verify` «Running a gate» punto 1 dice «At the end of the tasks and in the close»; `closing-the-review.md:33` y `sdd-propose/references/control-profiles.md` (:60 «Validation (end of implementation of feature and patch)», :86, :150) y `sdd-templates` (`SKILL.md:24`, `validation-template.md:3,11`, `patch-template.md:63`) cambian «`sdd-archive`» por «`sdd-validate`» donde nombran quién presenta la validación.
 - [ ] **Step 5: Build y verificación** — `moon run kit:build kit:own kit:skill-size kit:copies` y los tests de «Verificación»; mide palabras de `sdd-archive`; sobre el tope, recorta antes de seguir.
 - [ ] **Step 6: Commit de la task** — `refactor(sdd-archive): el cierre comprueba la validación y no la hace`.
 
@@ -252,14 +256,14 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Verificación**: `node dist/cli/bin/sdd.js decision check --path .docs/sdd` → exit 0 y, desde `cli/`, `pnpm exec vitest run test/kit/word-budget.test.ts test/kit/workflow-docs.test.ts test/kit/decision-routes.test.ts` → `Tests  N passed (N)`
 **Interfaces**:
 - Consume: lo medido en T4 a T6 y el texto de «Topes de palabras» de la spec.
-- Produce: la ADR `0043-validation-in-implementation.md` (status `accepted`, `rutas`: `skills/sdd-implement/**`, `skills/sdd-archive/**`), los topes en `word-budget.test.ts` y las líneas de «Enmiendas» de la spec.
+- Produce: la ADR `0043-validation-in-implementation.md` (status `accepted`, `rutas`: `skills/sdd-validate/**`, `skills/sdd-implement/**`, `skills/sdd-archive/**`), los topes en `word-budget.test.ts` y las líneas de «Enmiendas» de la spec.
 
 **Ficheros**: crear `.docs/sdd/decisions/0043-validation-in-implementation.md`; modificar `cli/test/kit/word-budget.test.ts`, `.docs/workflow/greenfield.md`, `.docs/workflow/usage-guide.md`, `tests/dev-validation-green.md` y `spec.md`.
 
 - [ ] **Step 1: ADR** — calca `adr-template.md`: contexto (la decisión 5 de la 0149 y `64a86577c` llevaron la validación al cierre; 10,8 ediciones de código por sesión tras la revisión final), opciones (A, B y C de la spec), decisión (la validación es parte de la implementación y sus arreglos no son del cierre), consecuencias, y `### Confirmación` con la orden que la comprueba (`git grep -n "step 1 of .sdd-archive" -- skills` sin resultados). Declara en el cuerpo que sustituye a la 0040 solo en el disparador de la revisión final; el `status` de la 0040 no cambia, porque la sustituye en un punto y no entera.
-- [ ] **Step 2: Topes** — en `word-budget.test.ts` pon `sdd-archive: { skillMd: 2625, total: 8450 }` y `sdd-implement: { skillMd: 2781, total: 8221 }`; si lo medido en T4 a T6 es menor, baja el tope a lo medido + 2 % (mínimo 20 palabras).
-- [ ] **Step 3: Docs del flujo** — en `greenfield.md:75` y `usage-guide.md:159,182,197`, la validación se presenta al terminar la implementación, antes de cerrar con `sdd-archive`; sube el marcador «Última revisión: kit vX.Y.Z» a la versión de `plugin.json`.
-- [ ] **Step 4: Enlace y enmiendas** — en `tests/dev-validation-green.md:3`, la ruta pasa a `skills/sdd-implement/references/dev-validation.md`; en la spec, línea de «Enmiendas»: «2026-11-24 — los requisitos de `closing-suite` («El walkthrough dice de dónde sale cada THEN», «La suite E2E del cierre…») y de `control-profiles` que dicen «el cierre» o «la validación» para el gate o el cierre se alinean con `MODIFIED` de redacción — lo anunció el Scope — aplica literal una decisión tomada con el dev-lead», y añade esos `MODIFIED` al delta copiando entero cada requisito vigente con solo esos cambios.
+- [ ] **Step 2: Topes** — en `word-budget.test.ts` pon `sdd-archive: { skillMd: 2625, total: 8450 }` y comprueba que la entrada `sdd-validate: { skillMd: 655, total: 1735 }` de T4 sigue vigente; si lo medido en T4 a T6 es menor, baja el tope a lo medido + 2 % (mínimo 20 palabras).
+- [ ] **Step 3: Docs del flujo y recuento** — en `README.md:3`, `PRODUCT.md:16` (con `sdd-validate` en su lista) y `CLAUDE.md:22`, «28 skills» pasa a «29 skills»; en `greenfield.md:75` y `usage-guide.md:159,182,197`, la validación se presenta al terminar la implementación, antes de cerrar con `sdd-archive`; sube el marcador «Última revisión: kit vX.Y.Z» a la versión de `plugin.json`.
+- [ ] **Step 4: Enlace y enmiendas** — en `tests/dev-validation-green.md:3`, la ruta pasa a `skills/sdd-validate/references/dev-validation.md`; en la spec, línea de «Enmiendas»: «2026-11-24 — los requisitos de `closing-suite` («El walkthrough dice de dónde sale cada THEN», «La suite E2E del cierre…») y de `control-profiles` que dicen «el cierre» o «la validación» para el gate o el cierre se alinean con `MODIFIED` de redacción — lo anunció el Scope — aplica literal una decisión tomada con el dev-lead», y añade esos `MODIFIED` al delta copiando entero cada requisito vigente con solo esos cambios.
 - [ ] **Step 5: Verificación y commit** — corre `capability merge` sobre una copia de `.docs/sdd` para comprobar que el delta enmendado fusiona, y los comandos de «Verificación»; commit `docs(sdd): ADR 0043, topes y docs del flujo de la validación`.
 
 ### Task 8 — GREEN, REFACTOR y controles
@@ -268,7 +272,7 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 **Modelo**: el hilo en Native (Sonnet, effort medium); sujetos en Sonnet.
 **Tests RED**: los de T3, ahora en GREEN.
 **Superficies**: docs, tooling
-**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-implement/battery.md`, `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-archive/battery.md`, `SCENARIOS="vg1 vg2 vg3 vg4 vv1a vv1b vse1 vt1 vt2 vt3" N=1 node tests/headless/battery.mjs run tests/batteries/sdd-implement/battery.md` y los controles `SCENARIOS="h1 h2 g1 a1" N=2` (`sdd-implement`) y `SCENARIOS="a3 a3r a3a a5" N=2` (`sdd-archive`) → cada escenario con su umbral; los de `vf*` y `av*` en 2/2
+**Verificación**: `SCENARIOS="vf1 vf2 vf3 vf4 vf5 vf6 vf7" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md`, `SCENARIOS="av1 av2" N=2 node tests/headless/battery.mjs run tests/batteries/sdd-archive/battery.md`, `SCENARIOS="g1 g2 g3 g4 v1a v1b se1 t1 t2 t3" N=1 node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md` y los controles `SCENARIOS="h1 h2 g1 a1" N=2` (`sdd-implement`) y `SCENARIOS="a3 a3r a3a a5" N=2` (`sdd-archive`) → cada escenario con su umbral; los de `vf*` y `av*` en 2/2
 **Interfaces**:
 - Consume: el texto final de T4 a T7 y la previsión de coste de la spec.
 - Produce: `tests/validation-in-implement-green.md`, la carpeta `green/` de la spec y, si un escenario no llega a su umbral, una tanda de REFACTOR (un cambio de texto y una nueva ronda de los escenarios que fallaron).
@@ -305,11 +309,11 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 
 ## 4. Self-review (cobertura spec → tasks)
 
-- `implementation` «El gate de cierre se ejecuta una vez» (THEN y los cuatro AND: una vez al acabar las tasks, no en la task, filtrado salvo «Sin filtro», tras el sync solo lo que cruza) → Task 4 (sección Validation) y Task 6 (`closing-suite.md`); `vf1`, `vf6`. ✓
-- `implementation` «El final de `sdd-implement` valida antes de pasar al cierre» (THEN orden, AND no invoca `sdd-archive`, AND paso del guion que falla, AND diferida o `unattended`, AND el kit fija el orden y no nombra herramienta, AND el registro) → Task 4; `vf1`, `vf3`, `vf4` y `validation-project-neutral.test.ts`. ✓
-- `implementation` «Un fallo de la validación vuelve a una task…» (task con test, qué corre, no el gate entero, «Sin filtro», fallo de la revisión final, revisión solo posterior a la revisión final, anterior sin revisión propia, tras la vuelta) → Task 4; `vf2`, `vf3`, `vf6`, `vf7`. ✓
-- `implementation` «Un patch sigue en `sdd-implement`…» y «La implementación la lleva `sdd-implement`» → Task 4 (`patch-flow.md`) y Task 5; `vf5`, `vf1`. ✓
-- `feature-flow` (cuatro `MODIFIED`: validar antes de cerrar, decisión sola, entorno parado, base al día) → Tasks 4 y 6 (textos de `validation-modes.md`, `dev-validation.md`, `validation-template.md`); `vv1a`, `vse1`, `vg3`, `vt1`. ✓
+- `implementation` «El gate de cierre se ejecuta una vez» (THEN y los cuatro AND: una vez al acabar las tasks, no en la task, filtrado salvo «Sin filtro», tras el sync solo lo que cruza) → Task 4 (la skill nueva) y Task 6 (`closing-suite.md`); `vf1`, `vf6`. ✓
+- `validation` «`sdd-validate` valida antes de pasar al cierre» (THEN orden, AND no invoca `sdd-archive`, AND paso del guion que falla, AND diferida o `unattended`, AND el kit fija el orden y no nombra herramienta, AND el registro) → Task 4; `vf1`, `vf3`, `vf4` y `validation-project-neutral.test.ts`. ✓
+- `validation` «Un fallo de la validación vuelve a una task…» (task con test, qué corre, no el gate entero, «Sin filtro», fallo de la revisión final, revisión solo posterior a la revisión final, anterior sin revisión propia, tras la vuelta) → Task 4; `vf2`, `vf3`, `vf6`, `vf7`. ✓
+- `implementation` «Un patch sigue en `sdd-implement`…» y «La implementación la lleva `sdd-implement`» → Task 4 (`patch-flow.md`) y Task 5 (la invocación de `sdd-validate`); `vf5`, `vf1`, `h1`, `h2`. ✓
+- `feature-flow` (cuatro `MODIFIED`: validar antes de cerrar, decisión sola, entorno parado, base al día) → Tasks 4 y 6 (textos de `validation-modes.md`, `dev-validation.md`, `validation-template.md`); `v1a`, `se1`, `g3`, `t1`. ✓
 - `archive` (cierre arranca con la validación registrada y no arregla código; rojo tras el commit de cierre; «Un rojo ajeno…»; reglas `Dónde viven los datos`, `Límites` y `Avisos`) → Task 6; `av1`, `av2`, `a3r`. ✓
 - `closing-suite` (REMOVED «Con otra rama abierta…», `MODIFIED` del sync, del gate entero, del rojo y de «Camino crítico») → Task 6 (`closing-suite.md`); controles `a3`, `a3a`, `a5`. ✓
 - `verification` (REMOVED y ADDED del disparador, `MODIFIED` de «Una re-revisión nunca abre otra», «El cierre no repite la revisión final», «La revisión se cierra una vez», «El kit no invoca las skills de superpowers…») → Tasks 5 y 6 (`final-review-check.md`, skills de método); `vf7`, `av1`. ✓
