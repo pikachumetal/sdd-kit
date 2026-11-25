@@ -215,9 +215,12 @@ Medido con el conteo de `cli/test/kit/word-budget.test.ts` (`split(/\s+/)`) sobr
 | Una tanda de REFACTOR | ídem | 4.24 |
 | Controles | `SCENARIOS="vf5 vf1" N=1` → la mitad de `suma: 4 sujetos · coste previsto: 4.24 $` | 2.12 |
 | Medición tras la revisión final | 0: la revisión no toca las skills si sale limpia; si las toca, repite GREEN | 0 |
-| Suma | 14 sujetos | 14.84 |
+| Vuelta de la validación (Task 4): `vf9`, `N=2` | 2 sujetos | 2.00 |
+| Suma | 16 sujetos | 16.84 |
 
 ## Enmiendas
+
+- 2026-11-25 — la previsión de coste gana la fila de la Task 4 (2 sujetos, 2 $) — la re-revisión dejó `vf9` en 1/2 frente al 2/2 del Intent y el dev-lead eligió una vuelta más — aprobada: «1» (respuesta a «Una vuelta más (Recomendada)… se pasa un poco de la previsión»)
 
 ## Aprobaciones
 

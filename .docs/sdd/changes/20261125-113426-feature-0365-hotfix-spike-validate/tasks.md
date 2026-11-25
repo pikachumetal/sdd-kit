@@ -12,3 +12,7 @@ title: Tasks — El hotfix y el spike también validan en sdd-validate
 | 3 | El hotfix valida como un patch y el cierre deja de validar | done | | vf8 GREEN 2/2; controles vf9 vf5 vf1 a4 |
 
 Revisión final: Spec opus+high, con arreglos · Código sonnet+high, con arreglos · Arquitectura no (plan), sobre 32060ca
+Pasada de fix: e08d609ac, 9 hallazgos (fix de skill y molde; vf9 relanzado 1/2)
+Re-revisión: 32060ca..e08d609, sdd-kit:effort-high + opus, quedan hallazgos (vf9 1/2 frente al 2/2 del Intent; paso a sdd-archive del spike sin observar)
+
+| 4 | enmienda 2026-11-25: registro del spike en el walkthrough y molde | done | | vuelta de sdd-validate |

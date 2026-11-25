@@ -234,3 +234,13 @@ Las tasks se ejecutan en orden, sin paralelo; `Tras` dice de cuál depende cada 
 - Tabla «Lo que se retira»: `sdd-archive/SKILL.md:27`, `validation-modes.md:3`, `patch-flow.md:24`, `closing-suite.md:7`, «A patch has no final review» → Tasks 2 y 3, `git grep` de cada frase en la Verificación de la Task 3. ✓
 - ADR 0043 → la escribe el cierre (decisión 11 de la spec). ✓
 - Review Focus (tres líneas) → Tasks 2 y 3, sin escenario propio. ✓
+
+### Task 4 — enmienda 2026-11-25: el spike registra en el borrador del walkthrough y su molde deja de hacer dudar
+
+**Tras**: Task 3
+**Modelo**: Native: la sesión.
+**Tests RED**: `vf9` tras la pasada de fix (1/2: `vf9-1` registra en `tasks.md`), en `fix/out/`.
+**Superficies**: docs (skills), tooling
+**Verificación**: `moon run kit:build kit:own`; `SCENARIOS="vf9" N=2 BATTERY=sdd-validate node tests/headless/battery.mjs run tests/batteries/sdd-validate/battery.md` → `VF9` 2/2.
+
+**Ficheros**: modificar `skills/sdd-validate/SKILL.md` («Order»: «5 goes in the draft walkthrough, never `tasks.md`»), `tests/batteries/sdd-archive/subject.mjs` (la spec del spike explica O3; `medir-libres.mjs` es una copia literal de `freeRooms`), `tests/batteries/sdd-validate/battery.md`.

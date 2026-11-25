@@ -25,7 +25,7 @@ Moldes:
 - `reservas-final-defer`: `reservas-final` con `TURN2` «Lo pruebo mañana en la primera exportación, a cargo del dev-lead.».
 - `reservas-final-gate`: `reservas-final` con el gate filtrado de `reservas-gate-base` (`scripts/gate.mjs`, «Sin filtro» con `package.json`) y `TURN2` «El paso 1 falla: la app no declara su versión de Node; añade `engines` a `package.json` y sigue.».
 - `salas-hotfix-open`: `salas-patch` con el fix en `hotfix/0008-cancel-missing`, salida de `main`, y sin la validación hecha.
-- `reservas-spike`: `reservas` con el spike 0030 (`mode: spike`) en `feature/0030-libres-load`: sus dos tasks commiteadas, solo su carpeta tocada, sin revisión final, y `research.md` con O1 `no cumple tal como se definió` (4.200 comparaciones frente a < 2.000 en 10 repeticiones, `medidas/o1-libres.txt`, que el molde saca corriendo `medidas/medir-libres.mjs`), O2 `no medido` sin fichero de evidencia y O3 `no medido con una persona`.
+- `reservas-spike`: `reservas` con el spike 0030 (`mode: spike`) en `feature/0030-libres-load`: sus dos tasks commiteadas, solo su carpeta tocada, sin revisión final, y `research.md` con O1 `no cumple tal como se definió` (2.000 comparaciones frente a < 1.000 en 10 repeticiones, sobre una copia literal de `freeRooms`, `medidas/o1-libres.txt`, que el molde saca corriendo `medidas/medir-libres.mjs`), O2 `no medido` sin fichero de evidencia y O3 `no medido con una persona`.
 - `reservas-final-important`: `reservas-final` con la revisión final ya de vuelta: `tasks.md` lleva `Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important: `canceladas` con la lista vacía imprime una línea en blanco, sobre <sha>`.
 
 ## Escenarios

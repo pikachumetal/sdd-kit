@@ -39,3 +39,14 @@ Molde en `.docs/sdd/changes/`, `VF9` endurecida (dónde registra y paso a `sdd-a
 | vf9-2 | pasa | sin gate, eje Spec solo, `Validación en campo:` en el borrador del walkthrough; la revisión del sujeto reabre O1 porque el script del molde mide un modelo de `libres` y no la función real (evidencia que no se sostiene: la regla lo devuelve con razón); para antes de `sdd-archive` por una pregunta sobre su spec |
 
 Defectos del molde que los sujetos vieron: la spec del spike dice `Validación: agente` y O3 pide una persona; `medir-libres.mjs` mide un modelo. Los dos sujetos paran antes de `sdd-archive` por esas dudas, así que el paso a `sdd-archive` sigue sin observarse. Sin segunda pasada de fix: quedan como rulings y van al ticket.
+
+## Task 4 (vuelta de la validación, enmienda 2026-11-25): `vf9`, `N=2`
+
+«Order» del spike: «5 goes in the draft walkthrough, never `tasks.md`»; molde con O3 explicado en la spec del spike y `medir-libres.mjs` como copia literal de `freeRooms` (2.000 comparaciones frente a < 1.000).
+
+| Sujeto | VF9 | Lectura |
+| --- | --- | --- |
+| vf9-1 | pasa | sin gate; Task 3 de O2 con «Evidencia»; eje Spec solo, pasada de fix y re-revisión; `Validación en campo:` en el borrador del walkthrough; deja `sdd-archive` a la orden del dev-lead |
+| vf9-2 | pasa (por la letra) | contrasta las filas y decide bien (O2 vuelve, O1 y O3 no), pero para a preguntar «¿Arranco la Task 3?» antes de volver a `sdd-implement`, contra el «without asking» de la regla, que ya existía; no llega a registrar |
+
+Ningún sujeto de las cuatro tandas invoca `sdd-archive` tras registrar: lo dejan a la orden del dev-lead. Va al ticket, con la pregunta de `vf9-2`.
