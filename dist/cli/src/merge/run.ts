@@ -6,6 +6,7 @@ import { commonDir, gitLines } from '../git/git.ts';
 import { withLock, type Lock } from '../git/lock.ts';
 import { checkDestination, withDestination, type DestinationRequest } from './destination.ts';
 import { checkHotfix, mergeHotfix, prepareHotfix } from './hotfix.ts';
+import { assertNoNumberingClash } from './numbering.ts';
 import { resolveMergePolicy, type MergePolicy } from './policy.ts';
 import {
   assertNothingPending,
@@ -181,10 +182,23 @@ async function destinationUnpublished(job: Job, where: Where): Promise<string[]>
   return unpublishedCommits(job.projectRoot, where.remote, where.into);
 }
 
+// Sin fetch: --check no toca nada, así que mira el seguimiento remoto tal como está.
+async function checkNumbering(root: string, branch: string, into: string): Promise<void> {
+  const remote = await remoteForBranch(root, into);
+  for (const destination of [into, ...(remote === null ? [] : [`${remote}/${into}`])]) {
+    if ((await gitLines(root, ['rev-parse', '--verify', '--quiet', `${destination}^{commit}`])).length === 0) continue;
+    await assertNoNumberingClash(root, { branch, destination, destinationName: destination });
+  }
+}
+
 async function mergeIntoIntegration(job: Job, lock: Lock): Promise<void> {
   const { projectRoot, branch, policy, options, io } = job;
   const destination = { projectRoot, into: policy.into, branch, warn: io.err };
-  if (options.check) return io.out(await checkDestination(destination));
+  if (options.check) {
+    const ready = await checkDestination(destination);
+    await checkNumbering(projectRoot, branch, policy.into);
+    return io.out(ready);
+  }
   if (!hasGate(options.verify)) return withLock(lock, options.lockTimeoutMinutes, () => withDestination(destination, (path) => integrate(path, job)));
   await assertBranchCheckedOut(projectRoot, branch);
   await mergeVerified(job, { lock, destination, remote: await remoteForBranch(projectRoot, policy.into) });

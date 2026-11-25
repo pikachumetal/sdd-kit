@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { spawn } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { cleanedUp, failGate, git, isWindows, mergeFixture, nodeGate, runMerge, sha, write } from './helpers.ts';
+import { ADR_CLASH, cleanedUp, commitFiles, commitOnBranch, failGate, git, isWindows, mergeFixture, nodeGate, runMerge, sha, write } from './helpers.ts';
 
 describe('el push del cierre publica la rama destino', () => {
   it('con --push fusiona --no-ff con el título acordado y deja local y remoto iguales', async () => {
@@ -276,5 +276,21 @@ describe('rama destino sacada y política de merge', () => {
 
     expect(result.code).toBe(1);
     expect(result.text).toContain('no es un JSON válido');
+  });
+});
+
+describe('el merge del cierre vuelve a comprobar la numeración dentro del cerrojo', () => {
+  it('sin --verify, con una ADR cuyo número ya usa develop, no fusiona y deja develop como estaba', async () => {
+    const fx = mergeFixture('cierre-numeracion');
+    commitOnBranch(fx, 'develop', { '.docs/sdd/decisions/0004-a.md': 'a\n' });
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+    const before = sha(fx.repo, 'develop');
+
+    const result = await runMerge(join(fx.wt, '0001'));
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
+    expect(sha(fx.repo, 'develop')).toBe(before);
+    expect(cleanedUp(fx)).toBe(true);
   });
 });

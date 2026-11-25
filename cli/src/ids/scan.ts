@@ -28,7 +28,7 @@ interface GitIds {
 }
 
 export const SPEC_FOLDER_ID = /-(?:feature|task|patch|proposal)-([0-9]{4})[a-z]*-/i;
-const SUFFIXED_FOLDER = /-[0-9]{4}[a-z]+-/i;
+export const SUFFIXED_FOLDER =/-[0-9]{4}[a-z]+-/i;
 export const BRANCH_ID = /(?:^|\/)([0-9]{4})(?:$|-)/;
 export const ID_TAG_PREFIX = 'sdd-id/';
 const ROADMAP_ROW_ID = /^\|\s*(?:[0-9]{4}-[0-9]{2}-[0-9]{2}\s*\|\s*)?([0-9]{4})\s*\|/;
@@ -87,7 +87,7 @@ function roadmapIds(root: string): string[] {
     .flatMap((path) => rowIds(readFileSync(path, 'utf8').split(/\r\n|\n|\r/)));
 }
 
-function assertNoSharedIds(artifacts: SpecArtifact[], io: Io): void {
+function warnSharedIds(artifacts: SpecArtifact[], io: Io): void {
   const legacy = artifacts.filter((artifact) => SUFFIXED_FOLDER.test(artifact.folder));
   if (legacy.length > 0) {
     const folders = legacy.map((artifact) => artifact.folder).join(', ');
@@ -98,7 +98,7 @@ function assertNoSharedIds(artifacts: SpecArtifact[], io: Io): void {
     foldersById.set(id, (foldersById.get(id) ?? new Set()).add(folder));
   }
   for (const [id, folders] of foldersById) {
-    if (folders.size > 1) throw new DomainError(`Dos artefactos distintos comparten el id ${id}: ${[...folders].join(', ')}.`);
+    if (folders.size > 1) io.err(`aviso: dos artefactos distintos comparten el id ${id}: ${[...folders].join(', ')}; renumera uno.`);
   }
 }
 
@@ -162,7 +162,7 @@ async function gitIds({ root, io }: Ctx): Promise<GitIds> {
 export async function idScan(ctx: Ctx): Promise<IdScan> {
   assertSequenceMode(ctx.root);
   const artifacts = specArtifacts(ctx.root).filter((artifact) => artifact.id !== '0000');
-  assertNoSharedIds(artifacts, ctx.io);
+  warnSharedIds(artifacts, ctx.io);
   const fromGit = await gitIds(ctx);
   const allIds = [...artifacts.map((artifact) => artifact.id), ...roadmapIds(ctx.root), ...fromGit.usedIds];
   const usedIds = allIds.filter((id) => id !== '0000').map(Number);

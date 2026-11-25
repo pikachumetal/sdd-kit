@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { chmodSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, failsIfExists, git, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { ADR_CLASH, commitFiles, edit, failsIfExists, git, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const ORDER = 'fusiona el hotfix del login en main';
 const slash = (text: string) => text.replaceAll('\\', '/');
@@ -384,5 +384,23 @@ describe('el push de un hotfix nombra los commits que no son del cambio', () => 
     expect(result.code).toBe(1);
     expect(result.text).toContain("push: no se pudo publicar 'main' y 'develop' en 'origin'.");
     expect(result.text).toContain('remote: rama protegida');
+  });
+});
+
+describe('un hotfix cuya vuelta choca en la numeración se deshace entero', () => {
+  it('una ADR del hotfix con un número que develop ya usa deshace main y la etiqueta', async () => {
+    const fx = hotfixFixture('vuelta-numeracion');
+    const develop = join(fx.wt, 'develop-sacada');
+    git(fx.repo, 'worktree', 'add', '-q', develop, 'develop');
+    commitFiles(develop, { '.docs/sdd/decisions/0004-a.md': 'a\n' }, 'docs: adr 0004 en develop');
+    commitFiles(fx.hotfix, { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004 en el hotfix');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--tag', 'v3.0.1', '--push'));
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+    expect(sha(fx.remote, 'main')).toBe(sha(fx.repo, 'main'));
   });
 });

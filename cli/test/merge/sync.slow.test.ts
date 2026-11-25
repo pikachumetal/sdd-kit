@@ -4,7 +4,7 @@ import { chmodSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { memoryIo } from '../../src/cli/io.ts';
 import { run } from '../../src/main.ts';
-import { cleanEnv, edit, git, mergeFixture, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { FOLDER_A, FOLDER_B, FOLDER_CLASH, SEQUENCE_CONFIG, cleanEnv, commitFiles, edit, git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const CAPABILITY = '.docs/sdd/capabilities/routing.md';
 const RULES = ['Dónde viven los datos', 'Idioma de los nombres', 'Límites', 'Avisos', 'Regla ante conflicto'].map((rule) => `- **${rule}**: no aplica\n`).join('');
@@ -238,5 +238,23 @@ describe('el error de git sin conflictos solo llega en --sync', () => {
     expect(result.code).toBe(1);
     expect(result.text).toContain('destino sacado:');
     expect(result.text).not.toContain('git merge falló sin conflictos');
+  });
+});
+
+describe('sdd merge --sync con un id que la base ya usa', () => {
+  it('para antes de integrar si la base tiene en specs/ otra carpeta con el id que trae la rama', async () => {
+    const fx = mergeFixture('sync-numeracion');
+    pushRemoteCommit(fx, '.docs/sdd/sdd-kit.json', SEQUENCE_CONFIG);
+    pushRemoteCommit(fx, `.docs/sdd/specs/${FOLDER_A}/spec.md`, 'a\n');
+    const feature = join(fx.wt, '0001');
+    commitFiles(feature, { '.docs/sdd/sdd-kit.json': SEQUENCE_CONFIG, [`.docs/sdd/changes/${FOLDER_B}/patch.md`]: 'b\n' }, 'docs: patch 0756');
+    const before = sha(feature, 'HEAD');
+
+    const result = await sync(fx);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(FOLDER_CLASH.replace('<ref>', 'origin/develop'));
+    expect(sha(feature, 'HEAD')).toBe(before);
+    expect(git(feature, 'status', '--porcelain')).toBe('');
   });
 });

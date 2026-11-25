@@ -119,6 +119,24 @@ export function localCommit(fx: Fixture, branch: string, message: string): strin
   return git(fx.repo, 'rev-parse', '--short', branch);
 }
 
+export const SEQUENCE_CONFIG = '{"merge": {"into": "develop", "noFf": true, "removeWorktree": false}, "ids": {"mode": "sequence"}}';
+export const FOLDER_A = '20261123-141327-feature-0756-a';
+export const FOLDER_B = '20261123-162919-patch-0756-b';
+export const FOLDER_CLASH = `numeración: la rama trae ${FOLDER_B} y '<ref>' ya tiene ${FOLDER_A} con el id 0756; renumera la de la rama a mano`;
+export const ADR_CLASH = "numeración: la rama trae decisions/0004-b.md y '<ref>' ya tiene decisions/0004-a.md con el número 0004; renumera la de la rama a mano";
+
+export function commitFiles(dir: string, files: Record<string, string>, message: string): void {
+  Object.entries(files).forEach(([relative, content]) => write(dir, relative, content));
+  saveAll(dir, message);
+}
+
+export function commitOnBranch(fx: Fixture, branch: string, files: Record<string, string>): void {
+  const path = join(fx.root, `local-${++localCommits}`);
+  git(fx.repo, 'worktree', 'add', '-q', path, branch);
+  commitFiles(path, files, `docs: ${Object.keys(files).join(', ')} en ${branch}`);
+  git(fx.repo, 'worktree', 'remove', path);
+}
+
 export async function runMerge(worktree: string, extra: string[] = []): Promise<{ code: number; text: string }> {
   const io = memoryIo();
   const code = await run(['merge', '--project-root', worktree, ...extra], io);

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { failGate, git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write } from './helpers.ts';
+import { ADR_CLASH, commitFiles, failGate, git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write } from './helpers.ts';
 
 describe('la suite no se repite si desde el commit verificado solo cambian docs', () => {
   it('omite la verificación si desde el sha solo cambian docs', async () => {
@@ -60,6 +60,22 @@ describe('la suite no se repite si desde el commit verificado solo cambian docs'
     expect(result.code).toBe(2);
     expect(result.text).toContain("--verified-at: 'nada' no es un commit");
     expect(existsSync(fx.lock)).toBe(false);
+    expect(sha(fx.repo, 'develop')).toBe(before);
+  });
+});
+
+describe('el merge con --verify para al integrar una base con un número que la rama ya trae', () => {
+  it('para antes del gate y deja develop como estaba', async () => {
+    const fx = mergeFixture('verificado-numeracion');
+    pushRemoteCommit(fx, '.docs/sdd/decisions/0004-a.md', 'a\n');
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+    const before = sha(fx.repo, 'develop');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--verify', failGate]);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'origin/develop'));
+    expect(result.text).not.toContain('verificación: código de salida');
     expect(sha(fx.repo, 'develop')).toBe(before);
   });
 });

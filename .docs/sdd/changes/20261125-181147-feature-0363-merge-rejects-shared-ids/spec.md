@@ -103,6 +103,7 @@ En document-manager, una feature y un patch con el id 0756, y dos ADR 0004 de ra
 | el `throw` del duplicado y el nombre `assertNoSharedIds` | `cli/src/ids/scan.ts:90`, `:101` y `:165` | Approach: pasa a `warnSharedIds`, que avisa |
 | el test «consumes no id when there are duplicate ids» | `cli/test/ids/reserve.slow.test.ts:202` | Dónde se prueba: pasa a reservar el siguiente libre con el aviso |
 | el test «fails naming the id when two folders share it across lanes» | `cli/test/ids/next.slow.test.ts:31` | Dónde se prueba: pasa a proponer el siguiente libre con el aviso |
+| el test «fails when a task folder and a feature folder share an id» (fixture `mixed-duplicate`), el escenario del `MODIFIED` de la línea 157 | `cli/test/ids/next.slow.test.ts:59` | pasa a «warns when…», con el aviso y salida 0 (se vio en el GREEN; ruling de la Task 1) |
 | «Dos carpetas con el mismo id sin sufijo siguen siendo error» | `CHANGELOG.md:373` | decisión: se queda; es la entrada de una release pasada |
 
 - Filas que implementa: 0363 → `ROADMAP.md` (fila 0363) y `.docs/sdd/steering/debt.md` (fila «Dos ramas paralelas toman el mismo id o el mismo número de ADR», «Lista», destino 0363): las marca el cierre.

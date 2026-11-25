@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawn, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import { appendFileSync, cpSync, existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { hostname } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -199,11 +199,14 @@ describe('id next --reserve refusals', () => {
     }
   });
 
-  it('consumes no id when there are duplicate ids', async () => {
+  it('reserves the next free id after the highest one when there are duplicate ids, with the warning', async () => {
     const repo = copyFixtureToRepo('duplicate-ids');
+    appendFileSync(join(repo, '.docs/sdd/roadmap.md'), '\n| Id | Tarea |\n| --- | --- |\n| 0010 | Más alta que el duplicado |\n');
     const result = await runNext(repo, ['--reserve']);
-    expect(result.code).toBe(1);
-    expect(existsSync(join(repo, '.git/sdd-ids'))).toBe(false);
+    expect(result.stderr).toContain('aviso: dos artefactos distintos comparten el id 0003');
+    expect(result.lines).toEqual(['0011']);
+    expect(result.code).toBe(0);
+    expect(counterOf(repo)).toBe('0011');
   });
 
   it('does not create the counter in tracker mode', async () => {
