@@ -165,7 +165,7 @@ and is re-read on every later turn. Hand artifacts over as files.
 short timeouts, and never sit in one silent, open-ended wait either.
 While you have local work — ledger updates, packaging the next review,
 reading reports — keep working; child results arrive on their own.
-A stuck or lost child is noticed by its silence watch (`sdd-implement`, «After the last task»).
+A stuck or lost child is noticed by its silence watch (`sdd-implement`, «Every dispatch»).
 
 ### 1. Dispatch the implementer
 

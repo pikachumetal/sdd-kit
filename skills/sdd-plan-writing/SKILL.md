@@ -169,7 +169,7 @@ If the method is already given —`execution: native` or `subagent` in `.docs/sd
 <!-- kit: fin -->
 
 <!-- kit: 0359 · sustituye: «**If Subagent-driven chosen:**…superpowers:executing-plans» -->
-**Hand-off.** Once the plan is written, first thing: the phase notice, then invoke `sdd-implement` with `Skill`; implement nothing from here, and validation and closing live in `sdd-archive`. In `delegate` and `unattended` the plan is not a stop: invoke it in the same turn you write the plan, unless the dev-lead chose to stop before Task 1; it reads `mode` and `profile` from the frontmatter of `spec.md`, the plan's `Ejecución` line and the branch.
+**Hand-off.** Once the plan is written, first thing: the phase notice, then invoke `sdd-implement` with `Skill`; implement nothing from here, and validation lives in `sdd-validate`, the closing in `sdd-archive`. In `delegate` and `unattended` the plan is not a stop: invoke it in the same turn you write the plan, unless the dev-lead chose to stop before Task 1; it reads `mode` and `profile` from the frontmatter of `spec.md`, the plan's `Ejecución` line and the branch.
 
 ## Red flags — STOP
 

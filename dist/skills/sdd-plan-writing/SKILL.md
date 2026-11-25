@@ -152,7 +152,7 @@ If the method is already given —`execution: native` or `subagent` in `.docs/sd
 
 **Commits.** Frequent commits are fine while a milestone is open; when its review is clean they're squashed into one ([commit-milestones.md](../sdd-implement/references/commit-milestones.md)): the history is the opening, one per task and the closing. Before writing the first task's RED tests, put the opening in a commit (in Native, before its `sdd task start`).
 
-**Hand-off.** Once the plan is written, first thing: the phase notice, then invoke `sdd-implement` with `Skill`; implement nothing from here, and validation and closing live in `sdd-archive`. In `delegate` and `unattended` the plan is not a stop: invoke it in the same turn you write the plan, unless the dev-lead chose to stop before Task 1; it reads `mode` and `profile` from the frontmatter of `spec.md`, the plan's `Ejecución` line and the branch.
+**Hand-off.** Once the plan is written, first thing: the phase notice, then invoke `sdd-implement` with `Skill`; implement nothing from here, and validation lives in `sdd-validate`, the closing in `sdd-archive`. In `delegate` and `unattended` the plan is not a stop: invoke it in the same turn you write the plan, unless the dev-lead chose to stop before Task 1; it reads `mode` and `profile` from the frontmatter of `spec.md`, the plan's `Ejecución` line and the branch.
 
 ## Red flags — STOP
 

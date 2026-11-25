@@ -19,7 +19,7 @@ A red is contrasted by hand, from the saved output:
 2. Run the failing file alone, with the project's runner (`vitest run <file>`, `node --test <file>`), not the gate nor its whole task: on the branch and in that worktree at once, in the background in the same turn. A red with no file to name (a build, a lint) runs its task as is, without `--affected`.
 3. Read both results:
 
-- **Passes without the branch, red on the branch**: it's the branch's; fix it with a failing test first and go back to the gate as «Running a gate» of `sdd-verify` says: the tests that failed and what the fix affects, not the whole suite.
+- **Passes without the branch, red on the branch**: it's the branch's, and the close doesn't fix it: the work goes back to `sdd-implement` (a task with its failing test first) and then to `sdd-validate`; when it returns, the close restarts from «History» (step 5), repeats `sdd merge --sync` and carries the new gate's sha in `--verified-at`.
 - **No se repite**: green in both. If the saved error line is a timeout or a machine resource (a busy port, a locked file, a full disk, git's temporary objects), that explains the red: open a debt row of flaky tests, placed as below and with what step 6 lists; go on, in any profile. If it isn't, first run the red task whole in both, without `--affected` (in the base's worktree it selects nothing), and read it the same way: two green passes of the file alone don't make it flaky, since the red can come from another file of its task.
 - **Fails without the branch** (on the branch too, or only there): write `base: en rojo: el mismo comando también falla sin la rama`.
 <!-- kit: incluye base-red-debt -->

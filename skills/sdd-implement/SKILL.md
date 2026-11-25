@@ -57,6 +57,8 @@ It goes before the script. `delegate` and `unattended` don't stop here.
 
 The closing gate —the project's full build and suite— runs at the baseline of `sdd-worktrees` and once, in `sdd-validate`, never inside a task.
 
+**Every dispatch** —implementer, reviewers, re-review— gets its silence watch, as in `sdd-validate`, «Closing drafts».
+
 ## Deviations and rulings
 
 - **Rulings.** Scope brakes and the deviations below aren't rulings: they stop; a `Ruling:` in the ledger doesn't stop you.
@@ -64,11 +66,11 @@ The closing gate —the project's full build and suite— runs at the baseline o
 - **Scope brakes** stop the same way: the third discovered fix, a decision that changes the observable output, the feature's row or the task's lines changed in the base ([control-profiles.md](../sdd-propose/references/control-profiles.md)).
 <!-- kit: incluye deviation -->
 The approval's detail and the files an amendment adds: [Deviation](../sdd-propose/references/control-profiles.md#deviation).
-- **Every commit of yours** enters the review scope of the task in progress; with no task open and the final review not yet out, the final review's; and once it's out, even if not back, the single re-review of the range `<last reviewed>..HEAD` («Closing the review» of `sdd-verify`); once that re-review is out, it doesn't open another and goes to ✋ as `sin revisar: <sha> — <what it changes>`. No commit is presented or closed unreviewed other than one under 20 lines (`git diff --numstat`) that only changes documentation or comments —files under `.docs/`, `*.md` of any path that aren't an agent's instructions or a template, comment lines no tool interprets; in a merge, only what you resolved, with `git show --remerge-diff`—: that one you read yourself, noting `revisado en el hilo`.
+- **Every commit of yours** enters the review scope of the task in progress; with no task open and the final review not yet out, the final review's; and once it's out, even if not back, the single re-review of the range `<last reviewed>..HEAD` («Closing the review» of `sdd-verify`); once that re-review is out, it doesn't open another and goes to ✋ as `sin revisar: <sha> — <what it changes>`; the fix turn of `sdd-validate` has its own diff review. No commit is presented or closed unreviewed other than one under 20 lines (`git diff --numstat`) that only changes documentation or comments —files under `.docs/`, `*.md` of any path that aren't an agent's instructions or a template, comment lines no tool interprets; in a merge, only what you resolved, with `git show --remerge-diff`—: that one you read yourself, noting `revisado en el hilo`.
 
 ## Recovery
 
-After a crash or a quota cut, first reread the ledger, `git log` and the workspace's report files (`task-<n>-report.md`). A report that arrived complete counts as returned, its agent's failure notification ignored: a task's goes to its task review, the final review's axes as «After the last task» says. A dispatch without a complete report is relaunched once, with the same brief and model, and its dispatch names the files `git status` shows changed. A task with its `complete` line is never redone. Ledger `Task <N>: Ruling: recuperación tras <caída | corte por cuota> — <qué se retomó>`.
+After a crash or a quota cut, first reread the ledger, `git log` and the workspace's report files (`task-<n>-report.md`). A report that arrived complete counts as returned, its agent's failure notification ignored: a task's goes to its task review, the final review's axes as `sdd-validate` says. A dispatch without a complete report is relaunched once, with the same brief and model, and its dispatch names the files `git status` shows changed. A task with its `complete` line is never redone. Ledger `Task <N>: Ruling: recuperación tras <caída | corte por cuota> — <qué se retomó>`.
 
 ## After the last task
 

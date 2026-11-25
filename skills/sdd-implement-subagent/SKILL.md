@@ -198,7 +198,7 @@ short timeouts, and never sit in one silent, open-ended wait either.
 While you have local work — ledger updates, packaging the next review,
 reading reports — keep working; child results arrive on their own.
 <!-- kit: 649f1a99 · sustituye: «When you are genuinely idle…not at the end of the session.» -->
-A stuck or lost child is noticed by its silence watch (`sdd-implement`, «After the last task»).
+A stuck or lost child is noticed by its silence watch (`sdd-implement`, «Every dispatch»).
 <!-- kit: fin -->
 
 ### 1. Dispatch the implementer

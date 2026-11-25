@@ -21,7 +21,7 @@ Cómo se verifica lo que se ve: la task que cambia la UI se mira en un navegador
 ### La verificación visual se enseña con medidas y capturas
 
 - GIVEN la feature 0012 con el selector de estado, cuya «Verificación visual» declara `/` y `/?theme=dark`, el criterio «el selector filtra la lista por estado» y contraste del texto ≥ 4,5:1
-- WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-archive` en `delegate`
+- WHEN el agente para tras la task en `pair`, o presenta la validación de `sdd-validate` en `delegate`
 - THEN antes del guion de pruebas enseña el criterio, la salida del detector por viewport con cada hallazgo resuelto o justificado («390x844 · `cramped-padding` en `select` · arreglado: padding-right 12 px») y la ruta de cada captura
 - AND cada medida en estilos computados, solo porque el criterio fija un valor, con su valor y el esperado («texto del selector, oscuro · contraste · 7,9:1 · ≥ 4,5:1»)
 - AND sin detector declarado, el aviso literal «composición no medida: `operations.md` no declara detector en §Frontend»
