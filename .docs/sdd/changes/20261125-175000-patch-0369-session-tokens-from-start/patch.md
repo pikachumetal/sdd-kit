@@ -7,7 +7,7 @@ solution: ticket
 status: done
 created: 2026-11-25
 branch: patch/0369-session-tokens-from-start
-commit: <hash>
+commit: f9307bafc
 ---
 
 # Patch 0369 — `sdd session tokens` cuenta el esfuerzo real desde el `Inicio:` del artefacto
@@ -40,6 +40,12 @@ Ticket de dev-tools §1, propuesta: «con `--artifact` y un `Inicio:` en el arte
 | --- | --- | --- |
 | 1 | sesión con actividad de 14:04Z a 16:29Z, `patch.md` con `Inicio: 2026-11-02T16:19Z` → `Esfuerzo real` ≤ 0,2 h y `desde 2026-11-02T16:19Z` | RED antes del fix (`expected … to be less than or equal to 0.2`); verde después: `npx vitest run test/session/` → 126/127, el rojo es `window.slow` «con dos worktrees que aportan» por timeout de 5 s con la máquina cargada; solo, pasa (1/1) |
 
+| 2 | guion sobre esta sesión: `sdd session tokens --path . --branch patch/0369-session-tokens-from-start --artifact <copia de esta carpeta>` | `Esfuerzo real: 0,20 h — reloj de la sesión 0,20 h desde 2026-11-25T17:50Z`; sin `--artifact`, `0,23 h … desde 2026-11-25T17:48Z` (el arranque de la sesión, con `sdd-propose` dentro) ✅ |
+
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 798/798 · cli:typecheck: corrió, sin errores · cli:test: 2.592/2.607 en el pre-commit del fix (15 saltados)
+
+Validación en campo: 2026-11-25 · timing.test.ts 38/38 · gate en verde · guion 1/1 sobre la sesión real
+
 Revisión (un revisor sonnet, effort medium, sobre `patch.md` y el diff), sin bloqueantes:
 
 - Fallback a `walkthrough.md` sin test y sin caso (su plantilla no lleva `Inicio:`) — arreglado: se quita.
@@ -53,7 +59,8 @@ Revisión (un revisor sonnet, effort medium, sobre `patch.md` y el diff), sin bl
 
 - Estimación: 0,5 h + 0,07 h del gate de cierre (4 min, patch 0286)
 - Inicio: 2026-11-25T17:50Z
-- Esfuerzo real: <al cerrar>
+- Esfuerzo real: 0,21 h — reloj de la sesión 0,21 h desde 2026-11-25T17:50Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desviación: −63 % frente a 0,57 h; sin esperas ni huecos medidos: el fix cupo en cinco ficheros de la CLI y un test, menos de lo estimado
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
