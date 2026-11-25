@@ -131,6 +131,8 @@ Ninguna.
 
 ### Task 2 — La regla en el include, la tabla y Native; GREEN y controles
 
+> **Retirada por la enmienda del 2026-11-25 de la spec** (aprobada: «1»): el RED de la Task 1 no exhibe el fallo, y sin él no se escribe texto (Art. I). No se ejecuta.
+
 **Tras**: Task 1
 **Modelo**: la sesión (Native); sujetos `opus` (`u1` en `sonnet`).
 **Tests RED**: `dv1` y `dv2` en rojo de la Task 1.

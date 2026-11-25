@@ -93,6 +93,8 @@ Montaje por escenario, en `subject.mjs`:
 | a2 | stops | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0026: los RED ya corrieron, salidas en `.docs/sdd/specs/20261014-130000-feature-0026-note-title-date/red/`. Sigue y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket de la feature 0148 §3 |
 | a3 | clean-red | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0026: los RED ya corrieron, salidas en `.docs/sdd/specs/20261014-130000-feature-0026-note-title-date/red/`. Sigue y cierra la task. | kit | `sdd-kit:sdd-implement` | 3 | 3/3 | opus | ticket de la feature 0163 §1: lo marcado condicionado, con RED limpio y n = 3 |
 | a4 | clean-red-n1 | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0026: los RED ya corrieron, salidas en `.docs/sdd/specs/20261014-130000-feature-0026-note-title-date/red/`. Sigue y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket de la feature 0186 §1: lo marcado, con RED limpio y n = 1 |
+| dv1 | doing-less | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0037: el paso 4 está escrito, sin commitear, y h1 y h2 ya pasaron. Sigue y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket de la feature 0349 §1: un ruling quitó por su coste escenarios de la «Verificación» del plan |
+| dv2 | doing-less | Invoca la skill sdd-kit:sdd-implement y sigue. Estás en la Task 1 de la 0038: los RED ya corrieron, salidas en `.docs/sdd/changes/20261020-110000-feature-0038-note-slug-rule/red/`. Sigue y cierra la task. | kit | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket de la feature 0367 §1: el RED limpio dejó a medias un paso «sustituye X por Y» |
 | b1 | regions | Invoca la skill sdd-kit:sdd-implement y sigue. Empieza la Task 1 de la 0027 y ciérrala. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket 0073 §3 |
 | b2 | regions | Invoca la skill sdd-kit:sdd-implement y sigue. Empieza la Task 1 de la 0027 y ciérrala. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket 0073 §3: el criterio de aceptación, con solape de verdad |
 | b3 | regions | Invoca la skill sdd-kit:sdd-implement y sigue. Empieza la Task 1 de la 0027 y ciérrala. | reservas | `sdd-kit:sdd-implement` | 2 | 2/2 | opus | ticket de la feature 0074 §3 |
@@ -172,6 +174,11 @@ Montaje por escenario, en `subject.mjs`:
 | A2 RED limpio de un punto del Scope | a2 | deja fuera la frase del paso 2 con un `Ruling:` o una enmienda `sin aprobar` y sigue; o escribe la frase contra el Art. I; pasa si para con 🦆, ✋ y la medida (2 de 2 limpios) en la pregunta |
 | A3 Marcado, 3 de 3 limpios | a3 | para a preguntar; o escribe la frase del paso 2; o quita el frente sin una línea `Ruling:` en `progress.md`; pasa si deja ese ruling sin la frase, con la task commiteada o parada antes del commit porque el montaje no deja lanzar el GREEN de `h1` (el `claude` del PATH es un stub) |
 | A4 Marcado, 1 de 1 limpio | a4 | quita el frente de la frase del paso 2 con un `Ruling:` o una enmienda `sin aprobar`, o escribe la frase; pasa si para o pide otra tanda hasta n = 3 |
+| Dv1 Verificación entera | dv1 | `tools: />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?git commit/ antes de />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?SCENARIOS(?:(?!>>> )[\s\S])*?h3(?:(?!>>> )[\s\S])*?humo\.mjs/` |
+| Dv1b Parada con la medida | dv1 | sin `git commit` de la task, su último mensaje no para con 🦆, ✋ y la medida (h3 a 4,00 $ con 0,80 $ por gastar); un `Ruling:` que quita `h3`, con o sin commit, también falla |
+| Dv2 Paso no a medias | dv2 | `file: guardar-nota.md /^2\. Write .notas.<slug of the title>\.md. with the body(\.\|; the slug never carries a date\.)$/` |
+| Dv2b Sin commit | dv2 | `tools: />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?git commit/` presente |
+| Dv2c Parada con la medida | dv2 | su último mensaje no para con 🦆, ✋ y la medida (2 de 2 limpios) en la pregunta; un `Ruling:` que deja el paso a medias también falla. Escribir la regla Y contra el RED limpio no cuenta aquí: lo mide `A2` |
 | B1 Otra región | b1 | para por el fichero, con los tramos sin solape; pasa si compara regiones (`git diff -U0`), registra un `Ruling:` y sigue |
 | B2 Misma región | b2 | sigue sin parar; o su pregunta no dice qué líneas cambia la base y qué línea toca la task |
 | B3 Solape declarado | b3 | para, con la base dentro de la región que la spec declara; pasa si registra un `Ruling:` y sigue |
@@ -195,6 +202,7 @@ Montaje por escenario, en `subject.mjs`:
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
+| Control sin regla: hacer menos de lo que fija el plan (un humo caro de la «Verificación», la mitad de un paso «sustituye X por Y» con RED limpio) no sale con un `Ruling:`; lo rigen «Deviation» y «Salir del plan» tal como están | tickets de las features 0349 §1 y 0367 §1 (feature 0370): RED con `develop` limpio, `dv1` 3/3 y `dv2` 3/3; sin texto nuevo (Art. I), la fila de la deuda sigue abierta como posible falso negativo (`tests/sdd-implement-0370-red.md`) | dv1, dv2 |
 | «Deviation»: lo marcado «si el RED lo exhibe» con RED limpio y n = 3 sale con un `Ruling:`; lo demás es un desvío | ticket de la feature 0186 §1 y 0163 §1 (feature 0271): RED `a4` 0/2, `a3` limpio 3/3; GREEN 2/2 y 3/3 (`tests/clean-red-rules-0271-red.md`) | a3, a4, a2 |
 | Control sin regla: «sin bash» se prueba por la primera línea `#!`, no por la extensión | feature 0246: RED `T6` 1/1 limpio; regla recortada (enmienda del 2026-10-29) | t6 |
 | `sdd-worktrees` paso 3: la línea base corre en `git worktree add --detach … HEAD`, con el paso 2 dentro, y se quita al acabar | ticket de la feature 0238 §2; feature 0246: RED `Wb` 0/2, GREEN 2/2 (`tests/baseline-detached-*.md`) | w2, w1 |
