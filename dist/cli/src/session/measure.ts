@@ -17,6 +17,7 @@ export interface MeasureOptions {
   branch: string;
   projectsRoots: string[];
   now?: number;
+  since?: number;
 }
 
 export interface WindowInfo {
@@ -50,7 +51,7 @@ export function measureSession(options: MeasureOptions): Measurement {
   const roots = rootsOf(options);
   const folders = transcriptFolders(worktreePath, roots);
   const repo = options.branch === '' ? null : repositoryOf(worktreePath, roots);
-  const own = readSession(folders, { branch: options.branch, until: untilOf(repo, options.branch) });
+  const own = readSession(folders, { branch: options.branch, from: options.since, until: untilOf(repo, options.branch) });
   if (!isEmpty(own)) return measured(worktreePath, own);
   const windowed = repo === null ? null : byWindow(repo, worktreePath, options);
   if (windowed !== null) return windowed;

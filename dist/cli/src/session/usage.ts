@@ -15,6 +15,7 @@ export interface TimeWindow {
 
 export interface Selector {
   branch: string;
+  from?: number;
   until?: number;
   window?: TimeWindow;
 }
@@ -39,12 +40,12 @@ function parseLine(text: string): Json | null {
 
 export const inRange = (time: number, from = -Infinity, to = Infinity): boolean => time >= from && time < to;
 
-function isCounted(line: Json, { branch, until, window }: Selector): boolean {
+function isCounted(line: Json, { branch, from, until, window }: Selector): boolean {
   if (!sameText(line.type, 'assistant') || line.message?.usage == null) return false;
   if (sameText(line.message.model, '<synthetic>')) return false;
   const time = Date.parse(String(line.timestamp));
   if (window !== undefined) return inRange(time, window.from, window.to) && window.countable(String(line.gitBranch ?? ''), time);
-  return (branch === '' || sameText(line.gitBranch, branch)) && (Number.isNaN(time) || inRange(time, -Infinity, until));
+  return (branch === '' || sameText(line.gitBranch, branch)) && (Number.isNaN(time) || inRange(time, from, until));
 }
 
 function toUsage(raw: Json): Usage {
