@@ -1,0 +1,121 @@
+--- [14]
+Ahora: ejecuto la Task 3 en Native (medir O2 y rellenar su fila). Queda: commit, volver a `sdd-validate`, revisión del eje Spec y tu validación, ~8 min.
+
+--- [39]
+Ahora: espero la revisión del eje Spec, que va en segundo plano. Queda: leer su informe, cerrarla y pedirte la validación, ~5 min.
+
+Mientras tanto no hay más que hacer: el borrador de walkthrough no aplica a un spike (no hay `capabilities/` que fusionar), así que me quedo esperando el informe.
+
+--- [51]
+### Strengths
+- Las tres filas O1–O3 de `research.md` existen, cada una con estado, detalle y evidencia. O3 queda como «no medido con una persona», que es un resultado válido, y la recomendación no se apoya en esa fila.
+- Volví a ejecutar las medidas. `node medidas/medir-libres.mjs` reproduce `medidas/o1-libres.txt` línea a línea (la única diferencia es CRLF) y `--memoria` reproduce los «4.3 MB» de `o2-memoria.txt`.
+- La siembra cumple la peor carga de la spec: 1.000 reservas repartidas entre lun y vie de una sola semana, con 10 repeticiones.
+- El conteo cuadra. Son 3 salas × 1.000 reservas = 3.000 comparaciones de sala, más 1.000 de franja para las reservas de la sala, más 200 del límite superior (las franjas 10 y 11 de cada 10). Total: 4.200, y la conclusión de que no baja de 2.000 es correcta para el modelo medido.
+- Ruling (1): añadir la Task 3 al final del plan para medir O2, que se podía medir, fue la decisión correcta y deja rastro en `plan.md` y en `tasks.md`.
+- La recomendación responde de forma explícita a la «Decisión que desbloquea» (memoria o fichero en la 0014) y explica por qué pasar a fichero no arregla O1.
+
+### Issues
+
+#### Critical (Must Fix)
+1. **`research.md:20` y `:31-32`: O2 se da por cumplido con otra métrica, y la que pide la spec no cumple.**
+   - **Qué está mal:** la spec (`spec.md:23`) pide «memoria **del proceso** < 50 MB». La fila mide `heapUsed`, cambia el texto del objetivo a «memoria < 50 MB» y deja escrito que «el RSS del proceso no se midió». Esa medida es trivial: es `process.memoryUsage().rss` en la misma línea del script.
+   - **Qué medí yo:** ejecuté el mismo script con un hook `--import` que solo lee al salir, sin tocar el árbol. El RSS sale entre 55,9 y 56,0 MB en 5 ejecuciones (Node v26.10.0, Windows). Un `node -e` vacío da entre 54,7 y 54,9 MB.
+   - **Por qué importa:** con la métrica de la spec, O2 no cumple. El «Por qué» de la recomendación («O2 cumple») y el descarte «la memoria sobra» se apoyan en una fila que, medida como pide la spec, dice lo contrario. Además, la regla del spike dice que un objetivo sin medir que se puede medir es un fallo.
+   - **La decisión puede sostenerse igual:** lo que cuentan las reservas en el RSS es la diferencia entre el proceso cargado (~56 MB) y el vacío (~55 MB), unos 1 MB. Pasar a fichero no reduce el arranque de Node. Pero ese razonamiento no está en `research.md` ni respaldado en `medidas/`.
+   - **Cómo arreglarlo:**
+     - Que `--memoria` imprima el RSS además del heap, y el RSS de un proceso vacío como base.
+     - Regenerar `o2-memoria.txt`.
+     - Poner O2 como «no cumple tal como se definió: RSS 56 MB, de los que ~55 son Node vacío; las 1.000 reservas añaden ~1 MB».
+     - Apoyar la recomendación en esa diferencia, no en «O2 cumple».
+   - **Gap:** `contradicts`.
+   - **Origen:** bb60844 (Task 3) y el ruling (2) del ejecutor.
+
+#### Important (Should Fix)
+2. **`medidas/medir-libres.mjs:2-4,9`: O1 no mide el `libres` real, sino una reimplementación con otra semántica.**
+   - **Qué está mal:** el `libres` real es `freeRooms` en `src/app.js:5-7`. Usa 2 salas (`Norte`, `Sur`), compara la franja exacta (`b.slot === slot`, con valores como `'10:00-12:00'`), corta en cuanto encuentra una reserva (`some`) y filtra por `status === 'active'`. El script usa 3 salas, franjas horarias sueltas (`'08:00'`…`'17:00'`) con comparación de rango, no corta nunca y no mira el estado.
+   - **Por qué importa:** el «4200» de la fila O1, de §3 y de la recomendación es el número de un modelo, no del comando que la spec nombra (`libres 10:00-12:00`). El veredicto «no cumple» probablemente sí vale para el código real en su peor caso: si las 2 salas están libres, son al menos 2 × 1.000 comparaciones de sala, o sea ≥ 2.000. Pero eso no está medido, y con otra siembra el corte de `some` podría dar cifras muy distintas.
+   - **Cómo arreglarlo:** una de dos.
+     - Contar sobre `freeRooms` real, sembrando reservas con el formato de `app.js`.
+     - O declarar en `research.md` que O1 mide un modelo lineal equivalente y añadir el cálculo del peor caso real.
+   - **Gap:** `partial`.
+   - **Origen:** 91ebb45 (Task 1).
+3. **`research.md:36`: «Lo que sale — nada» contradice la recomendación.**
+   - **Qué está mal:** la recomendación elegida (`:31`) dice que «`libres` necesita otro recorrido» y que las reservas siguen en memoria. Eso deja trabajo pendiente: cambiar el recorrido de `libres`. También deja una decisión que debería llegar al brief de la 0014, cuyo campo «Decisiones ya tomadas» está hoy en «—» en `ROADMAP.md`.
+   - **Por qué importa:** sin una salida, el hallazgo de O1 se pierde y la 0014 no recibe la decisión que este spike tenía que desbloquear.
+   - **Cómo arreglarlo:** listar en §5 una tarea nueva para el recorrido de `libres` (que no pase de 2.000 comparaciones con 1.000 reservas) y la decisión «reservas en memoria» para la 0014.
+   - **Gap:** `missing`.
+   - **Origen:** a3e120e y bb60844.
+
+#### Minor (Nice to Have)
+4. **`medidas/medir-libres.mjs:5`: el heap se lee nada más sembrar, antes de ejecutar `libres`.** No incluye la memoria de la consulta. Con 1.000 reservas es despreciable, pero «memoria del proceso con 1.000 reservas» se entiende mejor midiendo después de una ejecución de `libres`. Gap: `partial`. Origen: bb60844.
+5. **`research.md:20`: el texto del objetivo O2 se reescribió.** Pasó de «memoria del proceso < 50 MB» a «memoria < 50 MB». Las filas deberían copiar el objetivo de la spec tal cual, para que el cambio de métrica se vea. Gap: `contradicts` (menor). Origen: a3e120e.
+6. **`research.md:5`: el entregable cerrado sigue con `status: draft`.** No lo he comprobado contra la plantilla. Gap: `partial`. Origen: a3e120e.
+
+### Declined to judge
+- **Si guardar las reservas en memoria sirve en una CLI que termina tras cada comando** (persistencia entre ejecuciones): la spec plantea la decisión solo por aguante y memoria, no por persistencia. Fuera de los objetivos del spike.
+- **La simulación de O3 («lo simulé yo: 4 s»)**: la fila ya la declara no medida con una persona, que es válido, y nada se apoya en ella.
+- **La calidad del script** (formato, nombres, todo en una línea): es del eje de calidad, no del de Spec.
+- **Si 50 MB es un umbral sensato para un runtime cuyo proceso vacío ya ocupa ~55 MB**: el umbral viene de la spec aprobada. Solo señalo cómo afecta al resultado.
+- **Si la Task 3 duplica la evidencia que ya declaraba la Task 2 en `plan.md`**: es trazabilidad del plan, no un requisito de la spec.
+
+### Not verified
+- No verificado: el RSS en el entorno del ejecutor. Mi medida (~56 MB) es de esta máquina con Node v26.10.0. En otra plataforma o versión de Node el arranque puede bajar de 50 MB, pero el ejecutor no lo midió.
+- No verificado: el número real de comparaciones de `freeRooms` con 1.000 reservas. Solo hice la cota del peor caso (≥ 2.000); no lo instrumenté.
+- No verificado: el campo `status` de `research.md` contra la plantilla del kit.
+
+### Recommendations
+- Medir el RSS cargado y vacío, rehacer la fila O2 y apoyar la recomendación en la diferencia de ~1 MB. La recomendación probablemente se sostiene, pero hoy descansa en una métrica que no es la de la spec.
+- Instrumentar `freeRooms` real, o declarar que O1 mide un modelo, y añadir el peor caso del código real.
+- Rellenar «Lo que sale» con la tarea del recorrido de `libres` y la decisión para la 0014.
+
+### Assessment
+**Ready to merge?** With fixes
+
+**Reasoning:** La conclusión de fondo probablemente aguanta: las reservas pesan ~1 MB y pasar a fichero no arregla un recorrido lineal. Pero la fila O2 dice «cumple» con heap cuando la métrica de la spec, el RSS del proceso, da ~56 MB aquí. Además, O1 mide un modelo y no el `libres` real, y «Lo que sale — nada» deja sin salida el trabajo que la propia recomendación pide.
+
+Ficheros relevantes (en `<run>/review-0030-bf51769`):
+- `.docs/sdd/specs/20261120-090000-feature-0030-libres-load/research.md`
+- `.docs/sdd/specs/20261120-090000-feature-0030-libres-load/medidas/medir-libres.mjs`
+- `.docs/sdd/specs/20261120-090000-feature-0030-libres-load/medidas/o2-memoria.txt`
+- `src/app.js`
+- `ROADMAP.md`
+
+--- [53]
+Ahora: la revisión del eje Spec devuelve 1 Critical y 2 Important. Contrasto sus afirmaciones con el código y los arreglo como Task 4 (una sola pasada). Queda: la pasada de fix, la re-revisión y tu validación, ~10 min.
+
+--- [62]
+El script de edición falló, así que los commits `9c5548d` y `11128a4` no incluyen los cambios de `research.md`. El segundo anotó una revisión y un fix que no están hechos. Lo corrijo ahora.
+
+--- [67]
+Ahora: lanzo la única re-revisión de la pasada de fix (`bf51769..881e9cf`). Queda: leer su veredicto y pedirte la validación, ~4 min.
+
+--- [81]
+🦆 **El spike 0030 queda validado, pero las conclusiones cambian respecto a lo que había al empezar.** `libres` no cumple O1, la memoria no cumple O2 tal como la define la spec, y aun así las reservas pueden seguir en memoria. No he invocado `sdd-archive`: antes quiero que decidas lo de O2 (abajo).
+
+La validación va en modo `agente`, como dice la spec, y está registrada en `tasks.md` (`4d677d3`). Como el spike no toca código, no hubo gate de cierre. Tampoco ejecuté `node --test`: la rama solo cambia ficheros de su carpeta del spike.
+
+**Qué falló y qué se hizo**
+- **O2:** estaba `no medido`, pero se podía medir. Lo medí como heap (4,3 MB) y lo di por «cumple». La revisión del eje Spec me corrigió: la spec pide el RSS del proceso. Medido así, O2 **no cumple**: 56,1–56,2 MB en 5 ejecuciones, de los que ~54 MB son un Node vacío. Las 1.000 reservas suman solo unos 2 MB.
+- **O1:** el script no mide el `freeRooms` real de `src/app.js`, sino un modelo lineal (4200 comparaciones). `research.md` lo declara así. Para el código real razona un peor caso de al menos 2.000 comparaciones, que no baja de 2.000, pero no está medido.
+- **O3:** queda `no medido con una persona`, tal cual.
+- **Recomendación:** las reservas siguen en memoria y `libres` cambia de recorrido. Pasar a fichero no baja ni el RSS ni las comparaciones.
+- **«Lo que sale»:** ya no dice «nada». Lista la tarea del nuevo recorrido y la decisión para la 0014.
+- **Revisión final:** el eje Spec (opus+high) encontró 1 Critical y 2 Important. La Task 4 los arregló y la re-revisión no dejó ninguno abierto. Corregí en el hilo dos Minor de cifras y trazabilidad, en `f4f01c0`.
+
+**Rulings que tomé**
+- Añadí la Task 3 (medir O2) al final del plan. Si me equivoco, solo sobra una medida.
+- Reescribí la recomendación de §4 dos veces, según lo que fui midiendo. Si me equivoco, la 0014 recibe una decisión errónea, y por eso quiero que la confirmes.
+
+**Minors diferidos**
+- El heap se lee antes de ejecutar `libres`.
+- `status: draft` en `research.md`, sin comprobar contra la plantilla.
+
+**Cosas que no pude verificar**
+- No instrumenté el `freeRooms` real, así que el peor caso de O1 es un razonamiento, no una medida.
+- El RSS es de esta máquina (Node v26.10.0). En otra plataforma el arranque de Node podría quedar por debajo de 50 MB.
+
+**Por decidir (✋):** el umbral de 50 MB de O2 no puede cumplirse con Node, que ya ocupa ~54 MB vacío. Hay que decidir con Laura si el objetivo pasa a medir solo lo que añaden las reservas (~2 MB, que cumpliría). Mientras tanto, el spike dice `no cumple tal como se definió`.
+
+Cuando lo decidas, sigo con `sdd-archive`. Si cambias el objetivo de O2, lo hago antes como un fix más.
+

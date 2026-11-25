@@ -1,0 +1,342 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo sus archivos y las referencias de la validación. Queda: la puerta de cierre, el guion, la revisión final y tu validación, ~20 min.
+
+--- [16]
+Ahora: ejecuto la puerta de cierre (`node --test test/ && node e2e/run.mjs`). Queda: recorrer el guion, la revisión final y tu validación, ~15 min.
+
+--- [20]
+El e2e falla con conexión rechazada: la suite necesita el entorno levantado (`env-up`). Miro cómo se arranca antes de dar el rojo por bueno.
+
+--- [23]
+El rojo es del entorno, no del código: no estaba levantado. Lo levanto con `env-up` (el «Entorno de la suite» de `operations.md`), compruebo que responde y repito el e2e.
+
+--- [27]
+Puerta verde: unit 5/5 y e2e 7/7 (con el entorno levantado). Ahora: recorro el guion real contra el servidor, con mi propia sesión, un paso por THEN.
+
+--- [36]
+Ahora: preparo la revisión final (paquete, briefs y despacho de los ejes). Queda: los revisores, el cierre de la revisión y tu validación, ~15 min, ~algunos dólares de subagentes.
+
+--- [49]
+Ahora: construyo el paquete de revisión en un worktree aislado y reúno los índices para los briefs. Queda: despachar Spec y Código en paralelo y cerrar la revisión.
+
+--- [52]
+El comando del workspace imprimió un texto en vez de una ruta y el paquete se escribió en un sitio mal formado. Lo rehago en la ruta real y borro el resto.
+
+--- [69]
+Ahora: espero a los dos revisores (Spec y Código). Queda: cerrar la revisión según sus hallazgos, los borradores del cierre y tu validación, ~10 min.
+
+Los dos ejes están en marcha en segundo plano, con su vigilancia de silencio, sobre `bae2e62`. Hasta ahora ya tengo estos resultados:
+
+- **Puerta de cierre en verde.** `node --test test/` pasa 5/5. `node e2e/run.mjs` pasa 7/7, pero solo después de levantar el entorno con `env-up`. La primera pasada falló por conexión rechazada, porque el entorno no estaba arriba.
+- **Guion recorrido.** Todos los THEN de la spec salen con su literal exacta, ejecutados contra el servidor real con mi propia sesión.
+- **Posible hallazgo.** El test `canceladas enseña sala, día y motivo` falla si se ejecuta solo (0 de 1). Es el `Ruling` de la Task 2, que choca con la regla «Datos» de `operations.md`. Lo he señalado en los briefs para que los revisores lo valoren.
+- **Eje Arquitectura.** No sale, y lo anoté en `tasks.md` sin commitear.
+
+Con la revisión de los dos ejes cerrada, haré la pasada de fix si hay Critical o Important. Después irán el borrador del walkthrough y tu validación manual.
+
+--- [87]
+### Strengths
+- The change is small and sits where the spec puts it. `reasons` is one constant, and `cancelBooking` uses it for both the check and the error message, so the list of reasons lives in one place (`src/app.js:3`, `:56`).
+- `reasonOf` keeps argument parsing out of `cancelBooking`. A missing `--motivo` or a missing value gives `undefined`, which fails the check and returns the spec's message.
+- The UI text is in Spanish and follows the spec literally: «cancelada Norte lun (sala ocupada)», «motivo no válido: …» and «Norte lun — sala ocupada».
+- Each E2E test has its own session, and `server.mjs` gives each session fresh app state. The new E2E test that cancels and then lists does not depend on any other test.
+- The first E2E test was renamed to the declared core flow, "cancela una reserva con su motivo".
+- No comments cite documents, and there are no stale citations or commented-out code.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. **`test/cancel.test.js:108-110`: the `canceladas` test only passes after the first test has run.**
+   - It reads module-level state left by "cancelar con un motivo de la lista". It fails if run alone, with `--test-name-pattern`, or in another order.
+   - tasks.md records this as a ruling ("workaround hasta que cada test prepare sus datos"), but the ruling is not a fix.
+   - It breaks the same "a test that depends on another" principle that the project's Datos rule applies to E2E (Clean Code: independent tests).
+   - Fix: have the test prepare its own cancellation. That needs a way to reset or inject the bookings, or `canceladas` could be tested through a fresh module import (`import('../src/app.js?x')`), as `server.mjs` already does per session.
+
+2. **`e2e/cancel.e2e.mjs:4-5`: two new E2E tests name no core flow.**
+   - "rechaza un motivo fuera de la lista" and "la cancelada sale en canceladas con su motivo" are not in «Flujos core».
+   - The first duplicates the unit test of the same name and the second duplicates the `canceladas` unit test, so both belong one layer down.
+   - They also cost time. Each step sleeps 6 s, so these two tests add about 18 s to a suite that `operations.md` budgets at 0,5 min and already lists at ~50 s.
+   - Fix: delete both and keep the unit coverage.
+
+3. **`test/cancel.test.js`: coverage of two spec behaviours was lost.**
+   - The test "cancelar sin reserva lo dice" was removed. The branch `sin reserva ${room} ${day}` (`src/app.js:58`) now has no test, and the remaining invalid-motive test uses `Sur mar`, so it never reaches that branch with a valid reason.
+   - The spec's "sin `--motivo` responde «motivo no válido…»" is also untested, and it is the only path where `reasonOf` returns `undefined`.
+   - Fix: add `cancelar Sur mar --motivo otro` → `sin reserva Sur mar`, and `cancelar Norte lun` → `motivo no válido: …`.
+
+#### Minor (Nice to Have)
+1. `src/app.js:73`: `canceladas` with nothing cancelled returns `''`, and `console.log` prints an empty line. A reasonable user would expect something like «sin canceladas». The spec is silent, so it is low impact.
+2. `src/app.js:51`: `reasonOf` returns whatever follows `--motivo`, even another flag (`--motivo --cada-semana`). It is rejected as an invalid reason, so the behaviour is safe.
+3. `src/app.js:56`: the reason is validated before the booking is looked up, so a missing booking with a bad reason reports the reason first. This is acceptable and matches the spec's order, but test 3 could pin it down.
+
+### Declined to judge
+- Whether the order "validate reason first, then look up the booking" is the intended one. The spec doesn't say which error wins when both apply, so it belongs to the Spec axis.
+- The `canceladas` ruling in tasks.md, and whether the choice to share state between tests is acceptable. I report the effect (Important 1), but the executor decides whether to accept it.
+- The E2E budget (0,5 min) already looks exceeded by the existing suite (~50 s). It is not in my «Project E2E» fields, so I only mention it in Important 2.
+- Whether `app.js` should be split into modules, since the file is growing. That is the Architecture axis.
+
+### Recommendations
+- The main thread should run `node --test test/` and `node e2e/run.mjs` as the closing gate. I did not run them.
+- Once the `canceladas` test no longer shares state, check that each unit test passes when run alone.
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** The feature code is correct and clean. There are no Critical issues, but the order-dependent unit test, the two non-core E2E tests (which also add suite time) and the lost "sin reserva" and "sin --motivo" coverage should be fixed before merge.
+
+--- [89]
+El eje Código ya ha vuelto: sin Critical, 3 Important y 3 Minor. Espero al eje Spec antes de re-graduar los hallazgos, porque la revisión se cierra con los dos informes juntos.
+
+--- [91]
+That's the Code axis silence watch ending, which is expected now that the axis has returned. The Spec axis is still running, so I'm waiting for it before I close the review.
+
+--- [92]
+## Revisión final, eje Spec: feature 0010 «Motivo al cancelar» (bae2e62)
+
+Revisé de una pasada el paquete entero (112 líneas, tres ficheros), además de la spec, el plan, `tasks.md`, `operations.md`, `e2e/run.mjs` y `server.mjs`. No ejecuté la suite.
+
+### Strengths
+
+- **La decisión del dev-lead está cubierta entera.** La lista cerrada «cambio de planes, sala ocupada, otro» está en `src/app.js:3`. Ese mismo array sirve para validar (`:20`) y para escribir el mensaje de error (`reasons.join(', ')`), así que el mensaje no puede desincronizarse de la lista.
+- **El motivo se valida antes de buscar la reserva** (`src/app.js:20`). Con un motivo inválido la reserva no se toca, y el error lista los motivos válidos. El test `cancelar con un motivo fuera de la lista` usa Sur mar, que no tiene reserva, y con eso fija ese orden.
+- **Sin `--motivo` el código hace lo que pide la spec.** `reasonOf` devuelve `undefined` y `reasons.includes(undefined)` es falso, así que responde el mismo «motivo no válido…». También funciona si `--motivo` es el último argumento.
+- **`canceladas` filtra solo `status === 'cancelled'`.** Las anuladas (`voided`) no aparecen, lo que respeta el «No entra: anulaciones (0011)».
+- **Los e2e están bien aislados.** `la cancelada sale en canceladas con su motivo` cancela y lista en la misma sesión, y no depende de nada más.
+- **El flujo core de `operations.md` coincide con el e2e.** Nombra `cancela una reserva con su motivo`, que es el nombre nuevo.
+- **Todo el texto de la interfaz está en castellano.** La restricción se cumple.
+
+### Issues
+
+#### Critical (Must Fix)
+Ninguno.
+
+#### Important (Should Fix)
+
+**1. Falta el test del THEN «sin `--motivo` responde lo mismo».**
+- Dónde: `test/cancel.test.js` (no hay test) y `e2e/cancel.e2e.mjs` (tampoco).
+- Qué pasa: el código lo cumple, pero ningún test ni escenario e2e llama a `cancelar Norte lun` sin `--motivo`. «Dónde se prueba» lo sitúa en `test/cancel.test.js`.
+- Por qué importa: es justo el cambio que rompe el uso de antes de `cancelar <sala> <día>`. Si alguien pone un motivo por defecto o hace el flag opcional, la suite no lo detecta.
+- Cómo arreglarlo: `assert.equal(run('cancelar', ['Norte', 'lun']), 'motivo no válido: cambio de planes, sala ocupada, otro')`, preferiblemente comprobando además que la reserva sigue activa.
+- Gap: `missing`. Origen: el THEN 3 del ADDED «Cancelar pide un motivo de la lista».
+
+**2. El test de `canceladas` depende del primer test. El Ruling de la Task 2 debe revocarse antes del merge.**
+- Dónde: `test/cancel.test.js:13-15`.
+- Qué pasa: `run('canceladas', [])` solo devuelve «Norte lun — sala ocupada» porque el test de `:5-7` ya canceló esa reserva en el mismo módulo. Si corre solo (`--test-name-pattern`), con otro orden o con más tests delante, devuelve `''` y falla.
+- Por qué importa: `operations.md` §Testing «Datos» lo prohíbe expresamente, porque un test que solo pasa con el entorno recién vaciado depende de otro. Además es la única verificación nombrada del THEN de `canceladas`, así que ese THEN no está fijado de forma fiable. El Ruling lo llama «workaround» sin destino ni fila de deuda.
+- Cómo arreglarlo: que el test prepare su GIVEN. Por ejemplo, que llame él mismo a `run('cancelar', ['Norte','lun','--motivo','sala ocupada'])` antes de listar, o mejor, que cargue un estado propio por test, como hace `server.mjs` con `import(\`${appUrl}?session=…\`)`.
+- Gap: `partial`. Origen: el THEN del ADDED «El listado de canceladas enseña el motivo», junto con `operations.md` «Datos».
+
+**3. Se quitó el único test de «cancelar sin reserva» y nada lo sustituye.**
+- Dónde: `test/cancel.test.js` (en 2d930f9 se borra `cancelar sin reserva lo dice`).
+- Qué pasa: el comportamiento sigue en el código (`src/app.js:21-22`). Con motivo válido y sin reserva activa responde `sin reserva <sala> <día>`. Pero el test que lo fijaba pasó a ser el de motivo inválido, y como la validación va primero, ya no llega a esa rama. No hay unit ni e2e que la cubra.
+- Por qué importa: la spec no cambia este comportamiento, así que no había motivo para dejar de fijarlo. Cancelar ya tuvo un bug (patch 0007, cancelaba reservas de otro día), y quitar el test deja esa zona sin red.
+- Cómo arreglarlo: recuperarlo con motivo, por ejemplo `run('cancelar', ['Sur', 'mar', '--motivo', 'otro'])` → `'sin reserva Sur mar'`.
+- Gap: `partial`. Origen: lo que un usuario razonable espera del comportamiento existente de `cancelar`. Ver también «Not verified».
+
+#### Minor (Nice to Have)
+
+**4. No hay test de que un motivo inválido deje la reserva activa.**
+- Dónde: `src/app.js:20` y los tests.
+- Qué pasa: el código es correcto (sale antes de mutar), pero ni el unit ni el e2e `rechaza un motivo fuera de la lista` comprueban después que Norte lun sigue reservada, por ejemplo con `libres 10:00-12:00` → `Sur`, o con `canceladas` vacío.
+- Gap: `partial`. Origen: lo que un usuario razonable espera.
+
+**5. `canceladas` sin canceladas imprime una línea en blanco.**
+- Dónde: `src/app.js:35-36`.
+- Qué pasa: `cancelledList()` devuelve `''`. Por la CLI, cada invocación es un proceso nuevo (la spec lo asume hasta la 0014), así que el usuario de consola siempre verá una línea vacía, sin saber si el comando funciona o si no hay nada.
+- Cómo arreglarlo: un mensaje en castellano tipo «sin canceladas».
+- Gap: `partial`. Origen: lo que un usuario razonable espera; la spec no dice nada.
+
+**6. Problemas de la propia spec, no de la implementación.**
+- La lista de decisiones salta del 1 al 3.
+- La decisión 3 dice «dos señales (MODIFIED, datos)», pero el delta marca los dos requisitos como ADDED y Capacidades dice «Nuevas».
+- Cancelar sin motivo cambia un comportamiento que ya existía, así que en rigor es MODIFIED.
+- No afecta a la verificación, porque el proyecto no tiene capacidades, pero conviene corregirlo en las enmiendas o al archivar.
+
+### Not verified
+
+- **Si el test borrado `cancelar sin reserva lo dice` era el test de regresión del patch 0007:** no verificado. `patch.md` solo dice «Fix y test de regresión», sin nombrar el test, y `test/cancel.test.js` viene de la base `a3b5f0a`. Si lo era, la issue 3 sube a Critical.
+- **Que la suite unit y la e2e pasen en bae2e62:** no verificado. El encargo prohíbe ejecutarlas y el ledger no trae informes de task con evidencia; solo trae la tabla y el Ruling.
+- **Que el test de `canceladas` falle al correr aislado:** no verificado por ejecución. Lo deduzco leyendo el código: el estado de `bookings` es del módulo y no se reinicia entre tests.
+
+### Declined to judge
+
+- **Orden libre de los argumentos** (`cancelar --motivo otro Norte lun`): la spec fija la sintaxis `cancelar <sala> <día> --motivo <motivo>`.
+- **Motivos sin distinguir mayúsculas ni espacios** («Sala ocupada»): la lista es cerrada por decisión del dev-lead y el mensaje enseña la forma exacta.
+- **Que `canceladas` persista entre procesos:** la spec lo deja expresamente para la 0014.
+- **Agrupar o totalizar por sala en `canceladas`:** es la 0012 (`informe`).
+- **Anulaciones con motivo:** fuera de alcance (0011).
+- **Que bae2e62 borre de `tasks.md` la línea «Revisión final: …» y que haya `tasks.md` modificado sin commitear:** es un tema del proceso del ledger, no del comportamiento frente a la spec.
+
+### Recommendations
+
+- Para la issue 2, dar a cada test su estado con un import aislado por test, como `server.mjs`. Así se puede retirar el Ruling y cumplir «Datos» sin workaround.
+- Antes del merge, recomiendo pasar el gate de cierre completo (`node --test test/ && node e2e/run.mjs`) y además `node --test --test-name-pattern "canceladas" test/cancel.test.js`, para confirmar la dependencia de la issue 2 y que el arreglo la resuelve.
+- Del ledger solo hay que pesar el Ruling de la Task 2: no hay líneas `minor (deferred)` ni `parked`. Ese Ruling debe arreglarse antes del merge (issue 2).
+
+### Assessment
+
+**Ready to merge?** With fixes
+
+**Reasoning:** Los dos requisitos ADDED y la decisión de la lista cerrada están bien implementados, pero la verificación está incompleta. Falta el test del THEN «sin `--motivo`», el del listado depende de otro test (lo que contradice `operations.md`), y se perdió el test existente de «cancelar sin reserva». Los tres arreglos son de tests y no tocan el código de producción.
+
+--- [94]
+Ahora: re-gradúo los hallazgos de los dos ejes y compruebo lo que el eje Spec dejó como «no verificado» (si el test borrado era la regresión del patch 0007).
+
+--- [100]
+Ahora: ejecuto la Task 3 (la pasada de fix) con el método Native del plan. Queda: el arreglo con su RED→GREEN, la re-revisión de su diff, los borradores y tu validación, ~15 min.
+
+--- [103]
+Ahora: añado la Task 3 al plan, registro la revisión final en `tasks.md` y cargo `sdd-tdd`. Queda: RED→GREEN del fix, re-revisión y validación, ~12 min.
+
+--- [107]
+Ahora: Task 3 en el plan y en `tasks.md`, con la `Revisión final:` y los Minors diferidos. Luego, los tests.
+
+--- [114]
+Los backticks del shell se ejecutaron y ensuciaron el plan. Restauro `plan.md` y lo edito bien.
+
+--- [125]
+Ahora: escribo los tests de la Task 3. Cada uno usa un módulo fresco, para que no dependa de ningún otro.
+
+--- [146]
+Mientras revisa: repito la puerta de cierre sobre `2173e70`, porque el fix toca `test/` y `e2e/`.
+
+--- [159]
+Puerta verde tras el fix: unit 7/7 y e2e 5/5, con el entorno levantado y parado después. Espero la re-revisión.
+
+--- [160]
+### Finding Verdicts
+
+- **S1: no test for «sin `--motivo`» returning the motivo-no-válido message.** ADDRESSED. `test/cancel.test.js:119-123`, «cancelar sin motivo lo rechaza y deja la reserva activa», runs `cancelar Norte lun` and expects `MOTIVO_NO_VALIDO`. That constant (`test/cancel.test.js:104`) is word for word the spec literal in `spec.md:54`, «motivo no válido: cambio de planes, sala ocupada, otro». The test also checks `libres 10:00-12:00` → `Sur`, which proves the Norte reservation is still active. It lives in `test/cancel.test.js`, the place the spec's «Dónde se prueba» names (`spec.md:42`). The mutation claim fits the code: `reasonOf` returns `undefined` without `--motivo` (`src/app.js:16`), and that is rejected at `src/app.js:20`. If `otro` were the default, the reservation would be cancelled and the first assertion would fail.
+- **S2: the `canceladas` test depends on the first test; the Task 2 Ruling must be revoked.** ADDRESSED. Each test now loads its own copy of the module with `import('../src/app.js?<name>')` (`test/cancel.test.js:107`). The `canceladas` test makes its own cancellation (`test/cancel.test.js:130-134`). The Task 2 Ruling is marked as revoked, and a Task 3 Ruling cites «Datos» in `operations.md` (`tasks.md:20-21`).
+- **S3: the only «cancelar sin reserva» test was deleted and nothing replaced it.** ADDRESSED. `test/cancel.test.js:125-128` runs `cancelar Sur mar --motivo otro` and expects `sin reserva Sur mar`. Because the reason is valid, the call reaches the `sin reserva` branch at `src/app.js:22`.
+- **C1: the `canceladas` test only passes after the first one.** ADDRESSED. It has the same evidence as S2, and I ran it on its own (see the check below).
+- **C2: two non-core e2e tests in `e2e/cancel.e2e.mjs`.** ADDRESSED. Both were removed (diff, `e2e/cancel.e2e.mjs`, the old lines 3-4). The file keeps the core flow «cancela una reserva con su motivo», whose name matches `operations.md:19` exactly, plus the two `anular` tests it already had.
+- **C3: coverage lost for «sin reserva» and «sin --motivo».** ADDRESSED. The evidence is the same as for S1 and S3: `test/cancel.test.js:119-128`.
+
+**Check run:** `node --test --test-name-pattern="canceladas enseña" test/cancel.test.js` ran 1 test, 1 passed. The test passes when run alone, so the per-test module copy really separates the state.
+
+**Count check:** `test/` has 7 tests in total (2 in `app.test.js`, 5 in `cancel.test.js`). This matches the "suite 7/7" in `tasks.md:16`.
+
+### New Breakage in the Fix Diff
+None.
+- The tests check real behaviour through `run`, share no state, and have clear Castilian names.
+- The spec's literal message is defined once, as a constant, instead of being repeated.
+- `src/app.js` was not touched, as the thread claimed.
+- No interface text changed.
+
+### Out-of-Scope Observations
+None.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [162]
+Re-revisión limpia: los 6 hallazgos quedan resueltos, sin roturas nuevas. La anoto, retiro el worktree de revisión y paso a los borradores y al guion para ti.
+
+--- [165]
+Ahora: preparo los borradores del cierre (walkthrough y capacidad `bookings`). Leo la plantilla del walkthrough y el paso 3 de `sdd-archive`.
+
+--- [170]
+Ahora: ensayo el guion exacto que vas a pegar (los mismos comandos, con otra sesión para no tocar tus datos). Levanto el entorno solo para esto y lo paro después.
+
+--- [175]
+Ahora: te presento el guion para que valides a mano. Queda: tu «validado» y el cierre con `sdd-archive`, ~5 min.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro» y no toca la reserva. El comando nuevo `canceladas` lista lo cancelado con su motivo («Norte lun — sala ocupada»).
+
+**✋ Me salí del plan en…**
+
+- Añadí una Task 3 al final del plan para arreglar los hallazgos de la revisión final. Nada de lo que cambió toca `src/app.js`.
+- Revoqué el `Ruling` de la Task 2: el test de `canceladas` dependía del primer test, y eso va contra «Datos» de `operations.md`.
+- El eje Arquitectura no salió: el diff solo añade el campo `reason` a la reserva en memoria. Si me equivoco, falta un revisor sobre una frontera que no se tocó.
+- Deferred minors: `canceladas` vacío imprime una línea en blanco; `--motivo` seguido de otro flag se rechaza como motivo inválido; la spec salta de la decisión 1 a la 3 y marca ADDED lo que en rigor modifica `cancelar`.
+
+**Revisión final**
+
+- Spec (opus) y Código (sonnet) volvieron «con fixes»: 3 Important cada uno, 0 Critical. Eran tests que faltaban o dependían de otros, y dos e2e que no eran flujo core.
+- Los arreglé en `a553f1a`. La re-revisión de `bae2e62..2173e70` (opus) salió limpia: 6 de 6 resueltos, sin roturas nuevas.
+
+**Smoke que he corrido** (`ejecución real` contra el servidor, con mi propia sesión)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| sin `--motivo` | ejecución real | el mismo mensaje, y la reserva sigue activa |
+| `canceladas` | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites** (sobre `2173e70`)
+
+- `node --test test/`: 7/7.
+- `node e2e/run.mjs`: 5/5, con el entorno levantado y parado después. La primera pasada, sin entorno, falló por conexión rechazada.
+
+**Sin probar**
+
+- Nada. Los borradores `walkthrough.md`, `capabilities/bookings.md` y las líneas nuevas de `tasks.md` están sin commitear: los completa `sdd-archive`.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno está parado. Terminal 1, el entorno (queda en el puerto 52659):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2. Uso `curl.exe` y tu propia sesión `dev-lead`, para no cruzarme con la mía:
+
+```
+cd <run>\repo
+```
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl.exe -s -H "x-session: dev-lead" "http://localhost:52659/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22me%20aburro%22%5D"
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl.exe -s -H "x-session: dev-lead" "http://localhost:52659/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%5D"
+```
+
+3. Listado antes de cancelar nada → una línea vacía (la reserva no se canceló en los pasos 1 y 2)
+
+```
+curl.exe -s -H "x-session: dev-lead" "http://localhost:52659/run?cmd=canceladas&args=%5B%5D"
+```
+
+4. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl.exe -s -H "x-session: dev-lead" "http://localhost:52659/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22sala%20ocupada%22%5D"
+```
+
+5. Listado → «Norte lun — sala ocupada»
+
+```
+curl.exe -s -H "x-session: dev-lead" "http://localhost:52659/run?cmd=canceladas&args=%5B%5D"
+```
+
+6. Cancelar una reserva que no existe, con motivo válido → «sin reserva Sur mar»
+
+```
+curl.exe -s -H "x-session: dev-lead" "http://localhost:52659/run?cmd=cancelar&args=%5B%22Sur%22%2C%22mar%22%2C%22--motivo%22%2C%22otro%22%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves. Dime "validado" o qué paso falla.
+

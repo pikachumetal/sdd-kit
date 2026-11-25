@@ -1,0 +1,68 @@
+--- [14]
+Retomo el patch 0008 en el paso 5: el fix está commiteado y los 4 tests pasan. Falta el revisor, y está lanzado en segundo plano. Aún no sé qué dirá.
+
+En cuanto responda contesto cada hallazgo en §4 de `patch.md` (corregido o rechazado con motivo). Después invoco `sdd-validate`.
+
+Lo que debe confirmar el revisor:
+- **Fines de línea:** el diff reescribe `src/app.js` y `test/app.test.js` enteros, probablemente por un cambio CRLF↔LF que nadie pidió. Si es eso, lo revierto en un commit propio.
+- **Test existente:** «cancelar respeta el día» pasó de `mar` a `lun`, y eso puede debilitar lo que comprueba.
+
+--- [20]
+Hallazgos:
+
+1. **Media: cambio de fin de línea no pedido (CRLF a LF).**
+   - En `HEAD~1`, `src/app.js` y `test/app.test.js` están en CRLF. En `HEAD` están en LF.
+   - Evidencia: `git show HEAD~1:src/app.js | od -c` muestra `\r \n`, y `git show HEAD:src/app.js | od -c` muestra solo `\n`.
+   - Por eso `git diff --stat` marca `src/app.js` con 32 líneas y `test/app.test.js` con 34, cuando el cambio real es 1 línea en `app.js` y 5 en `test`.
+   - Con `--ignore-cr-at-eol` queda `src/app.js | 2 +-` y `test/app.test.js | 6 +-`.
+   - Es ruido fuera del alcance. Rompe el blame y dificulta la revisión. Conviene restaurar CRLF en ambos ficheros.
+   - Mi `grep -c $'\r'` dio un resultado engañoso, así que me fío de `od -c`.
+
+2. **Baja: `startsWith` es una comparación laxa, no exacta.**
+   - `src/app.js:14` compara `b.slot.startsWith(params[1])`, y el slot almacenado es `'10:00-12:00'` (`src/app.js:3`).
+   - Es necesaria, porque el síntoma usa `10:00` y el slot es un rango. Con los datos actuales funciona.
+   - Pero `cancelar lun 1`, `cancelar lun 10:0` o `cancelar lun ""` (cadena vacía) también darían «cancelada». `cancelar lun 10:00` coincidiría igualmente con un futuro `10:00-11:00`.
+   - Es mejor comparar la hora de inicio exacta, por ejemplo `b.slot.split('-')[0] === params[1]`, o aceptar también el slot completo.
+   - No bloquea, porque el patch no define el formato de la franja. Sí conviene anotarlo en patch.md o en la deuda.
+   - La línea 14 es además un ternario largo en una sola línea, y legibilidad aparte, la respuesta repite `params[0] params[1]` dos veces.
+
+3. **Baja: el test «cancelar respeta el día» cambió de `mar` a `lun`.**
+   - El cambio es inevitable. Con el fix, `mar 10:00` ya no tiene reserva y devolvería «no hay reserva». Antes pasaba solo porque la implementación era un eco.
+   - La cobertura de «respeta el día» no se debilita. El test nuevo `mie 10:00` (`test/app.test.js:17-19`) tiene la franja correcta con día distinto, así que falla si se ignora el día.
+   - El test `lun 10:00` por sí solo no prueba el día, porque pasaría aunque se ignorara.
+   - El nombre «respeta el día» ya no describe bien ese test. Sería más claro renombrarlo a «cancelar una reserva existente» y dejar el caso de día distinto explícito, por ejemplo con `mar 10:00`.
+
+4. **Sin hallazgo: causa raíz.**
+   - Es cierta. En `HEAD~1`, `run('cancelar')` devolvía `cancelada ${params[0]} ${params[1]}` sin consultar `bookings`.
+
+5. **Sin hallazgo: el test nuevo habría estado en RED.**
+   - Antes devolvía «cancelada mie 10:00» y el test espera «no hay reserva mie 10:00».
+   - Ahora `node --test` da 4 pasados y 0 fallos, como dice patch.md.
+
+6. **Baja: detalles de patch.md.**
+   - El frontmatter deja `commit: <hash>` sin rellenar.
+   - Dice `branch: feature/0008-cancel-missing`, pero la rama real es `hotfix/0008-cancel-missing`.
+   - Está en `.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md`.
+
+7. **Alcance: sin hallazgos.** Solo tocan `src/app.js`, `test/app.test.js` y patch.md. Aparte del ruido de fin de línea, no hay cambios ajenos al patch.
+
+--- [29]
+Ahora: paso a `sdd-validate` (puerta de cierre, guion para validar y validación del dev). Queda: la validación del dev, ~5 min.
+
+--- [36]
+Smoke OK. Registro la validación en campo en `patch.md` §4.
+
+--- [38]
+Ahora: cierro con `sdd-archive`. Queda: archivar el patch y mergear, ~2 min.
+
+--- [43]
+Ahora: cierro el patch 0008 con `sdd-archive`. Hasta ahora solo he pasado las comprobaciones previas: el árbol está limpio y la validación en campo está registrada. Queda: el hash en `patch.md`, la historia en dos commits y el merge, ~5 min tras tu respuesta.
+
+La rama es `hotfix/…`, así que antes de escribir ningún registro necesito saber una cosa:
+
+**¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?**
+
+El diff no me lo dice: solo tú sabes si hay algo que aplicar al fusionar. Espero tu respuesta.
+
+Hay otra cosa que depende de ti. Fusionar en `main` o crear un tag exige una frase tuya como `--order`. Con `--check --into main` el kit me lo rechaza sin ella. Si prefieres que fusione en `develop`, que es el `merge.into` configurado, dímelo y no hace falta.
+
