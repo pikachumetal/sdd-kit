@@ -135,9 +135,11 @@ function readUserEntry(state: ClockState, entry: Json, time: number): void {
 interface Range {
   from?: number;
   to?: number;
+  anchored?: boolean;
 }
 
-const rangeOf = ({ until, window }: Selector): Range => (window === undefined ? { to: until } : { from: window.from, to: window.to });
+// Solo la ventana fija el inicio del reloj: con un `Inicio:`, cada transcript empieza en su primera entrada desde él.
+const rangeOf = ({ from, until, window }: Selector): Range => (window === undefined ? { from, to: until } : { from: window.from, to: window.to, anchored: true });
 
 function initialState(entries: Json[]): ClockState {
   return {
@@ -166,7 +168,7 @@ function timeline(file: string, range: Range): Timeline | null {
     state.previous = times[index]!;
   });
   const { waitSpans, idleSpans, runSpans, calls } = state;
-  return { from: range.from ?? times.reduce(earlier), to: times.reduce(later), waitSpans, idleSpans, runSpans, calls: [...calls.values()] };
+  return { from: range.anchored === true ? range.from! : times.reduce(earlier), to: times.reduce(later), waitSpans, idleSpans, runSpans, calls: [...calls.values()] };
 }
 
 export const formatMinute = (millis: number): string => `${new Date(millis).toISOString().slice(0, 16)}Z`;

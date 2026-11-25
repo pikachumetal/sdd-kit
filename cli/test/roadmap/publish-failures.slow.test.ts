@@ -64,6 +64,19 @@ describe('sdd roadmap publish failures', () => {
     expect(git(repo.main, 'log', '-1', '--format=%s', 'develop')).toBe('base');
   });
 
+  it('keeps the edit when the commit fails in the checkout where develop is checked out', async () => {
+    const repo = newRepo();
+    const edited = `${baseRoadmap}| 0150 | Filtro |\n`;
+    write(repo.main, roadmap, edited);
+    failingPreCommit(repo.main);
+    const result = await publish(repo.main, roadmap);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain('git commit falló');
+    expect(roadmapOf(repo.main)).toBe(edited);
+    expect(git(repo.main, 'status', '--porcelain')).toBe(`M ${roadmap}`);
+    expect(git(repo.main, 'log', '-1', '--format=%s', 'develop')).toBe('base');
+  });
+
   it('rolls back a new file when the commit fails', async () => {
     const repo = newRepo();
     const added = '.docs/sdd/nuevo.md';
