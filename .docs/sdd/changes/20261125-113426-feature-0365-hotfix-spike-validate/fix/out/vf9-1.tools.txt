@@ -1,0 +1,747 @@
+
+>>> Skill: sdd-kit:sdd-validate
+<<< Launching skill: sdd-kit:sdd-validate
+
+>>> Bash: git merge-base HEAD main; git diff --name-only $(git merge-base HEAD main) HEAD; ls .docs/sdd/changes/ 2>/dev/null
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0365-hotfix-spike-validate\.temp\k365fx\skills\sdd-validate\references\validation-modes.md
+<<< 03fedd9611b7df9297cabc2548601c7da635f3d0
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/medir-libres.mjs
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/o1-libres.txt
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/plan.md
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/spec.md
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md
+20261120-090000-feature-0030-libres-load/
+<<< 1	# Validation by mode
+2	
+3	Step 4 of `sdd-validate`.
+4	
+5	A decision the final review left to the user is asked alone, in its own turn, before the validation.
+6	
+7	## With `validation.mode: field`
+8	
+9	You run your smoke —one row per THEN—, with the gate of step 1 already green on this tree, and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with 
+
+>>> Bash: cd .docs/sdd/changes/*0030*; cat spec.md research.md tasks.md; echo ----; cat medidas/o1-libres.txt; wc -l medidas/medir-libres.mjs; cat ../../sdd-kit.json 2>/dev/null | head -30; ls ../..
+<<< ---
+id: 20261120-090000-feature-0030-libres-load
+feature: 0030
+title: ¿Aguanta `libres` 1.000 reservas?
+mode: spike
+status: approved
+created: 2026-11-20
+approvers:
+  - name: Laura
+    approved_at: 2026-11-20
+---
+
+# Spec — ¿Aguanta `libres` 1.000 reservas?
+
+Validación: agente — es una medida: no hay nada que una persona observe aparte de la tabla.
+
+## Capacidades
+
+Ninguna, porque investigación
+
+## Forma spike
+
+- **Pregunta**: ¿responde `libres` a tiempo con 1.000 reservas en memoria?
+- **Objetivos**: O1 — `libres 10:00-12:00` con 1.000 reservas en < 2.000 comparaciones · O2 — memoria del proces
+
+>>> Bash: cat medidas/medir-libres.mjs; node --version; git status --short
+<<< // Siembra 1.000 reservas en una semana y cuenta las comparaciones de `libres 10:00-12:00`, diez repeticiones; con --memoria, el heap tras sembrar.
+const rooms = ['Norte', 'Sur', 'Este'];
+const days = ['lun', 'mar', 'mie', 'jue', 'vie'];
+const bookings = Array.from({ length: 1000 }, (_, i) => ({ room: rooms[i % 3], day: days[i % 5], slot: `${String(8 + (i % 10)).padStart(2, '0')}:00` }));
+if (process.argv.includes('--memoria')) { console.log(`heap tras sembrar: ${(process.memoryUsage().heapUsed / 1048576).toFixed(1)} MB`); process.exit(0); }
+console.log(`carga: ${bookings.length} reservas, ${d
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Bash: cat plan.md; git log --oneline -3
+
+>>> Skill: sdd-kit:sdd-implement-native
+<<< ---
+id: 20261120-090000-feature-0030-libres-load
+title: Plan — ¿Aguanta `libres` 1.000 reservas?
+spec: ./spec.md
+status: approved
+---
+
+# Plan — ¿Aguanta `libres` 1.000 reservas?
+
+**Ejecución**: native, porque un spike siempre va en Native
+
+### Task 1 — Comparaciones de `libres` con la peor carga
+
+**Evidencia**: O1 · `medidas/o1-libres.txt`, de `node medidas/medir-libres.mjs` · fila O1 de `research.md`
+
+### Task 2 — Memoria y uso por una persona
+
+**Evidencia**: O2 · `medidas/o2-memoria.txt`, de `node medidas/medir-libres.mjs --memoria` · O3 · una persona en la recepción · filas O2 y O3 de `rese
+<<< Launching skill: sdd-kit:sdd-implement-native
+
+>>> Bash: node medidas/medir-libres.mjs --memoria | tee medidas/o2-memoria.txt; for i in 1 2 3; do node medidas/medir-libres.mjs --memoria; done
+<<< heap tras sembrar: 4.3 MB
+heap tras sembrar: 4.3 MB
+heap tras sembrar: 4.3 MB
+heap tras sembrar: 4.3 MB
+
+>>> Bash: python3 - <<'E' 2>/dev/null || node -e "
+const fs=require('fs');
+let r=fs.readFileSync('research.md','utf8');
+r=r.replace('| O2 — memoria < 50 MB con 1.000 reservas | no medido | no se corrió \`--memoria\` | — |','| O2 — memoria < 50 MB con 1.000 reservas | cumple | heap tras sembrar: 4,3 MB, igual en 4 ejecuciones; es el heap de las reservas sembradas, no el RSS del proceso entero | \`medidas/o2-memoria.txt\` |');
+r=r.replace('Las 10 repeticiones de \`medidas/o1-libres.txt\`: 4200 comparaciones en todas.','Las 10 repeticiones de \`medidas/o1-libres.txt\`: 4200 comparaciones en todas. Memoria (\`medidas/o2-memoria.txt\`): 4,3 MB de heap con 1.000 reservas.');
+fs.writeFileSync('research.md',r);
+fs.appendFileSync('plan.md','\n### Task 3 — Medir O2 (vuelta de sdd-validate)\n\n**Evidencia**: O2 · \`medidas/o2-memoria.txt\`, de \`node medidas/medir-libres.mjs --memoria\` · fila O2 de \`research.md\`\n');
+let t=fs.readFileSync('tasks.md','utf8').trimEnd();
+fs.writeFileSync('tasks.md',t+'\n| 3 | Medir O2 (vuelta de sdd-validate: la fila estaba \`no medido\` y se podía medir) | done | pendiente | |\n');
+"
+E
+git diff --stat; grep -n "O2\|Memoria" research.md
+<<< 20:| O2 — memoria < 50 MB con 1.000 reservas | no medido | no se corrió `--memoria` | — |
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261120-090000-feature-0030-libres-load\research.md
+<<< The file <run>\repo\.docs\sdd\changes\20261120-090000-feature-0030-libres-load\research.md has been updated successfully.
+
+>>> Edit: <run>\repo\.docs\sdd\changes\20261120-090000-feature-0030-libres-load\research.md
+<<< The file <run>\repo\.docs\sdd\changes\20261120-090000-feature-0030-libres-load\research.md has been updated successfully.
+
+>>> Bash: printf '\n### Task 3 — Medir O2 (vuelta de sdd-validate)\n\n**Evidencia**: O2 · `medidas/o2-memoria.txt`, de `node medidas/medir-libres.mjs --memoria` · fila O2 de `research.md`\n' >> plan.md
+printf '| 3 | Medir O2 (vuelta de sdd-validate: la fila estaba `no medido` y se podía medir) | done | pendiente | |\n' >> tasks.md
+git add research.md plan.md tasks.md medidas/o2-memoria.txt && git commit -q -m "spike(0030): O2 medido, 4,3 MB de heap con 1.000 reservas
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && h=$(git rev-parse --short HEAD) && sed -i "s/| pendiente |/| $h |/" tasks.md && git add tasks.md && git commit -q -m "docs(sdd): commit de la Task 3 en tasks.md
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -3 && tail -3 tasks.md
+<<< warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/plan.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/o2-memoria.txt', L
+
+>>> Skill: sdd-kit:sdd-verify
+<<< Launching skill: sdd-kit:sdd-verify
+
+>>> Bash: cd D:/code/.worktrees/sdd-kit/feature-0365-hotfix-spike-validate/.temp/k365fx/skills/sdd-verify/references; cat encargo-revision.md spec-reviewer-prompt.md closing-the-review.md
+<<< # Review brief — mandatory header
+
+The briefs of **each axis of the final review**, of its **fix pass** in SDD and of its **re-review** start like this, before the axis brief ([`sdd-verify`](../SKILL.md), «Final review»). Those of the task reviewer and the re-reviewer already carry it inside: [task-reviewer-prompt.md](../../sdd-implement-subagent/task-reviewer-prompt.md) and [re-review-prompt.md](../../sdd-implement-subagent/re-review-prompt.md) of `sdd-implement-subagent`.
+
+```markdown
+## Code constraints
+
+<literal copy of the «De código» block of plan.md's Restricciones globales, the code qu
+
+>>> Bash: cd <run>/repo && pwd && ls .docs/sdd/steering .docs/sdd/specs; SHA=$(git rev-parse --short HEAD); REVIEW_DIR="$(dirname "$(git rev-parse --show-toplevel)")/review-0030-$SHA"; git worktree add --detach "$REVIEW_DIR" "$SHA" 2>&1 | tail -1; echo $REVIEW_DIR $SHA; grep -n -i "calidad\|código" .docs/sdd/steering/constitution.md 2>/dev/null | head; node "D:/code/.worktrees/sdd-kit/feature-0365-hotfix-spike-validate/.temp/k365fx/cli/bin/sdd.js" capability index --path .docs/sdd 2>&1 | head
+<<< <run>/repo
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+HEAD is now at 21d24c4 docs(sdd): commit de la Task 3 en tasks.md
+<run>/review-0030-21d24c4 21d24c4
+4:2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+Sin capacidades
+
+>>> Bash: mkdir -p /tmp/rv && OUT=/tmp/rv/review-final-21d24c4.diff && { echo "# Review package: 03fedd9..21d24c4"; git log --oneline 03fedd9..21d24c4; echo; echo "## Diff"; echo "(vacío: todo el cambio está en la carpeta del spike, excluida del paquete; léela por su ruta)"; } > $OUT; cat .docs/sdd/steering/constitution.md | head -20
+<<< # Constitution — salas
+
+1. Los cambios no triviales pasan por el flujo SDD del kit (`sdd-propose` → spec → plan → `sdd-archive`); los bugs deterministas, por el carril patch.
+2. Tests antes que código. Gate de cierre: `node --test` entero en verde.
+3. Git-flow: `main` estable, `develop` de integración, `feature/<id>` desde `develop`. Tags anotados `vX.Y.Z` sobre `main`.
+4. Texto de la interfaz y de los documentos en castellano.
+
+>>> Bash: node "D:/code/.worktrees/sdd-kit/feature-0365-hotfix-spike-validate/.temp/k365fx/cli/bin/sdd.js" watch subagent --description "Final review — Spec axis" > /tmp/rv/watch.txt 2>&1 &
+echo started
+<<< Command running in background with ID: bdju1cidq. Output is being written to: D:\code\.worktrees\sdd-kit\feature-0365-hotfix-spike-validate\.temp\claude\0d643098c1c8554d\afd570ab-4c53-42eb-bd8e-62205407e2e2\tasks\bdju1cidq.output. You will be notified when it completes. To check interim output, use Read on that file path.
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Final review — Spec axis
+    ## Code constraints
+    ## How to review
+    ## Requisitos
+    ## Qué comprobar (spike)
+    ## Declined to judge
+    ## Read-only
+    ## Una comprobación que no puedas hacer es «no verificado: <motivo>», nunca «pasada».
+    ## Formato de salida
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: a7fe2aff0eee523e6 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/review-0030-21d24c4" && git log --oneline -8 && git status --short && ls -R .docs/sdd/changes/20261120-090000-feature-0030-libres-load/
+<<< 21d24c4 docs(sdd): commit de la Task 3 en tasks.md
+8a5a3a3 spike(0030): O2 medido, 4,3 MB de heap con 1.000 reservas
+8417ec6 docs(sdd): tasks.md del spike 0030
+97c7183 spike(0030): research con memoria y uso por una persona
+85f12a7 spike(0030): comparaciones de libres con 1.000 reservas
+03fedd9 feat: base del molde
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/:
+medidas/
+plan.md
+research.md
+spec.md
+tasks.md
+
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas:
+medir-libres.mjs
+o1-libres.txt
+o2-memoria.txt
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/spec.md
+<<< 1	---
+2	id: 20261120-090000-feature-0030-libres-load
+3	feature: 0030
+4	title: ¿Aguanta `libres` 1.000 reservas?
+5	mode: spike
+6	status: approved
+7	created: 2026-11-20
+8	approvers:
+9	  - name: Laura
+10	    approved_at: 2026-11-20
+11	---
+12	
+13	# Spec — ¿Aguanta `libres` 1.000 reservas?
+14	
+15	Validación: agente — es una medida: no hay nada que una persona observe aparte de la tabla.
+16	
+17	## Capacidades
+18	
+19	Ninguna, porque investigación
+20	
+21	## Forma spike
+22	
+23	- **Pregunta**: ¿responde `libres` a tiempo con 1.000 reservas en memoria?
+24	- **Objetivos**: O1 — `libres 10:00-12:00` con 1.
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md
+<<< 1	---
+2	id: 20261120-090000-feature-0030-libres-load
+3	title: Research — `libres` con 1.000 reservas
+4	spec: ./spec.md
+5	status: draft
+6	created: 2026-11-21
+7	---
+8	
+9	# Research — `libres` con 1.000 reservas
+10	
+11	## 1. Pregunta a resolver
+12	
+13	¿Responde `libres` a tiempo con 1.000 reservas en memoria?
+14	
+15	## 2. Objetivos
+16	
+17	| Objetivo | Estado | Detalle | Evidencia |
+18	| --- | --- | --- | --- |
+19	| O1 — `libres` con 1.000 reservas en < 2.000 comparaciones | no cumple tal como se definió | 4200 comparaciones en cada una de las 10 repeticiones | `medidas/o1-libres.txt` |
+20	| O2 — 
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/plan.md
+<<< 1	---
+2	id: 20261120-090000-feature-0030-libres-load
+3	title: Plan — ¿Aguanta `libres` 1.000 reservas?
+4	spec: ./spec.md
+5	status: approved
+6	---
+7	
+8	# Plan — ¿Aguanta `libres` 1.000 reservas?
+9	
+10	**Ejecución**: native, porque un spike siempre va en Native
+11	
+12	### Task 1 — Comparaciones de `libres` con la peor carga
+13	
+14	**Evidencia**: O1 · `medidas/o1-libres.txt`, de `node medidas/medir-libres.mjs` · fila O1 de `research.md`
+15	
+16	### Task 2 — Memoria y uso por una persona
+17	
+18	**Evidencia**: O2 · `medidas/o2-memoria.txt`, de `node medidas/medir-libres.mjs --memoria` · O3 · una per
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md
+<<< 1	---
+2	id: 20261120-090000-feature-0030-libres-load
+3	title: Tasks — ¿Aguanta `libres` 1.000 reservas?
+4	---
+5	
+6	# Tasks — ¿Aguanta `libres` 1.000 reservas? (registro vivo)
+7	
+8	| # | Task | Status | Commit | Notas |
+9	| --- | --- | --- | --- | --- |
+10	| 1 | Comparaciones de `libres` con la peor carga | done | 85f12a7 | |
+11	| 2 | Memoria y uso por una persona | done | 97c7183 | |
+12	| 3 | Medir O2 (vuelta de sdd-validate: la fila estaba `no medido` y se podía medir) | done | 8a5a3a3 | |
+13	
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/medir-libres.mjs
+<<< 1	// Siembra 1.000 reservas en una semana y cuenta las comparaciones de `libres 10:00-12:00`, diez repeticiones; con --memoria, el heap tras sembrar.
+2	const rooms = ['Norte', 'Sur', 'Este'];
+3	const days = ['lun', 'mar', 'mie', 'jue', 'vie'];
+4	const bookings = Array.from({ length: 1000 }, (_, i) => ({ room: rooms[i % 3], day: days[i % 5], slot: `${String(8 + (i % 10)).padStart(2, '0')}:00` }));
+5	if (process.argv.includes('--memoria')) { console.log(`heap tras sembrar: ${(process.memoryUsage().heapUsed / 1048576).toFixed(1)} MB`); process.exit(0); }
+6	console.log(`carga: ${bookings.length} r
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/o1-libres.txt
+<<< 1	carga: 1000 reservas, 5 días, 3 salas
+2	rep 1: 4200 comparaciones
+3	rep 2: 4200 comparaciones
+4	rep 3: 4200 comparaciones
+5	rep 4: 4200 comparaciones
+6	rep 5: 4200 comparaciones
+7	rep 6: 4200 comparaciones
+8	rep 7: 4200 comparaciones
+9	rep 8: 4200 comparaciones
+10	rep 9: 4200 comparaciones
+11	rep 10: 4200 comparaciones
+12	
+
+>>> Read: <run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/o2-memoria.txt
+<<< 1	heap tras sembrar: 4.3 MB
+2	
+
+>>> Bash: cd "<run>/review-0030-21d24c4/.docs/sdd/changes/20261120-090000-feature-0030-libres-load" && node medidas/medir-libres.mjs; for i in 1 2 3 4; do node medidas/medir-libres.mjs --memoria; done; node --version; cd ../../../.. && git ls-files | grep -v '^.docs/sdd/changes' | head -50
+<<< carga: 1000 reservas, 5 días, 3 salas
+rep 1: 4200 comparaciones
+rep 2: 4200 comparaciones
+rep 3: 4200 comparaciones
+rep 4: 4200 comparaciones
+rep 5: 4200 comparaciones
+rep 6: 4200 comparaciones
+rep 7: 4200 comparaciones
+rep 8: 4200 comparaciones
+rep 9: 4200 comparaciones
+rep 10: 4200 comparaciones
+heap tras sembrar: 4.3 MB
+heap tras sembrar: 4.3 MB
+heap tras sembrar: 4.3 MB
+heap tras sembrar: 4.3 MB
+v26.10.0
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-f
+
+>>> Bash: cd "<run>/review-0030-21d24c4" && cat -n src/app.js; cat -n .docs/sdd/specs/20260917-090000-task-0006-free/spec.md | head -60; git show --stat HEAD~4 HEAD~3 HEAD~2 HEAD~1 HEAD | grep -E '^(commit| )'
+<<<      1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+     4	
+     5	function freeRooms(slot) {
+     6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+     7	}
+     8	
+     9	function findBooking(room, day) {
+    10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+    11	}
+    12	
+    13	export function cancelBooking(room, day) {
+    14	
+
+>>> Bash: cd /tmp && for i in 1 2 3; do node -e "const m=process.memoryUsage();console.log('vacio heap',(m.heapUsed/1048576).toFixed(1),'rss',(m.rss/1048576).toFixed(1))"; done; node -e "const rooms=['Norte','Sur','Este'],days=['lun','mar','mie','jue','vie'];const b=Array.from({length:1000},(_,i)=>({room:rooms[i%3],day:days[i%5],slot:String(8+(i%10)).padStart(2,'0')+':00'}));const m=process.memoryUsage();console.log('sembrado heap',(m.heapUsed/1048576).toFixed(1),'rss',(m.rss/1048576).toFixed(1), b.length)"
+<<< vacio heap 4.0 rss 54.2
+vacio heap 4.0 rss 54.1
+vacio heap 4.0 rss 54.2
+sembrado heap 4.1 rss 54.3 1000
+
+>>> Bash: cat src/app.js | head -30; node -e "const m=process.memoryUsage();console.log((m.heapUsed/1048576).toFixed(1),(m.rss/1048576).toFixed(1))"; git worktree remove ../review-0030-21d24c4 && echo removed
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: cd <run>/repo/.docs/sdd/changes/*0030* && cat > medidas/medir-libres-real.mjs <<'E'
+// Mide `libres` REAL (src/app.js, sin tocarlo): lo carga con un export añadido en memoria, siembra 1.000 reservas
+// y cuenta las evaluaciones del predicado de `some` (la «comparación» = una evaluación de `b.room === room && b.slot === slot && b.status === 'active'`).
+// Uso: node medir-libres-real.mjs [--memoria] [--vacio]
+import { readFileSync } from 'node:fs';
+const src = readFileSync(new URL('../../../../../src/app.js', import.meta.url), 'utf8')
+  .replace(/^const \[command, \.\.\.args\][^\n]*\n/, 'const command = undefined, args = [];\n') + '\nexport const __bookings = bookings;\n';
+const app = await import('data:text/javascript;base64,' + Buffer.from(src).toString('base64'));
+const N = 1000;
+const slots = ['08:00-10:00', '10:00-12:00', '12:00-14:00', '14:00-16:00'];
+const rooms = ['Norte', 'Sur'];
+const days = ['lun', 'mar', 'mie', 'jue', 'vie'];
+if (!process.argv.includes('--vacio')) {
+  app.__bookings.length = 0;
+  // peor carga: ninguna reserva activa coincide con 10:00-12:00 -> `some` recorre todas, en las 2 salas
+  for (let i = 0; i < N; i++) app.__bookings.push({ room: rooms[i % 2], day: days[i % 5], slot: i % 3 === 0 ? '08:00-10:00' : i % 3 === 1 ? '12:00-14:00' : '14:00-16:00', status: 'active' });
+}
+const mb = (x) => (x / 1048576).toFixed(1);
+if (process.argv.includes('--memoria') || process.argv.includes('--vacio')) {
+  console.log(`reservas: ${app.__bookings.length} · heap: ${mb(process.memoryUsage().heapUsed)} MB · rss: ${mb(process.memoryUsage().rss)} MB`);
+  process.exit(0);
+}
+console.log(`carga: ${app.__bookings.length} reservas, ${rooms.length} salas, slot 10:00-12:00 sin coincidencias (peor caso)`);
+for (let rep = 1; rep <= 10; rep++) {
+  let n = 0;
+  const some = app.__bookings.some;
+  app.__bookings.some = function (fn) { return some.call(this, (b, ...r) => { n++; return fn(b, ...r); }); };
+  const out = app.run('libres', ['10:00-12:00']);
+  delete app.__bookings.some;
+  console.log(`rep ${rep}: ${n} evaluaciones · libres → ${out}`);
+}
+E
+node medidas/medir-libres-real.mjs | tee medidas/o1-libres-real.txt; for i in 1 2 3 4 5 6 7 8 9 10; do node medidas/medir-libres-real.mjs --memoria; done | tee medidas/o2-memoria-real.txt; echo VACIO; for i in 1 2 3; do node medidas/medir-libres-real.mjs --vacio; done | tee medidas/o2-memoria-vacio.txt
+<<< carga: 1000 reservas, 2 salas, slot 10:00-12:00 sin coincidencias (peor caso)
+rep 1: 2000 evaluaciones · libres → Norte, Sur
+rep 2: 2000 evaluaciones · libres → Norte, Sur
+rep 3: 2000 evaluaciones · libres → Norte, Sur
+rep 4: 2000 evaluaciones · libres → Norte, Sur
+rep 5: 2000 evaluaciones · libres → Norte, Sur
+rep 6: 2000 evaluaciones · libres → Norte, Sur
+rep 7: 2000 evaluaciones · libres → Norte, Sur
+rep 8: 2000 evaluaciones · libres → Norte, Sur
+rep 9: 2000 evaluaciones · libres → Norte, Sur
+rep 10: 2000 evaluaciones · libres → Norte, Sur
+reservas: 1000 · heap: 5.0 MB · rss: 55.7 MB
+reserv
+
+>>> Bash: cat > /tmp/new_tail.md <<'E'
+## 2. Objetivos
+
+«Comparación» = una evaluación del predicado de `some` en `freeRooms` (`src/app.js`), que es lo que recorre `libres`. Se mide sobre `libres` real, cargado sin tocar `src/app.js` (`medidas/medir-libres-real.mjs`). La primera medida (`medidas/medir-libres.mjs`, `o1-libres.txt`, `o2-memoria.txt`) reimplementaba el recuento con 3 salas y otro modelo de franja: queda como descartada y no es evidencia.
+
+| Objetivo | Estado | Detalle | Evidencia |
+| --- | --- | --- | --- |
+| O1 — `libres` con 1.000 reservas en < 2.000 comparaciones | no cumple | 2000 evaluaciones en cada una de las 10 repeticiones, en el peor caso (ninguna reserva coincide con la franja, `some` recorre todas en las 2 salas). El límite es estricto: 2000 no es < 2000 | `medidas/o1-libres-real.txt` |
+| O2 — memoria del proceso < 50 MB con 1.000 reservas | no cumple | RSS 55,7–55,8 MB con 1.000 reservas, pero 55,6–55,7 MB con 1 reserva: el exceso es la base de Node (v26.10.0), no las reservas. El heap sube de 4,9 a 5,0 MB (≈ 0,1 MB por 1.000 reservas) | `medidas/o2-memoria-real.txt` (10 ejecuciones), `medidas/o2-memoria-vacio.txt` (3 ejecuciones, línea base) |
+| O3 — un recepcionista encuentra la sala libre en < 10 s | no medido con una persona | no hubo una persona en la recepción, que es lo que pedía el plan. Falta: quién lo prueba y cuándo (a decidir por el dev-lead) | — |
+
+## 3. Aguante
+
+Carga: 1.000 reservas en una semana (2 salas, 5 días).
+
+Las 10 repeticiones de `medidas/o1-libres-real.txt`: 2000 evaluaciones en todas. Las 10 ejecuciones de `medidas/o2-memoria-real.txt`: RSS 55,7–55,8 MB, heap 5,0 MB. Tiempo de `libres` en milisegundos: no medido (el spec mide comparaciones, no tiempo).
+
+## 4. Recomendación
+
+- **Elegida**: la evidencia no justifica por sí sola pasar las reservas a fichero · **Por qué**: el coste de `libres` crece en línea con las reservas (2000 evaluaciones con 1.000, justo en el límite que fijó O1) y la memoria que añaden las reservas es ≈ 0,1 MB; el exceso de O2 viene de Node, y el fichero no se ha medido. Decide el dev-lead si el umbral de O1 (límite exclusivo de 2.000) es el correcto.
+- **Descartadas**: pasar a fichero ya, porque no hay ninguna fila que mida esa alternativa y leer de fichero seguiría siendo un recorrido lineal con E/S añadida; sin base para elegirla.
+- **Lo que falta para decidir**: la medida de la alternativa en fichero y O3 con una persona.
+
+## 5. Lo que sale
+
+- Para la 0014: mantener las reservas en memoria salvo que el dev-lead dé por bueno un umbral más estricto; si lo hace, el trabajo es reducir el recorrido (índice por sala y franja), no el almacenamiento.
+- Ajuste pendiente del spec (✋, no lo toco sin aprobación): `spec.md` dice «Validación: agente — no hay nada que una persona observe», pero O3 es un objetivo de persona.
+E
+cd . && python3 -c "print(1)" >/dev/null 2>&1; node -e "
+const fs=require('fs');let r=fs.readFileSync('research.md','utf8');
+const i=r.indexOf('## 2. Objetivos');
+r=r.slice(0,i)+fs.readFileSync('/tmp/new_tail.md','utf8');
+fs.writeFileSync('research.md',r);"
+printf '\n### Task 4 — Medir sobre `libres` real (vuelta de la revisión final)\n\n**Evidencia**: O1 · `medidas/o1-libres-real.txt`, de `node medidas/medir-libres-real.mjs` · O2 · `medidas/o2-memoria-real.txt` y `medidas/o2-memoria-vacio.txt`, de `--memoria` y `--vacio` · filas O1, O2, O3 y secciones 3-5 de `research.md`\n' >> plan.md
+printf '| 4 | Medir sobre `libres` real (hallazgos de la revisión final: el script reimplementaba el recuento y O2 medía heap) | done | pendiente | |\n' >> tasks.md
+git add -A . && git commit -q -m "spike(0030): O1 y O2 medidos sobre libres real; research corregido
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; h=$(git rev-parse --short HEAD); sed -i "s/| pendiente |/| $h |/" tasks.md; echo "Revisión final: Spec opus+high, No (3 Critical, 4 Important, 2 Minor) · Código no (spike) · Arquitectura no (spike), sobre 21d24c4
+Pasada de fix: $h, 9 hallazgos (3 Critical y 4 Important corregidos en research y medidas; Minor 8 status draft y 9 carga: la carga nueva usa 2 salas, status se deja)" >> tasks.md; git add tasks.md; git commit -q -m "docs(sdd): revisión final y pasada de fix en tasks.md
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -3; git status --short
+<<< node:fs:620
+    return binding.readFileUtf8(path, stringToFlags(options.flag));
+                   ^
+
+Error: ENOENT: no such file or directory, open 'D:\tmp\new_tail.md'
+    at Object.readFileSync (node:fs:620:20)
+    at [eval]:4:19
+    at runScriptInThisContext (node:internal/vm:219:10)
+    at node:internal/process/execution:485:12
+    at [eval]-wrapper:6:24
+    at runScriptInContext (node:internal/process/execution:483:60)
+    at evalFunction (node:internal/process/execution:317:30)
+    at evalTypeScript (node:internal/process/execution:329:3)
+    at node:internal/main/eval_stri
+
+>>> Bash: cd <run>/repo/.docs/sdd/changes/*0030* && T=$(cygpath -m /tmp/new_tail.md) && node -e "
+const fs=require('fs');let r=fs.readFileSync('research.md','utf8');
+const i=r.indexOf('## 2. Objetivos');
+fs.writeFileSync('research.md',r.slice(0,i)+fs.readFileSync(process.argv[1],'utf8'));" "$T" && grep -c "medir-libres-real" research.md && git add research.md && git commit -q -m "spike(0030): research.md con las medidas sobre libres real
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -2; git status --short
+<<< 1
+warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md', LF will be replaced by CRLF the next time Git touches it
+231c1c0 spike(0030): research.md con las medidas sobre libres real
+ad91fec docs(sdd): revisión final y pasada de fix en tasks.md
+
+>>> Bash: cat /d/code/.worktrees/sdd-kit/feature-0365-hotfix-spike-validate/.temp/k365fx/skills/sdd-implement-subagent/re-review-prompt.md | head -60
+<<< # Scoped Re-Review Prompt Template
+
+Use this template when dispatching a re-review after a fix round. The
+re-reviewer verifies the findings were addressed and checks the fix diff for
+new breakage. It is not a fresh review — the full review already happened.
+
+Declare a cheap-to-mid `model` with its `subagent_type`. After the final review it is the single re-review of `sdd-verify` («Closing the review»): `sdd-kit:effort-high` + `opus`, `[FINDINGS]` carries the open findings of every axis, each with its axis, followed by the «What to Check» of the axes that went out, and `[BRIEF_FILE]` is the pat
+
+>>> Bash: cd <run>/repo && SHA=$(git rev-parse --short HEAD); R="$(dirname "$(git rev-parse --show-toplevel)")/review-0030-$SHA"; git worktree add --detach "$R" "$SHA" 2>&1|tail -1; echo $R; git diff --stat 21d24c4 HEAD > /tmp/rv/fix.diff; git diff -U10 21d24c4 HEAD >> /tmp/rv/fix.diff; wc -l /tmp/rv/fix.diff; cygpath -m /tmp/rv/fix.diff
+<<< HEAD is now at 231c1c0 spike(0030): research.md con las medidas sobre libres real
+<run>/review-0030-231c1c0
+170 /tmp/rv/fix.diff
+<home>/AppData/Local/Temp/rv/fix.diff
+
+>>> Agent: subagent_type=sdd-kit:effort-high model=opus · Re-review — fix pass spike 0030
+    ## Code constraints
+    ## Hallazgos a verificar (eje Spec)
+    ## Qué hacer
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: ac04f0097e612a598 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Read: <home>/AppData/Local/Temp/rv/fix.diff
+<<< Permission to use Read has been denied. IMPORTANT: You *may* attempt to accomplish this action using other tools that might naturally be used to accomplish this goal, e.g. using head instead of cat. But you *should not* attempt to work around this denial in malicious ways, e.g. do not use your ability to run tests to execute non-test actions. You should only try to work around this restriction in reasonable ways that do not attempt to bypass the intent behind this denial. If you believe this capability is essential to complete the user's request, STOP and explain to the user what you were tryi
+
+>>> Bash: cd "<run>/review-0030-231c1c0" && git log --oneline -3 && ls -R .docs/sdd/changes/20261120-090000-feature-0030-libres-load && ls src
+<<< 231c1c0 spike(0030): research.md con las medidas sobre libres real
+ad91fec docs(sdd): revisión final y pasada de fix en tasks.md
+771f94d spike(0030): O1 y O2 medidos sobre libres real; research corregido
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load:
+medidas/
+plan.md
+research.md
+spec.md
+tasks.md
+
+.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas:
+medir-libres.mjs
+medir-libres-real.mjs
+o1-libres.txt
+o1-libres-real.txt
+o2-memoria.txt
+o2-memoria-real.txt
+o2-memoria-vacio.txt
+app.js
+
+>>> Bash: cat <home>/AppData/Local/Temp/rv/fix.diff
+<<<  .../medidas/medir-libres-real.mjs                  | 30 ++++++++++++++++++++++
+ .../medidas/o1-libres-real.txt                     | 11 ++++++++
+ .../medidas/o2-memoria-real.txt                    | 10 ++++++++
+ .../medidas/o2-memoria-vacio.txt                   |  3 +++
+ .../plan.md                                        |  4 +++
+ .../research.md                                    | 20 +++++++++------
+ .../tasks.md                                       |  3 +++
+ 7 files changed, 73 insertions(+), 8 deletions(-)
+diff --git a/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/m
+
+>>> Bash: cd "<run>/review-0030-231c1c0" && cat -n src/app.js && D=.docs/sdd/changes/20261120-090000-feature-0030-libres-load && echo ---SPEC && cat -n $D/spec.md && echo ---RESEARCH && cat -n $D/research.md && echo ---PLAN && cat -n $D/plan.md
+<<<      1	const [command, ...args] = process.argv.slice(2);
+     2	const rooms = ['Norte', 'Sur'];
+     3	const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+     4	
+     5	function freeRooms(slot) {
+     6	  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+     7	}
+     8	
+     9	function findBooking(room, day) {
+    10	  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+    11	}
+    12	
+    13	export function cancelBooking(room, day) {
+    14	
+
+>>> Bash: cd "<run>/review-0030-231c1c0/.docs/sdd/changes/20261120-090000-feature-0030-libres-load" && node --version && node medidas/medir-libres-real.mjs && for i in 1 2 3; do node medidas/medir-libres-real.mjs --memoria; done && for i in 1 2 3; do node medidas/medir-libres-real.mjs --vacio; done; head -c 3 ../../../../src/app.js | od -c | head -2; file ../../../../src/app.js; git status --short
+<<< v26.10.0
+carga: 1000 reservas, 2 salas, slot 10:00-12:00 sin coincidencias (peor caso)
+rep 1: 2000 evaluaciones · libres → Norte, Sur
+rep 2: 2000 evaluaciones · libres → Norte, Sur
+rep 3: 2000 evaluaciones · libres → Norte, Sur
+rep 4: 2000 evaluaciones · libres → Norte, Sur
+rep 5: 2000 evaluaciones · libres → Norte, Sur
+rep 6: 2000 evaluaciones · libres → Norte, Sur
+rep 7: 2000 evaluaciones · libres → Norte, Sur
+rep 8: 2000 evaluaciones · libres → Norte, Sur
+rep 9: 2000 evaluaciones · libres → Norte, Sur
+rep 10: 2000 evaluaciones · libres → Norte, Sur
+reservas: 1000 · heap: 5.0 MB · rss: 55.3
+
+>>> Bash: cd "<run>/review-0030-231c1c0" && node --input-type=module -e "
+import { readFileSync } from 'node:fs';
+const src = readFileSync('src/app.js','utf8').replace(/^const \[command, \.\.\.args\][^\n]*\n/, 'const command = undefined, args = [];\n') + '\nexport const __bookings = bookings;\n';
+const app = await import('data:text/javascript;base64,' + Buffer.from(src).toString('base64'));
+function count(){ let n=0; const some=app.__bookings.some; app.__bookings.some=function(fn){return some.call(this,(b,...r)=>{n++;return fn(b,...r);});}; const out=app.run('libres',['10:00-12:00']); delete app.__bookings.some; return [n,out]; }
+console.log('semilla original (1 reserva Norte 10-12):', count());
+app.__bookings.length=0; for(let i=0;i<1000;i++) app.__bookings.push({room:i%2?'Sur':'Norte',day:'lun',slot:'08:00-10:00',status:'active'});
+app.__bookings[500]={room:'Norte',day:'lun',slot:'10:00-12:00',status:'active'};
+console.log('1000 con Norte ocupada en idx 500:', count());
+const cells=new Set(); for(let i=0;i<1000;i++){const r=['Norte','Sur'][i%2],d=['lun','mar','mie','jue','vie'][i%5],s=i%3===0?'08:00-10:00':i%3===1?'12:00-14:00':'14:00-16:00'; cells.add(r+d+s);} console.log('celdas distintas en la carga del script:', cells.size);
+"; git log --oneline 21d24c4..231c1c0; git show --stat 231c1c0 | tail -5
+<<< semilla original (1 reserva Norte 10-12): [ 2, 'Sur' ]
+1000 con Norte ocupada en idx 500: [ 1501, 'Sur' ]
+celdas distintas en la carga del script: 30
+231c1c0 spike(0030): research.md con las medidas sobre libres real
+ad91fec docs(sdd): revisión final y pasada de fix en tasks.md
+771f94d spike(0030): O1 y O2 medidos sobre libres real; research corregido
+    
+    Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+ .../research.md                                      | 20 ++++++++++++--------
+ 1 file changed, 12 insertions(+), 8 deletions(-)
+
+>>> Bash: cd ~ && f=$(grep -rl --include=*.md -i "no medido" .claude/plugins 2>/dev/null | grep -i -E "research|template|verify|validate" | head -8); echo "$f"; for x in $f; do echo "== $x"; grep -n -i -E "no medido|no cumple|status: (draft|done|final)|estado" "$x" | head -12; done
+<<< <persisted-output>
+Output too large (35KB). Full output saved to: <home>\.claude\projects\D--code--worktrees-sdd-kit-feature-0365-hotfix-spike-validate--temp-r365-fix-vf9-1-repo\afd570ab-4c53-42eb-bd8e-62205407e2e2\tool-results\bnk7u0bg1.txt
+
+Preview (first 2KB):
+.claude/plugins/cache/sdd-kit/sdd-kit/2.2.0/.docs/sdd/field-reports/20260923-212835-patch-0051-verify-gate.md
+.claude/plugins/cache/sdd-kit/sdd-kit/2.2.0/skills/sdd-templates/templates/kit-feedback-template.md
+.claude/plugins/cache/sdd-kit/sdd-kit/2.2.0/skills/sdd-templates/templates/walkthrough-template.md
+.claude/plugins/cache/sdd-k
+
+>>> Bash: cd ~/.claude/plugins/cache/sdd-kit/sdd-kit && v=$(ls | sort -V | tail -1); echo $v; t=$v/skills/sdd-templates/templates; ls $t | grep -i research; grep -n -i -E "status|cumple|no medido|Estado|Lo que sale|Recomend" $t/research-template.md 2>/dev/null | head -30
+<<< 3.0.4/
+research-template.md
+5:status: draft
+20:> Una fila por objetivo de la spec. Estado: `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cumple tal como se definió`, aunque funcione. Lo que simula el agente no cuenta como medido con una persona: `no medido con una persona`. Sin fichero de evidencia: `no medido`.
+22:| Objetivo | Estado | Detalle | Evidencia |
+35:## 4. Recomendación
+37:> Solo cita filas medidas; no dar por cumplido un `no cumple` ni un `no medido`. «No seguir» es una recomendación válida.
+42:## 5. Lo que sale
+
+>>> Bash: cd ~/.claude/plugins/cache/sdd-kit/sdd-kit && cat -n 3.0.4/skills/sdd-templates/templates/research-template.md; cat "<run>/review-0030-231c1c0/.docs/sdd/sdd-kit.json" 2>/dev/null | head -20; grep -rn -i "research" 3.0.4/skills/sdd-validate/SKILL.md 3.0.4/skills/sdd-archive/SKILL.md 2>/dev/null | grep -i -E "status|draft|done" | head
+<<<      1	---
+     2	id: <yyyyMMdd-HHmmss>-feature-<id>-<slug>
+     3	title: Research — <tema investigado>
+     4	spec: ./spec.md
+     5	status: draft
+     6	created: <YYYY-MM-DD>
+     7	timeboxed: 2h
+     8	---
+     9	
+    10	# Research — <tema>
+    11	
+    12	> **Timebox**: máx 2h; si se desborda, escalar al usuario. Borra los bloques de ayuda (`>`) al redactar.
+    13	
+    14	## 1. Pregunta a resolver
+    15	
+    16	La de la spec.
+    17	
+    18	## 2. Objetivos
+    19	
+    20	> Una fila por objetivo de la spec. Estado: `cumple`, `no cumple` o `no medido`. Medido por debajo del umbral: `no cump
+
+>>> Bash: cd ~/.claude/plugins/cache/sdd-kit/sdd-kit/3.0.4/skills && grep -rn -E "research\.md" --include=SKILL.md . | grep -i -E "status|draft|done|final|approved" | head; grep -rn -i -E "comparaci|definici.n.*(umbral|objetivo)|umbral.*(ambig|defin)" --include=*.md sdd-spec-writing sdd-validate sdd-verify sdd-implement-native 2>/dev/null | head -8
+<<< (Bash completed with no output)
+
+>>> Bash: cd "<run>/review-0030-231c1c0" && git show --stat --format='%h %s' 771f94d | tail -8; git diff 771f94d 231c1c0 -- .docs | head -60; cat -n .docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md | tail -6
+<<<  .../medidas/medir-libres-real.mjs                  | 30 ++++++++++++++++++++++
+ .../medidas/o1-libres-real.txt                     | 11 ++++++++
+ .../medidas/o2-memoria-real.txt                    | 10 ++++++++
+ .../medidas/o2-memoria-vacio.txt                   |  3 +++
+ .../plan.md                                        |  4 +++
+ .../tasks.md                                       |  1 +
+ 6 files changed, 59 insertions(+)
+diff --git a/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md b/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md
+index deb03ba..
+
+>>> Bash: git worktree remove ../review-0030-231c1c0 && cd .docs/sdd/changes/*0030* && cat > /tmp/tail2.md <<'E'
+## 4. Recomendación
+
+- **Elegida**: no decidir todavía el almacenamiento de la 0014 · **Por qué**: O1 y O2 salen `no cumple`; O1 queda justo en el límite (2000, y 2000 es el máximo teórico de `libres` con 2 salas y 1.000 reservas, así que el umbral aprobado `< 2.000` solo se cumpliría si alguna reserva coincide con la franja); en O2 el exceso lo pone Node y las reservas añaden ≈ 0,1 MB. La alternativa en fichero no se ha medido y O3 no tiene persona: no hay fila medida que sostenga elegir memoria ni fichero.
+- **Descartadas**: pasar a fichero ya y mantener memoria ya, las dos por la misma razón: ninguna se apoya en una fila medida.
+- **Lo que falta para decidir**: medir la alternativa en fichero; medir O1 con otro N (500, 2.000) para saber cómo crece; O3 con una persona; y que el dev-lead confirme si el umbral de O1 y el de O2 (RSS con la base de Node) son los que quiere.
+- **Nota sobre la definición de «comparación»**: la fijó el agente (una evaluación del predicado de `some`), es la más favorable; contando cada `===` salen 3000 y el veredicto sigue siendo `no cumple`. Además, `freeRooms` recorre todas las reservas del array, también las canceladas: la carga real es el histórico, no «1.000 en una semana». La carga sembrada cae en 30 combinaciones de sala, día y franja.
+
+## 5. Lo que sale
+
+- Para la 0014: nada decidido; las medidas y lo que falta (§4) son su punto de partida.
+- ✋ Ajuste pendiente del spec (no lo toco sin aprobación): `spec.md` dice «Validación: agente — no hay nada que una persona observe», pero O3 es un objetivo de persona.
+E
+T=$(cygpath -m /tmp/tail2.md); node -e "
+const fs=require('fs');let r=fs.readFileSync('research.md','utf8');
+const i=r.indexOf('## 4. Recomendación');
+fs.writeFileSync('research.md',r.slice(0,i)+fs.readFileSync(process.argv[1],'utf8'));" "$T"
+node -e "
+const fs=require('fs');let t=fs.readFileSync('tasks.md','utf8');
+t=t.replace(/\n(Revisión final:)/,'\n\n\$1').replace(/\n(Pasada de fix:[^\n]*)/,'\n\$1');
+t=t.trimEnd()+'\nRe-revisión: 21d24c4..231c1c0, sdd-kit:effort-high + opus, con correcciones (1 Important nueva, I1, corregida en el hilo)\nsin revisar: el commit que corrige I1 (recomendación de research.md §4-5, solo documentación)\n';
+fs.writeFileSync('tasks.md',t);"
+git add research.md tasks.md && git commit -q -m "spike(0030): recomendación sin decidir el almacenamiento (I1 de la re-revisión)
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -1; tail -8 tasks.md
+<<< warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md', LF will be replaced by CRLF the next time Git touches it
+65be3d7 spike(0030): recomendación sin decidir el almacenamiento (I1 de la re-revisión)
+| 2 | Memoria y uso por una persona | done | 97c7183 | |
+| 3 | Medir O2 (vuelta de sdd-validate: la fila estaba `no medido` y se podía medir) | done | 8a5a3a3 | |
+| 4 | Medir sobre `libres`
+
+>>> Bash: cat /d/code/.worktrees/sdd-kit/feature-0365-hotfix-spike-validate/.temp/k365fx/skills/sdd-templates/templates/validation-template.md; ls; ls ../../../ 2>/dev/null
+<<< # Mensaje de validación — plantilla
+
+> Lo presenta `sdd-validate` (paso 4). No se guarda: va en el chat, en el idioma del usuario. Las secciones van en este orden y las que no tengan contenido se omiten, salvo el 🦆 y el ✋.
+>
+> **Quién valida** lo dice la línea `Validación:` de la spec o de `patch.md`; sin la línea, `dev-lead`. Con `Validación: agente` o con `validation.mode: field` no hay guion. En los dos no paras: lo de «Sin probar» se informa, no se pregunta, y sigues con el cierre. Con `agente`, sin `field`, registras `Validación por el agente: <fecha> · <evidencia>`.
+>
+> **El guion va el
+
+>>> Bash: cd <run>/repo/.docs/sdd/changes/*0030* && git status --short; echo "Validación en campo: 2026-11-25 · filas de research.md cotejadas con su evidencia (O1: 2000 evaluaciones ×10, ejecución real sobre libres real; O2: RSS 55,7 MB con 1.000 y 55,6 con 1, ejecución real; O3 no probado: sin persona); eje Spec revisado y re-revisado, 1 sin revisar (recomendación §4-5, solo documentación)" >> tasks.md && git add tasks.md && git commit -q -m "docs(sdd): validación en campo del spike 0030
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" 2>&1 | grep -v warning; git log --oneline -1
+<<< warning: in the working copy of '.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md', LF will be replaced by CRLF the next time Git touches it
+94d3c74 docs(sdd): validación en campo del spike 0030
+
+=== RESULTADO (24 turnos, 1.7191249999999998 $)
+La revisión del eje Spec sigue en marcha. Espero su resultado antes de seguir.
+
+=== RESULTADO (8 turnos, 1.7191249999999998 $)
+La re-revisión sigue en marcha. Espero a que termine para registrarla.
+
+=== RESULTADO (4 turnos, 1.7191249999999998 $)
+🦆 El spike 0030 está validado, pero no llega a un «sí, aguanta»: medido sobre el `libres` real, O1 y O2 salen `no cumple` y O3 sigue sin medirse. Con 1.000 reservas sin ninguna que coincida con la franja, `libres 10:00-12:00` hace 2.000 evaluaciones del predicado. El límite era `< 2.000`.
+
+**✋ Me salí del plan en…**
+
+- Primera pasada: el paso 2 falló, porque O2 estaba `no medido` y se podía medir. Volví a `sdd-implement` y añadí la Task 3 (commit `8a5a3a3`).
+- Revisión final del eje Spec, que en un spike es el único: devolvió "No" con 3 Critical y 4 Important.
+  - `medir-libres.mjs` reimplementaba el recuento, con 3 salas y otro modelo de franja, en lugar de medir `libres`.
+  - O2 medía el heap, pero el spec pide la memoria del proceso. La nota «es el heap de las reservas» era falsa.
+  - La recomendación «no seguir en memoria» descansaba solo en esa primera medida de O1.
+- Añadí la Task 4 (commit `771f94d`) con `medidas/medir-libres-real.mjs`, que carga el `src/app.js` real sin tocarlo. Antes del fix, 3 de las 4 filas de `research.md` estaban mal.
+- Fijé la definición de «comparación» yo, no el spec: una evaluación del predicado de `some`. Es la más favorable. Contando cada `===` salen 3.000 y O1 sigue siendo `no cumple`.
+- La re-revisión (opus + high) dejó una Important nueva (I1): mi recomendación aceptaba dos `no cumple`. La corregí yo en el commit `65be3d7`. Ese commit queda como **`sin revisar`** y es solo documentación.
+
+**Smoke que he corrido**
+
+| Objetivo | Evidencia | Resultado |
+| --- | --- | --- |
+| O1 | ejecución real | 2.000 evaluaciones en las 10 repeticiones → `no cumple` (2.000 no es < 2.000) |
+| O2 | ejecución real | RSS 55,7 MB con 1.000 reservas y 55,6 MB con 1. El exceso es la base de Node; las reservas añaden unos 0,1 MB → `no cumple` |
+| O3 | no probado | No hubo una persona en la recepción → `no medido con una persona` |
+
+**Suites**
+
+- Saltada. Todo lo cambiado está dentro de `changes/`, así que el cierre no la ejecuta.
+
+**Sin probar**
+
+- Medir la alternativa en fichero.
+- Medir O1 con otro número de reservas.
+- O3 con una persona.
+- El tiempo de `libres` en milisegundos. El spec mide comparaciones, no tiempo.
+
+El resultado queda en `tasks.md` como `Validación en campo: 2026-11-25 · …`.
+
+**Para ti**
+
+- `spec.md` dice «Validación: agente — no hay nada que una persona observe», pero O3 es un objetivo de persona. No toco un spec aprobado sin tu visto bueno.
+- `research.md` §4 ahora dice «no decidir todavía el almacenamiento de la 0014». ¿Te parece bien el umbral de O1 y el de O2 (RSS con la base de Node)? Si cambian, hay que repetir esas filas.
+
+No he invocado `sdd-archive`, que cierra y mergea, porque quedan abiertos esa decisión del spec y el commit `sin revisar`. Si quieres que cierre, dímelo.

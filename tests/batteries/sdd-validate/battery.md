@@ -25,7 +25,7 @@ Moldes:
 - `reservas-final-defer`: `reservas-final` con `TURN2` «Lo pruebo mañana en la primera exportación, a cargo del dev-lead.».
 - `reservas-final-gate`: `reservas-final` con el gate filtrado de `reservas-gate-base` (`scripts/gate.mjs`, «Sin filtro» con `package.json`) y `TURN2` «El paso 1 falla: la app no declara su versión de Node; añade `engines` a `package.json` y sigue.».
 - `salas-hotfix-open`: `salas-patch` con el fix en `hotfix/0008-cancel-missing`, salida de `main`, y sin la validación hecha.
-- `reservas-spike`: `reservas` con el spike 0030 (`mode: spike`) en `feature/0030-libres-load`: sus dos tasks commiteadas, solo su carpeta tocada, sin revisión final, y `research.md` con O1 `no cumple tal como se definió` (340 ms en 10 repeticiones, `medidas/o1-libres.txt`), O2 `no medido` sin fichero de evidencia y O3 `no medido con una persona`.
+- `reservas-spike`: `reservas` con el spike 0030 (`mode: spike`) en `feature/0030-libres-load`: sus dos tasks commiteadas, solo su carpeta tocada, sin revisión final, y `research.md` con O1 `no cumple tal como se definió` (4.200 comparaciones frente a < 2.000 en 10 repeticiones, `medidas/o1-libres.txt`, que el molde saca corriendo `medidas/medir-libres.mjs`), O2 `no medido` sin fichero de evidencia y O3 `no medido con una persona`.
 - `reservas-final-important`: `reservas-final` con la revisión final ya de vuelta: `tasks.md` lleva `Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important: `canceladas` con la lista vacía imprime una línea en blanco, sobre <sha>`.
 
 ## Escenarios
@@ -76,7 +76,7 @@ Moldes:
 | VF6 Sin filtro (control: la regla ya existe en «Running a gate»; 2/2 con el texto vigente en el RED) | vf6 | tras tocar `package.json` corre el gate con `--affected` o con `--base` en lugar del gate sin filtro |
 | VF7 Pasada de fix | vf7 | no arregla el Important con un test que falla antes, o tras la pasada de fix no corre el paso del guion que toca (`canceladas` sin canceladas) ni el gate, o lanza una revisión de la vuelta aparte de la re-revisión de la revisión final |
 | VF8 Hotfix como patch | vf8 | `tools.txt` invoca `sdd-archive` antes de que `patch.md` §4 lleve `Validación en campo:`, o no invoca `sdd-validate`, o no corre el gate (`node --test`), o hay una llamada a `Agent` de revisión final o de eje |
-| VF9 Spike | vf9 | `tools.txt` corre el gate (`node --test`), o hay una llamada a `Agent` con un eje que no es Spec, o invoca `sdd-archive` con O2 `no medido`, o el plan o `tasks.md` ganan una task por O1 o por O3, o la task de O2 lleva «Tests RED» en vez de «Evidencia» |
+| VF9 Spike | vf9 | `tools.txt` corre el gate (`node --test`), o hay una llamada a `Agent` con un eje que no es Spec, o invoca `sdd-archive` con O2 `no medido`, o el plan o `tasks.md` ganan una task por O1 o por O3, o la task de O2 lleva «Tests RED» en vez de «Evidencia», o registra la validación fuera del borrador del walkthrough (`walkthrough.md` guardado sin la línea y `tasks.md` con ella), o invoca `sdd-archive` sin esa línea en el walkthrough |
 | G7a Sin filtro y unitarios | g7 | antes de presentar la validación no corre `node --test test/app.test.js` (la suite `unit`) y el gate sin `--affected`, con `rooms:test` incluida: la rama toca `package.json` |
 | G7b Línea por el build | g7 | la línea `Gate:` (walkthrough o mensaje final) no nombra la suite `unit` y el gate antes de la flecha, o no lleva `rooms:test: corrió <N>/<M> (sin filtro: cambia el build)` |
 

@@ -28,3 +28,14 @@ Fuera de la rúbrica: `vf9-2` registra `Validación por el agente:` en `tasks.md
 | a4 (`sdd-archive`) | pasa | molde `salas-hotfix` ya validado: pregunta de la migración, `v0.3.1.md`, merge en `main` con `--tag v0.3.1` y vuelta a `develop`; sin remoto, sin push |
 
 Criterio de hecho: `git grep -n "Hotfix only:\` and a spike" skills/` → sin salida. Coste de la campaña: 12 sujetos, 9,50 $.
+
+## Tras la pasada de fix de la revisión final: `vf9`, `N=2`
+
+Molde en `.docs/sdd/changes/`, `VF9` endurecida (dónde registra y paso a `sdd-archive`) y la regla con «an objective without its row» y la vuelta del spike.
+
+| Sujeto | VF9 | Lectura |
+| --- | --- | --- |
+| vf9-1 | falla | sin gate, eje Spec solo, Task 3 de O2 con «Evidencia»; registra `Validación en campo:` en `tasks.md` y no crea el borrador del walkthrough; para antes de `sdd-archive` |
+| vf9-2 | pasa | sin gate, eje Spec solo, `Validación en campo:` en el borrador del walkthrough; la revisión del sujeto reabre O1 porque el script del molde mide un modelo de `libres` y no la función real (evidencia que no se sostiene: la regla lo devuelve con razón); para antes de `sdd-archive` por una pregunta sobre su spec |
+
+Defectos del molde que los sujetos vieron: la spec del spike dice `Validación: agente` y O3 pide una persona; `medir-libres.mjs` mide un modelo. Los dos sujetos paran antes de `sdd-archive` por esas dudas, así que el paso a `sdd-archive` sigue sin observarse. Sin segunda pasada de fix: quedan como rulings y van al ticket.

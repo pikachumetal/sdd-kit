@@ -25,6 +25,7 @@ let ASK = cell('Petición');
 if (!current) ASK = RED_VALIDATE ? ASK.replace('Invoca la skill sdd-kit:sdd-validate y sigue. ', '') : ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const P8 = '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing';
+const S30 = '.docs/sdd/changes/20261120-090000-feature-0030-libres-load';
 const CAP = '.docs/sdd/capabilities/bookings.md';
 const ROADMAP = 'ROADMAP.md';
 const DEBT = '.docs/sdd/steering/debt.md';
@@ -286,7 +287,6 @@ function done0008(hotfix) {
 }
 // El spike 0030 con sus dos tasks commiteadas y solo su carpeta tocada: O1 no cumple su umbral (un resultado), O2 sin medir y medible (vuelve), O3 sin medir con una persona (un resultado).
 function doneSpike0030() {
-  const S30 = '.docs/sdd/specs/20261120-090000-feature-0030-libres-load';
   moldReservas();
   branch('feature/0030-libres-load');
   s.put(`${S30}/spec.md`, [
@@ -873,7 +873,7 @@ foreign?.kill();
 // Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
 if (existsSync(at('scripts/env-down.mjs'))) spawnSync(s.NODE, [at('scripts/env-down.mjs')], { cwd: s.R, stdio: 'ignore' });
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const kept of ['tasks', 'walkthrough', 'patch']) for (const dir of [F10, P8, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
+for (const kept of ['tasks', 'walkthrough', 'patch', 'plan', 'research']) for (const dir of [F10, P8, S30, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
 const files = (dir, pattern) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => pattern.test(name)).sort() : []);
 for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\.md$/)) keepIf(`skills/sdd-upgrade/references/migrations/${migration}`, migration);
 for (const kept of ['ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));
