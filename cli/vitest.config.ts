@@ -9,6 +9,6 @@ export default defineConfig({
     // SDD_KIT_HEADLESS (0233); los que corren en proceso van también en cli:test y en el pre-commit.
     exclude: process.env.SDD_KIT_HEADLESS
       ? configDefaults.exclude
-      : [...configDefaults.exclude, ...['run', 'subject', 'molds'].map((name) => `**/kit/headless/${name}.test.ts`)],
+      : [...configDefaults.exclude, ...['run', 'subject', 'molds', 'mold-commands'].map((name) => `**/kit/headless/${name}.test.ts`)],
   },
 });

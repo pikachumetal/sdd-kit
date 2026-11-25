@@ -327,8 +327,20 @@ describe('verdict con las filas de la rúbrica que se comprueban', () => {
     ['text: sin regex', '| K6 Mal | k1 | `text: x` |', 'K6: comprobación mal escrita'],
     ['text: con una regex que no compila', '| K6 Mal | k1 | `text: /(/` |', 'K6: comprobación mal escrita'],
     ['text: con un escenario que no existe', '| K6 Mal | k9 | `text: /x/` |', 'K6: escenario desconocido: k9'],
+    ['mold: sin regex', '| K6 Mal | k1 | `mold: walkthrough.md` |', 'K6: comprobación mal escrita'],
+    ['mold: con una regex que no compila', '| K6 Mal | k1 | `mold: walkthrough.md /(/` |', 'K6: comprobación mal escrita'],
+    ['mold: con un escenario que no existe', '| K6 Mal | k9 | `mold: walkthrough.md /x/` |', 'K6: escenario desconocido: k9'],
   ])('rechaza una comprobación %s: callada, no correría', (_name, row, message) => {
     expect(() => verdict(TABLE, OUT, [], withRubric(row))).toThrow(new BatteryError(message));
+  });
+
+  it('mold: no se aplica a lo que guarda el sujeto: es del molde, y la evalúa el sujeto en seco', () => {
+    const fs = withRubric('| M1 Molde | k1 | `mold: walkthrough.md /^Validación en campo:/` |');
+    for (const label of ['k1-1', 'k1-2']) {
+      tools(fs, label, finished(CLEAN));
+      kept(fs, label, 'Validación en campo: 2026-11-25\n');
+    }
+    expect(verdict(TABLE, OUT, [], fs).lines[0]).toBe('k1 · 2/2 · umbral 2/2 · verde');
   });
 });
 

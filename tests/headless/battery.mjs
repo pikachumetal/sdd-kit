@@ -12,6 +12,8 @@
 // y con 3 sin lanzar nada si lo gastado en toda la campaña ya alcanza COST_CAP. Cada sujeto cuenta contra COST_CAP con el precio de plan de su escenario.
 // Con 0 y `puerta verde`, la conducta sigue sin leer: las filas en prosa las lee el hilo. `verde` solo si todas sus filas son de máquina:
 // `tools: /<regex>/` presente|ausente, `tools: /<a>/ antes de /<b>/`, y `file: <fichero> /<regex>/`, que falla si en <salida>/<etiqueta>/ falta el fichero (lo guarda s.keep) o la línea, y `text: /<regex>/`, que falla si <salida>/<etiqueta>.texts.txt falta o no casa, también con emoji.
+// `mold: <fichero> /<regex>/` es del molde montado, no de la salida: con DRY_RUN=1 el sujeto la evalúa antes de lanzar, junto a los comandos
+// de s.leave, y si el fichero existe y casa deja <etiqueta>.mold.txt; el escenario sale rojo con «molde roto en <etiqueta>: …».
 // Lo que hace fallar el primer lanzamiento: KIT_DIR es una copia sin .docs/ ni tests/, sacada con git archive <commit>:dist;
 // SUBJECT_CAP acumula entre fases de SPEC_DIR, no cuenta la tanda, y la previsión de la spec manda sobre él (cabecera de run.mjs); y el id de un escenario choca dentro de una fase («ya existe»), también entre baterías con el mismo SPEC_DIR y PHASE.
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -85,8 +87,16 @@ const savedCheck = (saved, pattern) => ({ label }, { outDir, fs }) => {
 
 const onTools = (check) => ({ text }) => check(text);
 
+const regex = (source, flags) => new RegExp(source.replaceAll('\\|', '|'), flags);
+const MOLD_CHECK = /^`mold: ([^\s`]+) \/(.+)\/`$/;
+
 function compileCheck(cell) {
-  const regex = (source, flags) => new RegExp(source.replaceAll('\\|', '|'), flags);
+  // Del molde montado, no de la salida: la evalúa el sujeto en seco, antes de lanzar. Aquí solo se compila.
+  const mold = cell.match(MOLD_CHECK);
+  if (mold) {
+    regex(mold[2], 'm');
+    return () => false;
+  }
   const presence = cell.match(/^`tools: \/(.+)\/` (presente|ausente)$/);
   if (presence) return onTools(presenceCheck(regex(presence[1]), presence[2] === 'presente'));
   const order = cell.match(/^`tools: \/(.+)\/ antes de \/(.+)\/`$/);
@@ -123,6 +133,16 @@ function proseCovers(cell, known) {
   return (id) => named.includes(id);
 }
 
+// Las filas `mold:` de un escenario, para el sujeto en seco; sin battery.md, ninguna.
+export function moldChecks(batteryPath, id) {
+  if (!existsSync(batteryPath)) return [];
+  return (readTable(batteryPath, RUBRIC_HEADER, fileFs) ?? [])
+    .filter((row) => row.Escenarios.split(/,\s*/).includes(id))
+    .map((row) => [row, MOLD_CHECK.exec(row['Falla si…'])])
+    .filter(([, match]) => match)
+    .map(([row, [, file, source]]) => ({ id: row.Fila.split(' ')[0], file, pattern: regex(source, 'm') }));
+}
+
 // Una celda puede juntar varias filas: «S1, S2, R1 Juntas».
 const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
 
@@ -130,7 +150,7 @@ const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
 function readRubric(batteryPath, rows, fs) {
   const known = new Set(rows.map((row) => row.Id));
   const table = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
-  const byMachine = (row) => /^`(tools|file|text):/.test(row['Falla si…']);
+  const byMachine = (row) => /^`(tools|file|text|mold):/.test(row['Falla si…']);
   return {
     checks: table.filter(byMachine).map((row) => parseCheck(row, known)),
     prose: table.filter((row) => !byMachine(row)).map((row) => ({ id: rowIds(row.Fila), covers: proseCovers(row.Escenarios, known) })),
@@ -204,8 +224,9 @@ function readRuns(row, outDir, fs) {
 }
 
 // Falta evidencia solo si lo que falta aún podría cambiar el veredicto: con lo medido por debajo del umbral aunque pasaran todos, es rojo.
-function scenarioState({ passed, missing, needed, kitFailed }) {
-  if (kitFailed || passed + missing < needed) return 'rojo';
+// Un molde roto o un kit que no cargó es rojo aunque falten sujetos: relanzar no lo arregla.
+function scenarioState({ passed, missing, needed, broken }) {
+  if (broken || passed + missing < needed) return 'rojo';
   return missing ? 'sin evidencia' : 'verde';
 }
 
@@ -234,14 +255,27 @@ function judge(row, { outDir, fs, rubric: { checks, prose } }) {
       !failedChecks.some(({ labels }) => labels.includes(label)) &&
       (row.Esperado === ANY || (slashSkill(state) ?? firstSkill(text)) === row.Esperado),
   ).length;
-  const state = scenarioState({ passed, missing: n - runs.length, needed, kitFailed: unloaded.length > 0 });
-  const notes = [
+  const brokenMolds = brokenMoldsOf(row, outDir, fs);
+  const state = scenarioState({ passed, missing: n - runs.length, needed, broken: unloaded.length > 0 || brokenMolds.length > 0 });
+  const notes = verdictNotes({ noTools, unfinished, unloaded, failedChecks, brokenMolds });
+  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id, outDir)}`, ...notes].join(' · ');
+}
+
+function verdictNotes({ noTools, unfinished, unloaded, failedChecks, brokenMolds }) {
+  return [
     noTools.length ? `sin tools.txt: ${noTools.join(', ')}` : '',
     unfinished.length ? `sin RESULTADO: ${unfinished.join(', ')}` : '',
     unloaded.length ? `el kit no cargó en ${unloaded.join(', ')}` : '',
     ...failedChecks.map(({ id, labels }) => `${id} falla en ${labels.join(', ')}`),
+    ...brokenMolds,
   ].filter(Boolean);
-  return [`${row.Id} · ${passed}/${n} · umbral ${row.Umbral} · ${statedVerdict(state, prose, row.Id, outDir)}`, ...notes].join(' · ');
+}
+
+// La primera línea de <etiqueta>.mold.txt, que el sujeto en seco deja al encontrar el molde roto.
+function brokenMoldsOf(row, outDir, fs) {
+  return Array.from({ length: Number(row.n) }, (_, i) => `${row.Id}-${i + 1}`)
+    .filter((label) => fs.exists(join(outDir, `${label}.mold.txt`)))
+    .map((label) => `molde roto en ${label}: ${fs.read(join(outDir, `${label}.mold.txt`)).split(/\r?\n/)[0]}`);
 }
 
 function judgeRows(batteryPath, selected, { outDir, fs }) {
