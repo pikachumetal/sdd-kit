@@ -23,7 +23,7 @@ created: 2026-11-24
 | 5 | `sdd-implement` y sus métodos: el pase a `sdd-validate` | done | 841c974 | |
 | 6 | `sdd-archive` y los textos que nombran la validación | done | 67ee053 | |
 | 7 | ADR, topes, docs del flujo y enmiendas de redacción | done | 82e3f62 | |
-| 8 | GREEN, REFACTOR y controles | in_progress | — | GREEN leído en parte; falta REFACTOR de dos paros, controles y humo |
+| 8 | GREEN, REFACTOR y controles | done | — | GREEN, una ronda de REFACTOR, controles 8/8 y humo 5/5; ver tests/validation-in-implement-green.md |
 
 ## Rulings
 

@@ -1,0 +1,200 @@
+--- [3]
+Ahora: leo la spec, el plan y el estado de la rama. Queda: elegir método e implementar las tasks, ~pocos minutos.
+
+--- [8]
+La línea `Ejecución` del plan dice `subagent`, y ella decide aunque `sdd-kit.json` ponga `native`. Sigo con SDD.
+
+--- [14]
+Ya estoy en la rama de la feature (no en `main`). Trabajo en el sitio y paso el baseline en un worktree desacoplado.
+
+--- [16]
+Baseline verde (4/4). Ahora el workspace, el preflight y la comprobación de base.
+
+--- [24]
+Ahora escribo los tests RED de la Task 1 (sin commitear) y guardo una copia fuera del repo.
+
+--- [30]
+La Task 1 está en manos del implementador (sonnet, effort-low). Espero su informe.
+
+--- [35]
+Sin cambios; uso Edit.
+
+--- [40]
+El commit no se hizo (el grep sin coincidencias cortó la cadena). Lo hago ahora.
+
+--- [42]
+Status: DONE
+
+Commits: c969edf feat(cancelar): pedir un motivo de la lista
+
+Tests: antes de implementar, `node --test test/cancel.test.js` falló en 3 tests, como se esperaba. Después pasan los 4 (4 pass, 0 fail).
+
+Concerns: ninguna. `cancelar` comprueba primero que exista la reserva y después el motivo. Un motivo inválido o ausente no cancela la reserva. El motivo queda guardado en `booking.reason`. No toqué `canceladas` ni `anular`.
+
+Report: <run>\repo\.temp\sdd\plan\task-1-report.md
+
+--- [43]
+Informe recibido. Comparo el test con mi copia RED y genero el paquete de revisión.
+
+--- [51]
+Revisión limpia (sin Critical ni Important). Cierro la Task 1: marco `tasks.md`, junto el rango en un commit y anoto el ledger.
+
+--- [68]
+Revisión limpia. Cierro la Task 2 y paso a la validación.
+
+--- [70]
+Ahora: la validación final (gate, guion y revisión final). Queda: `sdd-validate`.
+
+--- [74]
+Ahora: el gate de cierre y el guion ejecutado a mano. Queda: revisión final y validación, ~pocos minutos.
+
+--- [77]
+El CLI no persiste entre procesos (el almacén es en memoria; eso es la 0014), así que ensayo el guion completo en un solo proceso.
+
+--- [80]
+Gate verde (7/7) y guion ensayado. Sigo con la revisión final por ejes.
+
+--- [94]
+Los dos ejes (Spec con opus y Code con sonnet) están revisando en segundo plano. Espero sus informes.
+
+--- [110]
+### Strengths
+- **Scenario 1 (Cancelar pide un motivo de la lista) is fully implemented.** `src/app.js:32-46` accepts exactly the three reasons, in the order the dev-lead agreed (cambio de planes, sala ocupada, otro). A valid cancellation answers «cancelada Norte lun (sala ocupada)». A reason outside the list and a missing `--motivo` both answer the exact text the spec asks for, because `reasonFrom` (`src/app.js:34-37`) returns `undefined`, which fails the list check.
+- **Scenario 2 (El listado de canceladas enseña el motivo) is fully implemented.** `listCancelled` (`src/app.js:56-61`) and the `canceladas` route (`src/app.js:69`) return «Norte lun — sala ocupada», with the em dash as written in the spec. The reason is stored on the booking, as the Approach section says.
+- **Every THEN has its test where «Dónde se prueba» says it should be**, in `test/cancel.test.js`:
+  - valid reason: line 110
+  - reason outside the list: line 98
+  - no `--motivo`: line 102
+  - the `canceladas` listing: line 117
+- **The scope is respected.** `voidBooking` (`anular`) is unchanged and voided bookings stay out of `canceladas`, which keeps 0011 out. `freeRooms` and `reservar` behave as before.
+- **Both plan tasks are present and match the commits.** Task 1 is `4dff15e` and Task 2 is `990f436`.
+- **The ledger's rulings hold up.**
+  - Rewriting the old test 'cancelar una reserva activa' was required: under the spec, cancelling without a reason is now an error.
+  - Checking that the booking exists before checking the reason keeps the existing behaviour for a missing booking. The spec doesn't cover that case.
+  - Tests are ordered because `bookings` is shared at module level in the file.
+- All interface text is in Spanish, as the code constraint requires.
+
+### Issues
+
+**Critical**: ninguna.
+
+**Important**: ninguna.
+
+**Minor**
+- **`canceladas` prints a blank line when nothing has been cancelled** (`src/app.js:56-61`).
+  - What: with no cancelled bookings, `listCancelled()` returns `''`, so the CLI prints an empty line.
+  - Why: the spec doesn't cover this case. Someone running `canceladas` would expect a message such as «no hay reservas canceladas», not blank output they can't tell apart from a failure.
+  - Fix: return a Spanish message when the filter comes back empty, and add a test. Confirm the wording with the dev-lead, because it adds an output the spec doesn't fix.
+  - Gap: `partial`. Source: THEN of scenario 2, read with what a user would reasonably expect.
+
+### Not verified
+- **Test results:** I didn't run the suite, as the brief instructs. The main thread reports 7/7 green, which matches the 2 tests in `test/app.test.js` plus the 5 in `test/cancel.test.js`.
+- **The `bookings` capability spec:** the spec lists `bookings` under «Modificadas», but the project has no capabilities and the review package leaves out the spec folder. I can't tell whether a capability document should have been updated.
+- **Running the real CLI:** the reason in quotes (`--motivo "sala ocupada"`) depends on the shell passing it as one argument. The tests only check it through `run()`, not through `process.argv`.
+
+### Declined to judge
+- **Line endings:** `test/cancel.test.js` changed from CRLF to LF in the index (`git ls-files --eol`: `i/lf`) while the rest of the repo is CRLF, so the whole file shows as rewritten in the diff. That is for the quality axis.
+- **Tests that depend on their order:** they rely on shared module state. That is for the quality axis, and the ledger already records it as a ruling.
+- **Exact matching of the reason:** case and spacing must match, so «Sala ocupada» is rejected. The list is closed and the spec quotes the reasons in lowercase, so I'm not counting it as a gap.
+- **Where `--motivo` sits:** it is found anywhere after the room and the day, and the room and day must come first. The spec only defines the form `cancelar <sala> <día> --motivo <motivo>`.
+- **Missing booking plus invalid reason:** the answer is «sin reserva …». This is outside what the spec fixes and is covered by a ruling.
+- **«otro» takes no free text:** that is the closed list agreed with the dev-lead.
+
+### Recommendations
+- Add a test that a voided booking (`anular`) doesn't appear in `canceladas`. It's cheap, and it guards the line between this feature and 0011.
+- Before merging, run the actual CLI once: `node src/app.js cancelar Norte lun --motivo "sala ocupada"` and then `canceladas` in the same process. The state lives in memory, so `canceladas` in a separate run will show nothing. That is worth flagging to the dev during validation, because a user may expect cancellations to persist between runs.
+
+### Assessment
+**Ready to merge?** Yes
+
+**Reasoning:** Both spec scenarios and the dev-lead's decision on the closed list are implemented completely and tested where the spec says, and nothing outside the scope was added. The only finding is a Minor one: `canceladas` with nothing cancelled prints a blank line, a case the spec doesn't cover.
+
+--- [111]
+Spec axis: sin Critical ni Important. Espero el eje de Code.
+
+--- [113]
+Espero la notificación del eje Code, que llegará sola.
+
+--- [114]
+### Strengths
+- The change is small and does one thing. `reasonFrom` parses the flag, `CANCEL_REASONS` is the single source of truth for the allowed values, and `cancelBooking` validates and applies the change (`src/app.js:32-46`). `listCancelled` only reads state (`src/app.js:56-61`).
+- The order of checks in `cancelBooking` is sensible. "sin reserva" is reported first, and the state is only mutated after the reason passes validation. A rejected cancellation leaves the booking `active`, so no half-applied state is possible.
+- A missing `--motivo` (`undefined`) is rejected by the same `includes` check as a wrong value. There is no separate branch for it.
+- `reasonFrom` is small and has no hidden state. A trailing `--motivo` with no value gives `undefined`, which is rejected cleanly.
+- The interface text is in Spanish, as the constraint requires.
+- The tests check exact output strings, so they test real behavior. The rejection tests are not vacuous: if `Norte lun` were already cancelled, they would return "sin reserva" and fail.
+- The test file keeps its own copy of the error string (`MOTIVO_NO_VALIDO`) instead of importing the list. That gives it an independent oracle.
+- The one comment in the tests (`test/cancel.test.js:96-97`) explains why the order matters, not what the code does. It documents the shared-state trade-off.
+
+### Issues
+
+**Critical**
+- None.
+
+**Important**
+- None.
+
+**Minor**
+1. `test/cancel.test.js:96-97` and `:117`. The shared-state dependency is wider than the comment says. The comment only says that tests which must not cancel `Norte lun` go before the one that cancels it. The last test (`canceladas…`) also depends on the previous test having cancelled `Norte lun` with "sala ocupada". It fails if run alone (`--test-name-pattern`) or if the tests are reordered.
+   - Judgement: this is acceptable and not a defect. `node:test` runs a file's tests sequentially in declaration order, so the result is deterministic, and the trade-off is already ruled on.
+   - Fix: make the comment mention the dependency of `canceladas` on the cancelling test.
+   - The negative tests also don't assert that the booking is still `active` after the rejection. They only show it indirectly, because a later test cancels it successfully.
+2. `src/app.js:61` and `:69`. With no cancelled bookings, `canceladas` returns `''`, and `console.log` prints a blank line. A person using the command would expect something like "sin reservas canceladas". The spec is silent on this. The effect is cosmetic, but there is also no test for the empty case. A cheap fix is `|| 'sin reservas canceladas'` plus a test. The test would have to run before the cancelling test, which makes the ordering coupling a little worse.
+3. `src/app.js:42`. A forgotten flag (`cancelar Norte lun`) gets "motivo no válido: cambio de planes, sala ocupada, otro". That message never mentions `--motivo`. Someone who forgot the flag has to guess it. Multi-word reasons also need quotes: `--motivo sala ocupada` unquoted gives the reason `sala` and is rejected. A hint such as "usa --motivo «…»" in the message would help.
+4. `src/app.js:34-37` with `:67`. `reasonFrom` and the positional arguments don't cooperate when the flag comes first. In `cancelar --motivo otro Norte lun`, `params[0]` is `--motivo`, so the output is "sin reserva --motivo otro". This is possible but not serious. The spec fixes the order `room day --motivo x`, and the usage is a CLI one-liner.
+5. `test/cancel.test.js`. The commit flips the line endings of this file. `git ls-files --eol` shows `i/lf w/crlf` for it, while `src/app.js` and `test/app.test.js` are `i/crlf`. As a result, the diff rewrites the whole file (30 insertions and 11 deletions, against 21 and 2 when ignoring end-of-line). This makes review and blame noisier, and the repo is now inconsistent. Normalizing it to match the other files would fix that.
+6. Possible duplication of the string `'sin reserva ${room} ${day}'` between `cancelBooking` and `voidBooking`. This is pre-existing and not worth extracting for two uses.
+7. Missing coverage, none of it blocking: `voided` bookings do not appear in `canceladas`, and the flag at the end without a value is not tested.
+
+### Declined to judge
+- Whether the three reasons ("cambio de planes", "sala ocupada", "otro") are the right ones. That is the Spec axis.
+- Whether `canceladas` should show the slot or the date. That is also the Spec axis.
+- Whether keeping parsing, domain state and CLI dispatch in a single `src/app.js` is right. That is the Architecture axis.
+- The module state being global (`bookings`) and the top-level `if (command) console.log(...)`. Both are pre-existing and in the architecture's scope.
+- Whether `anular` should also record a reason. It is outside the plan and the spec.
+
+### Recommendations
+- Fix the line endings of `test/cancel.test.js`. This is the only item I would do before merging, and it is trivial.
+- Optionally add the empty-list message and mention `--motivo` in the error message. Both are small UX improvements for someone using the CLI.
+- No heavy verification is missing. The suite is reported 7/7 green, and the change is small enough to read in full.
+
+### Assessment
+**Ready to merge?** Yes
+
+**Reasoning:** The change is correct and minimal. Validation happens before mutation, and the tests assert exact behavior. The shared-state ordering in the tests is documented and deterministic, so I consider it acceptable. There are no Critical or Important findings, only Minor polish items such as the empty-list output and the line-ending churn.
+
+--- [118]
+La 0010 está implementada y revisada, pero falta tu validación (modo `manual`). No he invocado `sdd-archive`, y `tasks.md` tiene un cambio sin commitear que irá en el cierre.
+
+## Qué se ha hecho
+- **Método:** SDD, porque la línea `Ejecución: subagent` del plan manda sobre `execution: native` de `sdd-kit.json`. Lo dejé como `Ruling:` en el ledger.
+- **Task 1** (`4dff15e`): `cancelar <sala> <día> --motivo <motivo>` acepta cambio de planes, sala ocupada u otro. Un motivo ausente o fuera de la lista responde «motivo no válido: …» y no cancela la reserva. Revisión de la task limpia.
+- **Task 2** (`990f436`): el comando `canceladas` lista `<sala> <día> — <motivo>`. Las anuladas no entran. Revisión de la task limpia.
+- **Gate** (`node --test`): 7/7 en verde. El baseline previo tenía 4/4.
+- **Revisión final:** el eje Spec (opus) y el eje Code (sonnet) no encontraron Critical ni Important. El eje Arquitectura no salió porque no había señales en el diff. No hubo pasada de fix ni re-revisión.
+- **Minors diferidos** (ledger):
+  - `canceladas` sin canceladas imprime una línea en blanco.
+  - El mensaje «motivo no válido» no menciona `--motivo` ni las comillas.
+  - `test/cancel.test.js` pasó de CRLF a LF.
+  - El test de `canceladas` depende del orden de los tests.
+  - Falta un test de que las anuladas no aparecen en `canceladas`.
+
+## Rulings que tomé
+- **Orden de comprobaciones:** `cancelar` mira primero si existe la reserva («sin reserva …») y después valida el motivo. La spec solo fija el caso con reserva.
+- **Tests existentes:** reescribí 'cancelar una reserva activa' para usar `--motivo`, porque la spec lo exige.
+- **Orden de los tests:** el estado de las reservas es de módulo y se comparte entre tests del fichero, así que los de rechazo van antes del que cancela Norte lun.
+
+## Ojo con el estado en memoria
+El estado vive en memoria, así que `canceladas` lanzado en otro proceso sale vacío. Eso es la 0014. Para probarlo, usa un solo proceso.
+
+## Guion para validar
+Lo ensayé yo con estas llamadas en un solo proceso (`run`), no con el CLI de terminal.
+1. `cancelar Norte lun` → «motivo no válido: cambio de planes, sala ocupada, otro»
+2. `cancelar Norte lun --motivo porque` → el mismo mensaje
+3. `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)»
+4. `canceladas` → «Norte lun — sala ocupada»
+
+Si algún paso no sale como digo, dime el número del paso y qué ves.
+
+✋ ¿Das la validación (o la difieres con un disparador)? Cuando la registre, sigo con el cierre (`sdd-archive`).
+

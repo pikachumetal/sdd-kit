@@ -1,0 +1,61 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [17]
+Sigo con el cierre de la 0010: pre-checks hechos (sin cambios ajenos, destino `develop` listo, ninguna otra rama abierta). Ahora preparo el walkthrough, la capacidad y los índices.
+
+--- [25]
+Escribo el walkthrough completo (conservando el borrador de validación y la verificación).
+
+--- [29]
+Ahora la deuda, la capacidad y los checks.
+
+--- [36]
+La base trajo `package-lock.json` y un test: es un fichero de «Sin filtro», así que el gate corre sin `--affected`.
+
+--- [41]
+Rojo en `bookings:test`. Lo contrasto como pide el cierre: el fichero solo, en la rama y en un worktree desacoplado de `develop`, a la vez.
+
+--- [46]
+**No terminado.** La 0010 no se fusiona: la suite está en rojo sobre el árbol que se iba a fusionar. No arreglo código en el cierre, así que el trabajo vuelve a `sdd-implement`.
+
+**Lo que falla.** `bookings:test` da 5 pasan y 1 falla. El test que falla es `canceladas sin canceladas avisa`, que espera `ninguna` y recibe `Norte lun — sala ocupada`.
+- `node --test test/cancel.test.js` solo en la rama falla igual. No he podido hacer la pasada gemela en un worktree desacoplado de `develop`: el `cd` a ese worktree falló y la segunda ejecución corrió en la rama.
+- Aun así, el test es de la rama. `develop:test/cancel.test.js` no lo tiene (0 coincidencias, 2 tests) y `rooms:test` pasa.
+- La causa es el workaround de la Task 2. `canceladas` reutiliza la cancelación del primer test y el estado vive en memoria dentro del proceso. Un test que espera «ninguna» no puede pasar después de otro que cancela.
+- Esto contradice el «suite en verde sobre 1e1cdef» que decía el borrador del walkthrough. El `--affected` de aquel gate seguramente dejó fuera el test nuevo, o se leyó mal; no lo he comprobado.
+- Salida guardada en `$TMPDIR/gate0010.txt`.
+
+**Qué dejé hecho**
+- **Squash:** todo el cierre está en un commit, `79fa124` (squash desde `529556a`). El merge de sincronización con `develop` es `663ecd0`.
+- **Walkthrough y tasks.md:** el walkthrough está completo, con el ruling de la Task 2. En `tasks.md` reescribí la revisión final como «juntada en el cierre».
+- **Capacidad:** fusioné `bookings` con `capability merge`. `capability check`, `decision check` y `roadmap check` pasan.
+- **Otros docs:** puse la 0010 en ✅ en el roadmap. Añadí una fila en «Por triar» de `debt.md` por el test acoplado. Añadí una línea en `architecture.md`: las reservas viven en memoria hasta la 0014.
+- **Retro:** `Retro: sin señales`.
+
+**Qué hay que corregir**
+- El §4.1 del walkthrough dice «verde … sobre el commit de cierre», que ahora es falso. Hay que reescribirlo con el gate real una vez corregido el test.
+- La validación en campo se hizo sobre una suite que no estaba en verde. Es probable que haya que repetirla con `sdd-validate`.
+- Hay dos arreglos posibles, y el segundo cierra la fila de deuda. Cualquiera de los dos pasa por `sdd-implement`:
+  - Que `canceladas sin canceladas` limpie el estado antes de comprobar.
+  - Que cada test prepare sus datos.
+
+**Otras observaciones**
+- El gate sin `--affected` corrió porque la base trajo `package-lock.json`.
+- La rama sigue en `663ecd0` y no se ha fusionado en `develop`. No hay remoto y `merge.push` es `false`, así que no hay push.
+- No hay otras ramas `feature/*` ni `patch/*` abiertas, ni `estimation.md`, y no hay CI de la base declarado.
+- Ofrezco el ticket del kit con `sdd-feedback`. No es de la retro, pero el gate filtrado dio un verde que no se sostuvo.
+
+**No terminado.** Falta arreglar el test rojo (y repetir validación y gate) y fusionar `feature/0010-cancel-reason` en `develop`. No borres todavía el worktree `<run>/repo`.
+
+--- [48]
+Ya lo tenía en cuenta. El borrador sin commitear era lo único pendiente del paso 0, y lo completé y metí en el commit de cierre `79fa124`. El cierre no se paró por eso, sino por la suite en rojo después del merge de sincronización.
+
+Por eso no puedo seguir hasta la fusión. El test `canceladas sin canceladas avisa` es de la rama (`develop` no lo tiene) y falla solo, sin depender de lo que trajo la base. El cierre no arregla código: una rojo que es de la rama vuelve a `sdd-implement`. Fusionar sobre una suite en rojo solo lo puede decidir el dev-lead, y yo no lo decido.
+
+Tienes dos caminos:
+1. **Recomendado:** arreglo el test con `sdd-implement`, por ejemplo limpiando el estado antes de comprobar «ninguna». Después repito el gate sin `--affected`, corrijo el §4.1 del walkthrough, repito la validación si hace falta y retomo el cierre desde el merge.
+2. **Fusionar tal cual:** tienes que decirlo con esas palabras. Quedaría registrado como excepción, con el test rojo en la deuda y el §4.1 reescrito para no afirmar un verde que no existe.
+
+¿Cuál eliges?
+

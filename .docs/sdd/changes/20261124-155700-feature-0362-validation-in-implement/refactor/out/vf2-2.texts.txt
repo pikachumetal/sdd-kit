@@ -1,0 +1,357 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo su tasks, plan y los criterios del gate. Queda: gate, script, revisión final y tu validación, ~30 min.
+
+--- [11]
+Ahora: paso el gate de cierre. Queda: script, revisión final y tu validación, ~15 min.
+
+--- [16]
+El e2e falla porque no hay servidor levantado. Lo arranco con el comando de «Arrancar» y repito.
+
+--- [20]
+Gate verde: unit 5/5 y e2e 7/7 (con el entorno levantado). Ahora: recorro el script de la spec paso a paso como lo hará la persona. Queda: revisión final y tu validación.
+
+--- [31]
+Ahora: invoco el método Native para ejecutar la Task 3 (arreglo de `libres`). Queda: RED y GREEN, commit, gate afectado, revisión final y tu validación, ~12 min.
+
+--- [34]
+Ahora: Task 3, empezando por el test en RED. Queda: fix, commit, gate afectado, revisión final y tu validación.
+
+--- [38]
+RED por la razón correcta (`Sur` en vez de `Norte, Sur`). Ahora el fix: restablecer `=== 'active'`, que es lo que hacía `libres` hasta la 0010.
+
+--- [42]
+GREEN: 6/6. Commit del código y del test, y registro de la Task 3 en `tasks.md`.
+
+--- [49]
+Ahora: vuelvo a `sdd-validate` y repito lo que toca el arreglo: gate y paso de `libres`. Queda: revisión final y tu validación.
+
+--- [52]
+Gate verde de nuevo (unit 6/6, e2e 7/7) y el paso de `libres` ya sale `Norte, Sur`. Ahora: lanzo la revisión final por ejes (Spec y Código). Queda: cerrar la revisión y tu validación, ~10 min.
+
+--- [61]
+Ahora: preparo el worktree desacoplado y el paquete de revisión. Queda: lanzar los dos ejes, cerrar la revisión y tu validación.
+
+--- [66]
+Paquete listo (150 líneas). Eje Arquitectura: sin señales en el diff (ni módulo nuevo, ni dependencia, ni contrato, ni datos) → no sale. Lanzo Spec y Código en paralelo.
+
+--- [81]
+Los dos ejes (Spec con opus y Código con sonnet) están revisando en segundo plano. No he podido arrancar el vigilante de silencio porque el permiso se denegó, así que no vigilo si se cuelgan. Espero sus informes antes de cerrar la revisión y de pedirte la validación.
+
+Hasta ahora:
+- **Gate:** `node --test test/` 6/6 y `node e2e/run.mjs` 7/7, repetido tras el arreglo.
+- **Script:** los 4 THEN de la spec salen bien. En el recorrido apareció una regresión que no cubría ningún THEN. `375994c` hacía que una reserva cancelada siguiera ocupando la sala en `libres`. La arreglé como Task 3 (`40f77e2`, con su test en RED y luego GREEN) y repetí el paso: ahora devuelve `Norte, Sur`.
+- **Entorno:** el servidor local sigue levantado en el puerto 56391 (pid 55048). Lo paro antes de presentarte el script.
+
+--- [94]
+### Strengths
+- The change is small and reads well. `reasonOf`, `cancelBooking` and `cancelledList` each do one thing. The reason list is a single `reasons` constant, so the validation and the error message (`reasons.join(', ')`) can't drift apart.
+- `cancelBooking` checks the reason before it looks up the booking. A bad reason never changes state.
+- `--motivo` as the last argument gives `undefined`, which fails `reasons.includes` and gets the "motivo no válido" message. `canceladas` with nothing cancelled returns `''` without error.
+- Interface text is in Spanish, and the diff has no comments, so there are no comments that repeat the code and none that cite documents.
+- The E2E tests are isolated. `server.mjs` gives each test its own session, so `Norte lun` being cancelled in two E2E tests doesn't interfere. Retries and timeouts are untouched, and the E2E steps assert on output, not internal state.
+- The net effect of `freeRooms` against the base is zero. 40f77e2 restored exactly the base line (`status === 'active'`), and 40f77e2 added a test that would have caught the bug from 375994c.
+
+### Issues
+
+#### Critical (Must Fix)
+None.
+
+#### Important (Should Fix)
+1. `src/app.js:1-48` · Line-ending churn. In `7e35a66`, `src/app.js` has 0 CR in 48 lines, so it is LF. Every other text file I checked is CRLF: `test/*.js`, `e2e/*.mjs`, `server.mjs`, `scripts/*`, and the root `.md` files. (`package.json` and `e2e/config.json` are single-line files with no CR.) Before 375994c, `app.js` was CRLF too, since the base blob has 35 CRs.
+   - Effect on the repo: `app.js` is now the only LF source file, with no `.gitattributes` or `.editorconfig` to pin a policy. The branch diff shows the whole file as deleted and re-added, which hides the real change of about 20 lines. `git blame` for `app.js` now points at this feature for every line. The feature's own review was misled the same way. The single-line `freeRooms` regression from 375994c was buried in the whole-file diff and only surfaced as a bug afterwards.
+   - Fix: re-save `app.js` as CRLF so the diff shows only real changes, and keep the project's current convention. Or, if LF is wanted, add a `.gitattributes` with `* text=auto eol=lf` and normalise every file in its own `chore:` commit, apart from the feature.
+   - Book row: Clean Code "Follow Standard Conventions" and The Pragmatic Programmer "Don't leave broken windows". Possible. Rated Important by effect: it breaks review, blame and mixed-OS editing.
+
+2. `e2e/cancel.e2e.mjs:3-4` · Two new E2E tests name no «Flujos core» entry: `rechaza un motivo fuera de la lista` and `la cancelada sale en canceladas con su motivo`. The only core flow in this file is `cancela una reserva con su motivo`, which is correctly renamed.
+   - Why it matters: the rule says what no core flow covers is tested one layer down. Both behaviours are already covered by unit tests, `cancelar con un motivo fuera de la lista` and `canceladas enseña sala, día y motivo`. The extra E2E tests only add runtime. Each step sleeps 6 s by default.
+   - Fix: delete both E2E entries. Strengthen the unit tests if needed.
+
+3. `test/cancel.test.js` · The unit test `cancelar sin reserva lo dice` was removed. Its `Sur mar` data was reused for the invalid-reason test. Nothing now covers `sin reserva` for `cancelar` with a valid reason, which is the `if (!booking)` branch of `cancelBooking` (`app.js:21`). That branch is now a different case, because the reason check comes before it.
+   - Fix: add `run('cancelar', ['Sur','mar','--motivo','otro'])` expecting `sin reserva Sur mar`. This also shows that the invalid-reason test passes because of the reason, not because the booking is missing.
+   - The invalid-reason test is also ambiguous for the same reason: it uses a room and day that have no booking. Use `Norte lun` there, so the test shows the reason is what's rejected.
+
+#### Minor (Nice to Have)
+4. `test/cancel.test.js:13-19` · Possible order coupling (Pragmatic Programmer, "test independence"). Tests 3 (`canceladas`) and 4 (`libres`) depend on the state test 1 left behind in the shared module. Test 3 asserts `Norte lun — sala ocupada`, which only holds if test 1 ran first. `node --test` runs tests inside a file in order, so it works today. Reordering or `.only` would break them. Make each test cancel what it needs, or note the dependency in the name.
+5. `src/app.js:7,11,25,37` · Possible duplication and magic strings (Clean Code, "G25 replace magic strings"). The statuses `'active'`, `'cancelled'` and `'voided'` are repeated literals. `findBooking` and `freeRooms` both encode "active" separately. That is how the `!== 'voided'` mistake in 375994c got in. An `isActive(b)` helper or a `STATUS` constant would give one place to change.
+6. `src/app.js:14-17` · `reasonOf` returns the next argument even if it is another flag (`--motivo --cada-semana`). The result is the right "motivo no válido" message, so it is harmless. It would need a guard only if more flags with values appear.
+
+### Declined to judge
+- Whether the list of reasons, the `canceladas` format and the messages match the spec. That is the Spec axis.
+- The module-level state and the `console.log` side effect in `app.js`, and the global `process.argv` parse. That is the Architecture axis, and it is unchanged by this branch.
+- The `sdd` docs commits (`tasks.md`, plan, reviews). They are outside the diff of source, and not code.
+- The 6 s per-step sleep and the runner design in `e2e/run.mjs`. It is not touched by the branch.
+- Returning error strings instead of raising errors. It is the existing pattern (`sin reserva`), so I followed it.
+- The unit and e2e suite results (6/6 and 7/7). The main thread owns them.
+
+### Recommendations
+- Run the E2E suite once with the two non-core entries removed, to confirm the core flows still pass at 2 retries in CI.
+- Decide the repo's line-ending policy and enforce it with `.gitattributes`. Without it, the next edit on any machine can repeat this churn.
+- Run the full lint if the project has one. Several files are CRLF and one is LF, so a linter with a line-ending rule would flag `app.js`.
+
+### Assessment
+**Ready to merge?** With fixes.
+The code is small and correct, and the final `freeRooms` matches the base behaviour. Before merging, restore CRLF in `src/app.js` (or normalise the whole repo apart from this feature). Also drop the two E2E tests that cover no core flow, and restore the missing `sin reserva` unit coverage.
+
+--- [95]
+El eje Código ha vuelto con tres hallazgos Important. Espero al eje Spec antes de cerrar la revisión, porque la fix pass es una sola para los dos ejes.
+
+--- [96]
+## Revisión final del eje Spec, feature 0010 (Motivo al cancelar), con `7e35a66` como último commit
+
+### Strengths
+- **Las dos ADDED están implementadas.** `src/app.js:77` (`reasons`), `:88-100` (`reasonOf`, `cancelBooking` con validación y `booking.reason`) y `:109-111` (`cancelledList`), en las líneas del paquete. Los literales coinciden con la spec: «cancelada Norte lun (sala ocupada)», «motivo no válido: cambio de planes, sala ocupada, otro» y «Norte lun — sala ocupada».
+- **La decisión 1 de la spec está cubierta entera.** La lista cerrada «cambio de planes, sala ocupada, otro» es exactamente el array `reasons`, y cualquier valor fuera de ella se rechaza con `includes`.
+- **Las THEN de motivo válido, motivo fuera de lista y listado** tienen test en `test/cancel.test.js`, como pide «Dónde se prueba». También están en e2e (`e2e/cancel.e2e.mjs`), y el e2e del listado encadena cancelar y `canceladas` en la misma sesión (`server.mjs` da a cada sesión su propio estado).
+- **`libres` tras cancelar se comporta como se espera.** En `freeRooms` (`src/app.js:81`) solo ocupa la sala una reserva `active`, así que una reserva cancelada o anulada deja la sala libre. El test `libres vuelve a ofrecer la sala cancelada` lo comprueba. `test/app.test.js` sigue comprobando que una reserva activa ocupa la franja, así que no se ha ido al extremo contrario.
+- **El cambio no planificado de 375994c no deja efecto en el comportamiento.** `git diff --ignore-cr-at-eol 98d82ba 7e35a66 -- src/app.js` sale vacío: `src/app.js` es idéntico al de la Task 2 salvo por los finales de línea.
+- **Texto de la interfaz en castellano:** se cumple.
+
+### Issues
+
+#### Critical (Must Fix)
+- Ninguno.
+
+#### Important (Should Fix)
+- **Falta el test de la AND «sin `--motivo` responde lo mismo»** (`test/cancel.test.js`, `e2e/cancel.e2e.mjs`).
+  - **Qué falla:** ningún test unitario ni e2e llama a `cancelar` sin `--motivo`. El código sí lo cubre (`reasonOf` devuelve `undefined` y `includes` lo rechaza), pero no hay verificación.
+  - **Por qué importa:** es una línea explícita del delta. Además es el cambio que rompe el uso anterior de `cancelar Sala día`, y nada lo protege de una regresión.
+  - **Cómo arreglarlo:** añadir `assert.equal(run('cancelar', ['Norte', 'lun']), 'motivo no válido: cambio de planes, sala ocupada, otro')`. Hay que colocarlo antes del primer test o con una reserva que no dependa del orden, por el ruling de la Task 2.
+  - **Gap:** `partial`. **Origen:** THEN de «Cancelar pide un motivo de la lista», tercera AND.
+
+#### Minor (Nice to Have)
+- **375994c pasó `src/app.js` de CRLF a LF** (`src/app.js`, el fichero entero).
+  - **Qué falla:** es el único efecto que queda de ese commit. Por eso el diff de la rama reescribe las 48 líneas y oculta las ~15 que cambian de verdad. El resto del código fuente (`test/*.js`, `e2e/*.mjs`, `server.mjs`) está en CRLF y no hay `.gitattributes`.
+  - **Por qué importa:** no cambia ningún comportamiento, pero es un cambio sin pedir que ensucia el diff y el blame. tasks.md lo dejó anotado a la vista.
+  - **Cómo arreglarlo:** devolver `src/app.js` a CRLF, o decidirlo para todo el repo con un `.gitattributes`.
+  - **Gap:** `unrequested`. **Origen:** el commit 375994c, sin task.
+- **Al quitar `cancelar sin reserva lo dice` se perdió cobertura** (`test/cancel.test.js:138-140` del paquete).
+  - **Qué falla:** el test se convirtió en el de motivo fuera de lista. Ahora ningún test ejerce la rama `sin reserva` de `cancelBooking` con un motivo válido (por ejemplo `cancelar Sur mar --motivo otro` → «sin reserva Sur mar»). En e2e solo queda el caso equivalente de `anular`.
+  - **Por qué importa:** es comportamiento previo de la capacidad que sigue vigente y ya no tiene red.
+  - **Cómo arreglarlo:** reponer el test con `--motivo otro`.
+  - **Gap:** `partial`. **Origen:** el comportamiento previo de `cancelar`, que la spec no modifica.
+- **Ningún test comprueba que un motivo rechazado no cancela la reserva.**
+  - **Qué falla:** el unitario de motivo inválido usa `Sur mar`, donde no hay reserva. El e2e usa `Norte lun`, pero no mira el estado después.
+  - **Por qué importa:** el código valida antes de tocar la reserva y es correcto, pero una persona razonable espera que un motivo rechazado deje la reserva intacta, y nada lo fija.
+  - **Cómo arreglarlo:** en el e2e, añadir tras el rechazo un paso `libres 10:00-12:00` → «Sur», o un `cancelar` válido que funcione.
+  - **Gap:** `partial`. **Origen:** expectativa razonable.
+
+### Declined to judge
+- **`libres` filtra solo por franja y no por día.** Es comportamiento previo (task 0006) y queda fuera del delta.
+- **`canceladas` no muestra nada desde la CLI, porque cada proceso nace con su memoria.** El Approach de la spec lo acepta explícitamente hasta la 0014.
+- **`canceladas` sin resultados devuelve una cadena vacía, sin mensaje del tipo «sin canceladas».** La spec no lo pide. Es una mejora de UX, no un hueco de este alcance.
+- **El motivo distingue mayúsculas («Sala ocupada» se rechaza).** La decisión del dev-lead fija una lista cerrada con esos literales.
+- **Que `anular` libere la sala en `libres`.** Es comportamiento previo a la rama, que 375994c alteró y la Task 3 restauró; el resultado coincide con la base.
+- **Los tests dependen del orden** (rulings de las Tasks 2 y 3). Es calidad de tests y pertenece a otro eje; el ruling lo declara con su coste.
+
+### Not verified
+- **El punto 2 de las «Decisiones» de la spec**, porque la lista salta del 1 al 3 y no sé si falta una decisión o es solo la numeración.
+- **El verde de la suite** (unit 6/6, e2e 7/7): no ejecuté nada, por instrucción. Me fío de lo que reporta el hilo principal.
+- **Que `node --test test/` corra cada fichero en un proceso aparte**, que es lo que evita que la cancelación de `cancel.test.js` contamine `app.test.js`. Es lo normal en `node:test`, pero no lo ejecuté.
+
+### Recommendations
+- Añadir el test sin `--motivo` y el de cancelar con motivo válido sin reserva. Son dos líneas en `test/cancel.test.js`.
+- Decidir los finales de línea del repo (un `.gitattributes`) y devolver `src/app.js` a CRLF, o normalizarlo todo, antes del merge.
+- Tras añadir los tests, ejecutar `node --test test/cancel.test.js` solo, para confirmar que el orden aguanta.
+
+### Assessment
+**Ready to merge?** With fixes. Las dos ADDED, la decisión de la lista cerrada y el arreglo de `libres` son correctos, y 375994c ya no cambia ningún comportamiento. Falta el test de la AND «sin `--motivo`» que la spec enumera, y conviene revertir el cambio de finales de línea de `src/app.js`.
+
+--- [98]
+Ahora: cierro la revisión. Re-gradúo por eje y hago una sola fix pass. Queda: re-revisión única, tu validación y el cierre, ~10 min.
+
+**Re-graduación.**
+- **Spec, Important:** falta el test de «sin `--motivo`». Se arregla.
+- **Código, Important (fin de línea):** `src/app.js` quedó en LF por 375994c y el diff reescribe el fichero entero. Se arregla devolviéndolo a CRLF.
+- **Código, Important (tests e2e):** dos tests e2e fuera de «Flujos core». Se arregla quitándolos, porque el unitario ya cubre los dos casos.
+- **Código, Important (cobertura):** se perdió la cobertura de `sin reserva` al cancelar. Se arregla con un test nuevo. El Spec lo dice igual como Minor.
+- **Minors diferidos** (`review.minors` no es `fix`): el acoplamiento por orden de los tests, los literales de estado repetidos, `reasonOf` con una flag como valor, y que el e2e de rechazo no compruebe que la reserva queda intacta.
+
+--- [106]
+Unit 8/8 y e2e 5/5. Escribo las líneas de la revisión en `tasks.md` y lanzo la re-revisión única (opus) del rango `7e35a66..2dced14`.
+
+--- [115]
+Ahora: espero la re-revisión única de la fix pass. Queda: tu validación y el cierre, ~8 min.
+
+Sigue en marcha el agente de la re-revisión (opus). En cuanto vuelva, anoto su veredicto en `tasks.md`, paro el servidor local y te presento el script para validar. No puedo darte el resultado antes de que llegue.
+
+Estado hasta aquí:
+- **Gate:** unit 8/8 y e2e 5/5 tras la fix pass. Los e2e pasaron de 7 a 5 porque quité dos que no eran flujo core.
+- **Eje Spec:** 1 Important. Falta el test de «sin `--motivo`», ya añadido.
+- **Eje Código:** 3 Important (fin de línea de `src/app.js`, dos e2e fuera de flujos core, falta el test de `sin reserva`), todos arreglados en `2dced14`.
+- **Minors diferidos:** cuatro, anotados como ruling en `tasks.md`.
+
+--- [122]
+### Finding Verdicts
+
+1. **Spec · Important · test/cancel.test.js: no había test para el AND «sin `--motivo` responde lo mismo»**: ADDRESSED. `test/cancel.test.js:21-23` (en 2dced14) añade `cancelar sin motivo`. Comprueba `run('cancelar', ['Norte', 'lun'])` → «motivo no válido: cambio de planes, sala ocupada, otro», que es el literal del spec (`spec.md`, ADDED «Cancelar pide un motivo de la lista», último AND). La aserción protege de verdad el comportamiento. `reasonOf` devuelve `undefined` sin `--motivo`, y `cancelBooking` valida antes de buscar la reserva (`src/app.js:20`). Si se quita la validación, el test recibe «sin reserva Norte lun» y falla, lo que coincide con la prueba de mutación del ejecutor.
+
+2. **Spec · Minor: se perdió la cobertura de `cancelar Sur mar --motivo otro` → «sin reserva Sur mar»**: ADDRESSED. `test/cancel.test.js:25-27` (en 2dced14) añade `cancelar sin reserva con un motivo válido` con esos datos y esa salida. Recorre la rama `if (!booking) return \`sin reserva ...\`` de `src/app.js:22` con un motivo válido. No cambia el estado y va al final del fichero, así que no altera los tests anteriores.
+
+3. **Code · Important · src/app.js: 375994c lo pasó de CRLF a LF**: ADDRESSED. `git ls-files --eol src/app.js` da `i/crlf  w/crlf`. `git show 2dced14:src/app.js | file -` da «with CRLF line terminators», mientras que en 7e35a66 salía sin CRLF. Con `--ignore-cr-at-eol` el diff no muestra ningún cambio de contenido en `src/app.js`; el `--stat` de 96 líneas son solo finales de línea. Los demás ficheros fuente y de test siguen en CRLF. Solo quedan en LF ficheros que no son fuente (`.docs/**`, `e2e/config.json`, `package.json`).
+
+4. **Code · Important · e2e/cancel.e2e.mjs: dos e2e que no son flujo core**: ADDRESSED. En el diff (`e2e/cancel.e2e.mjs`, hunk `@@ -1,7 +1,5 @@`) se borran `rechaza un motivo fuera de la lista` y `la cancelada sale en canceladas con su motivo`. El flujo core `cancela una reserva con su motivo` sigue en `e2e/cancel.e2e.mjs:2`. Los unitarios siguen cubriendo lo borrado: `cancelar con un motivo fuera de la lista` en `test/cancel.test.js:9-11` y `canceladas enseña sala, día y motivo` en `test/cancel.test.js:13-15`.
+
+5. **Code · Important · test/cancel.test.js: la rama `sin reserva` con motivo válido sin test**: ADDRESSED, con la misma evidencia que el punto 2 (`test/cancel.test.js:25-27`).
+
+### New Breakage in the Fix Diff
+
+None.
+
+Una nota que no llega a Minor sobre `test/cancel.test.js:21-23`. Los tests comparten el estado del módulo, así que cuando corre `cancelar sin motivo` la reserva Norte lun ya está cancelada por el primer test. El test no reproduce el GIVEN del spec, que pide la reserva activa. Aun así, la salida esperada es la misma y la mutación lo detecta, porque la validación del motivo va antes de buscar la reserva. No hace falta tocarlo.
+
+### Out-of-Scope Observations
+
+- `e2e/cancel.e2e.mjs:3-4` (`anula una reserva`, `anular sin reserva avisa`) tampoco cubren ninguno de los dos flujos core declarados. Vienen de la base (fbbb411 «test: suite e2e») y la 0011 está fuera del scope de la 0010; el fix no los tocó.
+- `test/cancel.test.js:9-11` prueba el motivo fuera de la lista con Sur mar, que no tiene reserva, y no con la reserva del GIVEN. Es anterior al fix.
+
+### Verdict
+
+**Fix round:** All findings addressed, no new Critical/Important breakage.
+
+--- [124]
+La re-revisión da «todos los hallazgos arreglados, sin rotura nueva». Ahora: anoto el veredicto, ensayo el script tal como lo vas a ejecutar y paro el servidor. Queda: tu validación y el cierre.
+
+--- [129]
+Ahora: te pido la validación. El servidor está parado y no he lanzado nada contra el entorno.
+
+🦆 Al cancelar una reserva hay que decir por qué, con un motivo de una lista cerrada. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro» y la reserva sigue activa.
+
+**✋ Me salí del plan en…**
+
+- **Task 3, fuera del plan:** el commit `375994c` cambió `libres` sin task ni test, y una reserva cancelada seguía ocupando la sala (tras cancelar Norte, `libres 10:00-12:00` decía «Sur»). Lo arreglé en `40f77e2` con su test en RED y luego GREEN. Coste si me equivoco: una reserva cancelada o anulada se ofrecería como libre.
+- **Revisión final, `2dced14`:** `src/app.js` vuelve a CRLF, porque `375994c` lo había pasado a LF y el diff salía entero. Quité dos e2e que no eran flujo core y añadí dos tests unitarios: `cancelar` sin motivo y `cancelar` sin reserva con motivo válido.
+- **Tests con dependencia de orden:** el de `libres` va tras `canceladas` y comparte estado con el primer test, igual que el de la Task 2. Falla si se corre solo.
+- **Minors diferidos**, como ruling en `tasks.md`:
+  - los literales de estado repetidos en `app.js`;
+  - `reasonOf` con una flag como valor;
+  - que el e2e de rechazo no compruebe que la reserva queda intacta;
+  - el acoplamiento de tests por orden.
+- **Cobertura:** la re-revisión (opus) dejó los 5 hallazgos arreglados y sin rotura nueva. El eje Arquitectura no salió: no hay módulo, dependencia, contrato ni datos nuevos.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» | `ejecución real` + `suite` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista → «motivo no válido: …» | `ejecución real` + `suite` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` → el mismo mensaje | `ejecución real` + `suite` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` → «Norte lun — sala ocupada» | `ejecución real` + `suite` | «Norte lun — sala ocupada» |
+| `libres` tras cancelar vuelve a incluir la sala (la regresión de la Task 3) | `ejecución real` + `suite` | «Norte, Sur» |
+
+**Suites**
+
+- `node --test test/`: 8/8 sobre `2dced14`.
+- `node e2e/run.mjs`: 5/5 sobre `2dced14`, con el entorno levantado. Después solo hay commits de `.docs/`.
+
+**Sin probar**
+
+- Los borradores de cierre (`walkthrough.md` y el merge de la capacidad `bookings`) no los he escrito. Se hacen en `sdd-archive`, una vez registrada tu validación.
+- No he lanzado el vigilante de silencio de los subagentes: el permiso se denegó.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (el servidor guarda las reservas en memoria, y al arrancarlo empiezas con la reserva Norte lun activa):
+
+```
+cd <run>/repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>/repo
+```
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G http://localhost:56391/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]' -H "x-session: validar"
+```
+
+2. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -G http://localhost:56391/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]' -H "x-session: validar"
+```
+
+3. La reserva sigue activa tras los dos rechazos → «Sur»
+
+```
+curl -s -G http://localhost:56391/run --data-urlencode "cmd=libres" --data-urlencode 'args=["10:00-12:00"]' -H "x-session: validar"
+```
+
+4. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -G http://localhost:56391/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]' -H "x-session: validar"
+```
+
+5. Listado de canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -G http://localhost:56391/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]' -H "x-session: validar"
+```
+
+6. Tras cancelar, la sala vuelve a estar libre → «Norte, Sur»
+
+```
+curl -s -G http://localhost:56391/run --data-urlencode "cmd=libres" --data-urlencode 'args=["10:00-12:00"]' -H "x-session: validar"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en la smoke de la próxima release, a cargo de quien valida`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Dime "validado" o qué paso falla.
+
+--- [131]
+Ahora: reproduzco tu fallo con los comandos exactos del guion antes de tocar nada. Queda: arreglo si se reproduce, con su test, y repetir el gate.
+
+Ojo: en mi guion el paso 3 es `libres` *antes* de cancelar (espera «Sur»); lo que describes —`libres` tras cancelar sin Norte— corresponde al paso 6. Lo compruebo.
+
+--- [135]
+No he podido reproducir el fallo, así que no he cambiado código. Un arreglo a ciegas sobre algo que en este árbol funciona sería adivinar.
+
+Con `1195ed1`, arrancando con `node scripts/env-up.mjs` y la sesión `validar`, el guion sale así:
+
+| Paso | Respuesta |
+| --- | --- |
+| 1 | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 2 | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| 3 | `Sur` |
+| 4 | `cancelada Norte lun (sala ocupada)` |
+| 5 | `Norte lun — sala ocupada` |
+| 6 | `Norte, Sur` |
+
+El `libres` de después de cancelar es el paso 6, no el 3. El paso 3 va antes de cancelar y debe dar `Sur`, porque Norte sigue reservada. Si hablas del paso 6 y te sale `Sur`, tienes el síntoma exacto de la regresión de `375994c`, que ya estaba arreglada en `40f77e2`. Eso apunta a un servidor que sigue ejecutando código anterior al arreglo.
+
+Dos causas probables:
+- **Servidor viejo:** el servidor carga `src/app.js` al crear cada sesión y no lo recarga. Si estaba levantado desde antes del arreglo, sigue con el código viejo. Si lo lanzaste con `node server.mjs` a mano, o desde otra copia del repo, `env-up` no lo habrá parado.
+- **Sesión reutilizada:** si repites el guion con `x-session: validar` sin reiniciar el servidor, la reserva ya está cancelada. El paso 3 da `Norte, Sur` y el paso 4 da `sin reserva Norte lun`. Eso no es un fallo, pero cambia lo que ves.
+
+Para distinguirlo, haz esto en el worktree `...\vf2-2\repo`:
+
+```
+node scripts/env-down.mjs
+git log --oneline -1
+node scripts/env-up.mjs
+```
+
+`git log` debe mostrar `1195ed1` o posterior. Luego repite los pasos del 1 al 6 con una sesión nueva (cambia `validar` por otro nombre en el header).
+
+Si sigue fallando, dime:
+- qué paso exacto falla y qué respuesta literal te da,
+- la salida de `git log --oneline -1`,
+- cómo arrancaste el servidor.
+
+Con eso lo reproduzco y lo arreglo con su test. Dejé el servidor parado y el puerto 56391 libre. La validación sigue sin registrar, así que no he invocado `sdd-archive`.
+

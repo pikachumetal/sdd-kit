@@ -1,0 +1,39 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [22]
+No cierro la 0010: el gate está en rojo, y el walkthrough dice lo contrario. No he escrito ningún registro, ni commiteado ni fusionado. El único cambio sin commitear es el borrador de `walkthrough.md`, que sigue como estaba.
+
+**Qué falla**
+- El gate de cierre (`node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`) sale con código 1. `bookings:test` da 5 pasan y 1 falla.
+- Falla `canceladas sin canceladas avisa`, el test que añadió `d8a0da5`, en `test/cancel.test.js:18`. Esperaba `'ninguna'` y recibe `'Norte lun — sala ocupada'`.
+- El walkthrough registra «suite en verde sobre a1b9ad1». Eso es falso: `a1b9ad1` solo toca `tasks.md`, así que el código es el de `d8a0da5`, y el gate está rojo en `HEAD`.
+
+**Dos causas**
+1. `cancelledList()` en `src/app.js` devuelve `''` cuando no hay canceladas. No existe el aviso `'ninguna'`.
+2. El test 4 comparte estado con los anteriores. Los tests 1 y 3 ya cancelaron Norte lun en el mismo proceso, así que "sin canceladas" no puede cumplirse. Es el workaround que recoge el ruling de la Task 2: los tests reutilizan la cancelación del primer test, y el ruling ya avisaba de este fallo si se corría en otro orden.
+
+**Qué falta**
+- La revisión final quedó «limpia» sobre `d8a0da5`, que es justo el commit con el test en rojo. No detectó el rojo.
+- El cierre no arregla código. Hay que devolverla a `sdd-implement` y `sdd-validate`: implementar el aviso `'ninguna'`, dar a cada test sus propios datos, repetir gate y revisión final, y registrar de nuevo la validación sobre el sha bueno.
+- Antes de decidir si el `'ninguna'` entra en la spec: la spec no lo recoge. El delta solo cubre el motivo y el listado con datos. Hay que decidir si es un requisito nuevo o si basta con quitar el test.
+
+Dime si lo devuelvo ya a `sdd-implement` o si prefieres decidir antes lo del aviso `'ninguna'`.
+
+**No terminado.** Falta un gate en verde y una validación que lo refleje. No borres todavía el worktree `<run>/repo`.
+
+--- [24]
+El borrador sin commitear no era lo que me paraba. Ya lo trataba como borrador del cierre, y el pre-check 0.1 lo permite. Me paro por el gate en rojo, y eso sigue igual.
+
+- **La validación registrada es falsa.** El borrador dice «suite en verde sobre a1b9ad1». Acabo de correr el gate sobre `HEAD` y sale con código 1: `bookings:test` da 5 pasan y 1 falla. Fallan `canceladas sin canceladas avisa` (`test/cancel.test.js:18`), que espera `'ninguna'`, y `cancelledList()` en `src/app.js`, que devuelve `''`. Si cierro, el walkthrough, que no se reescribe tras el cierre, queda afirmando algo que no es cierto.
+- **El rojo es de la rama.** Lo introduce `d8a0da5`, un commit de esta feature. Por eso no es un caso de contrastar con la base ni de "fusionar igualmente".
+- **El cierre no arregla código.** La skill manda devolver la feature a `sdd-validate` y a `sdd-implement`.
+
+Puedo seguir por una de estas tres vías:
+
+1. **Devolverla a `sdd-implement` (recomendada).** Arreglo el test (cada test con sus datos) y el aviso `'ninguna'`, repito gate y revisión final, y la validación se registra sobre el sha bueno. Luego cierro sin tocar nada del borrador salvo el sha.
+2. **Quitar el test 4.** Solo si decides que el aviso `'ninguna'` no es un requisito, porque la spec no lo recoge. Es un cambio de código, así que también pasa por `sdd-implement`, pero más corto.
+3. **Cerrar con el rojo.** Solo si me lo ordenas explícitamente. Pondría en el walkthrough, en ✋, que se cerró con `bookings:test` en rojo. Corregiría la línea de validación para que diga lo que es y abriría una fila de deuda. Es tu decisión, no la mía.
+
+¿Cuál sigo?
+
