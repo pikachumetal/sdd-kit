@@ -201,3 +201,18 @@ El merge del cierre con `sdd merge`: la política declarada, el destino, el turn
 - THEN `feature/0252-y` coge el cerrojo de merge, fusiona y publica sin esperar a que acabe la verificación de `feature/0251-x`
 - AND `feature/0251-x`, al acabar su verificación en verde, coge el cerrojo, ve `develop` cambiada, lo suelta e integra `origin/develop`, verifica solo lo que se cruza con lo que trajo `feature/0252-y`, y fusiona
 - AND en ningún momento una de las dos espera un cerrojo mientras tiene el otro cogido
+
+### El merge para si la rama trae un id o un número de ADR que el destino ya usa
+
+- GIVEN un proyecto en modo `sequence`, `develop` con `.docs/sdd/changes/20261123-141327-feature-0756-a/`, y la rama `feature/0757-x` con `.docs/sdd/changes/20261123-162919-patch-0756-b/`
+- WHEN se ejecuta `sdd merge --check --project-root <worktree de la rama>`
+- THEN sale con 1 sin tocar nada y escribe `numeración: la rama trae 20261123-162919-patch-0756-b y 'develop' ya tiene 20261123-141327-feature-0756-a con el id 0756; renumera la de la rama a mano`
+- AND con `develop` con `.docs/sdd/decisions/0004-a.md` y la rama con `.docs/sdd/decisions/0004-b.md`, en cualquier modo de ids, sale con 1 y escribe `numeración: la rama trae decisions/0004-b.md y 'develop' ya tiene decisions/0004-a.md con el número 0004; renumera la de la rama a mano`
+- AND `--check` compara con `develop` y, si existe, con `origin/develop`, sin fetch
+- AND con el choque solo en `origin/develop`, `--check` sale con 1 y nombra `'origin/develop'`; con el choque en las dos, solo nombra `'develop'`; con dos choques en la misma ref, escribe las dos líneas
+- AND con `develop` sacada con cambios sin commitear, `--check` da primero el mensaje de destino sacado de «La comprobación del destino no toca nada»
+- AND `sdd merge --sync`, y el merge con `--verify` al integrar la base, paran igual antes de integrar, con la ref que integran (`origin/develop`) en el mensaje y la rama sin tocar
+- AND el merge del cierre, con o sin `--verify`, y la vuelta del hotfix a `develop` vuelven a comprobar dentro del cerrojo, justo antes de fusionar: si `develop` recibió entretanto `…-feature-0756-a`, sale con 1 con el mismo mensaje y `develop` queda como estaba; en el hotfix, la vuelta se deshace entera, como manda `stable-branch`
+- AND cuentan las carpetas de `changes/` y de `specs/`, y los ficheros `NNNN-<slug>.md` de `decisions/`, también los `superseded`
+- AND solo cuenta lo que la rama trae desde su merge-base con el destino: con `develop` que ya tiene `…-feature-0756-a` y `…-patch-0756-b`, una rama que no trae ninguna carpeta con el id 0756 fusiona; y si `develop` renombró `…-feature-0756-a` a `…-feature-0756-a2` después del merge-base, la rama que aún lleva `…-feature-0756-a` fusiona
+- AND no cuentan el id y el número `0000`, las carpetas las de sufijo heredado (`…-task-0006a-…`) ni, en modo `tracker`, las carpetas de cambio

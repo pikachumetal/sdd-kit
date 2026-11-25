@@ -44,14 +44,14 @@ describe('id next con la estructura 3.0.0', () => {
     expect((await runNext(project)).lines).toEqual(['0096']);
   });
 
-  it('una carpeta en changes y otra en specs con el mismo id son duplicado', async () => {
+  it('una carpeta en changes y otra en specs con el mismo id son duplicado: avisa y sigue', async () => {
     const project = sequenceProject({
       '.docs/sdd/specs/20260920-100000-feature-0079-b/spec.md': '',
       '.docs/sdd/changes/20261010-090000-patch-0079-c/patch.md': '',
     });
     const result = await runNext(project);
-    expect(result.lines).toEqual([]);
-    expect(result.stderr).toContain('0079');
-    expect(result.code).toBe(1);
+    expect(result.lines).toEqual(['0080']);
+    expect(result.stderr).toContain('aviso: dos artefactos distintos comparten el id 0079: 20261010-090000-patch-0079-c, 20260920-100000-feature-0079-b; renumera uno.');
+    expect(result.code).toBe(0);
   });
 });
