@@ -26,6 +26,7 @@ created: 2026-11-25
   - `battery.test.ts`: cinco unitarios de `mold:`.
 - **Guía** (`.docs/sdd/steering/operations.md`). La pregunta (8) de la comprobación previa nombra `s.leave`, `mold:` y la nota `molde roto`. La (7) se acorta para que el fichero quede en su tope (20.785 palabras).
 - Apertura: `0822972bb`.
+- Arreglo tras el cierre: `5fc254790`, el tope de `s.leave` mata el grupo de procesos fuera de Windows (§3).
 
 ## 2. Tiempo y coste: estimado vs real *(OBLIGATORIO si existe `.docs/sdd/steering/estimation.md` — no borrar)*
 
@@ -61,6 +62,7 @@ created: 2026-11-25
 - El ruling «fuera de Windows el tope mata solo `sh`, y `sh` lanza un `node` simple con `exec`» resultó falso: el CI de la rama se colgó 37 min en `suite` (run 45688320658, cancelado). Con dash, matar `sh` deja vivo el `node` con las tuberías abiertas, y `close` no llega. Reproducido en Docker (`node:22-bookworm-slim`, `/bin/sh` → dash): «RED: runShell no volvió en 10 s». Arreglo en una task más tras el cierre: el comando va en su propio grupo de procesos (`detached`) y al tope se mata el grupo (`process.kill(-pid)`). GREEN: «volvió en 2 s · timedOut true · nieto vivo false» (con `--init`, que recoge los huérfanos como el runner). El test integrado lleva además un tope de 100 s, para fallar en vez de colgar la tanda.
 - `stdout += chunk` puede partir un carácter UTF-8 entre dos trozos. Las salidas declaradas son de una línea. — Coste si está mal: un `molde roto` falso y visible; el arreglo es `setEncoding('utf8')`.
 - «(0147 a 0365)» en la pregunta (8) se lee como un rango: la lista entera pasa del tope de palabras. — Coste si está mal: la trazabilidad de `operations.md` queda más corta.
+- Minor de la revisión de `5fc254790`, sin otro commit: con `detached`, un Ctrl-C o la cancelación del padre ya no llegan al grupo de un comando colgado; si salta el tope de 100 s del test integrado, el fallo dice «expected null to be 1» sin el ETIMEDOUT; `killShellTree` repite el try/catch de `killProcess`; un proceso en segundo plano que cerró sus tuberías no se mata sin tope; `isAlive` necesita un init que recoja huérfanos. — Coste si está mal: un huérfano tras cancelar una tanda, o un fallo de test menos legible.
 
 ## 4. Verificación
 
@@ -69,6 +71,7 @@ created: 2026-11-25
 - Línea base (worktree desacoplado en `0822972bb`): `moon run kit:test-headless cli:typecheck cli:test` → kit:test-headless: corrió 801/801 · cli:typecheck: corrió · cli:test: corrió · 5 min 8 s.
 - Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → kit:test-headless: corrió 811/811 · cli:typecheck: corrió (`tsc --noEmit`, 0 errores) · cli:test: corrió 2595/2595 (15 omitidos) · 125 s · sobre `0eb77487f`.
 - Gate tras la pasada de fix: `moon run kit:test-headless cli:typecheck cli:test --affected --base 0eb77487f` → tras la revisión final en `0eb77487f`, arreglo el commit de cierre: kit:test-headless: corrió 813/813 · cli:typecheck: corrió · cli:test: corrió 2596/2596 (15 omitidos) · 182 s · sobre el commit de cierre.
+- Tras el cierre: merge de sincronización `82b72baf2` con `origin/develop`, gate `moon run kit:test-headless cli:typecheck cli:test --affected --base origin/develop` → kit:test-headless: corrió 813/813 · cli:typecheck: corrió · cli:test: corrió 2598/2598 (15 omitidos) · 170 s. El arreglo de POSIX `5fc254790` lo revisó un eje Código (sdd-kit:effort-high + sonnet, «Ready to merge: Yes», 6 Minor resueltos con ruling) y el CI de la rama (`ci.yml`, Linux) salió `success` sobre él.
 - Ensayos en seco de batería entera sobre el commit de cierre (`DRY_RUN=1 N=1 node tests/headless/battery.mjs run`): `sdd-archive`, 49 escenarios, ninguno con `molde roto`, 82 s; `sdd-validate`, 21 escenarios, ninguno con `molde roto`, 33 s. Todos salen `rojo` (código 1) porque el stream falso no carga la skill: en seco se lee la nota `molde roto`.
 - Medida de la decisión 4, en el molde de `g5` (`KEEP_MOLD=1`): `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → 0 · «cancelada Norte lun (sala ocupada)»; `--motivo "por si acaso"` → 0 · «motivo no válido: cambio de planes, sala ocupada, otro»; sin motivo → 0 · el mismo texto.
 
