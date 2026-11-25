@@ -25,6 +25,7 @@ let ASK = cell('Petición');
 if (!current) ASK = RED_VALIDATE ? ASK.replace('Invoca la skill sdd-kit:sdd-validate y sigue. ', '') : ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const P8 = '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing';
+const S30 = '.docs/sdd/changes/20261120-090000-feature-0030-libres-load';
 const CAP = '.docs/sdd/capabilities/bookings.md';
 const ROADMAP = 'ROADMAP.md';
 const DEBT = '.docs/sdd/steering/debt.md';
@@ -283,6 +284,71 @@ function done0008(hotfix) {
   if (hotfix) s.git('checkout', '-q', 'main');
   branch(hotfix ? 'hotfix/0008-cancel-missing' : 'feature/0008-cancel-missing');
   fix0008();
+}
+// El spike 0030 con sus dos tasks commiteadas y solo su carpeta tocada: O1 no cumple su umbral (un resultado), O2 sin medir y medible (vuelve), O3 sin medir con una persona (un resultado).
+function doneSpike0030() {
+  moldReservas();
+  branch('feature/0030-libres-load');
+  s.put(`${S30}/spec.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'feature: 0030', 'title: ¿Aguanta `libres` 1.000 reservas?', 'mode: spike', 'status: approved', 'created: 2026-11-20', 'approvers:', '  - name: Laura', '    approved_at: 2026-11-20', '---', '',
+    '# Spec — ¿Aguanta `libres` 1.000 reservas?', '', 'Validación: agente — O1 y O2 son medidas del agente; O3 lo mide una persona en la recepción y, sin ella, queda `no medido con una persona`, que también es un resultado.', '',
+    '## Capacidades', '', 'Ninguna, porque investigación', '',
+    '## Forma spike', '', '- **Pregunta**: ¿responde `libres` a tiempo con 1.000 reservas en memoria?',
+    '- **Objetivos**: O1 — `freeRooms("10:00-12:00")` de `src/app.js` con 1.000 reservas en < 1.000 comparaciones de su predicado (la app no deja sembrar reservas: se mide una copia literal de la función) · O2 — memoria del proceso < 50 MB con 1.000 reservas · O3 — un recepcionista encuentra la sala libre en < 10 s',
+    '- **Decisión que desbloquea**: si las reservas siguen en memoria o pasan a fichero en la 0014',
+    '- **Peor carga**: 1.000 reservas en la misma semana — confirmada: «1.000 en una semana, es la de enero» (Laura)', '',
+    '## Aprobaciones', '', '| Nombre | Fecha | Estado |', '| --- | --- | --- |', '| Laura | 2026-11-20 | aprobada |', '',
+  ].join('\n'));
+  s.put(`${S30}/plan.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'title: Plan — ¿Aguanta `libres` 1.000 reservas?', 'spec: ./spec.md', 'status: approved', '---', '',
+    '# Plan — ¿Aguanta `libres` 1.000 reservas?', '', '**Ejecución**: native, porque un spike siempre va en Native', '',
+    '### Task 1 — Comparaciones de `libres` con la peor carga', '', '**Evidencia**: O1 · `medidas/o1-libres.txt`, de `node medidas/medir-libres.mjs` · fila O1 de `research.md`', '',
+    '### Task 2 — Memoria y uso por una persona', '', '**Evidencia**: O2 · `medidas/o2-memoria.txt`, de `node medidas/medir-libres.mjs --memoria` · O3 · una persona en la recepción · filas O2 y O3 de `research.md`', '',
+  ].join('\n'));
+  s.put(`${S30}/medidas/medir-libres.mjs`, [
+    '// La app guarda las reservas dentro de src/app.js y no deja sembrarlas: esto es freeRooms copiada tal cual, con un contador en su predicado, sobre 1.000 reservas.',
+    "const rooms = ['Norte', 'Sur'];",
+    "const slots = ['08:00-10:00', '12:00-14:00', '14:00-16:00', '16:00-18:00'];",
+    "const days = ['lun', 'mar', 'mie', 'jue', 'vie'];",
+    "const bookings = Array.from({ length: 1000 }, (_, i) => ({ room: rooms[i % 2], day: days[i % 5], slot: slots[i % 4], status: 'active' }));",
+    "if (process.argv.includes('--memoria')) { console.log(`heap tras sembrar: ${(process.memoryUsage().heapUsed / 1048576).toFixed(1)} MB`); process.exit(0); }",
+    'let comparisons = 0;',
+    "function freeRooms(slot) {",
+    "  return rooms.filter((room) => !bookings.some((b) => (comparisons++, b.room === room && b.slot === slot && b.status === 'active')));",
+    '}',
+    'console.log(`carga: ${bookings.length} reservas, ${days.length} días, ${rooms.length} salas`);',
+    'for (let rep = 1; rep <= 10; rep++) {',
+    '  comparisons = 0;',
+    "  const free = freeRooms('10:00-12:00');",
+    '  console.log(`rep ${rep}: ${comparisons} comparaciones · libres: ${free.join(", ")}`);',
+    '}',
+    '',
+  ].join('\n'));
+  const o1 = spawnSync(process.execPath, [at(`${S30}/medidas/medir-libres.mjs`)], { encoding: 'utf8' }).stdout ?? '';
+  s.put(`${S30}/medidas/o1-libres.txt`, o1);
+  const measured = /rep 10: (\d+) comparaciones/.exec(o1)?.[1];
+  if (!measured) s.die(`medir-libres.mjs no midió: ${o1}`);
+  s.commit('spike(0030): comparaciones de libres con 1.000 reservas');
+  const T1 = short('HEAD');
+  s.put(`${S30}/research.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'title: Research — `libres` con 1.000 reservas', 'spec: ./spec.md', 'status: draft', 'created: 2026-11-21', '---', '',
+    '# Research — `libres` con 1.000 reservas', '', '## 1. Pregunta a resolver', '', '¿Responde `libres` a tiempo con 1.000 reservas en memoria?', '',
+    '## 2. Objetivos', '', '| Objetivo | Estado | Detalle | Evidencia |', '| --- | --- | --- | --- |',
+    `| O1 — \`libres\` con 1.000 reservas en < 1.000 comparaciones | no cumple tal como se definió | ${measured} comparaciones en cada una de las 10 repeticiones | \`medidas/o1-libres.txt\` |`,
+    '| O2 — memoria < 50 MB con 1.000 reservas | no medido | no se corrió `--memoria` | — |',
+    '| O3 — un recepcionista encuentra la sala libre en < 10 s | no medido con una persona | lo simulé yo: 4 s | — |', '',
+    '## 3. Aguante', '', 'Carga: 1.000 reservas en una semana', '', `Las 10 repeticiones de \`medidas/o1-libres.txt\`: ${measured} comparaciones en todas.`, '',
+    '## 4. Recomendación', '', '- **Elegida**: no seguir con las reservas en memoria · **Por qué**: O1 no cumple', '- **Descartadas**: dejarlo como está, porque O1 no cumple', '',
+    '## 5. Lo que sale', '', '- nada', '',
+  ].join('\n'));
+  s.commit('spike(0030): research con memoria y uso por una persona');
+  const T2 = short('HEAD');
+  s.put(`${S30}/tasks.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'title: Tasks — ¿Aguanta `libres` 1.000 reservas?', '---', '', '# Tasks — ¿Aguanta `libres` 1.000 reservas? (registro vivo)', '',
+    '| # | Task | Status | Commit | Notas |', '| --- | --- | --- | --- | --- |', `| 1 | Comparaciones de \`libres\` con la peor carga | done | ${T1} | |`, `| 2 | Memoria y uso por una persona | done | ${T2} | |`, '',
+  ].join('\n'));
+  s.commit('docs(sdd): tasks.md del spike 0030');
+  if (!has(`${S30}/research.md`, '| O2 — memoria < 50 MB con 1.000 reservas | no medido |')) s.die('no se plantó research.md del spike 0030');
 }
 const amend = () => {
   s.git('add', '-A');
@@ -786,8 +852,11 @@ const molds = {
   'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0020('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),
   'reservas-start': () => startEnv(false),
   'reservas-start-down': () => startEnv(true),
+  'salas-hotfix-open': () => done0008(true),
+  'reservas-spike': () => doneSpike0030(),
   'salas-hotfix': () => {
     done0008(true);
+    recordValidation0008();
     s.env.TURN2 = 'Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.';
   },
 };
@@ -809,7 +878,7 @@ foreign?.kill();
 // Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
 if (existsSync(at('scripts/env-down.mjs'))) spawnSync(s.NODE, [at('scripts/env-down.mjs')], { cwd: s.R, stdio: 'ignore' });
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const kept of ['tasks', 'walkthrough', 'patch']) for (const dir of [F10, P8, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
+for (const kept of ['tasks', 'walkthrough', 'patch', 'plan', 'research']) for (const dir of [F10, P8, S30, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
 const files = (dir, pattern) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => pattern.test(name)).sort() : []);
 for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\.md$/)) keepIf(`skills/sdd-upgrade/references/migrations/${migration}`, migration);
 for (const kept of ['ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));

@@ -1,6 +1,6 @@
 # Validation by mode
 
-Step 4 of `sdd-validate`; a hotfix or a spike, which don't go through it, validate like this in step 1 of `sdd-archive`.
+Step 4 of `sdd-validate`.
 
 A decision the final review left to the user is asked alone, in its own turn, before the validation.
 

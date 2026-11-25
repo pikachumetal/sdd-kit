@@ -1,6 +1,6 @@
 # Batería de regresión — `sdd-validate`
 
-La validación de una feature o de un patch tras sus tasks: el gate, el guion que recorre el agente, la revisión final y la validación del dev-lead, y el bucle de vuelta a `sdd-implement`. Nace en la feature 0362, que saca la validación de `sdd-archive`: los diez escenarios de `g1` a `t3` vienen de la batería de `sdd-archive` con su id y su procedencia, y los siete nuevos (`vf1` a `vf7`) miden el orden y el bucle.
+La validación de una feature o de un patch tras sus tasks: el gate, el guion que recorre el agente, la revisión final y la validación del dev-lead, y el bucle de vuelta a `sdd-implement`. Nace en la feature 0362, que saca la validación de `sdd-archive`: los diez escenarios de `g1` a `t3` vienen de la batería de `sdd-archive` con su id y su procedencia, y los siete nuevos (`vf1` a `vf7`) miden el orden y el bucle. La feature 0365 añade `vf8` (el hotfix) y `vf9` (el spike), que validan aquí y no en `sdd-archive`.
 
 Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-validate`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado. Su `subject.mjs` es el de `sdd-archive` con `BATTERY_DIR` apuntando a esta carpeta: los moldes son los mismos y viven en un solo sitio.
 
@@ -24,6 +24,8 @@ Moldes:
 - `reservas-final-late`: el mismo fallo, sin el paso en el plan: el guion del agente pasa y solo lo ve el dev-lead (`TURN2`: «El paso 3 falla: tras cancelar Norte el lunes, `libres 10:00-12:00` no me da Norte. Arréglalo.»).
 - `reservas-final-defer`: `reservas-final` con `TURN2` «Lo pruebo mañana en la primera exportación, a cargo del dev-lead.».
 - `reservas-final-gate`: `reservas-final` con el gate filtrado de `reservas-gate-base` (`scripts/gate.mjs`, «Sin filtro» con `package.json`) y `TURN2` «El paso 1 falla: la app no declara su versión de Node; añade `engines` a `package.json` y sigue.».
+- `salas-hotfix-open`: `salas-patch` con el fix en `hotfix/0008-cancel-missing`, salida de `main`, y sin la validación hecha.
+- `reservas-spike`: `reservas` con el spike 0030 (`mode: spike`) en `feature/0030-libres-load`: sus dos tasks commiteadas, solo su carpeta tocada, sin revisión final, y `research.md` con O1 `no cumple tal como se definió` (2.000 comparaciones frente a < 1.000 en 10 repeticiones, sobre una copia literal de `freeRooms`, `medidas/o1-libres.txt`, que el molde saca corriendo `medidas/medir-libres.mjs`), O2 `no medido` sin fichero de evidencia y O3 `no medido con una persona`.
 - `reservas-final-important`: `reservas-final` con la revisión final ya de vuelta: `tasks.md` lleva `Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important: `canceladas` con la lista vacía imprime una línea en blanco, sobre <sha>`.
 
 ## Escenarios
@@ -48,6 +50,8 @@ Moldes:
 | vf5 | validation-patch | Invoca la skill sdd-kit:sdd-validate y sigue. El fix del patch 0008 está commiteado: valídalo. | salas-report | `sdd-kit:sdd-validate` | 2 | 2/2 | sonnet | feature 0362: un patch valida con gate, guion y dev-lead, sin ejes de revisión |
 | vf6 | validation-unfiltered | Invoca la skill sdd-kit:sdd-validate y sigue. Las tasks de la 0010 están acabadas y commiteadas y la revisión final aún no ha salido: valídala. | reservas-final-gate | `sdd-kit:sdd-validate` | 2 | 2/2 | sonnet | feature 0362: una vuelta que toca un fichero de «Sin filtro» corre el gate sin filtro |
 | vf7 | validation-review-fix | Invoca la skill sdd-kit:sdd-validate y sigue. La revisión final de la 0010 ha vuelto con 1 Important del eje Código: sigue con la validación. | reservas-final-important | `sdd-kit:sdd-validate` | 2 | 2/2 | sonnet | feature 0362: un fallo de la revisión final sigue la pasada de fix, sin revisión de vuelta, y después corre el gate con `--base` |
+| vf8 | validation-hotfix | Invoca la skill sdd-kit:sdd-implement y sigue. Retoma el hotfix 0008: el fix está commiteado. | salas-hotfix-open | `sdd-kit:sdd-implement` | 2 | 2/2 | sonnet | feature 0365: el hotfix valida en `sdd-validate` como un patch, sin revisión final (dev-lead, 2026-11-25: «vale pues hay que arreglarlo joder») |
+| vf9 | validation-spike | Invoca la skill sdd-kit:sdd-validate y sigue. Las tasks del spike 0030 están acabadas y commiteadas: valídalo. | reservas-spike | `sdd-kit:sdd-validate` | 2 | 2/2 | sonnet | feature 0365: el spike valida su evidencia; vuelve una fila sin medir, no un umbral (dev-lead, 2026-11-25: «1») |
 
 ## Rúbrica
 
@@ -71,9 +75,13 @@ Moldes:
 | VF5 Patch | vf5 | no presenta el mensaje de validación del patch (🦆, ✋ y un guion de pasos numerados con su resultado esperado) tras correr gate y guion, o no deja la línea de validación en `patch.md` §4, o despacha un eje de revisión final, o invoca `sdd-archive` sin la validación registrada |
 | VF6 Sin filtro (control: la regla ya existe en «Running a gate»; 2/2 con el texto vigente en el RED) | vf6 | tras tocar `package.json` corre el gate con `--affected` o con `--base` en lugar del gate sin filtro |
 | VF7 Pasada de fix | vf7 | no arregla el Important con un test que falla antes, o tras la pasada de fix no corre el paso del guion que toca (`canceladas` sin canceladas) ni el gate, o lanza una revisión de la vuelta aparte de la re-revisión de la revisión final |
+| VF8 Hotfix como patch | vf8 | `tools.txt` invoca `sdd-archive` antes de que `patch.md` §4 lleve `Validación en campo:`, o no invoca `sdd-validate`, o no corre el gate (`node --test`), o hay una llamada a `Agent` de revisión final o de eje |
+| VF9 Spike | vf9 | `tools.txt` corre el gate (`node --test`), o hay una llamada a `Agent` con un eje que no es Spec, o invoca `sdd-archive` con O2 `no medido`, o el plan o `tasks.md` ganan una task por O1 o por O3, o la task de O2 lleva «Tests RED» en vez de «Evidencia», o registra la validación fuera del borrador del walkthrough (`walkthrough.md` guardado sin la línea y `tasks.md` con ella), o invoca `sdd-archive` sin esa línea en el walkthrough |
 | G7a Sin filtro y unitarios | g7 | antes de presentar la validación no corre `node --test test/app.test.js` (la suite `unit`) y el gate sin `--affected`, con `rooms:test` incluida: la rama toca `package.json` |
 | G7b Línea por el build | g7 | la línea `Gate:` (walkthrough o mensaje final) no nombra la suite `unit` y el gate antes de la flecha, o no lleva `rooms:test: corrió <N>/<M> (sin filtro: cambia el build)` |
 
 ## Procedencia de las reglas
 
 Cada fila de la tabla de escenarios nombra la suya. Las filas que vienen de `sdd-archive` conservan su procedencia; las de la feature 0362 citan la frase del dev-lead que las fija.
+
+- `vf9` (feature 0365): el molde del spike aguanta que el sujeto relea su script y su spec. Un script esqueleto, una carpeta fuera de `changes/`, una spec que contradice un objetivo o una medida sobre un modelo y no sobre `freeRooms` hicieron reabrir filas o parar por el molde, no por la regla (`tests/sdd-validate-0365-red.md` y `tests/sdd-validate-0365-green.md`).

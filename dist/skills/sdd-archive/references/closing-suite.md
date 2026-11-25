@@ -4,7 +4,7 @@ Step 6 of `sdd-archive`; the gate itself runs in `sdd-validate`. With E2E fields
 
 ## Before the close
 
-The closing gate already ran, once, at the end of the tasks, in `sdd-validate` (a hotfix or a spike runs it in step 1 of `sdd-archive`): its sha is in the validation record (the closing commit moves `HEAD`, not that). Don't run it again, whatever the base did: step 6 repeats only what the base brought.
+The closing gate already ran, once, at the end of the tasks, in `sdd-validate`: its sha is in the validation record (the closing commit moves `HEAD`, not that). Don't run it again, whatever the base did: step 6 repeats only what the base brought.
 
 ## With «Camino crítico»
 

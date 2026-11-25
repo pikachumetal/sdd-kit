@@ -1,0 +1,305 @@
+
+>>> Skill: sdd-kit:sdd-implement
+<<< Launching skill: sdd-kit:sdd-implement
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0365-hotfix-spike-validate\.temp\k365g3\skills\sdd-implement\references\patch-flow.md
+<<< 1	# The patch flow
+2	
+3	A **patch** is a small change whose **solution is already fixed**: no spec, plan, tasks or walkthrough, only one `patch.md`. You arrive with the lane decided (`sdd-propose`, [Is it really a patch?](../../sdd-propose/references/patch-lane.md)). The lane's name isn't the git-flow branch type: a patch can leave as `feature/*` or `hotfix/*`, as the project's git-flow says.
+4	
+5	One todo per step. Resuming, start at the first step whose output `patch.md` or the branch lacks, never with a second `patch.md`.
+6	
+7	1. **Root cause, MANDATORY in a failure** (the intent, in a visu
+
+>>> Glob: .docs/sdd/changes/**/*
+<<< No files found
+
+>>> Bash: git show --stat HEAD | head -30; git status --short; ls -a; ls .docs/sdd 2>/dev/null
+<<< commit 0e5953330120b7defa783097bd977015522828e0
+Author: Fixture <fixture@example.com>
+Date:   Wed Nov 25 14:02:16 2026 +0100
+
+    fix: cancelar una reserva que no existe avisa (0008)
+    
+    Cuerpo del commit.
+
+ .../patch.md                                       | 35 ++++++++++++++++++++++
+ src/app.js                                         | 32 ++++++++++----------
+ test/app.test.js                                   | 34 +++++++++++----------
+ 3 files changed, 70 insertions(+), 31 deletions(-)
+./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+skills/
+src/
+test/
+sd
+
+>>> Bash: git show --stat --name-only HEAD --format= ; find .docs -name patch.md | xargs cat
+<<< .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+src/app.js
+test/app.test.js
+# Patch — cancel
+
+Causa raíz: comparación solo por hora. Fix y test de regresión. Verificado.
+
+## Tiempo
+
+- Esfuerzo real: 0,5h
+---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+>>> Bash: node --test 2>&1 | tail -15; git diff HEAD~1 HEAD -- src test | head -120; find .docs -name patch.md
+<<< ✔ libres excluye la sala reservada en la franja (0.6757ms)
+✔ reservar --cada-semana crea la reserva semanal (0.1149ms)
+✔ cancelar respeta el día (1.6255ms)
+✔ cancelar sin reserva avisa (0.1425ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85.8831
+diff --git a/src/app.js b/src/app.js
+index a366456..fee61ca 100644
+--- a/src/app.js
++++ b/src/app.js
+@@ -1,16 +1,16 @@
+-const [command, ...args] = process.argv.slice(2);
+-const rooms = ['Norte', 'Sur'];
+-const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+-
+-function freeRooms(slot) {
+
+>>> Agent: subagent_type=sdd-kit:effort-medium model=sonnet · Revisar fix del patch 0008
+<<< Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)
+agentId: add4d5d9f46a5faa1 (internal ID - do not mention to user.)
+The agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.
+Do not duplicate this agent's work — avoid working with the same files or topics it is using.
+output_
+
+>>> Bash: cd "<run>/repo" && cat .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md; git diff HEAD~1 HEAD --stat; git diff --ignore-space-at-eol HEAD~1 HEAD -- src test; git diff HEAD~1 HEAD --stat --ignore-cr-at-eol
+<<< ---
+id: 20261010-090000-patch-0008-cancel-missing
+task: 0008
+title: Patch — cancelar una reserva que no existe
+type: patch
+solution: causa raíz
+status: done
+created: 2026-10-10
+branch: feature/0008-cancel-missing
+commit: <hash>
+---
+
+# Patch 0008 — cancelar una reserva que no existe
+
+## Capacidades
+
+Ninguna, porque el proyecto no tiene `capabilities/`.
+
+## 1. Síntoma
+
+`cancelar mie 10:00`, sin reserva ese día, responde «cancelada mie 10:00».
+
+## 2. Causa raíz
+
+`run('cancelar')` devuelve el texto sin buscar la reserva en `bookings`.
+
+## 3. Fix
+
+`cancelar` busca la res
+
+>>> Bash: cd "<run>/repo" && cat src/app.js; cat test/app.test.js; for c in HEAD~1 HEAD; do for f in src/app.js test/app.test.js; do echo $c $f CR=$(git show $c:$f | grep -c $'\r') lines=$(git show $c:$f | wc -l); done; done; cat .gitattributes 2>/dev/null; git config core.autocrlf; node --test 2>&1 | tail -12
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot));
+}
+
+export function run(cmd, params) {
+  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+  if (cmd === 'reservar' && params.includes('--cada-semana')) return 'reserva semanal creada';
+  if (cmd === 'cancelar') return bookings.some((b) => b.day === params[0] && b.slot.startsWith(params[1])) ? `cancelada ${params[0
+
+>>> Bash: cd "<run>/repo" && git diff HEAD~1 HEAD --stat -- src test; git show HEAD~1:src/app.js | od -c | head -5; git show HEAD:src/app.js | od -c | head -5; git ls-files --eol src test
+<<<  src/app.js       | 32 ++++++++++++++++----------------
+ test/app.test.js | 34 +++++++++++++++++++---------------
+ 2 files changed, 35 insertions(+), 31 deletions(-)
+0000000   c   o   n   s   t       [   c   o   m   m   a   n   d   ,    
+0000020   .   .   .   a   r   g   s   ]       =       p   r   o   c   e
+0000040   s   s   .   a   r   g   v   .   s   l   i   c   e   (   2   )
+0000060   ;  \r  \n   c   o   n   s   t       r   o   o   m   s       =
+0000100       [   '   N   o   r   t   e   '   ,       '   S   u   r   '
+0000000   c   o   n   s   t       [   c   o   m   m   a   n   d   ,    
+00
+
+>>> Bash: sed -i 's/$/\r/' src/app.js test/app.test.js && git diff --stat HEAD~1 -- src test
+f=.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+sed -i 's#^branch: .*#branch: hotfix/0008-cancel-missing#' $f
+cat >> $f <<'EOF'
+
+### Revisión (1 revisor, sonnet)
+
+1. CRLF→LF no pedido en `src/app.js` y `test/app.test.js`: **corregido**, restaurado CRLF; el diff queda en 1 y 5 líneas.
+2. `startsWith` laxo (`cancelar lun 1` coincidiría): **rechazado**, el formato de franja no lo fija el patch (decisión de formato = feature); queda como deuda por triar.
+3. Test «cancelar respeta el día» cambia `mar`→`lun`: **rechazado**, el cambio es inevitable con el fix y `mie 10:00` del test nuevo cubre el día distinto.
+4. `branch:` del frontmatter era `feature/…`: **corregido** a `hotfix/0008-cancel-missing`. `commit:` lo rellena `sdd-archive`.
+EOF
+node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git diff --stat
+<<<  src/app.js       | 32 ++++++++++++++++----------------
+ test/app.test.js | 34 +++++++++++++++++++---------------
+ 2 files changed, 35 insertions(+), 31 deletions(-)
+ℹ pass 4
+ℹ fail 0
+warning: in the working copy of '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md', LF will be replaced by CRLF the next time Git touches it
+ .../patch.md                                       | 77 ++++++++++++----------
+ 1 file changed, 42 insertions(+), 35 deletions(-)
+
+>>> Bash: git config core.autocrlf; cat .gitattributes 2>/dev/null; git ls-files --eol src test .docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md; git show HEAD~1:src/app.js | od -c | head -3; git diff --stat --ignore-cr-at-eol HEAD~1 -- src test
+<<< true
+i/crlf  w/lf    attr/                 	.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+i/lf    w/crlf  attr/                 	src/app.js
+i/lf    w/crlf  attr/                 	test/app.test.js
+0000000   c   o   n   s   t       [   c   o   m   m   a   n   d   ,    
+0000020   .   .   .   a   r   g   s   ]       =       p   r   o   c   e
+0000040   s   s   .   a   r   g   v   .   s   l   i   c   e   (   2   )
+ src/app.js       | 2 +-
+ test/app.test.js | 6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
+
+>>> Bash: f=.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+sed -i 's/\r$//; s/$/\r/' $f
+git -c core.autocrlf=false add src/app.js test/app.test.js $f
+git diff --cached --stat HEAD~1; git ls-files --eol --cached src test | head
+<<<  .../patch.md                                       | 42 ++++++++++++++++++++++
+ src/app.js                                         |  2 +-
+ test/app.test.js                                   |  6 +++-
+ 3 files changed, 48 insertions(+), 2 deletions(-)
+i/crlf  w/crlf  attr/                 	src/app.js
+i/crlf  w/crlf  attr/                 	test/app.test.js
+
+>>> Bash: node --test 2>&1 | grep -E "^ℹ (pass|fail)"; git -c core.autocrlf=false commit -q -m "fix: restaura CRLF y anota la revisión del patch 0008
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -3
+<<< ℹ pass 4
+ℹ fail 0
+b17a914 fix: restaura CRLF y anota la revisión del patch 0008
+0e59533 fix: cancelar una reserva que no existe avisa (0008)
+d59f41b feat: base del molde
+
+>>> Skill: sdd-kit:sdd-validate
+<<< Launching skill: sdd-kit:sdd-validate
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0365-hotfix-spike-validate\.temp\k365g3\skills\sdd-validate\references\validation-modes.md
+<<< 1	# Validation by mode
+2	
+3	Step 4 of `sdd-validate`.
+4	
+5	A decision the final review left to the user is asked alone, in its own turn, before the validation.
+6	
+7	## With `validation.mode: field`
+8	
+9	You run your smoke —one row per THEN—, with the gate of step 1 already green on this tree, and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with 
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0365-hotfix-spike-validate\.temp\k365g3\skills\sdd-validate\references\dev-validation.md
+<<< 1	# The dev's validation
+2	
+3	For `validation.mode` `manual` or missing, in a feature or a patch (step 4 of `sdd-validate`). Form and order: [validation-template.md](../../sdd-templates/templates/validation-template.md). With `validation.mode: field` or `Validación: agente` none of this runs.
+4	
+5	## 1. The script
+6	
+7	Each step is a numbered action in the app with the scenarios' data and its expected result with the literal that comes out —«Debe cancelarse con normalidad» or «sin error» gives the person nothing to compare. In this order:
+8	
+9	1. **The report's steps first**, literal and in th
+
+>>> Bash: cat .docs/sdd/sdd-kit.json; ls .docs/sdd/steering; grep -n -i -E "build|test|gate" .docs/sdd/steering/operations.md | head
+<<< {"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}, "control": {"profile": "delegate"}, "merge": {"into": "develop", "noFf": true, "removeWorktree": false, "push": false}, "validation": {"mode": "field"}}
+constitution.md
+debt.md
+operations.md
+8:## Testing
+10:- Tests: `node --test` (carpeta `test/`).
+
+>>> Bash: node --test 2>&1 | grep -E "^ℹ (pass|fail)"; node src/app.js libres 10:00-12:00; node src/app.js cancelar mie 10:00; node src/app.js cancelar lun 10:00; git status --short
+<<< ℹ pass 4
+ℹ fail 0
+Sur
+no hay reserva mie 10:00
+cancelada lun 10:00
+
+>>> Bash: f=.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing/patch.md
+cat >> $f <<'EOF'
+
+### Validación
+
+| THEN | Evidencia |
+| --- | --- |
+| `cancelar mie 10:00` sin reserva responde «no hay reserva mie 10:00» | ejecución real |
+| `cancelar lun 10:00` con reserva responde «cancelada lun 10:00» | ejecución real |
+| `libres 10:00-12:00` sigue respondiendo «Sur» | ejecución real |
+
+Gate: `node --test` 4 pasados, 0 fallos (tras el commit b17a914).
+
+Validación en campo: 2026-11-25 · smoke de los tres comandos con el árbol del commit b17a914; nada `no probado`.
+EOF
+sed -i 's/\r$//; s/$/\r/' $f
+git -c core.autocrlf=false add $f && git -c core.autocrlf=false commit -q -m "docs: registra la validación en campo del patch 0008
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>" && git log --oneline -1
+<<< de0f2ce docs: registra la validación en campo del patch 0008
+
+>>> Skill: sdd-kit:sdd-archive
+<<< Launching skill: sdd-kit:sdd-archive
+
+>>> Bash: git status --porcelain; node "D:/code/.worktrees/sdd-kit/feature-0365-hotfix-spike-validate/.temp/k365g3/cli/bin/sdd.js" merge --check --into main --project-root "$PWD" 2>&1 | tail -15; git worktree list; git branch -a
+<<< --into 'main' distinta de merge.into necesita --order "<frase del dev-lead>"
+uso: sdd merge [--project-root <valor>] [--branch <valor>] [--push] [--check] [--sync] [--verify <valor>] [--verified-at <valor>] [--into <valor>] [--order <valor>] [--tag <valor>] [--lock-timeout <valor>]
+<run>/repo de0f2ce [hotfix/0008-cancel-missing]
+  develop
+* hotfix/0008-cancel-missing
+  main
+
+=== RESULTADO (9 turnos, 0.4498142 $)
+Retomo el patch 0008 en el paso 5: el fix está commiteado y los 4 tests pasan. Falta el revisor, y está lanzado en segundo plano. Aún no sé qué dirá.
+
+En cuanto responda contesto cada hallazgo en §4 de `patch.md` (corregido o rechazado con motivo). Después invoco `sdd-validate`.
+
+Lo que debe confirmar el revisor:
+- **Fines de línea:** el diff reescribe `src/app.js` y `test/app.test.js` enteros, probablemente por un cambio CRLF↔LF que nadie pidió. Si es eso, lo revierto en un commit propio.
+- **Test existente:** «cancelar respeta el día» pasó de `mar` a `lun`, y eso puede debilitar lo que comprueba.
+
+=== RESULTADO (15 turnos, 0.4498142 $)
+Ahora: cierro el patch 0008 con `sdd-archive`. Hasta ahora solo he pasado las comprobaciones previas: el árbol está limpio y la validación en campo está registrada. Queda: el hash en `patch.md`, la historia en dos commits y el merge, ~5 min tras tu respuesta.
+
+La rama es `hotfix/…`, así que antes de escribir ningún registro necesito saber una cosa:
+
+**¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?**
+
+El diff no me lo dice: solo tú sabes si hay algo que aplicar al fusionar. Espero tu respuesta.
+
+Hay otra cosa que depende de ti. Fusionar en `main` o crear un tag exige una frase tuya como `--order`. Con `--check --into main` el kit me lo rechaza sin ella. Si prefieres que fusione en `develop`, que es el `merge.into` configurado, dímelo y no hace falta.

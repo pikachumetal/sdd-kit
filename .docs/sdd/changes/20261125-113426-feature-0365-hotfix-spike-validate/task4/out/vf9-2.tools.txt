@@ -1,0 +1,81 @@
+
+>>> Skill: sdd-kit:sdd-validate
+<<< Launching skill: sdd-kit:sdd-validate
+
+>>> Bash: cd "<run>/repo" && git status --short | head; ls .docs/sdd/changes/*0030* 2>/dev/null; ls .docs/sdd/changes | head -20; git merge-base HEAD main; git diff --stat $(git merge-base HEAD main) HEAD | tail -20
+
+>>> Read: D:\code\.worktrees\sdd-kit\feature-0365-hotfix-spike-validate\.temp\k365t4\skills\sdd-validate\references\validation-modes.md
+<<< medidas/
+plan.md
+research.md
+spec.md
+tasks.md
+20261120-090000-feature-0030-libres-load/
+e092ab6d2fa5fb0550311f0a3c8db2bf57799313
+ .../medidas/medir-libres.mjs                       | 16 ++++++++++
+ .../medidas/o1-libres.txt                          | 11 +++++++
+ .../plan.md                                        | 18 +++++++++++
+ .../research.md                                    | 36 ++++++++++++++++++++++
+ .../spec.md                                        | 32 +++++++++++++++++++
+ .../tasks.md                                       | 11 +++++++
+ 6 files changed, 124 insertions(+)
+<<< 1	# Validation by mode
+2	
+3	Step 4 of `sdd-validate`.
+4	
+5	A decision the final review left to the user is asked alone, in its own turn, before the validation.
+6	
+7	## With `validation.mode: field`
+8	
+9	You run your smoke —one row per THEN—, with the gate of step 1 already green on this tree, and record `Validación en campo: <fecha> · <verificación del agente>` with the evidence you ran and what is `no probado` as is. Then send the message of [validation-template.md](../../sdd-templates/templates/validation-template.md) without its script; its first two lines, literal: `🦆 <what changes, with 
+
+>>> Bash: cd "<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load" && for f in spec.md plan.md tasks.md research.md medidas/medir-libres.mjs medidas/o1-libres.txt; do echo "=== $f"; cat $f; done; ls ../..; cat ../../sdd-kit.json 2>/dev/null | head -40; ls ../../../..
+<<< === spec.md
+---
+id: 20261120-090000-feature-0030-libres-load
+feature: 0030
+title: ¿Aguanta `libres` 1.000 reservas?
+mode: spike
+status: approved
+created: 2026-11-20
+approvers:
+  - name: Laura
+    approved_at: 2026-11-20
+---
+
+# Spec — ¿Aguanta `libres` 1.000 reservas?
+
+Validación: agente — O1 y O2 son medidas del agente; O3 lo mide una persona en la recepción y, sin ella, queda `no medido con una persona`, que también es un resultado.
+
+## Capacidades
+
+Ninguna, porque investigación
+
+## Forma spike
+
+- **Pregunta**: ¿responde `libres` a tiempo con 1.000 reservas en memoria?
+- **Objetivos**: O1 — `
+
+>>> Bash: cd "<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load" && node medidas/medir-libres.mjs | diff - medidas/o1-libres.txt && echo O1-REPRODUCE; node medidas/medir-libres.mjs --memoria; ls medidas; git status --short
+<<< O1-REPRODUCE
+heap tras sembrar: 4.3 MB
+medir-libres.mjs
+o1-libres.txt
+
+=== RESULTADO (7 turnos, 0.1389074 $)
+Ahora: el spike no pasa la validación y vuelve a `sdd-implement`. Queda: una task nueva al final del plan para medir O2, y luego volver aquí, ~5 min.
+
+**Resultado de la validación (spike 0030)**
+
+- **Puerta de cierre (paso 1):** no hace falta. Ningún fichero commiteado fuera de `changes/` ha cambiado desde el `merge-base`.
+- **Filas de `research.md` contra su evidencia (paso 2):**
+  - **O1:** se sostiene. Repetí `node medidas/medir-libres.mjs` y la salida coincide con `medidas/o1-libres.txt`. Son 2000 comparaciones en las 10 repeticiones, con la peor carga de 1.000 reservas, y "no cumple" es un resultado válido.
+  - **O2: no se sostiene.** La fila dice `no medido · no se corrió --memoria`, pero sí se puede medir. Lo corrí ahora y da `heap tras sembrar: 4.3 MB`. Además, la Task 2 está `done` en `tasks.md` (d39d43e) y su evidencia, `medidas/o2-memoria.txt`, no existe.
+  - **O3:** `no medido con una persona` es un resultado válido. Pero la nota "lo simulé yo: 4 s" no es una medida de la persona. Al corregir la fila hay que dejarla como simulación del agente, o quitarla.
+- **Recomendación:** hoy se apoya solo en O1 y deja O2 sin medir. Hay que revisarla con el dato de memoria.
+
+**Qué pasa ahora**
+
+El fallo se corrige a través de `sdd-implement`, no aquí. Añado una Task 3 al final del plan. Ejecuta `--memoria` con 10 repeticiones y la peor carga, guarda `medidas/o2-memoria.txt`, actualiza la fila O2 y revisa la recomendación. Después vuelvo a la validación: puerta del spike (no aplica), recomprobación de las filas que toca, revisión final solo con el eje Spec, y el registro en el walkthrough borrador (`Validación en campo`, porque `validation.mode` es `field`).
+
+Todavía no he modificado nada: el árbol sigue limpio. ¿Arranco la Task 3 ahora con `sdd-implement`?

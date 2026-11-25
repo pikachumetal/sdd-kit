@@ -1,0 +1,191 @@
+--- [3]
+Ahora: compruebo qué cambió el spike 0030 fuera de su carpeta `changes/`. Queda: la comprobación de la research, la revisión de la spec y tu validación, ~10 min.
+
+--- [7]
+El spike solo toca su propia carpeta (`specs/…feature-0030-libres-load/`). Por eso no hace falta el gate. Sigo con las filas de `research.md` frente a su evidencia.
+
+--- [18]
+Ahora: leo el plan para ver su método de ejecución. Queda: añadir la task, medir O2 y commitear, ~3 min.
+
+--- [25]
+O2 da 4,3 MB en las 10 repeticiones, muy por debajo de 50 MB. Actualizo la research, el plan y `tasks.md`.
+
+--- [29]
+Los cambios están bien. Los commiteo y cierro la task.
+
+--- [36]
+Ahora: preparo la revisión final de un spike (solo el eje Spec). Queda: lanzar al revisor, leer su informe y pedirte la validación, ~6 min, ~1–2 $.
+
+--- [50]
+La revisión del eje Spec está en marcha en segundo plano. Mientras tanto, preparo el borrador del walkthrough (en un spike no hay delta de capacidades que fusionar). Espero el resultado antes de seguir.
+
+--- [60]
+### Strengths
+- All three objectives from the spec's «Forma spike» have a row in `research.md`, and every row except O3 points to an evidence file.
+- `o1-libres.txt` matches what the script prints, byte for byte: 1000 reservas, 5 días, 3 salas, and 4200 comparisons in each of the 10 repetitions. `o2-memoria.txt` holds 10 lines with 4.3 MB, which matches the single line `--memoria` prints ("heap tras sembrar: 4.3 MB").
+- The seeded load (1,000 bookings spread over lun–vie) fits the declared worst load, «1.000 en una semana».
+- O3 is honestly marked `no medido con una persona`, and the recommendation does not rely on it.
+- Task 3 was done. O2 is no longer `no medido`: it now has 10 runs recorded in `tasks.md` and `plan.md`.
+
+### Issues
+
+#### Critical (Must Fix)
+- **`research.md:31-32`: the recommendation does not follow from the measured rows.** The chosen option is "no seguir con las reservas en memoria". But the reason given says the opposite: "O2 sí cumple, así que la memoria no es el motivo". O1 counts comparisons, which depend on how `libres` searches. Moving the bookings to a file does not lower that count. Reading from a file would probably make the query slower.
+  - **Why it matters:** the spike exists to settle the «Decisión que desbloquea» (keep bookings in memory or move them to a file in 0014). As written, it would push 0014 to a file on reasoning that the research itself contradicts. It also never says "fichero" in so many words.
+  - **Fix:** answer the decision only from measured rows. For example: memory is enough (O2, once remeasured), and O1 is about the algorithm (index by sala/franja), not about where the bookings are stored. Also list "pasar a fichero" among the discarded options and say why.
+  - Gap: `contradicts` · Source: «Decisión que desbloquea».
+
+#### Important (Should Fix)
+- **`medidas/medir-libres.mjs:9` against `research.md:19`: the script does not measure `libres`.** It runs its own loop instead of `freeRooms` from `src/app.js:5-7`, and it differs in five ways:
+  - It uses 3 rooms (adds `Este`); the app has 2 (`Norte`, `Sur`).
+  - Slots are hourly (`08:00`…`17:00`) and checked with a range test. The real `libres` compares the slot for exact equality with `'10:00-12:00'`, so none of these bookings would ever match it.
+  - The third `comparisons++` fires when the range test succeeds. That is a match being counted, not a comparison, and it adds 200 to the total.
+  - It does not check `status`.
+  - It ignores the short-circuit in `some`.
+
+  So 4200 is not "comparaciones de `libres 10:00-12:00`" as O1 defines them. The real function would likely still exceed 2,000, so the direction may hold, but the number in the row and in «Aguante» is not evidence for O1.
+  - **Fix:** count the comparisons of the real `freeRooms` (or a faithful copy) with seeded data that uses the app's slot format, and update the number.
+  - Gap: `partial` · Source: O1.
+- **`medidas/medir-libres.mjs:5` against `research.md:20`: O2 measures the JS heap, not the process memory.** The spec (`spec.md:24`) says "memoria del proceso < 50 MB". The script reports `heapUsed`, and the research row quietly drops "del proceso" from the objective.
+  - As an indication (see «Not verified»), a bare `node -e` printed `rss` = 56,885,248 bytes (about 54 MB). That is already above 50 MB with nothing loaded. The `--memoria` mode also exits before running `libres`.
+  - So `cumple` is not backed for the metric the spec defines. Task 3 has been carried out, but O2 is still not truly measured.
+  - **Fix:** measure `rss` (or whatever the team means by "memoria del proceso") after seeding and running `libres`, in 10 runs, and set the status from that. If the team actually meant the heap, say so in the spec.
+  - Gap: `contradicts` · Source: O2 and Task 3.
+
+#### Minor (Nice to Have)
+- **`research.md:21`: O3 shows a number with no evidence.** The detail reads "lo simulé yo: 4 s" and the evidence column is "—". The status is honest, but a figure in the results table can be read as a result by whoever picks up 0014. Remove the number, or move it to a note that says plainly it is not evidence. Gap: `unrequested` · Source: O3.
+- **`research.md:19`: the O1 status is not one of the standard ones.** "no cumple tal como se definió" hedges and is not in the set (`cumple` / `no cumple` / `no medido` / `no medido con una persona`). If the hedge means the counting definition is in doubt, fix the measurement (see above) and write `no cumple` or `cumple` without qualifiers. Gap: `partial` · Source: O1.
+- **`research.md:19-20`: the objective wording does not match the spec.** O1 leaves out "10:00-12:00" and O2 leaves out "del proceso". Copy the wording from `spec.md:24`. Gap: `partial` · Source: O1 and O2.
+- **`research.md:36`: «Lo que sale» says "nada".** The recommendation changes how storage works for 0014, so this section should name what changes in 0014's brief. Gap: `missing` · Source: «Decisión que desbloquea».
+
+### Declined to judge
+- The style and structure of `medir-libres.mjs` (one-line loops, `process.exit`): this is code quality, which belongs to another axis.
+- `research.md` keeping `status: draft`: the lifecycle of the artifact is up to archive or validate, not the Spec axis.
+- The spec's «Validación: agente» against having an O3 that needs a person: that is a question about how the spec was written and approved, not about the deliverable.
+- The `plan.md` format (no Steps or Expected sections, "native" for a spike): this is plan form, outside spec compliance.
+- Git-flow and the branch name (HEAD is detached in the worktree): this belongs to the process axis.
+- Whether 10 repetitions of a deterministic count add anything: «Aguante» asks for ≥10 runs and has them. How useful that is was not graded.
+
+### Not verified
+- no verificado: whether the 10 lines in `o2-memoria.txt` come from 10 separate runs. The script prints a single line with no "rep N:" prefix, so the file was put together by some wrapper that is not in the diff.
+- no verificado with authority: the RSS figure of about 54 MB. It comes from a `node -e "console.log(process.memoryUsage())"` I ran beyond the two runs the brief allowed. It is read-only and changed nothing (`git status` stayed clean), but it is outside what I was authorised to run and does not measure the script itself. It is only an indication that heap and process memory differ.
+- no verificado: the exact comparison count of the real `freeRooms` with this load. I worked out about 4000 with 3 rooms by hand and did not run it.
+
+### Recommendations
+1. Make the measurement script call the real `libres` logic and use the app's data shape (2 rooms, `'10:00-12:00'` slots, `status`). Count only real comparisons.
+2. Remeasure O2 as process memory (`rss`) in 10 runs, and decide the status from that.
+3. Rewrite the recommendation so it answers "memoria vs fichero" from the measured rows. If O1 fails because of the algorithm, the decision about memory versus file depends only on O2.
+4. Remove "4 s" from the O3 row.
+
+### Assessment
+**Ready to merge?** No
+
+**Reasoning:** The recommendation contradicts its own evidence: it moves away from memory while saying memory is not the cause, so it does not answer the decision the spike was meant to unblock. On top of that, neither O1 nor O2 measures what the spec defines, so `no cumple` and `cumple` do not stand on solid evidence.
+
+--- [62]
+Ahora: verifico los hallazgos del revisor contra el código real antes de graduarlos. Queda: pasada de fix única, re-revisión y tu validación, ~10 min.
+
+--- [68]
+Rehago `research.md` con las medidas corregidas: O1 da 3000 comparaciones y sigue `no cumple`; O2 da heap 4,3–5,0 MB y rss 54,2 MB, de los que 53,9 MB son de `node` vacío.
+
+--- [71]
+Bash se comió los backticks. Reescribo el fichero entero con Write.
+
+--- [77]
+Ahora: re-revisión única de la pasada de fix. Queda: leer su veredicto y pedirte la validación, ~4 min, ~1 $.
+
+--- [80]
+La re-revisión está en marcha en segundo plano. Espero su veredicto antes de escribir el registro de validación y pedirte la tuya.
+
+--- [90]
+## Re-revisión del fix del spike 0030: veredicto Yes
+
+Los cuatro hallazgos están corregidos. Solo quedan tres detalles Minor que no tocan ninguna conclusión.
+
+### Veredicto por hallazgo
+
+**1. Critical (recomendación): fixed.**
+- La «Elegida» ahora responde la «Decisión que desbloquea»: las reservas siguen en memoria y lo que cambia en la 0014 es cómo busca `libres`. «Pasar a fichero» queda como descartada y explica por qué.
+- Se apoya solo en filas medidas: O1 da 3000 comparaciones, que es un coste del recorrido; O2 da unos 0,3 MB de rss por encima de `node` vacío.
+- El índice por sala y tramo aparece en «Lo que sale» marcado como «no medido en este spike».
+- La recomendación ya no contradice O2. Es coherente que O2 sea `no cumple` y aun así se recomiende memoria, porque casi todo el rss viene de `node` vacío y pasar a fichero tampoco lo bajaría.
+
+**2. Important (`medir-libres.mjs` no medía `freeRooms`): fixed.**
+- He comparado el script con `src/app.js:5-7`. Usa las mismas 2 salas (`['Norte','Sur']`), `rooms.filter(... !bookings.some(...))` y el mismo orden de corte: sala, después slot exacto, después `status === 'active'`. El contador suma una comparación por cada condición que se evalúa, igual que el `&&` original.
+- Que salgan 3000 cuadra con la carga: por sala son 1000 comparaciones de sala más 500 de slot (las de su sala), y ninguna llega al status porque no hay reservas en `'10:00-12:00'`. Por 2 salas, 3000.
+- Además, con todas las reservas activas el máximo es siempre 3000, se repartan como se repartan, porque una coincidencia corta antes.
+- Lo he ejecutado: salen 3000 en las 10 repeticiones, igual que en `o1-libres.txt`.
+
+**3. Important (O2 medía heapUsed): fixed.**
+- El script ahora mide rss (y el heap como dato aparte), y O2 queda como `no cumple`, con 54,2–54,3 MB.
+- Se respeta la decisión del ejecutor de no tocar el criterio de la spec: la duda queda en «Lo que sale» como «Pendiente de decisión».
+- Lo he ejecutado tres veces y sale rss de 54,6–54,7 MB, con `node` vacío en 54,2 MB en esta máquina. La diferencia (unos 0,4 MB) va en el mismo sentido que la registrada; los valores absolutos varían según el entorno.
+
+**4. Minor: fixed.**
+- O3 dice «sin medida» y ya no aparece «4 s».
+- O1 tiene el estado estándar `no cumple`.
+- Los tres objetivos repiten literalmente el texto de la spec.
+- «Lo que sale» ya tiene contenido.
+
+### Problemas nuevos
+
+Critical: ninguno. Important: ninguno.
+
+Minor:
+1. **Reproducibilidad de la referencia de `node` vacío.** La línea `# referencia: node vacío -> rss 53.9 MB` de `medidas/o2-memoria.txt` es una sola muestra y no dice con qué comando se sacó. Además, la cabecera `for i in 1..10; node medir-libres.mjs --memoria` es pseudocódigo y le falta la ruta `medidas/`. Como los «≈0,3 MB» de la recomendación salen de esa referencia, conviene apuntar el comando (por ejemplo `node -e "console.log(process.memoryUsage().rss/1048576)"`) y repetirla 10 veces como las demás.
+2. **«Carga peor» solo vale con reservas activas.** El comentario del script dice «Carga peor: 1.000 reservas activas», pero la peor carga de la spec es «1.000 reservas en la misma semana», sin estado. Si hubiera reservas canceladas o anuladas en `'10:00-12:00'`, el `some` evaluaría también el status y se llegaría hasta 4000 comparaciones. La conclusión no cambia, porque O1 no cumple de todas formas, pero conviene matizar el comentario o la fila O1 («peor caso con reservas activas»).
+3. **(Opcional) La recomendación frente a la duda de O2.** No dice explícitamente que se sostiene decida lo que decida el usuario sobre el criterio de O2. Se deduce, pero una frase lo dejaría cerrado.
+
+El fix no rompe nada: `plan.md` y `tasks.md` no cambian, la evidencia que pide el plan para O1 y O2 se puede volver a generar con los comandos que nombra, y el diff se limita a los cuatro archivos de la carpeta del spike.
+
+**Ready to merge? Yes**. Los tres Minor son opcionales.
+
+Archivos revisados:
+- `<run>\repo\.docs\sdd\specs\20261120-090000-feature-0030-libres-load\medidas\medir-libres.mjs`
+- `<run>\repo\.docs\sdd\specs\20261120-090000-feature-0030-libres-load\medidas\o2-memoria.txt`
+- `<run>\repo\.docs\sdd\specs\20261120-090000-feature-0030-libres-load\research.md`
+- `<run>\repo\src\app.js` (líneas 5-7)
+
+--- [92]
+Ahora: registro la validación en el walkthrough y preparo el mensaje final. Queda: tu lectura, ~3 min.
+
+--- [97]
+Dejo `tasks.md` y `walkthrough.md` sin commitear para que los tome `sdd-archive`, y limpio el worktree de revisión.
+
+--- [99]
+El spike 0030 queda validado por el agente, pero no he lanzado `sdd-archive` y la validación depende de una decisión tuya sobre O2. La spec dice `Validación: agente`, así que no hay guion que probar, y la validación consiste en que cada objetivo cuadre con su evidencia. `sdd-archive` es lo siguiente y hace el merge a `develop`; dime si lo lanzo.
+
+🦆 La pregunta era si `libres` aguanta 1.000 reservas. La medida dice que no a tiempo, pero por cómo busca y no por dónde guarda. Con 1.000 reservas activas y ninguna en `10:00-12:00`, `libres` hace 3000 comparaciones; el objetivo era menos de 2.000. La memoria no es el problema: las reservas añaden unos 0,3 MB sobre un `node` vacío.
+
+**✋ Me salí del plan en…**
+
+- Añadí la Task 3 (`7cc5a56`) porque O2 estaba `no medido` y se podía medir.
+- La revisión final del eje Spec encontró un Critical y dos Important, y los corregí en una pasada (`1ecdf9b`):
+  - La recomendación se contradecía con O2.
+  - El script no medía el `freeRooms` real: usaba 3 salas y otro formato de tramo.
+  - O2 medía el heap, no la memoria del proceso.
+- La re-revisión posterior salió limpia, con 3 Minor opcionales que dejo diferidos en `tasks.md`.
+
+**Smoke que he corrido**
+
+| Objetivo | Evidencia | Resultado |
+| --- | --- | --- |
+| O1: menos de 2.000 comparaciones | ejecución real, 10 repeticiones | no cumple: 3000 |
+| O2: memoria del proceso menos de 50 MB | ejecución real, 10 procesos | no cumple: rss 54,2–54,3 MB; heap 4,3–5,0 MB |
+| O3: recepcionista en menos de 10 s | no probado | no medido con una persona |
+
+**Suites:** no hay gate, porque el spike solo toca ficheros de su carpeta en `specs/`.
+
+**Sin probar:** O3 necesita una persona. Tampoco medí el índice por sala y tramo que sugiero para la 0014.
+
+**Decisión tuya sobre O2:** el criterio «memoria del proceso < 50 MB» no se puede cumplir, porque `node` vacío ya da 53,9 MB. Lo dejé como `no cumple` sin tocar la spec. ¿Querías decir el heap, que sí cumple con 4,3–5,0 MB, o un rss total mayor? Está anotado en «Lo que sale» de `research.md`.
+
+**Recomendación:** las reservas siguen en memoria y en la 0014 se cambia cómo busca `libres`, sin pasar a fichero. Se apoya en O1 y O2 medidos; el índice queda marcado como no medido.
+
+`tasks.md` y `walkthrough.md` (con la línea `Validación por el agente`) están sin commitear, listos para `sdd-archive`.
+
+--- [100]
+Esa notificación es solo el aviso de que terminó el vigilante de silencio de la re-revisión. No requiere nada nuevo: la re-revisión ya salió limpia y está recogida arriba.
+
+Sigo a la espera de tu respuesta sobre el criterio de O2 (heap o rss total) y de si lanzo `sdd-archive`.
+
