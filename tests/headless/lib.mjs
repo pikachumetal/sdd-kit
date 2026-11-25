@@ -120,17 +120,28 @@ function runSync(command, args, { cwd, env, input } = {}) {
   return { code: result.status ?? 1, stdout: result.stdout ?? '', stderr: result.stderr ?? result.error?.message ?? '' };
 }
 
+// Fuera de Windows, el comando va en su propio grupo de procesos (detached): -pid mata el grupo entero.
+function killShellTree(pid) {
+  if (windows) return killProcess(pid, true);
+  try {
+    process.kill(-pid, 'SIGKILL');
+  } catch {
+    // Ya había salido.
+  }
+}
+
 // Un comando que el molde deja, tal como lo escribiría el sujeto: por la shell del sistema, con comillas dobles.
-// Al tope se mata el árbol: el timeout de spawnSync mata cmd.exe y dejaba vivo el node que lanzó.
+// Al tope se mata el árbol: matar solo la shell (cmd.exe, o el sh de dash, que no hace exec) deja vivo el node que
+// lanzó, con las tuberías abiertas, y close no llega nunca.
 function runShell(command, { cwd, env, timeout }) {
   return new Promise((done) => {
-    const child = spawn(command, { cwd, env, shell: true, windowsHide: true });
+    const child = spawn(command, { cwd, env, shell: true, windowsHide: true, detached: !windows });
     const result = { code: 1, stdout: '', stderr: '', timedOut: false };
     child.stdout.on('data', (chunk) => (result.stdout += chunk));
     child.stderr.on('data', (chunk) => (result.stderr += chunk));
     const timer = setTimeout(() => {
       result.timedOut = true;
-      killProcess(child.pid, true);
+      killShellTree(child.pid);
     }, timeout);
     child.on('error', (error) => (result.error = error.message));
     child.on('close', (code) => {

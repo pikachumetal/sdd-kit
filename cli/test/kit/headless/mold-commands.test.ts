@@ -92,7 +92,8 @@ beforeAll(() => {
     MOLD_TIMEOUT_SECONDS: '5',
     NODE: process.execPath,
   };
-  const run = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'battery.mjs'), 'run'], { cwd: kitRoot, env, encoding: 'utf8', windowsHide: true });
+  // Con tope: spawnSync bloquea el bucle de vitest, y un sujeto colgado dejaba la tanda sin acabar en vez de fallar.
+  const run = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'battery.mjs'), 'run'], { cwd: kitRoot, env, encoding: 'utf8', windowsHide: true, timeout: 100_000 });
   result = { status: run.status, output: `${run.stdout}${run.stderr}` };
 });
 

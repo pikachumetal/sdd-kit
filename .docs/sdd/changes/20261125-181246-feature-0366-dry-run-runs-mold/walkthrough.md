@@ -58,7 +58,7 @@ created: 2026-11-25
 - `MOLD_TIMEOUT_SECONDS` (60 por omisión) ajusta el tope, para que el test del tope no tarde 60 s. — Coste si está mal: una variable más en la cabecera de `lib.mjs`.
 - Un comando que no arranca da `molde roto: «<comando>» no arrancó: <error>`, un literal que no estaba en la decisión 7. — Coste si está mal: ninguno, es un caso más.
 - `moldChecks` se queda en `battery.mjs`, que es quien lee la rúbrica, y no pasa a un módulo común. — Coste si está mal: un ciclo de imports que hay que mantener dinámico.
-- Fuera de Windows el tope mata solo `sh`. Hoy cada comando declarado es un `node` simple, y `sh` lo lanza con `exec`. — Coste si está mal: un ensayo colgado con un comando compuesto; el arreglo es `detached` más `process.kill(-pid)`.
+- El ruling «fuera de Windows el tope mata solo `sh`, y `sh` lanza un `node` simple con `exec`» resultó falso: el CI de la rama se colgó 37 min en `suite` (run 45688320658, cancelado). Con dash, matar `sh` deja vivo el `node` con las tuberías abiertas, y `close` no llega. Reproducido en Docker (`node:22-bookworm-slim`, `/bin/sh` → dash): «RED: runShell no volvió en 10 s». Arreglo en una task más tras el cierre: el comando va en su propio grupo de procesos (`detached`) y al tope se mata el grupo (`process.kill(-pid)`). GREEN: «volvió en 2 s · timedOut true · nieto vivo false» (con `--init`, que recoge los huérfanos como el runner). El test integrado lleva además un tope de 100 s, para fallar en vez de colgar la tanda.
 - `stdout += chunk` puede partir un carácter UTF-8 entre dos trozos. Las salidas declaradas son de una línea. — Coste si está mal: un `molde roto` falso y visible; el arreglo es `setEncoding('utf8')`.
 - «(0147 a 0365)» en la pregunta (8) se lee como un rango: la lista entera pasa del tope de palabras. — Coste si está mal: la trazabilidad de `operations.md` queda más corta.
 
@@ -91,7 +91,7 @@ created: 2026-11-25
 
 ### 4.3 Residuales / deuda generada
 
-- Fuera de Windows, el tope mata solo `sh`: un comando compuesto (`a && b`) podría colgar el ensayo. Hoy todo `s.leave` es un `node` simple. Se queda en ruling y en este walkthrough, sin fila: un solo caso razonado y sin medir.
+- Ninguno. El cuelgue del tope fuera de Windows, que era el residual, se arregló en la task posterior al cierre (§3).
 
 ## 5. Aprendizajes
 
