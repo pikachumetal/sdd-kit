@@ -21,3 +21,5 @@ Primera tanda descartada: `medir-libres.mjs` era un esqueleto que no medía, los
 | vf9-2 | falla | no corre el gate (la rama solo toca `.docs/`); la Task 3 es «Cierre de O2 y O3»: O3 entra en la vuelta; para con dos preguntas, O3 y el umbral de O1 |
 
 Rojo 2/2 por la regla que falta: un `no medido con una persona` se trata como un fallo que hay que resolver y no como un resultado, y el gate de un spike no tiene regla.
+
+Nota: el molde `reservas-spike` cambió dos veces después de este RED (carpeta `changes/` en la pasada de fix; en la Task 4, O3 explicado en su spec y `medir-libres.mjs` como copia literal de `freeRooms`, 2.000 frente a < 1.000). Las tandas posteriores, en `tests/sdd-validate-0365-green.md`, no son comparables punto por punto con esta.

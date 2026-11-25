@@ -83,3 +83,5 @@ Moldes:
 ## Procedencia de las reglas
 
 Cada fila de la tabla de escenarios nombra la suya. Las filas que vienen de `sdd-archive` conservan su procedencia; las de la feature 0362 citan la frase del dev-lead que las fija.
+
+- `vf9` (feature 0365): el molde del spike aguanta que el sujeto relea su script y su spec. Un script esqueleto, una carpeta fuera de `changes/`, una spec que contradice un objetivo o una medida sobre un modelo y no sobre `freeRooms` hicieron reabrir filas o parar por el molde, no por la regla (`tests/sdd-validate-0365-red.md` y `tests/sdd-validate-0365-green.md`).
