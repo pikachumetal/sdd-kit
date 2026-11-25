@@ -39,6 +39,15 @@ function planText(folder: string): string {
   return source === undefined ? '' : readText(source);
 }
 
+const START_LINE = /^\s*-\s*Inicio\s*:\s*(\S+)/m;
+
+// El `Inicio:` que `patch.md` §5 escribe al abrir; sin él, o con el marcador de la plantilla, cuenta toda la sesión.
+export function readStart(folder: string): number | undefined {
+  const source = join(folder, 'patch.md');
+  const time = Date.parse(START_LINE.exec(existsSync(source) ? readText(source) : '')?.[1] ?? '');
+  return Number.isNaN(time) ? undefined : time;
+}
+
 function readEstimate(text: string, name: PhaseName, warn: Warn): number | null {
   return toHours(getFieldText(text, PHASE_ESTIMATE_LABELS[name]), 'plan', warn);
 }
