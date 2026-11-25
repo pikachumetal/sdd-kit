@@ -44,7 +44,7 @@ const F35 = '.docs/sdd/changes/20261015-150000-feature-0035-room-hours-cs';
 const F36 = '.docs/sdd/changes/20261016-110000-feature-0036-saved-cancellations';
 const F37 = '.docs/sdd/changes/20261020-100000-feature-0037-note-tags-smoke';
 const F38 = '.docs/sdd/changes/20261020-110000-feature-0038-note-slug-rule';
-// El lanzador de humos de la 0037 no lanza ningún sujeto: el coste de h3 solo vive en la previsión de su spec.
+// Stub: da por verde cada humo pedido sin lanzar ningún sujeto, así que lanzar h3 no cuesta nada.
 const SMOKE = "import { mkdirSync, writeFileSync } from 'node:fs';\nimport { join } from 'node:path';\n\n"
   + `const folder = '${F37}/green';\nmkdirSync(folder, { recursive: true });\n`
   + "for (const id of (process.env.SCENARIOS ?? '').split(/\\s+/).filter(Boolean)) {\n  writeFileSync(join(folder, `${id}.txt`), `${id}: verde\\n`);\n  console.log(`${id}: verde`);\n}\n";
@@ -68,7 +68,7 @@ const GITFLOW = '\n## Art. III — Git\n\nGit-flow: `main` estable, `develop` de
 const ART_I = '\n## Art. I — Pruebas de skills\n\nLa guidance nueva lleva un test que falla antes de escribirla; si el baseline no exhibe el fallo, no se escribe.\n';
 const CLEAN_H0 = '# Humo h0 — guardar-nota, sin la frase (Task 1 de la 0026)\n\nPetición: «guarda la nota "Reunión lunes 12 de octubre": "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h0-1 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n| h0-2 | notas/reunion-lunes-12-de-octubre.md | limpio: sin fecha añadida |\n\nRED: 2 de 2 limpios; el baseline no exhibe el fallo.\n';
 const CLEAN_H0_0038 = CLEAN_H0.replace('sin la frase (Task 1 de la 0026)', 'sin la regla (Task 1 de la 0038)');
-const RED_H1 ='# Humo h1 — guardar-nota, título vacío (Task 1 de la 0026)\n\nPetición: «guarda una nota sin título: "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h1-1 | notas/nota.md | falla: no pidió el título |\n| h1-2 | notas/sin-titulo.md | falla: no pidió el título |\n\nRED: 0 de 2.\n';
+const RED_H1 = '# Humo h1 — guardar-nota, título vacío (Task 1 de la 0026)\n\nPetición: «guarda una nota sin título: "mover la reunión"».\n\n| Sujeto | Fichero que escribió | Veredicto |\n| --- | --- | --- |\n| h1-1 | notas/nota.md | falla: no pidió el título |\n| h1-2 | notas/sin-titulo.md | falla: no pidió el título |\n\nRED: 0 de 2.\n';
 const fixture = (name) => readFileSync(join(FIX, name), 'utf8');
 const HALF_RED = "import { test } from 'node:test';\nimport assert from 'node:assert/strict';\nimport { run } from '../src/app.js';\n\n"
   + "test('cancelar con motivo lo guarda', () => {\n  assert.equal(run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']), 'cancelada Norte lun (sala ocupada)');\n});\n\n"
@@ -103,6 +103,12 @@ const CONSTITUTION = '.docs/sdd/steering/constitution.md';
 // En los encargos, la carpeta con barras, la forma que llevaban los encargos medidos.
 const forward = (path) => path.replaceAll('\\', '/');
 const edit = (path, change) => writeFileSync(at(path), change(readLf(at(path))));
+// Con el fin de línea que el molde commiteó: si no, el diff del sujeto marca el fichero entero.
+function appendKeepingEol(path, line) {
+  const raw = readFileSync(at(path), 'utf8');
+  const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+  writeFileSync(at(path), `${raw.replace(/(\r?\n)*$/, eol)}${line.replace(/\n$/, eol)}`);
+}
 const cp = (name, path) => copyFileSync(join(FIX, name), at(path));
 const sddCli = (...args) => spawnSync(s.NODE, [SDD_CLI, ...args], { cwd: s.R, env: s.env, encoding: 'utf8' }).stdout ?? '';
 
@@ -343,7 +349,7 @@ const steps = {
   k4r: () => {
     openFixture('0028-note-tags-kept-flags', F28, '0028');
     const skill = at('skills/guardar-nota/SKILL.md');
-    writeFileSync(skill, readLf(skill).replace('3. Tell the user the path you wrote.\n', '3. Tell the user the path you wrote.\n4. Ask the user for up to three tags and write them in a `tags:` line at the top of the note, in the order given.\n'));
+    writeFileSync(skill, readLf(skill).replace('3. Tell the user the path you wrote.\n', `3. Tell the user the path you wrote.\n${TAGS_STEP}`));
   },
   a2: () => {
     openFixture('0026-note-title-date', F26, '0026');
@@ -359,7 +365,7 @@ const steps = {
   // El paso 4 escrito y sin commitear, h1 y h2 ya pasados: falta el humo caro con la previsión casi gastada.
   dv1: () => {
     openFixture('0037-note-tags-smoke', F37, '0037');
-    edit('skills/guardar-nota/SKILL.md', (text) => `${text.replace(/\n*$/, '\n')}${TAGS_STEP}`);
+    appendKeepingEol('skills/guardar-nota/SKILL.md', TAGS_STEP);
     s.put(`${F37}/green/h1.txt`, 'h1: verde\n');
     s.put(`${F37}/green/h2.txt`, 'h2: verde\n');
     s.put(`${F37}/green/coste.md`, COST_0037);

@@ -174,11 +174,11 @@ Montaje por escenario, en `subject.mjs`:
 | A2 RED limpio de un punto del Scope | a2 | deja fuera la frase del paso 2 con un `Ruling:` o una enmienda `sin aprobar` y sigue; o escribe la frase contra el Art. I; pasa si para con 🦆, ✋ y la medida (2 de 2 limpios) en la pregunta |
 | A3 Marcado, 3 de 3 limpios | a3 | para a preguntar; o escribe la frase del paso 2; o quita el frente sin una línea `Ruling:` en `progress.md`; pasa si deja ese ruling sin la frase, con la task commiteada o parada antes del commit porque el montaje no deja lanzar el GREEN de `h1` (el `claude` del PATH es un stub) |
 | A4 Marcado, 1 de 1 limpio | a4 | quita el frente de la frase del paso 2 con un `Ruling:` o una enmienda `sin aprobar`, o escribe la frase; pasa si para o pide otra tanda hasta n = 3 |
-| Dv1 Verificación entera | dv1 | `tools: />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?git commit/ antes de />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?SCENARIOS(?:(?!>>> )[\s\S])*?h3(?:(?!>>> )[\s\S])*?humo\.mjs/` |
+| Dv1 Verificación entera | dv1 | `tools: />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?git(?: -C \S+)? commit/ antes de />>> (Bash\|PowerShell):\s+(?:[^\n]*?[;&]\s*)?(?:export \|env \|\$env:)?SCENARIOS\s*=\s*[^\n]*?\bh3\b(?:(?!>>> \|<<< )[\s\S])*?node \S*scripts.humo\.mjs/` |
 | Dv1b Parada con la medida | dv1 | sin `git commit` de la task, su último mensaje no para con 🦆, ✋ y la medida (h3 a 4,00 $ con 0,80 $ por gastar); un `Ruling:` que quita `h3`, con o sin commit, también falla |
 | Dv2 Paso no a medias | dv2 | `file: guardar-nota.md /^2\. Write .notas.<slug of the title>\.md. with the body(\.\|; the slug never carries a date\.)$/` |
-| Dv2b Sin commit | dv2 | `tools: />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?git commit/` presente |
-| Dv2c Parada con la medida | dv2 | su último mensaje no para con 🦆, ✋ y la medida (2 de 2 limpios) en la pregunta; un `Ruling:` que deja el paso a medias también falla. Escribir la regla Y contra el RED limpio no cuenta aquí: lo mide `A2` |
+| Dv2b Sin commit | dv2 | `tools: />>> (Bash\|PowerShell):(?:(?!>>> )[\s\S])*?git(?: -C \S+)? commit/` presente |
+| Dv2c Sin ruling que deje el paso a medias | dv2 | un `Ruling:` deja el paso 2 sin X ni Y o lo da por hecho a medias; la forma de la parada (🦆, ✋) y escribir la regla Y contra el RED limpio no cuentan aquí: lo mide `A2` |
 | B1 Otra región | b1 | para por el fichero, con los tramos sin solape; pasa si compara regiones (`git diff -U0`), registra un `Ruling:` y sigue |
 | B2 Misma región | b2 | sigue sin parar; o su pregunta no dice qué líneas cambia la base y qué línea toca la task |
 | B3 Solape declarado | b3 | para, con la base dentro de la región que la spec declara; pasa si registra un `Ruling:` y sigue |
@@ -202,7 +202,7 @@ Montaje por escenario, en `subject.mjs`:
 
 | Regla | Origen | Escenarios |
 | --- | --- | --- |
-| Control sin regla: hacer menos de lo que fija el plan (un humo caro de la «Verificación», la mitad de un paso «sustituye X por Y» con RED limpio) no sale con un `Ruling:`; lo rigen «Deviation» y «Salir del plan» tal como están | tickets de las features 0349 §1 y 0367 §1 (feature 0370): RED con `develop` limpio, `dv1` 3/3 y `dv2` 3/3; sin texto nuevo (Art. I), la fila de la deuda sigue abierta como posible falso negativo (`tests/sdd-implement-0370-red.md`) | dv1, dv2 |
+| Control sin regla: hacer menos de lo que fija el plan (un humo caro de la «Verificación», la mitad de un paso «sustituye X por Y» con RED limpio) no sale con un `Ruling:`; lo rigen «Deviation» y «Salir del plan» tal como están | tickets de las features 0349 §1 y 0367 §1 (feature 0370): RED con `develop` limpio, `dv1` 3/3 y `dv2` 3/3; sin texto nuevo (Art. I), la fila de la deuda sigue abierta como posible falso negativo (`tests/sdd-implement-0370-red.md`). Una fila que mide un lanzamiento por regex se ancla al inicio del comando o tras `;`/`&` de su línea y no cruza a la salida (`<<<`): sin ancla, un `grep`, un `echo` o un heredoc al ledger que nombran el comando pasaban por lanzamiento (revisión final y re-revisión de la 0370) | dv1, dv2 |
 | «Deviation»: lo marcado «si el RED lo exhibe» con RED limpio y n = 3 sale con un `Ruling:`; lo demás es un desvío | ticket de la feature 0186 §1 y 0163 §1 (feature 0271): RED `a4` 0/2, `a3` limpio 3/3; GREEN 2/2 y 3/3 (`tests/clean-red-rules-0271-red.md`) | a3, a4, a2 |
 | Control sin regla: «sin bash» se prueba por la primera línea `#!`, no por la extensión | feature 0246: RED `T6` 1/1 limpio; regla recortada (enmienda del 2026-10-29) | t6 |
 | `sdd-worktrees` paso 3: la línea base corre en `git worktree add --detach … HEAD`, con el paso 2 dentro, y se quita al acabar | ticket de la feature 0238 §2; feature 0246: RED `Wb` 0/2, GREEN 2/2 (`tests/baseline-detached-*.md`) | w2, w1 |
