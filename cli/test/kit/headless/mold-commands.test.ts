@@ -1,8 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { isAlive, killProcess } from '../../../../tests/headless/lib.mjs';
 import { cleanGitEnv, kitRoot } from '../process.ts';
 
 // Cada escenario monta un molde con git init y sus commits, y la batería lanza un sujeto real por escenario.
@@ -18,6 +19,7 @@ const out = join(runs, 'dry', 'battery', 'out');
 const lib = pathToFileURL(join(kitRoot, 'tests', 'headless', 'lib.mjs')).href;
 
 const MARKER = `node -e "require('fs').writeFileSync('ran.txt','');console.log('hola');process.exit(2)"`;
+const HANG = `node -e "require('fs').writeFileSync('hang.pid',String(process.pid));setInterval(()=>{},1e3)"`;
 
 const SUBJECT = `import { initSubject } from '${lib}';
 const s = initSubject(process.argv.slice(2), 'toy');
@@ -29,6 +31,7 @@ const molds = {
   casa: () => s.put('walkthrough.md', 'Validación en campo: 2026-11-25\\n'),
   nocasa: () => s.put('walkthrough.md', 'Borrador sin validar\\n'),
   ausente: () => {},
+  colgado: () => s.leave(${JSON.stringify(HANG)}),
 };
 molds[s.SC]();
 s.initRepo();
@@ -43,7 +46,7 @@ const BATTERY = [
   '',
   '| Id | Paso | Petición | Molde | Esperado | n | Umbral | Modelo | Procedencia |',
   '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
-  ...['roto', 'codigo', 'salida', 'casa', 'nocasa', 'ausente'].map(scenarioRow),
+  ...['roto', 'codigo', 'salida', 'casa', 'nocasa', 'ausente', 'colgado'].map(scenarioRow),
   '',
   '| Fila | Escenarios | Falla si… |',
   '| --- | --- | --- |',
@@ -86,13 +89,19 @@ beforeAll(() => {
     COST_CAP: '20',
     DRY_RUN: '1',
     KEEP_MOLD: '1',
+    MOLD_TIMEOUT_SECONDS: '5',
     NODE: process.execPath,
   };
   const run = spawnSync(process.execPath, [join(kitRoot, 'tests', 'headless', 'battery.mjs'), 'run'], { cwd: kitRoot, env, encoding: 'utf8', windowsHide: true });
   result = { status: run.status, output: `${run.stdout}${run.stderr}` };
 });
 
-afterAll(() => rmSync(root, { recursive: true, force: true }));
+// Si el tope no mató el árbol, el proceso colgado no sobrevive a la tanda de tests.
+afterAll(() => {
+  const pidFile = join(runs, 'battery', 'colgado-1', 'repo', 'hang.pid');
+  if (existsSync(pidFile)) killProcess(Number(readFileSync(pidFile, 'utf8')), true);
+  rmSync(root, { recursive: true, force: true });
+});
 
 describe('el ensayo en seco ejecuta lo que el molde deja', () => {
   it('un comando declarado que sale con error da rojo, nombra el escenario y no escribe el stream de su sujeto', () => {
@@ -117,6 +126,12 @@ describe('el ensayo en seco ejecuta lo que el molde deja', () => {
 
   it('una fila mold: sobre un fichero que no existe deja pasar el escenario: la señal no está', () => {
     expect(lineOf('ausente'), result.output).toBe('ausente · 1/1 · umbral 1/1 · verde');
+  });
+
+  it('un comando que no termina da molde roto al tope y no deja vivo el proceso que lanzó', () => {
+    expect(lineOf('colgado'), result.output).toContain(`molde roto en colgado-1: molde roto: «${HANG}» no terminó en 5 s`);
+    const pid = Number(readFileSync(join(runs, 'battery', 'colgado-1', 'repo', 'hang.pid'), 'utf8'));
+    expect(isAlive(pid)).toBe(false);
   });
 
   it('una fila mold: que no casa deja pasar el escenario', () => {

@@ -483,6 +483,14 @@ describe('runBattery', () => {
     expect(fake.launched).toEqual([]);
   });
 
+  it('no lanza ningún sujeto si una fila mold: de la rúbrica no compila', async () => {
+    const fs = toyFs();
+    fs.write(TABLE, `${TOY}\n| Fila | Escenarios | Falla si… |\n| --- | --- | --- |\n| K6 Mal | r1 | \`mold: walkthrough.md /(/\` |\n`);
+    const fake = fakeDeps(fs);
+    await expect(runBattery(env({ STEPS: 'roadmap' }), CWD, fake.deps)).rejects.toThrow(new BatteryError('K6: comprobación mal escrita'));
+    expect(fake.launched).toEqual([]);
+  });
+
   it('lanza solo el tramo pedido, cada índice con el modelo de su escenario', async () => {
     const fs = toyFs();
     const fake = fakeDeps(fs);

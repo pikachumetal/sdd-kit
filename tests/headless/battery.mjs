@@ -146,7 +146,7 @@ export function moldChecks(batteryPath, id) {
 // Una celda puede juntar varias filas: «S1, S2, R1 Juntas».
 const rowIds = (fila) => fila.match(/^[^\s,]+(?:,\s+[^\s,]+)*/)?.[0] ?? fila;
 
-// Una fila cuya celda «Falla si…» empieza por `tools:, `file: o `text: es una comprobación; mal escrita es un error, porque callada no correría.
+// Una fila cuya celda «Falla si…» empieza por `tools:, `file:, `text: o `mold: es una comprobación; mal escrita es un error, porque callada no correría.
 function readRubric(batteryPath, rows, fs) {
   const known = new Set(rows.map((row) => row.Id));
   const table = readTable(batteryPath, RUBRIC_HEADER, fs) ?? [];
@@ -273,9 +273,10 @@ function verdictNotes({ noTools, unfinished, unloaded, failedChecks, brokenMolds
 
 // La primera línea de <etiqueta>.mold.txt, que el sujeto en seco deja al encontrar el molde roto.
 function brokenMoldsOf(row, outDir, fs) {
-  return Array.from({ length: Number(row.n) }, (_, i) => `${row.Id}-${i + 1}`)
-    .filter((label) => fs.exists(join(outDir, `${label}.mold.txt`)))
-    .map((label) => `molde roto en ${label}: ${fs.read(join(outDir, `${label}.mold.txt`)).split(/\r?\n/)[0]}`);
+  return Array.from({ length: Number(row.n) }, (_, i) => `${row.Id}-${i + 1}`).flatMap((label) => {
+    const path = join(outDir, `${label}.mold.txt`);
+    return fs.exists(path) ? [`molde roto en ${label}: ${fs.read(path).split(/\r?\n/)[0]}`] : [];
+  });
 }
 
 function judgeRows(batteryPath, selected, { outDir, fs }) {
@@ -338,6 +339,8 @@ export function batteryPlan(env, cwd, fs) {
   if (!fs.exists(table)) throw new BatteryError(`sin batería: ${table}`);
   const rows = pickRows(readScenarios(table, fs), words(env.STEPS), env);
   if (rows.length === 0) throw new BatteryError(noScenarios(table), 3);
+  // Una fila de rúbrica mal escrita para aquí, antes de lanzar: la de `mold:` la evalúa cada sujeto en seco.
+  readRubric(table, readScenarios(table, fs), fs);
   const launchEnv = { ...env, SUBJECT_SH: join(dir, 'subject.mjs') };
   const config = readConfig({ ...launchEnv, SCENARIOS: rows.map((row) => row.Id).join(' ') }, cwd, fs);
   return { table, rows, launchEnv, config };
