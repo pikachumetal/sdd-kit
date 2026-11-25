@@ -324,6 +324,8 @@ function doneSpike0030() {
     '}',
     '',
   ].join('\n'));
+  s.leave(`node ${S30}/medidas/medir-libres.mjs`, { output: 'rep 10: ' });
+  s.leave(`node ${S30}/medidas/medir-libres.mjs --memoria`, { output: 'heap tras sembrar: ' });
   const o1 = spawnSync(process.execPath, [at(`${S30}/medidas/medir-libres.mjs`)], { encoding: 'utf8' }).stdout ?? '';
   s.put(`${S30}/medidas/o1-libres.txt`, o1);
   const measured = /rep 10: (\d+) comparaciones/.exec(o1)?.[1];
@@ -459,7 +461,11 @@ function buildChange0010() {
 // con una fila por THEN; con un solo smoke, el sujeto la rehace.
 function validated0010() {
   const head = short('HEAD');
-  const row = (then, command, output) => `| ${then} | ejecución real | \`${command}\` → «${output}» |`;
+  // La app sale con 0 también al rechazar un motivo: lo que distingue cada fila es su salida.
+  const row = (then, command, output) => {
+    s.leave(command, { output });
+    return `| ${then} | ejecución real | \`${command}\` → «${output}» |`;
+  };
   s.put(`${F10}/walkthrough.md`, ['# Walkthrough — Motivo al cancelar', '', '## 4. Verificación', '', '### 4.1 Builds', '',
     `- Suite completa: \`${FILTERED_GATE}\` → verde, 1 s, sobre ${head}`, '', '### 4.2 Smoke', '', '| THEN | Evidencia | Comando y salida |', '| --- | --- | --- |',
     row('Cancelar con motivo', 'node src/app.js cancelar Norte lun --motivo "sala ocupada"', 'cancelada Norte lun (sala ocupada)'),

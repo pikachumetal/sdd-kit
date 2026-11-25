@@ -11,6 +11,8 @@
 //   s.show('feature/0013:.docs/sdd/roadmap.md', 'roadmap.md');    // un fichero de otra rama, con las reglas de keep
 //   s.seedTranscript('feature/0042', ['<fecha ISO> <user|assistant|assistant!> <texto>', …]); // transcripts del trabajo (assistant! cierra el turno); se borran al acabar
 //   s.ports();                                                    // puertos del sujeto (PORT y los del stream); la limpieza para lo que arrancó con él
+//   s.leave('node src/app.js libres', { code: 0, output: 'Norte' }); // comando que el molde deja: con DRY_RUN=1 corre antes de launch, junto a las filas `mold:` de la rúbrica;
+//                                                                   // lo que escriba queda en el molde que conserva KEEP_MOLD=1
 // s.env es una copia del entorno: un molde fija ahí lo suyo antes de launch (s.env.MAX_TURNS ||= '30'; s.env.TURN2 = '…').
 // Variables: RUNS_DIR (obligatoria, en el scratchpad o en .temp/ del repo; cada sujeto va a RUNS_DIR/<PHASE>/<etiqueta>), PHASE (red), MODEL (sonnet), MAX_TURNS (60), MOLD_NAME (repo),
 // EXTRA_DISALLOWED («PowerShell» en escenarios con worktrees), NODE (el node que corre esto),
@@ -22,7 +24,8 @@
 // CLAUDE_BIN (otro claude; un .mjs se lanza con node), TURN2 (mensaje del segundo turno: launch reanuda la sesión con resume),
 // DRY_RESULT (texto del result en seco; con «?», converse sigue preguntando), DRY_PERSONA_COST (coste de la persona en seco),
 // DRY_RUN=1 (un stream falso en lugar de claude -p, con coste DRY_COST: 0.5),
-// KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre).
+// KEEP_MOLD=1 (al salir no se borra el molde del sujeto; su carpeta de Claude Code en CLAUDE_CODE_TMPDIR o TEMP, siempre),
+// MOLD_TIMEOUT_SECONDS (tope de cada comando de s.leave en seco: 60 por omisión).
 import { spawn, spawnSync } from 'node:child_process';
 import { closeSync, cpSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -117,6 +120,37 @@ function runSync(command, args, { cwd, env, input } = {}) {
   return { code: result.status ?? 1, stdout: result.stdout ?? '', stderr: result.stderr ?? result.error?.message ?? '' };
 }
 
+// Fuera de Windows, el comando va en su propio grupo de procesos (detached): -pid mata el grupo entero.
+function killShellTree(pid) {
+  if (windows) return killProcess(pid, true);
+  try {
+    process.kill(-pid, 'SIGKILL');
+  } catch {
+    // Ya había salido.
+  }
+}
+
+// Un comando que el molde deja, tal como lo escribiría el sujeto: por la shell del sistema, con comillas dobles.
+// Al tope se mata el árbol: matar solo la shell (cmd.exe, o el sh de dash, que no hace exec) deja vivo el node que
+// lanzó, con las tuberías abiertas, y close no llega nunca.
+function runShell(command, { cwd, env, timeout }) {
+  return new Promise((done) => {
+    const child = spawn(command, { cwd, env, shell: true, windowsHide: true, detached: !windows });
+    const result = { code: 1, stdout: '', stderr: '', timedOut: false };
+    child.stdout.on('data', (chunk) => (result.stdout += chunk));
+    child.stderr.on('data', (chunk) => (result.stderr += chunk));
+    const timer = setTimeout(() => {
+      result.timedOut = true;
+      killShellTree(child.pid);
+    }, timeout);
+    child.on('error', (error) => (result.error = error.message));
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      done({ ...result, code: code ?? 1 });
+    });
+  });
+}
+
 // Sin shell y con la entrada cerrada: con ella abierta, un aviso de stdin precedía al JSON.
 function spawnClaude(command, args, { cwd, env, stdout, stderr, append }) {
   const out = openSync(stdout, append ? 'a' : 'w');
@@ -150,6 +184,7 @@ export function realSubjectDeps() {
   return {
     fs: nodeFs,
     run: runSync,
+    shell: runShell,
     spawnClaude,
     whichClaude,
     netstat,
@@ -176,7 +211,7 @@ export function realSubjectDeps() {
 export function initSubject(argv, skill, { env = process.env, deps = realSubjectDeps(), cwd = process.cwd() } = {}) {
   const [kit, label, scenario, out] = argv;
   /** @type {Record<string, any>} */
-  const s = { env: { ...env }, LABEL: label, SC: scenario, HEADLESS, exitCode: 0 };
+  const s = { env: { ...env }, LABEL: label, SC: scenario, HEADLESS, exitCode: 0, left: [] };
   s.NODE = s.env.NODE || process.execPath;
   s.die = (message) => {
     deps.err(`[${label || 'sujeto'}] ${message}`);
@@ -216,9 +251,11 @@ function prepareRun(s, fs, { out, cwd }) {
   s.JSONL = join(s.RUNS, `${s.LABEL}.jsonl`);
   s.LEAK = join(s.RUNS, `${s.LABEL}.leak`);
   s.ERR = join(s.RUNS, `${s.LABEL}.err`);
+  s.MOLD_FAILURE = join(s.OUT, `${s.LABEL}.mold.txt`);
   fs.remove(s.RUN);
   fs.mkdir(s.R);
   fs.remove(s.LEAK);
+  fs.remove(s.MOLD_FAILURE);
   s.versionedOut = versionedOut(s, fs);
 }
 
@@ -240,6 +277,7 @@ function bindMoldTools(s, deps) {
     },
     initRepo: (title = 'feat: base del molde') => initRepo(s, title),
     put: (path, text) => deps.fs.write(join(s.R, path), text),
+    leave: (command, expected = {}) => s.left.push({ command, ...expected }),
     copy: (source, dest = '.') => cpSync(source, join(s.R, dest), { recursive: true }),
     kitVersion: () => kitVersion(s.KIT, deps.fs),
     putKitMarker: (fields) => putKitMarker(s, fields),
@@ -506,7 +544,43 @@ function checkSettings(s) {
   return settings;
 }
 
+function leftFailure({ command, code = 0, output }, result, seconds) {
+  if (result.error) return `molde roto: «${command}» no arrancó: ${result.error}`;
+  if (result.timedOut) return `molde roto: «${command}» no terminó en ${seconds} s`;
+  if (result.code !== code) return `molde roto: «${command}» salió con ${result.code} (esperado ${code})`;
+  if (output !== undefined && !`${result.stdout}${result.stderr}`.includes(output)) return `molde roto: «${command}» no contiene «${output}»`;
+  return undefined;
+}
+
+async function commandFailure(s, deps) {
+  const seconds = Number(s.env.MOLD_TIMEOUT_SECONDS || 60);
+  for (const left of s.left) {
+    const failure = leftFailure(left, await deps.shell(left.command, { cwd: s.R, env: s.env, timeout: seconds * 1000 }), seconds);
+    if (failure) return failure;
+  }
+  return undefined;
+}
+
+// Import dinámico: battery.mjs ya importa campaign.mjs, que importa este módulo.
+// Un fichero ausente no lleva la señal: el walkthrough de vf10 no existe hasta que el sujeto lo escribe.
+async function rubricFailure(s, fs) {
+  const { moldChecks } = await import('./battery.mjs');
+  const battery = join(s.env.BATTERY_DIR || dirname(process.argv[1] ?? ''), 'battery.md');
+  const found = moldChecks(battery, s.SC).find(({ file, pattern }) => fs.exists(join(s.R, file)) && pattern.test(fs.read(join(s.R, file)).replaceAll('\r\n', '\n')));
+  return found && `molde roto: ${found.file} casa /${found.pattern.source}/ (fila ${found.id})`;
+}
+
+// En seco, lo que el molde deja se ejecuta antes del stream falso: un molde roto medía otra conducta en la tanda real.
+// Primero las filas mold:, porque un comando puede crear o borrar la señal.
+async function checkMold(s, deps) {
+  const failure = (await rubricFailure(s, deps.fs)) ?? (await commandFailure(s, deps));
+  if (!failure) return;
+  deps.fs.write(s.MOLD_FAILURE, `${failure}\n`);
+  s.die(failure);
+}
+
 async function launch(s, deps, ask) {
+  if (s.env.DRY_RUN === '1') await checkMold(s, deps);
   s.claudeArgs = claudeArgs(s, checkSettings(s));
   pinIdentity(s, deps);
   deps.fs.write(join(s.RUNS, `${s.LABEL}.args`), lines([...s.claudeArgs, ask]));
