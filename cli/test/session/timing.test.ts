@@ -104,6 +104,17 @@ describe('session tokens --artifact', () => {
     expect(timing.withinMargin).toBe(true);
   });
 
+  it('con un Inicio en patch.md cuenta desde él, no desde el arranque de la sesión', async () => {
+    const times = ['14:04:00', '14:30:00', '15:00:00', '15:30:00', '16:00:00', '16:19:00', '16:24:00', '16:29:00'];
+    const worktree = worktreeWith(times.map((time) => agent(time, [{ type: 'text', text: 'sigo' }])));
+    const { output, timing } = await timingOf(worktree, { file: 'patch.md', text: '## 5. Tiempo\n\n- Estimación: 0,2 h\n- Inicio: 2026-11-02T16:19Z\n' });
+    expect(timing.withinMargin).toBe(true);
+    const hours = Number(/Esfuerzo real: ([\d,]+) h/.exec(line(output, 'Esfuerzo real')!)![1]!.replace(',', '.'));
+    expect(hours).toBeLessThanOrEqual(0.2);
+    expect(line(output, 'Esfuerzo real')).toContain('desde 2026-11-02T16:19Z');
+    expect(line(output, 'Tokens del hilo')).toBe('- Tokens del hilo: 6 — claude-sonnet-5 6');
+  });
+
   it('sin transcripts escribe measured false', async () => {
     const folder = tempDir();
     const worktree = newWorktree([], null);
