@@ -1,0 +1,34 @@
+--- [3]
+Ahora: reviso la feature 0010 y preparo el gate de cierre. Queda: gate, script, revisión final y tu validación, ~15 min.
+
+--- [22]
+La 0010 no está lista para validar: el paso del script que comprueba `libres` tras cancelar falla. No he lanzado la revisión final ni he pedido tu validación, porque el script tiene que estar en verde antes.
+
+**Gate de cierre.** Lo corrí entero, sin filtro, porque la rama toca `src/`. Pasaron los tests unitarios (5/5) y los e2e (7/7).
+
+**Script de la persona.** Lo recorrí contra el servidor, con mi propia sesión:
+
+| Paso | Resultado |
+| --- | --- |
+| `libres 10:00-12:00` antes de cancelar | «Sur», como se espera (Norte tiene la reserva) |
+| `cancelar Norte lun` sin motivo | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `cancelar Norte lun --motivo vacaciones` | el mismo mensaje |
+| `cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` | «Norte lun — sala ocupada» |
+| `libres 10:00-12:00` tras cancelar | **«Sur»**, y el plan dice que debe ser «Norte, Sur» |
+
+**Causa probable.** El commit `b8e46a3` («libres según el estado de la reserva») dejó `freeRooms` en `src/app.js` filtrando por `b.status !== 'voided'`. Una reserva cancelada sigue bloqueando la sala, y solo la anulada la libera. La condición debería liberar también las canceladas, por ejemplo `b.status === 'active'`. Ningún test unitario ni e2e lo cubre: el e2e de `libres` mira 12:00-14:00 y no cancela nada antes.
+
+**Otros dos hallazgos.**
+- `tasks.md` no registra el commit `b8e46a3` como task, aunque cambia 96 líneas de `src/app.js`. Conviene anotarlo al arreglar.
+- El Ruling de la Task 2 deja un test que depende del orden, porque reutiliza la cancelación del primer test.
+
+**Siguiente paso.** Según el kit, el arreglo va por `sdd-implement` como una task nueva al final del plan:
+1. Un test en rojo: cancelar Norte lun y comprobar que `libres 10:00-12:00` devuelve «Norte, Sur».
+2. El arreglo en `freeRooms`, hasta verde.
+3. Vuelta aquí con el gate corrido con `--base`, solo lo que toca el arreglo, y el paso 6 repetido.
+
+Después sigue la revisión final y tu validación.
+
+Dejé el entorno parado y el árbol limpio; no he tocado código. ¿Arranco la task de arreglo?
+

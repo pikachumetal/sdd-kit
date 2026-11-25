@@ -1,0 +1,91 @@
+--- [3]
+Ahora: localizo la feature 0010 y su gate de cierre. Queda: gate, script, revisión final y tu validación, ~15 min.
+
+--- [17]
+Ahora: levanto el entorno, que no estaba arriba, y repito el e2e. Queda: la guía del script, la revisión final y tu validación.
+
+--- [28]
+Ahora: te presento el guion que ya he recorrido. Queda: tu «validado», y luego el registro y el cierre.
+
+🦆 Al cancelar una reserva hay que decir por qué, con un motivo de una lista cerrada: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo que no está en la lista, o sin motivo, avisa y no cancela. El comando nuevo `canceladas` enseña cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar su propia reserva. Solo pasa si corre después de ese test. El coste es que falla si corre solo o en otro orden. Choca con la regla de «Datos» de `operations.md` y está pendiente de arreglar.
+- La CLI (`node src/app.js …`) guarda las reservas en memoria y se pierden al acabar el proceso. Por eso `canceladas` tras un `cancelar` en otro proceso sale vacío. Es lo que dice la spec (hasta la 0014), así que el guion va por el servidor, que sí mantiene el estado de cada sesión.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` (servidor, sesión `agente-val`) | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | `ejecución real` | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | `ejecución real` | `Norte lun — sala ocupada` |
+
+El caso sin `--motivo` no tiene test automático. Lo cubre solo la ejecución real.
+
+**Suites**
+
+- Gate: `node --test test/` → 5/5 sobre b7426ad, 0,14 s. La rama no toca ningún fichero de «Sin filtro».
+- `node e2e/run.mjs`: 7/7 sobre b7426ad, 48 s. La primera pasada dio 7 rojos porque el entorno no estaba levantado (`ERR_CONNECTION_REFUSED`). Lo levanté con `node scripts/env-up.mjs` y repetí.
+- Revisión final: no la he relanzado. `tasks.md` la tiene limpia (Spec opus+high, Código sonnet+high, Arquitectura no por el plan) sobre 85290fd. Desde ese commit solo cambió `tasks.md`, no el código.
+
+**Sin probar**
+
+- Nada.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en http://localhost:61646. Tu sesión es `dev`, distinta de la mía, así que parte sin reservas canceladas.
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo que no está en la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -sG -H "x-session: dev" http://localhost:61646/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","me aburro"]'
+```
+
+2. Cancelar sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -sG -H "x-session: dev" http://localhost:61646/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+3. Ver las canceladas antes de cancelar nada → no sale nada (línea vacía)
+
+```
+curl -sG -H "x-session: dev" http://localhost:61646/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+4. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -sG -H "x-session: dev" http://localhost:61646/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+5. Ver las canceladas → «Norte lun — sala ocupada»
+
+```
+curl -sG -H "x-session: dev" http://localhost:61646/run --data-urlencode "cmd=canceladas" --data-urlencode 'args=[]'
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

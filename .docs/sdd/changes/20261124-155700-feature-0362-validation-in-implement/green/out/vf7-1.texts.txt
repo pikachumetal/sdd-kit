@@ -1,0 +1,117 @@
+--- [3]
+Ahora: leo el estado de la 0010 y el hallazgo Important del eje Código. Queda: devolverlo a `sdd-implement` como una task nueva con su test, ~5 min.
+
+--- [8]
+El hallazgo es del eje Código en la revisión final. Según `sdd-validate`, eso vuelve a `sdd-implement` como una task nueva al final del plan, con su test (RED y luego GREEN).
+
+--- [11]
+Ahora: paso a la ejecución Native para añadir la Task 3 (el fix de `canceladas` vacía) con su RED. Queda: el test en RED, el fix, el commit y la vuelta a `sdd-validate`, ~10 min.
+
+--- [14]
+Ahora: miro el código de `canceladas` y el test existente. Queda: RED, fix, commit y `task done`, ~8 min.
+
+--- [18]
+Ahora: escribo el test en RED. Uso un proceso nuevo, que arranca con estado limpio, para no depender del orden de los otros tests. Queda: fix, commit y `task done`, ~6 min.
+
+--- [20]
+RED confirmado: imprime `'\n'`. Ahora hago el fix mínimo.
+
+--- [23]
+GREEN: 6 de 6. Ahora: commit de la task, y después `task done` en su propia llamada.
+
+--- [28]
+Ahora: registro la Task 3 en `plan.md` y `tasks.md`. Queda: volver a `sdd-validate` (gate filtrado, review del diff del fix, script), ~10 min.
+
+--- [30]
+La Task 3 está commiteada (04de48e) y registrada. Vuelvo a `sdd-validate` para la vuelta del fix.
+
+--- [33]
+Ahora: ejecuto la vuelta del fix: gate filtrado, review del diff del fix y los pasos del script que toca. Queda: gate, un review (~1 dólar), script y la validación del dev, ~10 min.
+
+--- [45]
+Paso del script recorrido: `canceladas` en frío da 0 bytes, y `cancelar` y `libres` siguen respondiendo igual. Mientras vuelve la review, leo el modo de validación.
+
+--- [49]
+La review del fix sigue en marcha. Hasta que llegue su resultado no presento el script ni registro nada de la validación.
+
+**Estado de la 0010:**
+- **Task 3 (04de48e):** `canceladas` sin canceladas ya no imprime una línea en blanco. El RED mostraba `'\n'` y ahora da `''`. Los tests unitarios dan 6 de 6.
+- **Ruling:** la spec calla sobre la lista vacía. Decidí no imprimir nada, sin texto nuevo de interfaz. Si prefieres un mensaje tipo «sin canceladas», dímelo.
+- **Gate:** solo corrí la pasada afectada (`node --test test/`). No corrí el e2e porque el fix no toca su camino ni ningún fichero de «Sin filtro».
+- **Script:** recorrí el paso que toca. `canceladas` en frío da 0 bytes, y `cancelar` y `libres` siguen respondiendo igual.
+- **Registro:** `plan.md` y `tasks.md` están actualizados (847467c).
+
+Sigo con la validación del dev en cuanto vuelva la review.
+
+--- [56]
+Hay un hallazgo Important y uno Minor. No edité nada: la mutación de la prueba la restauré y `git status` quedó limpio.
+
+**Qué funciona**
+- El fix es correcto. `if (output !== '') console.log(output)` en `src/app.js` (final del fichero) evita la línea en blanco. `node src/app.js canceladas` ahora emite 0 bytes, también desde otro cwd.
+- El test falla sin el fix y pasa con él. Con `src/app.js` de 068e730, `canceladas sin ninguna cancelada no imprime nada` falla (pass 5, fail 1). Con el fix, `npm test` da 6 de 6.
+- No rompe otros comandos. `salas`, `cancelar` y `anular` devuelven siempre texto no vacío. `libres` solo devuelve `''` si ambas salas están ocupadas en la franja, y ahí también deja de imprimir la línea en blanco. Me parece coherente con la decisión tomada.
+- `server.mjs` llama a `run()` directamente, así que no le afecta.
+
+**Hallazgos**
+
+1. **Important** — `test/cancel.test.js:19`: el test puede pasar sin comprobar nada. Lanza `['src/app.js', 'canceladas']` con una ruta relativa al cwd y solo comprueba `result.stdout === ''`. Si el cwd no es la raíz del repo, node no encuentra el fichero, sale con error y `stdout` queda vacío. Lo verifiqué ejecutando `node --test cancel.test.js` desde `test/`: el test pasa en verde sin haber ejecutado la app. Hay dos arreglos, mejor combinarlos:
+   - Resolver la ruta con `fileURLToPath(new URL('../src/app.js', import.meta.url))`, o pasar `cwd` explícito.
+   - Afirmar también `result.status === 0` y `result.stderr === ''`.
+
+2. **Minor** — `src/app.js` y `test/cancel.test.js`: el commit convirtió ambos ficheros de CRLF a LF.
+   - Con `git diff` aparecen 99 y 36 líneas tocadas. Con `--ignore-cr-at-eol` quedan 5 y 6 líneas de cambio real.
+   - Ensucia el `blame` y la revisión.
+   - El resto de `.js` y `.mjs` del repo siguen en CRLF, por ejemplo `test/app.test.js` y `server.mjs`.
+   - Conviene restaurar CRLF para que el diff quede en las líneas reales. Si la normalización fue intencionada, que sea un commit aparte.
+
+--- [58]
+La review devuelve un Important y un Minor, y los dos son defectos reales de mi commit. Ahora: compruebo primero los finales de línea.
+
+--- [68]
+Los tres comportamientos son los esperados. Compruebo que el diff contra la base 068e730 queda en las líneas reales.
+
+--- [71]
+El diff contra la base queda en las líneas reales (4/1 y 10/0). Ahora: cierro la vuelta en el ledger y preparo el script del dev. Cada paso lo ejecuto yo antes de presentarlo.
+
+--- [73]
+Puerto libre. Levanto el entorno, guardo el PID y recorro los pasos con una sesión mía (`x-session: agente`).
+
+--- [76]
+Todos los pasos dan lo esperado. Paro lo que arranqué, y como la sesión es mía los datos de la persona no se tocan. Compruebo que el puerto queda libre.
+
+--- [78]
+🦆 **Qué cambia:** `canceladas` sin ninguna cancelada ya no imprime una línea en blanco. No imprime nada. Con una cancelada sigue diciendo `Norte lun — sala ocupada`.
+
+**Estado de la vuelta del fix**
+- **Fix:** Task 3 en 04de48e.
+- **Review del diff del fix:** `sonnet` + `effort-high` encontró dos defectos reales de mi commit, y los arreglé en d72b795:
+  - **Important:** mi test podía pasar en verde sin ejecutar la app. Con ruta relativa y otro cwd, node no encontraba el fichero y `stdout` quedaba vacío. Ahora usa ruta absoluta y comprueba `status 0` y `stderr` vacío. Lo verifiqué: pasa desde `test/`, falla sin el fix y falla con la ruta rota.
+  - **Minor:** el commit había pasado `src/app.js` y `test/cancel.test.js` de CRLF a LF, porque `core.autocrlf=true` normaliza al añadir. Los restauré con CRLF. El diff contra la base queda en 4/1 y 10/0 líneas.
+- **Tests:** `node --test test/` da 6 de 6. No corrí el e2e: el fix no toca su camino.
+
+**✋ Me salí del plan en…**
+- **Ruling:** la spec calla sobre la lista vacía. No imprimo nada y no añado texto nuevo. Si prefieres un mensaje tipo «sin canceladas», es un cambio de spec.
+- **Ruling:** el test usa un proceso nuevo (`spawnSync`) para tener estado vacío sin depender del orden de los otros tests. Con eso desaparece el workaround de la Task 2, en el que el test de `canceladas` reutilizaba la cancelación del primer test.
+- **Sin revisar:** d72b795 (arreglo de la review). Ya hubo la única re-review que permite el kit, así que no abro otra.
+
+**Script de validación**
+
+Los pasos 1 a 6 los ejecuté yo con una sesión mía (`x-session: agente`). El entorno está parado y el puerto 50473 está libre. Para repetirlos, levántalo con `node scripts/env-up.mjs`. Se para con `node scripts/env-down.mjs`. Usa una sesión nueva, por ejemplo `x-session: tu-nombre`, y llama a `http://localhost:50473/run?cmd=<cmd>&args=<JSON>` (no probé `x-session` con otro nombre).
+
+1. `canceladas` con `[]` en sesión nueva → respuesta vacía.
+2. `cancelar` con `["Norte","lun"]` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+3. `cancelar` con `["Norte","lun","--motivo","me aburro"]` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+4. `cancelar` con `["Norte","lun","--motivo","sala ocupada"]` → `cancelada Norte lun (sala ocupada)`.
+5. `canceladas` con `[]` → `Norte lun — sala ocupada`.
+6. El mismo `cancelar` del paso 4 otra vez → `sin reserva Norte lun`.
+7. Por CLI en frío: `node src/app.js canceladas`. Debe salir sin ninguna línea, ni siquiera en blanco. Esta es la que cambió.
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+**¿Validas la 0010?** Cuando lo confirmes, lo registro en el walkthrough y sigo con `sdd-archive`.
+
+--- [79]
+El aviso es solo de que terminó la vigilancia de silencio de la review. No es una validación tuya, así que la 0010 sigue sin validar y no la registro.
+
+Sigo esperando tu respuesta sobre el script de 7 pasos. No lanzo nada contra el entorno mientras tanto. Cuando confirmes, registro `Validado` en el walkthrough y sigo con `sdd-archive`. Si algún paso falla, dime el número y qué ves.
+

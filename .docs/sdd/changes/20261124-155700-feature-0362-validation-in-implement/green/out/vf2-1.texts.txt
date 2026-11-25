@@ -1,0 +1,66 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo cómo se corre el gate de cierre. Queda: gate, script, revisión final y tu validación, ~20 min.
+
+--- [16]
+Ahora: corro el gate de cierre (tests y e2e). Queda: script, revisión final, tu validación, ~10 min.
+
+--- [23]
+La validación de la 0010 se ha parado en el script, antes de la revisión final. Un paso falla y no he lanzado ni la revisión final ni tu validación.
+
+**Gate de cierre**
+- `node --test test/`: 5/5.
+- `node e2e/run.mjs`: 7/7, con el entorno levantado y luego parado.
+
+**Script (lo que dice la spec)**
+
+Lo he recorrido contra el servidor local, con mi propia sesión.
+
+| Paso | Resultado |
+| --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | «cancelada Norte lun (sala ocupada)», correcto |
+| `canceladas` | «Norte lun — sala ocupada», correcto |
+| Motivo fuera de la lista | «motivo no válido: cambio de planes, sala ocupada, otro», correcto |
+| Sin `--motivo` | el mismo mensaje, correcto |
+
+**Lo que falla**
+- **Qué falla:** tras cancelar Norte lun 10:00-12:00, `libres 10:00-12:00` responde «Sur», y la sala cancelada sigue sin salir como libre. Antes de `ec86a99` salía «Norte, Sur».
+- **Origen:** el commit `ec86a99` («libres según el estado de la reserva») cambió `freeRooms` de `status === 'active'` a `status !== 'voided'`. Desde entonces una reserva cancelada sigue ocupando la sala.
+- **Por qué importa:** contradice el Intent de la spec, que habla de «por qué se liberó una sala».
+- **Sin cobertura:** ese commit no tiene task en `plan.md` ni en `tasks.md`, ni test que lo cubra. La spec no menciona `libres` y los tests actuales pasan igual.
+- **Ruido en el diff:** el commit reescribe `src/app.js` entero (96 líneas), porque cambian los finales de línea. Sin contar espacios, el cambio real es una línea.
+- **Línea de revisión final:** la de `tasks.md` ya no existe, porque `a98f239` la borró. Estaba sobre `475a056`, antes de este commit, así que no valía.
+
+**Qué propongo**
+
+Mandarlo a `sdd-implement` como task 3, con test en rojo y luego verde. Cubriría «cancelar libera la sala en `libres`». Se restauraría `status === 'active'` y se evitaría el cambio de finales de línea. Después volvería aquí para repetir el gate sobre lo tocado, el paso del script y la revisión final sobre el último commit.
+
+Tu decisión: ¿era intencionado que una reserva cancelada siga bloqueando la sala? Mi recomendación es que no. Si lo era, hace falta añadirlo a la spec como enmienda con su THEN antes de seguir.
+
+--- [25]
+Ahora: devuelvo el fallo a la implementación como task 3, con su test. Queda: arreglo, gate sobre lo tocado, script, revisión final y tu validación, ~15 min.
+
+--- [43]
+Ahora: repito el gate y el paso 3 del script sobre el arreglo. Queda: revisión final y tu validación, ~10 min.
+
+--- [47]
+Arreglado: tras cancelar Norte el lunes, `libres 10:00-12:00` vuelve a dar «Norte, Sur». Antes del arreglo daba solo «Sur».
+
+**Qué he hecho**
+- **Causa:** el commit `ec86a99` cambió `freeRooms` de `status === 'active'` a `status !== 'voided'`. Eso dejaba la sala cancelada como ocupada. Ese commit no estaba en la spec ni en el plan.
+- **Task 3** (commit `05ddee3`, anotada en `plan.md` y `tasks.md`):
+  - **Test:** `test/free.test.js` es nuevo y prepara sus propios datos. Lo vi fallar antes del arreglo: devolvía «Sur» y esperaba «Norte, Sur».
+  - **Arreglo:** `src/app.js` vuelve a su versión anterior a `ec86a99`. Con ello también se deshace el cambio de finales de línea que reescribía el fichero entero.
+  - **Registro:** `8635e0c` marca la task como hecha.
+- **Comprobaciones tras el arreglo:**
+  - `node --test test/`: 6/6.
+  - `node e2e/run.mjs`: 7/7.
+  - He repetido el paso 3 y los pasos de la spec en el servidor: `canceladas` sigue dando «Norte lun — sala ocupada».
+  - Los dos mensajes de «motivo no válido» no los he vuelto a probar a mano. Los cubren los tests de `test/cancel.test.js`, que pasan, y el e2e `rechaza un motivo fuera de la lista`.
+  - El entorno queda parado y el árbol limpio.
+
+**Pendiente**
+- La revisión final de la 0010 no ha salido. Va sobre el último commit, `8635e0c`, y lanza sus ejes con subagentes (Spec y Código; Arquitectura queda fuera según el plan). Tiene coste en tokens.
+- Después te presento el script para tu validación (modo `manual`).
+
+¿Lanzo la revisión final ahora?
+

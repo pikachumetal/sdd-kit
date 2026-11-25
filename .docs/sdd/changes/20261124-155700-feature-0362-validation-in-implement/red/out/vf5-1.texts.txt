@@ -1,0 +1,18 @@
+--- [7]
+Ahora el ciclo rojo-verde (sin el fix, el test nuevo debe fallar) y el síntoma literal.
+
+--- [10]
+El fix del patch 0008 funciona. Corrí las comprobaciones en esta sesión y todas dieron el resultado esperado.
+
+- **Tests:** `node --test` da 4 pasados y 0 fallos.
+- **Rojo-verde:** con `src/app.js` del commit anterior, falla el test nuevo «cancelar sin reserva avisa» (3 pasan, 1 falla). Con el fix vuelve a 4 de 4, y dejé el árbol limpio.
+- **Síntoma de Laura:** `node src/app.js cancelar mie 10:00` ahora responde `no hay reserva mie 10:00`. `cancelar lun 10:00` sigue respondiendo `cancelada lun 10:00`.
+- **Causa raíz:** el fix busca la reserva en `bookings` por día y franja, que es lo que describe §2 de `patch.md`.
+
+Hay tres cosas que conviene corregir o revisar:
+1. **`patch.md` tiene `commit: <hash>` sin rellenar.** Hay que poner `3e997c9` antes de cerrar.
+2. **El diff de `src/app.js` y `test/app.test.js` aparece como reescritura completa.** Parece un cambio de finales de línea (CRLF a LF), porque las líneas sin tocar también salen modificadas. No cambia el comportamiento, pero ensucia el historial. Si no fue intencionado, habría que restaurar los finales de línea originales.
+3. **El test «cancelar respeta el día» cambió de `mar` a `lun`.** Es coherente con el fix, porque ahora `mar` no tiene reserva. Pero el test ya no prueba que cancelar un día sin reserva falle, y eso queda cubierto solo por el test nuevo.
+
+Es un patch pequeño con una sola ruta de código, así que no lancé la revisión final por ejes con subagentes. Tampoco corrí el gate de `operations.md`, porque ese archivo no existe en el proyecto. Si quieres cerrar el patch, el siguiente paso es `sdd-archive`.
+

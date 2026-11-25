@@ -1,0 +1,106 @@
+--- [3]
+Ahora: leo la feature 0010 y su guion para saber qué specs E2E toca la rama. Queda: lanzar el gate y las tres pasadas E2E en segundo plano, y caminar el guion, ~5 min.
+
+--- [10]
+Ahora: lanzo el gate de cierre (unit + E2E). Queda: caminar el guion, la revisión final y tu validación, ~4 min.
+
+--- [16]
+El gate de cierre corre en segundo plano. Cuando acabe camino el guion con el servidor, para no pisar el puerto 60049.
+
+--- [19]
+Gate verde (exit 0). Ahora: camino el guion como lo hará la persona, con el servidor y una sesión mía. Queda: la revisión final y tu validación.
+
+--- [22]
+Guion caminado, sin fallos. Ahora: paso por `sdd-verify` para dar por cerrada la revisión final. Queda: tu validación.
+
+--- [30]
+Ahora: presento el guion para tu validación. Queda: solo tu respuesta.
+
+🦆 Al cancelar una reserva ahora hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro), y `canceladas` lo enseña. Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Nada. Un aviso sobre las tres pasadas E2E que me pediste (abajo, en «Sin probar»).
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- Gate de cierre `node --test test/ && node e2e/run.mjs`: exit 0 sobre 0192c49. Lo corrí en una sola ejecución y no leí el recuento. Los tests y las specs E2E pasaron una vez.
+- Revisión final (Spec opus+high y Código sonnet+high, limpia) sobre 9f06c31. Desde entonces solo cambió `tasks.md`. `package.json` solo gana scripts, así que no hay dependencias nuevas. No hubo pasada de fix.
+
+**Sin probar**
+
+- **Las tres pasadas E2E en segundo plano no las lanzo mientras pruebas.** Usan el mismo servidor, el del puerto 60049. Lo reinician o lo paran al acabar, y eso te rompería los pasos. Las corro **cuando me contestes**, o antes si prefieres esperar unos ~2,5 min. La suite tarda unos 50 s, y con `E2E_TRACE=light` va el doble de rápida.
+- Nada más.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno está parado. `canceladas` solo ve lo cancelado dentro del mismo proceso, así que se prueba contra el servidor, no con `node src/app.js` suelto. Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2 (con `curl` y la cabecera `x-session: mi-sesion` tienes tu propio estado, y empiezas sin cancelaciones):
+
+```
+cd <run>\repo
+```
+
+1. Sin cancelaciones todavía → responde vacío.
+
+```
+curl -s -H "x-session: mi-sesion" "http://localhost:60049/run?cmd=canceladas&args=%5B%5D"
+```
+
+2. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: mi-sesion" "http://localhost:60049/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+3. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: mi-sesion" "http://localhost:60049/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+4. Cancelar con motivo → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: mi-sesion" "http://localhost:60049/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+5. Listado → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: mi-sesion" "http://localhost:60049/run?cmd=canceladas&args=%5B%5D"
+```
+
+6. Cancelar otra vez la misma → «sin reserva Norte lun»
+
+```
+curl -s -H "x-session: mi-sesion" "http://localhost:60049/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22otro%22%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves. Dime "validado" o qué paso falla.
+

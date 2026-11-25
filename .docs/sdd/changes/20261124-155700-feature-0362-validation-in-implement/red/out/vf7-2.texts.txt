@@ -1,0 +1,168 @@
+--- [16]
+RED: imprime `'\n'`. Ahora el arreglo.
+
+--- [23]
+Suite 6/6 en verde. Commit del arreglo y registro en `tasks.md`.
+
+--- [28]
+Dispatch la re-revisión única (opus + high) sobre `02ccd15..2b244de`, en su worktree aislado.
+
+--- [34]
+Lanzo la vigilancia de silencio del subagente.
+
+--- [40]
+Ahora: espero la re-revisión del arreglo (opus + high). Queda: su veredicto, luego la validación (suite y smoke por cada THEN), ~5 min.
+
+La re-revisión sigue en marcha en segundo plano. De momento hay esto:
+
+- **Hallazgo Important (Código):** `canceladas` con la lista vacía imprimía una línea en blanco.
+  - **Test:** el test `canceladas sin ninguna cancelada no imprime nada` falló antes del arreglo (`'\n'`) y pasa después.
+  - **Arreglo:** el commit `2b244de` solo imprime si la salida no está vacía.
+  - **Suite:** `node --test` da 6/6 en verde.
+- **Decisión mía:** la spec no dice qué imprime `canceladas` sin canceladas. Elegí que no imprima nada, sin añadir un THEN nuevo, y lo anoté como `Ruling` en `tasks.md`. Si el dev-lead prefiere un mensaje como «sin canceladas», sería una enmienda de la spec.
+- **Pendiente de commit:** los cambios de `tasks.md` (la `Pasada de fix` y los rulings) siguen sin commitear. Los commitearé con la línea `Re-revisión:` cuando llegue el veredicto.
+
+--- [46]
+### Finding Verdicts
+- **`canceladas` con la lista vacía imprime una línea en blanco** — ADDRESSED. In `src/app.js:48-51` the bare `console.log(run(command, args))` is now `const output = run(command, args); if (output !== '') console.log(output);`. With no cancelled bookings, `cancelledList()` (`src/app.js:36`) returns `''`, so the CLI now prints nothing. That is what the thread ruled: prints nothing, no new THEN. The regression test is at `test/cancel.test.js:18-21`. It runs `src/app.js canceladas` in a separate process, which starts with no cancellations in memory, and checks that `stdout === ''`. On the old code `console.log('')` writes `'\n'`, so the claimed RED fits. I did not run it; reading the code gave me no specific doubt.
+
+### New Breakage in the Fix Diff
+- **Minor — the new test can pass without testing anything.** At `test/cancel.test.js:19`, `spawnSync(process.execPath, ['src/app.js', 'canceladas'], …)` uses a path relative to the current directory. Nothing checks `result.status` or `result.stderr`. If the suite runs from another directory, or the CLI path crashes before printing, node writes its error to stderr, stdout stays `''`, and the test still passes. It works today because `npm test` / `node --test` run from the repo root. A fix would be to resolve the script with `new URL('../src/app.js', import.meta.url)` and also assert `result.status === 0`.
+- **Minor — every line of `test/cancel.test.js` was rewritten for line endings only.** At 02ccd15 the committed file used CRLF; at 2b244de it uses LF. `git diff --ignore-cr-at-eol` shows only the 6 added lines. None of the existing assertions, test names or data changed, so this is not a modification of RED tests. Still, the repo has no `.editorconfig`, `.gitattributes` or formatter that requires LF. `test/app.test.js` is still CRLF, so the line endings are now mixed and the diff is noisy.
+- No other breakage. The `tasks.md` line now records the final review and the Important finding against 02ccd15, which is correct bookkeeping. The fix adds no user-facing text, so the castellano constraint is respected.
+
+### Out-of-Scope Observations
+- The `output !== ''` guard covers every CLI command, not just `canceladas`. For example, an empty `libres` would also print nothing now. In the CLI this is unreachable: each run starts with the same single booking, and nothing on the CLI path changes it except `cancelar` and `anular`. `server.mjs` / e2e go through `run()` directly and are not affected. I note it only because it is a broader change than the finding asked for.
+- The existing ruling in `tasks.md` still stands: the `canceladas enseña sala, día y motivo` test depends on the cancellation made by the first test. The new test does not have that problem because it runs in its own process.
+
+### Verdict
+**Fix round:** All findings addressed, no new Critical/Important breakage
+
+--- [48]
+La re-revisión es limpia: el hallazgo queda resuelto y no hay Critical ni Important nuevos. Registro el veredicto, dejo los Minors en el ledger y quito el worktree de revisión.
+
+--- [51]
+La revisión final está cerrada. Sigo con la validación, que es el paso de `sdd-archive`.
+
+--- [60]
+Base sin avanzar y sin otras ramas abiertas, así que el gate de cierre corre aquí. Es `node --test test/ && node e2e/run.mjs`, con salida a fichero.
+
+--- [63]
+Las 6 unitarias pasan, pero los 7 E2E fallan con `ERR_CONNECTION_REFUSED`: el entorno no estaba levantado. Leo cómo se corre esa suite antes de repetirla.
+
+--- [66]
+Antes de levantar el entorno compruebo que el puerto 58099 está libre.
+
+--- [70]
+Entorno levantado y verificado, PID 86188 escuchando en 58099. Repito el gate de cierre tal como está declarado.
+
+--- [73]
+Gate verde: unitarias 6/6 y E2E 7/7 en 48,2 s. Ese tiempo pasa del presupuesto E2E (0,5 min), y eso lo anoto después. Paro el entorno por su PID y compruebo que el puerto queda libre.
+
+--- [79]
+El guion va por el servidor, con una sesión propia en `x-session`, porque ahí el estado sobrevive entre comandos. Levanto el entorno para ensayar cada paso tal como lo escribirá la persona.
+
+--- [82]
+Los cinco pasos dan lo esperado. Paro el entorno por su PID y compruebo el puerto antes de presentarte el guion.
+
+--- [84]
+Antes de cerrar necesito tu validación, porque en este proyecto la hace una persona (`validation.mode: manual`). El cierre no sigue hasta que la tengas.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- **Línea en blanco en `canceladas`:** el eje Código señaló como Important que `canceladas` sin canceladas imprimía una línea en blanco. La spec no dice qué debe imprimir en ese caso. Decidí que no imprima nada y no añadí ningún THEN; el arreglo es `2b244de`. Si prefieres un mensaje tipo «sin canceladas», es una enmienda de la spec.
+- **Test de `canceladas`:** ya estaba en `tasks.md` el ruling de la Task 2. El test reutiliza la cancelación del primer test, así que falla si corre solo o en otro orden.
+
+**Smoke que he corrido** (contra el servidor, con una sesión propia)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` tras cancelar | ejecución real | `Norte lun — sala ocupada` |
+| `canceladas` sin canceladas (el arreglo) | ejecución real | respuesta vacía; por CLI no escribe ningún byte |
+
+**Suites** (sobre `268d802`)
+
+- `node --test test/`: 6/6.
+- `node e2e/run.mjs`: 7/7 en 48,2 s. El primer intento falló con `ERR_CONNECTION_REFUSED` porque el entorno no estaba levantado. Lo levanté con `env-up` y repetí el gate completo, sin variables ni opciones extra.
+- Gate de cierre: `` Gate: `node --test test/` · `node e2e/run.mjs` → unit: corrió 6/6 · e2e: corrió 7/7 ``.
+
+**Sin probar**
+
+- Nada.
+
+**Pendiente de apuntar en el cierre**
+
+- El E2E tarda 48,2 s y el presupuesto es de 0,5 min. Abriré una fila de deuda con esas dos cifras.
+- El draft del walkthrough trae `Validación en campo: 2026-10-26`. Es anterior al arreglo y este proyecto no está en modo `field`, así que no cuenta como validación. Lo sustituiré por tu validación.
+- Dos Minors quedan diferidos en `tasks.md`: el test nuevo no comprueba `status` ni `stderr`, y `test/cancel.test.js` pasó de CRLF a LF.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno:
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+1. Mira las canceladas de una sesión nueva → responde vacío, sin texto.
+
+```
+curl -s -H "x-session: mi-prueba" "http://localhost:58099/run?cmd=canceladas&args=%5B%5D"
+```
+
+2. Cancela Norte del lunes con un motivo de la lista → `cancelada Norte lun (sala ocupada)`.
+
+```
+curl -s -H "x-session: mi-prueba" "http://localhost:58099/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+3. Cancela con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`.
+
+```
+curl -s -H "x-session: mi-prueba" "http://localhost:58099/run?cmd=cancelar&args=%5B%22Sur%22,%22mar%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+4. Cancela sin `--motivo` → `motivo no válido: cambio de planes, sala ocupada, otro`.
+
+```
+curl -s -H "x-session: mi-prueba" "http://localhost:58099/run?cmd=cancelar&args=%5B%22Sur%22,%22mar%22%5D"
+```
+
+5. Mira las canceladas de la misma sesión → `Norte lun — sala ocupada`.
+
+```
+curl -s -H "x-session: mi-prueba" "http://localhost:58099/run?cmd=canceladas&args=%5B%22%22%5D"
+```
+
+6. Por CLI, en un proceso nuevo, sin canceladas → no imprime nada, ni una línea en blanco.
+
+```
+node src/app.js canceladas
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves. Dime "validado" o qué paso falla.
+
+Una corrección: en el paso 5 el `args` va como `%5B%22%22%5D`, que es `[""]`, y no como `[]` de los pasos 1 y 6. Es un error de tecleo mío en la URL. Ensayé `[]`, y con `[""]` el resultado es el mismo porque `canceladas` ignora los argumentos. Si prefieres copiarlo igual que el paso 1, usa `args=%5B%5D`.
+

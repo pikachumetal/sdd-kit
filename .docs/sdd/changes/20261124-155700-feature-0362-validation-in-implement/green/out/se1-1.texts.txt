@@ -1,0 +1,82 @@
+--- [3]
+Ahora: leo la feature 0010 y la referencia de verificación para preparar el gate de cierre. Queda: gate, script, revisión final y tu validación, ~15 min.
+
+--- [14]
+Ahora: compruebo que la rama está al día con `develop` (el primer THEN lo pide) y corro el gate de cierre. Queda: script, revisión final y tu validación, ~12 min.
+
+--- [17]
+Gate verde (5/5) y la rama está al día con `develop` (merge-base = `develop`). Ahora: recorro el script como lo haría la persona, comando a comando.
+
+--- [28]
+Escribo el borrador del walkthrough, sin verificación ni tiempo y sin commit.
+
+--- [31]
+Ahora: te presento la validación. Queda: tu respuesta y el cierre con `sdd-archive`, ~3 min.
+
+🦆 Al cancelar una reserva hay que decir por qué, con una lista cerrada: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno que no está en la lista, rechaza la cancelación. Después, `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, ese test falla cuando corre solo o en otro orden. Lo comprobé: con `--test-name-pattern="canceladas"` falla. En la suite entera pasa.
+
+**Smoke que he corrido** (sobre `88406ef`)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` | ejecución real, worktree con la base al día | «cancelada Norte lun (sala ocupada)» |
+| AND motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| AND sin `--motivo` | ejecución real (sin test en la suite) | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` tras cancelar | ejecución real, en el mismo proceso | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- Gate: `node --test` → 5/5 sobre `88406ef`.
+- La rama está al día: `develop` (`26175d4`) es su merge-base.
+- Revisión final: Spec y Código limpias, sobre `0822ef4`. Después solo cambió una línea de `spec.md` (`Se valida en:`) y `tasks.md`, sin tocar código. Arquitectura no salió, según el plan.
+
+**Sin probar**
+
+- Nada de la spec. Las reservas viven en memoria hasta la 0014, así que `canceladas` en una invocación separada de `cancelar` sale vacío, como dice la spec. Por eso el paso 4 usa un solo proceso.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>/repo`
+
+No hay comando de arranque declarado, porque es una CLI. No dejo nada corriendo y no escribe datos: todo va en memoria.
+
+Terminal 1:
+
+```
+cd <run>/repo
+```
+
+1. Ejecuta el siguiente comando y debe responder «cancelada Norte lun (sala ocupada)».
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Ejecuta el siguiente comando y debe responder «motivo no válido: cambio de planes, sala ocupada, otro».
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Ejecuta el siguiente comando y debe responder lo mismo que en el paso 2: «motivo no válido: cambio de planes, sala ocupada, otro».
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Ejecuta el siguiente comando, en bash, en un solo proceso, y debe imprimir dos líneas: «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada».
+
+```
+node --input-type=module -e 'const {run}=await import("./src/app.js"); console.log(run("cancelar",["Norte","lun","--motivo","sala ocupada"])); console.log(run("canceladas",[]))'
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

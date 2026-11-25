@@ -21,7 +21,7 @@ A template's text and literals stay as they are.
 | [patch-template.md](templates/patch-template.md) | `patch.md` | Patch lane (only artifact) |
 | [proposal-template.md](templates/proposal-template.md) | `proposal.md` | `proposal` lane: `sdd-roadmap` writes it for something big or a client meeting; historical, with dated amendments |
 | [launch-prompt-template.md](templates/launch-prompt-template.md) | launch prompt, in the chat | Given by `sdd-roadmap` and `sdd-explore`: starts the change in another worktree with its lane and its decisions |
-| [validation-template.md](templates/validation-template.md) | validation message, in the chat | Presented by `sdd-archive` |
+| [validation-template.md](templates/validation-template.md) | validation message, in the chat | Presented by `sdd-validate` |
 | [data-model-template.md](templates/data-model-template.md) | `data-model.md` | Optional: data changes that don't fit in the plan |
 | [research-template.md](templates/research-template.md) | `research.md` | A spike's evidence, with its objectives table |
 | [retro-template.md](templates/retro-template.md) | `retro.md` | Release cut, through `sdd-retro`: review by cause, proposals and, if asked, estimate |

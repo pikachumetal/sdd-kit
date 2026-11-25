@@ -1,0 +1,97 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo cómo correr el gate de cierre. Queda: gate, script, revisión final y tu validación, ~15 min.
+
+--- [13]
+Gate unitario: 5/5. La suite e2e no declara nivel (cuenta como `pendiente`), así que la corro entera.
+
+--- [15]
+The e2e failed with connection refused because the environment wasn't up. That's a setup problem, not a code failure. I'll raise it with `env-up` (the "Entorno de la suite" command) and rerun.
+
+--- [18]
+Gate en verde: unit 5/5 y e2e 7/7. Ahora recorro el script como lo hará la persona, con los comandos reales, incluidos los THEN de fallo.
+
+--- [28]
+Ahora: presento el script de validación con el entorno arriba. Queda: tu respuesta y el registro.
+
+🦆 Al cancelar una reserva hay que decir por qué, con una de tres opciones. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Después, `canceladas` lista cada cancelada con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si es erróneo, el test falla al correr solo o en otro orden.
+- No he relanzado la revisión final. `tasks.md` la registra limpia (Spec opus+high, Código sonnet+high) sobre `c9ab5af`, y desde entonces solo cambia `tasks.md` (`git diff c9ab5af HEAD`). El código revisado es el que validas. Arquitectura no salió, porque el plan lo decidió así.
+
+**Smoke que he corrido** (servidor del entorno, sesión propia `agente-validate`)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Un motivo fuera de la lista da «motivo no válido…» | ejecución real (`--motivo "me aburro"`) | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` da lo mismo | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña «Norte lun — sala ocupada» | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5, sobre `fb0fdd1`.
+- `node e2e/run.mjs`: 7/7 sobre `fb0fdd1`, 48 s de 0,5 min de presupuesto. En la primera pasada fallaron los 7 con `ERR_CONNECTION_REFUSED`, porque el entorno no estaba arriba. Lo levanté con `node scripts/env-up.mjs` y la segunda pasada salió verde.
+
+**Sin probar**
+
+- Nada. Cada `node src/app.js …` es un proceso nuevo y `canceladas` sale vacío fuera del proceso donde se canceló. Es lo que dice el Approach de la spec (memoria hasta la 0014), por eso el guion usa el servidor.
+- El e2e supera el presupuesto de 0,5 min (48 s ≈ 0,8 min). Lo anoto como deuda en 4.3 del walkthrough.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en el puerto 50734.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelas con motivo válido:
+
+```
+curl -s -H "x-session: dev" -G http://localhost:50734/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"sala ocupada\"]"
+```
+
+→ `cancelada Norte lun (sala ocupada)`
+
+2. Pruebas un motivo fuera de la lista:
+
+```
+curl -s -H "x-session: dev" -G http://localhost:50734/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\",\"--motivo\",\"me aburro\"]"
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+3. Pruebas sin `--motivo`:
+
+```
+curl -s -H "x-session: dev" -G http://localhost:50734/run --data-urlencode "cmd=cancelar" --data-urlencode "args=[\"Norte\",\"lun\"]"
+```
+
+→ `motivo no válido: cambio de planes, sala ocupada, otro`
+
+4. Listas las canceladas:
+
+```
+curl -s -H "x-session: dev" -G http://localhost:50734/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+→ `Norte lun — sala ocupada`
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Dime "validado" o qué paso falla.
+

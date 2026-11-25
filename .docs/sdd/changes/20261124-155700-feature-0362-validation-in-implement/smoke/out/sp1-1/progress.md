@@ -1,0 +1,2 @@
+# SDD ledger — plan: .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/plan.md
+Task 1: complete (commits ba9d4a7..9d101e7, tests: test -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o1.txt -a -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/evidence/o2-o4-1000.txt -a -f .docs/sdd/specs/20261015-100000-feature-0030-free-rooms-kiosk/research.md → (sin salida))

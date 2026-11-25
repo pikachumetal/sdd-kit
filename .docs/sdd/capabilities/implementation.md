@@ -62,9 +62,10 @@ La ejecución de un plan aprobado: Native y SDD, las tasks, sus RED, el ledger, 
 
 - GIVEN una constitution que pide el gate completo en verde al cerrar cada task
 - WHEN se escribe el plan y se despacha una task de solo frontend
-- THEN el gate completo aparece una sola vez, en la validación final, y lo ejecuta el hilo principal
+- THEN el gate de cierre aparece una sola vez, al acabar las tasks, en `sdd-validate`, y lo ejecuta el hilo principal
 - AND no aparece en «De código» ni en la verificación de esa task, y el encargo de su implementador le dice que ejecute su verificación y no la suite completa
-- AND tras su merge de sincronización, el cierre de `sdd-archive` repite solo lo que afecta lo que trajo la base, y con otra rama abierta o la base por delante la validación no lo corre: lo corre el cierre una sola vez sobre el merge de sincronización
+- AND corre el que declara `operations.md` §Testing, filtrado por lo afectado si el proyecto lo declara, y entero solo si la rama toca un fichero de «Sin filtro»
+- AND tras su merge de sincronización, el cierre de `sdd-archive` repite solo lo que afecta lo que trajo la base: las tareas que cruzan la rama y la base
 
 ### El effort declarado viaja en el tipo de agente
 
@@ -167,7 +168,7 @@ La ejecución de un plan aprobado: Native y SDD, las tasks, sus RED, el ledger, 
 
 - GIVEN la feature 0042 en modo full, con la spec aprobada y el plan con `Ejecución: native, porque 2 tasks encadenadas por la interfaz de Ledger, …`
 - WHEN `sdd-propose` entrega la feature
-- THEN invoca `sdd-implement`, que invoca `sdd-implement-native` con `Skill`; esta ejecuta las dos tasks en Native y, con la revisión final de vuelta y su pasada de fix hecha, invoca `sdd-archive`, que abre con la validación
+- THEN invoca `sdd-implement`, que invoca `sdd-implement-native` con `Skill`; esta ejecuta las dos tasks en Native y, con la última hecha, invoca `sdd-validate`, que corre el gate, recorre el guion, hace la revisión final y presenta la validación, y con la validación registrada invoca `sdd-archive`, que abre comprobando esa validación
 - AND con `Ejecución: subagent`, `sdd-implement` invoca `sdd-implement-subagent`
 - AND ningún texto que carga el agente (`skills/` sin las marcas `<!-- kit: … -->`) invoca `superpowers:executing-plans` ni `superpowers:subagent-driven-development`
 - AND en modo lite, sin plan, el método es el de `execution` si está fijado y Native con `auto`, con `spec.md` en el lugar del plan
@@ -265,7 +266,7 @@ La ejecución de un plan aprobado: Native y SDD, las tasks, sus RED, el ledger, 
 - THEN invoca `sdd-implement`, que lee lo primero `references/patch-flow.md` y sigue su flujo: causa raíz, `patch.md`, fix mínimo y commit; ni el Setup ni los bucles de tasks aplican
 - AND antes de decir que está arreglado, §4 de `patch.md` lleva el comando del test y su salida leída en esta sesión, como dice la «Gate Function» de `sdd-verify`
 - AND antes del commit del fix, un revisor en Sonnet lee `patch.md` y el diff —la causa raíz, el arreglo y su test— y §4 responde cada hallazgo: arreglado, o rechazado con su motivo
-- AND no se despacha ningún eje de la revisión final, y sigue en `sdd-archive`
+- AND no se despacha ningún eje de la revisión final; tras el commit del fix invoca `sdd-validate`, que corre el gate, recorre el guion y presenta la validación, como en una feature, y solo con la validación registrada sigue en `sdd-archive`; una vuelta tras un fallo del dev-lead pasa por ese mismo revisor Sonnet de §4 antes de volver a presentar
 
 ### Ninguna skill intermedia entre propose e implement
 

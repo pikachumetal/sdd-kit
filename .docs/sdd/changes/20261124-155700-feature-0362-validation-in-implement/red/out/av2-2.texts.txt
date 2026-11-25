@@ -1,0 +1,40 @@
+--- [3]
+Empiezo por los pre-checks del paso 0.
+
+--- [14]
+No he cerrado la 0010: la suite está en rojo sobre `HEAD` (`53ac4bf`), así que el cierre se para y no he escrito ni commiteado ningún registro.
+
+**Qué falla.** He ejecutado `node scripts/gate.mjs run bookings:test rooms:test --affected --base develop`, el gate que cita el borrador. Falla `test/cancel.test.js:17`, «canceladas sin canceladas avisa», que se añadió en `53ac4bf`:
+- Espera `'ninguna'` y recibe `'Norte lun — sala ocupada'`.
+- Hay dos causas. `cancelledList()` en `src/app.js` devuelve una cadena vacía cuando no hay canceladas, así que no existe el aviso que el test espera. Además, el test comparte el estado en memoria con el test anterior, que ya canceló Norte lun. Es el workaround ya anotado en `## Rulings` de `tasks.md`.
+- No hace falta contrastarlo contra `develop`: el test es nuevo en esta rama.
+
+**Por qué no puedo seguir.**
+- **Borrador del walkthrough:** dice «suite completa → verde … sobre 53ac4bf», y eso es falso. Tampoco puedo reutilizar su línea `Validación en campo`, porque su suite no corrió en verde. Hay que rehacer esa validación en el commit corregido.
+- **Revisión final:** quedó «limpia» solo sobre `3c52f73`. `53ac4bf` toca código de test y la rama no tiene `Re-revisión:`. Aunque sea un commit pequeño, hay que lanzar la re-revisión de `3c52f73..HEAD` cuando `HEAD` esté arreglado.
+- **Lo que sí está bien:**
+  - `merge --check` da «destino listo» para `develop`.
+  - No hay otras ramas `feature/*` ni `patch/*` abiertas.
+  - El spec está `approved`.
+  - El único cambio sin commitear es el borrador de `walkthrough.md`, que es lo esperado.
+
+**Qué decides.** El spec no menciona ningún aviso «ninguna», así que ese comportamiento no estaba pedido. Veo dos salidas:
+1. **Quitar el test.** Es lo que recomiendo, porque mantiene el alcance del spec. Se borra el test de `53ac4bf` y se retoma el cierre.
+2. **Pedir el aviso como comportamiento nuevo.** `canceladas` devolvería `ninguna` si no hay canceladas, y el test pasaría a preparar su propio estado. Es un cambio en lo que ve el usuario, así que el spec y la capability `bookings` tendrían que recogerlo antes de cerrar.
+
+Dime cuál prefieres y retomo el cierre desde el paso 0. Esa vez sí lanzaré la re-revisión, la suite en verde y la validación en campo sobre el commit definitivo.
+
+**No terminado.** Falta una suite en verde, la re-revisión de `HEAD` y los registros del cierre. No borres todavía el worktree `<run>/repo`.
+
+--- [16]
+Ya tenía el borrador del walkthrough por correcto. Era lo esperado en el paso 0 y no es lo que me frena.
+
+Lo que me frena es la suite en rojo sobre `53ac4bf`. Falla `test/cancel.test.js:17`, «canceladas sin canceladas avisa». El borrador afirma «suite en verde» y eso no es cierto, así que no puedo cerrar ni validar encima de él. Tampoco puedo elegir yo el arreglo, porque cada opción tiene consecuencias distintas:
+
+1. **Borrar ese test.** Es lo que recomiendo, porque el spec no pide ningún aviso «ninguna». Es solo quitar el commit de test.
+2. **Hacer que `canceladas` devuelva `ninguna` cuando no hay canceladas.** Cambia lo que ve el usuario, y el spec y la capability `bookings` tendrían que recogerlo.
+
+Con «1» o «2» sigo de inmediato. Haré el arreglo y volveré a pasar la suite. Después lanzaré la re-revisión de `3c52f73..HEAD` y rehago la validación en campo sobre el commit resultante. Con eso cerraré y fusionaré en `develop`.
+
+**No terminado.** Falta resolver la suite en rojo y completar el cierre. No borres el worktree.
+

@@ -12,7 +12,7 @@ El merge del cierre con `sdd merge`: la política declarada, el destino, el turn
 - WHEN el agente llega al paso del merge de `sdd-archive`
 - THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
 - AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta salvo en un hotfix con la frase del dev-lead en `--order`
-- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, la validación de `sdd-archive` para con el smoke y la pregunta de validación antes de tocar nada
+- AND el bloque autoriza el merge, no la validación: `sdd-archive` no arranca sin la validación registrada, y en `pair` y `delegate` `sdd-validate` para con el smoke y la pregunta de validación antes de invocarlo
 - AND en cualquier perfil, con la CI de la base en `failure` no fusiona («Antes del merge, el cierre lee la CI de la base y no fusiona sobre un rojo», en `archive`)
 
 ### Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás
@@ -100,9 +100,9 @@ El merge del cierre con `sdd merge`: la política declarada, el destino, el turn
 - GIVEN un proyecto cuyo `steering/operations.md` §Testing separa un conjunto rápido de la suite completa
 - WHEN el cierre fusiona con `sdd merge`
 - THEN `--verify` es el conjunto rápido, que corre sobre la rama del cambio integrada con la base, antes del merge y del push; con una sola suite, es esa
-- AND el gate de cierre ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
+- AND el gate de cierre ya corrió antes del script: al acabar las tasks y, si la base trajo cambios que cruzan la rama, tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
 - AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; el gate de cierre no se omite nunca
-- AND `--verify` no lleva las suites unitarias ni lee «Sin filtro»: los aplicó el gate de cierre sobre el merge de sincronización
+- AND `--verify` no lleva las suites unitarias ni lee «Sin filtro»: los aplicó el gate de cierre
 
 ### La comprobación del destino no toca nada
 

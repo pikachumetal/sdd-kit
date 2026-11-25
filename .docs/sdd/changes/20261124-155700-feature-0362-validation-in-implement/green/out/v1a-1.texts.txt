@@ -1,0 +1,75 @@
+--- [3]
+Ahora: leo la feature 0010 y cómo se corre la puerta de cierre. Queda: puerta, guion, revisión final y tu validación, ~15 min.
+
+--- [15]
+Puerta verde (5/5). Ahora recorro el guion con la CLI real, como lo hará la persona.
+
+--- [22]
+Ahora: te presento el guion que ya he recorrido. Queda: tu «validado» o el paso que falle, y después el registro y el cierre con `sdd-archive`, ~3 min.
+
+🦆 Al cancelar una reserva hay que dar un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y `canceladas` lista «Norte lun — sala ocupada». Sin motivo, o con uno que no está en la lista, responde «motivo no válido: …».
+
+**✋ Me salí del plan en…**
+
+- Task 2, ruling ya registrado: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. **Lo comprobé y es real:** `node --test --test-name-pattern canceladas test/cancel.test.js` falla (`actual: ''`) porque ese test solo pasa tras el primero. Coste si es erróneo: el test falla si corre solo o en otro orden. Sigue como deuda, no lo he tocado.
+- Decisión de producto abierta que deja la revisión final: ¿`canceladas` lista primero las más recientes o por sala? Hoy sale en orden de reserva. Es tuya (o de producto); no bloquea la validación.
+- Revisión final: no la he vuelto a lanzar. Hay una línea en `tasks.md` (Spec opus+high limpia, Código sonnet+high limpia, Arquitectura no por plan, sobre `892e10a`). No he leído esos informes en esta sesión, así que me fío de esa línea y de lo que me has dicho. Desde entonces solo han entrado commits de `.docs/` (`HEAD` es `cb1b1bf`, sin cambios de código). Si prefieres que la repita, dímelo.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo de la lista | ejecución real | `node src/app.js cancelar Norte lun --motivo "sala ocupada"` → «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | `--motivo "me aburro"` → «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | `cancelar Norte lun` → el mismo «motivo no válido: …». No hay test de suite para este caso. |
+| `canceladas` enseña el motivo | ejecución real, solo en proceso | Cancelar y listar en el mismo proceso → «Norte lun — sala ocupada». |
+
+**Suites**
+
+- `node --test`: 5/5 sobre `cb1b1bf`, ~109 ms.
+
+**Sin probar**
+
+- `canceladas` desde la CLI como comando suelto: las reservas viven en la memoria de cada proceso (hasta la 0014), así que `node src/app.js canceladas` solo devuelve una línea vacía. La spec lo acepta («lo cancelado en el mismo proceso»). Por eso el paso 4 usa un solo proceso.
+- No hay `operations.md` ni comando de arranque declarado, y es una CLI: no hay entorno que arrancar ni parar.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+No hay comando de arranque declarado. Un terminal, desde el worktree:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+node src/app.js cancelar Norte lun --motivo "sala ocupada"
+```
+
+2. Cancelar con un motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun --motivo "me aburro"
+```
+
+3. Cancelar sin motivo → el mismo «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+node src/app.js cancelar Norte lun
+```
+
+4. Cancelar y listar en el mismo proceso → dos líneas: «cancelada Norte lun (sala ocupada)» y «Norte lun — sala ocupada»
+
+```
+node --input-type=module -e "import {run} from './src/app.js'; console.log(run('cancelar',['Norte','lun','--motivo','sala ocupada'])); console.log(run('canceladas',[]))"
+```
+
+Los datos no se guardan entre ejecuciones, así que cada paso parte del mismo estado y no hay nada que restaurar.
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Dime «validado» o qué paso falla.
+

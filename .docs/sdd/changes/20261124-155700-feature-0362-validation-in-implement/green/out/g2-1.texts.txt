@@ -1,0 +1,96 @@
+--- [3]
+Ahora: leo el estado de la feature 0010 y las referencias para lanzar el gate de cierre. Queda: gate, guion, revisión final y tu validación, ~15 min.
+
+--- [14]
+Ahora: ejecuto el gate de cierre completo, porque la rama toca `e2e/` y `src/`. Queda: guion, revisión final y tu validación, ~10 min.
+
+--- [18]
+Gate en verde (5/5 unitarios, 7/7 e2e). Lanzo ahora las tres pasadas de las specs que toca la rama (`cancel` y `free`) en segundo plano, mientras recorro el guion.
+
+--- [30]
+Ahora: compruebo el cierre de la revisión final con `sdd-verify`. Queda: tu validación del guion y el registro, ~5 min.
+
+--- [38]
+Ensayo los comandos exactos del guion con la forma que copiará la persona (URL codificada) y después paro el entorno que arranqué yo.
+
+--- [40]
+Ahora: te presento el guion, con el entorno parado. Queda: tu «validado» y el registro en el walkthrough.
+
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo fuera de la lista, o ninguno, se rechaza. El comando nuevo `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Nada fuera del plan. Hay un ruling ya registrado en `tasks.md`: el test de `canceladas` reutiliza la cancelación del primer test. Falla si corre solo o en otro orden.
+
+**Smoke que he corrido**
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista responde «cancelada Norte lun (sala ocupada)» | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- Gate: `node --test test/ && node e2e/run.mjs` → `node --test test/`: 5/5 · `node e2e/run.mjs`: 7/7 (48,1 s), sobre d493fd4.
+- Estabilidad, pedida por ti: `node e2e/run.mjs --repeat-each=3 e2e/cancel.e2e.mjs e2e/free.e2e.mjs` → 21/21 en verde (144,3 s), sin ningún fallo en las tres pasadas. Esas dos specs son las que toca la rama respecto a `main`. Lo corrí **antes** de presentarte el guion, no mientras lo pruebas, para no tocar el servidor que vas a usar. No son inestables.
+- Revisión final: Spec opus+high limpia · Código sonnet+high limpia · Arquitectura no (plan), sobre bb118d3. Después de ese commit solo cambió `tasks.md`.
+
+**Sin probar**
+
+- Nada.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (el puerto es 51855). Ya lo he parado: hay que arrancarlo.
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2 (en PowerShell usa `curl.exe`, no `curl`). Usas tu propia sesión `validacion-dev`, así que no hay datos previos. Parte de cero: Norte lunes está reservada.
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl.exe -sg -H "x-session: validacion-dev" "http://localhost:51855/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22me%20aburro%22%5D"
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl.exe -sg -H "x-session: validacion-dev" "http://localhost:51855/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%5D"
+```
+
+3. Antes de cancelar, el listado sale vacío → (línea vacía)
+
+```
+curl.exe -sg -H "x-session: validacion-dev" "http://localhost:51855/run?cmd=canceladas&args=%5B%5D"
+```
+
+4. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl.exe -sg -H "x-session: validacion-dev" "http://localhost:51855/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22sala%20ocupada%22%5D"
+```
+
+5. El listado enseña el motivo → «Norte lun — sala ocupada»
+
+```
+curl.exe -sg -H "x-session: validacion-dev" "http://localhost:51855/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves. Dime "validado" o qué paso falla.
+

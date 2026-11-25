@@ -68,11 +68,11 @@ digraph process {
 <!-- kit: fin -->
     "More tasks remain?" [shape=diamond];
 <!-- kit: 649f1a99 · sustituye: «read references/final-review.md» -->
-    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [shape=box];
+    "Final review and finish: sdd-validate, then Finish of sdd-implement-native" [shape=box];
 <!-- kit: fin -->
     "Final review clean: delete this plan's workspace" [shape=box];
 <!-- kit: 64a86577 · sustituye: «"Use superpowers:finishing-a-development-branch"» -->
-    "sdd-archive (validation)" [shape=box style=filled fillcolor=lightgreen];
+    "sdd-archive" [shape=box style=filled fillcolor=lightgreen];
 <!-- kit: fin -->
 
 <!-- kit: 649f1a99 · sustituye: «"Dispatch implementer subagent (./implementer-prompt.md)"» -->
@@ -92,13 +92,13 @@ digraph process {
     "More tasks remain?" -> "Base check; write the RED tests; sdd task brief" [label="yes"];
 <!-- kit: fin -->
 <!-- kit: 649f1a99 · sustituye: «read references/final-review.md» -->
-    "More tasks remain?" -> "Final review and finish: sdd-verify, then Finish of sdd-implement-native" [label="no"];
+    "More tasks remain?" -> "Final review and finish: sdd-validate, then Finish of sdd-implement-native" [label="no"];
 <!-- kit: fin -->
 <!-- kit: 649f1a99 · sustituye: «read references/final-review.md» -->
-    "Final review and finish: sdd-verify, then Finish of sdd-implement-native" -> "Final review clean: delete this plan's workspace";
+    "Final review and finish: sdd-validate, then Finish of sdd-implement-native" -> "Final review clean: delete this plan's workspace";
 <!-- kit: fin -->
 <!-- kit: 64a86577 · sustituye: «"Use superpowers:finishing-a-development-branch"» -->
-    "Final review clean: delete this plan's workspace" -> "sdd-archive (validation)";
+    "Final review clean: delete this plan's workspace" -> "sdd-archive";
 <!-- kit: fin -->
 }
 ```
@@ -198,7 +198,7 @@ short timeouts, and never sit in one silent, open-ended wait either.
 While you have local work — ledger updates, packaging the next review,
 reading reports — keep working; child results arrive on their own.
 <!-- kit: 649f1a99 · sustituye: «When you are genuinely idle…not at the end of the session.» -->
-A stuck or lost child is noticed by its silence watch (`sdd-implement`, «After the last task»).
+A stuck or lost child is noticed by its silence watch (`sdd-implement`, «Every dispatch»).
 <!-- kit: fin -->
 
 ### 1. Dispatch the implementer
@@ -338,7 +338,7 @@ Squash the task's range into one commit, as [commit-milestones.md](../sdd-implem
 ## Final Review
 
 <!-- kit: 0296 · sustituye: «read…how you finish.» -->
-When every task is complete, invoke `sdd-verify` with `Skill`: the final review and its single closing are its. When its closing is done, finish with [Finish](../sdd-implement-native/SKILL.md#finish) of `sdd-implement-native`.
+When every task is complete, invoke `sdd-validate` with `Skill`. When the validation is recorded, finish with [Finish](../sdd-implement-native/SKILL.md#finish) of `sdd-implement-native`.
 <!-- kit: fin -->
 
 ## Common Rationalizations
