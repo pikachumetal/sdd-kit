@@ -11,7 +11,7 @@ la fase entre las tasks y el cierre: el gate, el guion recorrido, la revisión f
 - GIVEN la 0012 en `validation.mode: manual`, con sus tres tasks acabadas y commiteadas
 - WHEN `sdd-implement` acaba la Task 3 e invoca `sdd-validate`
 - THEN corre el gate de cierre una vez, después recorre el guion de pruebas entero tal como lo recorrerá el dev-lead, después despacha la revisión final sobre lo ya validado y por último presenta el mensaje de validación
-- AND no invoca `sdd-archive` hasta que el dev-lead valida; con `validation.mode: field` o `Validación: agente` no para, y lo invoca cuando ha registrado su verificación
+- AND no invoca `sdd-archive` hasta que el dev-lead valida; con `validation.mode: field` o `Validación: agente` no para, y lo invoca cuando ha registrado su verificación, sin preguntar: en una feature o un patch en `delegate` o `unattended` con el bloque `merge` completo (la 0010 con `"merge": {"into": "develop", "noFf": true, "removeWorktree": false}` y `Validación en campo:` escrita), el cierre fusiona en `develop` sin preguntar; con el bloque incompleto pregunta, y el merge a la rama estable de un hotfix, el tag y un push sin `merge.push: true` siguen siendo de una persona
 - AND con la validación diferida (`Diferir: lo pruebo en la primera exportación, a cargo del dev-lead`) o en `unattended`, registra `Validación diferida:` con su disparador y pasa a `sdd-archive`; si el dev-lead no responde, la feature queda en espera en `sdd-validate` con el smoke documentado
 - AND un paso del guion que falla al recorrerlo, `cancelar Norte lun → «cancelada lun»` que, con la reserva del lunes creada, devuelve «no hay reserva lun», se arregla en una task con su test, antes de la revisión final
 - AND el kit fija ese orden y que el agente recorra el guion; con qué herramienta lo recorre lo declara el proyecto, y la skill no nombra ninguna
@@ -23,13 +23,15 @@ la fase entre las tasks y el cierre: el gate, el guion recorrido, la revisión f
 - GIVEN la 0012 con el gate en verde en `a1b2c3d`, la revisión final hecha y el dev-lead que responde «el paso 3 falla: `cancelar Norte lun` dice «cancelada lun» y me quita también la del martes»
 - WHEN `sdd-validate` lo devuelve a `sdd-implement` y el agente lo arregla
 - THEN el arreglo es una task con su test, que falla antes y pasa después
+- AND el agente vuelve a `sdd-implement` sin preguntar antes de la task, en cualquier modo de validación, en `delegate` y `unattended`
 - AND corre el test nuevo y los que fallaron, el gate con `--base a1b2c3d`, los pasos del guion que toca el arreglo y, al ser posterior a la revisión final, la revisión de su diff
 - AND no corre el gate entero, el guion entero ni la revisión final entera
 - AND si el arreglo toca un fichero de «Sin filtro», corre el gate sin filtro
 - AND lo mismo con un fallo del agente al recorrer el guion; un fallo de la revisión final sigue «La revisión se cierra una vez» (una sola pasada de fix) y después corre el gate con `--base` y los pasos del guion que toca
 - AND la revisión de su diff la hace un revisor `sdd-kit:effort-high` + `sonnet`, una sola vez, y un hallazgo suyo que queda abierto va a ✋ como `sin revisar: <sha>`
 - AND una vuelta anterior a la revisión final (un fallo del gate o del guion del agente) no lleva revisión propia: la cubre la revisión final, que sale después
-- AND tras la vuelta la validación sigue desde el paso que falló, y no pasa a `sdd-archive` hasta que el dev-lead valida; un cambio que el dev-lead pide después de validar sigue «Lo cambiado tras la validación se separa de lo validado» y no repite la validación
+- AND tras la vuelta la validación sigue desde el paso que falló, y no pasa a `sdd-archive` hasta que la validación queda registrada (el dev-lead en `manual`; el agente en `field` o con `Validación: agente`); un cambio que el dev-lead pide después de validar sigue «Lo cambiado tras la validación se separa de lo validado» y no repite la validación
+- AND sigue preguntando, sola y antes de la validación, una decisión que la revisión final deja al dev-lead, y la vuelta que es el 3.er fix descubierto sigue parando en el freno de alcance
 - AND en un spike, la task de la vuelta lleva «Evidencia» en vez de test, corre el gate solo si toca un fichero fuera de su carpeta de `changes/`, y en lugar de los pasos del guion vuelve a contrastar las filas que toca
 
 ### Un hotfix valida en `sdd-validate` como un patch

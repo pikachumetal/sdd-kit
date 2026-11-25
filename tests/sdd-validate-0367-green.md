@@ -33,3 +33,12 @@ Línea `suma:` de la campaña tras la tanda: `sujetos de la campaña: 9 · coste
 - Quitar «without asking» de la vuelta no la hace parar: 4 de 4 vuelven sin preguntar (`vf10` ×2, `vf2`, `vf3`).
 - En `manual` la validación sigue parando, y la decisión de la revisión final se sigue preguntando sola.
 - Coste: 16,10 $ de 27,80 $ previstos; sin tanda de REFACTOR ni de repetición por el molde.
+
+## Tras la pasada de fix de la revisión final: `vf10`, `N=2`
+
+Texto: «goes back to `sdd-implement` at once, as a new task»; «`delegate` merges by the complete `merge` block»; «Closing drafts» sin «in their place,». 762 y 1828 palabras. Fila VF10 anclada a la orden que escribe, al `merge` sin `--sync` ni `--check` y al commit con el test del paso. Salidas en `fix/out/`; campaña: 11 sujetos · 20,75 $.
+
+| Sujeto | VF10 | Lectura |
+| --- | --- | --- |
+| vf10-1 | pasa | vuelve sin preguntar; `Validación en campo:` (l. 908), `sdd-archive` (l. 935); «fusionada en develop (25d352d)» |
+| vf10-2 | pasa | vuelve sin preguntar; `sdd-archive` (l. 960); «fusionada en develop (ea4029c)»; la pregunta final, por un ticket de `sdd-feedback`, va después del merge |
