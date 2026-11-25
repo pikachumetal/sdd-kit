@@ -1,6 +1,7 @@
 import { DomainError } from '../cli/args.ts';
-import { gitLines } from '../git/git.ts';
-import { BRANCH_CHANGE_FOLDERS, SPEC_FOLDER_ID, SUFFIXED_FOLDER, idsMode } from '../ids/scan.ts';
+import { DECISIONS_FOLDER, decisionNumber } from '../decisions/document.ts';
+import { git, gitLines } from '../git/git.ts';
+import { BRANCH_KIT_CONFIG, SPEC_FOLDER_ID, SUFFIXED_FOLDER, changeFolderNamesAt, idsModeOf } from '../ids/scan.ts';
 
 export interface Numbered {
   changes: string[];
@@ -20,35 +21,39 @@ export interface ClashRefs {
   destinationName: string;
 }
 
-interface Clash {
+export interface Clash {
   kind: 'id' | 'adr';
   branch: string;
   destination: string;
   number: string;
 }
 
-type NumberOf = (name: string) => string | undefined;
+interface Sides {
+  base: string[];
+  branch: string[];
+  destination: string[];
+}
 
-const DECISIONS = '.docs/sdd/decisions';
-const ADR_NUMBER = /^(\d{4})-.+\.md$/;
+type NumberOf = (name: string) => string | null;
+
+const DECISIONS = `.docs/sdd/${DECISIONS_FOLDER}`;
 const UNNUMBERED = '0000';
 const EMPTY: Numbered = { changes: [], decisions: [] };
 
-const folderId: NumberOf = (name) => (SUFFIXED_FOLDER.test(name) ? undefined : SPEC_FOLDER_ID.exec(name)?.[1]);
-const adrNumber: NumberOf = (name) => ADR_NUMBER.exec(name)?.[1];
+const folderId: NumberOf = (name) => (SUFFIXED_FOLDER.test(name) ? null : (SPEC_FOLDER_ID.exec(name)?.[1] ?? null));
 
-function clashesOf(kind: Clash['kind'], numberOf: NumberOf, sides: { base: string[]; branch: string[]; destination: string[] }): Clash[] {
+function clashesOf(kind: Clash['kind'], numberOf: NumberOf, sides: Sides): Clash[] {
   const brought = sides.branch.filter((name) => !sides.base.includes(name) && !sides.destination.includes(name));
   return brought.flatMap((name) => {
     const number = numberOf(name);
-    if (number === undefined || number === UNNUMBERED) return [];
+    if (number === null || number === UNNUMBERED) return [];
     return sides.destination.filter((other) => numberOf(other) === number).map((other) => ({ kind, branch: name, destination: other, number }));
   });
 }
 
 export function numberingClashes({ base, branch, destination, sequence }: ClashInput): Clash[] {
-  const side = (key: keyof Numbered) => ({ base: base[key], branch: branch[key], destination: destination[key] });
-  return [...(sequence ? clashesOf('id', folderId, side('changes')) : []), ...clashesOf('adr', adrNumber, side('decisions'))];
+  const sides = (key: keyof Numbered): Sides => ({ base: base[key], branch: branch[key], destination: destination[key] });
+  return [...(sequence ? clashesOf('id', folderId, sides('changes')) : []), ...clashesOf('adr', decisionNumber, sides('decisions'))];
 }
 
 function clashLine({ kind, branch, destination, number }: Clash, destinationName: string): string {
@@ -61,9 +66,13 @@ export function clashLines(clashes: Clash[], destinationName: string): string[] 
 }
 
 async function namesAt(root: string, ref: string): Promise<Numbered> {
-  const changes: string[] = [];
-  for (const folder of BRANCH_CHANGE_FOLDERS) changes.push(...(await gitLines(root, ['ls-tree', '-d', '--name-only', `${ref}:${folder}`])));
-  return { changes, decisions: await gitLines(root, ['ls-tree', '--name-only', `${ref}:${DECISIONS}`]) };
+  return { changes: await changeFolderNamesAt(root, ref), decisions: await gitLines(root, ['ls-tree', '--name-only', `${ref}:${DECISIONS}`]) };
+}
+
+// El modo sale de la rama, que es lo que quedará en el destino tras fusionar, y no de qué checkout corre la comprobación.
+async function sequenceAt(root: string, ref: string): Promise<boolean> {
+  const shown = await git(root, ['show', `${ref}:${BRANCH_KIT_CONFIG}`]);
+  return idsModeOf(shown.code === 0 ? shown.stdout : null, `${ref}:${BRANCH_KIT_CONFIG}`) === 'sequence';
 }
 
 export async function assertNoNumberingClash(root: string, { branch, destination, destinationName }: ClashRefs): Promise<void> {
@@ -72,7 +81,7 @@ export async function assertNoNumberingClash(root: string, { branch, destination
     base: base === undefined ? EMPTY : await namesAt(root, base),
     branch: await namesAt(root, branch),
     destination: await namesAt(root, destination),
-    sequence: idsMode(root) === 'sequence',
+    sequence: await sequenceAt(root, branch),
   });
   if (clashes.length > 0) throw new DomainError(clashLines(clashes, destinationName).join('\n'));
 }

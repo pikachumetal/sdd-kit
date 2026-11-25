@@ -172,3 +172,18 @@ describe('el merge para si la rama trae un id o un número de ADR que el destino
     expect(result.text).not.toContain('numeración');
   });
 });
+describe('--check con el mismo choque en develop y en origin/develop', () => {
+  it('solo nombra develop', async () => {
+    const fx = mergeFixture('numeracion-dos-refs');
+    commitOnBranch(fx, 'develop', { '.docs/sdd/decisions/0004-a.md': 'a\n' });
+    git(fx.repo, 'push', '-q', 'origin', 'develop');
+    git(fx.repo, 'fetch', '-q', 'origin');
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
+    expect(result.text).not.toContain("'origin/develop'");
+  });
+});

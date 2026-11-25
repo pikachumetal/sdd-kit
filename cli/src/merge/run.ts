@@ -60,10 +60,12 @@ type Outcome = 'published' | 'changed' | 'moved';
 
 const ATTEMPTS = 3;
 
-async function publish(path: string, { policy, io }: Job, remote: string): Promise<void> {
+async function publish(path: string, { branch, policy, io }: Job, remote: string): Promise<void> {
   for (let attempt = 1; (await pushDestination(path, remote, policy.into)) === 'moved'; attempt++) {
     if (attempt === ATTEMPTS) throw new DomainError(exhausted('moved', { into: policy.into, remote }));
     io.out(retrying('moved', { into: policy.into, remote }, attempt + 1));
+    const moved = await fetchBase(path, { into: policy.into, remote });
+    await assertNoNumberingClash(path, { branch, destination: moved, destinationName: moved });
     await syncBaseBranch(path, { into: policy.into, remote }, io.out);
   }
 }

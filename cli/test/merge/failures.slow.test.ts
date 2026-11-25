@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { spawn } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { ADR_CLASH, cleanedUp, commitFiles, commitOnBranch, failGate, git, isWindows, mergeFixture, nodeGate, runMerge, sha, write } from './helpers.ts';
+import { ADR_CLASH, FOLDER_A, FOLDER_B, FOLDER_CLASH, SEQUENCE_CONFIG, cleanedUp, commitFiles, commitOnBranch, failGate, git, isWindows, mergeFixture, nodeGate, runMerge, sha, write } from './helpers.ts';
 
 describe('el push del cierre publica la rama destino', () => {
   it('con --push fusiona --no-ff con el título acordado y deja local y remoto iguales', async () => {
@@ -292,5 +292,19 @@ describe('el merge del cierre vuelve a comprobar la numeración dentro del cerro
     expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
     expect(sha(fx.repo, 'develop')).toBe(before);
     expect(cleanedUp(fx)).toBe(true);
+  });
+});
+describe('el modo de ids de la comprobación es el de la rama', () => {
+  it('si la rama pasa el proyecto a sequence, el merge del cierre compara sus carpetas', async () => {
+    const fx = mergeFixture('cierre-modo-rama');
+    commitOnBranch(fx, 'develop', { [`.docs/sdd/changes/${FOLDER_A}/spec.md`]: 'a\n' });
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/sdd-kit.json': SEQUENCE_CONFIG, [`.docs/sdd/changes/${FOLDER_B}/patch.md`]: 'b\n' }, 'chore: ids en sequence y patch 0756');
+    const before = sha(fx.repo, 'develop');
+
+    const result = await runMerge(join(fx.wt, '0001'));
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(FOLDER_CLASH.replace('<ref>', 'develop'));
+    expect(sha(fx.repo, 'develop')).toBe(before);
   });
 });

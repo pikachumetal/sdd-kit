@@ -33,14 +33,15 @@ Delta probado en una copia: `sdd capability merge` → `closing-merge.md: añadi
 1. Enfoque: comparar listados de `git ls-tree` de las refs, frente a reutilizar `idScan` o `checkDecisions` (ver Approach).
 2. Solo cuenta lo que **trae la rama**: las carpetas de cambio y las ADR de la rama que no están, por nombre, en el merge-base de la rama y el destino. Se comparan con todo lo del destino salvo el mismo nombre. Un duplicado ya fusionado (el 0756 de document-manager) no bloquea los merges de otras ramas, y una carpeta o ADR que el destino renombró después del merge-base tampoco choca con la vieja de la rama — si se compararan los dos árboles enteros, o la rama contra el destino, saldrían los dos falsos positivos.
 3. Qué se compara: carpetas de `changes/` y de `specs/` (`BRANCH_CHANGE_FOLDERS`) con el patrón de id de `scan.ts`, y ficheros de `decisions/` que cumplen `NNNN-<slug>.md`. Un `README.md` u otro nombre sin número no cuenta, y una ADR `superseded` cuenta igual — sigue ocupando su número.
-4. Las carpetas de cambio se comprueban solo en modo `sequence` (leído del `sdd-kit.json` de la raíz del proyecto) — en `tracker` un mismo ticket puede tener una feature y un patch; es el mismo criterio que `assertNoSharedIds`. Las ADR, en cualquier modo — su número nunca viene de un gestor externo.
+4. Las carpetas de cambio se comprueban solo en modo `sequence` (leído del `sdd-kit.json` que trae la rama, con `git show`, igual en todos los puntos de comprobación) — en `tracker` un mismo ticket puede tener una feature y un patch; es el mismo criterio que `assertNoSharedIds`. Las ADR, en cualquier modo — su número nunca viene de un gestor externo.
 5. No cuentan el id y el número `0000`, ni las carpetas de sufijo heredado (`…-task-0006a-…`) — igual que en `cli/src/ids/scan.ts`. Dos carpetas o ADR nuevas de la misma rama con el mismo número, sin choque con el destino, quedan fuera: las ven `sdd id next` y `sdd decision check`.
 6. Destino de `--check`: la rama `merge.into` local y, si existe, su seguimiento remoto (`origin/develop`), sin fetch — «La comprobación del destino no toca nada» prohíbe el fetch. Va después de `checkDestination`, así un checkout del destino con cambios sigue dando su mensaje de siempre. Con `--branch`, compara esa rama; si no, `HEAD`.
-7. Cuatro puntos de comprobación, todos antes de su `git merge`:
+7. Seis puntos de comprobación, todos antes de su `git merge`:
    - `--check`.
    - `integrateRef`, que hacen `--sync` y la integración de la base del merge con `--verify`.
    - `mergeFeature`, dentro del cerrojo y en el checkout del destino, después de que `syncBaseBranch` traiga `origin/develop`: compara la rama con lo que va a recibirla. Cubre el merge sin `--verify`, el de `--verify` tras sus reintentos (un choque es un cambio solo de docs, que hoy publica sin reverificar) y la vuelta del hotfix a `develop`.
-   - En el hotfix, un choque en la vuelta deshace la vuelta entera, como ya manda la capacidad `stable-branch` («una vuelta que falla se deshace entera»).
+   - El reintento del push sin `--verify`, contra el `origin/develop` que avanzó, antes de integrarlo.
+   - La vuelta del hotfix, antes de fusionar en `main`; si aun así choca dentro de `mergeFeature`, la vuelta se deshace entera, como ya manda la capacidad `stable-branch` («una vuelta que falla se deshace entera»).
 8. `--check` con `--into` a la rama estable (`checkHotfix`) no lleva la comprobación — el merge real del hotfix la lleva por `mergeFeature`, y un hotfix solo trae su carpeta; no hay caso de campo.
 9. Mensajes, por salida de error y con salida 1: todos los choques de la primera ref que choca, uno por línea (con `develop` y `origin/develop`, se mira primero `develop`):
    - `numeración: la rama trae <carpeta de la rama> y '<ref>' ya tiene <carpeta del destino> con el id <id>; renumera la de la rama a mano`
@@ -104,6 +105,7 @@ En document-manager, una feature y un patch con el id 0756, y dos ADR 0004 de ra
 | el test «consumes no id when there are duplicate ids» | `cli/test/ids/reserve.slow.test.ts:202` | Dónde se prueba: pasa a reservar el siguiente libre con el aviso |
 | el test «fails naming the id when two folders share it across lanes» | `cli/test/ids/next.slow.test.ts:31` | Dónde se prueba: pasa a proponer el siguiente libre con el aviso |
 | el test «fails when a task folder and a feature folder share an id» (fixture `mixed-duplicate`), el escenario del `MODIFIED` de la línea 157 | `cli/test/ids/next.slow.test.ts:59` | pasa a «warns when…», con el aviso y salida 0 (se vio en el GREEN; ruling de la Task 1) |
+| el test «una carpeta en changes y otra en specs con el mismo id son duplicado» | `cli/test/ids/layout.slow.test.ts:47` | pasa a «…: avisa y sigue», con el aviso, `0080` y salida 0 (lo vio la suite lenta de la pasada de fix de la revisión final) |
 | «Dos carpetas con el mismo id sin sufijo siguen siendo error» | `CHANGELOG.md:373` | decisión: se queda; es la entrada de una release pasada |
 
 - Filas que implementa: 0363 → `ROADMAP.md` (fila 0363) y `.docs/sdd/steering/debt.md` (fila «Dos ramas paralelas toman el mismo id o el mismo número de ADR», «Lista», destino 0363): las marca el cierre.

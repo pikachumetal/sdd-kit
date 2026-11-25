@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { decisionNumber } from '../../src/decisions/document.ts';
 import { clashLines, numberingClashes, type Numbered } from '../../src/merge/numbering.ts';
 
 const FEATURE_A = '20261123-141327-feature-0756-a';
@@ -29,7 +30,20 @@ describe('numberingClashes', () => {
 
   it('dos choques en la misma ref salen los dos', () => {
     const found = clashes({ changes: [PATCH_B], decisions: ['0004-b.md'] }, { changes: [FEATURE_A], decisions: ['0004-a.md'] });
-    expect(found).toHaveLength(2);
+    expect(clashLines(found, 'develop')).toEqual([
+      `numeración: la rama trae ${PATCH_B} y 'develop' ya tiene ${FEATURE_A} con el id 0756; renumera la de la rama a mano`,
+      "numeración: la rama trae decisions/0004-b.md y 'develop' ya tiene decisions/0004-a.md con el número 0004; renumera la de la rama a mano",
+    ]);
+  });
+
+  it('una carpeta de specs/ cuenta igual que una de changes/', () => {
+    expect(clashes({ changes: [PATCH_B] }, { changes: ['20261123-141327-task-0756-a'] })).toHaveLength(1);
+  });
+
+  it('el número de una ADR sale de la misma regla que lee decisions/', () => {
+    expect(decisionNumber('0004-a.md')).toBe('0004');
+    expect(decisionNumber('0004-a.txt')).toBeNull();
+    expect(clashes({ decisions: ['0004-b.md'] }, { decisions: ['0004-a.md'] })).toHaveLength(1);
   });
 
   it('lo que la rama comparte con el destino por nombre no choca', () => {

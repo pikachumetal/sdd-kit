@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { chmodSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ADR_CLASH, commitFiles, edit, failsIfExists, git, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { ADR_CLASH, commitFiles, edit, failGate, failsIfExists, git, localCommit, mergeFixture, publishFromSeed, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 const ORDER = 'fusiona el hotfix del login en main';
 const slash = (text: string) => text.replaceAll('\\', '/');
@@ -402,5 +402,22 @@ describe('un hotfix cuya vuelta choca en la numeración se deshace entero', () =
     expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
     expect(git(fx.repo, 'for-each-ref')).toBe(refs);
     expect(sha(fx.remote, 'main')).toBe(sha(fx.repo, 'main'));
+  });
+});
+describe('el hotfix comprueba la numeración de la vuelta antes de fusionar en main', () => {
+  it('con --verify, una ADR que choca en develop para antes de verificar main', async () => {
+    const fx = hotfixFixture('vuelta-numeracion-pronto');
+    const develop = join(fx.wt, 'develop-sacada');
+    git(fx.repo, 'worktree', 'add', '-q', develop, 'develop');
+    commitFiles(develop, { '.docs/sdd/decisions/0004-a.md': 'a\n' }, 'docs: adr 0004 en develop');
+    commitFiles(fx.hotfix, { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004 en el hotfix');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(fx.hotfix, hotfixArgs('--verify', failGate));
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
+    expect(result.text).not.toContain('verificación: código de salida');
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
   });
 });

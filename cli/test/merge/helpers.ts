@@ -109,13 +109,16 @@ export function pushRemoteCommit(fx: Fixture, relative: string, content: string)
 
 let localCommits = 0;
 
-export function localCommit(fx: Fixture, branch: string, message: string): string {
+function commitInTempWorktree(fx: Fixture, branch: string, commit: (path: string, id: number) => void): void {
   const id = ++localCommits;
   const path = join(fx.root, `local-${id}`);
   git(fx.repo, 'worktree', 'add', '-q', path, branch);
-  write(path, `local-${id}.txt`, `${message}\n`);
-  saveAll(path, message);
+  commit(path, id);
   git(fx.repo, 'worktree', 'remove', path);
+}
+
+export function localCommit(fx: Fixture, branch: string, message: string): string {
+  commitInTempWorktree(fx, branch, (path, id) => commitFiles(path, { [`local-${id}.txt`]: `${message}\n` }, message));
   return git(fx.repo, 'rev-parse', '--short', branch);
 }
 
@@ -131,10 +134,7 @@ export function commitFiles(dir: string, files: Record<string, string>, message:
 }
 
 export function commitOnBranch(fx: Fixture, branch: string, files: Record<string, string>): void {
-  const path = join(fx.root, `local-${++localCommits}`);
-  git(fx.repo, 'worktree', 'add', '-q', path, branch);
-  commitFiles(path, files, `docs: ${Object.keys(files).join(', ')} en ${branch}`);
-  git(fx.repo, 'worktree', 'remove', path);
+  commitInTempWorktree(fx, branch, (path) => commitFiles(path, files, `docs: ${Object.keys(files).join(', ')} en ${branch}`));
 }
 
 export async function runMerge(worktree: string, extra: string[] = []): Promise<{ code: number; text: string }> {

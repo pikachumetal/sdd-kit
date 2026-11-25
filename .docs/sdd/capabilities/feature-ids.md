@@ -53,14 +53,6 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 - AND `0000` no cuenta como id ocupado: un proyecto cuyo histórico es todo `0000` recibe `0001`
 - AND un id heredado con sufijo alfabético (`…-task-0006a-slug`) sí cuenta
 
-### El script avisa de un id duplicado y no devuelve ninguno
-
-- GIVEN un proyecto en modo `sequence` donde dos carpetas de artefactos distintas llevan el mismo id, en `specs/`, en `changes/` o una en cada una
-- WHEN se invoca `sdd id next`, con `--reserve` o sin él
-- THEN escribe el id duplicado y las rutas implicadas por salida de error, y no devuelve ningún id por salida estándar
-- AND el contador no cambia
-- AND las carpetas con sufijo alfabético heredadas (`…-task-0006a-…`, `…-task-0006b-…`) no cuentan como duplicado: el script las nombra en un aviso por salida de error, cuenta su número como ocupado y devuelve el siguiente id libre
-
 ### El script avisa si el proyecto no está en modo secuencia
 
 - GIVEN un proyecto en modo `tracker` (declarado o por ausencia del campo `ids`)
@@ -154,7 +146,7 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 - WHEN se ejecuta `sdd id next --project-root <raíz>` sin `--reserve`
 - THEN propone `0081`
 - AND si solo existiera `…-feature-0079-b/`, propondría `0080`
-- AND si `specs/` tiene a la vez `…-task-0063-a/` y `…-feature-0063-b/`, es un id duplicado: se aplica «El script avisa de un id duplicado y no devuelve ninguno», sin distinguir carril
+- AND si `specs/` tiene a la vez `…-task-0063-a/` y `…-feature-0063-b/`, es un id duplicado: se aplica «El script avisa de un id duplicado y sigue», sin distinguir carril
 
 ### Al arrancar, el push a la integración decide de quién es el id
 
@@ -213,11 +205,20 @@ La numeración del trabajo: cómo un proyecto decide sus ids de feature y de pat
 - AND si `origin/develop` tiene una fila `| 0176 | Validar la franja horaria | ⏳ |` que tu `develop` no tiene, escribe `id: 0176 ya estaba en origin/develop («Validar la franja horaria»); nada que publicar` y no renumera
 - AND relanzado con la carpeta `patch-0176-fast-suite-budget` ya creada en el worktree de la tarea, vuelve a escribir `id: 0176 libre en origin/develop`
 
+### El script avisa de un id duplicado y sigue
+
+- GIVEN un proyecto en modo `sequence` donde dos carpetas de artefactos distintas llevan el mismo id, `20261123-141327-feature-0756-a` y `20261123-162919-patch-0756-b`, en `specs/`, en `changes/` o una en cada una, y ningún id mayor que 0756
+- WHEN se invoca `sdd id next --reserve`
+- THEN escribe por salida de error `aviso: dos artefactos distintos comparten el id 0756: 20261123-141327-feature-0756-a, 20261123-162919-patch-0756-b; renumera uno.` y devuelve `0757` por salida estándar
+- AND sin `--reserve`, escribe el mismo aviso y propone `0757`
+- AND con además una fila `0760` en el roadmap, devuelve `0761`: el duplicado no cambia cómo se calcula el siguiente libre, y `--reserve` deja el contador en el id devuelto
+- AND las carpetas con sufijo alfabético heredadas (`…-task-0006a-…`, `…-task-0006b-…`) no cuentan como duplicado: el script las nombra en un aviso por salida de error, cuenta su número como ocupado y devuelve el siguiente id libre
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: el modo, en `.docs/sdd/sdd-kit.json` (`ids.mode`). El último id consumido, en `<git-common-dir>/sdd-ids` (`sdd-ids-<ruta relativa>` si el proyecto está en una subcarpeta), compartido por todos los worktrees del repositorio y fuera del árbol versionado. La fila del roadmap y la rama siguen siendo donde se ve cada reserva. Con la integración protegida, el id reclamado queda en la etiqueta `sdd-id/<id>` del remoto, que no se borra.
 - **Idioma de los nombres**: claves y valores de `sdd-kit.json` en inglés (`ids.mode`, `tracker`, `sequence`), como el resto del fichero; también en inglés el verbo `claim` y el prefijo de etiqueta `sdd-id/`. El texto de las skills, los mensajes de los verbos y el asunto del commit de renumeración (`chore(roadmap): la 0203 pasa a 0205`, tipo y scope en inglés como en el Art. VI) van en castellano.
 - **Límites**: cuatro dígitos con ceros a la izquierda (`0001`–`9999`); `0000` reservado como comodín de «sin ticket» en modo `tracker`, también en Later. Una reserva que pasaría de `9999` falla sin reservar. `--count` va de 1 a 99. Con remoto, el id reservado es provisional y lo decide `sdd id claim` al arrancar; sin remoto, o en un proyecto en una subcarpeta, solo vale el contador local de una máquina. `sdd id claim` intenta el push 3 veces. Sin fila, el claim no publica nada: dos arranques sin fila a la vez en dos máquinas pueden coger el mismo id. Hay un contador por proyecto: `sdd-ids` en la raíz del repositorio y `sdd-ids-<ruta relativa>` en una subcarpeta.
-- **Avisos**: ids duplicados entre artefactos, proyecto en modo `tracker` y ramas omitidas por no ser raíz del repositorio se avisan por salida de error; en los dos primeros casos el script no devuelve id ni toca el contador. El script avisa además por salida de error si el contador no se puede leer (y lo reinicializa) y si no hay repositorio git donde reservar (sin reservar). También avisa si el cerrojo no se libera en el plazo, nombrando al dueño y sin reservar. `sdd id claim` dice por la salida estándar si el id es tuyo, si ya estaba publicado, si pasa a otro, si se fijó con una etiqueta, si no hay remoto o no se comprueba en él, cuándo la rama no se renombra o no avanza, y si el destino tiene cambios.
+- **Avisos**: ids duplicados entre artefactos, proyecto en modo `tracker` y ramas omitidas por no ser raíz del repositorio se avisan por salida de error; con ids duplicados el script sigue y devuelve el siguiente libre, y en modo `tracker` no devuelve id ni toca el contador. El script avisa además por salida de error si el contador no se puede leer (y lo reinicializa) y si no hay repositorio git donde reservar (sin reservar). También avisa si el cerrojo no se libera en el plazo, nombrando al dueño y sin reservar. `sdd id claim` dice por la salida estándar si el id es tuyo, si ya estaba publicado, si pasa a otro, si se fijó con una etiqueta, si no hay remoto o no se comprueba en él, cuándo la rama no se renombra o no avanza, y si el destino tiene cambios.
 - **Regla ante conflicto**: la fila del roadmap manda. El contador nunca baja: si el escaneo ve un id mayor, gana el escaneo, y un claim que falla deja consumidos sus ids. Si dos clones reservan el mismo id, gana el primero que lo publica en la integración del remoto (o que empuja su etiqueta `sdd-id/<id>`), y el otro pasa al siguiente libre con `sdd id claim`. Sin remoto, o con dos arranques sin fila a la vez, si aun así dos trabajos acaban con el mismo id, el segundo en darse cuenta renumera su carpeta y su rama y lo anota en el roadmap.
 - **Contrato de lectura del roadmap**: el script lee `ROADMAP.md` de la raíz del proyecto y `.docs/sdd/roadmap.md`, los dos si existen, y reconoce un id en la primera columna de una fila de tabla (`| 0001 |`), en la segunda si la primera es una fecha (`| 2026-10-01 | 0001 |`, la forma de la tabla de Patches), en los nombres de artefacto (`feature-<id>-`, `task-<id>-`, `patch-<id>-`, `proposal-<id>-`) de `changes/` y `specs/`, y en un segmento del nombre de rama (`feature/0001`, `hotfix/0001-slug`). Cualquier otra aparición de cuatro dígitos (fechas, versiones) no cuenta.
