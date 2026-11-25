@@ -771,6 +771,7 @@ const molds = {
   },
   'reservas-final': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), reviewPending()),
   'reservas-final-bug': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), freeRoomsBug(true), reviewPending()),
+  'reservas-final-bug-campo': () => (moldReservas(), e2eSuite(), done0010(), freeRoomsBug(true), reviewPending()),
   'reservas-final-late': () => {
     manualValidation();
     moldReservas();
