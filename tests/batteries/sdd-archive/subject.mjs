@@ -352,6 +352,17 @@ function doneSpike0030() {
   s.commit('docs(sdd): tasks.md del spike 0030');
   if (!has(`${S30}/research.md`, '| O2 — memoria < 50 MB con 1.000 reservas | no medido |')) s.die('no se plantó research.md del spike 0030');
 }
+// El spike 0030 revisado y validado, con la tarea #412 del gestor en su fila y dos arreglos en §5 que piden su fila.
+function spikeRows0030() {
+  doneSpike0030();
+  const row = nowRow('0030', '¿Aguanta `libres` 1.000 reservas?', 'medir `libres` con la carga de enero', { state: '🔄', lane: 'spike' });
+  addTableRow(ROADMAP, 'Now', row.replace('| 0030 | — |', '| 0030 | #412 |'));
+  edit(`${S30}/research.md`, [/^- nada$/, '- índice de reservas por sala en `libres` → fila del roadmap por abrir\n- caché de `libres` por día → fila del roadmap por abrir']);
+  appendFileSync(at(`${S30}/tasks.md`), `\nRevisión final: Spec opus+high, limpia · Código sonnet+high, limpia, sobre ${short('HEAD')}\n`);
+  s.put(`${S30}/walkthrough.md`, '# Walkthrough — ¿Aguanta `libres` 1.000 reservas?\n\nValidación en campo: 2026-11-22 · O1 medido en `medidas/o1-libres.txt`; O2 y O3 sin medir, como dice `research.md`\n');
+  s.commit('docs(sdd): fila de la 0030, revisión final y validación del spike');
+  if (!has(`${S30}/research.md`, 'caché de `libres` por día → fila del roadmap por abrir') || !has(ROADMAP, /^\| 0030 \| #412 \|/)) s.die('no se plantó el spike 0030 con sus filas por abrir');
+}
 const amend = () => {
   s.git('add', '-A');
   s.git('commit', '-q', '--amend', '--no-edit');
@@ -861,6 +872,7 @@ const molds = {
   'reservas-start-down': () => startEnv(true),
   'salas-hotfix-open': () => done0008(true),
   'reservas-spike': () => doneSpike0030(),
+  'reservas-spike-rows': spikeRows0030,
   'salas-hotfix': () => {
     done0008(true);
     recordValidation0008();

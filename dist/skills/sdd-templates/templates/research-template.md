@@ -41,6 +41,4 @@ Carga: <la de la spec>
 
 ## 5. Lo que sale
 
-> Un arreglo que la medida deja a la vista va aquí, con su fila: el spike no deja código de producción.
-
 - <cambio> → <fila del roadmap por abrir> | nada
