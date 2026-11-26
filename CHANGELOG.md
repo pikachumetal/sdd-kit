@@ -4,6 +4,10 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+## [3.0.5] - 2026-11-26
+
+smoke: pendiente
+
 ### Added
 
 - **Feature 0361** — Escenario `j1` en la batería de `sdd-grilling`, que mide si la pregunta de la entrevista nombra cada pieza con el vocabulario del proyecto; ninguno de los tres textos probados lo mejoró sobre la base y las skills quedan como estaban. → [ref](.docs/sdd/changes/20261120-150821-feature-0361-plain-language-questions/)
