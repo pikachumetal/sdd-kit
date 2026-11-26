@@ -30,3 +30,10 @@ El carril spike: una investigación con spec corta que deja su evidencia en `res
 - THEN el arreglo no está en la rama, y `research.md` §5 lo nombra con su fila del roadmap
 - AND los scripts de medida y las salidas en bruto quedan en la carpeta de la spec
 - AND cada task corre en Native, con su salida en bruto como evidencia y sin tests RED
+
+### El cierre de un spike abre las filas que propone su `research.md`
+
+- GIVEN un proyecto con `ids.mode: sequence` y un spike, la 0030, con «Externo» `#412` en su fila y un `research.md` cuyo §5 dice `índice por sala en libres → fila por abrir` y `caché de libres por día → fila por abrir`
+- WHEN `sdd-archive` lo cierra
+- THEN el commit de cierre lleva en Now dos filas `⏳`, una por arreglo y con su brief (`**Toca:**` incluido), con ids de una sola reserva (`sdd id next --reserve --count 2`), p. ej. 0031 y 0032
+- AND la fila 0030 dice `✅ → 0031, 0032` en «Estado» (con la validación diferida, `🧪 validación diferida a <disparador> → 0031, 0032`), y `#412` pasa de su «Externo» al de las dos filas nuevas

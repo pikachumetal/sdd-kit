@@ -13,7 +13,7 @@ Línea `suma:`: `red: 2 sujetos · 0.81 $`.
 
 ## GREEN: kit de la rama, `N=2`
 
-Línea `suma:`: `green: 2 sujetos · 0.81 $`. Viñeta: «… the spike's row ends in `→ <ids>`, «Externo» `—`.»
+Línea de la tanda: `green: 2 sujetos · 0.84 $` (campaña: 6 sujetos, 2,61 $). Viñeta: «… the spike's row ends in `→ <ids>`, «Externo» `—`.»
 
 | Sujeto | Resultado | Lectura |
 | --- | --- | --- |
@@ -24,7 +24,7 @@ Fallo de forma (Art. II): «the spike's row ends in» se lee como el final de la
 
 ## REFACTOR: kit de la rama, `N=2`
 
-Línea `suma:`: `refactor: 2 sujetos · 0.81 $`. Viñeta: «The spike's «Externo» moves to those rows, and its «Estado» cell becomes `✅ → <ids>`.»
+Línea de la tanda: `refactor: 2 sujetos · 0.92 $` (campaña: 8 sujetos, 3,53 $). Viñeta: «The spike's «Externo» moves to those rows, and its «Estado» cell becomes `✅ → <ids>`.»
 
 | Sujeto | Resultado | Lectura |
 | --- | --- | --- |
@@ -45,3 +45,21 @@ El control corrió con la viñeta del GREEN; el REFACTOR solo reescribe la viñe
 ## Palabras
 
 `dist/skills/sdd-archive/` + `dist/skills/sdd-templates/`, contadas como `word-budget.test.ts`: 25.794 antes, 25.793 después (8.080 + 17.713).
+
+## Pasada de fix tras la revisión final: kit de la rama, `N=2`
+
+Primera medición, `fix: 2 sujetos · 0.83 $` (campaña: 10 sujetos, 4,35 $). Viñeta: «… with its brief and the spike's «Externo» …; the spike's «Externo» becomes `—`».
+
+| Sujeto | Resultado | Lectura |
+| --- | --- | --- |
+| sp1-1 | falla SP3 | filas, ids y `✅ → 0031, 0032` bien; `#412` desaparece de todas las filas |
+| sp1-2 | falla SP3 | igual |
+
+Tanda extra, `fix2: 2 sujetos · 0.79 $` (enmienda de la previsión; campaña: 12 sujetos, 5,15 $). Viñeta final: «The spike's «Externo» moves to each of those rows, and its «Estado» cell becomes `✅ → <ids>` (or `🧪 … → <ids>`).»
+
+| Sujeto | Resultado | Lectura |
+| --- | --- | --- |
+| sp1-1 | falla SP3 | 0031 y 0032 `⏳` en Now con brief y `#412`; la 0030 `✅ → 0031, 0032`, pero conserva `#412`: lo copia en vez de moverlo; ids reservados; cierre `c2ba927`; «Roadmap válido» |
+| sp1-2 | pasa SP1-SP4 | la 0030 `✅ → 0031, 0032` con «Externo» `—`; «Roadmap válido» |
+
+El dev-lead cierra con lo medido (SP3 1/2): la copia de «Externo» va a deuda.

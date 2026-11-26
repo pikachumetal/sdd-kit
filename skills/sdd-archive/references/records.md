@@ -15,10 +15,10 @@ With `.docs/sdd/steering/estimation.md`, step 2 of `sdd-archive`: a deviation be
 ## Roadmap
 
 - What's done stays in Now until the release cut moves it to the changelog; a change without a row gains one there, with its brief, or the cut misses it.
-- `mode: spike`: each `→` of `research.md` §5 gains a `⏳` row in Now with its brief, ids per step 4 of `sdd-roadmap`, in the closing commit. The spike's «Externo» moves to those rows, and its «Estado» cell becomes `✅ → <ids>`.
+- `mode: spike`: each `→` line of `research.md` §5 gains a `⏳` row in Now with its brief, ids per «Ids» of `sdd-roadmap`, in the closing commit. The spike's «Externo» moves to each of those rows, and its «Estado» cell becomes `✅ → <ids>` (or `🧪 … → <ids>`).
 - In «Lista» of `.docs/sdd/steering/debt.md`, the rows whose «Destino» is the closed id go; a row settled only in part stays, with «Ítem» rewritten to what's left. Debt the work uncovered goes to «Por triar», with its origin and date.
 - If `patch.md` re-measures a debt row the patch doesn't settle, and the result contradicts what the row claims (its evidence, its count, its proposal), rewrite those cells with the new measurement, its date and a link to `patch.md`: the row can no longer claim what the measurement denies.
-- After editing and before the closing commit, `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`.
+- `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" roadmap check --path .docs/sdd`.
 <!-- kit: incluye roadmap-check-failures -->
 
 ## What's next in the family

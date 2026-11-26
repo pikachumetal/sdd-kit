@@ -79,6 +79,7 @@ Segunda ronda (un revisor `sonnet`, effort medium, por el Crítico aceptado del 
 ### Decisiones tomadas con el dev-lead
 
 - La regla vive en `records.md` §Roadmap, y en `SKILL.md:39` solo se ajusta el «only»; si el RED muestra que el sujeto no lee `records.md`, sube a `SKILL.md` — «1» (2026-11-26, a la pregunta de dónde vive la regla)
+- Una tanda más de `sp1` (n = 2, ~0,8 $) por encima de la previsión, tras perder `#412` la redacción de la pasada de fix — «1» (2026-11-26, a la parada por coste: seguir, cerrar con lo medido u otra cosa)
 - El cierre del propio spike abre las filas, no «se lanzará roadmap después» — «entiendo que la tendria que lanzar la propia spike al acabr no decir que se ha d elanzra roadmap lanzarlo ella no?» (2026-11-26)
 
 ## Intent
@@ -157,9 +158,12 @@ La viñeta nueva y el recorte de la primera, literales, en la decisión 9.
 | Una tanda de REFACTOR | `SCENARIOS="sp1" N=2` → como `a5` | 0,87 |
 | Controles | `SCENARIOS="a9 a1" N=1` → ~0,44 $ por sujeto, como `a5` | 0,87 |
 | Medición tras la revisión final | solo si la revisión toca la viñeta: `SCENARIOS="sp1" N=2` | 0,87 |
-| Suma | 10 sujetos | 4,35 |
+| Tanda extra tras la pasada de fix (enmienda del 2026-11-26) | `SCENARIOS="sp1" N=2` → como `a5` | 0,87 |
+| Suma | 12 sujetos | 5,22 |
 
 ## Enmiendas
+
+- 2026-11-26 — previsión de coste: 10 → 12 sujetos, 4,35 → 5,22 $, por una tanda extra de `sp1` tras la pasada de fix — la redacción de la pasada perdió `#412` (SP3 0/2) — aprobada: «1»
 
 ## Aprobaciones
 

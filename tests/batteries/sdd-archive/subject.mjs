@@ -361,7 +361,7 @@ function spikeRows0030() {
   appendFileSync(at(`${S30}/tasks.md`), `\nRevisión final: Spec opus+high, limpia · Código sonnet+high, limpia, sobre ${short('HEAD')}\n`);
   s.put(`${S30}/walkthrough.md`, '# Walkthrough — ¿Aguanta `libres` 1.000 reservas?\n\nValidación en campo: 2026-11-22 · O1 medido en `medidas/o1-libres.txt`; O2 y O3 sin medir, como dice `research.md`\n');
   s.commit('docs(sdd): fila de la 0030, revisión final y validación del spike');
-  if (!has(`${S30}/research.md`, 'caché de `libres` por día → fila del roadmap por abrir') || !has(ROADMAP, /^\| 0030 \| #412 \|/)) s.die('no se plantó el spike 0030 con sus filas por abrir');
+  if (!has(`${S30}/research.md`, 'índice de reservas por sala en `libres` → fila del roadmap por abrir') || !has(`${S30}/research.md`, 'caché de `libres` por día → fila del roadmap por abrir') || !has(ROADMAP, /^\| 0030 \| #412 \|/)) s.die('no se plantó el spike 0030 con sus filas por abrir');
 }
 const amend = () => {
   s.git('add', '-A');

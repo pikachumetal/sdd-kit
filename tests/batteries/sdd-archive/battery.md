@@ -194,7 +194,7 @@ Moldes:
 | SP1 Filas nuevas | sp1 | «ROADMAP.md en develop» de `state.txt` no tiene en Now dos filas `⏳` nuevas, una con el índice por sala y otra con la caché por día, cada una con su brief y `**Toca:**`; o `sdd roadmap check` sobre ese roadmap no da «Roadmap válido» |
 | SP2 Fila del spike | sp1 | el «Estado» de la fila 0030 en `develop` no acaba en `→ <id>, <id>` (tras `✅` o `🧪 …`) con los ids de esas dos filas, o esos ids no son los que imprimió el `id next --reserve` de `tools.txt` |
 | SP3 Externo | sp1 | la fila 0030 de `develop` sigue con `#412` en «Externo», o alguna de las dos filas nuevas no lo lleva |
-| SP4 Reserva y commit | sp1 | `tools.txt` no tiene `id next` con `--reserve`, o las filas nuevas no llegan en el commit de cierre de `feature/0030-libres-load` (el último de la rama antes del merge de sincronización, si lo hay), o `develop` gana un commit propio que toca `ROADMAP.md` fuera del merge |
+| SP4 Reserva y commit | sp1 | `tools.txt` no tiene `id next` con `--reserve` antes del commit de cierre, o las filas nuevas no llegan en el commit de cierre de `feature/0030-libres-load` (el último de la rama antes del merge de sincronización, si lo hay), o `develop` gana un commit propio que toca `ROADMAP.md` fuera del merge |
 | CPT4-P Pregunta la fila | cpt4 | `text: /¿Pegas en .critical-path\.md. la fila.*Si no, el cierre borra .?share-pdf/` |
 | CPT4-W Lista intacta | cpt4 | `tools: />>> (Write\|Edit):.*critical-path\.md/` presente |
 | CPT4-O Orden | cpt4 | en `tools.txt`, el borrado de `export-pdf.e2e.mjs` llega antes de correr `--extras --run`, o sin correrlo; o la suite del cierre corre antes del borrado |
@@ -278,7 +278,7 @@ Moldes:
 | Con `ROADMAP.md`, lo hecho queda en Now y la deuda saldada sale de «Lista» | dev-lead, 2026-10-15 | a9 (N1, N2): RED dejó la fila parcial sin reescribir (N2 0/1); GREEN 2/2 |
 | La `description` de `sdd-archive` recoge «cierra la feature», «cierra el patch», «hemos acabado», «haz el walkthrough» | feature 0149, decisión 3 | r1, r2 |
 | `references/e2e-suite.md`: el entorno lo levanta la sesión, el gate tal cual, el presupuesto con su deuda y la tanda acotada contra `merge.into` | feature 0207: RED E1 1/2, E2 0/2, E3 0/2, E4 0/2; GREEN E1-E3 2/2; E4, alcance 2/2 y línea `Tanda:` en el 4.1 2/2 tras dos REFACTOR, el anuncio antes de lanzar 0/2 (deuda) ([evidencia](../../e2e-closing-green.md)) | e1, e2 |
-| `references/records.md` §Roadmap: con `mode: spike`, cada `→` de `research.md` §5 gana su fila en Now en el commit de cierre, y la del spike acaba en `→ <ids>` con su «Externo» movido | tickets de la feature 0163 §5 y de la 0809 de un proyecto de campo §1 y §2; feature 0371 | sp1 |
+| `references/records.md` §Roadmap: con `mode: spike`, cada `→` de `research.md` §5 gana su fila en Now en el commit de cierre, y la del spike acaba en `→ <ids>` con su «Externo» movido | tickets de la feature 0163 §5 y de la 0809 de un proyecto de campo §1 y §2; feature 0371: RED 0/2 (sin filas, o en Later), GREEN 0/2 (los ids en «Tarea»), REFACTOR 2/2, tras la revisión final 1/2 en SP3 (un sujeto copia «Externo» en vez de moverlo; [evidencia](../../sdd-archive-0371.md)) | sp1 |
 
 ## Evidencia heredada de `sdd-end-feature` y `sdd-end-patch`
 
