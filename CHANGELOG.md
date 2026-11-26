@@ -4,6 +4,24 @@ Formato: [Keep a Changelog 1.1.0](https://keepachangelog.com/). Changelog técni
 
 ## [Unreleased]
 
+### Added
+
+- **Feature 0361** — Escenario `j1` en la batería de `sdd-grilling`, que mide si la pregunta de la entrevista nombra cada pieza con el vocabulario del proyecto; ninguno de los tres textos probados lo mejoró sobre la base y las skills quedan como estaban. → [ref](.docs/sdd/changes/20261120-150821-feature-0361-plain-language-questions/)
+- **Feature 0370** — Escenarios `dv1` y `dv2` en la batería de `sdd-implement`, que miden si el hilo hace menos de lo que fija la spec o un paso del plan; con un sujeto recién arrancado no se reproduce el fallo de campo y no hay texto nuevo. → [ref](.docs/sdd/changes/20261125-181327-feature-0370-doing-less-is-a-deviation/)
+
+### Changed
+
+- **Feature 0362** — La validación pasa a la skill nueva `sdd-validate`, al final de la implementación (gate con `--affected`, sonda del guion, revisión final y validación del dev-lead, con los fallos de vuelta al bucle de tasks), y `sdd-archive` arranca solo con ella registrada. → [ref](.docs/sdd/changes/20261124-155700-feature-0362-validation-in-implement/)
+- **Feature 0365** — El hotfix y el spike también validan en `sdd-validate`, y `sdd-archive` ya no valida en ningún carril. → [ref](.docs/sdd/changes/20261125-113426-feature-0365-hotfix-spike-validate/)
+- **Feature 0366** — El ensayo en seco de una batería ejecuta lo que deja cada molde y para antes de lanzar sujetos si un comando falla. → [ref](.docs/sdd/changes/20261125-181246-feature-0366-dry-run-runs-mold/)
+
+### Fixed
+
+- **Feature 0363** — `sdd merge --check` y `--sync` paran antes de fusionar si la rama trae un id de cambio o un número de ADR que el destino ya usa. → [ref](.docs/sdd/changes/20261125-181147-feature-0363-merge-rejects-shared-ids/)
+- **Patch 0364** — `sdd roadmap publish` publica desde el checkout que tiene sacada la rama de integración, en vez de parar con «destino con cambios». → [ref](.docs/sdd/changes/20261125-175114-patch-0364-publish-from-integration-checkout/)
+- **Feature 0367** — `sdd-validate` en `delegate` no para antes de volver a `sdd-implement` con un arreglo ni antes de invocar `sdd-archive`. → [ref](.docs/sdd/changes/20261125-155223-feature-0367-validate-no-stops-in-delegate/)
+- **Patch 0369** — `sdd session tokens` cuenta el esfuerzo real desde el `Inicio:` del artefacto, no desde el arranque de la sesión. → [ref](.docs/sdd/changes/20261125-175000-patch-0369-session-tokens-from-start/)
+
 ## [3.0.4] - 2026-11-19
 
 smoke: pendiente
