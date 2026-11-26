@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, realpathSync, rmSync } from 'node:
 import { dirname, join, relative, resolve, sep } from 'node:path';
 import { DomainError, UsageError } from '../cli/args.ts';
 import type { Io } from '../cli/io.ts';
-import { git, gitLines, hasContentChanges, toplevel } from '../git/git.ts';
+import { git, gitLines, hasContentChanges, samePath, toplevel } from '../git/git.ts';
 import { runGit, withIntegrationTarget, withMergeLock } from '../merge/integration.ts';
 import { ROOT_DOCUMENTS } from '../cli/layout.ts';
 
@@ -36,12 +36,29 @@ async function assertBaseIntegrated({ projectRoot, files, into }: PublishOptions
   }
 }
 
+async function hasChanges(target: string, file: string): Promise<boolean> {
+  const { code, stdout, stderr } = await git(target, ['status', '--porcelain', '--', file]);
+  if (code !== 0) throw new DomainError(`git status falló en '${target}': ${stderr.trim()}`);
+  return stdout.startsWith('??') || hasContentChanges(target, [file]);
+}
+
 async function assertTargetClean(target: string, files: string[]): Promise<void> {
   for (const file of files) {
-    const { code, stdout, stderr } = await git(target, ['status', '--porcelain', '--', file]);
-    if (code !== 0) throw new DomainError(`git status falló en '${target}': ${stderr.trim()}`);
-    const untracked = stdout.startsWith('??');
-    if (untracked || (await hasContentChanges(target, [file]))) throw new DomainError(`destino con cambios: ${file} en ${target}`);
+    if (await hasChanges(target, file)) throw new DomainError(`destino con cambios: ${file} en ${target}`);
+  }
+}
+
+// Origen y destino son el mismo árbol: se publica solo lo nombrado, y un fallo nunca toca la edición del usuario.
+async function commitInPlace(target: string, files: string[], message: string): Promise<void> {
+  for (const file of files) {
+    if (!(await hasChanges(target, file))) throw new DomainError(`sin cambios que publicar: ${file} en ${target}`);
+  }
+  try {
+    await runGit(target, ['add', '--', ...files]);
+    await runGit(target, ['commit', '-m', message, '--', ...files]);
+  } catch (error) {
+    await git(target, ['reset', '-q', '--', ...files]);
+    throw error;
   }
 }
 
@@ -69,6 +86,9 @@ async function pathsInRepository(projectRoot: string, files: string[]): Promise<
 async function commitFiles(target: string, options: PublishOptions): Promise<void> {
   const { projectRoot, files, message } = options;
   const targetFiles = await pathsInRepository(projectRoot, files);
+  if (samePath(target, (await toplevel(projectRoot))!)) {
+    return commitInPlace(target, targetFiles, message);
+  }
   await assertTargetClean(target, targetFiles);
   try {
     targetFiles.forEach((targetFile, index) => {

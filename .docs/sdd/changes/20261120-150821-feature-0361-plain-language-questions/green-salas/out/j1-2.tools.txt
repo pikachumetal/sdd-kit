@@ -1,0 +1,128 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && ls -a && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd .docs/sdd/steering .docs/sdd/changes 2>/dev/null; git ls-files | head -50; node "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+src/
+test/
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "release": {"hasRecipient": false}}
+.docs/sdd:
+sdd-kit.json
+specs/
+steering/
+
+.docs/sdd/steering:
+constitution.md
+debt.md
+operations.md
+.docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md src/app.js package.json; cat .docs/sdd/specs/*free/spec.md; ls .docs/sdd/specs
+<<< # salas
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+# Roadmap — salas
+
+## Now
+
+| Id | Externo | Tarea | Estado | Tras | Tamaño |
+| --- | --- | --- | --- | --- | --- |
+| 0008 | — | **Avisos por correo antes de la reserva**<br>*Un aviso por correo antes de cada reserva*<details><summary>Brief</summary>**Carril:** feature<br>**Requisitos:** los del one-liner<br>**Decisiones ya tomadas:** ninguna
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/skills/sdd-propose/references" && cat nombrado.md; sed -n 1,60p control-profiles.md; cd "<run>/repo"; git branch -a; git remote -v; node "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js" id --help 2>&1 | head -20
+<<< ## Naming of spec folders
+
+`<yyyyMMdd-HHmmss>-(feature|patch|proposal)-<id>-<slug>`, all in UTC:
+
+- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `track
+
+>>> Bash: cd "<run>/repo" && S='D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js'; node "$S" id next --project-root . --reserve
+<<< 0010
+
+>>> Bash: cd "<run>/repo" && S='D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js'; git status --short; git checkout -b feature/0010-libres-por-dia develop && node "$S" id claim --project-root .
+<<< Switched to a new branch 'feature/0010-libres-por-dia'
+sin remoto: la 0010 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && cat test/app.test.js README.md CHANGELOG.md; cat .docs/sdd/specs/*0006-free/walkthrough.md .docs/sdd/specs/*0007*/patch.md
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+
+test('cancelar respeta el día', () => {
+  assert.equal(run('cancelar', ['mar', '10:00']), 'cancelada mar 10:00');
+});
+# salas
+
+Reservas de salas de reuniones desde la terminal.
+# Changelog
+
+
+
+=== RESULTADO (13 turnos, 0.22286920000000002 $)
+Esto es lo que he entendido, corrígeme si no es así. Hoy `libres <franja>` mira solo la hora, no el día. La reserva de Norte (lunes 10:00-12:00) hace que Norte desaparezca de la lista en cualquier día. Tú esperas que la sala se vea ocupada solo el lunes.
+
+Lo que he mirado:
+- En `src/app.js`, `libres` recibe un único parámetro (la franja) y compara solo `room` y `slot`.
+- Las reservas ya guardan el día (`lun`).
+- `cancelar` ya recibe el día, delante de la hora (`cancelar mar 10:00`), tras el patch 0007.
+- `test/app.test.js` solo prueba `libres 10:00-12:00`, sin día.
+
+Cómo reparto las decisiones:
+- **Contestado**: la reserva ya tiene día (lo veo en `src/app.js`), así que no hay que cambiar cómo se guardan. Los tests, el texto en castellano y el flujo SDD vienen de la constitución.
+- **Menor**: el nombre de los helpers y el orden de las tareas los decido yo.
+- **Tuyo**: cómo se indica el día en `libres`, y qué pasa si no se indica ninguno. Las dos las veremos según tu respuesta.
+
+Antes de nada, necesito entender el motivo. Cuando lanzas `libres 10:00-12:00`, ¿qué estás intentando resolver y qué haces con la respuesta?
+
+=== RESULTADO (1 turnos, 0.24265430000000002 $)
+Entendido: una sala está libre si ese día, a esa hora, no tiene reserva. Con eso el criterio queda cerrado. Queda una decisión tuya: cómo se pide el día.
+
+❓ **Cómo se indica el día en `libres`**
+Hoy `libres` no recibe día (`src/app.js`), y `cancelar` ya lo recibe delante de la hora. Con la reserva de Norte del lunes de 10:00 a 12:00:
+
+1️⃣ **Día obligatorio, antes de la franja**, como en `cancelar`.
+- `libres lun 10:00-12:00` → `Sur`
+- `libres mar 10:00-12:00` → `Norte, Sur`
+- `libres 10:00-12:00` → `Falta el día: libres <día> <franja>`
+- Cuesta que la forma actual `libres 10:00-12:00` deje de funcionar. Hoy da una respuesta que depende de un día que nadie ha dicho.
+
+2️⃣ **Día opcional; sin día, una línea por cada día de la semana.**
+- `libres lun 10:00-12:00` → `Sur`
+- `libres 10:00-12:00` → `lun: Sur` / `mar: Norte, Sur` / …
+- Cuesta decidir qué días entran (¿lunes a viernes o los siete?), algo que ahora nadie ha fijado. También es más código y más cosas que probar.
+
+➡️ **Recomiendo 1️⃣**, porque es la misma forma que ya usa `cancelar` y deja una sola respuesta posible a «¿qué salas hay libres?». A cambio, quien teclee la forma antigua recibe un aviso en vez de una lista.
+
+¿Cuál eliges?

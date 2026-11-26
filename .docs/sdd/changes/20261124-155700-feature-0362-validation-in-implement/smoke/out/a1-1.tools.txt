@@ -1,0 +1,136 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: ls -a; ls -R .docs | head -50; cat .docs/sdd/sdd-kit.local.json; cat .docs/sdd/sdd-kit.json 2>/dev/null | head -40
+<<< ./
+../
+.docs/
+.git/
+CHANGELOG.md
+package.json
+PRODUCT.md
+README.md
+ROADMAP.md
+scripts/
+src/
+test/
+.docs:
+sdd/
+
+.docs/sdd:
+sdd-kit.json
+sdd-kit.local.json
+specs/
+steering/
+
+.docs/sdd/specs:
+20260915-090000-task-0005-weekly/
+20260917-090000-task-0006-free/
+20260918-090000-patch-0007-cancel/
+
+.docs/sdd/specs/20260915-090000-task-0005-weekly:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260917-090000-task-0006-free:
+spec.md
+walkthrough.md
+
+.docs/sdd/specs/20260918-090000-patch-0007-cancel:
+patch.md
+
+.docs/sdd/steering:
+architecture.md
+constitution.md
+debt.md
+estimation.md
+operations.md
+{"merge": {"pu
+
+>>> Bash: cat PRODUCT.md ROADMAP.md .docs/sdd/steering/constitution.md .docs/sdd/steering/architecture.md .docs/sdd/steering/operations.md; cat .docs/sdd/specs/*cancel/patch.md; ls -R src test; ls node_modules 2>&1 | head -2; node "D:/code/.worktrees/sdd-kit/feature-0362-validation-in-implement/.temp/kit-r/cli/bin/sdd.js" capability index --path .docs/sdd
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cat src/app.js | head -80; cat .docs/sdd/specs/*weekly/spec.md | head -30
+<<< const [command, ...args] = process.argv.slice(2);
+const rooms = ['Norte', 'Sur'];
+const bookings = [{ room: 'Norte', day: 'lun', slot: '10:00-12:00', status: 'active' }];
+
+function freeRooms(slot) {
+  return rooms.filter((room) => !bookings.some((b) => b.room === room && b.slot === slot && b.status === 'active'));
+}
+
+function findBooking(room, day) {
+  return bookings.find((b) => b.room === room && b.day === day && b.status === 'active');
+}
+
+export function cancelBooking(room, day) {
+  const booking = findBooking(room, day);
+  if (!booking) return `sin reserva ${room} ${day}`;
+ 
+
+>>> Bash: git checkout -b feature/0011 develop 2>&1; node "D:/code/.worktrees/sdd-kit/feature-0362-validation-in-implement/.temp/kit-r/cli/bin/sdd.js" id claim --project-root "$(pwd)" 2>&1
+<<< Switched to a new branch 'feature/0011'
+sin remoto: la 0011 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cat test/*.js; cat README.md; cat .docs/sdd/steering/debt.md; cat .docs/sdd/specs/*free/spec.md | head -40
+<<< import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('libres excluye la sala reservada en la franja', () => {
+  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+});
+
+test('reservar --cada-semana crea la reserva semanal', () => {
+  assert.equal(run('reservar', ['Norte', '--cada-semana']), 'reserva semanal creada');
+});
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { run } from '../src/app.js';
+
+test('cancelar una reserva activa', () => {
+  assert.equal(run('cancelar', ['Norte
+
+=== RESULTADO (12 turnos, 0.19690520000000003 $)
+Ahora: leo el código y te explico lo que he entendido, antes de escribir la spec. Queda: tu respuesta, el enfoque, la spec y su aprobación, ~10 min.
+
+**Lo que he entendido:** hoy cualquiera puede anular una reserva con `anular <sala> <día>`. Esa orden ya existe (`voidBooking`, `src/app.js:19`), pero no comprueba quién la ejecuta y no tiene tests. Tú quieres que solo el responsable de cada sala pueda anular las reservas de otras personas (fila 0011 del roadmap). Dime si me equivoco.
+
+**Lo que he encontrado:**
+- La app no tiene usuarios. Las reservas no guardan a nombre de quién están y no hay login.
+- Nada dice quién es el responsable de cada sala.
+- `PRODUCT.md` dice que solo la usas tú y que no hay más usuarios. Eso choca con la idea de un responsable de sala distinto de quien reserva.
+
+**Lo que ya está contestado:**
+- La anulación es la del responsable, por cualquier motivo, y es distinta de la cancelación. Sale del glosario de `PRODUCT.md` y de la fila 0011.
+- Los textos van en castellano y los tests van antes que el código. Sale de la constitución.
+
+**Lo que decido yo, porque no cambia lo que se construye:**
+- El código va en `src/app.js` y los tests en un fichero nuevo. Es la única entrada que fija la arquitectura.
+
+**Lo que solo puedes decidir tú, y te iré preguntando de una en una:**
+- Cómo se sabe quién es quien ejecuta la orden.
+- Dónde se define quién es el responsable de cada sala.
+- Qué pasa cuando alguien que no es responsable intenta anular.
+- Qué pasa con la contradicción con `PRODUCT.md`.
+
+Empiezo por lo más importante: ¿para qué quieres que exista el responsable de sala y qué te pasa hoy que lo pide?

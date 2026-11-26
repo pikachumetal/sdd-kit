@@ -1,7 +1,7 @@
 import { rootOption, text } from '../cli/args.ts';
 import type { Verb } from '../cli/verbs.ts';
 import { measureSession, textLines, timingOf, toJson } from './measure.ts';
-import { marginWarning, writeTiming } from './timing.ts';
+import { marginWarning, readStart, writeTiming } from './timing.ts';
 
 export const sessionTokensVerb: Verb = {
   noun: 'session',
@@ -17,15 +17,16 @@ export const sessionTokensVerb: Verb = {
   },
   async run(args, io) {
     const roots = args.values['projects-root'];
+    const artifact = text(args, 'artifact');
     const options = {
       path: rootOption(args, 'path') ?? '.',
       branch: text(args, 'branch') ?? '',
       projectsRoots: Array.isArray(roots) ? roots.map(String) : [],
+      since: artifact === null ? undefined : readStart(artifact),
     };
     const measurement = measureSession(options);
     if (args.values.json === true) io.json(toJson(measurement));
     else textLines(measurement).forEach((line) => io.out(line));
-    const artifact = text(args, 'artifact');
     if (artifact !== null) {
       const timing = timingOf(measurement, options, { folder: artifact, warn: io.err });
       writeTiming(artifact, timing);

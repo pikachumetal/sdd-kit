@@ -93,10 +93,9 @@ digraph process {
     "Setup: worktree, workspace + ledger, read plan + spec, pre-flight scan" [shape=box];
     "More tasks remain?" [shape=diamond];
 <!-- kit: 649f1a99 · sustituye: «"Final whole-branch review (fresh reviewer if you have one)"…"Use superpowers:finishing-a-development-branch"» -->
-    "sdd-verify: final review in axes (fresh reviewers, in the background)" [shape=box];
-    "sdd-verify: closing of the review" [shape=box];
+    "sdd-validate: gate, script, final review, dev validation" [shape=box];
     "Closing done: rulings to tasks.md, delete this plan's workspace" [shape=box];
-    "sdd-archive (validation)" [shape=box style=filled fillcolor=lightgreen];
+    "sdd-archive" [shape=box style=filled fillcolor=lightgreen];
 <!-- kit: fin -->
 
 <!-- kit: 649f1a99 · sustituye: «task-start:» -->
@@ -118,10 +117,9 @@ digraph process {
     "Completion contract met?" -> "sdd task done: run the Verificación, ledger the result; mark todo complete" [label="yes"];
     "sdd task done: run the Verificación, ledger the result; mark todo complete" -> "More tasks remain?";
     "More tasks remain?" -> "sdd task start: brief + BASE; read the brief" [label="yes"];
-    "More tasks remain?" -> "sdd-verify: final review in axes (fresh reviewers, in the background)" [label="no"];
-    "sdd-verify: final review in axes (fresh reviewers, in the background)" -> "sdd-verify: closing of the review";
-    "sdd-verify: closing of the review" -> "Closing done: rulings to tasks.md, delete this plan's workspace";
-    "Closing done: rulings to tasks.md, delete this plan's workspace" -> "sdd-archive (validation)";
+    "More tasks remain?" -> "sdd-validate: gate, script, final review, dev validation" [label="no"];
+    "sdd-validate: gate, script, final review, dev validation" -> "Closing done: rulings to tasks.md, delete this plan's workspace";
+    "Closing done: rulings to tasks.md, delete this plan's workspace" -> "sdd-archive";
 <!-- kit: fin -->
 }
 ```
@@ -279,9 +277,7 @@ Before taking the next task, do what `sdd-implement`, «After each task», asks 
 ## Final Review
 
 <!-- kit: 649f1a99 · sustituye: «Run `../subagent-driven-development/scripts/review-package PLAN_FILE MERGE_BASE HEAD`…There is no second fix pass.» -->
-**REQUIRED SUB-SKILL:** `sdd-verify` runs the final whole-branch review and its single closing: its axes go out in the background as soon as the last task's commit exists, and you come back here, to [Finish](#finish), when its closing is done.
-
-The silence watch of each dispatch and the closing drafts are `sdd-implement`'s, «After the last task».
+**REQUIRED SUB-SKILL:** after the last task, invoke `sdd-validate` with `Skill`; you come back here, to [Finish](#finish), when the validation is recorded, and a failure comes back as a task at the end of the plan.
 <!-- kit: fin -->
 
 ## Finish
@@ -300,7 +296,7 @@ plan's workspace directory — the git history is the record now. Sibling
 directories belong to other plans; leave them alone.
 
 <!-- kit: 64a86577 · sustituye: «Use superpowers:finishing-a-development-branch.» -->
-Then invoke `sdd-archive` with `Skill`: its first step is the validation.
+Then invoke `sdd-archive` with `Skill`: its first step checks that the validation is recorded.
 
 ## Common Rationalizations
 

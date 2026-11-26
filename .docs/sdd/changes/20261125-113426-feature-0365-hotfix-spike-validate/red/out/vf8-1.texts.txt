@@ -1,0 +1,66 @@
+--- [5]
+Primero miro el estado real: qué hay en la rama y si existe `patch.md`.
+
+--- [17]
+El revisor del patch está en marcha. Espero su informe antes de tocar nada más.
+
+Lo que he comprobado hasta ahora:
+- **Fix:** está commiteado (`1eca3c6`) y `node --test` da 4 pasados, 0 fallos.
+- **Revisor:** el paso 5 (un revisor antes del commit) no consta en §4 de `patch.md`. Lo lanzo ahora sobre el commit ya hecho.
+- **Saltos de línea:** el commit convirtió `src/app.js` y `test/app.test.js` de CRLF a LF. El diff real son 1 línea en `app.js` y 5 en el test, pero git cuenta 16 y 19 por el ruido.
+- **`patch.md`:** tiene `status: done`, `commit: <hash>` sin rellenar y `branch: feature/0008-cancel-missing`. La rama real es `hotfix/0008-cancel-missing`.
+
+Cuando llegue el informe, respondo cada hallazgo en §4. Después corrijo `patch.md` y los saltos de línea, y paso a `sdd-validate`. Esta última parte, el squash de los commits intermedios y la validación, depende de los hallazgos.
+
+--- [24]
+Hallazgos del patch 0008. Los tests pasan (4 de 4), pero hay un cambio ajeno y dos problemas de coherencia en `patch.md`.
+
+1. **Media: cambios ajenos de saltos de línea (CRLF→LF).** `src/app.js` y `test/app.test.js` pasaban de CRLF a LF.
+   - Evidencia: en `HEAD~1` `src/app.js` tenía 16 líneas con 16 CR, y `test/app.test.js` 15 líneas con 15 CR. En `HEAD` los dos tienen 0 CR.
+   - `git show --stat` marca 32 líneas cambiadas en `src/app.js` y 34 en `test/app.test.js`. `git diff -w --ignore-cr-at-eol HEAD~1 HEAD` deja solo 2 líneas (+1 −1) en `src/app.js` y 6 en `test/app.test.js`.
+   - Esto contradice «fix mínimo». Hay que restaurar CRLF en ambos archivos para que el diff sea solo el cambio real.
+
+2. **Media: el cambio del test «cancelar respeta el día» (mar→lun) tiene justificación válida, pero no está documentada.**
+   - Con el fix, `cancelar mar 10:00` devuelve «no hay reserva», porque `bookings` solo tiene `lun 10:00-12:00`. Si el test se hubiera dejado como estaba, habría fallado, así que el cambio es necesario.
+   - El nuevo test usa `lun`, que sí existe, y sigue comprobando que se respeta el día.
+   - `patch.md` no menciona este cambio de un test existente. Debería decir que el test usaba un dato que ya no es una reserva real y por eso se pasa a `lun`.
+
+3. **Baja: la causa raíz es real y está en el código, pero la redacción es algo imprecisa.**
+   - Antes del fix, `run('cancelar')` hacía `return \`cancelada ${params[0]} ${params[1]}\`` sin consultar `bookings`, y el diff lo confirma.
+   - `patch.md` lo describe correctamente. La causa y el fix son coherentes, y el test nuevo cubre el síntoma (`mie 10:00` → «no hay reserva mie 10:00»).
+
+4. **Baja: el match `b.slot.startsWith(params[1])` es correcto en el caso base, pero frágil.**
+   - Las reservas guardan la franja como `'10:00-12:00'` y el usuario escribe `10:00`, así que `startsWith` los empareja.
+   - Un prefijo parcial como `10` o `1` también casaría, por ejemplo `cancelar lun 1`. Si `params[1]` es `undefined`, `startsWith(undefined)` lo convierte en la cadena `"undefined"` y no casa, así que no hay excepción.
+   - No hay test que cubra la franja completa `10:00-12:00` ni un prefijo ambiguo. No bloquea, pero conviene dejarlo anotado en `patch.md` como límite conocido.
+   - Además, `cancelar` solo comprueba la existencia: no elimina la reserva de `bookings`. Eso ya era así antes del fix y queda fuera del alcance.
+
+5. **Media: el frontmatter de `patch.md` es incoherente.**
+   - `commit: <hash>` es un marcador sin rellenar, y el commit real es `1eca3c6`.
+   - `branch: feature/0008-cancel-missing`, pero la rama real es `hotfix/0008-cancel-missing`.
+   - `status: done` aparece antes de que se archive o se mergee el patch. Revisa si debería ser otro estado.
+   - Para un patch estos tres campos deben ser exactos.
+
+6. **Baja: formato.** La línea modificada de `src/app.js` es un ternario largo en una sola línea (más de 150 caracteres). Funciona, pero se lee peor que un `if` con `return`. Es una cuestión de estilo, no de corrección.
+
+--- [33]
+Ahora: paso a `sdd-validate`, que ejecuta el gate, el guion y la validación del dev y luego `sdd-archive`.
+
+--- [38]
+Ahora: ejecuto el gate y el guion del patch con la CLI real. Queda: registrar la validación en campo en §4 y pasar a `sdd-archive`, ~3 min.
+
+--- [40]
+Verde. Registro la validación en campo en §4 y lo añado al commit del fix.
+
+--- [44]
+Ahora: pre-checks del cierre (árbol limpio, `merge --check`, worktrees abiertos). Queda: una pregunta tuya antes de escribir nada más, ~2 min.
+
+--- [47]
+Árbol limpio, sin otras ramas ni worktrees abiertos. Hay una pregunta antes de seguir:
+
+**¿Alguno de estos patches pide algo al proyecto (un fichero, una clave, un paso a mano)?**
+
+Aquí solo hay uno, el 0008. Cambia `cancelar` en `src/app.js` y añade un test. A mí no me hace falta ninguna migración, pero solo tú sabes qué tiene que aplicar el proyecto.
+
+Hasta que respondas no escribo el registro ni hago el merge. `sdd merge --check --into main` también me pide una frase tuya que autorice fusionar en `main`, porque `merge.into` apunta a `develop`. Te la pediré después de esta respuesta.
+

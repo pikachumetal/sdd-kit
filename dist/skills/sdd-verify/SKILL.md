@@ -56,7 +56,7 @@ Skip any step = lying, not verifying
 
 **Running a gate.** Wherever you run the closing gate —the validation, the close, the config lane, the baseline—, from `operations.md` §Testing; after a red, item 3 holds for any gate, the merge's `--verify` too:
 
-1. In the validation and the close:
+1. At the end of the tasks and in the close:
 A branch that only touches `.docs/` or `*.md` runs nothing. Otherwise each suite of «Suites» with level `unitario` or `pendiente` (a suite without a level counts as `pendiente`) runs whole, with its command, before the gate, unless its command is the gate's or one of the tasks the gate runs.
 2. If the branch —or, after `sdd merge --sync`, what the base brought— touches a file of «Sin filtro» (without the field: `package.json`, `*.csproj`, `*.sln`, `pom.xml`, `build.gradle*`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `composer.json`, `Gemfile`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`, `packages.lock.json`, `poetry.lock`, `uv.lock`, `go.sum`, `Cargo.lock`, `composer.lock`, `Gemfile.lock`, `.moon/**`, `tsconfig*.json`, `Directory.Build.*`, `Directory.Packages.props`, `global.json`, `.prototools`, `vitest.config.*`, `jest.config.*`, `playwright.config.*`, at any depth), the gate runs without `--affected` and every task carries `(sin filtro: cambia el build)`. A project's `moon.yml` is «cambia su definición», not the build.
 3. After a red pass at `<sha>`:
@@ -190,7 +190,7 @@ The kit doesn't take `HEAD~1` nor one `general-purpose` reviewer: the package co
 
 ## Final review
 
-**Dispatch it in the background as soon as the last task's commit exists** —in Native, the last task's; in SDD, the squashed one after its clean review—, before starting the app for its «Verificación visual»: while it reviews, you do that check and write the closing drafts of step 7. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`.
+**`sdd-validate` dispatches it in the background once the gate and the script are green**, on the last commit: while it reviews, you do the «Verificación visual» check and write the closing drafts. It works isolated from the moving `HEAD`, in a detached worktree at the sha it reviews (`git worktree add --detach <worktrees parent>/review-<id>-<short sha> <sha>`), with the package built there and the brief telling it not to look at later branches or commits; when it returns, remove it with `git worktree remove`.
 
 **The axes.** With `mode: spike`, only the Spec axis goes out. Otherwise the review goes out in axes, each with its own brief, model and effort, in parallel: load `sdd-parallel-agents` with `Skill` and dispatch them in the same message, never more at once than `control.maxParallelAgents` of `.docs/sdd/sdd-kit.json` (with 2 and three axes, two go out and the third when one returns). In `delegate`, a `Política de modelos:` line in the approved spec's ✋ that names the axes is the confirmation a user instruction asks before parallelizing: dispatch them without asking again (two of two stopped here: `tests/sdd-propose-0185-green.md`). Each axis brief carries, inside its block, the header, «How to review» and the worktree sentence of [encargo-revision.md](references/encargo-revision.md): fill every `<…>`, and use its package recipe —not `sdd review package`—. Every `sdd <verb>` here and in `references/` runs as `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" <verb>`. What each axis gets:
 
@@ -210,7 +210,7 @@ Final: Eje Arquitectura: <sí | no> en el plan · señales en el diff: <each sig
 
 If the diff crosses one the plan didn't foresee, the axis goes out and you ledger `Final: Ruling: Eje Arquitectura no → sí — <reason> — <cost if wrong>`; `tasks.md` writes it `Arquitectura opus+high, <verdict> (subido: <reason>)`. Never lower a `sí`. Without the line —lite mode, or a plan written before the kit carried it— decide it at dispatch with the same signals, as a ruling.
 
-**Each axis gets its silence watch** (`sdd-implement`, «Every dispatch»). A hung axis is relaunched alone, once, as [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch) says; the others go on.
+**Each axis gets its silence watch** (`sdd-validate`, «Closing drafts»). A hung axis is relaunched alone, once, as [Silence watch](../sdd-propose/references/control-profiles.md#silence-watch) says; the others go on.
 
 **Read the reports by axis.** A change can pass one axis and fail another: code that follows every standard can implement the wrong thing, and code that does exactly what the spec asked can break the project's conventions. Keep the reports under one heading per axis, as they came; do not merge or rerank findings across axes, because that is how one axis masks another. Re-grading each finding by its effect happens inside its axis ([Closing the review](references/closing-the-review.md)).
 

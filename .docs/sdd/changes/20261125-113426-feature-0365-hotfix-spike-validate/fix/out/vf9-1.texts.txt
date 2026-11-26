@@ -1,0 +1,240 @@
+--- [3]
+Ahora: miro qué cambió la rama respecto a `main` y localizo el spike 0030. Queda: puerta de cierre si procede, comprobar filas de `research.md`, revisión de Spec y tu validación, ~10 min.
+
+--- [7]
+Todos los archivos cambiados están dentro de `changes/`, así que el paso 1 (puerta) no aplica. Paso 2: compruebo cada objetivo de `research.md` contra su evidencia.
+
+--- [15]
+Ahora: leo el plan y preparo la Task 3 (medir O2 con la peor carga). Queda: medir, actualizar `research.md`, commitear y volver a validar, ~5 min.
+
+--- [19]
+Ahora: mido O2 con la peor carga. Queda: actualizar `research.md`, `plan.md` y `tasks.md`, y commitear, ~3 min.
+
+--- [22]
+O2 da 4,3 MB de heap, muy por debajo de 50 MB. Actualizo `research.md`, `plan.md` y `tasks.md`.
+
+--- [25]
+El primer intento no aplicó nada. Lo hago con edición directa.
+
+--- [33]
+Ahora: preparo y lanzo el eje Spec (único en un spike). Queda: revisión, cierre de hallazgos, validación y registro, ~6 min, ~1–2 $.
+
+--- [43]
+La revisión del eje Spec sigue en marcha. Espero su resultado antes de seguir.
+
+--- [58]
+## Revisión de Spec: spike 0030, `libres` con 1.000 reservas (HEAD `21d24c4`)
+
+### Strengths
+- Los números se reproducen. `node medidas/medir-libres.mjs` da 10 repeticiones de 4200 comparaciones, igual que `medidas/o1-libres.txt`. `--memoria` da `heap tras sembrar: 4.3 MB` en 4 ejecuciones seguidas, igual que `medidas/o2-memoria.txt`.
+- La cuenta de 4200 es correcta para lo que hace el script: 3 salas × 1.000 = 3000, más 1000 coincidencias de sala, más 200 reservas en la franja.
+- La tabla de O1 usa la peor carga del spec (1.000 reservas en 5 días) y tiene 10 repeticiones.
+- `research.md:20` admite que O2 es heap y no RSS, y la Task 3 se abrió porque «no medido» se podía medir. Las dos cosas son honestas.
+- O3 no se marca `cumple`: usa el estado válido «no medido con una persona».
+
+### Issues
+
+#### Critical (Must Fix)
+
+1. **`medidas/medir-libres.mjs:2-9`: el script no mide `libres`, reimplementa el recuento.**
+   - **Qué falla:** no importa `run` ni `freeRooms` de `src/app.js`. Mide otro algoritmo con otro modelo de datos:
+     - usa 3 salas (`Norte, Sur, Este`), y la app tiene 2 (`src/app.js:2`);
+     - usa franjas de una hora (`'08:00'…'17:00'`) comparadas por rango (`>= '10:00' && < '12:00'`), y la app compara igualdad exacta `b.slot === slot` con `'10:00-12:00'` (`src/app.js:6`);
+     - la app comprueba también `status === 'active'` y para con `some` al primer acierto; el script recorre todo sin parar.
+   - Además, el recuento no es consistente: cuenta la comparación de franja solo cuando pasa. Las 800 comparaciones `>=` que fallan y las `<` no cuentan, así que ni siquiera mide bien su propio algoritmo.
+   - **Por qué importa:** las «4200 comparaciones» no dicen nada del `libres` real. El veredicto de O1 no tiene base.
+   - **Cómo arreglarlo:** medir la función real. Hace falta poder sembrar 1.000 reservas en el array del módulo, que hoy es una constante sin exportar (`src/app.js:3`). Si en el spike no se puede, la fila tiene que decirlo, y no dar como dato el número de un algoritmo inventado. También hay que fijar en el spec qué cuenta como «comparación».
+   - **Gap:** `contradicts`. **Origen:** O1.
+
+2. **`research.md:20`: O2 «cumple» con una magnitud que no es la del objetivo, y la nota es falsa.**
+   - **Qué falla:** el spec (`spec.md:24`) pide «memoria del proceso < 50 MB». La fila mide `heapUsed`. Lo reproduje en esta máquina (Node v26.10.0):
+     - `node -e` vacío: heap 4,0 MB, **RSS 54,2 MB**;
+     - con las 1.000 reservas del script: heap 4,1 MB, RSS 54,3 MB.
+   - Por tanto, «es el heap de las reservas sembradas» es falso. Los 4,3 MB son casi todos el heap base de Node; las reservas aportan unos 0,1–0,3 MB.
+   - La memoria del proceso entero, que es lo que pide el objetivo, ya pasa de 50 MB sin ninguna reserva. Medido como se definió, O2 saldría «no cumple», o el umbral está mal planteado.
+   - **Por qué importa:** la fila dice `cumple` sobre algo que no es el objetivo.
+   - **Cómo arreglarlo:** medir RSS (`process.memoryUsage().rss`) y registrarlo, o reformular O2 en el spec (por ejemplo, el incremento de heap por reserva) y volver a aprobarlo. En los dos casos, restar el valor base del proceso vacío.
+   - **Gap:** `contradicts`. **Origen:** O2.
+
+3. **`research.md:31-32`: la recomendación no está sostenida.**
+   - **Qué falla:** «Elegida: no seguir con las reservas en memoria · Por qué: O1 no cumple», y la opción descartada usa la misma razón. Pero:
+     - descansa en una sola fila, O1, que no mide `libres` (hallazgo 1);
+     - aunque O1 fuera válido, un número alto de comparaciones apunta a un índice o a filtrar antes, no a guardar en fichero. Leer de fichero sigue siendo un recorrido lineal y además añade E/S. No hay ninguna fila que mida la alternativa del fichero;
+     - O2, la única fila de memoria, sale `cumple`, lo que iría a favor de seguir en memoria (y además está mal medida, hallazgo 2);
+     - el «tal como se definió» de O1 deja ver que ni el propio agente se fía del umbral.
+   - **Por qué importa:** es la salida del spike. Desbloquearía la 0014 con una conclusión que la evidencia no apoya.
+   - **Cómo arreglarlo:** que la recomendación salga solo de filas medidas sobre el código real. Si no se puede, decir qué falta para decidir.
+   - **Gap:** `contradicts`. **Origen:** Decisión que desbloquea.
+
+#### Important (Should Fix)
+
+4. **`research.md:19`: el estado «no cumple tal como se definió» no es válido.** Los estados válidos son `cumple`, `no cumple` y `no medido con una persona`. La coletilla deja el resultado a medias: o el umbral vale, o hay que corregir el spec.
+   - **Cómo arreglarlo:** poner `no cumple` (una vez se mida bien) y llevar la duda del umbral a una nota o a una revisión del spec.
+   - **Gap:** `partial`. **Origen:** O1.
+
+5. **`research.md:20` y `medidas/o2-memoria.txt:1`: la evidencia no respalda «igual en 4 ejecuciones», y O2 no llega a 10 repeticiones.** El fichero tiene una sola línea. Las 4 ejecuciones no están registradas, y una tabla de aguante pide al menos 10 (`research.md:27` cita solo un valor).
+   - **Cómo arreglarlo:** que `--memoria` haga 10 repeticiones y vuelque todas, como hace O1.
+   - **Gap:** `partial`. **Origen:** O2.
+
+6. **`research.md:21`: la fila de O3 lleva un dato que no es evidencia.** Junto al estado válido «no medido con una persona» aparece «lo simulé yo: 4 s». Una simulación del propio agente no mide lo que hace un recepcionista, y el 4 s parece un resultado sin serlo. Tampoco dice por qué no hubo persona, aunque el plan lo pedía (`plan.md:18`, «una persona en la recepción»). Además, el spec se contradice: `spec.md:15` dice «Validación: agente — no hay nada que una persona observe», pero O3 (`spec.md:24`) es un objetivo de persona.
+   - **Cómo arreglarlo:** quitar el 4 s y decir qué hace falta para medirlo: quién lo haría y cuándo. Si O3 no se va a medir nunca, sacarlo del spec.
+   - **Gap:** `partial`. **Origen:** O3.
+
+7. **`research.md:36`: «Lo que sale: nada» no cuadra con la recomendación.** Si se recomienda dejar la memoria, sale al menos un cambio para la 0014 (pasar a fichero, o lo que se elija). Tampoco se dice qué sustituye a la memoria: la opción «fichero» del spec no aparece con ese nombre.
+   - **Gap:** `missing`. **Origen:** Decisión que desbloquea.
+
+#### Minor
+
+8. **`research.md:5`: `status: draft`** en un research que se da por cerrado.
+   - **Gap:** `partial`.
+
+9. **`medidas/medir-libres.mjs:4`: la carga no es realista.** 1.000 reservas en 150 huecos sala×día×hora obligan a solapar reservas en la misma sala y la misma hora. La cifra de «1.000 en una semana» coincide con la del spec, pero el reparto no es real. Si se mide sobre la app, con 2 salas, esto se hace aún más evidente.
+   - **Gap:** `partial`. **Origen:** Peor carga.
+
+### Declined to judge
+- La calidad o el estilo del script de medida: es del eje de código, no de Spec.
+- El hecho de que `src/app.js` no permita sembrar reservas: es de arquitectura. Aquí solo cuenta porque impide medir O1.
+- El formato y los trailers de los mensajes de commit: no están en el plan ni en el spec.
+
+### Not verified
+- RSS dentro del propio script: no verificado, porque tendría que tocar el árbol. Lo medí aparte con `node -e` y el mismo sembrado. Son 54 MB en esta máquina; puede cambiar según la versión de Node y el sistema.
+- Número real de comparaciones de `freeRooms` con 1.000 reservas: no verificado, porque la app no permite sembrar reservas sin modificar `src/app.js`.
+- O3 con una persona: no verificado, porque no lo puede hacer un revisor agente.
+- Suite `node --test`: no verificada, porque el encargo dice que no se ejecute.
+
+### Recommendations
+- Rehacer O1 sobre `freeRooms` y `run('libres', …)` reales, con la definición de «comparación» fijada en el spec.
+- Rehacer O2 con RSS y valor base, en 10 repeticiones volcadas al fichero, o reformular O2 y volver a aprobarlo.
+- Añadir una fila o una medida de la alternativa del fichero antes de recomendar el cambio. Si no hay forma de medirla, que el §4 diga «no se puede decidir aún; falta X».
+- Arreglar la contradicción entre `spec.md:15` y O3.
+
+### Assessment
+**Ready to merge?** No. La única fila en que se apoya la recomendación (O1) mide un algoritmo reimplementado, no `libres`. La fila `cumple` (O2) mide heap y no la memoria del proceso, que medida como RSS ya pasa de 50 MB en vacío. Con esto, la Decisión de la 0014 queda sin responder.
+
+--- [60]
+Ahora: compruebo por mi cuenta los hallazgos Critical antes de actuar. Queda: la pasada de fix, la re-revisión, la validación y el registro, ~15 min.
+
+--- [66]
+Resultados sobre el `libres` real: 2.000 evaluaciones (el límite es `< 2.000`, así que no cumple) y RSS de 55,7 MB, que ya es 55,6 MB con un proceso vacío. Reescribo `research.md` con eso.
+
+--- [69]
+`research.md` no se actualizó, porque Node no encontró `/tmp`, aunque los commits dicen que sí. Lo corrijo ahora.
+
+--- [72]
+Ahora: la re-revisión única de la pasada de fix (opus + high). Queda: ella, el registro y tu validación, ~8 min, ~1 $.
+
+--- [76]
+La re-revisión sigue en marcha. Espero a que termine para registrarla.
+
+--- [78]
+Empiezo por el diff del fix y los artefactos del cambio.
+
+--- [82]
+Read está denegado; leo los ficheros con Bash.
+
+--- [86]
+Ahora reproduzco las medidas y compruebo los detalles del entorno.
+
+--- [89]
+Reproduce 2000 evaluaciones; el RSS sale a 55,3–55,4 MB. Hago una prueba de control para confirmar que el contador sigue el `some` real y no da un número fijo.
+
+--- [102]
+### Veredicto por hallazgo
+
+1. **Critical (el script reimplementaba el recuento): resuelto.** `medidas/medir-libres-real.mjs` carga el `src/app.js` real como módulo `data:`, quita la lectura de argv, añade `export const __bookings` y nada más. Después intercepta `some` en la instancia del array, que es la misma `bookings` que usa `freeRooms` (`src/app.js:6`), y cuenta las evaluaciones del predicado. Lo reproduje: 2000 evaluaciones en las 10 repeticiones y `libres → Norte, Sur`. Prueba de control: con la semilla original el contador da 2 (`Sur`), y con 1.000 reservas y una coincidencia en Norte en la posición 500 da 1501. Así que el número cambia con la carga y sale del `some` real. La sustitución de la primera línea funciona aunque `src/app.js` tenga finales CRLF: con `--memoria` no aparece `salas`. `research.md:17` deja el script viejo como descartado.
+2. **Critical (O2 medía heap): resuelto.** La fila mide RSS, el estado pasa a `no cumple` y la nota falsa sobre el heap ha desaparecido (`research.md:22`). El argumento de la línea base es correcto: 1 reserva frente a 1.000 cambia ≈ 0,1 MB. Node v26.10.0 coincide con lo que dice. Mi reproducción da RSS 55,3–55,4 MB, no 55,7–55,8. La diferencia es del entorno y la conclusión no cambia.
+3. **Critical (la recomendación descansaba en un O1 mal medido): parcialmente resuelto.** «No seguir en memoria» ha desaparecido, se dice que el fichero no se ha medido y hay una línea «Lo que falta para decidir» (`research.md:35`). Pero la sección 5 vuelve a tomar la decisión de almacenamiento, «mantener las reservas en memoria» (`research.md:39`), con la alternativa sin medir y con O1 y O2 en `no cumple`. Lo detallo en Nuevos problemas, I1.
+4. **Important (estado «no cumple tal como se definió» no válido): resuelto, aunque el hallazgo no se sostenía.** La plantilla del kit 3.0.4 (`research-template.md:20`, la versión del proyecto en `sdd-kit.json`) define precisamente `no cumple tal como se definió` para lo medido por debajo del umbral «aunque funcione». `no cumple` también es válido, así que la fila es correcta. Aun así, el estado anterior encajaba mejor con lo que el propio research cuenta: O1 queda justo en el límite y en O2 el exceso es de Node.
+5. **Important (O2 sin 10 repeticiones): resuelto.** `o2-memoria-real.txt` tiene 10 ejecuciones y `o2-memoria-vacio.txt` las 3 de línea base. Lo reproduje con 3 y 3.
+6. **Important (O3 «lo simulé yo» y contradicción con spec.md:15): resuelto dentro de lo que le toca al fix.** O3 queda como `no medido con una persona`, sin la cifra simulada y diciendo qué falta (`research.md:23`). La contradicción de `spec.md:15` está señalada con ✋ en `research.md:40` y no toca el spec aprobado sin aprobación, que es lo correcto. Sigue abierta para quien aprobó el spec.
+7. **Important («Lo que sale: nada»): resuelto en la forma.** La sección ya tiene contenido. Lo que dice ahora tiene sus propios problemas (I1, M3).
+8. **Minor (`status: draft`): no resuelto, de forma deliberada** (`tasks.md:15`, «status se deja», sin motivo). No pesa: la plantilla trae `status: draft` y no encontré ninguna skill del kit 3.0.4 que cambie el estado de un research.
+9. **Minor (carga poco realista): parcialmente resuelto.** Ahora hay 2 salas, pero la carga cae en solo 30 combinaciones distintas de sala, día y franja: unas 33 reservas activas duplicadas por cada una. No cambia ninguna cifra, porque 2000 es el máximo teórico (2 salas × 1.000) y la memoria depende del tamaño del objeto, pero `research.md:27` la presenta como «1.000 reservas en una semana».
+
+### Nuevos problemas
+
+**Important**
+
+- **I1. `research.md:33-39`: la recomendación trata dos `no cumple` como aceptables.**
+  - La plantilla dice «no dar por cumplido un `no cumple` ni un `no medido`» (`research-template.md:37`). Pero la sección 5 recomienda para la 0014 «mantener las reservas en memoria salvo que el dev-lead dé por bueno un umbral más estricto», con O1 y O2 en `no cumple` y el fichero sin medir.
+  - La frase está al revés. El umbral más estricto es el `< 2.000` aprobado en el spec, y es justo el que falla. Lo que necesitaría la aprobación es relajarlo a `≤ 2.000`.
+  - Hay además dos premisas que no salen de ninguna fila medida:
+    - «el coste crece en línea con las reservas»: solo se midió con N = 1.000.
+    - «leer de fichero seguiría siendo un recorrido lineal con E/S añadida»: es razonamiento, no medida.
+  - El «Elegida» de `research.md:33` no es una opción, porque «la evidencia no justifica…» no elige nada. Coherente con la línea 35 sería elegir «no decidir aún» o «no seguir», con lo que falta, y que la sección 5 no fije la 0014.
+
+**Minor**
+
+- **M1. `research.md:17,21`: la definición de «comparación» la fijó el agente y el texto no lo dice.** Se presenta como un hecho. El veredicto aguanta igual: contando cada `===` del predicado salen 3000 (2000 de sala más 1000 de franja), y también es `no cumple`. Convendría decir que la definición es del agente, que es la más favorable y que el veredicto no depende de ella. El «2000 no es < 2000» está bien planteado. Falta añadir que 2000 es el máximo teórico, así que el umbral aprobado solo se cumple si alguna reserva coincide con la franja.
+- **M2. `research.md:27-29`: la sección 3 no sigue la forma de la plantilla.** La plantilla pide una tabla de Repetición, Tiempo y Recurso acumulado (`research-template.md:28-33`). El tiempo se declara no medido con motivo, lo cual vale. Pero el recurso acumulado por repetición dentro del mismo proceso no se registra: la memoria se mide en procesos aparte.
+- **M3. `research.md:39`: `freeRooms` no filtra por día ni por estado del array, porque las canceladas siguen en él (`src/app.js:6`).** La carga real es el total histórico de reservas, no «1.000 en una semana». Esto pesa en la decisión de la 0014 y el research no lo dice.
+- **M4. Trazabilidad.**
+  - El commit `771f94d` dice «research corregido» pero no toca `research.md`: el cambio de research entra en `231c1c0`.
+  - `tasks.md:13,15` apuntan la pasada de fix a `771f94d`.
+  - `plan.md:14,18,22` siguen citando como evidencia los ficheros descartados. Es aceptable como historia, pero no se marca.
+- **M5. `tasks.md:14-15`: las dos líneas «Revisión final…» y «Pasada de fix…» van pegadas a la tabla sin línea en blanco.** En GFM se pintan como filas de la tabla.
+
+### No verificado
+
+- No verificado que `o1-libres-real.txt`, `o2-memoria-real.txt` y `o2-memoria-vacio.txt` salieran exactamente de esos comandos y en ese entorno. No hay registro de cómo se capturaron. Mi reproducción coincide en las evaluaciones y difiere en unos 0,4 MB de RSS.
+- O3: no verificable, no hubo persona.
+
+### Valoración
+
+**¿Listo para mergear?** Con correcciones. Las medidas ya son buenas: miden el `freeRooms` real, se reproducen y los estados de O1, O2 y O3 se sostienen. Lo que queda es reescribir las secciones 4 y 5 para que no den por aceptables dos `no cumple`, no apoyen la decisión de la 0014 en premisas sin medir y no inviertan el sentido del umbral aprobado.
+
+Rutas relevantes:
+- `<run>/review-0030-231c1c0/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md`
+- `<run>/review-0030-231c1c0/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/medir-libres-real.mjs`
+- `<run>/review-0030-231c1c0/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md`
+- `<run>/review-0030-231c1c0/src/app.js`
+- Plantilla: `<home>/.claude/plugins/cache/sdd-kit/sdd-kit/3.0.4/skills/sdd-templates/templates/research-template.md`
+
+--- [104]
+La re-revisión da una Important nueva (I1) que trajo mi fix: la recomendación acepta dos `no cumple`. Según el cierre, la arreglo yo, sin otra re-revisión, y queda en ✋ como `sin revisar`.
+
+--- [107]
+Ahora: paso 4, validación en modo `field`. Queda: mi smoke por objetivo, el registro y el mensaje de validación, ~3 min.
+
+--- [111]
+🦆 El spike 0030 está validado, pero no llega a un «sí, aguanta»: medido sobre el `libres` real, O1 y O2 salen `no cumple` y O3 sigue sin medirse. Con 1.000 reservas sin ninguna que coincida con la franja, `libres 10:00-12:00` hace 2.000 evaluaciones del predicado. El límite era `< 2.000`.
+
+**✋ Me salí del plan en…**
+
+- Primera pasada: el paso 2 falló, porque O2 estaba `no medido` y se podía medir. Volví a `sdd-implement` y añadí la Task 3 (commit `8a5a3a3`).
+- Revisión final del eje Spec, que en un spike es el único: devolvió "No" con 3 Critical y 4 Important.
+  - `medir-libres.mjs` reimplementaba el recuento, con 3 salas y otro modelo de franja, en lugar de medir `libres`.
+  - O2 medía el heap, pero el spec pide la memoria del proceso. La nota «es el heap de las reservas» era falsa.
+  - La recomendación «no seguir en memoria» descansaba solo en esa primera medida de O1.
+- Añadí la Task 4 (commit `771f94d`) con `medidas/medir-libres-real.mjs`, que carga el `src/app.js` real sin tocarlo. Antes del fix, 3 de las 4 filas de `research.md` estaban mal.
+- Fijé la definición de «comparación» yo, no el spec: una evaluación del predicado de `some`. Es la más favorable. Contando cada `===` salen 3.000 y O1 sigue siendo `no cumple`.
+- La re-revisión (opus + high) dejó una Important nueva (I1): mi recomendación aceptaba dos `no cumple`. La corregí yo en el commit `65be3d7`. Ese commit queda como **`sin revisar`** y es solo documentación.
+
+**Smoke que he corrido**
+
+| Objetivo | Evidencia | Resultado |
+| --- | --- | --- |
+| O1 | ejecución real | 2.000 evaluaciones en las 10 repeticiones → `no cumple` (2.000 no es < 2.000) |
+| O2 | ejecución real | RSS 55,7 MB con 1.000 reservas y 55,6 MB con 1. El exceso es la base de Node; las reservas añaden unos 0,1 MB → `no cumple` |
+| O3 | no probado | No hubo una persona en la recepción → `no medido con una persona` |
+
+**Suites**
+
+- Saltada. Todo lo cambiado está dentro de `changes/`, así que el cierre no la ejecuta.
+
+**Sin probar**
+
+- Medir la alternativa en fichero.
+- Medir O1 con otro número de reservas.
+- O3 con una persona.
+- El tiempo de `libres` en milisegundos. El spec mide comparaciones, no tiempo.
+
+El resultado queda en `tasks.md` como `Validación en campo: 2026-11-25 · …`.
+
+**Para ti**
+
+- `spec.md` dice «Validación: agente — no hay nada que una persona observe», pero O3 es un objetivo de persona. No toco un spec aprobado sin tu visto bueno.
+- `research.md` §4 ahora dice «no decidir todavía el almacenamiento de la 0014». ¿Te parece bien el umbral de O1 y el de O2 (RSS con la base de Node)? Si cambian, hay que repetir esas filas.
+
+No he invocado `sdd-archive`, que cierra y mergea, porque quedan abiertos esa decisión del spec y el commit `sin revisar`. Si quieres que cierre, dímelo.
+

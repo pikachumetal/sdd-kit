@@ -9,18 +9,23 @@ import { scenarioCell, subjectCell, moldFrom } from '../../headless/battery.mjs'
 import { initSubject, readLf } from '../../headless/lib.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
+// La batería de sdd-validate lanza este mismo sujeto con su carpeta: la tabla de escenarios es la suya y los moldes y las fixtures, los de aquí.
+const BATTERY = process.env.BATTERY_DIR ?? HERE;
 const IMPL = join(HERE, '..', 'sdd-implement');
 const [kit, , SC] = process.argv.slice(2);
 // Un kit anterior a sdd-archive (el RED, con el kit de develop de entonces) cierra con sdd-end-feature o sdd-end-patch: la guarda y la petición usan la de ese kit.
-const GUARD = (scenarioCell(HERE, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
-const OLD = (scenarioCell(HERE, SC, 'Molde') ?? '').startsWith('salas-') ? 'sdd-end-patch' : 'sdd-end-feature';
+const GUARD = (scenarioCell(BATTERY, SC, 'Esperado') ?? '').replace(/^sdd-kit:/, '');
+// El RED de sdd-validate, con el kit anterior a ella, pide la validación sin nombrar la skill y la guarda mira la de implementación.
+const RED_VALIDATE = GUARD === 'sdd-validate';
+const OLD = RED_VALIDATE ? 'sdd-implement' : (scenarioCell(BATTERY, SC, 'Molde') ?? '').startsWith('salas-') ? 'sdd-end-patch' : 'sdd-end-feature';
 const current = existsSync(join(kit, 'skills', GUARD));
 const s = initSubject(process.argv.slice(2), current ? GUARD : OLD);
-const cell = subjectCell(HERE, s);
+const cell = subjectCell(BATTERY, s);
 let ASK = cell('Petición');
-if (!current) ASK = ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
+if (!current) ASK = RED_VALIDATE ? ASK.replace('Invoca la skill sdd-kit:sdd-validate y sigue. ', '') : ASK.replaceAll(`sdd-kit:${GUARD}`, `sdd-kit:${OLD}`);
 const F10 = '.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason';
 const P8 = '.docs/sdd/specs/20261010-090000-patch-0008-cancel-missing';
+const S30 = '.docs/sdd/changes/20261120-090000-feature-0030-libres-load';
 const CAP = '.docs/sdd/capabilities/bookings.md';
 const ROADMAP = 'ROADMAP.md';
 const DEBT = '.docs/sdd/steering/debt.md';
@@ -49,6 +54,24 @@ function addTableRow(path, section, row) {
   for (let i = start + 1; i < lines.length && !lines[i].startsWith('## '); i++) if (lines[i].startsWith('|')) last = i;
   lines.splice(last + 1, 0, row);
   writeFileSync(at(path), lines.join('\n'));
+}
+// Las tasks de la 0010 acabadas y la revisión final sin hacer: el sujeto llega a la validación con la revisión por hacer.
+function reviewPending(finding) {
+  edit(`${F10}/tasks.md`, [/^Revisión final:.*$/, finding ? `Revisión final: Spec opus+high, limpia · Código sonnet+high, 1 Important: ${finding}, sobre ${short('HEAD')}` : '']);
+  s.commit('docs(sdd): la revisión final de la 0010');
+}
+// `libres` da por ocupada una sala cancelada: ningún test lo cubre y solo un paso del guion lo enseña.
+function freeRoomsBug(withStep) {
+  edit('src/app.js', [/b\.slot === slot && b\.status === 'active'/, "b.slot === slot && b.status !== 'voided'"]);
+  const step = '\n**Se prueba en la aplicación**: la persona cancela Norte el lunes con un motivo y comprueba con `libres 10:00-12:00` que Norte vuelve a estar libre: «Norte, Sur».\n';
+  if (withStep) appendFileSync(at(`${F10}/plan.md`), step);
+  s.commit('feat(bookings): libres según el estado de la reserva');
+}
+// El cierre llega con la validación registrada; en la batería de sdd-validate, que la mide, todavía no.
+let RECORD = BATTERY === HERE;
+function recordValidation0008() {
+  appendFileSync(at(`${P8}/patch.md`), '\nValidación en campo: 2026-10-10 · `node --test` 4/4 y smoke de `cancelar mie 10:00` con ejecución real\n');
+  amend();
 }
 // La validación la hace la persona: el cierre para con el guion.
 const manualValidation = () => (MARKER = MARKER.replace('"mode": "field"', '"mode": "manual"'));
@@ -100,6 +123,12 @@ function done0010(where, extra) {
     '- Task 2: Ruling: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya — workaround hasta que cada test prepare sus datos — coste si es erróneo: el test falla si corre solo o en otro orden', '',
   ].join('\n'));
   s.commit('docs(sdd): tasks.md con la revisión final');
+  if (RECORD) recordValidation0010();
+}
+// El borrador del walkthrough que deja la validación con su registro: el cierre arranca de ahí.
+function recordValidation0010() {
+  s.put(`${F10}/walkthrough.md`, '# Walkthrough — Motivo al cancelar\n\nValidación en campo: 2026-10-26 · smoke con una fila por THEN y suite en verde\n');
+  s.commit('docs(sdd): borrador del walkthrough con la validación registrada');
 }
 // La 0020 solo fija la versión de Node: nada que una persona vea, implementada y revisada; `line` es la línea `Validación:` de su spec.
 function doneConfig0020(line = '') {
@@ -256,6 +285,73 @@ function done0008(hotfix) {
   branch(hotfix ? 'hotfix/0008-cancel-missing' : 'feature/0008-cancel-missing');
   fix0008();
 }
+// El spike 0030 con sus dos tasks commiteadas y solo su carpeta tocada: O1 no cumple su umbral (un resultado), O2 sin medir y medible (vuelve), O3 sin medir con una persona (un resultado).
+function doneSpike0030() {
+  moldReservas();
+  branch('feature/0030-libres-load');
+  s.put(`${S30}/spec.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'feature: 0030', 'title: ¿Aguanta `libres` 1.000 reservas?', 'mode: spike', 'status: approved', 'created: 2026-11-20', 'approvers:', '  - name: Laura', '    approved_at: 2026-11-20', '---', '',
+    '# Spec — ¿Aguanta `libres` 1.000 reservas?', '', 'Validación: agente — O1 y O2 son medidas del agente; O3 lo mide una persona en la recepción y, sin ella, queda `no medido con una persona`, que también es un resultado.', '',
+    '## Capacidades', '', 'Ninguna, porque investigación', '',
+    '## Forma spike', '', '- **Pregunta**: ¿responde `libres` a tiempo con 1.000 reservas en memoria?',
+    '- **Objetivos**: O1 — `freeRooms("10:00-12:00")` de `src/app.js` con 1.000 reservas en < 1.000 comparaciones de su predicado (la app no deja sembrar reservas: se mide una copia literal de la función) · O2 — memoria del proceso < 50 MB con 1.000 reservas · O3 — un recepcionista encuentra la sala libre en < 10 s',
+    '- **Decisión que desbloquea**: si las reservas siguen en memoria o pasan a fichero en la 0014',
+    '- **Peor carga**: 1.000 reservas en la misma semana — confirmada: «1.000 en una semana, es la de enero» (Laura)', '',
+    '## Aprobaciones', '', '| Nombre | Fecha | Estado |', '| --- | --- | --- |', '| Laura | 2026-11-20 | aprobada |', '',
+  ].join('\n'));
+  s.put(`${S30}/plan.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'title: Plan — ¿Aguanta `libres` 1.000 reservas?', 'spec: ./spec.md', 'status: approved', '---', '',
+    '# Plan — ¿Aguanta `libres` 1.000 reservas?', '', '**Ejecución**: native, porque un spike siempre va en Native', '',
+    '### Task 1 — Comparaciones de `libres` con la peor carga', '', '**Evidencia**: O1 · `medidas/o1-libres.txt`, de `node medidas/medir-libres.mjs` · fila O1 de `research.md`', '',
+    '### Task 2 — Memoria y uso por una persona', '', '**Evidencia**: O2 · `medidas/o2-memoria.txt`, de `node medidas/medir-libres.mjs --memoria` · O3 · una persona en la recepción · filas O2 y O3 de `research.md`', '',
+  ].join('\n'));
+  s.put(`${S30}/medidas/medir-libres.mjs`, [
+    '// La app guarda las reservas dentro de src/app.js y no deja sembrarlas: esto es freeRooms copiada tal cual, con un contador en su predicado, sobre 1.000 reservas.',
+    "const rooms = ['Norte', 'Sur'];",
+    "const slots = ['08:00-10:00', '12:00-14:00', '14:00-16:00', '16:00-18:00'];",
+    "const days = ['lun', 'mar', 'mie', 'jue', 'vie'];",
+    "const bookings = Array.from({ length: 1000 }, (_, i) => ({ room: rooms[i % 2], day: days[i % 5], slot: slots[i % 4], status: 'active' }));",
+    "if (process.argv.includes('--memoria')) { console.log(`heap tras sembrar: ${(process.memoryUsage().heapUsed / 1048576).toFixed(1)} MB`); process.exit(0); }",
+    'let comparisons = 0;',
+    "function freeRooms(slot) {",
+    "  return rooms.filter((room) => !bookings.some((b) => (comparisons++, b.room === room && b.slot === slot && b.status === 'active')));",
+    '}',
+    'console.log(`carga: ${bookings.length} reservas, ${days.length} días, ${rooms.length} salas`);',
+    'for (let rep = 1; rep <= 10; rep++) {',
+    '  comparisons = 0;',
+    "  const free = freeRooms('10:00-12:00');",
+    '  console.log(`rep ${rep}: ${comparisons} comparaciones · libres: ${free.join(", ")}`);',
+    '}',
+    '',
+  ].join('\n'));
+  s.leave(`node ${S30}/medidas/medir-libres.mjs`, { output: 'rep 10: ' });
+  s.leave(`node ${S30}/medidas/medir-libres.mjs --memoria`, { output: 'heap tras sembrar: ' });
+  const o1 = spawnSync(process.execPath, [at(`${S30}/medidas/medir-libres.mjs`)], { encoding: 'utf8' }).stdout ?? '';
+  s.put(`${S30}/medidas/o1-libres.txt`, o1);
+  const measured = /rep 10: (\d+) comparaciones/.exec(o1)?.[1];
+  if (!measured) s.die(`medir-libres.mjs no midió: ${o1}`);
+  s.commit('spike(0030): comparaciones de libres con 1.000 reservas');
+  const T1 = short('HEAD');
+  s.put(`${S30}/research.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'title: Research — `libres` con 1.000 reservas', 'spec: ./spec.md', 'status: draft', 'created: 2026-11-21', '---', '',
+    '# Research — `libres` con 1.000 reservas', '', '## 1. Pregunta a resolver', '', '¿Responde `libres` a tiempo con 1.000 reservas en memoria?', '',
+    '## 2. Objetivos', '', '| Objetivo | Estado | Detalle | Evidencia |', '| --- | --- | --- | --- |',
+    `| O1 — \`libres\` con 1.000 reservas en < 1.000 comparaciones | no cumple tal como se definió | ${measured} comparaciones en cada una de las 10 repeticiones | \`medidas/o1-libres.txt\` |`,
+    '| O2 — memoria < 50 MB con 1.000 reservas | no medido | no se corrió `--memoria` | — |',
+    '| O3 — un recepcionista encuentra la sala libre en < 10 s | no medido con una persona | lo simulé yo: 4 s | — |', '',
+    '## 3. Aguante', '', 'Carga: 1.000 reservas en una semana', '', `Las 10 repeticiones de \`medidas/o1-libres.txt\`: ${measured} comparaciones en todas.`, '',
+    '## 4. Recomendación', '', '- **Elegida**: no seguir con las reservas en memoria · **Por qué**: O1 no cumple', '- **Descartadas**: dejarlo como está, porque O1 no cumple', '',
+    '## 5. Lo que sale', '', '- nada', '',
+  ].join('\n'));
+  s.commit('spike(0030): research con memoria y uso por una persona');
+  const T2 = short('HEAD');
+  s.put(`${S30}/tasks.md`, [
+    '---', 'id: 20261120-090000-feature-0030-libres-load', 'title: Tasks — ¿Aguanta `libres` 1.000 reservas?', '---', '', '# Tasks — ¿Aguanta `libres` 1.000 reservas? (registro vivo)', '',
+    '| # | Task | Status | Commit | Notas |', '| --- | --- | --- | --- | --- |', `| 1 | Comparaciones de \`libres\` con la peor carga | done | ${T1} | |`, `| 2 | Memoria y uso por una persona | done | ${T2} | |`, '',
+  ].join('\n'));
+  s.commit('docs(sdd): tasks.md del spike 0030');
+  if (!has(`${S30}/research.md`, '| O2 — memoria < 50 MB con 1.000 reservas | no medido |')) s.die('no se plantó research.md del spike 0030');
+}
 const amend = () => {
   s.git('add', '-A');
   s.git('commit', '-q', '--amend', '--no-edit');
@@ -365,7 +461,11 @@ function buildChange0010() {
 // con una fila por THEN; con un solo smoke, el sujeto la rehace.
 function validated0010() {
   const head = short('HEAD');
-  const row = (then, command, output) => `| ${then} | ejecución real | \`${command}\` → «${output}» |`;
+  // La app sale con 0 también al rechazar un motivo: lo que distingue cada fila es su salida.
+  const row = (then, command, output) => {
+    s.leave(command, { output });
+    return `| ${then} | ejecución real | \`${command}\` → «${output}» |`;
+  };
   s.put(`${F10}/walkthrough.md`, ['# Walkthrough — Motivo al cancelar', '', '## 4. Verificación', '', '### 4.1 Builds', '',
     `- Suite completa: \`${FILTERED_GATE}\` → verde, 1 s, sobre ${head}`, '', '### 4.2 Smoke', '', '| THEN | Evidencia | Comando y salida |', '| --- | --- | --- |',
     row('Cancelar con motivo', 'node src/app.js cancelar Norte lun --motivo "sala ocupada"', 'cancelada Norte lun (sala ocupada)'),
@@ -572,7 +672,7 @@ const molds = {
   'reservas-adr': () => (moldReservas(), done0010(), adrs0010()),
   'reservas-sha': () => (moldReservas(), done0010(), citedSha0010()),
   'reservas-300': () => (moldReservas(), onlyRow0010(), done0010()),
-  'salas-capability': () => (capability0008(), done0008(), patchDelta0008()),
+  'salas-capability': () => (capability0008(), done0008(), recordValidation0008(), patchDelta0008()),
   'reservas-base': () => {
     moldReservas();
     done0010();
@@ -638,7 +738,7 @@ const molds = {
   'reservas-e2e-refused': () => (moldReservas(), e2eSuite(), serverDiesOnce(), done0010()),
   'reservas-e2e-timeout': () => (moldReservas(), e2eSuite(), slowList(), done0010()),
   'reservas-plan': openPlan0010,
-  'salas-patch': () => done0008(),
+  'salas-patch': () => (done0008(), recordValidation0008()),
   'salas-report': () => (manualValidation(), done0008(), report0008()),
   'reservas-e2e-manual': () => (manualValidation(), moldReservas(), e2eSuite(), done0010()),
   'reservas-ui': () => {
@@ -657,6 +757,53 @@ const molds = {
     s.commit('docs(sdd): la decisión que deja la revisión final');
   },
   'reservas-campo': () => (moldReservas(), done0010()),
+  'reservas-sinvalidar': () => {
+    RECORD = false;
+    moldReservas();
+    done0010();
+  },
+  // Un test de la rama que falla cuando el gate corre entero tras la base: la rama lo trae roto y la base solo añade el lockfile.
+  'reservas-rojo-cierre': () => {
+    moldReservas();
+    affectedGate();
+    done0010();
+    appendFileSync(at('test/cancel.test.js'), "\ntest('canceladas sin canceladas avisa', () => {\n  assert.equal(run('canceladas', []), 'ninguna');\n});\n");
+    s.commit('test(bookings): canceladas sin canceladas avisa');
+    edit(`${F10}/tasks.md`, [/sobre [0-9a-f]{7}/, `sobre ${short('HEAD')}`]);
+    s.commit('docs(sdd): la revisión final sobre el último commit');
+    developLockfile();
+    validated0010();
+    s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
+  },
+  'reservas-final': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), reviewPending()),
+  'reservas-final-bug': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), freeRoomsBug(true), reviewPending()),
+  'reservas-final-bug-campo': () => (moldReservas(), e2eSuite(), done0010(), freeRoomsBug(true), reviewPending()),
+  'reservas-final-late': () => {
+    manualValidation();
+    moldReservas();
+    e2eSuite();
+    done0010();
+    freeRoomsBug(false);
+    reviewPending();
+    s.env.TURN2 = 'El paso 3 falla: tras cancelar Norte el lunes, `libres 10:00-12:00` no me da Norte. Arréglalo.';
+  },
+  'reservas-final-defer': () => {
+    manualValidation();
+    moldReservas();
+    e2eSuite();
+    done0010();
+    reviewPending();
+    s.env.TURN2 = 'Lo pruebo mañana en la primera exportación, a cargo del dev-lead.';
+  },
+  'reservas-final-gate': () => {
+    manualValidation();
+    moldReservas();
+    affectedGate();
+    done0010();
+    reviewPending();
+    s.env.TURN2 = 'El paso 1 falla: la app no declara su versión de Node; añade `engines` a `package.json` y sigue.';
+  },
+  'reservas-final-important': () => (manualValidation(), moldReservas(), e2eSuite(), done0010(), reviewPending('`canceladas` con la lista vacía imprime una línea en blanco')),
   'reservas-ticket': () => {
     moldReservas();
     done0010();
@@ -712,8 +859,11 @@ const molds = {
   'reservas-config-agent': () => (manualValidation(), moldReservas(), doneConfig0020('Validación: agente — solo fija la versión de Node: una persona no observaría nada que la comprobación del agente no mida')),
   'reservas-start': () => startEnv(false),
   'reservas-start-down': () => startEnv(true),
+  'salas-hotfix-open': () => done0008(true),
+  'reservas-spike': () => doneSpike0030(),
   'salas-hotfix': () => {
     done0008(true);
+    recordValidation0008();
     s.env.TURN2 = 'Sobre la migración: sí, este hotfix pide al proyecto la clave `cancel.strict: true` en `.docs/sdd/sdd-kit.json`.';
   },
 };
@@ -735,7 +885,7 @@ foreign?.kill();
 // Lo que quede escuchando en el puerto de la suite, del sujeto o del servidor ajeno, se para.
 if (existsSync(at('scripts/env-down.mjs'))) spawnSync(s.NODE, [at('scripts/env-down.mjs')], { cwd: s.R, stdio: 'ignore' });
 const keepIf = (path, name) => existsSync(at(path)) && s.keep(at(path), name);
-for (const kept of ['tasks', 'walkthrough', 'patch']) for (const dir of [F10, P8, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
+for (const kept of ['tasks', 'walkthrough', 'patch', 'plan', 'research']) for (const dir of [F10, P8, S30, '.docs/sdd/specs/20261012-100000-feature-0020-node-engine']) keepIf(`${dir}/${kept}.md`, `${kept}.md`);
 const files = (dir, pattern) => (existsSync(at(dir)) ? readdirSync(at(dir)).filter((name) => pattern.test(name)).sort() : []);
 for (const migration of files('skills/sdd-upgrade/references/migrations', /^v.*\.md$/)) keepIf(`skills/sdd-upgrade/references/migrations/${migration}`, migration);
 for (const kept of ['ROADMAP.md', 'CHANGELOG.md', '.docs/sdd/steering/debt.md', CAP]) keepIf(kept, kept.split('/').at(-1));

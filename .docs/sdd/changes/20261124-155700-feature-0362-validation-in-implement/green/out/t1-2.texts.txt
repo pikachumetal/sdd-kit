@@ -1,0 +1,100 @@
+--- [3]
+Ahora: leo el estado de la 0010 y las reglas del gate de cierre. Queda: gate, guion, revisión final y tu validación, ~15 min.
+
+--- [15]
+El e2e falla porque el entorno no estaba levantado (conexión rechazada). Lo levanto con el comando de `operations.md` y repito.
+
+--- [18]
+Gate verde: unit 5/5 y e2e 7/7. Ahora el guion; miro cómo declara el plan que se prueba en la aplicación.
+
+--- [28]
+Ahora el borrador del walkthrough (sin verificación ni tiempo), sin commitear.
+
+--- [32]
+Ahora: te presento el guion para tu validación. Queda: tu respuesta, y luego registrar y cerrar con `sdd-archive`, ~5 min.
+
+🦆 Cancelar una reserva ahora exige un motivo de una lista cerrada, y hay un comando nuevo que enseña lo cancelado. Por ejemplo, `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)», y después `canceladas` responde «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un apaño hasta que cada test prepare sus datos. Si es erróneo, el test falla al correr solo o en otro orden.
+
+**Smoke que he corrido**
+
+Con una sesión mía (`x-session: validacion-agente`), por el servidor.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Cancelar con motivo de la lista | `ejecución real` | «cancelada Norte lun (sala ocupada)» |
+| Motivo fuera de la lista | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` | `ejecución real` | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| `canceladas` enseña el motivo | `ejecución real` | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre 7b44746.
+- `node e2e/run.mjs`: 7/7 sobre 7b44746, 48 s (presupuesto 0,5 min, así que lo pasa; ver «Sin probar»).
+- Gate: `node --test test/` · `node e2e/run.mjs` → unit: corrió 5/5 · e2e: corrió 7/7.
+
+**Sin probar**
+
+- El primer e2e falló con `ERR_CONNECTION_REFUSED` porque no había entorno levantado. Lo levanté con `node scripts/env-up.mjs` y repetí: verde. Ya lo he parado.
+- El e2e tarda 48 s y el presupuesto de `operations.md` es 0,5 min. Es deuda del proyecto y la apunto en 4.3 al cerrar.
+- No he lanzado una revisión nueva. La revisión final ya constaba limpia en `tasks.md` (Spec y Código, sobre 2fe85c0), y desde ese commit solo cambian `plan.md` y `tasks.md`. Si prefieres una revisión nueva, dímelo.
+- Hay borradores sin commitear: `walkthrough.md` y `capabilities/bookings.md`, este último generado con `sdd capability merge`.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (puerto 55992):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2:
+
+```
+cd <run>\repo
+```
+
+Usa una sesión nueva, distinta de la mía, para que Norte lun esté activa. Cada paso va en su propio bloque.
+
+1. Cancelar con un motivo de la lista → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -G -H "x-session: tu-sesion" http://localhost:55992/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","sala ocupada"]'
+```
+
+2. Ver las canceladas → «Norte lun — sala ocupada»
+
+```
+curl -G -H "x-session: tu-sesion" http://localhost:55992/run --data-urlencode "cmd=canceladas" --data-urlencode "args=[]"
+```
+
+3. Motivo fuera de la lista (en otra sesión nueva, o en la misma: da igual) → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -G -H "x-session: tu-sesion" http://localhost:55992/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun","--motivo","porque sí"]'
+```
+
+4. Sin `--motivo` → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -G -H "x-session: tu-sesion" http://localhost:55992/run --data-urlencode "cmd=cancelar" --data-urlencode 'args=["Norte","lun"]'
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

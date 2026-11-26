@@ -10,8 +10,8 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 
 - GIVEN una feature cerrada con `sdd-archive`
 - WHEN se escribe «4. Verificación» del walkthrough
-- THEN «4.1 Builds» lleva la línea `Gate:` del gate de cierre, con las suites unitarias, su duración, su configuración (la del gate, o lo que se añadió) y el sha de la validación; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
-- AND si el sha de la validación cae en el tramo que el cierre junta (una pasada de fix o un borrador tras la última task), «4.1 Builds» dice «sobre el commit de cierre» en lugar del sha, y `--verified-at` y el mensaje final llevan el sha del commit de cierre; nunca el de la última task
+- THEN «4.1 Builds» lleva la línea `Gate:` del gate de cierre, con las suites unitarias, su duración, su configuración (la del gate, o lo que se añadió) y el sha del gate de cierre; si se repitió tras el merge de sincronización, el mensaje final da su resultado y su sha
+- AND si el sha del gate de cierre cae en el tramo que el cierre junta (una pasada de fix o un borrador tras la última task), «4.1 Builds» dice «sobre el commit de cierre» en lugar del sha, y `--verified-at` y el mensaje final llevan el sha del commit de cierre; nunca el de la última task
 - AND con E2E, «4.1 Builds» lleva el comando de «Entorno de la suite» con su comprobación, levantado en esa sesión, y la duración de la suite E2E frente a «Presupuesto E2E»
 - AND «4.2 Smoke / tests» tiene una fila por THEN, o por objetivo en un spike, con su evidencia (`suite` · `ejecución real` · `no probado`)
 - AND si la suite E2E pasó de su presupuesto, o, sin presupuesto, la suite pasó de 10 minutos, «4.3 Residuales» lo apunta como deuda del proyecto con su duración
@@ -20,7 +20,7 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 
 - GIVEN un proyecto cuyo `operations.md` declara `Entorno de la suite: node scripts/env-up.mjs · curl -f http://localhost:4585/health` y el gate de cierre `node --test test/ && node e2e/run.mjs`
 - AND en el puerto 4585 ya escucha un servidor que arrancó otra pasada con el código de `develop`
-- WHEN el cierre pasa la suite
+- WHEN el hilo pasa la suite del gate de cierre
 - THEN antes de la primera pasada ejecuta `node scripts/env-up.mjs` y comprueba `/health`
 - AND la pasa con `node --test test/ && node e2e/run.mjs` literal, sin `E2E_TRACE` ni otra variable que el gate no declare
 - AND ante un `ERR_CONNECTION_REFUSED` vuelve a levantar el entorno, lo comprueba y repite la pasada antes de abrir el código o contrastar con la base
@@ -44,7 +44,7 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 
 ### El cierre integra la base tras su commit y repite solo lo que afecta lo que trae la base
 
-- GIVEN la 0081, que toca `src/app/` y `src/api/`, con la suite en verde en `a1b2c3d`, en la validación, un gate de cierre `moon run app:test api:test launcher:test --affected --base develop`, y `origin/develop` que avanzó con el merge de la 0080, que cambia `src/api/rooms.js` (input de `api:test`) y `scripts/launcher/run.sh` (input de `launcher:test`, que la 0081 no toca)
+- GIVEN la 0081, que toca `src/app/` y `src/api/`, con la suite en verde en `a1b2c3d` al acabar las tasks, un gate de cierre `moon run app:test api:test launcher:test --affected --base develop`, y `origin/develop` que avanzó con el merge de la 0080, que cambia `src/api/rooms.js` (input de `api:test`) y `scripts/launcher/run.sh` (input de `launcher:test`, que la 0081 no toca)
 - WHEN el cierre ha hecho su commit de cierre
 - THEN hace `git fetch` y `sdd merge --sync --project-root <worktree>`, que integra `origin/develop` en la rama como último commit, y corre sobre el resultado solo las tareas que tocan la rama y la base a la vez: `api:test`; no corre `app:test` (la base no toca sus inputs) ni `launcher:test` (solo la toca la base, y la verificó el cierre de la 0080)
 - AND el mensaje final lleva `` Gate: `moon run app:test api:test launcher:test --affected --base develop` → api:test: corrió 212/212 · app:test: saltada (la base no toca sus inputs: `moon task app:test`) · launcher:test: saltada (solo la toca la base) ``, y el 4.1 del walkthrough, la línea `Gate:` de la validación
@@ -55,20 +55,10 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 - AND si la 0080 trae también `pnpm-lock.yaml`, que está en «Sin filtro», el gate corre entero sobre el merge de sincronización, con `(sin filtro: cambia el build)` en cada tarea
 - AND con una suite unitaria en «Suites», corre entera sobre el merge de sincronización si la base trae cambios fuera de `.docs/` que no sean `*.md`
 
-### Con otra rama abierta o la base por delante, la suite corre una sola vez, tras el merge de sincronización
-
-- GIVEN `validation.mode: field`, la 0081 implementada, `git worktree list` que muestra `feature/0083-room-photos`, y `git rev-list --count HEAD..origin/develop` que da 2 tras `git fetch`
-- WHEN la validación y el cierre de la 0081
-- THEN el smoke por THEN corre y la suite no corre antes del commit de cierre
-- AND tras el commit de cierre y `sdd merge --sync`, el gate de cierre corre una sola vez, tal como lo declara el proyecto, sobre el merge de sincronización
-- AND `Validación en campo:` dice que la suite corrió sobre el merge de sincronización, y el merge final lleva `--verified-at` con su sha, que da también el mensaje final
-- AND sin otra rama abierta y con la base al día (`git rev-list --count` da 0), la suite corre en la validación como hasta ahora
-- AND con `validation.mode: manual`, el guion se presenta igual, y la suite corre tras el merge de sincronización, antes del merge
-
 ### El gate corre entero si la rama toca el build, la configuración, las dependencias o los helpers de los tests
 
 - GIVEN un `operations.md` con «Suites» `` `unit` · `npm run test:unit` · ~15 s · unitario `` y `` `integration` · `moon run :integration` · ~4 min · integración ``, «Gate de cierre» `moon run :integration --affected --base develop --include-relations`, «Sin filtro» `**/package.json`, `pnpm-lock.yaml`, `**/*.csproj`, `tests/helpers/**`, y la rama 0081 que cambia `apps/api/Api.csproj` y `apps/api/People/Save.cs`
-- WHEN el cierre corre el gate de cierre
+- WHEN el hilo corre el gate de cierre, al acabar las tasks o en una vuelta de la validación
 - THEN corre `npm run test:unit` entera y después el gate sin `--affected`
 - AND la línea es `` Gate: `npm run test:unit` · `moon run :integration --affected --base develop --include-relations` → unit: corrió 510/510 · api:integration: corrió 61/61 (sin filtro: cambia el build) · app:integration: corrió 12/12 (sin filtro: cambia el build) ``
 - AND si la rama solo toca `apps/app/src/people/list.ts`, corre `npm run test:unit` entera y el gate con `--affected`, y `api:integration` sale como `saltada`; si solo toca `README.md` y `.docs/sdd/roadmap.md`, no corre ninguna orden
@@ -80,7 +70,7 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 ### Tras un rojo, el gate repite los tests que fallaron y lo afectado por el arreglo
 
 - GIVEN una pasada roja en `a1b2c3d` del gate `moon run :integration --affected --base develop --include-relations`, con `PeopleTests.Zero_is_saved` y `PeopleTests.Empty_name_is_rejected` en rojo en `api:integration`, y `app:integration` sin correr porque moon la saltó por depender de la roja
-- WHEN el arreglo `e4f5a6b` toca `apps/api/People/Save.cs` y el cierre vuelve al gate
+- WHEN el arreglo `e4f5a6b` toca `apps/api/People/Save.cs` y el hilo vuelve al gate
 - THEN corre `PeopleTests.Zero_is_saved` y `PeopleTests.Empty_name_is_rejected` con el runner del proyecto, la suite unitaria entera, el gate con `--base a1b2c3d` y `app:integration`
 - AND la línea es `` Gate: `npm run test:unit` · `moon run :integration --affected --base develop --include-relations` → tras el rojo en `a1b2c3d`, arreglo `e4f5a6b`: PeopleTests.Zero_is_saved: corrió 1/1 · PeopleTests.Empty_name_is_rejected: corrió 1/1 · unit: corrió 510/510 · api:integration: corrió 61/61 · app:integration: corrió 12/12 (no corrió en la pasada roja) ``
 - AND si el runner paró en el primer rojo (bail) y no dice qué tests quedaron sin correr, corre `api:integration` entera
@@ -94,11 +84,11 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 - GIVEN `operations.md` con «Camino crítico: `node scripts/critical-path.mjs` · cubre `e2e`, `unit`», `e2e` de nivel E2E y `unit` de nivel unitario en «Suites», y «Tests de feature: `node scripts/critical-path.mjs --extras --run`»
 - AND una rama que añadió `e2e/export-pdf.spec.ts`, `e2e/share-pdf.spec.ts` y un test nuevo `exporta en A4` dentro de `e2e/print.spec.ts`, que ya tenía otros, y modificó `e2e/login.spec.ts`, que ya estaba en la base fuera de la lista; la spec propone fila para `share-pdf.spec.ts › comparte el PDF`
 - WHEN el agente cierra la feature
-- THEN en el paso de validación corre «Tests de feature» una vez y guarda su salida, y después el check
+- THEN en el cierre, antes de la suite, corre «Tests de feature» una vez y guarda su salida, y después el check
 - AND pregunta sola «¿Pegas en `critical-path.md` la fila `<fila>`? Si no, el cierre borra `e2e/share-pdf.spec.ts › comparte el PDF`.», y sin respuesta no borra ese test
 - AND «Tests de feature» pasa los tres tests añadidos y no `e2e/login.spec.ts`
 - AND borra `e2e/export-pdf.spec.ts` y, de `e2e/print.spec.ts`, solo `exporta en A4`; no borra `e2e/login.spec.ts` ni ningún test de `unit`; el borrado va en el commit de cierre, y el 4.1 del walkthrough lista lo borrado con el resultado de esa pasada
-- AND la suite del cierre corre sobre el árbol ya borrado, con el check en la gate, y un código distinto de 0 es rojo
+- AND la suite del cierre corre sobre el árbol ya borrado, con el check en la gate, y un código distinto de 0 es rojo; es el árbol del cierre, distinto del que validó el gate de cierre del final de las tasks
 - AND la sesión no escribe en `critical-path.md`
 - AND con «Camino crítico» y `critical-path.md` ausente o sin filas, o con una línea `sin-base:` antes del borrado, para sin borrar nada y lo dice
 - AND en un patch con el mismo proyecto, igual, con la fila propuesta de `patch.md` §4 y el borrado en su commit de cierre

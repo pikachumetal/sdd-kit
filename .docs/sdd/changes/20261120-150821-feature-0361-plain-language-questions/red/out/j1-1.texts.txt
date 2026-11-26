@@ -1,0 +1,43 @@
+--- [11]
+Sigo con el arranque: ya tengo el id reservado (0010), ahora creo la rama y lo reclamo.
+
+--- [19]
+Entendido, y confirmo el fallo en el código. Corrígeme si me equivoco en algo.
+
+**Lo que he entendido.** Hoy `libres 10:00-12:00` solo mira la franja. `freeRooms(slot)` en `src/app.js` descarta a Norte si tiene cualquier reserva en esa franja, sea del día que sea. Como Norte tiene reserva el lunes de 10:00 a 12:00, `libres 10:00-12:00` no la da ningún día. Lo que quieres es que `libres` tenga en cuenta el día: Norte debe salir libre el martes y ocupada solo el lunes. Además, `cancelar` ya recibe el día (`cancelar mar 10:00`), así que `libres` sería el único comando de reservas que lo ignora.
+
+**Lo que he encontrado.** El test actual (`libres excluye la sala reservada en la franja`) fija el comportamiento sin día: espera `Sur` sin pasarle ningún día. Cambiará con la feature. La spec antigua de `libres` (0006) está vacía, así que no tengo ahí ninguna regla que respetar. Lo que decidas va a la nueva spec.
+
+**Lo que decido yo, y por qué:**
+- La comparación de día es por igualdad exacta con `b.day` (`lun`, `mar`…). Es el formato en que ya están guardadas las reservas y en que `cancelar` recibe el día.
+- Es un arreglo pequeño y aislado, en `freeRooms` y en `run('libres', …)`. Lo que toca es solo `src/app.js` y su test.
+
+**Lo que es tuyo (te lo pregunto, no lo decido):**
+- Cómo se escribe el día en `libres`.
+- Qué pasa si no se da día.
+- Qué pasa con las reservas semanales (`--cada-semana`), que hoy no se guardan como reservas y no afectan a `libres`.
+
+Primero, para entender qué necesitas, cuéntame con tus palabras: ¿cuándo consultas `libres` y qué esperas ver en pantalla (¿un día concreto, toda la semana?), y qué te hizo darte cuenta del fallo?
+
+--- [21]
+Entonces la regla queda así: una sala está libre si ese día, a esa hora, no tiene reserva.
+
+```text
+libres lun 10:00-12:00  →  Sur
+libres mar 10:00-12:00  →  Norte, Sur
+```
+
+El orden `día franja` lo decido yo, porque es el de `cancelar mar 10:00`. Va a la spec como decisión mía.
+
+Lo que queda abierto es qué pasa si alguien escribe `libres 10:00-12:00` sin día, que es como se usa hoy:
+
+❓ **`libres` sin día**
+Hoy esa forma devuelve `Sur` y es justo el fallo. Para que `libres` siga siendo coherente con la regla que me has dado, hay tres caminos:
+1️⃣ **Día obligatorio.** `libres 10:00-12:00` responde `falta el día: libres <día> <franja>`. Cuesta un cambio de uso: la forma antigua deja de funcionar, aunque estaba dando respuestas falsas.
+2️⃣ **Día opcional, sin día = todos los días.** `libres 10:00-12:00` solo da las salas libres todos los días a esa hora, es decir, `Sur`. Es la misma respuesta de hoy, pero ahora con sentido, aunque puede confundirse con «libres un día cualquiera».
+3️⃣ **Sin día, una línea por día.** `libres 10:00-12:00` responde `lun: Sur` y `mar: Norte, Sur`. Es lo más informativo, pero hay que decidir qué días listar y es más de lo que has pedido.
+
+➡️ **Recomiendo 1️⃣**, porque tu regla habla siempre de «ese día»: sin día no hay respuesta correcta que dar, y un error claro evita fiarse de un resultado ambiguo. A cambio, rompe el uso sin día.
+
+¿Cuál eliges?
+

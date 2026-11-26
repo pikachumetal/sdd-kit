@@ -12,7 +12,7 @@ El merge del cierre con `sdd merge`: la política declarada, el destino, el turn
 - WHEN el agente llega al paso del merge de `sdd-archive`
 - THEN en `delegate` y `unattended` aplica la política sin preguntar: fusiona en `merge.into`, con `--no-ff` si `merge.noFf` es `true`; en `pair` la presenta y espera
 - AND con el bloque ausente o incompleto pregunta como hoy; nunca fusiona a `main` ni etiqueta salvo en un hotfix con la frase del dev-lead en `--order`
-- AND el bloque autoriza el merge, no la validación: en `pair` y `delegate`, la validación de `sdd-archive` para con el smoke y la pregunta de validación antes de tocar nada
+- AND el bloque autoriza el merge, no la validación: `sdd-archive` no arranca sin la validación registrada, y en `pair` y `delegate` `sdd-validate` para con el smoke y la pregunta de validación antes de invocarlo
 - AND en cualquier perfil, con la CI de la base en `failure` no fusiona («Antes del merge, el cierre lee la CI de la base y no fusiona sobre un rojo», en `archive`)
 
 ### Sin la rama destino sacada, el merge va en un worktree temporal junto a los demás
@@ -100,9 +100,9 @@ El merge del cierre con `sdd merge`: la política declarada, el destino, el turn
 - GIVEN un proyecto cuyo `steering/operations.md` §Testing separa un conjunto rápido de la suite completa
 - WHEN el cierre fusiona con `sdd merge`
 - THEN `--verify` es el conjunto rápido, que corre sobre la rama del cambio integrada con la base, antes del merge y del push; con una sola suite, es esa
-- AND el gate de cierre ya corrió antes del script: en la validación final y, si la base trajo cambios fuera de `.docs/` que no sean `*.md`, otra vez tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
+- AND el gate de cierre ya corrió antes del script: al acabar las tasks y, si la base trajo cambios que cruzan la rama, tras el merge de sincronización del cierre; el mensaje final da su resultado y su sha
 - AND si un hook `pre-merge-commit` del repo ya ejecuta el gate, `--verify` se omite; el gate de cierre no se omite nunca
-- AND `--verify` no lleva las suites unitarias ni lee «Sin filtro»: los aplicó el gate de cierre sobre el merge de sincronización
+- AND `--verify` no lleva las suites unitarias ni lee «Sin filtro»: los aplicó el gate de cierre
 
 ### La comprobación del destino no toca nada
 
@@ -201,3 +201,18 @@ El merge del cierre con `sdd merge`: la política declarada, el destino, el turn
 - THEN `feature/0252-y` coge el cerrojo de merge, fusiona y publica sin esperar a que acabe la verificación de `feature/0251-x`
 - AND `feature/0251-x`, al acabar su verificación en verde, coge el cerrojo, ve `develop` cambiada, lo suelta e integra `origin/develop`, verifica solo lo que se cruza con lo que trajo `feature/0252-y`, y fusiona
 - AND en ningún momento una de las dos espera un cerrojo mientras tiene el otro cogido
+
+### El merge para si la rama trae un id o un número de ADR que el destino ya usa
+
+- GIVEN un proyecto en modo `sequence`, `develop` con `.docs/sdd/changes/20261123-141327-feature-0756-a/`, y la rama `feature/0757-x` con `.docs/sdd/changes/20261123-162919-patch-0756-b/`
+- WHEN se ejecuta `sdd merge --check --project-root <worktree de la rama>`
+- THEN sale con 1 sin tocar nada y escribe `numeración: la rama trae 20261123-162919-patch-0756-b y 'develop' ya tiene 20261123-141327-feature-0756-a con el id 0756; renumera la de la rama a mano`
+- AND con `develop` con `.docs/sdd/decisions/0004-a.md` y la rama con `.docs/sdd/decisions/0004-b.md`, en cualquier modo de ids, sale con 1 y escribe `numeración: la rama trae decisions/0004-b.md y 'develop' ya tiene decisions/0004-a.md con el número 0004; renumera la de la rama a mano`
+- AND `--check` compara con `develop` y, si existe, con `origin/develop`, sin fetch
+- AND con el choque solo en `origin/develop`, `--check` sale con 1 y nombra `'origin/develop'`; con el choque en las dos, solo nombra `'develop'`; con dos choques en la misma ref, escribe las dos líneas
+- AND con `develop` sacada con cambios sin commitear, `--check` da primero el mensaje de destino sacado de «La comprobación del destino no toca nada»
+- AND `sdd merge --sync`, y el merge con `--verify` al integrar la base, paran igual antes de integrar, con la ref que integran (`origin/develop`) en el mensaje y la rama sin tocar
+- AND el merge del cierre, con o sin `--verify`, y la vuelta del hotfix a `develop` vuelven a comprobar dentro del cerrojo, justo antes de fusionar: si `develop` recibió entretanto `…-feature-0756-a`, sale con 1 con el mismo mensaje y `develop` queda como estaba; en el hotfix, la vuelta se deshace entera, como manda `stable-branch`
+- AND cuentan las carpetas de `changes/` y de `specs/`, y los ficheros `NNNN-<slug>.md` de `decisions/`, también los `superseded`
+- AND solo cuenta lo que la rama trae desde su merge-base con el destino: con `develop` que ya tiene `…-feature-0756-a` y `…-patch-0756-b`, una rama que no trae ninguna carpeta con el id 0756 fusiona; y si `develop` renombró `…-feature-0756-a` a `…-feature-0756-a2` después del merge-base, la rama que aún lleva `…-feature-0756-a` fusiona
+- AND no cuentan el id y el número `0000`, las carpetas las de sufijo heredado (`…-task-0006a-…`) ni, en modo `tracker`, las carpetas de cambio

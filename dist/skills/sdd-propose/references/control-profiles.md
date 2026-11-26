@@ -57,7 +57,7 @@ The name of whoever works isn't kept in any kit file: if needed, it comes from `
 | Deviation (change to the approved spec) | stops · `## Enmiendas` | stops · `## Enmiendas` | the most conservative option, amendment not approved; if it blocks, `⏸️ aparcada` |
 | Scope brake (see «Scope brakes») | stops | stops | conservative option, amendment not approved |
 | Leaving the plan | ruling + «✋ Me salí del plan en…» | ruling + «✋ Me salí del plan en…» | ruling + report |
-| Validation (closing of feature and patch) | stops | stops | deferred to the release's smoke (🧪) · with `validation.mode: field` or [`Validación: agente`](#who-validates), in all three: doesn't stop |
+| Validation (end of implementation of feature and patch) | stops | stops | deferred to the release's smoke (🧪) · with `validation.mode: field` or [`Validación: agente`](#who-validates), in all three: doesn't stop |
 | Merge to develop (closing of feature and patch) | presents the policy and waits | applies the full `merge` block; without it, asks | same as `delegate` |
 | Push of the integration branch after the closing's merge | presents the push with the merge and waits | with `merge.push: true`, does it; without it, doesn't | same as `delegate` |
 | Merge to main, tag, any other push, PR, publish | person | person | person |
@@ -83,7 +83,7 @@ The **update action**, besides the above:
 - The fix pass of the final review itself enters that re-review, with both methods, together with the thread's later commits. The thread notes it in `tasks.md` (without it, in the validation's presentation) as `Pasada de fix: <sha corto>, <n> hallazgos RED→GREEN`, and «The hash in the artifacts» of [commit-milestones.md](../../sdd-implement/references/commit-milestones.md) says how a squash rewrites it.
 The last reviewed commit is the second sha of the `Re-revisión:` line; without one, the `sobre` of `Revisión final:`; and if the line says «juntada en el cierre», the closing commit.
 With a `Revisión final:` line in the 2.x format, without axes, likewise.
-- The validation's presentation —and with `validation.mode: field`, the message the closing is invoked with— follows [validation-template.md](../../sdd-templates/templates/validation-template.md): it opens with the 🦆 and «✋ Me salí del plan en…».
+- The validation's presentation —and with `validation.mode: field`, the message `sdd-archive` is invoked after— follows [validation-template.md](../../sdd-templates/templates/validation-template.md): it opens with the 🦆 and «✋ Me salí del plan en…».
 
 ## Scope brakes
 
@@ -147,7 +147,7 @@ When the user validates what was deferred, the agent adds a dated addendum to th
 
 With `"validation": {"mode": "field"}` in `.docs/sdd/sdd-kit.json`, the project's human validation is real use: failures arrive as `sdd-feedback` tickets and open a new row. It's a team decision, written in the project's file; in `sdd-kit.local.json` it's ignored with a warning, and a value other than `manual` or `field` counts as `manual`, also with a warning: «`validation.mode: <valor>` no admitido en `sdd-kit.json`: rige `manual`». Without the key, or with `manual`, the usual one.
 
-In the field, in all three profiles, the closing's validation (the validation of `sdd-archive`) doesn't stop: you don't ask what the user tested, don't offer to defer, don't write a test script and go on with the closing.
+In the field, in all three profiles, the validation (that of `sdd-validate`) doesn't stop: you don't ask what the user tested, don't offer to defer, don't write a test script and go on with the closing.
 «El kit no define ese valor, no voy a suponer qué significa» doesn't hold: this section defines it.
 What doesn't change is the agent's verification: the final review and its closing (`sdd-verify`), a smoke with one row per THEN, visual verification and suite, same as in `manual`. The `Validación en campo:` line carries the axes and doesn't say «limpia» while a `sin revisar` or a «no verificado» remains: it says how many remain. A decision the final review leaves to the user is still asked on its own, in its turn.
 

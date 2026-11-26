@@ -29,11 +29,11 @@ describe('id next in a sequence project', () => {
     expect(await nextId(project)).toBe('0012');
   });
 
-  it('fails naming the id when two folders share it across lanes', async () => {
+  it('warns naming both folders when two share an id across lanes, and proposes the next free one', async () => {
     const result = await runNext(fixturePath('duplicate-ids'));
-    expect(result.lines).toEqual([]);
-    expect(result.stderr).toContain('0003');
-    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('aviso: dos artefactos distintos comparten el id 0003: 20260901-120000-task-0003-export, 20260902-120000-patch-0003-crash; renumera uno.');
+    expect(result.lines).toEqual(['0004']);
+    expect(result.code).toBe(0);
   });
 
   it('counts sdd-id tags', async () => {
@@ -56,10 +56,10 @@ describe('id next in a sequence project', () => {
     expect(await nextId(fixturePath(fixture))).toBe(expected);
   });
 
-  it('fails when a task folder and a feature folder share an id', async () => {
+  it('warns when a task folder and a feature folder share an id', async () => {
     const result = await runNext(fixturePath('mixed-duplicate'));
-    expect(result.stderr).toContain('0063');
-    expect(result.code).toBe(1);
+    expect(result.stderr).toContain('aviso: dos artefactos distintos comparten el id 0063: 20260920-100000-task-0063-a, 20261001-091500-feature-0063-b; renumera uno.');
+    expect(result.code).toBe(0);
   });
 
   it.each(['tracker-project', 'no-ids-field'])('fails in tracker mode for %s', async (fixture) => {

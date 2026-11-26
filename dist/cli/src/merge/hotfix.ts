@@ -5,6 +5,7 @@ import { checkDestination, withDestination, type DestinationRequest } from './de
 import type { Job } from './run.ts';
 import { appendGitError, branchMergeBase, mergeFeature, remoteForBranch, remoteMoved, shortHead, syncBaseBranch, undoFailedMerge, unpublishedCommits, unpublishedLines } from './steps.ts';
 import { MergeConflict } from './attempt.ts';
+import { assertNoNumberingClash } from './numbering.ts';
 import { explainFailure, verifyMerge } from './verify.ts';
 
 export interface HotfixTarget {
@@ -164,6 +165,7 @@ async function syncBack(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<U
 
 async function integrateHotfix(job: Job, plan: HotfixPlan, paths: Checkouts): Promise<void> {
   const unpublished = await syncBack(job, plan, paths);
+  await assertNoNumberingClash(paths.back, { branch: job.branch, destination: 'HEAD', destinationName: plan.back });
   const [stableBefore] = await gitLines(paths.stable, ['rev-parse', 'HEAD']);
   const [backBefore] = await gitLines(paths.back, ['rev-parse', 'HEAD']);
   let failedAt = paths.stable;

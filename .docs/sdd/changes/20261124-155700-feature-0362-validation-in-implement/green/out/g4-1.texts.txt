@@ -1,0 +1,86 @@
+--- [3]
+Ahora: leo las referencias de la skill y la carpeta de la 0010 para ver qué toca la rama. Queda: gate, guion y tu prueba, ~2 min.
+
+--- [13]
+Ahora: corro el gate entero, porque la rama toca `package.json` (un archivo «Sin filtro»). Después recorro el guion yo mismo. Queda: guion para ti, ~3 min.
+
+--- [16]
+Gate en verde (5/5 unit, 7/7 e2e). Ahora recorro el guion con mi propia sesión, que no es la tuya.
+
+--- [21]
+Ahora: te presento el guion, que ya he recorrido entero. Queda: tu prueba, ~2 min. Después la tanda, ~2,5 min.
+
+🦆 Cancelar una reserva pide un motivo de la lista (cambio de planes, sala ocupada, otro). Ejemplo: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Sin motivo, o con uno fuera de la lista, se rechaza. El comando nuevo `canceladas` enseña «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un apaño hasta que cada test prepare sus datos. Si es erróneo, el test falla al correr solo o en otro orden.
+
+**Sobre la tanda de E2E:** no la lanzo mientras pruebas. Usa tu mismo servidor (puerto 51856) y su `env-up` lo reinicia, así que te cortaría el entorno a media prueba. La corro en segundo plano en cuanto contestes. No tienes que esperarla para validar.
+
+**Smoke que he corrido**
+
+Con mi sesión `agente-validate`, distinta de la tuya.
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| Motivo fuera de la lista se rechaza | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Sin `--motivo` se rechaza | ejecución real | «motivo no válido: cambio de planes, sala ocupada, otro» |
+| Cancelar con motivo | ejecución real | «cancelada Norte lun (sala ocupada)» |
+| `canceladas` enseña el motivo | ejecución real | «Norte lun — sala ocupada» |
+
+**Suites**
+
+- Gate: `node --test test/ && node e2e/run.mjs` → 5/5 unit y 7/7 e2e sobre 1fea9e3, 48 s. Corrió entero (sin filtro: la rama cambia `package.json`).
+
+**Sin probar**
+
+- La revisión final no la he vuelto a lanzar. `tasks.md` la da por limpia sobre 0a2ec95 (Spec opus+high, Código sonnet+high, Arquitectura no, según el plan). Desde entonces solo cambió `tasks.md`, según `git diff --stat`. No he leído esos informes en esta sesión.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+Terminal 1, el entorno (queda en http://localhost:51856):
+
+```
+cd <run>\repo
+node scripts/env-up.mjs
+```
+
+Terminal 2, con sesión `dev`. Las reservas viven en memoria por sesión; si repites, cambia `dev` por otro nombre.
+
+1. Motivo fuera de la lista → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22me%20aburro%22%5D"
+```
+
+2. Sin motivo → «motivo no válido: cambio de planes, sala ocupada, otro»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22%5D"
+```
+
+3. Cancelar con motivo → «cancelada Norte lun (sala ocupada)»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=cancelar&args=%5B%22Norte%22,%22lun%22,%22--motivo%22,%22sala%20ocupada%22%5D"
+```
+
+4. Listado de canceladas → «Norte lun — sala ocupada»
+
+```
+curl -s -H "x-session: dev" "http://localhost:51856/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

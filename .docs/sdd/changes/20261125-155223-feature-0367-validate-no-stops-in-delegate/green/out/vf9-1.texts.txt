@@ -1,0 +1,186 @@
+--- [3]
+Ahora: leer el estado del spike 0030 y las referencias de validación. Queda: puerta de cierre, filas de research y revisión del eje Spec, ~10 min.
+
+--- [13]
+Ahora: ejecutar la Task 3 con el método Native, que es el de un spike. Queda: medir O2, actualizar `research.md` y commitear, ~3 min.
+
+--- [18]
+El script solo imprime `heapUsed`, y el objetivo habla de memoria del proceso. Añado el RSS a la salida para que la fila sea honesta.
+
+--- [21]
+El RSS (54,9 MB) supera 50, pero buena parte es la base de Node. Mido el RSS sin reservas para separar lo que aportan las 1.000.
+
+--- [30]
+Commit por rutas y registro de la Task 3 en `plan.md`.
+
+--- [45]
+Ahora: la revisión del eje Spec está en marcha en segundo plano. Queda: esperar su informe, cerrar la revisión, escribir el borrador de walkthrough y registrar la validación, ~5 min.
+
+Mientras tanto no toco nada que la revisión esté leyendo. Espero su aviso.
+
+--- [57]
+### Strengths
+- **Each objective has a row.** `research.md:19-21` has one row each for O1, O2 and O3, with status, detail and evidence. The pregunta at `research.md:13` matches `spec.md:23` word for word.
+- **The `freeRooms` copy is faithful.** The predicate in `medidas/medir-libres.mjs:9` is the same as `src/app.js:6`. The only addition is `comparisons++` inside the comma expression, which does not change the result. The counter counts exactly the predicate calls, as O1 asks.
+- **The worst-case load is applied and the repetitions are there.** The seed has 1,000 bookings over `lun`–`vie`. The queried slot `10:00-12:00` is not in `slots`, so `some` never stops early and scans everything. That is the worst case for the count. There are 10 repetitions for O1 (`o1-libres.txt:2-11`) and 10 for O2 (`o2-memoria.txt:1-10`).
+- **O1's figures match the evidence file.** 2000 comparisons in all 10 repetitions.
+- **O2 is honest about the baseline.** It records RSS without bookings (54.3 MB) and the heap (4.0 to 4.3 MB), and draws the right conclusion: the bookings add about 0.6 MB, and the 50 MB line is crossed by Node itself.
+- **O3 has the right status.** It is marked `no medido con una persona`, which `spec.md:15` accepts as a result.
+
+### Issues
+
+#### Critical (Must Fix)
+1. **The recommendation does not follow from the measurements, and it leans against what they show** (`research.md:31-32`).
+   - **What fails:** the chosen option, «no seguir con las reservas en memoria», and the rejected one, «dejarlo como está», both rest only on «O1 no cumple».
+   - **Why O1 cannot decide this:**
+     - The 2000 is fixed by construction. `freeRooms` has 2 rooms × N bookings, and a slot with no match always costs 2×N predicate calls. With N = 1,000, O1 (< 1,000) cannot pass with this algorithm.
+     - The count depends on the linear scan, not on where the bookings live. The same scan over bookings read from a file costs the same 2,000 comparisons, plus the I/O. O1 says nothing about memory against file, which is the decision the spike unblocks (`spec.md:25`).
+     - The other measured row, O2, says that in memory the bookings cost about 0.6 MB. If anything, that supports keeping them in memory.
+   - **Why it matters:** this recommendation is what the spike produces, and it will steer the 0014 decision on evidence that does not support it.
+   - **How to fix:** say in the O1 row that it «no cumple por construcción: 2 salas × 1.000 reservas sin coincidencia = 2.000; no depende del almacenamiento». Then rewrite the recommendation to rest on the measured rows. One option: «seguir en memoria; ni O1 ni O2 dan motivo para pasar a fichero; si preocupa O1, el arreglo es un índice por franja, no el fichero». The other: say the spike does not settle the decision and that O1 needs to be redefined, for example as time or with a dependence on storage.
+   - **Gap:** `contradicts`. **Source:** decisión que desbloquea, O1.
+
+#### Important (Should Fix)
+2. **The script cannot produce O2's evidence as the plan says it does** (`plan.md:22`, `plan.md:18`, `medidas/medir-libres.mjs:6`, `medidas/o2-memoria.txt:1-13`).
+   - **What fails:** with `--memoria`, the script prints one line, `heap tras sembrar: … · rss: …`, and exits. It has no `rep N:` prefix, no loop and no mode without bookings. The file `o2-memoria.txt` has `rep 1..10:` lines and three `base sin reservas: heap … · rss …` lines, in a different format.
+   - **Why it matters:** the baseline lines (54.3 MB) are what carries the main finding, «el RSS pasa de 50 MB por la base de Node». They come from a command that is not recorded anywhere, so nobody can reproduce them.
+   - **How to fix:** add a `--memoria` loop and a `--base` mode to the script, which drops the seed. Then regenerate `o2-memoria.txt`, or write down in `plan.md` and `research.md` the exact command that produced each block.
+   - **Gap:** `partial`. **Source:** O2.
+3. **O3 gives a figure with no evidence** (`research.md:21`).
+   - **What fails:** the detail says «lo simulé yo: 4 s», and the evidence column is «—». The status is correct, but the agent's 4 s next to the 10 s threshold reads as «cumple».
+   - **Why it matters:** `spec.md:15` and `spec.md:24` say only a person measures O3. An agent cannot simulate a receptionist's time with any meaning.
+   - **How to fix:** remove the 4 s. Put the reason it was not measured, for example «no hubo recepcionista disponible», and if useful, what would be needed to measure it.
+   - **Gap:** `unrequested`. **Source:** O3.
+
+#### Minor (Nice to Have)
+4. **The O2 detail rounds the figure up** (`research.md:20`).
+   - **What fails:** it says «RSS … 54,9 MB en las 10 repeticiones». In `o2-memoria.txt`, 6 of the 10 runs are 54.8 MB. `research.md:27` correctly says «54,8–54,9».
+   - **How to fix:** write «54,8–54,9 MB».
+   - **Gap:** `contradicts`, minor. **Source:** O2.
+5. **O1 and O2 are treated differently** (`research.md:19-20`).
+   - **What fails:** O2 explains that its threshold is out of reach because of Node's baseline. O1 does not say its threshold is out of reach by construction.
+   - **How to fix:** add that note to O1. It goes with issue 1.
+   - **Gap:** `partial`. **Source:** O1.
+6. **The plan still assigns O2 to two tasks** (`plan.md:18`, `tasks.md:11`).
+   - **What fails:** Task 2 in the plan still lists O2 and `o2-memoria.txt` as its evidence, but `tasks.md` says O2 was not measured there and moved to Task 3.
+   - **How to fix:** make Task 2 in the plan only about O3, or add a note saying O2 moved to Task 3.
+   - **Gap:** `contradicts`, minor. **Source:** plan.
+7. **The aguante section is prose, not a table** (`research.md:23-27`).
+   - **What fails:** it has the load and the 10 repetitions but not the table format.
+   - **How to fix:** a table with one row per repetition for O1 and O2, under the load «1.000 reservas en una semana».
+   - **Gap:** `partial`. **Source:** peor carga.
+8. **The worst-case seed is not realistic, and nothing says so** (`medidas/medir-libres.mjs:5`).
+   - **What fails:** 2 rooms × 5 days × 4 slots allow at most 40 active bookings in a week. The seed repeats 20 combinations 50 times each. Also, `freeRooms` ignores `day`, so «en una semana» does not affect the count.
+   - **Why it matters:** this does not invalidate O1, because it is the worst case for the count. It does mean the spec's worst-case load cannot happen with the current data model.
+   - **How to fix:** add a line about it in research.
+   - **Gap:** `partial`. **Source:** peor carga.
+
+### Not verified
+- **Running the script again:** not verified. Reading `medir-libres.mjs` is enough to confirm the 2000 (2 × 1000 with no match), and the brief asks not to run it unless a figure is in doubt.
+- **Where the `base sin reservas` lines in `o2-memoria.txt` come from:** not verified. No command for them is recorded, and the script cannot print them.
+- **O3 with a person:** not verified. It needs a receptionist, and the spec already accepts `no medido con una persona`.
+
+### Recommendations
+- Rewrite §4 of `research.md` before handing the spike to the 0014. As it stands, it pushes toward a file-based design that no measured row supports.
+- If the team wants a useful signal for O1, redefine it in a new spike, for example as time per `libres` call, or as comparisons against a version with an index per slot. The current threshold measures the algorithm, not the storage.
+- `research.md` is still `status: draft`. Check whether it should be marked closed before the archive.
+
+### Declined to judge
+- `findBooking`, `cancelBooking`, `voidBooking` and `reservar --cada-semana` in `src/app.js`: outside the spike's objectives.
+- Style and readability of `medir-libres.mjs` (one-line statements): that is the code-quality axis.
+- Whether the O1 threshold (< 1,000) and the O2 threshold (< 50 MB) were a good choice: the spec is approved by Laura. I only judge what the results support, not the thresholds.
+- Response time of the real CLI with 1,000 bookings: no objective asks for it. O1 is defined in comparisons.
+
+### Assessment
+**Ready to merge?** No. The spike's recommendation, «no seguir con las reservas en memoria», rests on an O1 that fails by construction and that does not depend on memory versus file. The only measured row that does compare them, O2, if anything supports staying in memory. On top of that, the O2 baseline cannot be reproduced with the script the plan names. Fix issues 1 to 3 before archiving.
+
+--- [59]
+Ahora: pasada de arreglo única de los hallazgos 1–3 (Critical e Important). Los Minor 4–8 van al ledger como diferidos, salvo el 5, que se arregla con el 1. Queda: arreglar, recomprobar, commitear y cerrar la revisión, ~5 min.
+
+--- [62]
+Las cifras se mueven un poco al regenerar (RSS 55,1–55,2 MB con reservas, 55,0 MB sin ellas). Actualizo `research.md` con los números nuevos y reescribo la recomendación.
+
+--- [68]
+Ahora: la re-revisión única de la pasada de fix (`bc54309..ea063df`). Queda: su informe, el borrador de walkthrough y el registro de validación, ~5 min.
+
+--- [72]
+Re-revisión lanzada en segundo plano. Espero su informe antes de escribir el walkthrough y registrar la validación.
+
+--- [85]
+## Re-revisión de la pasada de fix, eje Spec (spike 0030, bc54309..ea063df)
+
+**Assessment: Ready to merge? With fixes.** Los cuatro hallazgos están arreglados y la medida de O1 se reproduce exacta. Lo que queda son Minors de redacción y coherencia: el más relevante es que la diferencia de ~0,1–0,2 MB de O2 cae dentro del ruido de las repeticiones. No cambia la recomendación, pero conviene decirlo así.
+
+### Comprobaciones
+- **O1 sigue siendo reproducible.** Ejecuté `node medir-libres.mjs` sin flags en una copia del script (Node v26.10.0). La salida coincide byte a byte con `medidas/o1-libres.txt`. El cambio del script solo toca el tamaño del array cuando se pasa `--base` y la rama de memoria, así que la ruta de O1 no varía.
+- **Las cifras de research.md coinciden con `medidas/o2-memoria.txt`.** El fichero da 55,1–55,2 MB con 1.000 reservas en las 10 repeticiones, 55,0 MB en las 3 sin reservas, y heap de 4,3 frente a 4,2 MB. Eso es lo que dicen research.md:20 y research.md:27. Al ejecutarlo yo, `--memoria` dio 55,1–55,2 MB y heap 4,3 MB, igual que el fichero. `--base` dio 55,1–55,2 MB, no 55,0 (ver Issue 1).
+- **La recomendación no contradice spec.md.** Cubre la decisión que la spec dice desbloquear (spec.md:25, memoria o fichero) y trata O3 como pide spec.md:15.
+- **Coherencia de tasks.md y plan.md.** La Task 2 de plan.md:18 ya no reclama O2, en línea con tasks.md:11. La fila 3 de tasks.md:12 cita el commit del fix, 38fa8d9.
+
+### Veredicto por hallazgo
+
+1. **Critical (recomendación apoyada solo en O1): arreglado.**
+   - research.md:19 explica O1 por construcción: 2 salas × 1.000 reservas, ninguna en la franja `10:00-12:00`, dan 2.000 llamadas al predicado sea cual sea el almacenamiento. Es correcto: esa franja no está en `slots`, así que `some` recorre siempre el array entero.
+   - research.md:31-32 invierte la recomendación a «seguir en memoria» y la apoya en O2 (medido) y en O1 (medido, más el argumento de construcción). Dice explícitamente que no se apoya en O3.
+   - Es honesta con los dos «no cumple»: no presenta las dos filas como cumplidas, sino como filas que no distinguen entre memoria y fichero.
+   - Queda un resto pequeño sin medir (Issue 2).
+2. **Important (`o2-memoria.txt` con líneas que el script no producía): arreglado.** El script ganó el modo `--base` (medir-libres.mjs:5-6). El fichero se regeneró con los comandos en la cabecera (o2-memoria.txt:1), y todas las líneas tienen ahora la forma que imprime el script. Queda un resto menor (Issue 3).
+3. **Important (O3 «lo simulé yo: 4 s»): arreglado.** research.md:21 ya no da cifra: «no se midió con una recepcionista; sin ella no hay medida», con evidencia «—».
+5. **Minor (O1 sin la nota «por construcción»): arreglado.** Está en research.md:19.
+
+### Issues nuevos
+
+**Critical:** ninguno.
+
+**Important:** ninguno.
+
+**Minor:**
+1. **research.md:20 y :31, «las 1.000 reservas aportan ~0,1–0,2 MB».** La diferencia está al nivel de la resolución (0,1 MB) y del ruido entre ejecuciones. Al ejecutarlo yo, `--base` dio 55,1–55,2 MB, el mismo rango que con 1.000 reservas. La conclusión («no pesan») sale reforzada, pero la cifra aparenta más precisión de la que hay. Mejor: «indistinguible de la base (≤ 0,2 MB, dentro del ruido)». No es el «redondeo del detalle de O2» que quedó diferido: es otro problema.
+2. **research.md:31-32, afirmaciones sin medir.** «Un fichero no cambia» el recorrido lineal y «añadiría lectura» se deducen de leer el código, no se midieron. Lo primero lo cubre el argumento de construcción. Lo segundo es una hipótesis presentada como hecho. Sugiero marcarla «(no medido)», igual que en research.md:36.
+3. **o2-memoria.txt:2-14.** El script no imprime los prefijos `rep N:` y `base N:`, y la cabecera de o2-memoria.txt:1 no dice que se añadieron al ejecutar los comandos en bucle. Además, en modo `--base` la etiqueta «heap tras sembrar» describe una siembra que no ocurre (medir-libres.mjs:6). Es cosmético; basta una aclaración en la cabecera.
+4. **plan.md:22.** La evidencia de la Task 3 solo nombra `--memoria (10 repeticiones)`. research.md:20 y :27 se apoyan también en las 3 mediciones con `--base`, que el plan no recoge.
+5. **tasks.md:18.** La línea «Final: minor (deferred)» incluye dos puntos marcados «(corregido)»: el redondeo de O2 y la Task 2 de plan.md. Un punto corregido no está diferido, así que deberían salir de esa lista. Además, la línea da por cerrada la revisión antes de esta re-revisión.
+
+No veo incumplimientos de la constitución. El texto está en castellano. El script es un instrumento de medida, no código de producto, y tasks.md:17 justifica que no haya test RED porque es un spike.
+
+### Archivos
+- `<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/research.md`
+- `<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/o2-memoria.txt`
+- `<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/medidas/medir-libres.mjs`
+- `<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/plan.md`
+- `<run>/repo/.docs/sdd/changes/20261120-090000-feature-0030-libres-load/tasks.md`
+
+--- [87]
+La re-revisión no deja Critical ni Important. Arreglo en el hilo los Minor 1, 2 y 5, que son texto de menos de 20 líneas, y dejo diferidos el 3 y el 4.
+
+--- [98]
+Ahora: pre-comprobaciones del cierre del spike 0030 (estado, `merge --check`, otras ramas abiertas). Queda: walkthrough, retro, roadmap, commit de cierre, sync y merge, ~8 min.
+
+--- [115]
+Ahora: fusionar en `develop` con el bloque `merge` (`--no-ff`, sin push). La rama está al día con la base, no hay CI declarada y los cambios son solo documentación.
+
+--- [118]
+🦆 El spike 0030 está cerrado y fusionado en `develop`. `libres` con 1.000 reservas **no cumple O1 ni O2 tal como se definieron**, pero tampoco hay un motivo medido para sacar las reservas de memoria.
+- **O1:** da 2000 comparaciones. Con 2 salas × 1.000 reservas sin coincidencia sale así con cualquier almacenamiento.
+- **O2:** el RSS es 55,1–55,2 MB. Node sin reservas ya da 55,0 MB.
+- **O3:** no se midió con una persona.
+- **Recomendación para la 0014:** seguir con las reservas en memoria.
+
+**✋ Me salí del plan en…**
+
+- `sdd-validate` encontró O2 como `no medido` aunque se podía medir. Añadí una Task 3 al final del plan y la medí (`ede5d44`, con ajustes en `38fa8d9`).
+- La revisión final del eje Spec dijo «No» con 1 Critical y 2 Important:
+  - **Critical:** la recomendación original, «no seguir en memoria», descansaba solo en O1 y no sacaba la conclusión de lo medido. La invertí a «seguir en memoria». Si me equivoco, la 0014 mantiene las reservas en memoria sin un motivo medido a favor.
+  - **Important:** la evidencia de O2 no se podía reproducir con el script (añadí el modo `--base`) y la fila O3 traía un «4 s» simulado por mí (lo quité).
+- La re-revisión única (`bc54309..ea063df`) devolvió «con fixes», sin Critical ni Important y con 5 Minor. Arreglé 3 en el hilo (`ad76d1b`, menos de 20 líneas de documentación) y dejé diferidos 2.
+- Diferidos, anotados en `tasks.md` y el walkthrough: el aguante en prosa y no en tabla; la carga «1.000 en una semana», que con 2 salas × 5 días × 4 franjas no cabe (máximo 40 reservas activas); la cabecera de `o2-memoria.txt`; y que `plan.md` no cita las mediciones `--base`.
+- Añadí la fila 0030 a Now en `ROADMAP.md` con `✅`, porque no tenía fila. `roadmap check` da «Roadmap válido».
+- No hay `squash` del cierre. Dejé los commits tal cual y no reescribí historia.
+
+**Pendiente**
+- O3 con una recepcionista sigue sin medirse.
+- La puerta de cierre no corrió: ningún fichero fuera de `changes/` cambió desde el `merge-base`. El sync con la base dijo «al día».
+- Retro: sin señales, así que no hay ticket del kit pendiente. Si quieres igualmente el feedback de mejora del kit sobre esta sesión, dímelo y lo preparo con `sdd-feedback`.
+
+**Terminado.** `feature/0030-libres-load` fusionada en `develop` (`136fcf9`) · push: no hecho: este repo no tiene remoto.
+

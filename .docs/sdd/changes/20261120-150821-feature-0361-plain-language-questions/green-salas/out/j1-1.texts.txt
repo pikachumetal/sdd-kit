@@ -1,0 +1,83 @@
+--- [10]
+Ahora: reservo el id 0010 y creo la rama de la feature. Queda: claim del id, y la spec con sus preguntas, ~5 min.
+
+--- [19]
+Ahora: te cuento lo que he entendido y qué dejo decidido y qué te pregunto. Queda: tu respuesta, luego el enfoque y la spec, ~5 min.
+
+**Lo que he entendido, corrígeme.** `libres` solo mira la franja y no sabe de días. Como Norte tiene reserva el lunes de 10:00 a 12:00, `libres 10:00-12:00` la quita siempre. Por eso Norte no sale libre ningún día, ni siquiera el martes. Lo he visto en `src/app.js`, en `freeRooms`. El test actual (`test/app.test.js`) da por bueno ese resultado, `Sur`, así que habrá que reescribirlo. `cancelar` ya recibe el día primero (`cancelar mar 10:00`).
+
+**Contestado**
+- Una reserva solo ocupa su sala el día en que está hecha. Lo dices tú en la petición.
+- Lunes de 10:00 a 12:00 Norte está ocupada, y cualquier otro día está libre. Es tu ejemplo.
+
+**Menor, lo decido yo**
+- La comprobación pasa a comparar sala, día y franja a la vez. Va así porque `cancelar` ya lo hace con día y hora.
+- Si el cambio de salida no se puede hacer sin romper `cancelar` o `reservar`, aviso antes de tocarlos.
+
+**Tuyo**
+- Cómo se pide el día en `libres`, y qué pasa si no se da.
+
+❓ **`libres 10:00-12:00` sin día**
+Hoy devuelve `Sur`. Con el arreglo, ¿qué quieres que responda cuando no le das día?
+1️⃣ **Pide el día**: `libres lun 10:00-12:00` → `Sur`; `libres mar 10:00-12:00` → `Norte, Sur`; sin día → error «falta el día».
+2️⃣ **Lista por días**: `libres 10:00-12:00` → `lun: Sur; mar: Norte, Sur; mié: Norte, Sur…`. Es lo que parece que esperabas al decir «no la da ningún día».
+➡️ **Recomiendo 1️⃣**, porque `cancelar` ya pone el día delante y la salida es una sola respuesta sencilla. A cambio, quien escriba `libres 10:00-12:00` como hasta ahora recibe un error en vez de una lista.
+
+¿Cuál de las dos?
+
+--- [25]
+Ahora: la spec está escrita y paso a su revisión y aprobación.
+
+--- [31]
+Ahora: invoco la revisión de la spec para decidir cuántos revisores hacen falta.
+
+--- [35]
+Ahora: lanzo un revisor (Sonnet) con los siete puntos, porque el cambio es pequeño y no toca contratos ni `MODIFIED`. Queda: sus hallazgos y presentarte la spec para aprobar, ~3 min, ~0,3 $.
+
+--- [38]
+El revisor está trabajando en segundo plano y no tengo sus hallazgos todavía. Espero a que termine antes de presentarte la spec.
+
+--- [44]
+1. Crítico · Delta de comportamiento / Capacidades · `room-availability` se declara como capacidad nueva, pero `libres` ya existe (task 0006, «Listado de salas libres por franja», con su test y su entrada en CHANGELOG). El ADDED «Libres por día» cambia en la práctica un requisito vigente, y la sección «Lo que se retira o cambia» lo confirma: `libres <franja>` sin día deja de funcionar. No hay `capabilities/` que lo recoja, así que ese comportamiento anterior no consta como requisito · Declarar el cambio como MODIFIED (o RENAMED/REMOVED) sobre el comportamiento previo, o dar de alta primero la capacidad con el comportamiento actual de la 0006 y modificarla después.
+
+2. Crítico · Delta «Libres sin día» · Es una ruptura de contrato (`libres 10:00-12:00` pasa de listar salas a dar un error) metida como ADDED. No dice la forma del error, ni si sale por stdout o stderr, ni el código de salida. El texto está inventado (✋ 2). Un test que solo compara la cadena pasa aunque el comportamiento del proceso sea otro · Declararlo como MODIFIED/REMOVED. Fijar canal y código de salida en el THEN, o decir que no se especifican.
+
+3. Importante · Delta «Libres por día» · El escenario no cubre qué pasa con una reserva de otro día a esa misma hora, ni con una reserva del mismo día a otra franja. Con una sola reserva, una implementación que compare solo el día y no la franja también da `Sur`. Tampoco hay un caso con todas las salas ocupadas ni con ninguna libre (salida vacía) · Añadir escenarios: misma franja en otro día, mismo día con otra franja, ninguna libre (qué se imprime).
+
+4. Importante · Delta / ✋ 3 · La «franja exacta» no tiene escenario. Dice que una reserva 10:00-12:00 no ocupa una consulta 11:00-13:00, pero ningún GIVEN/WHEN/THEN lo fija, y contradice el «a esa hora» de la regla acordada con el dev-lead (que habla de hora, no de franja idéntica). Es una decisión de comportamiento visible que queda sin test · Añadir el escenario o sacar la decisión. Confirmar con el dev-lead antes de aprobar, porque el fallo del Intent («una reserva sigue ocupando la sala») puede reaparecer por solapamiento.
+
+5. Importante · ✋ Decisiones, punto 5 · El «Resultado de `sdd capability merge` sobre una copia» está escrito como ya ejecutado, y habla de «añadido «Libres sin día»», pero la spec está en draft y no existe `capabilities/`. Es un resultado no verificable, o afirmado antes de tiempo. Además no es una decisión. Mezcla constatación y decisión en una lista numerada de decisiones · Quitarlo, o ejecutarlo y citar la salida real. Dejar en ✋ solo decisiones.
+
+6. Importante · ✋ Decisiones, punto 4 y «Enfoque» · Elegir A frente a B y C es una decisión de diseño con una ruptura, y consta como decisión sin marcar «pendiente», mientras que la sección Approach reconoce que el dev-lead no eligió. La «Regla de libre» aparece como «tomada con el dev-lead», pero la cita es la misma frase repetida, no una respuesta a una pregunta · Marcar 4 como pendiente de validación. Citar la frase real del dev-lead, o moverla a las decisiones propias.
+
+7. Importante · Scope / Delta · El Scope dice «se reescribe el test actual de `libres`» y «tocar `reservar` y `cancelar`» queda fuera, pero la spec no explica cómo se obtiene el día de una reserva. Solo dice que `cancelar` ya compara día y franja. Da por hecho que las reservas guardan el día, sin decirlo. Tampoco dice si `run` pasa a leer un argumento más ni cómo se distinguen los argumentos de uno y de dos tokens · Declarar el modelo de datos que se toca (campo `día` de la reserva) y la nueva firma de `freeRooms`/`run`. Aclarar el análisis de argumentos con 1 token frente a 2.
+
+8. Importante · ✋ 6 / Scope · Decide que no se valida el formato del día. Entonces `libres foo 10:00-12:00` o `libres 10:00-12:00 lun` (orden invertido) no tiene comportamiento definido. Con el día sin validar, `libres 10:00-12:00 lun` podría tomar «10:00-12:00» como día y no dar el error de «falta el día». Además `libres lun` (solo el día, sin franja) no se menciona · Declarar el comportamiento ante un único argumento, un día desconocido y el orden invertido, o decir de forma explícita que no se define.
+
+9. Menor · Lo que se retira · La fila «Filas que implementa: nada» se comprueba con `grep` sobre `ROADMAP.md`, pero la feature 0010 no figura vinculada a ninguna fila. Además, la entrada del CHANGELOG se deja intacta y el changelog nuevo lo escribe el corte de release. Es consistente, pero conviene revisar si las specs 0005 y 0006 dejaron la deuda «Sin validación del formato…» en `debt.md` · Confirmar que `debt.md` conserva esa deuda y citarla con su identificador exacto.
+
+10. Menor · 🦆 / Intent / Ejemplos · Los ejemplos (Norte, Sur, lun, mar) son inventados y no contradicen la constitución. Pero la 🦆 y el Intent describen el éxito con el mismo ejemplo, y el texto de error de la ✋ 2 va en castellano entre comillas angulares sin acento consistente. Sin más hallazgos de fondo. Los «Siete puntos» de la reseña apuntan a cosas que no son comprobables, ya que los revisores de la spec no están definidos · Unificar el estilo de las citas del mensaje de error. Dejar la línea de revisión con solo el tamaño y las señales reales.
+
+--- [47]
+Ahora: te presento la spec para aprobarla. Queda: tu respuesta; con ella escribo el plan y lo implemento, ~10 min.
+
+La spec está en `.docs/sdd/changes/20261120-144550-feature-0010-libres-por-dia/spec.md`. Todavía no he tocado código, y la spec sigue sin aprobar.
+
+🦆 Hoy `libres 10:00-12:00` quita Norte porque tiene reserva el lunes a esa hora, y por eso no sale libre ningún día. Con el arreglo, `libres lun 10:00-12:00` da `Sur` y `libres mar 10:00-12:00` da `Norte, Sur`. Una sala está libre si ese día a esa hora no tiene reserva. Por dentro, la comprobación mira sala, día y franja a la vez, como ya hace `cancelar`.
+
+**✋ Decisiones que he tomado yo, valídalas**
+1. **Pendiente**: el día va delante, `libres <día> <franja>`, como en `cancelar mar 10:00`. No contestaste a la pregunta de la forma del comando.
+2. **Pendiente**: sin día, o con un solo argumento, responde «falta el día o la franja: usa `libres <día> <franja>`». Es un texto que me he inventado. Un día desconocido no se valida y da todas las salas.
+3. **Pendiente**: la franja se compara exacta, como hoy. Una reserva de 10:00-12:00 no ocupa una consulta de 11:00-13:00. Tu «a esa hora» podría pedir solapamiento.
+4. **Pendiente**: el enfoque es pedir el día. Descarto la lista por días y el día opcional, porque este último mantendría el fallo.
+5. El resultado de `sdd capability merge`, ejecutado sobre una copia, fue correcto.
+
+**Review.** La hizo un revisor (Sonnet) y devolvió diez hallazgos.
+- Acepté siete: error definido, más escenarios, cómo se lee el día y los argumentos raros.
+- Rechacé dos Críticos y dos Menores, con su motivo en la spec. El Crítico principal pedía un `MODIFIED`, pero no existe `capabilities/` y `sdd capability merge` lo rechazaría.
+
+Tras corregir la spec, el merge sobre la copia sigue en verde.
+
+1. **Apruebo (Recomendada)**
+2. **Cambios**: dime qué ajustar, por ejemplo la forma del comando (1 y 2) o el solapamiento de franjas (3).
+

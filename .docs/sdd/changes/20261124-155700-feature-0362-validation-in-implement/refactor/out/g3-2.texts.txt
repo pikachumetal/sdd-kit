@@ -1,0 +1,93 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo sus referencias para lanzar el gate de cierre. Queda: gate, script, revisión final y tu validación, ~15 min.
+
+--- [14]
+Gate verde (5/5). Ahora recorro el script: leo el código para ejecutar cada THEN como lo hará la persona.
+
+--- [20]
+Los 3 THEN dan el literal exacto. Ahora la revisión final: leo «Closing the review» de `sdd-verify` para ver si la ya anotada en `tasks.md` (sobre 25207ea) la cubre.
+
+--- [23]
+Vuelvo al repo (mi `cd` me sacó de él) y compruebo que nada de código cambió desde el sha que cubre la revisión final anotada.
+
+--- [29]
+Antes de presentar, ensayo los comandos exactos del guion (con otro nombre de sesión, para no ensuciar la tuya).
+
+--- [31]
+Ahora: espero tu validación del guion (gate y script ya en verde). Queda: tu «validado», y luego el registro en el walkthrough y `sdd-archive`, ~5 min.
+
+🦆 Al cancelar una reserva ahora hay que decir por qué: `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Un motivo que no esté en la lista (o ninguno) se rechaza. El nuevo comando `canceladas` enseña cada cancelación con su motivo: «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un apaño hasta que cada test prepare sus datos. Si me equivoco, el test falla al correr solo o en otro orden. Choca con la regla «Datos» de `operations.md` (un test que depende de otro).
+
+**Smoke que he corrido** (con mi propia sesión `x-session`, distinta de la tuya)
+
+| THEN | Evidencia | Resultado |
+| --- | --- | --- |
+| `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)» | ejecución real | `cancelada Norte lun (sala ocupada)` |
+| Motivo fuera de la lista | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| Sin `--motivo` | ejecución real | `motivo no válido: cambio de planes, sala ocupada, otro` |
+| `canceladas` enseña el motivo | ejecución real | `Norte lun — sala ocupada` |
+
+**Suites**
+
+- `node --test test/`: 5/5 sobre 284794c, ~0,6 s.
+- E2E: saltada. El gate de cierre del proyecto no la incluye.
+
+**Revisión final**: Spec (opus) limpia y Código (sonnet) limpia, sobre 25207ea. Arquitectura: no (plan). Desde ese sha solo cambió `tasks.md`, así que no la he repetido.
+
+**Sin probar**
+
+- Sin `--motivo` no tiene test automático. Solo lo he comprobado con ejecución real.
+- Las reservas viven en la memoria del proceso (hasta la 0014). Con `node src/app.js …` suelto, cada comando es un proceso nuevo y `canceladas` sale vacío. Por eso el guion va por el servidor.
+
+**Guion**
+
+Rama `feature/0010-cancel-reason` · worktree `<run>\repo`
+
+El entorno ya está arrancado en http://localhost:56389 (comprobado con `/health`). Empiezas con tu sesión `validacion` vacía: la reserva de Norte del lunes, 10:00-12:00, está activa.
+
+Terminal 1:
+
+```
+cd <run>\repo
+```
+
+1. Cancelar con un motivo fuera de la lista → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validacion" "http://localhost:56389/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22me%20aburro%22%5D"
+```
+
+2. Cancelar sin motivo → `motivo no válido: cambio de planes, sala ocupada, otro`
+
+```
+curl -s -H "x-session: validacion" "http://localhost:56389/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%5D"
+```
+
+3. Cancelar con un motivo de la lista → `cancelada Norte lun (sala ocupada)`
+
+```
+curl -s -H "x-session: validacion" "http://localhost:56389/run?cmd=cancelar&args=%5B%22Norte%22%2C%22lun%22%2C%22--motivo%22%2C%22sala%20ocupada%22%5D"
+```
+
+4. Ver las canceladas → `Norte lun — sala ocupada`
+
+```
+curl -s -H "x-session: validacion" "http://localhost:56389/run?cmd=canceladas&args=%5B%5D"
+```
+
+Para parar el entorno:
+
+```
+node scripts/env-down.mjs
+```
+
+Si alguno de estos pasos no sale como digo, dime el número del paso y qué ves.
+
+Si no puedes ahora: `Diferir: lo pruebo en <uso más próximo, concreto>, a cargo de <quien valida>`
+
+Dime "validado" o qué paso falla.
+

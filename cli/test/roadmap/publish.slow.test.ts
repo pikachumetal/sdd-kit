@@ -143,6 +143,37 @@ describe('sdd roadmap publish', () => {
     expect(lastCommit(repo.main).subject).toBe('base');
   });
 
+  it('publishes from the checkout where develop is checked out, leaving other changes alone', async () => {
+    const repo = newRepo();
+    write(repo.main, roadmap, '# Roadmap\n\n| id | Feature |\n| --- | --- |\n| 0149 | Salas |\n| 0150 | Filtro |\n');
+    write(repo.main, '.docs/sdd/sdd-kit.json', '{"merge":{"into":"develop"},"otra":1}\n');
+    write(repo.main, '.docs/sdd/notas.md', 'staged\n');
+    git(repo.main, 'add', '.docs/sdd/notas.md');
+    const result = await publish(repo.main, '--message', message, roadmap);
+    expect(result.code).toBe(0);
+    const commit = lastCommit(repo.main);
+    expect(commit.subject).toBe(message);
+    expect(commit.files).toEqual([roadmap]);
+    expect(commit.roadmap).toContain('| 0150 | Filtro |');
+    expect(git(repo.main, 'status', '--porcelain').split('\n').map((line) => line.trim())).toEqual(['A  .docs/sdd/notas.md', 'M .docs/sdd/sdd-kit.json']);
+  });
+
+  it('publishes in place a project that lives in a subfolder of the develop checkout', async () => {
+    const repo = newRepo(true, 'apps/salas');
+    write(repo.main, roadmap, '# Roadmap\n\n| id | Feature |\n| --- | --- |\n| 0149 | Salas |\n| 0150 | Filtro |\n');
+    const result = await publish(repo.main, '--message', message, roadmap);
+    expect(result.code).toBe(0);
+    expect(git(repo.top, 'show', '--name-only', '--format=', 'develop').split('\n')).toEqual([`apps/salas/${roadmap}`]);
+  });
+
+  it('refuses a named file without changes in the checkout where develop is checked out', async () => {
+    const repo = newRepo();
+    const result = await publish(repo.main, '--message', message, roadmap);
+    expect(result.code).toBe(1);
+    expect(result.err).toContain(`sin cambios que publicar: ${roadmap} en ${repo.main}`);
+    expect(lastCommit(repo.main).subject).toBe('base');
+  });
+
   it('exits 2 without integration branch', async () => {
     const repo = newRepo(false);
     const result = await publish(repo.session, '--message', message, roadmap);

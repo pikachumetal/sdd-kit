@@ -2,6 +2,7 @@ import { DomainError } from '../cli/args.ts';
 import { git, gitLines, hasContentChanges, refreshStat } from '../git/git.ts';
 import { completeMergeAttempt, gitWithOutput, mergeArgs, type MergeAttempt } from './attempt.ts';
 import { cleanRegistries } from './cleanup.ts';
+import { assertNoNumberingClash } from './numbering.ts';
 
 export type Report = (line: string) => void;
 
@@ -55,6 +56,7 @@ export async function assertNothingPending(root: string, branch: string): Promis
 
 export async function integrateRef(root: string, ref: string, report: Report): Promise<boolean> {
   if ((await git(root, ['merge-base', '--is-ancestor', ref, 'HEAD'])).code === 0) return false;
+  await assertNoNumberingClash(root, { branch: 'HEAD', destination: ref, destinationName: ref });
   await mergeAndClean({ worktree: root, stepName: 'base', report, mergedDestination: ref }, ['--no-edit', ref]);
   const [branch] = await gitLines(root, ['branch', '--show-current']);
   report(`base: integrada '${ref}' en '${branch}': ${await shortHead(root)}`);
@@ -76,6 +78,7 @@ export async function branchMergeBase(worktree: string, branch: string): Promise
 }
 
 export async function mergeFeature(worktree: string, { branch, into, noFf, order }: FeatureMerge, report: Report): Promise<void> {
+  await assertNoNumberingClash(worktree, { branch, destination: 'HEAD', destinationName: into });
   const flags = noFf ? ['--no-ff'] : [];
   const orderLine = order === null ? [] : ['-m', `Orden del dev-lead: «${order}»`];
   const message = ['-m', `merge: ${branch} en ${into}`, ...orderLine, '-m', 'Fusión hecha con sdd merge (sdd-kit).'];

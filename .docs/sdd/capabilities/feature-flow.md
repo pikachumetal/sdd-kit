@@ -40,17 +40,17 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El trabajo se valida con el usuario antes de cerrar
 
-- GIVEN una feature con la implementación terminada y el cierre de la revisión final terminado (sin Critical abiertos ni Important sin adjudicar), en un proyecto con `validation.mode` `manual` o sin la clave, y una spec sin `Validación: agente`
+- GIVEN una feature con las tasks acabadas, el gate en verde, el guion recorrido por el agente y el cierre de la revisión final terminado (sin Critical abiertos ni Important sin adjudicar), en un proyecto con `validation.mode` `manual` o sin la clave, y una spec sin `Validación: agente`
 - WHEN el agente va a cerrar
 - THEN antes de invocar `sdd-archive` presenta el mensaje de `validation-template.md`, empezando por un párrafo con 🦆 sobre lo que cambia para quien usa el producto y siguiendo con «✋ Me salí del plan en…», las decisiones sin el dev-lead, el smoke que ejecutó y el guion de pruebas, el último, y espera la validación explícita (qué probó el usuario y que funciona; «cierra la tarea» no lo es)
 - AND el guion de pruebas son pasos numerados, cada uno con una acción en la aplicación y su resultado esperado, compuestos y ensayados como dice «El guion de la validación empieza por el reporte y lo ha corrido el agente» de [`archive`](archive.md). Va separado del smoke.
 - AND el smoke da una fila por THEN de la spec con su evidencia, que es uno de tres valores: `suite`, `ejecución real` o `no probado`. Un THEN que se observa en una interfaz (pantalla, respuesta HTTP, salida de una CLI, fichero que produce el cambio) solo cuenta como verificado con `ejecución real`.
 - AND un THEN de fallo (un error, un rechazo, un 400) se provoca de verdad con la entrada que falla: con la feature 0012, `curl -i localhost:<puerto>/api/bookings?status=Lost` → `400` con «Estado no válido: Lost», no «lo cubre el test de la task 3»
-- AND el smoke dice cuánto tardó la suite completa
+- AND el smoke dice cuánto tardó el gate de cierre
 - AND «validado» o un «sí» sin detalle a la pregunta de validación es validación: no se repregunta, y el walkthrough registra la frase literal y «no detalló qué probó»
 - AND si el usuario no responde, la feature queda en espera con el smoke documentado; si difiere, se aplica «La validación puede diferirse con condiciones» de [`control-profiles`](control-profiles.md); en `unattended` se difiere al smoke de la release
 - AND el walkthrough registra la validación separada de lo verificado por el agente, y las decisiones sin el dev-lead en su propia sección
-- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN y la suite se ejecutan igual, el mensaje con el que pasa al cierre empieza por el 🦆 y el ✋ de los rulings, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
+- AND con `validation.mode: field` no presenta guion ni espera: el smoke por THEN, el gate y el guion recorrido por el agente se ejecutan igual, el mensaje con el que pasa al cierre empieza por el 🦆 y el ✋ de los rulings, y se aplica «Con `validation.mode: field`, la validación es en campo» de [`control-profiles`](control-profiles.md)
 
 ### El walkthrough crece por adendas
 
@@ -89,7 +89,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 ### Una decisión del dev-lead que sale de la revisión final se pregunta sola
 
 - GIVEN la revisión final de rama con un hallazgo cuya resolución es del dev-lead
-- WHEN el agente llega a la validación de `sdd-archive`
+- WHEN el agente llega a la validación de `sdd-validate`
 - THEN pregunta esa decisión sola, en su propio turno, y presenta la validación después de la respuesta
 - AND no la resuelve por defecto ni la mete en el mensaje de la validación
 
@@ -130,7 +130,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 
 ### El guion de pruebas empieza con el entorno parado, salvo que la persona lo quiera arrancado
 
-- GIVEN la validación de `sdd-archive` de la feature 0012, con la web levantada por el agente en el puerto 4656
+- GIVEN la validación de `sdd-validate` de la feature 0012, con la web levantada por el agente en el puerto 4656
 - WHEN el agente presenta el guion de pruebas sin `validation.startEnvironment` en `.docs/sdd/sdd-kit.local.json`, o con `false`
 - THEN antes de presentarlo ha parado lo que arrancó, y el guion empieza por cómo arrancarla
 - AND con `validation.startEnvironment: true`, la deja arrancada, y el guion dice en qué puerto está y cómo pararla
@@ -142,7 +142,7 @@ El carril feature del kit: lo que un dev y un agente pueden esperar al arrancar,
 - GIVEN la fila 0012 «`npm run check:changed` … si la rama no cambia ninguno, escribe «Nada que comprobar» y sale con 0», cuyo THEN negativo no se puede observar desde `feature/0012`, porque la rama siempre cambia `scripts/check-changed.mjs`
 - WHEN el agente escribe la spec
 - THEN bajo ese escenario escribe `Se valida en: worktree con la base al día` (o `validación post-merge con fecha`)
-- AND en la validación de `sdd-archive` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
+- AND en la validación de `sdd-validate` prepara ese entorno y lo da en el guion, en vez de pedir al usuario que se lo monte
 
 ### Lo cambiado tras la validación se separa de lo validado
 

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, git, mergeFixture, runMerge, saveAll, sha, write } from './helpers.ts';
+import { ADR_CLASH, FOLDER_A, FOLDER_B, FOLDER_CLASH, SEQUENCE_CONFIG, commitFiles, commitOnBranch, edit, git, mergeFixture, pushRemoteCommit, runMerge, saveAll, sha, write } from './helpers.ts';
 
 const slash = (text: string) => text.replaceAll('\\', '/');
 
@@ -112,5 +112,78 @@ describe('la comprobación del destino no toca nada', () => {
     expect(slash(result.text)).toBe(`destino: listo: 'develop' irá en el worktree temporal '${slash(join(fx.wt, 'merge-0001'))}'`);
     expect(existsSync(join(fx.wt, 'merge-0001'))).toBe(false);
     expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+  });
+});
+
+describe('el merge para si la rama trae un id o un número de ADR que el destino ya usa', () => {
+  const CONFIG = '.docs/sdd/sdd-kit.json';
+
+  it('--check para con una carpeta de cambio cuyo id ya usa develop, sin tocar nada', async () => {
+    const fx = mergeFixture('numeracion-carpeta');
+    commitOnBranch(fx, 'develop', { [CONFIG]: SEQUENCE_CONFIG, [`.docs/sdd/changes/${FOLDER_A}/spec.md`]: 'a\n' });
+    commitFiles(join(fx.wt, '0001'), { [CONFIG]: SEQUENCE_CONFIG, [`.docs/sdd/changes/${FOLDER_B}/patch.md`]: 'b\n' }, 'docs: patch 0756');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(FOLDER_CLASH.replace('<ref>', 'develop'));
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+    expect(existsSync(fx.lock)).toBe(false);
+  });
+
+  it('--check para con una ADR cuyo número ya usa develop', async () => {
+    const fx = mergeFixture('numeracion-adr');
+    commitOnBranch(fx, 'develop', { '.docs/sdd/decisions/0004-a.md': 'a\n' });
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
+  });
+
+  it('--check con el choque solo en origin/develop lo nombra, sin fetch', async () => {
+    const fx = mergeFixture('numeracion-remota');
+    pushRemoteCommit(fx, '.docs/sdd/decisions/0004-a.md', 'a\n');
+    git(fx.repo, 'fetch', '-q', 'origin');
+    pushRemoteCommit(fx, '.docs/sdd/decisions/0005-c.md', 'c\n');
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n', '.docs/sdd/decisions/0005-d.md': 'd\n' }, 'docs: adr 0004 y 0005');
+    const refs = git(fx.repo, 'for-each-ref');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'origin/develop'));
+    expect(result.text).not.toContain('0005');
+    expect(git(fx.repo, 'for-each-ref')).toBe(refs);
+  });
+
+  it('--check con develop sacada con cambios da antes el mensaje de destino sacado', async () => {
+    const { fx, dev } = dirtyDevelop('numeracion-sucio');
+    commitFiles(dev, { '.docs/sdd/decisions/0004-a.md': 'a\n' }, 'docs: adr 0004 en develop');
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+    edit(dev, '.docs/sdd/roadmap.md', '| 0100 | base |', '| 0100 | base retocada |');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code).toBe(1);
+    expect(slash(result.text)).toContain(`destino sacado: el checkout de 'develop' en '${slash(dev)}'`);
+    expect(result.text).not.toContain('numeración');
+  });
+});
+describe('--check con el mismo choque en develop y en origin/develop', () => {
+  it('solo nombra develop', async () => {
+    const fx = mergeFixture('numeracion-dos-refs');
+    commitOnBranch(fx, 'develop', { '.docs/sdd/decisions/0004-a.md': 'a\n' });
+    git(fx.repo, 'push', '-q', 'origin', 'develop');
+    git(fx.repo, 'fetch', '-q', 'origin');
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--check']);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'develop'));
+    expect(result.text).not.toContain("'origin/develop'");
   });
 });

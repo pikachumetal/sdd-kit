@@ -1,0 +1,40 @@
+--- [10]
+Estoy reservando el id 0010 y creando la rama de la feature; después sigo con la spec.
+
+--- [19]
+Esto es lo que he entendido, corrígeme si no es así. Hoy `libres <franja>` mira solo la hora, no el día. La reserva de Norte (lunes 10:00-12:00) hace que Norte desaparezca de la lista en cualquier día. Tú esperas que la sala se vea ocupada solo el lunes.
+
+Lo que he mirado:
+- En `src/app.js`, `libres` recibe un único parámetro (la franja) y compara solo `room` y `slot`.
+- Las reservas ya guardan el día (`lun`).
+- `cancelar` ya recibe el día, delante de la hora (`cancelar mar 10:00`), tras el patch 0007.
+- `test/app.test.js` solo prueba `libres 10:00-12:00`, sin día.
+
+Cómo reparto las decisiones:
+- **Contestado**: la reserva ya tiene día (lo veo en `src/app.js`), así que no hay que cambiar cómo se guardan. Los tests, el texto en castellano y el flujo SDD vienen de la constitución.
+- **Menor**: el nombre de los helpers y el orden de las tareas los decido yo.
+- **Tuyo**: cómo se indica el día en `libres`, y qué pasa si no se indica ninguno. Las dos las veremos según tu respuesta.
+
+Antes de nada, necesito entender el motivo. Cuando lanzas `libres 10:00-12:00`, ¿qué estás intentando resolver y qué haces con la respuesta?
+
+--- [21]
+Entendido: una sala está libre si ese día, a esa hora, no tiene reserva. Con eso el criterio queda cerrado. Queda una decisión tuya: cómo se pide el día.
+
+❓ **Cómo se indica el día en `libres`**
+Hoy `libres` no recibe día (`src/app.js`), y `cancelar` ya lo recibe delante de la hora. Con la reserva de Norte del lunes de 10:00 a 12:00:
+
+1️⃣ **Día obligatorio, antes de la franja**, como en `cancelar`.
+- `libres lun 10:00-12:00` → `Sur`
+- `libres mar 10:00-12:00` → `Norte, Sur`
+- `libres 10:00-12:00` → `Falta el día: libres <día> <franja>`
+- Cuesta que la forma actual `libres 10:00-12:00` deje de funcionar. Hoy da una respuesta que depende de un día que nadie ha dicho.
+
+2️⃣ **Día opcional; sin día, una línea por cada día de la semana.**
+- `libres lun 10:00-12:00` → `Sur`
+- `libres 10:00-12:00` → `lun: Sur` / `mar: Norte, Sur` / …
+- Cuesta decidir qué días entran (¿lunes a viernes o los siete?), algo que ahora nadie ha fijado. También es más código y más cosas que probar.
+
+➡️ **Recomiendo 1️⃣**, porque es la misma forma que ya usa `cancelar` y deja una sola respuesta posible a «¿qué salas hay libres?». A cambio, quien teclee la forma antigua recibe un aviso en vez de una lista.
+
+¿Cuál eliges?
+

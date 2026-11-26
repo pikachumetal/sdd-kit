@@ -233,7 +233,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - THEN `<carpeta>/timing.json` lleva `version: 1` y las fases `apertura`, `implementacion`, `revision` y `cierre`, en ese orden, cada una con `agentSeconds`, `execSeconds`, `waitSeconds`, `idleSeconds` y `ceremony` (`true` salvo en `implementacion`)
 - AND `implementacion` lleva `tasks` con la task 1, `source: "events"`
 - AND `|agente + ejecución + espera + hueco − reloj|`, sumado en todas las fases, es de 60 s o menos, o del 1 % del reloj si es mayor, y `withinMargin` es `true`
-- AND agente + ejecución de todas las fases da el `Esfuerzo real` de la cuarta línea, con la misma salida en las cuatro líneas que sin `--artifact`
+- AND agente + ejecución de todas las fases da el `Esfuerzo real` de la cuarta línea, con la misma salida en las cuatro líneas que sin `--artifact` mientras el artefacto no lleve `Inicio:`
 - AND fuera del margen, el fichero lleva `withinMargin: false`, la CLI avisa por stderr con las dos cifras y sale con 0
 - AND sin `--artifact` no escribe ningún fichero
 - AND regenerarlo sin cambios en los transcripts ni en la rama deja el fichero idéntico
@@ -286,6 +286,15 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - THEN imprime `- Esperas y huecos: 14:59Z 45 min; 15:40Z 12 min`, la última línea, también tras `Medición`
 - AND sin esperas ni huecos, con «no medido» o en `--json`, esa línea no sale
 - AND con una desviación de más del ±30 %, `sdd-archive` escribe en «Causa de la desviación» esas horas y minutos, o «sin medir»
+
+### Con un `Inicio:` en el artefacto, la sesión se mide desde él
+
+- GIVEN una sesión con actividad desde las 14:04Z y un `patch.md` con `- Inicio: 2026-11-02T16:19Z`, cerrado a las 16:29Z
+- WHEN se ejecuta `sdd session tokens --path <worktree> --branch <rama> --artifact <carpeta del patch>`
+- THEN `Esfuerzo real` es de 0,2 h o menos, y su `desde` es la primera entrada del transcript a partir del `Inicio:` (16:19Z si hay actividad a esa hora)
+- AND las respuestas anteriores al `Inicio:` no cuentan tampoco en los tokens ni en el coste, y `timing.json` sigue dentro del margen
+- AND sin `Inicio:` en `patch.md`, o con el marcador de la plantilla, cuenta toda la sesión, como sin `--artifact`
+- AND una rama medida por ventana sigue contando desde su creación
 
 ## Reglas de la capacidad
 

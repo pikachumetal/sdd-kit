@@ -1,0 +1,19 @@
+--- [10]
+Estoy comprobando en el repo si la cobertura nativa de Node funciona con vuestros tests, antes de plantearte la decisión.
+
+--- [12]
+Lo que he visto en el repo:
+
+- **Lo que dice la documentación:** `operations.md` fija Node 22 y "sin dependencias externas". Hay un solo fichero de código, `src/app.js`, y un fichero de tests.
+- **Lo que he probado:** `node --test --experimental-test-coverage` funciona hoy y da un informe por fichero: 93,75 % de líneas, 83,33 % de ramas y 100 % de funciones, con la línea 13 sin cubrir. Mi Node local es el 26, no el 22 que declara el proyecto. Las opciones de umbral (`--test-coverage-lines`, `--test-coverage-branches`, `--test-coverage-functions`) aparecen en el `--help` de esa versión. No he comprobado si el Node 22 las trae todas, y habría que mirarlo en su documentación antes de decidir nada.
+- **Lo que infiero:** c8 haría lo mismo que Node, porque ambos usan la cobertura de V8. c8 aportaría informes en HTML, lcov o JSON. Eso no tiene utilidad aquí, porque trabajas solo y no hay CI ni servicio externo que los consuma. A cambio, c8 rompería la regla de no tener dependencias externas.
+
+❓ **¿Qué esperas de la cobertura?**
+Antes de elegir herramienta necesito saber para qué la quieres: ¿para mirarla tú de vez en cuando, o para que bloquee un commit cuando baje de cierto nivel (la constitución ya exige `node --test` en verde antes de cada commit)?
+
+1️⃣ **Solo informativa:** `node --test --experimental-test-coverage` y nada más. No cuesta dependencias.
+2️⃣ **Con umbral que bloquea:** el mismo comando más `--test-coverage-lines=N` y similares, para que falle si baja del nivel que fijes. Sigue sin dependencias, pero hay que decidir los números.
+3️⃣ **c8:** solo compensa si quieres HTML o lcov. Añade una dependencia externa y obliga a tocar la regla de `operations.md`.
+
+➡️ **Recomiendo 1️⃣ o 2️⃣ con Node nativo y descarto 3️⃣**, porque el proyecto no tiene dependencias y la herramienta nativa ya da líneas, ramas y funciones. A cambio, el flag sigue llamándose "experimental" y su salida podría cambiar entre versiones de Node. ¿Quieres que la cobertura te bloquee los commits o solo que te informe?
+

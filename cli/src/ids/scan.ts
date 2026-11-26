@@ -28,7 +28,7 @@ interface GitIds {
 }
 
 export const SPEC_FOLDER_ID = /-(?:feature|task|patch|proposal)-([0-9]{4})[a-z]*-/i;
-const SUFFIXED_FOLDER = /-[0-9]{4}[a-z]+-/i;
+export const SUFFIXED_FOLDER = /-[0-9]{4}[a-z]+-/i;
 export const BRANCH_ID = /(?:^|\/)([0-9]{4})(?:$|-)/;
 export const ID_TAG_PREFIX = 'sdd-id/';
 const ROADMAP_ROW_ID = /^\|\s*(?:[0-9]{4}-[0-9]{2}-[0-9]{2}\s*\|\s*)?([0-9]{4})\s*\|/;
@@ -36,20 +36,24 @@ const NO_GIT_IDS: GitIds = { usedIds: [], currentBranchId: null };
 const DOCS = '.docs/sdd';
 export const BRANCH_ROADMAPS = ['ROADMAP.md', `${DOCS}/roadmap.md`];
 export const BRANCH_CHANGE_FOLDERS = [`${DOCS}/changes`, `${DOCS}/specs`];
+export const BRANCH_KIT_CONFIG = `${DOCS}/sdd-kit.json`;
 
-function readIdsMode(root: string): unknown {
-  const configPath = kitConfigPath(root);
-  if (!existsSync(configPath)) return undefined;
+function parsedIdsMode(config: string, source: string): unknown {
   try {
-    return JSON.parse(readText(configPath))?.ids?.mode;
+    return JSON.parse(config)?.ids?.mode;
   } catch {
-    throw new DomainError(`No se puede leer '${configPath}': no es JSON válido.`);
+    throw new DomainError(`No se puede leer '${source}': no es JSON válido.`);
   }
 }
 
-export function idsMode(root: string): 'sequence' | 'tracker' {
-  const mode = readIdsMode(root);
+export function idsModeOf(config: string | null, source: string): 'sequence' | 'tracker' {
+  const mode = config === null ? undefined : parsedIdsMode(config, source);
   return typeof mode === 'string' && mode.toLowerCase() === 'sequence' ? 'sequence' : 'tracker';
+}
+
+export function idsMode(root: string): 'sequence' | 'tracker' {
+  const configPath = kitConfigPath(root);
+  return idsModeOf(existsSync(configPath) ? readText(configPath) : null, configPath);
 }
 
 export function assertSequenceMode(root: string): void {
@@ -87,7 +91,7 @@ function roadmapIds(root: string): string[] {
     .flatMap((path) => rowIds(readFileSync(path, 'utf8').split(/\r\n|\n|\r/)));
 }
 
-function assertNoSharedIds(artifacts: SpecArtifact[], io: Io): void {
+function warnSharedIds(artifacts: SpecArtifact[], io: Io): void {
   const legacy = artifacts.filter((artifact) => SUFFIXED_FOLDER.test(artifact.folder));
   if (legacy.length > 0) {
     const folders = legacy.map((artifact) => artifact.folder).join(', ');
@@ -98,18 +102,21 @@ function assertNoSharedIds(artifacts: SpecArtifact[], io: Io): void {
     foldersById.set(id, (foldersById.get(id) ?? new Set()).add(folder));
   }
   for (const [id, folders] of foldersById) {
-    if (folders.size > 1) throw new DomainError(`Dos artefactos distintos comparten el id ${id}: ${[...folders].join(', ')}.`);
+    if (folders.size > 1) io.err(`aviso: dos artefactos distintos comparten el id ${id}: ${[...folders].join(', ')}; renumera uno.`);
   }
 }
 
 export async function branchContentIds(root: string, branch: string): Promise<string[]> {
   const ids: string[] = [];
   for (const roadmap of BRANCH_ROADMAPS) ids.push(...rowIds(await gitLines(root, ['show', `${branch}:${roadmap}`])));
-  for (const changes of BRANCH_CHANGE_FOLDERS) {
-    const folders = await gitLines(root, ['ls-tree', '-d', '--name-only', `${branch}:${changes}`]);
-    ids.push(...folders.flatMap((folder) => SPEC_FOLDER_ID.exec(folder)?.[1] ?? []));
-  }
+  ids.push(...(await changeFolderNamesAt(root, branch)).flatMap((folder) => SPEC_FOLDER_ID.exec(folder)?.[1] ?? []));
   return ids;
+}
+
+export async function changeFolderNamesAt(root: string, ref: string): Promise<string[]> {
+  const names: string[] = [];
+  for (const changes of BRANCH_CHANGE_FOLDERS) names.push(...(await gitLines(root, ['ls-tree', '-d', '--name-only', `${ref}:${changes}`])));
+  return names;
 }
 
 async function worktreeDiskIds(root: string): Promise<string[]> {
@@ -162,7 +169,7 @@ async function gitIds({ root, io }: Ctx): Promise<GitIds> {
 export async function idScan(ctx: Ctx): Promise<IdScan> {
   assertSequenceMode(ctx.root);
   const artifacts = specArtifacts(ctx.root).filter((artifact) => artifact.id !== '0000');
-  assertNoSharedIds(artifacts, ctx.io);
+  warnSharedIds(artifacts, ctx.io);
   const fromGit = await gitIds(ctx);
   const allIds = [...artifacts.map((artifact) => artifact.id), ...roadmapIds(ctx.root), ...fromGit.usedIds];
   const usedIds = allIds.filter((id) => id !== '0000').map(Number);

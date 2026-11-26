@@ -1,0 +1,105 @@
+
+>>> Skill: sdd-kit:sdd-propose
+<<< Launching skill: sdd-kit:sdd-propose
+
+>>> Bash: cd "<run>/repo" && git ls-files | head -50 && cat .docs/sdd/sdd-kit.json; cat .docs/sdd/sdd-kit.local.json 2>/dev/null; ls .docs/sdd .docs/sdd/steering
+<<< .docs/sdd/sdd-kit.json
+.docs/sdd/specs/20260915-090000-task-0005-weekly/spec.md
+.docs/sdd/specs/20260915-090000-task-0005-weekly/walkthrough.md
+.docs/sdd/specs/20260917-090000-task-0006-free/spec.md
+.docs/sdd/specs/20260917-090000-task-0006-free/walkthrough.md
+.docs/sdd/specs/20260918-090000-patch-0007-cancel/patch.md
+.docs/sdd/steering/architecture.md
+.docs/sdd/steering/constitution.md
+.docs/sdd/steering/debt.md
+CHANGELOG.md
+PRODUCT.md
+README.md
+ROADMAP.md
+package.json
+src/app.js
+test/app.test.js
+test/cancel.test.js
+{"version": "3.0.4", "channel": "plugin", "ids": {"mode": "sequence"}, "relea
+
+>>> Bash: cd "<run>/repo" && cat PRODUCT.md ROADMAP.md .docs/sdd/steering/*.md package.json; cat src/app.js; ls ../../ -a; node "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js" capability index --path .docs/sdd; ls node_modules 2>&1 | head -2
+<<< # Producto — salas
+
+Reservas de salas de reuniones desde la terminal, para los equipos de una oficina.
+
+## Product Purpose
+
+Herramienta de línea de comandos para reservar las salas de reuniones del coworking donde trabajo. La uso yo: la desarrollo, la pruebo y la despliego en mi propio servidor. No hay más usuarios ni más desarrolladores.
+
+## Terminology
+
+- **Reserva**: una sala en un día y una franja, a nombre de quien la pide. _Evitar_: booking.
+- **Sala**: una sala de reuniones con nombre (Norte, Sur). _Evitar_: room.
+- **Cancelación**: la reserva que anula el propio cliente ant
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/skills/sdd-propose/references" && cat control-profiles.md nombrado.md | head -150; cd "<run>/repo"; cat .docs/sdd/specs/*0006*/spec.md | head -60
+<<< # Control profiles and gates
+
+How much the agent stops is chosen by the user with a profile. Each gate of the table says what it does in each one. Contract of tasks 0005, 0006, 0012, 0021 and 0022: don't duplicate it, link it.
+
+## Profiles
+
+- **`pair`** — stops at every gate of the table.
+- **`delegate`** *(default)* — stops at the spec (its interview asks what only the user can answer), the deviations and the validation; no gate at the plan.
+- **`unattended`** — stops at no point until the release ends; the merge to `main`, the tag and every outward action (a push other than the integration b
+
+>>> Bash: cd "D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/skills/sdd-propose/references" && grep -n -i -B2 -A12 "sequence" nombrado.md | head -80; cd "<run>/repo"; git branch -a; git remote -v
+<<< 5-- Timestamp: `Get-Date -AsUTC -Format 'yyyyMMdd-HHmmss'` (PowerShell).
+6-- `feature`, `patch` or `proposal` by the lane. A `-task-` folder from before 2.0.0 is legacy: the scripts read it and the closing writes in it without renaming it, but no new folder is prefixed `task-`. A folder containing `patch.md` is ALWAYS prefixed `patch-`; one containing `proposal.md`, `proposal-` (`sdd-roadmap` creates it).
+7:- `<id>`: depends on the mode declared in `.docs/sdd/sdd-kit.json` (`ids.mode`; no field ⇒ `tracker`). In `tracker`: the ticket id in the project's tracker, `0000` if there is none. In `seq
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js" && node "$S" id next --project-root . --reserve
+<<< 0012
+
+>>> Bash: cd "<run>/repo" && S="D:/code/.worktrees/sdd-kit/feature-0361-plain-language-questions/.temp/k361-new/cli/bin/sdd.js" && git checkout -b feature/0012-libres-por-dia && node "$S" id claim --project-root .
+<<< Switched to a new branch 'feature/0012-libres-por-dia'
+sin remoto: la 0012 vale (contador local)
+
+>>> Skill: sdd-kit:sdd-spec-writing
+<<< Launching skill: sdd-kit:sdd-spec-writing
+
+>>> Skill: sdd-kit:sdd-grilling
+<<< Launching skill: sdd-kit:sdd-grilling
+
+>>> Bash: cd "<run>/repo" && grep -rn "libres" --include=*.js --include=*.md . | grep -v "^./.docs/sdd/specs/.*walkthrough" | head -20
+<<< ./CHANGELOG.md:10:- Listado de salas libres por franja (`salas libres 10:00-12:00`). [task 0006](.docs/sdd/specs/20260917-090000-task-0006-free/)
+./src/app.js:28:  if (cmd === 'libres') return freeRooms(params[0]).join(', ');
+./test/app.test.js:5:test('libres excluye la sala reservada en la franja', () => {
+./test/app.test.js:6:  assert.equal(run('libres', ['10:00-12:00']), 'Sur');
+
+=== RESULTADO (14 turnos, 0.23739730000000006 $)
+Esto es lo que he entendido, corrígeme si no es así.
+
+`libres` solo mira la franja: `freeRooms(slot)` en `src/app.js` compara `room` y `slot` y no usa `day`. Las reservas sí guardan el día (`day: 'lun'`) y `cancelar` y `anular` ya lo usan. Hoy `libres 10:00-12:00` no recibe ningún día. Por eso el comando no puede distinguir lunes de martes, y devuelve `Sur` aunque Norte esté libre el martes. Tu caso, Norte reservada el lunes de 10:00 a 12:00, debería dar `Sur` el lunes y `Norte, Sur` cualquier otro día. Arreglarlo cambia lo que ve quien usa el comando, así que no es solo un cambio interno.
+
+**Contestado** (lo uso sin preguntar):
+- Las reservas ya llevan día (`lun`, el formato de `bookings` en `src/app.js`).
+- Las canceladas y anuladas no ocupan sala (el filtro `status === 'active'` de `freeRooms`).
+
+**Menor** (lo decido yo con el proyecto):
+- Dónde se parsean los argumentos, que es `run` en `src/app.js`. Lo marco en ✋.
+
+**Del dev-lead** (lo pregunto, no lo decido):
+- Cómo se indica el día en `libres`.
+- Qué pasa si no se indica día.
+
+Primero te pregunto qué quieres exactamente. ¿Para qué vas a usar `libres` con día, es decir, qué consultas quieres poder hacer?
+
+=== RESULTADO (1 turnos, 0.2548095000000001 $)
+Entendido: una sala está libre si ese día, a esa hora, no tiene una reserva activa. Con eso, Norte con reserva el lunes de 10:00 a 12:00 queda así:
+
+- Lunes, 10:00-12:00: libre Sur.
+- Martes, 10:00-12:00: libres Norte y Sur.
+
+Falta decidir cómo se escribe el día en el comando. Esta decisión condiciona la siguiente, que es qué hace `libres` sin día.
+
+❓ **Cómo se indica el día en `libres`**
+Hoy es `libres 10:00-12:00`. `cancelar` y `anular` ya reciben el día como segundo argumento (`cancelar Norte lun`).
+1️⃣ **El día antes de la franja:** `libres lun 10:00-12:00` → `Sur`; `libres mar 10:00-12:00` → `Norte, Sur`. Es un formato nuevo y el día es obligatorio. El comando sin día, como lo usabas hasta ahora, deja de tener un significado válido. Hay que decidir qué responde.
+2️⃣ **El día después de la franja:** `libres 10:00-12:00 lun` → `Sur`. Mantiene el orden de la documentación actual (`salas libres 10:00-12:00` en `CHANGELOG.md`) y permite que el día sea opcional. En ese caso hay que decidir qué significa `libres 10:00-12:00` sin día.
+➡️ **Recomiendo 1️⃣**, porque `libres` solo tiene sentido con día y 1️⃣ obliga a darlo. Si el día fuera opcional, el comando volvería a ignorarlo, que es el fallo que quieres corregir. A cambio, rompe el uso actual `libres 10:00-12:00`, y ese caso lo trato en la siguiente pregunta. ¿Cuál eliges?

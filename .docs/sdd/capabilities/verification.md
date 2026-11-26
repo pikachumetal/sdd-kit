@@ -17,7 +17,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 
 - GIVEN los ficheros de `skills/` de la rama
 - WHEN se buscan `superpowers:verification-before-completion`, `superpowers:requesting-code-review` y `code-reviewer.md` de superpowers
-- THEN ninguno aparece: el contrato de cierre de `sdd-implement` y la comprobación de la revisión final de `sdd-archive` invocan `sdd-verify`
+- THEN ninguno aparece: el contrato de cierre de `sdd-implement` y la revisión final de `sdd-validate` invocan `sdd-verify`
 - AND los nombres de las fuentes solo aparecen en el `NOTICE` de `sdd-verify` y en su anexo de procedencia
 
 ### La revisión final sale en ejes, en paralelo
@@ -92,6 +92,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND en SDD la fix wave no lleva otra re-revisión: es esta
 - AND un Important que la re-revisión deja abierto en código que ya vio la revisión final, el hilo lo adjudica con `Final: Ruling:` y llega a ✋ en la presentación y en el walkthrough, sin otra pasada de fix ni otra re-revisión; uno que mete la propia pasada de fix no se adjudica («Un Important que mete la pasada de fix no se adjudica»)
 - AND si desde `a1b2c3d` solo hay commits que se revisan en el hilo, no despacha re-revisión
+- AND tras la pasada de fix corren el gate de cierre con `--base <sha del último verde>` y los pasos del guion que toca el arreglo, como en cualquier vuelta de la validación
 
 ### Un Critical que deja la re-revisión no se adjudica
 
@@ -109,6 +110,7 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - AND si el commit es documentación de menos de 20 líneas, lo anota como `revisado en el hilo: <sha> · <ficheros> · <n> líneas`
 - AND si la revisión final volvió limpia y no hubo re-revisión, ese commit abre la única, sobre `a1b2c3d..HEAD`
 - AND mientras quede un `sin revisar` o un «no verificado» sin resolver, ni la línea `Validación en campo:` ni el walkthrough dicen que la revisión quedó limpia: dicen cuántos quedan («…, 1 sin revisar»)
+- AND una vuelta del bucle de la validación posterior a la revisión final (un arreglo tras un fallo del dev-lead o tras la re-revisión) no es un commit suelto: se revisa una vez sobre su diff con `sdd-kit:effort-high` + `sonnet`, apunta `Revisión de vuelta: <sha>..<sha>, sdd-kit:effort-high + sonnet, <veredicto>` y un hallazgo suyo que queda abierto va a ✋ como `sin revisar: <sha>`, sin otra revisión
 
 ### `tasks.md` registra cada eje
 
@@ -124,15 +126,6 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - WHEN cada eje revisa
 - THEN lee el paquete y no ejecuta la suite, el build ni el lint del proyecto
 - AND si cree que hace falta una verificación pesada, la recomienda en su informe
-
-### El revisor final sale en segundo plano con el commit de la última task
-
-- GIVEN una feature Native con una task que cambia la UI, cuyo commit `a1b2c3d` acaba de hacerse, y su «Verificación visual» pendiente
-- WHEN el hilo cierra esa task
-- THEN el siguiente despacho son los ejes en segundo plano sobre `a1b2c3d`, antes de arrancar la aplicación para la verificación visual
-- AND mientras los ejes trabajan, el hilo hace la verificación visual y escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
-- AND la validación se presenta cuando el cierre de la revisión ha terminado (la pasada de fix y la re-revisión, si las hay), con lo residual en ✋, no antes
-- AND en SDD el disparador es el commit juntado de la última task, tras su revisión limpia
 
 ### El revisor final trabaja aislado en el sha que revisa
 
@@ -172,11 +165,11 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - GIVEN una feature cuya línea `Revisión final:` de `tasks.md` registra la revisión `sobre a1b2c3d`, y después de ese commit solo hay commits que se revisan en el hilo
 - WHEN se entra en `sdd-archive`
 - THEN no lanza otra revisión: comprueba que hubo revisión final y con qué ejes y modelos
-- AND si después del último revisado hay un commit `e4f5a6b` que cambia `src/slots.js` y `tasks.md` no tiene `Re-revisión:`, antes de escribir el walkthrough despacha la única re-revisión del tramo `<último revisado>..HEAD` (`sdd-kit:effort-high` + `opus`) y apunta `Re-revisión: <último revisado>..e4f5a6b, sdd-kit:effort-high + opus, <veredicto>`
+- AND si después del último revisado hay un commit `e4f5a6b` que cambia `src/slots.js` y `tasks.md` no tiene `Re-revisión:`, no despacha nada: devuelve el trabajo a `sdd-validate`, que lo revisa antes de la validación
 - AND si `tasks.md` ya tiene `Re-revisión:`, no despacha: el walkthrough lleva `sin revisar: e4f5a6b — <qué cambia>` en ✋
 - AND el último revisado es el segundo sha de la `Re-revisión:`; si no hay, el `sobre` de `Revisión final:`; y si la línea dice «juntada en el cierre», el commit de cierre
 - AND una línea en el formato 2.x (`Revisión final: sdd-kit:effort-high + opus, limpia, sobre a1b2c3d`, sin ejes) cuenta como revisión final, y el tramo de la única re-revisión empieza en su `sobre`, con la pasada de fix dentro, como en el cierre único
-- AND solo sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe de los ejes en esta sesión) invoca `sdd-verify` para la revisión final
+- AND sin la línea `Revisión final:` (ni, sin `tasks.md`, el informe de los ejes en esta sesión) no invoca `sdd-verify`: devuelve el trabajo a `sdd-validate`, porque la revisión final no es del cierre
 
 ### El eje Código marca los E2E que no siguen la política del proyecto
 
@@ -235,6 +228,16 @@ la revisión final de rama y la evidencia antes de afirmar: los ejes y lo que re
 - GIVEN `REMOVED — Avisar por correo` en `bookings`, un diff que deja `outbox.push` en `voidBooking()`, y «Avisar por correo» fuera de `capabilities/bookings.md` en el sha revisado y con su escenario en un commit anterior
 - WHEN revisa el eje Spec
 - THEN lee del historial de git la última versión del vigente, la anterior al commit que lo quitó, y marca Critical `contradicts` «REMOVED sigue implementado: Avisar por correo» con la línea del `outbox.push` en `src/app.js`
+
+### El revisor final sale en segundo plano al acabar el gate y el guion recorrido
+
+- GIVEN una feature Native con una task que cambia la UI, cuyo commit `a1b2c3d` acaba de hacerse y cuya «Verificación visual» ya se hizo
+- WHEN el hilo acaba la última task
+- THEN corre el gate de cierre y recorre el guion de pruebas, y con los dos en verde sobre `a1b2c3d` despacha los ejes en segundo plano sobre ese sha
+- AND mientras los ejes trabajan, el hilo escribe los borradores de cierre: `walkthrough.md` sin la verificación ni el tiempo, el delta fusionado en `capabilities/` y la entrada del changelog, todos sin commitear
+- AND la validación se presenta cuando el cierre de la revisión ha terminado (la pasada de fix y la re-revisión, si las hay), con lo residual en ✋, no antes
+- AND en los dos métodos, Native y SDD, los ejes los despacha `sdd-validate` con `sdd-verify`, con el gate y el guion en verde
+- AND un arreglo del guion que cambia el código después de `a1b2c3d` da otro sha: los ejes salen sobre el último
 
 ## Reglas de la capacidad
 

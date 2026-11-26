@@ -1,0 +1,56 @@
+--- [3]
+Ahora: localizo la feature 0010 y leo las referencias de validación. Queda: puerta de cierre, guion, revisión final y tu validación, ~15 min.
+
+--- [15]
+Ahora: corro la puerta de cierre. Como la rama toca `package.json` (archivo de «Sin filtro»), va entera, sin `--affected`. Queda: guion, revisión final y registro, ~10 min.
+
+--- [34]
+Puerta de cierre y guion en verde. Estoy esperando la re-revisión del commit `5c1808c` (el único posterior a la revisión final); hasta que vuelva no registro nada.
+
+--- [40]
+## Finding Verdicts
+
+Ninguno abierto.
+
+## New Breakage in the Fix Diff
+
+None.
+
+- **The script matches the spec.** `package.json:1` adds `"scripts": {"cancelar": "node src/app.js cancelar"}`. A call such as `npm run cancelar -- Norte lun --motivo "sala ocupada"` adds the arguments to the end of the script. So `process.argv.slice(2)` in `src/app.js:1` gets `['cancelar', 'Norte', 'lun', '--motivo', 'sala ocupada']`. `run` sends that to `cancelBooking(params[0], params[1], reasonOf(params))` (`src/app.js:42`), which gives the spec's form `cancelar <sala> <día> --motivo <motivo>`. npm quotes arguments that contain spaces, so the two-word reason «sala ocupada» stays one argument. The `--` matters: without it npm would take `--motivo` as its own option. The brief already assumes it is passed.
+- **The package still works as a module.** `"type": "module"` is kept and the JSON is valid. `src/app.js` uses `export` and runs as a script under `node`, so nothing changes for ESM. No existing key was dropped: before this commit `package.json` held only `"type"`.
+- **No UI text is involved.** The commit adds no user-facing text, so the Spanish-only rule does not apply.
+
+## Out-of-Scope Observations
+
+- The review package lists only `package.json` under "Files changed". The range also holds d44c1fc, which adds `.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md` (17 lines). I read it with `git show d44c1fc`. It is documentation only: the task log, the final review record over d4647cd, and one Ruling for Task 2 about test order. That Ruling was already known, and the file changes no code or behaviour. The package's file list is still incomplete for this range.
+- There is no npm script for `canceladas`. That fits the spec: bookings live only in memory until 0014, so a separate `npm run canceladas` would start a new process and always print an empty list. The listing only makes sense inside the same process, as the tests do.
+- There is no `scripts.test`. The closing gate is still `node --test` (plan §3), so this commit does not affect it.
+
+## Verdict
+
+Fix round: no. The diff d4647cd..5c1808c breaks nothing and introduces no findings.
+
+Files: `<run>/review-0010-5c1808c/package.json`, `<run>/review-0010-5c1808c/src/app.js`, `<run>/review-0010-5c1808c/.docs/sdd/specs/20261008-100000-feature-0010-cancel-reason/tasks.md`
+
+--- [53]
+Ahora: pre-comprobaciones del cierre de la 0010. Queda: registros, roadmap, commit de cierre, sincronizar base y fusionar, ~10 min.
+
+--- [65]
+Ahora: la base ya está integrada (`develop` al día), así que paso a fusionar la 0010 en `develop`. Queda: merge y mensaje final, ~3 min.
+
+--- [70]
+🦆 Cancelar una reserva ahora exige un motivo de la lista (cambio de planes, sala ocupada, otro). `cancelar Norte lun --motivo "sala ocupada"` responde «cancelada Norte lun (sala ocupada)». Con un motivo que no está en la lista, o sin `--motivo`, responde «motivo no válido: cambio de planes, sala ocupada, otro». `canceladas` lista «Norte lun — sala ocupada».
+
+**✋ Me salí del plan en…**
+
+- Task 2: el test de `canceladas` reutiliza la cancelación del primer test en vez de preparar la suya. Es un workaround hasta que cada test prepare sus datos. Si ese test corre solo o en otro orden, falla.
+
+- **Validación:** en campo, registrada en el walkthrough: suite 2/2, gate 6/6 y 4 THEN con ejecución real.
+- **Revisión final:** Spec y Código limpias sobre d4647cd. La re-revisión del script `cancelar` de `package.json` (el único commit posterior) salió limpia. Quedó anotada como «juntada en el cierre».
+- **Sin probar:** `canceladas` en un proceso aparte sale vacío, porque las reservas viven en memoria hasta la 0014. Es lo que dice la spec.
+- **Retro:** sin señales.
+- **Capability y roadmap:** `bookings` está fusionada en `capabilities/` y la fila 0010 del roadmap está en ✅.
+- **Gate:** `Gate: node --test test/app.test.js · node scripts/gate.mjs run bookings:test rooms:test` → bookings:test: corrió 5/5 (sin filtro: cambia el build) · rooms:test: corrió 1/1 (sin filtro: cambia el build) · sobre 89e636f. Ese commit solo cambia documentación respecto al código que pasó el gate. La base ya estaba integrada y no hubo sync merge.
+
+**Terminado.** feature/0010-cancel-reason fusionada en develop (ee8d88d) · push: no hecho: `merge.push` está en `false`
+

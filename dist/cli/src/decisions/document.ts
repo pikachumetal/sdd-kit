@@ -13,6 +13,7 @@ export interface Decision {
 }
 
 const NUMBER = /^(\d{4})-/;
+export const DECISIONS_FOLDER = 'decisions';
 const SECTION = /^#{2,3} \S/;
 const INLINE_LIST = /^\[(.*)\]$/;
 const BLOCK_ITEM = /^\s*- /;
@@ -50,13 +51,17 @@ function blockItems(lines: string[]): string[] {
   return items;
 }
 
+export function decisionNumber(name: string): string | null {
+  return name.endsWith('.md') ? (NUMBER.exec(name)?.[1] ?? null) : null;
+}
+
 export function readDecision(path: string): Decision {
   const lines = readLines(path);
   const front = frontmatter(lines);
   const title = lines.find((line) => line.startsWith('# '));
   return {
     file: basename(path),
-    number: NUMBER.exec(basename(path))?.[1] ?? null,
+    number: decisionNumber(basename(path)),
     title: title === undefined ? null : title.slice(2).trim(),
     status: field(front, 'status'),
     date: field(front, 'date'),
@@ -66,7 +71,7 @@ export function readDecision(path: string): Decision {
 }
 
 export function readDecisions(docsPath: string): Decision[] {
-  const folder = join(docsPath, 'decisions');
+  const folder = join(docsPath, DECISIONS_FOLDER);
   if (!existsSync(folder)) return [];
   return readdirSync(folder)
     .filter((name) => name.endsWith('.md'))

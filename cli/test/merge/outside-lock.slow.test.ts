@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { chmodSync, existsSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { edit, git, localCommit, mergeFixture, nodeGate, publishScript, pushRemoteCommit, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
+import { ADR_CLASH, commitFiles, edit, git, localCommit, mergeFixture, nodeGate, publishScript, pushRemoteCommit, runMerge, saveAll, sha, write, type Fixture } from './helpers.ts';
 
 interface Pass {
   lock: boolean;
@@ -42,10 +42,10 @@ function writePublisher(fx: Fixture, file: string, once: boolean): string {
 const real = (path: string) => realpathSync.native(path);
 
 // El remoto rechaza los `moves` primeros push y, en cada uno, mueve develop a un commit nuevo de otra sesión.
-function movingRemote(fx: Fixture, moves: number): string[] {
+function movingRemote(fx: Fixture, moves: number, fileOf = (index: number) => `src/q${index}.ts`): string[] {
   git(fx.seed, 'checkout', '-q', '-b', 'queue', 'develop');
   const commits = Array.from({ length: moves }, (_, index) => {
-    write(fx.seed, `src/q${index}.ts`, 'cola\n');
+    write(fx.seed, fileOf(index), 'cola\n');
     saveAll(fx.seed, `chore: otra sesión ${index}`);
     return sha(fx.seed, 'queue');
   });
@@ -293,5 +293,21 @@ describe('dos cierres a la vez no se esperan con un cerrojo cogido', () => {
     expect(firstResult.text).toContain("merge: 'develop' cambió durante la verificación; integro y verifico lo que se cruza (2/3)");
     expect(passes(fx).map((pass) => pass.lock)).toEqual([false, false]);
     ['feature/0001', 'feature/0002'].forEach((branch) => git(fx.repo, 'merge-base', '--is-ancestor', branch, 'develop'));
+  });
+});
+
+describe('el reintento del push sin --verify vuelve a comprobar la numeración', () => {
+  it('si develop recibe en el remoto una ADR con el número que trae la rama, para y no publica', async () => {
+    const fx = mergeFixture('push-movido-numeracion');
+    commitFiles(join(fx.wt, '0001'), { '.docs/sdd/decisions/0004-b.md': 'b\n' }, 'docs: adr 0004');
+    const [queued] = movingRemote(fx, 1, () => '.docs/sdd/decisions/0004-a.md');
+    const before = sha(fx.repo, 'develop');
+
+    const result = await runMerge(join(fx.wt, '0001'), ['--push']);
+
+    expect(result.code, result.text).toBe(1);
+    expect(result.text).toContain(ADR_CLASH.replace('<ref>', 'origin/develop'));
+    expect(sha(fx.repo, 'develop')).toBe(before);
+    expect(sha(fx.remote, 'develop')).toBe(queued);
   });
 });
