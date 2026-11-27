@@ -18,9 +18,10 @@ created: <YYYY-MM-DD>
 
 ## Estimación y action items
 
-> Solo si el usuario la pide. Sin evidencia no es retro, es opinión: los números salen de `estimation-log.md`.
+> Solo si el usuario la pide. Sin evidencia no es retro, es opinión: los números los da el verbo, sin cuentas a mano; si sale con error, escribe `Sin informe: <su mensaje>`.
 
-- **Agregado de la release**: estimado <X> h · real <Y> h (ratio <Z>).
+<salida de `sdd estimation report --release X.Y.Z`, sin tocar>
+
 - **Action items de la release anterior**: estado real de cada uno (aplicado, pendiente o descartado, con evidencia). Uno arrastrado dos veces se prioriza o se descarta por escrito.
 - **Qué funcionó**: <…>
 - **Qué corregir**: <…>

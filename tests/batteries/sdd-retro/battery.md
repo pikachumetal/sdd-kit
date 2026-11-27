@@ -2,7 +2,7 @@
 
 La mejora del entorno del proyecto: las señales del cierre y el repaso por causa de cada corte. Nace en la feature 0277.
 
-Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=close`, `check` o `release`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Sobre el molde `tests/batteries/using-sdd/mold-salas`: `cierre` añade la carpeta de la feature 0081 con su walkthrough, `.docs/sdd/steering/operations.md` y unas `notas-sesion.md` por escenario; `corte` completa `ROADMAP.md`, `CHANGELOG.md`, `debt.md` y la retro de la 1.3.0 sobre la forma 3.0.0 del molde; `corte-vacio`, la misma sin filas triadas ni retro, con `steering/estimation-log.md`.
+Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=close`, `check` o `release`); el método, en `.docs/sdd/steering/operations.md`, «Baterías por skill». El sujeto va aislado (`SUPERPOWERS_DIR`). Sobre el molde `tests/batteries/using-sdd/mold-salas`: `cierre` añade la carpeta de la feature 0081 con su walkthrough, `.docs/sdd/steering/operations.md` y unas `notas-sesion.md` por escenario; `corte` completa `ROADMAP.md`, `CHANGELOG.md`, `debt.md` y la retro de la 1.3.0 sobre la forma 3.0.0 del molde; `corte-vacio`, la misma sin filas triadas ni retro, con `steering/estimation-log.md`; `corte-estimacion`, la de `corte` con `steering/estimation.md`, el bloque de tiempo en el walkthrough de la 0040 y su log generado.
 
 **Petición por fase.** En el RED la skill no existe: `subject.mjs` deja la petición tal cual, que pide el paso de `sdd-archive`. Fuera del RED, en `close` y `check`, antepone «Invoca la skill sdd-kit:sdd-retro con `cierre` y ». `r4` y `r6` piden el corte, y `sdd-end-release` la invoca.
 
@@ -18,6 +18,7 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=
 | r5 | check | La 0081 se está cerrando: su walkthrough está en `.docs/sdd/specs/20261020-100000-feature-0081-reminders/` y lo que pasó en la sesión, en `notas-sesion.md`. Haz solo el paso del cierre de `sdd-archive` que revisa si hay que mejorar el entorno del proyecto, y deja lo que haga falta sin commitear. | cierre | `sdd-kit:sdd-retro` | 2 | 2/2 | sonnet | propuesta 0131, §archive: el chequeo es el primer peldaño |
 | r4 | release | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 1.4.0 con lo que hay en Now; la versión es esa, confirmada. | corte | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | fila 0277: «lo que tenemos ahora es muy miope» |
 | r6 | release | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release con lo que hay en Now. | corte-vacio | `sdd-kit:sdd-end-release` | 1 | 1/1 | sonnet | revisión final de la 0277: sin deuda triada no hay carpeta, y la estimación se ofrece |
+| r7 | release | Invoca la skill sdd-kit:sdd-end-release y sigue. Cierra la release 1.4.0 con lo que hay en Now; la versión es esa, confirmada. Quiero también la estimación y los action items de la retro. | corte-estimacion | `sdd-kit:sdd-end-release` | 2 | 2/2 | sonnet | fila 0374: la retro sin scripts sueltos |
 
 ## Rúbrica
 
@@ -39,6 +40,8 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=
 | R9 Changelog | r4 | `tools: /^>>> (Skill: \S*add-to-changelog(\s\|$)\|Read: [^\n]*add-to-changelog[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*add-to-changelog[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$\|[\|] *head -(n )?([5-9]\d\|\d{3,})(?!\d)))/` ausente |
 | R7 Sin carpeta | r6 | existe `.docs/sdd/releases/v1.4.0/` |
 | R8 Oferta | r6 | la propuesta no ofrece la estimación y los action items en una línea |
+| R10 Informe | r7 | `file: retro.md /Persona [\|] n [\|] Real \(h\) [\|] Ratio [\|] Real > est/` |
+| R11 Sin cuentas a mano | r7 | «Estimación y action items» lleva un agregado calculado a mano sobre `estimation-log.md` (estimado, real o ratio fuera de las tablas del informe) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas
@@ -52,4 +55,5 @@ La tabla la completan el RED y el GREEN de la 0277 (`tests/sdd-retro-red.md`, `t
 | La señal del kit va al ticket | decisión 11 de la spec; revisión de la spec | r3 |
 | Repaso, propuestas y arrastre | fila 0277; RED `r4` | r4, r6 |
 | El chequeo como primer peldaño | propuesta 0131, §archive; RED `r5`: sale sin guía, se queda como valor de la línea | r5 |
+| La estimación pega `sdd estimation report --release` | fila 0374; RED `r7` | r7 |
 | El corte carga `add-to-changelog` (paso 3 de `sdd-end-release`) | feature 0343, decisión 8: humo de la skill que solo corre en el corte; RED, `r4` de la fase `z-ret` de la 0152 releído con R9 | r4 |

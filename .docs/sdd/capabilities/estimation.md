@@ -296,10 +296,58 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - AND sin `Inicio:` en `patch.md`, o con el marcador de la plantilla, cuenta toda la sesión, como sin `--artifact`
 - AND una rama medida por ventana sigue contando desde su creación
 
+### El informe atribuye cada cierre a quien lo escribió
+
+- GIVEN un repo git donde Ana commitea `.docs/sdd/specs/20260910-100000-feature-0010-a/walkthrough.md` y Luis commitea `.docs/sdd/specs/20260912-100000-patch-0011-b/patch.md`, los dos con bloque de tiempo; después Pepe mueve `specs/` a `changes/` con `git mv` en el commit `chore(sdd): migrar al kit v3.0.1`, y Luis corrige un typo de `changes/20260910-100000-feature-0010-a/walkthrough.md`
+- AND un cierre `changes/20260915-100000-feature-0012-c/walkthrough.md` que entra por primera vez en ese mismo commit de migración
+- WHEN se ejecuta `sdd estimation report --root <proyecto>`
+- THEN la tabla por persona tiene `Ana` con n `1 *` y `Luis` con n `1 *`, y `sin atribuir` con n `1 *`, la última; `Pepe` no aparece
+- AND el autor es el del commit más antiguo que añade o modifica `<carpeta>/<fichero>`, sea en `specs/` o en `changes/`; si ese commit es de migración (asunto que empieza por `chore(sdd): migrar al kit`), el cierre es `sin atribuir`
+
+### El informe da la versión del kit de cada cierre
+
+- GIVEN el repo anterior, con `.docs/sdd/sdd-kit.json` a `version` `2.3.4` en los commits de Ana y Luis y a `3.0.1` tras la migración, y un cuarto cierre `changes/20261110-100000-feature-0020-d/walkthrough.md` de Ana commiteado con el marcador a `3.0.1`
+- WHEN se ejecuta `sdd estimation report --root <proyecto>`
+- THEN la tabla `| Versión marcada del kit | …` tiene `2.3.4` con n `2 *`, `3.0.1` con n `1 *` y `sin marcador` con n `1 *` (el cierre `sin atribuir`), en ese orden
+- AND la versión es la de `.docs/sdd/sdd-kit.json` en el commit que atribuye el cierre; sin el fichero, o sin `version`, `sin marcador`
+- AND la tabla de versiones va por SemVer: `3.9.0` antes de `3.10.0`, y `sin marcador` al final
+
+### El informe agrega por persona, carril y versión del kit
+
+- GIVEN un proyecto fuera de todo repositorio git con dos cierres `feature` con estimado 1 h y real 1 h, y estimado 2 h y real 3 h, y un `patch` con estimado `0,5 h (post hoc)` y real 1 h
+- WHEN se ejecuta `sdd estimation report --root <proyecto>`
+- THEN avisa una vez por stderr `Sin historial de git en <ruta>: persona y versión salen sin atribuir y sin marcador.` y sale con 0
+- AND la tabla por carril es `| Carril | n | Real (h) | Ratio | Real > est |`, con `| feature | 2 * | 2 | 1.25 | 1 |` y `| patch | 1 * | 1 | — | 0 |`, y acaba en `* n < 5: mediana orientativa.`
+- AND «Real (h)» es la mediana del real, «Ratio» la mediana de real/estimado y «Real > est» cuántas filas tienen ratio > 1; una fila sin estimado o `post hoc` cuenta en n y en el real, no en las otras dos
+- AND hay una tabla igual por persona (`| Persona | …`) y otra por versión (`| Versión marcada del kit | …`); aquí las dos tienen una sola fila, `sin atribuir` y `sin marcador`, con n `3 *`
+- AND con tres cierres `feature` más (real 1 h, estimado 1 h), la fila es `| feature | 5 | 1 | 1 | 1 |`, sin `*`; si ninguna fila de la tabla tiene `*`, no hay nota
+- AND sin ningún cierre, cada tabla se sustituye por `Sin cierres.` y el verbo sale con 0
+
+### El informe da las fases por persona
+
+- GIVEN, sin git, dos cierres con `timing.json` versión 1, `measured` y `withinMargin`: en el primero `implementacion` mide `agentSeconds` 1800 + `execSeconds` 1800 con `estimateHours` 0,5, y `revision` tiene `measured: false`; en el segundo `implementacion` mide 3600 + 1800 con `estimateHours` 1, y `apertura` mide 600 + 0 sin estimado
+- AND un tercer cierre con un `timing.json` `withinMargin: false`, y un cuarto sin `timing.json`
+- WHEN se ejecuta `sdd estimation report --root <proyecto>`
+- THEN la tabla `| Fase | Persona | n | Real (h) | Ratio |` tiene, en este orden, `| apertura | sin atribuir | 1 * | 0.17 | — |` y `| implementación | sin atribuir | 2 * | 1.25 | 1.75 |`, y ninguna fila de `revisión`
+- AND «Real (h)» es la mediana de agente + ejecución de cada cierre (1 h y 1,5 h → 1,25); «Ratio», la mediana de ese real entre `estimateHours` en las fases con estimado (2 y 1,5 → 1,75); `waitSeconds` y `gateSeconds` no cuentan
+- AND el `timing.json` fuera del margen no entra, con el aviso `timing.json fuera del margen, fuera de la tabla de fases: <carpeta>.`, y su cierre sigue contando en las tablas de persona, carril y versión (n `4 *` en cada una)
+- AND las fases van en el orden `apertura`, `implementación`, `revisión`, `cierre`, y dentro de cada una las personas por nombre
+- AND sin ningún `timing.json` válido, la tabla se sustituye por `Sin datos: ninguna tarea tiene timing.json.`
+
+### Con `--release` solo cuentan los cierres de esa release
+
+- GIVEN un repo git con `CHANGELOG.md` que tiene `## [3.1.0] - 2026-11-20` y `## [3.0.5] - 2026-11-18`; el cierre `0030` (`created: 2026-11-17`) commiteado antes del tag `v3.0.5`; el `0031` (`created: 2026-11-19`) después del tag; y el `0032` (`created: 2026-11-22`) después
+- WHEN se ejecuta `sdd estimation report --root <proyecto> --release 3.1.0`
+- THEN las tablas cuentan solo `0031`: la tabla por carril tiene n `1 *`
+- AND escribe por stderr `Fuera de toda release: 1 cierres sin publicar o sin fecha; no cuentan en la 3.1.0.` y sale con 0
+- AND con `--release 3.0.5` cuenta solo `0030`, y sin `--release` los tres
+- AND con `--release 9.9.9` sale con 1 y escribe `La versión 9.9.9 no está con fecha en el changelog (<ruta>): nada que informar.`; sin changelog, sale con 1 y escribe `Sin changelog en <ruta>: --release necesita las versiones del changelog.`
+- AND una release sin cierres saca `Sin cierres en la <X.Y.Z>.` en cada tabla y sale con 0
+
 ## Reglas de la capacidad
 
-- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el desglose por fase, en `timing.json` de cada carpeta de artefactos, y el estimado de cada fase, en su `plan.md`; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`.
-- **Idioma de los nombres**: columnas, etiquetas y avisos del log en castellano, como las plantillas que lee; las claves de `timing.json` en inglés y sus nombres de fase sin tilde, como contrato que leen otros verbos.
-- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min. Las fases suman el reloj con un margen de 60 s o del 1 % del reloj, lo que sea mayor.
-- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe, un documento presente en sus dos rutas, y un `timing.json` fuera del margen (al escribirlo y, con la tarea fuera de la tabla, al generar el log). La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout.
-- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos.
+- **Dónde viven los datos**: los bloques de tiempo de `walkthrough.md` (§2) y de `patch.md` (§5) de cada carpeta de artefactos, con la estimación previa del patch y su hora de inicio en §5, escritas antes del fix, y la marca `post hoc` si la estimación llega en el commit de cierre; el desglose por fase, en `timing.json` de cada carpeta de artefactos, y el estimado de cada fase, en su `plan.md`; el esfuerzo real y las esperas, de los transcripts de Claude Code; para una rama sin transcripts propios, de los transcripts de los demás worktrees del repo, entre la creación de la rama (su reflog) y su último merge en `merge.into`; el log, generado, en la carpeta de `estimation.md`; la persona y la versión marcada del kit de cada cierre, del historial de git (autor del commit más antiguo de su artefacto y `sdd-kit.json` en ese commit); el informe, solo por stdout.
+- **Idioma de los nombres**: columnas, etiquetas y avisos del log y del informe en castellano, como las plantillas que lee; las claves de `timing.json` en inglés y sus nombres de fase sin tilde, como contrato que leen otros verbos; en las tablas, la fase con tilde (`implementación`, `revisión`).
+- **Límites**: la ventana de una rama sin transcripts propios va de la primera entrada de su reflog hasta su último merge en `merge.into`, la creación de otra rama local sin transcripts propios o ahora, lo que llegue antes. Un hueco sin actividad pasa de 60 min. Las fases suman el reloj con un margen de 60 s o del 1 % del reloj, lo que sea mayor. En el informe, un grupo con menos de 5 cierres lleva su mediana como orientativa.
+- **Avisos**: por stderr y sin cambiar el código de salida: un bloque de tiempo sin esfuerzo real legible (la fila se excluye), un log mantenido a mano que se sobrescribe, un documento presente en sus dos rutas, un `timing.json` fuera del margen (al escribirlo y, con la tarea fuera de la tabla, al generar el log o el informe), un informe sin historial de git y, con `--release`, los cierres que no caen en ninguna release. La línea `- Medición: por ventana …` no es un aviso: es parte de la salida, por stdout. Los errores de `--release` (versión sin fecha en el changelog, o sin changelog) no son avisos: salen con 1.
+- **Regla ante conflicto**: con un documento en su ruta 3.0.0 y en la 2.x a la vez (`steering/estimation.md` y `estimation.md`, `CHANGELOG.md` y `<docs>/changelog.md`), manda la 3.0.0 y el verbo avisa por stderr del otro, también `estimation report` con `--release`. Las carpetas de artefactos (`changes/` y `specs/`) se leen las dos. Con el mismo `<carpeta>/<fichero>` en las dos, el autor es el del commit más antiguo de cualquiera de ellas.

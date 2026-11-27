@@ -44,6 +44,14 @@ la mejora del entorno del proyecto: señales del cierre y repaso por causa de ca
 - AND sin ninguna fila que cumpla la entrada, «Propuestas» dice `Sin propuestas`, sin inventar ninguna
 - AND sin `debt.md`, o si el verbo dice `Sin deuda triada`, no hay repaso
 
+### La estimación de la retro pega el informe de la release
+
+- GIVEN un corte de la 1.4.0 en un proyecto con `estimation-log.md`, y el usuario que pide la estimación y los action items
+- WHEN `sdd-retro` escribe `.docs/sdd/releases/v1.4.0/retro.md`
+- THEN «Estimación y action items» lleva literal la salida de `sdd estimation report --release 1.4.0`, sin cuentas a mano sobre `estimation-log.md`
+- AND si el verbo sale con error, la sección lleva `Sin informe: <su mensaje>`, sin cuentas a mano
+- AND el estado de los action items de la retro anterior sigue en la sección
+
 ## Reglas de la capacidad
 
 - **Dónde viven los datos**: la línea del cierre, en §5 del walkthrough; el repaso, en `.docs/sdd/releases/vX.Y.Z/retro.md`.
