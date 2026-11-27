@@ -102,6 +102,7 @@ Cómo se acumulan los tiempos de features y patches en `estimation-log.md` y qui
 - THEN la línea empieza por `Tokens de subagentes: 510.010 en 1 despacho — Revisión final de rama claude-opus-5-5 510.010 / 12 min` (con dos o más, «despachos» y los despachos separados por `; `)
 - AND los tokens del subagente no se suman a los del hilo
 - AND un despacho cuya última respuesta no acaba en texto ni en `SubagentHandback` (sigue trabajando) sale con `, en curso` detrás de los minutos: `… 510.010 / 12 min, en curso`
+- AND con 10 despachos ninguna línea de texto que imprime pasa de 120 columnas, salvo las filas de la tabla: la que pasaría se parte por palabras y cada continuación empieza por dos espacios, con el total en la primera línea, que `sdd estimation log` sigue leyendo igual que en el formato de una línea
 
 ### El coste sale de la tabla de precios del proyecto
 

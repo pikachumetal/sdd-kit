@@ -7,7 +7,7 @@ solution: ticket
 status: done
 created: 2026-11-27
 branch: feature/0373-cli-lines-md013
-commit: <hash>
+commit: d280a2ac7
 ---
 
 # Patch 0373 — `sdd session tokens` y `sdd ledger rulings` parten sus líneas a 120 columnas
@@ -17,9 +17,8 @@ que una persona observe que los tests no midan; el uso real lo valida en campo (
 
 ## Capacidades
 
-- Modificadas: `estimation` — los subagentes se miden aparte del hilo: con muchos despachos, la línea se parte
-- Modificadas: `implementation` — los rulings del ledger se cosechan antes de borrar el workspace: la salida de texto se
-  parte
+- Modificadas: `estimation` — cambia «Los subagentes se miden aparte del hilo»
+- Modificadas: `implementation` — cambia «Los rulings del ledger se cosechan antes de borrar el workspace»
 
 ## 1. Síntoma
 
@@ -76,6 +75,13 @@ Revisor (sonnet, effort medium), sin hallazgos importantes; los cuatro menores, 
 4. Sin test del verbo `ledger rulings` → `native.slow.test.ts`: un ruling largo sale partido en texto y entero con
    `--json`; 4/4 con `-t rulings`.
 
+Gate: `moon run kit:test-headless cli:typecheck cli:test --affected --base develop` → cli:test: corrió 2635/2650 (15
+omitidos) · kit:test-headless: corrió 820/820 · cli:typecheck: corrió, sin errores · 2 min 43 s
+
+Validación en campo: 2026-11-27 · gate en verde · `sdd session tokens` sobre la sesión del patch: ninguna línea de
+texto pasa de 120 columnas · tests: 10 despachos 1/1, `estimation log` con los dos formatos 1/1, `ledger rulings` en
+texto y `--json` 1/1
+
 Los consumidores: el revisor buscó en `cli/src`, `skills/` y `cli/test/kit` otro lector línea a línea de las dos salidas
 y no lo hay; `minutesAfterHours` no lee la continuación de `Esfuerzo real`.
 
@@ -83,7 +89,9 @@ y no lo hay; `minutesAfterHours` no lee la continuación de `Esfuerzo real`.
 
 - Estimación: 1 h + 0,08 h del gate de cierre (tope de 5 min, `operations.md`)
 - Inicio: 2026-11-27T14:03Z
-- Esfuerzo real: <pendiente>
+- Esfuerzo real: 0,31 h — reloj de la sesión 0,31 h desde 2026-11-27T14:03Z, sin 0 min de espera al dev-lead (0 esperas)
+- Desviación: −69 % frente a 1 h; ninguna espera ni hueco la explica (0 min): el fix, un helper y dos llamadas, fue
+  más corto de lo estimado
 - Coste de sujetos: no aplica
 
 ## 6. Delta de capacidad
