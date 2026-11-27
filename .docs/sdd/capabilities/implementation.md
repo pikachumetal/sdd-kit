@@ -154,6 +154,7 @@ La ejecución de un plan aprobado: Native y SDD, las tasks, sus RED, el ledger, 
 - THEN escribe esas tres líneas en el orden del ledger y sale con 0
 - AND sin ledger escribe `Sin rulings` y sale con 0
 - AND una fila de tabla del ledger (la del pre-flight) que contiene `Ruling:` no sale: solo cuentan las líneas que no empiezan por `|`
+- AND un ruling de más de 120 columnas sale partido por palabras, cada continuación con dos espacios delante; con `--json`, entero
 
 ### Las tasks Native se abren y cierran desde cualquier shell
 

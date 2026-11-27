@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { wrapLine } from '../../src/cli/wrap.ts';
 import { listRulings } from '../../src/tasks/rulings.ts';
 
 const ledgerText = [
@@ -37,6 +38,21 @@ describe('sdd ledger rulings', () => {
       '',
     ].join('\n');
     expect(listRulings(workspaceWithLedger(text))).toEqual(['Task 2: Ruling: el umbral queda en 30 s — el plan decía 20 y el test tarda 24']);
+  });
+
+  it('wrapLine splits a long ruling at 120 columns with a two-space continuation', () => {
+    const long = `Task 3: Ruling: ${'se queda la regla vieja porque el plan no la nombra '.repeat(6).trim()}`;
+    const lines = wrapLine(long);
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines.filter((line) => line.length > 120)).toEqual([]);
+    expect(lines.slice(1).every((line) => /^ {2}\S/.test(line))).toBe(true);
+    expect(lines.map((line) => line.trim()).join(' ')).toBe(long);
+    expect(wrapLine('Task 1: Ruling: corta')).toEqual(['Task 1: Ruling: corta']);
+  });
+
+  it('wrapLine keeps the indent, drops double spaces and never opens a continuation with a Markdown marker', () => {
+    expect(wrapLine('  aaa  bbb ccc', 9)).toEqual(['  aaa bbb', '  ccc']);
+    expect(wrapLine('aaa bbb - ccc', 7)).toEqual(['aaa', '  bbb -', '  ccc']);
   });
 
   it('rulings without ledger', () => {

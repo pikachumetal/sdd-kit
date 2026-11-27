@@ -53,6 +53,9 @@ export async function measure(worktree: Worktree, extra: string[] = []): Promise
   return { output: io.stdout.join('\n'), code };
 }
 
+// Junta las continuaciones de una línea partida a 120 columnas (patch 0373): los tests comparan el texto lógico.
+export const logicalLines = (lines: string[]): string[] => lines.join('\n').replace(/\n {2}/g, ' ').split('\n');
+
 export function line(output: string, label: string): string | undefined {
-  return output.split('\n').find((candidate) => candidate.startsWith(`- ${label}:`));
+  return logicalLines(output.split('\n')).find((candidate) => candidate.startsWith(`- ${label}:`));
 }

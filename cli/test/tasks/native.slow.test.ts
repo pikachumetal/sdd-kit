@@ -123,6 +123,17 @@ describe('sdd task start / task done', () => {
     expect(sdd(repo, 'ledger', 'rulings', plan).out.trim()).toBe('Task 1: Ruling: se queda como está');
   });
 
+  it('rulings wraps a long ruling in text and keeps it whole in json', () => {
+    const repo = newRepo();
+    const workspace = sdd(repo, 'workspace', plan).out.trim();
+    const long = `Task 1: Ruling: ${'se queda la regla vieja porque el plan no la nombra '.repeat(4).trim()}`;
+    writeFileSync(join(workspace, 'progress.md'), `${long}\n`);
+    const text = sdd(repo, 'ledger', 'rulings', plan).out.trimEnd().split(/\r?\n/);
+    expect(text.length).toBeGreaterThan(1);
+    expect(text.every((line) => line.length <= 120)).toBe(true);
+    expect(JSON.parse(sdd(repo, 'ledger', 'rulings', plan, '--json').out)).toEqual([long]);
+  });
+
   it('start fails without a plan', () => {
     const repo = newRepo();
     const result = sdd(repo, 'task', 'start', 'docs/no-existe.md', '1');
