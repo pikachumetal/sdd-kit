@@ -502,6 +502,21 @@ function developLockfile() {
   s.commit('chore: package-lock.json (0015)');
   s.git('checkout', '-q', 'feature/0010-cancel-reason');
 }
+// Un manifiesto de la lista «Sin filtro» por defecto que no es input de ninguna tarea de gate.json: no cruza la rama.
+function developManifest() {
+  developRoomsTest();
+  s.git('checkout', '-q', 'develop');
+  s.put('package.json', '{"type": "module", "engines": {"node": ">=22"}}\n');
+  s.commit('chore: package.json fija la versión de Node (0015)');
+  s.git('checkout', '-q', 'feature/0010-cancel-reason');
+}
+// develop gana un test en un input de bookings:test: la base cruza la rama, y el gate filtrado corre bookings:test.
+function developAppTest() {
+  s.git('checkout', '-q', 'develop');
+  appendFileSync(at('test/app.test.js'), "\ntest('libres responde con texto', () => {\n  assert.equal(typeof run('libres', ['10:00-12:00']), 'string');\n});\n");
+  s.commit('test(bookings): libres responde con texto (0016)');
+  s.git('checkout', '-q', 'feature/0010-cancel-reason');
+}
 // La rama y develop cambian la misma línea de architecture.md: «join» suma sin contradecirse; «clash» pone dos valores distintos.
 const STACK_LINE = '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.';
 const STACK_CHANGES = {
@@ -713,7 +728,7 @@ const molds = {
     moldReservas();
     affectedGate();
     done0010();
-    developLockfile();
+    developManifest();
     validated0010();
     s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
   },
@@ -783,6 +798,7 @@ const molds = {
     edit(`${F10}/tasks.md`, [/sobre [0-9a-f]{7}/, `sobre ${short('HEAD')}`]);
     s.commit('docs(sdd): la revisión final sobre el último commit');
     developLockfile();
+    developAppTest();
     validated0010();
     s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
   },
