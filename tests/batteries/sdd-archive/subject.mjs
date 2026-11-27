@@ -486,21 +486,35 @@ function validated0010() {
     row('Listado de canceladas', `node --input-type=module -e "const { run } = await import('./src/app.js'); run('cancelar', ['Norte', 'lun', '--motivo', 'sala ocupada']); console.log(run('canceladas', []))"`, 'Norte lun — sala ocupada'), '',
     `Validación en campo: 2026-10-26 · smoke con una fila por THEN (4.2) y suite en verde sobre ${head}`, ''].join('\n'));
 }
-// Tras la validación, develop gana la 0015, que solo cambia el test de las salas.
-function developRoomsTest() {
+// Un commit de develop tras la validación: la rama vuelve a quedar sacada.
+function onDevelop(title, change) {
   s.git('checkout', '-q', 'develop');
-  appendFileSync(at('test/rooms.test.js'), "\ntest('las salas no se repiten', () => {\n  assert.equal(new Set(rooms).size, rooms.length);\n});\n");
-  s.commit('test(rooms): las salas no se repiten (0015)');
+  change();
+  s.commit(title);
   s.git('checkout', '-q', 'feature/0010-cancel-reason');
 }
+// La 0015 solo cambia el test de las salas.
+function developRoomsTest() {
+  onDevelop('test(rooms): las salas no se repiten (0015)', () =>
+    appendFileSync(at('test/rooms.test.js'), "\ntest('las salas no se repiten', () => {\n  assert.equal(new Set(rooms).size, rooms.length);\n});\n"));
+}
 
-// Tras la validación, develop gana la 0015, que trae también el lockfile: un fichero de la lista «Sin filtro» del kit.
+// La 0015 trae también el lockfile, de la lista «Sin filtro» del kit e input de ninguna tarea de gate.json.
 function developLockfile() {
   developRoomsTest();
-  s.git('checkout', '-q', 'develop');
-  s.put('package-lock.json', '{\n  "name": "salas",\n  "lockfileVersion": 3,\n  "packages": {}\n}\n');
-  s.commit('chore: package-lock.json (0015)');
-  s.git('checkout', '-q', 'feature/0010-cancel-reason');
+  onDevelop('chore: package-lock.json (0015)', () =>
+    s.put('package-lock.json', '{\n  "name": "salas",\n  "lockfileVersion": 3,\n  "packages": {}\n}\n'));
+}
+// Un manifiesto de la lista «Sin filtro» por defecto que no es input de ninguna tarea de gate.json: no cruza la rama.
+function developManifest() {
+  developRoomsTest();
+  onDevelop('chore: package.json fija la versión de Node (0015)', () =>
+    s.put('package.json', '{"type": "module", "engines": {"node": ">=22"}}\n'));
+}
+// Un test en un input de bookings:test: la base cruza la rama, y el gate filtrado corre bookings:test.
+function developAppTest() {
+  onDevelop('test(bookings): libres responde con texto (0016)', () =>
+    appendFileSync(at('test/app.test.js'), "\ntest('libres responde con texto', () => {\n  assert.equal(typeof run('libres', ['10:00-12:00']), 'string');\n});\n"));
 }
 // La rama y develop cambian la misma línea de architecture.md: «join» suma sin contradecirse; «clash» pone dos valores distintos.
 const STACK_LINE = '- Node 22, sin dependencias externas. Un solo fichero de entrada: `src/app.js`.';
@@ -713,7 +727,7 @@ const molds = {
     moldReservas();
     affectedGate();
     done0010();
-    developLockfile();
+    developManifest();
     validated0010();
     s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
   },
@@ -773,7 +787,7 @@ const molds = {
     moldReservas();
     done0010();
   },
-  // Un test de la rama que falla cuando el gate corre entero tras la base: la rama lo trae roto y la base solo añade el lockfile.
+  // La rama trae un test roto en un input de bookings:test y la base toca otro: el cruce corre bookings:test, que sale rojo.
   'reservas-rojo-cierre': () => {
     moldReservas();
     affectedGate();
@@ -783,6 +797,7 @@ const molds = {
     edit(`${F10}/tasks.md`, [/sobre [0-9a-f]{7}/, `sobre ${short('HEAD')}`]);
     s.commit('docs(sdd): la revisión final sobre el último commit');
     developLockfile();
+    developAppTest();
     validated0010();
     s.env.TURN2 = 'El walkthrough sin commitear es el borrador del cierre: sigue con el cierre.';
   },
