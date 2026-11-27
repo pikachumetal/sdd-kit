@@ -1,13 +1,13 @@
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { DomainError } from '../cli/args.ts';
-import { changeFolders } from '../cli/layout.ts';
+import { changeFolders, shadowWarning } from '../cli/layout.ts';
 import { readRows } from './artifacts.ts';
 import type { Row } from './artifacts.ts';
 import type { Warn } from './fields.ts';
 import { resolveDocsPath } from './log.ts';
 import { formatNumber, median } from './numbers.ts';
-import { NO_DATA, PHASE_LABELS, readTiming } from './phases.ts';
+import { NO_DATA, PHASE_LABELS, readTiming, SECONDS_PER_HOUR, workSeconds } from './phases.ts';
 import { releaseIndex, UNDATED, UNPUBLISHED } from './releases.ts';
 import type { PhaseRecord } from './phases.ts';
 import { MISSING } from './text.ts';
@@ -17,7 +17,6 @@ export const UNATTRIBUTED = 'sin atribuir';
 export const UNMARKED = 'sin marcador';
 const SMALL_SAMPLE = 5;
 const NOTE = '* n < 5: mediana orientativa.';
-const SECONDS_PER_HOUR = 3600;
 
 export interface ReportSource {
   row: Row;
@@ -46,17 +45,8 @@ const unattributed = (_docsPath: string, sources: ReportSource[]): Attribution[]
 const specialsLast = (name: string): number => (name === UNATTRIBUTED || name === UNMARKED ? 1 : 0);
 const byName: Compare = (first, second) => specialsLast(first) - specialsLast(second) || first.localeCompare(second);
 
-function versionParts(version: string): number[] {
-  return version.split('.').map(Number);
-}
-
-const bySemVer: Compare = (first, second) => {
-  const special = specialsLast(first) - specialsLast(second);
-  if (special !== 0) return special;
-  const [a, b] = [versionParts(first), versionParts(second)];
-  const differing = a.findIndex((part, index) => part !== b[index]);
-  return differing < 0 ? 0 : a[differing]! - (b[differing] ?? 0);
-};
+const bySemVer: Compare = (first, second) =>
+  specialsLast(first) - specialsLast(second) || first.localeCompare(second, undefined, { numeric: true });
 
 const sampleCell = (n: number): string => (n < SMALL_SAMPLE ? `${n} *` : String(n));
 const noteFor = (sizes: number[]): string[] => (sizes.some((n) => n < SMALL_SAMPLE) ? ['', NOTE] : []);
@@ -68,8 +58,17 @@ function groupLine(name: string, rows: ReportRow[]): string {
   return `| ${name} | ${sampleCell(rows.length)} | ${formatNumber(median(rows.map((row) => row.real)))} | ${ratio} | ${over} |`;
 }
 
-function groupTable(label: string, rows: ReportRow[], key: (row: ReportRow) => string, compare: Compare, empty: string): string[] {
-  if (rows.length === 0) return [empty];
+interface GroupSpec {
+  label: string;
+  key: (row: ReportRow) => string;
+  compare: Compare;
+}
+
+const PERSON: GroupSpec = { label: 'Persona', key: (row) => row.person, compare: byName };
+const LANE: GroupSpec = { label: 'Carril', key: (row) => row.type, compare: byName };
+const KIT_VERSION: GroupSpec = { label: 'Versión marcada del kit', key: (row) => row.kitVersion, compare: bySemVer };
+
+function groupTable({ label, key, compare }: GroupSpec, rows: ReportRow[]): string[] {
   const groups = Map.groupBy(rows, key);
   const names = [...groups.keys()].sort(compare);
   const sizes = names.map((name) => groups.get(name)!.length);
@@ -82,11 +81,18 @@ interface PersonPhase {
   phase: PhaseRecord;
 }
 
-const workHours = (phase: PhaseRecord): number => (phase.agentSeconds + phase.execSeconds) / SECONDS_PER_HOUR;
+const workHours = (phase: PhaseRecord): number => workSeconds(phase) / SECONDS_PER_HOUR;
+
+function phaseRatio(phases: PhaseRecord[]): string {
+  const ratios = phases.flatMap((phase) => {
+    const estimate = phase.estimateHours;
+    return estimate !== null && estimate > 0 ? [workHours(phase) / estimate] : [];
+  });
+  return ratios.length === 0 ? MISSING : formatNumber(median(ratios));
+}
 
 function phaseLine(label: string, person: string, phases: PhaseRecord[]): string {
-  const estimated = phases.filter((phase) => phase.estimateHours !== null && phase.estimateHours > 0);
-  const ratio = estimated.length === 0 ? MISSING : formatNumber(median(estimated.map((phase) => workHours(phase) / phase.estimateHours!)));
+  const ratio = phaseRatio(phases);
   return `| ${label} | ${person} | ${sampleCell(phases.length)} | ${formatNumber(median(phases.map(workHours)))} | ${ratio} |`;
 }
 
@@ -114,11 +120,12 @@ function phaseTable(rows: ReportRow[], warn: Warn): string[] {
 }
 
 function render(rows: ReportRow[], empty: string, warn: Warn): string {
+  const table = (lines: () => string[]): string[] => (rows.length === 0 ? [empty] : lines());
   const sections = [
-    ['Por persona', groupTable('Persona', rows, (row) => row.person, byName, empty)],
-    ['Por carril', groupTable('Carril', rows, (row) => row.type, byName, empty)],
-    ['Por versión marcada del kit', groupTable('Versión marcada del kit', rows, (row) => row.kitVersion, bySemVer, empty)],
-    ['Por fase y persona', phaseTable(rows, warn)],
+    ['Por persona', table(() => groupTable(PERSON, rows))],
+    ['Por carril', table(() => groupTable(LANE, rows))],
+    ['Por versión marcada del kit', table(() => groupTable(KIT_VERSION, rows))],
+    ['Por fase y persona', table(() => phaseTable(rows, warn))],
   ] as const;
   return sections.map(([title, lines]) => [`### ${title}`, '', ...lines].join('\n')).join('\n\n');
 }
@@ -127,8 +134,14 @@ function readSources(docsPath: string, warn: Warn): ReportSource[] {
   return changeFolders(docsPath).flatMap((root) => readRows(root, warn).map((row) => ({ row, root })));
 }
 
-function selectRelease(sources: ReportSource[], docsPath: string, release: string, warn: Warn): ReportSource[] {
+interface ReleaseScope {
+  docsPath: string;
+  release: string;
+}
+
+function selectRelease(sources: ReportSource[], { docsPath, release }: ReleaseScope, warn: Warn): ReportSource[] {
   const index = releaseIndex(docsPath);
+  if (index.shadowed !== null) warn(shadowWarning(docsPath, index.shadowed));
   if (index.changelog === null) throw new DomainError(`Sin changelog en ${docsPath}: --release necesita las versiones del changelog.`);
   if (!index.versions.includes(release)) {
     throw new DomainError(`La versión ${release} no está con fecha en el changelog (${index.changelog}): nada que informar.`);
@@ -144,7 +157,7 @@ export function buildReport(root: string, options: ReportOptions, warn: Warn): s
   const docsPath = resolveDocsPath(resolve(root));
   const release = options.release?.replace(/^v/, '') ?? null;
   const all = readSources(docsPath, warn);
-  const sources = release === null ? all : selectRelease(all, docsPath, release, warn);
+  const sources = release === null ? all : selectRelease(all, { docsPath, release }, warn);
   const attributions = (options.attribute ?? unattributed)(docsPath, sources, warn);
   const rows = sources.map(({ row, root: folderRoot }, position) => ({ ...row, ...attributions[position]!, root: folderRoot }));
   return render(rows, release === null ? 'Sin cierres.' : `Sin cierres en la ${release}.`, warn);

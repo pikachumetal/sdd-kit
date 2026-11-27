@@ -39,5 +39,5 @@ Runs without asking and holds nothing back, also with the user away. It reads `.
    - a row whose `Abierta desde` is earlier than the version of the previous retro (the one its last line names), with or without a destination: `prioriza o descarta`.
 
    A row with a destination and no carry-over is already decided, and stays out. With no row through either door, the section is `Sin propuestas`. The review writes nothing in `debt.md` or `ROADMAP.md`: deciding is for `sdd-roadmap` and the dev-lead, and rejecting a proposal is discarding its row.
-4. **Estimate and action items**, only if the user asked: its template section, pasting `sdd estimation report --release <version>`, and the state of the previous action items. Without `debt.md`, the file carries only this.
+4. **Estimate and action items**, only if the user asked: its template section, pasting `node "${CLAUDE_PLUGIN_ROOT}/cli/bin/sdd.js" estimation report --release <version>`, and the state of the previous action items. Without `debt.md`, the file carries only this.
 5. **Name the proposals** to `sdd-end-release`, for its closing summary. The file goes in the cut's commit.

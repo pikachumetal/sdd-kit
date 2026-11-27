@@ -44,6 +44,16 @@ export function gitSync(cwd: string, args: string[]): string[] | null {
   }
 }
 
+export function gitBatchSync(cwd: string, args: string[], input: string): Buffer | null {
+  try {
+    return execFileSync('git', ['-c', 'core.quotePath=false', ...args], {
+      cwd, input, env: isolatedEnv(), maxBuffer: MAX_OUTPUT_BYTES, windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'],
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function gitLines(cwd: string, args: string[]): Promise<string[]> {
   const { code, stdout } = await git(cwd, args);
   if (code !== 0) return [];

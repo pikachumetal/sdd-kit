@@ -99,8 +99,8 @@ describe('sdd estimation report: tablas', () => {
 
   it('no closings', () => {
     const text = report(project({ 'steering/estimation.md': '# Estimación\n' })).text;
-    expect(text.match(/^Sin cierres\.$/gm)).toHaveLength(3);
-    expect(text).toContain('Sin datos: ninguna tarea tiene timing.json.');
+    expect(text.match(/^Sin cierres\.$/gm)).toHaveLength(4);
+    expect(text).not.toContain('Sin datos: ninguna tarea tiene timing.json.');
   });
 
   it('reads the same docs folder as the log', () => {

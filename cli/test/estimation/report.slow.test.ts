@@ -176,6 +176,49 @@ describe('sdd estimation report --release', () => {
   it('release without closings', async () => {
     const { code, text } = await report(releasedRepo(), '--release', '3.2.0');
     expect(code).toBe(0);
-    expect(text.match(/^Sin cierres en la 3\.2\.0\.$/gm)).toHaveLength(3);
+    expect(text.match(/^Sin cierres en la 3\.2\.0\.$/gm)).toHaveLength(4);
+  });
+});
+
+describe('sdd estimation report: pasada de la revisión final', () => {
+  it('warns about a shadowed changelog with --release', async () => {
+    const root = releasedRepo();
+    put(root, '.docs/sdd/changelog.md', CHANGELOG);
+    const { stderr } = await report(root, '--release', '3.1.0');
+    expect(stderr).toContain('aviso: también existe .docs/sdd/changelog.md, que no se lee');
+  });
+
+  it('no closings and no git does not warn about git', async () => {
+    const { code, stderr } = await report(project({ 'steering/estimation.md': '# Estimación\n' }));
+    expect(code).toBe(0);
+    expect(stderr.some((line) => line.startsWith('Sin historial de git en '))).toBe(false);
+  });
+
+  it('an empty --release is not the whole project', async () => {
+    const { code, stderr } = await report(releasedRepo(), '--release', '');
+    expect(code).toBe(1);
+    expect(stderr.join('\n')).toContain('no está con fecha en el changelog');
+  });
+
+  it('a commit without marker does not hide the marker of another', async () => {
+    const root = repo();
+    put(root, '.docs/sdd/changes/20261101-100000-feature-0040-a/walkthrough.md', walkthrough('2026-11-01'));
+    commit(root, 'Ana', 'feat: 0040');
+    put(root, '.docs/sdd/sdd-kit.json', marker('3.0.4'));
+    put(root, '.docs/sdd/changes/20261102-100000-feature-0041-b/walkthrough.md', walkthrough('2026-11-02'));
+    commit(root, 'Ana', 'feat: 0041');
+    const versions = tableOf((await report(root)).text, VERSION);
+    expect(versions).toContain('| 3.0.4 | 1 * | 2 | 2 | 1 |');
+    expect(versions).toContain('| sin marcador | 1 * | 2 | 2 | 1 |');
+  });
+
+  it('sorts accented names as a person reads them', async () => {
+    const root = repo();
+    put(root, '.docs/sdd/changes/20261101-100000-feature-0040-a/walkthrough.md', walkthrough('2026-11-01'));
+    commit(root, 'Beatriz', 'feat: 0040');
+    put(root, '.docs/sdd/changes/20261102-100000-feature-0041-b/walkthrough.md', walkthrough('2026-11-02'));
+    commit(root, 'Álvaro', 'feat: 0041');
+    const people = tableOf((await report(root)).text, PERSON).slice(2).map((line) => line.split('|')[1]!.trim());
+    expect(people).toEqual(['Álvaro', 'Beatriz']);
   });
 });

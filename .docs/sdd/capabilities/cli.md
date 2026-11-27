@@ -10,7 +10,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 
 - GIVEN el plugin instalado y Node 22.18.0 o posterior en el `PATH`, sin pnpm, moon ni proto
 - WHEN se ejecuta `node "<raíz del plugin>/cli/bin/sdd.js" --help`
-- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish|causes`, `id next|claim`, `merge`, `estimation log`, `init`, `upgrade`, `session tokens`, `watch subagent|command`, `hook session-start|session-end`, `task start|done|brief`, `review package|comments`, `workspace`, `ledger rulings`, `lock run`) con una línea de ayuda, y sale con 0
+- THEN lista cada verbo (`capability index|check|merge`, `decision check|index`, `roadmap check|publish|causes`, `id next|claim`, `merge`, `estimation log|report`, `init`, `upgrade`, `session tokens`, `watch subagent|command`, `hook session-start|session-end`, `task start|done|brief`, `review package|comments`, `workspace`, `ledger rulings`, `lock run`) con una línea de ayuda, y sale con 0
 - AND `cli/package.json` no tiene `dependencies`, y el plugin no necesita `pnpm install` para ejecutar ningún verbo
 
 ### Node demasiado viejo se dice antes de ejecutar nada
@@ -159,7 +159,7 @@ la CLI del kit: cómo se invoca, qué verbos y opciones tiene, su salida y sus c
 ### `--project-root` vale en todo verbo que sitúa el proyecto
 
 - GIVEN un proyecto en `D:\code\reservas` con `.docs/sdd/`
-- WHEN se ejecuta `node sdd.js roadmap check --project-root D:\code\reservas`, `capability index --project-root …`, `decision check --project-root …`, `estimation log --project-root …`, `upgrade --project-root …` o `session tokens --project-root …`
+- WHEN se ejecuta `node sdd.js roadmap check --project-root D:\code\reservas`, `capability index --project-root …`, `decision check --project-root …`, `estimation log --project-root …`, `estimation report --project-root …`, `upgrade --project-root …` o `session tokens --project-root …`
 - THEN cada uno hace lo mismo que con `--path D:\code\reservas\.docs\sdd` (en `roadmap`, `capability` y `decision`), con `--root D:\code\reservas` (en `estimation`, `init` y `upgrade`) o con `--path D:\code\reservas` (en `session tokens`)
 - AND con `--project-root` y el nombre de hoy a la vez, escribe `--path y --project-root no van juntas` (o `--root y --project-root no van juntas`) y el uso, y sale con 2
 - AND `node sdd.js merge --path .` escribe `opción desconocida: «--path»; la raíz del proyecto va en --project-root` y el uso, y sale con 2; lo mismo con `--root` en `merge`, `id next`, `id claim` y `roadmap publish`

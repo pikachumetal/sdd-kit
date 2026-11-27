@@ -40,7 +40,8 @@ Se lanza con `node tests/headless/battery.mjs run` (`BATTERY=sdd-retro`, `STEPS=
 | R9 Changelog | r4 | `tools: /^>>> (Skill: \S*add-to-changelog(\s\|$)\|Read: [^\n]*add-to-changelog[\\/]SKILL\.md(\n\|$)\|(Bash\|PowerShell): ([^\n]*[;&\n] *)?(cat\|Get-Content) (?![^;&\|\n]*(-TotalCount\|-Tail\|-Head\|-First\|>))[^;&\|\n]*add-to-changelog[\\/]SKILL\.md(?![\w.])[^;&\|\n]*([;&\n]\|$\|[\|] *head -(n )?([5-9]\d\|\d{3,})(?!\d)))/` ausente |
 | R7 Sin carpeta | r6 | existe `.docs/sdd/releases/v1.4.0/` |
 | R8 Oferta | r6 | la propuesta no ofrece la estimación y los action items en una línea |
-| R10 Informe | r7 | `file: retro.md /Persona [\|] n [\|] Real \(h\) [\|] Ratio [\|] Real > est\|Sin informe:/` |
+| R10 Informe | r7 | `file: retro.md /Persona [\|] n [\|] Real \(h\) [\|] Ratio [\|] Real > est/` |
+| R11 Sin cuentas a mano | r7 | «Estimación y action items» lleva un agregado calculado a mano sobre `estimation-log.md` (estimado, real o ratio fuera de las tablas del informe) |
 | L Idioma | todos | algún mensaje al usuario en inglés |
 
 ## Procedencia de las reglas

@@ -10,6 +10,7 @@ export const UNPUBLISHED = 'sin publicar';
 export const UNDATED = 'sin fecha';
 const RELEASE_HEADING = /^##\s*\[([^\]]+)\]\s*[-—]\s*(\d{4}-\d{2}-\d{2})\s*$/gm;
 const ARTIFACT_FILES = ['walkthrough.md', 'patch.md', 'hotfix.md'];
+const HEADER_MARK = '\u0000';
 
 interface Version {
   name: string;
@@ -35,23 +36,41 @@ function readVersions(changelogPath: string, docsPath: string): Version[] {
   return versions.sort((a, b) => a.date.localeCompare(b.date) || (a.commits?.size ?? 0) - (b.commits?.size ?? 0));
 }
 
-// Commit que añadió cada «<carpeta>/<fichero>» en changes/ o specs/: el log va del más nuevo al más viejo y gana el último,
+export interface ClosingCommit {
+  sha: string;
+  author: string;
+  subject: string;
+}
+
+function parseHeader(header: string): ClosingCommit {
+  const [sha = '', author = '', subject = ''] = header.split('\t');
+  return { sha, author, subject };
+}
+
+// Commit más antiguo de cada «<carpeta>/<fichero>» en changes/ o specs/: el log va del más nuevo al más viejo y gana el último,
 // así una carpeta movida de specs/ a changes/ cuenta desde su commit en specs/.
 // ponytail: un fichero renombrado (renumerar una carpeta) cuenta desde el renombrado; si se renombra tras el corte, cae en la versión siguiente.
-function addedCommits(docsPath: string): Map<string, string> {
-  const added = new Map<string, string>();
-  let commit = '';
-  for (const line of gitSync(docsPath, ['log', '--no-renames', '--diff-filter=A', '--format=%H', '--name-only', '--', ...CHANGE_FOLDER_NAMES]) ?? []) {
-    if (/^[0-9a-f]{40}$/.test(line)) commit = line;
-    else added.set(line.split('/').slice(-2).join('/'), commit);
+export function closingCommits(docsPath: string): Map<string, ClosingCommit> | null {
+  const format = '--format=%x00%H%x09%aN%x09%s';
+  const lines = gitSync(docsPath, ['log', '--no-renames', '--diff-filter=AM', format, '--name-only', '--', ...CHANGE_FOLDER_NAMES]);
+  if (lines === null) return null;
+  const commits = new Map<string, ClosingCommit>();
+  let current = parseHeader('');
+  for (const line of lines) {
+    if (line.startsWith(HEADER_MARK)) current = parseHeader(line.slice(HEADER_MARK.length));
+    else commits.set(line.split('/').slice(-2).join('/'), current);
   }
-  return added;
+  return commits;
+}
+
+export function artifactCommit(folder: string, commits: Map<string, ClosingCommit>): ClosingCommit | undefined {
+  return ARTIFACT_FILES.map((file) => commits.get(`${folder}/${file}`)).find(Boolean);
 }
 
 // El día no ordena un artefacto fusionado tras el corte del mismo día: con el tag de la versión, manda la ascendencia en git.
-function releaseLabel(row: Row, versions: Version[], added: Map<string, string>): string {
+function releaseLabel(row: Row, versions: Version[], commits: Map<string, ClosingCommit>): string {
   if (row.date === MISSING) return UNDATED;
-  const commit = ARTIFACT_FILES.map((file) => added.get(`${row.folder}/${file}`)).find(Boolean);
+  const commit = artifactCommit(row.folder, commits)?.sha;
   const inVersion = (version: Version): boolean =>
     version.commits === null ? version.date >= row.date : commit !== undefined && version.commits.has(commit);
   return versions.find(inVersion)?.name ?? UNPUBLISHED;
@@ -73,15 +92,17 @@ function releaseRow(label: string, rows: Row[]): string {
 
 export interface ReleaseIndex {
   changelog: string | null;
+  shadowed: string | null;
   versions: string[];
   label: (row: Row) => string;
 }
 
 export function releaseIndex(docsPath: string): ReleaseIndex {
-  const changelog = resolveDocument(docsPath, 'changelog').file;
+  const { file: changelog, shadowed } = resolveDocument(docsPath, 'changelog');
   const versions = changelog === null ? [] : readVersions(changelog, docsPath);
-  const added = versions.length === 0 ? new Map<string, string>() : addedCommits(docsPath);
-  return { changelog, versions: versions.map((version) => version.name), label: (row) => releaseLabel(row, versions, added) };
+  const commits = (versions.length === 0 ? null : closingCommits(docsPath)) ?? new Map<string, ClosingCommit>();
+  const label = (row: Row): string => releaseLabel(row, versions, commits);
+  return { changelog, shadowed, versions: versions.map((version) => version.name), label };
 }
 
 export function releaseTable(rows: Row[], docsPath: string): string[] {

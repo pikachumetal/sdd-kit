@@ -13,10 +13,10 @@ const HEADING = '## Tiempos por fase';
 export const NO_DATA = 'Sin datos: ninguna tarea tiene timing.json.';
 const TABLE_HEADER = '| Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |';
 const TABLE_RULE = '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |';
-const SECONDS_PER_HOUR = 3600;
+export const SECONDS_PER_HOUR = 3600;
 
 const hours = (seconds: number): string => formatNumber(seconds / SECONDS_PER_HOUR);
-const workSeconds = (phase: PhaseRecord): number => phase.agentSeconds + phase.execSeconds;
+export const workSeconds = (phase: PhaseRecord): number => phase.agentSeconds + phase.execSeconds;
 const totalOf = (phases: PhaseRecord[], read: (phase: PhaseRecord) => number): number => phases.reduce((total, phase) => total + read(phase), 0);
 const percent = (part: number, whole: number): string => `${whole === 0 ? 0 : Math.round((100 * part) / whole)} %`;
 

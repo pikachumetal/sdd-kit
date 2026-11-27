@@ -82,12 +82,15 @@ const ROADMAP = [
 ].join('\n');
 const CHANGELOG = ['# Changelog', '', '## [Unreleased]', '', '## [1.3.0] - 2026-09-01', '', '### Added', '', '- Reservas.', ''].join('\n');
 
+const EXPORT_FOLDER = '.docs/sdd/changes/20261020-100000-feature-0040-export';
+const EXPORT_WALKTHROUGH = WALKTHROUGH.replace('0081', '0040').replace('Recordatorio por correo de cada reserva.', 'Exportar salas a CSV.');
+
 function cutMold() {
   s.put('.docs/sdd/steering/debt.md', DEBT);
   s.put('.docs/sdd/releases/v1.3.0/retro.md', PREVIOUS_RETRO);
   s.put('ROADMAP.md', ROADMAP);
   s.put('CHANGELOG.md', CHANGELOG);
-  s.put('.docs/sdd/changes/20261020-100000-feature-0040-export/walkthrough.md', WALKTHROUGH.replace('0081', '0040').replace('Recordatorio por correo de cada reserva.', 'Exportar salas a CSV.'));
+  s.put(`${EXPORT_FOLDER}/walkthrough.md`, EXPORT_WALKTHROUGH);
 }
 
 const TIME = ['## 2. Tiempo: estimado vs real', '', '- Tipo: feature', '- Estimación de implementación (del plan): 2 h', '- Esfuerzo real: 1,5 h', ''].join('\n');
@@ -101,9 +104,9 @@ const LOG = [
 
 function estimateMold() {
   cutMold();
-  const walkthrough = '.docs/sdd/changes/20261020-100000-feature-0040-export/walkthrough.md';
-  const exported = WALKTHROUGH.replace('0081', '0040').replace('Recordatorio por correo de cada reserva.', 'Exportar salas a CSV.');
-  s.put(walkthrough, exported.replace('## 5. Aprendizajes', `${TIME}\n## 5. Aprendizajes`));
+  const timed = EXPORT_WALKTHROUGH.replace('## 5. Aprendizajes', `${TIME}\n## 5. Aprendizajes`);
+  if (timed === EXPORT_WALKTHROUGH) s.die('molde corte-estimacion: el walkthrough de la 0040 no tiene «## 5. Aprendizajes»');
+  s.put(`${EXPORT_FOLDER}/walkthrough.md`, timed);
   s.put('.docs/sdd/steering/estimation.md', '# Método de estimación — salas\n\nEl plan estima horas; el walkthrough registra el real.\n');
   s.put('.docs/sdd/steering/estimation-log.md', LOG);
 }

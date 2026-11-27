@@ -31,7 +31,7 @@ export const estimationReportVerb: Verb = {
   async run(args, io) {
     const root = rootOption(args, 'root') ?? '.';
     const requested = args.values.release;
-    const release = typeof requested === 'string' && requested.trim() !== '' ? requested.trim() : null;
+    const release = typeof requested === 'string' ? requested.trim() : null;
     io.out(buildReport(root, { release, attribute: attributeRows }, io.err));
     return 0;
   },
