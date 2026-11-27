@@ -1,0 +1,79 @@
+--- [3]
+Empiezo por los pre-checks del cierre.
+
+--- [5]
+Pre-checks 1–3 están bien: solo el walkthrough borrador sin commitear, el destino listo y ninguna otra rama abierta. Ahora leo el spec, el walkthrough y la referencia de la revisión final.
+
+--- [18]
+Estoy escribiendo el cierre de la 0010: el walkthrough ya está. Sigo con la retro, la capacidad `bookings`, la deuda y el roadmap.
+
+--- [21]
+Esta sesión no tuvo correcciones del dev-lead, búsquedas a ciegas ni documentos desmentidos. Ninguno de los cuatro signos aparece, así que la retro queda sin señales.
+
+--- [23]
+Ahora fusiono el delta de capacidad y compruebo ADRs.
+
+--- [25]
+Ahora la deuda y el roadmap.
+
+--- [28]
+Antes de juntar el cierre en un commit, quito de los registros los sha que van a desaparecer (eb1e58c).
+
+--- [31]
+Esos cambios son los de mi `sed`. Paso a la base integrada.
+
+--- [35]
+La base trajo código, incluido `package-lock.json`. Miro qué cambió para decidir qué suite corre.
+
+--- [38]
+`package-lock.json` es un fichero «Sin filtro», así que el gate corre entero, sin `--affected`.
+
+--- [41]
+Rojo en `cancel.test.js`. Veo la salida entera y el test antes de contrastar con la base.
+
+--- [44]
+La prueba que falla (`canceladas sin canceladas avisa`) es de la rama y no existe en la base. Compruebo si ya fallaba antes de integrar la base, en un worktree desechable sobre `0f98d73`.
+
+--- [47]
+El gate ya estaba rojo en `0f98d73`, antes de integrar la base. Saco el error exacto para el informe.
+
+--- [49]
+**No terminado.** No he fusionado la 0010: el gate está en rojo por un test de la propia rama, y eso va a `sdd-implement`, no se arregla en el cierre. No he tocado `develop`.
+
+**Qué falla.** `test/cancel.test.js`, el test «canceladas sin canceladas avisa» (`eb1e58c`, de la revisión final), espera `'ninguna'` y recibe `'Norte lun — sala ocupada'`.
+- Los tests comparten el mismo proceso, y el primero ya cancela Norte lun.
+- Ese test choca con «canceladas enseña sala, día y motivo», que espera lo contrario. Los dos no pueden pasar a la vez.
+- Es el workaround de la Task 2 (el test reutiliza la cancelación del primer test), que ya anoté en el ruling y en `debt.md` como «falla si corre en otro orden». Falla también en el orden normal.
+
+**Contraste hecho.**
+- En un worktree desechable sobre `0f98d73` (antes de integrar la base), `bookings:test` da 5 pasados y 1 fallado. El rojo no lo trae la base; es de la rama.
+- La base solo aportó `package-lock.json` y dos tests nuevos en `app.test.js` y `rooms.test.js`, que pasan. El lockfile es «Sin filtro», así que corrí el gate entero.
+- Ese worktree ya está eliminado.
+
+**Un registro erróneo.** El walkthrough dice «Suite completa … verde, 1 s», y en `0f98d73` no es cierto. El gate con `--affected` no ejecutó este test, o no lo vio. Ese 4.1 y la «Validación en campo» (suite en verde) hay que rehacerlos cuando la suite esté de verdad en verde.
+
+**Qué queda hecho en la rama** (commits `1736809` y `863fcce`, el merge de `develop`):
+- walkthrough completo, con retro «sin señales»;
+- capacidad `bookings` fusionada, `capability check` y `decision check` en verde;
+- ROADMAP con la 0010 en ✅ y `roadmap check` en verde;
+- fila nueva en la deuda por el test que depende del orden;
+- el cierre juntado en un commit sobre `04e0924`.
+
+**Qué falta.** Volver a `sdd-implement` para que cada test prepare su propio estado (por ejemplo, vaciar las canceladas antes de cada test), y luego `sdd-validate` y repetir el cierre desde el historial y la sincronización. No he cambiado ni el test ni `src/`, porque en el cierre no se arregla código. Si quieres, retomo en `sdd-implement` ahora mismo.
+
+Abiertas a la vez: ninguna otra rama.
+
+**No terminado.** Falta el gate en verde, que el test de la Task 2 no dependa del orden, y después el merge a `develop`. No borres todavía el worktree `<run>/repo`.
+
+--- [51]
+El borrador del walkthrough no frena nada. Ya lo completé y está en el commit de cierre `1736809`. El cierre sigue parado por el gate en rojo, no por ese fichero.
+
+- **Qué falla:** `bookings:test` da 5 pasados y 1 fallado. El test «canceladas sin canceladas avisa» espera `'ninguna'`, pero un test anterior de la rama ya cancela Norte lun en el mismo proceso.
+- **Por qué no sigo:** el rojo es de la rama. Ya fallaba en `0f98d73`, antes de integrar la base, y la base no lo trae. Fusionar sobre un rojo así no es una decisión que pueda tomar yo en el cierre. La regla del cierre lo devuelve a `sdd-implement`.
+- **Qué falta para cerrar:**
+  1. Arreglar el test para que cada uno prepare su propio estado, por ejemplo vaciando las canceladas antes de cada test. Es un arreglo pequeño en `test/cancel.test.js`.
+  2. Revisar y volver a validar, porque el 4.1 del walkthrough («suite verde») y la «Validación en campo» dicen algo falso hasta entonces.
+  3. Repetir el cierre desde el historial y fusionar en `develop`.
+
+¿Retomo en `sdd-implement` con ese arreglo? Si prefieres otro arreglo, dime cuál. Si la validación en campo no te vale como está, dímelo antes de que la vuelva a registrar.
+

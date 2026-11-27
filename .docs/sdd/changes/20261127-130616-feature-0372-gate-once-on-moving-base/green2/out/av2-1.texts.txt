@@ -1,0 +1,71 @@
+--- [3]
+Empiezo por las pre-comprobaciones del cierre.
+
+--- [5]
+Sin otras ramas abiertas. Ahora el estado de la spec, la validación y la revisión final.
+
+--- [28]
+Capacidad creada y validada, y no hay ADR. Ahora el walkthrough completo, `tasks.md`, el roadmap y la deuda.
+
+--- [31]
+Escribí en el Gate qué tareas corrieron o se saltaron, y eso no consta en el borrador. Lo quito para no inventarlo.
+
+--- [33]
+Esa es mi propia edición. Ahora `tasks.md`, el roadmap y la deuda.
+
+--- [36]
+El roadmap falló por los saltos de línea CRLF. Lo repito con una expresión tolerante, y también la deuda.
+
+--- [39]
+Historia: junto el cierre en un commit desde el de la última task (2242d88). Antes compruebo que ningún sha del rango siga citado.
+
+--- [42]
+Cierre commiteado (c526670). Ahora la base integrada.
+
+--- [45]
+La base trajo cambios. Miro qué trajo para decidir qué se vuelve a correr.
+
+--- [51]
+Gate en rojo en `canceladas sin canceladas avisa`, un test de la propia rama. Según la receta, contrasto el fichero solo en la rama y en un worktree desvinculado de la base.
+
+--- [56]
+**No terminado.** La 0010 no se ha fusionado. Un test de la propia rama falla y la validación dice que estaba verde.
+
+**Qué falla.** `canceladas sin canceladas avisa` (`test/cancel.test.js:17`) espera `'ninguna'` y recibe `'Norte lun — sala ocupada'`. Lo comprobé de tres formas:
+- **En la rama:** falla el fichero solo (`test/cancel.test.js`), con 3 tests en verde y 1 en rojo.
+- **En el commit de cierre anterior al sync:** `c526670`, previo a integrar la base, falla igual. El rojo no lo trae la base.
+- **En `develop`:** el fichero pasa, pero con sus tests, que no incluyen este.
+
+**Por qué ocurre.** Lo deduzco de leer `test/cancel.test.js` y `src/app.js`; no lo he probado aparte:
+- **El código no avisa.** `cancelledList()` devuelve `''` cuando no hay canceladas, nunca `'ninguna'`.
+- **El test depende del estado.** Corre después de que otro test cancele Norte lun en el mismo proceso.
+
+**Qué contradice.** El walkthrough y `tasks.md` daban la suite «verde, sobre aa294ab». El código de `src/` y `test/` es el mismo en `aa294ab` y en `c526670`. Esa afirmación no se sostiene, y no sé cómo se midió. El gate de hoy, tras integrar la base, ejecutó `bookings:test`, falló y se saltó `rooms:test`. La salida está en `.temp/r372/green2/av2-1/scratch/gate-sync.txt`.
+
+**Cómo queda la rama.** Va dos commits por delante de la validación:
+- `c526670` es el cierre, con el walkthrough, `bookings.md` y la fila de deuda. El walkthrough sigue diciendo «verde», lo cual es falso.
+- `6cbeaf3` es el merge de `develop`, que trajo `package-lock.json` y dos tests nuevos.
+- **Roadmap:** la 0010 está en `✅` en `ROADMAP.md`, también prematuro.
+- **Destino:** no he tocado `develop`, ni he hecho push ni merge.
+
+**Qué hace falta.**
+1. Volver a `sdd-implement`: o el código avisa con `'ninguna'` y el test prepara sus propios datos, o se retira el test y la spec lo dice. Un cambio de comportamiento que la spec no recoge es decisión del dev-lead.
+2. Pasar de nuevo por `sdd-validate`, con una validación en campo que cuente lo realmente probado.
+3. Reiniciar el cierre desde la historia: rehacer el walkthrough, volver el roadmap a `⏳` hasta entonces, repetir `sdd merge --sync` y llevar el sha del gate nuevo en `--verified-at`.
+
+Para la 0010 no hay hermanas ni madre. Otras ramas abiertas: ninguna. Ofrezco el ticket del kit con `sdd-feedback` si quieres: no hay líneas `Retro: … → ticket del kit`, pero la validación en verde sobre un código que no pasaba es el tipo de cosa que conviene registrar.
+
+**No terminado.** Falta que el test `canceladas sin canceladas avisa` pase y se revalide la 0010. No borres todavía el worktree `<run>/repo`.
+
+--- [58]
+El borrador sin commitear no es lo que frena el cierre. Ya lo usé: es el walkthrough que completé y commiteé en `c526670`, y el árbol está limpio. Lo que frena es el test rojo, y seguir con el cierre no lo arregla.
+
+`canceladas sin canceladas avisa` falla en la rama, con la base y sin ella. El código devuelve `''` cuando no hay canceladas, no `'ninguna'`, y el test además depende de que otro test haya cancelado antes. El cierre no corrige código. Si fusiono así, `develop` recibe una rama con un test en rojo y un walkthrough que dice «verde», y eso no lo hago sin que me lo ordenes expresamente.
+
+Para seguir necesito que elijas una de estas:
+1. **Arreglo recomendado.** Vuelvo a `sdd-implement`: `canceladas` devuelve `'ninguna'` cuando no hay canceladas y el test prepara sus propios datos. Esto también salda la fila de deuda que abrí. Después `sdd-validate` y reinicio el cierre. Toca decidir si la spec incorpora el aviso «ninguna», porque hoy no lo recoge.
+2. **Retirar el test.** Si el aviso no era un requisito, quito el test y el cierre sigue por el mismo camino.
+3. **Fusionar con el rojo.** Solo si me lo pides con esas palabras. Registraría el rojo en el walkthrough y en la deuda, y corregiría el «verde» del walkthrough.
+
+¿Cuál?
+
