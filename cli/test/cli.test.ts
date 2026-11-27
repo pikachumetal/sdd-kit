@@ -59,6 +59,12 @@ describe('sdd --help', () => {
     expect(text).toContain('sdd id claim');
   });
 
+  it('--help lista estimation report', async () => {
+    const io = memoryIo();
+    expect(await run(['--help'], io)).toBe(0);
+    expect(io.stdout.join('\n')).toContain('sdd estimation report');
+  });
+
   it('--help lista decision check y decision index', async () => {
     const io = memoryIo();
     expect(await run(['--help'], io)).toBe(0);
@@ -155,6 +161,20 @@ describe('--project-root', () => {
     const byRoot = await runReal(['estimation', 'log', '--project-root', root, '--out', out]);
     expect(byRoot).toEqual(await runReal(['estimation', 'log', '--root', root, '--out', out]));
     expect(byRoot.code).toBe(0);
+  });
+
+  it('project-root is an alias of --root in estimation report', async () => {
+    const { root } = project();
+    const byRoot = await runReal(['estimation', 'report', '--project-root', root]);
+    expect(byRoot).toEqual(await runReal(['estimation', 'report', '--root', root]));
+    expect(byRoot.code).toBe(0);
+  });
+
+  it('rejects root with project-root in estimation report', async () => {
+    const { root } = project();
+    const result = await runReal(['estimation', 'report', '--root', root, '--project-root', root]);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toContain('--root y --project-root no van juntas');
   });
 
   it('estimation log without changes/ nor specs/ writes the header and no rows', async () => {
