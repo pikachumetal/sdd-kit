@@ -6,11 +6,11 @@ import type { Warn } from './fields.ts';
 import { formatNumber } from './numbers.ts';
 import { MISSING } from './text.ts';
 
-type PhaseRecord = Omit<TimingPhase, 'agentSeconds' | 'execSeconds' | 'waitSeconds'> & { agentSeconds: number; execSeconds: number; waitSeconds: number };
+export type PhaseRecord = Omit<TimingPhase, 'agentSeconds' | 'execSeconds' | 'waitSeconds'> & { agentSeconds: number; execSeconds: number; waitSeconds: number };
 
-const PHASE_LABELS: Record<PhaseName, string> = { apertura: 'apertura', implementacion: 'implementación', revision: 'revisión', cierre: 'cierre' };
+export const PHASE_LABELS: Record<PhaseName, string> = { apertura: 'apertura', implementacion: 'implementación', revision: 'revisión', cierre: 'cierre' };
 const HEADING = '## Tiempos por fase';
-const NO_DATA = 'Sin datos: ninguna tarea tiene timing.json.';
+export const NO_DATA = 'Sin datos: ninguna tarea tiene timing.json.';
 const TABLE_HEADER = '| Fase | n | Agente (h) | Ejecución (h) | Espera (h) | Gate (h) | % del trabajo | Ceremonia | Est (h) | Real (h) | Ratio |';
 const TABLE_RULE = '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |';
 const SECONDS_PER_HOUR = 3600;
@@ -35,7 +35,7 @@ function isReadable(timing: Timing | null): timing is Timing {
   return !timing.measured || (Array.isArray(timing.phases) && timing.phases.length > 0 && timing.phases.every(hasTimes));
 }
 
-function readTiming(root: string, folder: string, warn: Warn): PhaseRecord[] | null {
+export function readTiming(root: string, folder: string, warn: Warn): PhaseRecord[] | null {
   const path = join(root, folder, 'timing.json');
   if (!existsSync(path)) return null;
   const timing = parseTiming(path);
