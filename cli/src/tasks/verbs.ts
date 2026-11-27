@@ -1,5 +1,6 @@
 import { UsageError } from '../cli/args.ts';
 import type { Verb, VerbArgs } from '../cli/verbs.ts';
+import { wrapLine } from '../cli/wrap.ts';
 import { git } from '../git/git.ts';
 import { isTaskId, writeBrief } from './brief.ts';
 import { finishTask } from './done.ts';
@@ -123,7 +124,7 @@ export const ledgerRulingsVerb: Verb = {
     const rulings = workspace === null ? [] : listRulings(workspace);
     if (args.values.json) io.json(rulings);
     else if (rulings.length === 0) io.out('Sin rulings');
-    else rulings.forEach((line) => io.out(line));
+    else rulings.flatMap((line) => wrapLine(line)).forEach((line) => io.out(line));
     return 0;
   },
 };

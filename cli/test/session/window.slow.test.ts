@@ -2,8 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { measureSession, textLines, toJson } from '../../src/session/measure.ts';
-import { folderName, tempDir } from './helpers.ts';
+import { measureSession, textLines as wrappedLines, toJson } from '../../src/session/measure.ts';
+import { folderName, logicalLines, tempDir } from './helpers.ts';
+
+const textLines = (measurement: Parameters<typeof wrappedLines>[0]): string[] => logicalLines(wrappedLines(measurement));
 
 const DAY = '2026-10-19';
 const at = (hhmm: string) => `${DAY}T${hhmm}:00Z`;

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DomainError } from '../../src/cli/args.ts';
 import { generateEstimationLog, writeEstimationLog } from '../../src/estimation/log.ts';
-import { build, buildFixture, fixtures, row } from './helpers.ts';
+import { build, buildFixture, fixtures, project, row } from './helpers.ts';
 
 const empty = '—';
 const line = (...cells: string[]) => `| ${cells.join(' | ')} |`;
@@ -111,6 +111,36 @@ describe('resolución de la carpeta de docs', () => {
 
   it('falla con mensaje si no hay specs', () => {
     expect(() => build(mkdtempSync(join(tmpdir(), 'sdd-sin-specs-')))).toThrow(/No se encuentra changes\/ ni specs\/ bajo \.docs\/sdd ni docs\/sdd/);
+  });
+});
+
+describe('líneas partidas de sdd session tokens', () => {
+  const head = '## 2. Tiempo y coste: estimado vs real\n\n- Tipo: docs\n- Estimación de implementación (del plan): 2h\n';
+  const old = [
+    '- Esfuerzo real: 1,50 h — reloj de la sesión 2,00 h desde 2026-11-20T10:00Z, sin 30 min de espera al dev-lead (2 esperas)',
+    '- Tokens del hilo: 2.605.005 — claude-sonnet-5 2.605.005',
+    '- Tokens de subagentes: 5.100.100 en 10 despachos — Implementador de la Task 1 claude-opus-5-5 510.010 / 12 min; Implementador de la Task 2 claude-opus-5-5 510.010 / 12 min',
+    '- Coste de la sesión: 3,95 $ (hilo 0,95 $ + subagentes 3,00 $)',
+  ].join('\n');
+  const wrapped = [
+    '- Esfuerzo real: 1,50 h — reloj de la sesión 2,00 h desde 2026-11-20T10:00Z, sin 30 min de espera al dev-lead',
+    '  (2 esperas)',
+    '- Tokens del hilo: 2.605.005 — claude-sonnet-5 2.605.005',
+    '- Tokens de subagentes: 5.100.100 en 10 despachos — Implementador de la Task 1 claude-opus-5-5 510.010 / 12 min;',
+    '  Implementador de la Task 2 claude-opus-5-5 510.010 / 12 min',
+    '- Coste de la sesión: 3,95 $ (hilo 0,95 $ + subagentes 3,00 $)',
+  ].join('\n');
+
+  it('lee igual el formato viejo de una línea y el nuevo partido', () => {
+    const root = project({
+      'changes/20261120-100000-feature-0901-old/walkthrough.md': `${head}${old}\n`,
+      'changes/20261121-100000-feature-0902-new/walkthrough.md': `${head}${wrapped}\n`,
+    });
+    const { text, warnings } = build(root);
+    const cells = (folder: string) => row(text, folder)!.split(' | ').slice(2, -1);
+    expect(cells('20261121-100000-feature-0902-new')).toEqual(cells('20261120-100000-feature-0901-old'));
+    expect(cells('20261120-100000-feature-0901-old')).toEqual(['docs', '2', '1.5', '0.75', '2605k', '5100k', empty, '3.95']);
+    expect(warnings).toEqual([]);
   });
 });
 

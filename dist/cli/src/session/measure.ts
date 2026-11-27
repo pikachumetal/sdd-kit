@@ -1,6 +1,7 @@
 import type { Json } from '../cli/records.ts';
 import { resolve } from 'node:path';
 import { docsFolder } from '../cli/layout.ts';
+import { wrapLine } from '../cli/wrap.ts';
 import { commitsOf } from './branches.ts';
 import type { Timing } from '../estimation/timing-file.ts';
 import { buildTiming, unmeasuredTiming } from './timing.ts';
@@ -90,7 +91,8 @@ export function textLines(measurement: Measurement): string[] {
   if (measurement.kind === 'notMeasured') return notMeasuredLines(measurement.reason);
   const lines = reportLines(measurement.session, measurement.prices, measurement.cost);
   const window = measurement.window === undefined ? [] : [windowLine(measurement.window)];
-  return [...lines, ...window, ...stopsLine(measurement.session.timelines)];
+  // Una fila de tabla no admite continuación: se queda entera.
+  return [...lines, ...window, ...stopsLine(measurement.session.timelines)].flatMap((line) => (line.startsWith('|') ? [line] : wrapLine(line)));
 }
 
 function costJson(cost: SessionCost): object {

@@ -213,3 +213,22 @@ describe('session tokens con ficheros corruptos', () => {
     expect(line(output, 'Coste de la sesión')).toContain('1,25 $');
   });
 });
+
+describe('session tokens con muchos despachos', () => {
+  it('parte cada línea a 120 columnas y deja la cifra en la primera', async () => {
+    const worktree = newWorktree(['base'], bothPrices);
+    const subagents = join(worktree.folder, 's1', 'subagents');
+    const transcript = readFileSync(join(subagents, 'agent-x1.jsonl'), 'utf8');
+    for (let index = 2; index <= 10; index++) {
+      writeFileSync(join(subagents, `agent-x${index}.jsonl`), transcript.replaceAll('agent-x1', `agent-x${index}`));
+      const meta = { agentType: 'sdd-kit:effort-medium', description: `Implementador de la Task ${index}`, toolUseId: `toolu_x${index}` };
+      writeFileSync(join(subagents, `agent-x${index}.meta.json`), JSON.stringify(meta));
+    }
+    const { output } = await measure(worktree);
+    const lines = output.split('\n').filter((candidate) => !candidate.startsWith('|'));
+    expect(lines.filter((candidate) => candidate.length > 120)).toEqual([]);
+    const subagentIndex = lines.findIndex((candidate) => candidate.startsWith('- Tokens de subagentes:'));
+    expect(lines[subagentIndex]).toMatch(/^- Tokens de subagentes: 5\.100\.100 en 10 despachos — /);
+    expect(lines[subagentIndex + 1]).toMatch(/^ {2}\S/);
+  });
+});
