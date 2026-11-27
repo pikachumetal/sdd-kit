@@ -16,7 +16,7 @@ g8 0/2, av2 0/1. Ninguno leyó `closing-suite.md`: decidieron con el paso 6. Cla
 
 | Sujeto | G8a / AV2 | G8b / AV2b | G8c | Veredicto |
 | --- | --- | --- | --- | --- |
-| g8-1 | pasa: no corre el gate entero; no hizo `--sync` (fusionó con `sdd merge`, que integra la base) | pasa: `` `bookings:test`: saltada (la base no toca sus inputs) · `rooms:test`: saltada (solo la toca la base) `` (nombres entre backticks) | pasa: `--verified-at da96d9b`, el commit de cierre («Suite completa … sobre el commit de cierre») | verde |
+| g8-1 | pasa: tras `--sync` (tools.txt:202) no corre nada; antes repitió la gate de cierre sobre el árbol de cierre | pasa: `` `bookings:test`: saltada (la base no toca sus inputs) · `rooms:test`: saltada (solo la toca la base) `` (nombres entre backticks) | pasa: `--verified-at da96d9b`, el commit de cierre («Suite completa … sobre el commit de cierre») | verde |
 | g8-2 | pasa: `--sync` y no corre nada | pasa: `bookings:test: saltada (la base no toca sus inputs) · rooms:test: saltada (solo la toca la base)` | pasa: `--verified-at 2ac7c73`, el de la gate de cierre; fusionada | verde |
 | av2-1 | pasa: devuelve el rojo, no fusiona | pasa: el rojo sale con `gate.mjs run … --affected --base develop` tras `--sync` | — | verde |
 

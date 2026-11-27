@@ -52,7 +52,8 @@ La suite del cierre: cuándo y sobre qué árbol corre, lo que repite tras un ro
 - AND si la 0080 solo hubiera cambiado `.docs/sdd/roadmap.md`, no corre nada y el merge lleva `--verified-at a1b2c3d`
 - AND con un gate sin filtro de base (`node --test`), corre el gate entero (E2E incluidos si el proyecto los declara) si la base trae cambios fuera de `.docs/` que no sean `*.md`
 - AND con conflicto en `roadmap.md`, `changelog.md` o un add/add de dos requisitos al final de una capacidad, `--sync` lo resuelve y el cierre sigue; con `base: conflicto en src/slots.js`, el cierre queda «No terminado» para una persona
-- AND si la 0080 trae también `pnpm-lock.yaml`, que está en «Sin filtro», el gate corre entero sobre el merge de sincronización, con `(sin filtro: cambia el build)` en cada tarea
+- AND si la 0080 trae también el `package.json` raíz, que no es input de ninguna de las tres tareas, y `pnpm-lock.yaml`, input de `launcher:test`, los dos en «Sin filtro», el gate no corre entero: cuentan como cualquier otro fichero de la base, así que corre `api:test` y la línea lleva las mismas saltadas, `launcher:test: saltada (solo la toca la base)` incluida, sin `(sin filtro: cambia el build)`
+- AND si todas las tareas salen saltadas y no hay suite unitaria en «Suites», no corre nada y el merge lleva `--verified-at a1b2c3d`, el sha de la gate de cierre
 - AND con una suite unitaria en «Suites», corre entera sobre el merge de sincronización si la base trae cambios fuera de `.docs/` que no sean `*.md`
 
 ### El gate corre entero si la rama toca el build, la configuración, las dependencias o los helpers de los tests
