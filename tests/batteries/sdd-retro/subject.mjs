@@ -90,6 +90,24 @@ function cutMold() {
   s.put('.docs/sdd/changes/20261020-100000-feature-0040-export/walkthrough.md', WALKTHROUGH.replace('0081', '0040').replace('Recordatorio por correo de cada reserva.', 'Exportar salas a CSV.'));
 }
 
+const TIME = ['## 2. Tiempo: estimado vs real', '', '- Tipo: feature', '- Estimación de implementación (del plan): 2 h', '- Esfuerzo real: 1,5 h', ''].join('\n');
+const LOG = [
+  '<!-- AUTO-GENERADO por sdd estimation log (sdd-kit) — no editar a mano. Regenerar: sdd estimation log --root <proyecto> -->',
+  '# Estimation log (estimado vs real)', '',
+  '| Fecha | Id | Tipo | Est (h) | Real (h) | Ratio | Hilo (tokens) | Subagentes (tokens) | Sujetos ($) | Sesión ($) | Carpeta |',
+  '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+  '| 2026-10-20 | 0040 | feature | 2 | 1.5 | 0.75 | — | — | — | — | 20261020-100000-feature-0040-export |', '',
+].join('\n');
+
+function estimateMold() {
+  cutMold();
+  const walkthrough = '.docs/sdd/changes/20261020-100000-feature-0040-export/walkthrough.md';
+  const exported = WALKTHROUGH.replace('0081', '0040').replace('Recordatorio por correo de cada reserva.', 'Exportar salas a CSV.');
+  s.put(walkthrough, exported.replace('## 5. Aprendizajes', `${TIME}\n## 5. Aprendizajes`));
+  s.put('.docs/sdd/steering/estimation.md', '# Método de estimación — salas\n\nEl plan estima horas; el walkthrough registra el real.\n');
+  s.put('.docs/sdd/steering/estimation-log.md', LOG);
+}
+
 s.copy(join(HERE, '..', 'using-sdd', 'mold-salas'));
 s.putKitMarker(MARKER);
 if (cell('Molde') === 'cierre') closeMold();
@@ -100,6 +118,7 @@ else if (cell('Molde') === 'corte-vacio') {
   s.put('.docs/sdd/steering/estimation-log.md', '# Log de estimación\n\n| Id | Estimado | Real |\n| --- | --- | --- |\n| 0040 | 2 h | 1,5 h |\n');
   rmSync(join(s.R, '.docs/sdd/releases'), { recursive: true, force: true });
 }
+else if (cell('Molde') === 'corte-estimacion') estimateMold();
 else s.die(`molde desconocido en battery.md: ${s.SC}`);
 s.initRepo();
 s.git('branch', 'develop');

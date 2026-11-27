@@ -2,6 +2,6 @@
 
 | Task | Estado | Commit |
 | --- | --- | --- |
-| 1 — Tablas del informe y el verbo, sin git | pendiente | — |
-| 2 — Persona y versión desde git, y `--release` | pendiente | — |
-| 3 — La retro pega el informe | pendiente | — |
+| 1 — Tablas del informe y el verbo, sin git | hecha | cef48c5 |
+| 2 — Persona y versión desde git, y `--release` | hecha | 03d1153 |
+| 3 — La retro pega el informe | hecha | (commit de la task) |
