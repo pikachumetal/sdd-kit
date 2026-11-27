@@ -8,6 +8,7 @@ import type { Warn } from './fields.ts';
 import { resolveDocsPath } from './log.ts';
 import { formatNumber, median } from './numbers.ts';
 import { NO_DATA, PHASE_LABELS, readTiming } from './phases.ts';
+import { releaseIndex, UNDATED, UNPUBLISHED } from './releases.ts';
 import type { PhaseRecord } from './phases.ts';
 import { MISSING } from './text.ts';
 import { PHASE_NAMES } from './timing-file.ts';
@@ -126,11 +127,25 @@ function readSources(docsPath: string, warn: Warn): ReportSource[] {
   return changeFolders(docsPath).flatMap((root) => readRows(root, warn).map((row) => ({ row, root })));
 }
 
+function selectRelease(sources: ReportSource[], docsPath: string, release: string, warn: Warn): ReportSource[] {
+  const index = releaseIndex(docsPath);
+  if (index.changelog === null) throw new DomainError(`Sin changelog en ${docsPath}: --release necesita las versiones del changelog.`);
+  if (!index.versions.includes(release)) {
+    throw new DomainError(`La versión ${release} no está con fecha en el changelog (${index.changelog}): nada que informar.`);
+  }
+  const labels = sources.map((source) => index.label(source.row));
+  const outside = labels.filter((label) => label === UNPUBLISHED || label === UNDATED).length;
+  if (outside > 0) warn(`Fuera de toda release: ${outside} cierres sin publicar o sin fecha; no cuentan en la ${release}.`);
+  return sources.filter((_, position) => labels[position] === release);
+}
+
 export function buildReport(root: string, options: ReportOptions, warn: Warn): string {
   if (!existsSync(root)) throw new DomainError(`No existe la carpeta del proyecto '${root}'.`);
   const docsPath = resolveDocsPath(resolve(root));
-  const sources = readSources(docsPath, warn);
+  const release = options.release?.replace(/^v/, '') ?? null;
+  const all = readSources(docsPath, warn);
+  const sources = release === null ? all : selectRelease(all, docsPath, release, warn);
   const attributions = (options.attribute ?? unattributed)(docsPath, sources, warn);
-  const rows = sources.map(({ row, root: folderRoot }, index) => ({ ...row, ...attributions[index]!, root: folderRoot }));
-  return render(rows, 'Sin cierres.', warn);
+  const rows = sources.map(({ row, root: folderRoot }, position) => ({ ...row, ...attributions[position]!, root: folderRoot }));
+  return render(rows, release === null ? 'Sin cierres.' : `Sin cierres en la ${release}.`, warn);
 }

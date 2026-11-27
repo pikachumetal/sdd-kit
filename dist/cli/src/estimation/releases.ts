@@ -6,8 +6,8 @@ import { MISSING } from './text.ts';
 import { gitSync } from '../git/git.ts';
 import { CHANGE_FOLDER_NAMES, resolveDocument } from '../cli/layout.ts';
 
-const UNPUBLISHED = 'sin publicar';
-const UNDATED = 'sin fecha';
+export const UNPUBLISHED = 'sin publicar';
+export const UNDATED = 'sin fecha';
 const RELEASE_HEADING = /^##\s*\[([^\]]+)\]\s*[-—]\s*(\d{4}-\d{2}-\d{2})\s*$/gm;
 const ARTIFACT_FILES = ['walkthrough.md', 'patch.md', 'hotfix.md'];
 
@@ -71,13 +71,24 @@ function releaseRow(label: string, rows: Row[]): string {
   return `| ${label} | ${rows.length} | ${hours} | ${medianText} | ${costSum(rows, 'subjectCost')} | ${costSum(rows, 'sessionCost')} |`;
 }
 
-export function releaseTable(rows: Row[], docsPath: string): string[] {
+export interface ReleaseIndex {
+  changelog: string | null;
+  versions: string[];
+  label: (row: Row) => string;
+}
+
+export function releaseIndex(docsPath: string): ReleaseIndex {
   const changelog = resolveDocument(docsPath, 'changelog').file;
   const versions = changelog === null ? [] : readVersions(changelog, docsPath);
+  const added = versions.length === 0 ? new Map<string, string>() : addedCommits(docsPath);
+  return { changelog, versions: versions.map((version) => version.name), label: (row) => releaseLabel(row, versions, added) };
+}
+
+export function releaseTable(rows: Row[], docsPath: string): string[] {
+  const { versions, label: labelOf } = releaseIndex(docsPath);
   if (versions.length === 0) return [];
-  const added = addedCommits(docsPath);
-  const byLabel = Map.groupBy(rows, (row) => releaseLabel(row, versions, added));
-  const labels = [...versions.map((version) => version.name), UNPUBLISHED, UNDATED];
+  const byLabel = Map.groupBy(rows, labelOf);
+  const labels = [...versions, UNPUBLISHED, UNDATED];
   return [
     '',
     '| Release | Artefactos | Horas reales | Mediana | Sujetos ($) | Sesión ($) |',
